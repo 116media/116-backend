@@ -51,3 +51,18 @@ public class FileByMimeTypeSpecification(string mimeType) : Specification<FileEn
         return file => file.MimeType == mimeType;
     }
 }
+
+/// <summary>
+/// Composite specification that matches a non-deleted file by its ID.
+/// Combines file ID lookup with soft-delete filtering, the most common file retrieval pattern.
+/// </summary>
+public class FileByIdNotDeletedSpecification(Guid fileId) : Specification<FileEntity>
+{
+    public override Expression<Func<FileEntity, bool>> ToExpression()
+    {
+        var fileByIdSpec = new FileByIdSpecification(fileId);
+        var notDeletedSpec = new FileIsNotDeletedSpecification();
+
+        return fileByIdSpec.And(notDeletedSpec).ToExpression();
+    }
+}
