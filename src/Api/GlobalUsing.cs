@@ -1,1 +1,1 @@
-global using _116.User;
+global using _116.Auth;
