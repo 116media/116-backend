@@ -33,6 +33,6 @@ public class FileIsValidAvatarSpecification : Specification<FileEntity>
         var notDeletedSpec = new FileIsNotDeletedSpecification();
         var imageSpec = new FileIsImageSpecification();
 
-        return file => notDeletedSpec.IsSatisfiedBy(file) && imageSpec.IsSatisfiedBy(file);
+        return notDeletedSpec.And(imageSpec).ToExpression();
     }
 }
