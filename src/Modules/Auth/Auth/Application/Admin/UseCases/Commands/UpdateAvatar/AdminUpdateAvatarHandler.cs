@@ -1,5 +1,6 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
+using _116.Shared.Application.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Mappers;
 using _116.Auth.Application.Shared.Repositories;
@@ -15,11 +16,13 @@ namespace _116.Auth.Application.Admin.UseCases.Commands.UpdateAvatar;
 /// <param name="fileRepository">Repository for file data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="userService">Service for user operations including avatar updates.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminUpdateAvatarHandler(
     IUserRepository userRepository,
     IFileRepository fileRepository,
     IRoleRepository roleRepository,
-    IUserService userService
+    IUserService userService,
+    IUnitOfWork unitOfWork
 ) : ICommandHandler<AdminUpdateAvatarCommand, AdminUpdateAvatarResult>
 {
     /// <summary>
@@ -33,19 +36,18 @@ public class AdminUpdateAvatarHandler(
         CancellationToken cancellationToken
     )
     {
-        // Get admin user from repository using userId from JWT claims
-        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByIdAsync(
+        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
             command.UserId,
             cancellationToken
         );
 
-        // Ensure the account is active (admin users only need to be active, not verified)
+        // Ensure the account is active (admin users only need to be active)
         userRepository.IsUserAccountActive(user!);
 
         // Update user avatar using the user service (this handles the file management)
         user = await userService.UpdateUserAvatarAsync(user!, command.AvatarUrl, cancellationToken);
 
-        await userRepository.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         // Extract roles and permissions using repository
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(user.UserRoles);

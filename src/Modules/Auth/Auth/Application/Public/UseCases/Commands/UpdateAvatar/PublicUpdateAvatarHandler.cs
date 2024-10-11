@@ -4,6 +4,7 @@ using _116.Auth.Application.Shared.Services;
 using _116.Auth.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
+using _116.Shared.Application.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Auth.Application.Public.UseCases.Commands.UpdateAvatar;
@@ -14,11 +15,13 @@ namespace _116.Auth.Application.Public.UseCases.Commands.UpdateAvatar;
 /// <param name="userRepository">Repository for user data access operations.</param>
 /// <param name="fileRepository">Repository for file data access operations.</param>
 /// <param name="userService">Service for user operations including avatar updates.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicUpdateAvatarHandler(
     IUserRepository userRepository,
     IFileRepository fileRepository,
     IRoleRepository roleRepository,
-    IUserService userService
+    IUserService userService,
+    IUnitOfWork unitOfWork
 ) : ICommandHandler<PublicUpdateAvatarCommand, PublicUpdateAvatarResult>
 {
     /// <summary>
@@ -32,19 +35,19 @@ public class PublicUpdateAvatarHandler(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByIdAsync(
+        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
             command.UserId,
             cancellationToken
         );
 
-        // Ensure the account is active and verified (public users must be verified)
+        // Validate user account status - must be active and verified
         userRepository.IsUserAccountActive(user!);
         userRepository.IsUserAccountVerified(user!);
 
         // Update user avatar using the user service (this handles the file management)
         user = await userService.UpdateUserAvatarAsync(user!, command.AvatarUrl, cancellationToken);
 
-        await userRepository.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         // Extract roles and permissions using repository
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(user.UserRoles);
