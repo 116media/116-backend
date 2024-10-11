@@ -1,4 +1,5 @@
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Repositories;
 using _116.Auth.Domain.Entities;
@@ -11,9 +12,11 @@ namespace _116.Auth.Application.Admin.UseCases.Commands.VerifyOtp;
 /// </summary>
 /// <param name="userRepository">Repository for user data access operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminVerifyOtpHandler(
     IUserRepository userRepository,
-    IOtpRepository otpRepository
+    IOtpRepository otpRepository,
+    IUnitOfWork unitOfWork
 ) : ICommandHandler<AdminVerifyOtpCommand, AdminVerifyOtpResult>
 {
     /// <summary>
@@ -34,24 +37,23 @@ public class AdminVerifyOtpHandler(
         var email = new Email(command.Email);
         var purpose = new OtpPurpose(command.Purpose);
 
-        // Get admin user by email
-        UserEntity user = await userRepository.GetActiveAdminUserWithRolesAndPermissionsAsync(email, cancellationToken);
+        UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
+
+        // Validate admin account status
+        userRepository.IsUserAdmin(user!);
+        userRepository.IsUserAccountActive(user!);
 
         // Validate the OTP (throws appropriate exceptions on failure)
         OtpEntity otp = await otpRepository.ValidateOtpAsync(
-            user.Id,
+            user!.Id,
             command.Code,
             purpose,
             cancellationToken
         );
 
-        // Mark OTP as used
+        // Mark OTP as used and user as verified
         otp.MarkAsUsed();
-        await otpRepository.UpdateAsync(otp, cancellationToken);
-
-        // Mark user as verified
         user.MarkAsVerified();
-        await userRepository.UpdateAsync(user, cancellationToken);
 
         // Invalidate any remaining OTPs for this purpose
         await otpRepository.InvalidateExistingOtpsAsync(
@@ -60,7 +62,7 @@ public class AdminVerifyOtpHandler(
             cancellationToken
         );
 
-        await otpRepository.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         return new AdminVerifyOtpResult(
             IsSuccess: true
