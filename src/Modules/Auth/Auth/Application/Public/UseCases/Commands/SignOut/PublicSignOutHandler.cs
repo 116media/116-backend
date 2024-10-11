@@ -1,3 +1,4 @@
+using _116.Shared.Application.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Repositories;
 using _116.Auth.Domain.Entities;
@@ -8,7 +9,8 @@ namespace _116.Auth.Application.Public.UseCases.Commands.SignOut;
 /// Handles the <see cref="PublicSignOutCommand"/> to sign out a user.
 /// </summary>
 public class PublicSignOutHandler(
-    IUserRepository userRepository
+    IUserRepository userRepository,
+    IUnitOfWork unitOfWork
 ) : ICommandHandler<PublicSignOutCommand, PublicSignOutResult>
 {
     /// <summary>
@@ -16,8 +18,9 @@ public class PublicSignOutHandler(
     /// </summary>
     public async Task<PublicSignOutResult> Handle(PublicSignOutCommand command, CancellationToken cancellationToken)
     {
-        UserEntity? user = await userRepository.GetUserByIdAsync(command.UserId, cancellationToken);
+        UserEntity? user = await userRepository.FindUserByIdOrThrow(command.UserId, cancellationToken);
 
+        // Validate user account status - user accounts must be active
         userRepository.IsUserAccountActive(user!);
 
         if (user!.IsLoggedIn == false)
@@ -26,7 +29,7 @@ public class PublicSignOutHandler(
         }
 
         user.RecordLogout();
-        await userRepository.UpdateAsync(user, cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         return new PublicSignOutResult(IsSuccess: true);
     }
