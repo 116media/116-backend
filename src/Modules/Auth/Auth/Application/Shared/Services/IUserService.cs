@@ -16,7 +16,7 @@ public interface IUserService
     /// <param name="authProvider">Authentication provider.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>User entity with roles and permissions loaded.</returns>
-    Task<UserEntity> GetOrCreateExternalUserAsync(
+    Task<UserEntity?> GetOrCreateExternalUserAsync(
         string email,
         string? userName,
         AuthProvider authProvider,
