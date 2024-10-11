@@ -1,4 +1,5 @@
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Repositories;
 using _116.Auth.Application.Shared.Services;
@@ -14,10 +15,12 @@ namespace _116.Auth.Application.Admin.UseCases.Commands.ResetPassword;
 /// <param name="userRepository">Repository for user data access operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
 /// <param name="passwordService">Service for password hashing operations.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminResetPasswordHandler(
     IUserRepository userRepository,
     IOtpRepository otpRepository,
-    IPasswordService passwordService
+    IPasswordService passwordService,
+    IUnitOfWork unitOfWork
 ) : ICommandHandler<AdminResetPasswordCommand, AdminResetPasswordResult>
 {
     /// <summary>
@@ -40,12 +43,15 @@ public class AdminResetPasswordHandler(
         // Normalize email using value object
         var email = new Email(command.Email);
 
-        // Get admin user by email
-        UserEntity user = await userRepository.GetActiveAdminUserWithRolesAndPermissionsAsync(email, cancellationToken);
+        UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
+
+        // Validate user account status
+        userRepository.IsUserAdmin(user!);
+        userRepository.IsUserAccountActive(user!);
 
         // Validate the OTP for password reset (throws appropriate exceptions on failure)
         OtpEntity otp = await otpRepository.ValidateOtpAsync(
-            user.Id,
+            user!.Id,
             command.Code,
             OtpPurpose.PasswordReset,
             cancellationToken
@@ -56,11 +62,9 @@ public class AdminResetPasswordHandler(
 
         // Update user's password
         user.UpdatePassword(hashedPassword);
-        await userRepository.UpdateAsync(user, cancellationToken);
 
         // Mark OTP as used
         otp.MarkAsUsed();
-        await otpRepository.UpdateAsync(otp, cancellationToken);
 
         // Invalidate any remaining password reset OTPs for this user
         await otpRepository.InvalidateExistingOtpsAsync(
@@ -69,8 +73,7 @@ public class AdminResetPasswordHandler(
             cancellationToken
         );
 
-        // Save all changes
-        await otpRepository.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         return new AdminResetPasswordResult(
             IsSuccess: true
