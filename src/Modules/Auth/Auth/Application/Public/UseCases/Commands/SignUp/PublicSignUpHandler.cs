@@ -1,4 +1,5 @@
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Mappers;
 using _116.Auth.Application.Shared.Repositories;
@@ -8,7 +9,7 @@ using _116.Auth.Domain.Results;
 using _116.Auth.Domain.ValueObjects;
 using OtpPurpose = _116.Auth.Domain.Enums.OtpPurpose;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.SignUp.V1;
+namespace _116.Auth.Application.Public.UseCases.Commands.SignUp;
 
 /// <summary>
 /// Handles the <see cref="PublicSignUpCommand"/> to register new public users.
@@ -19,13 +20,15 @@ namespace _116.Auth.Application.Public.UseCases.Commands.SignUp.V1;
 /// <param name="passwordService">Service for hashing passwords.</param>
 /// <param name="otpService">Service for generating OTP codes.</param>
 /// <param name="jwtService">Service for generating JWT tokens with user claims.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicSignUpHandler(
     IUserRepository userRepository,
     IRoleRepository roleRepository,
     IOtpRepository otpRepository,
     IPasswordService passwordService,
     IOtpService otpService,
-    IJwtService jwtService
+    IJwtService jwtService,
+    IUnitOfWork unitOfWork
 ) : ICommandHandler<PublicSignUpCommand, PublicSignUpResult>
 {
     /// <summary>
@@ -66,16 +69,16 @@ public class PublicSignUpHandler(
 
         // Save all changes atomically in a single transaction
         // (user creation, visitor role assignment, and OTP generation) succeed or fail together
-        await userRepository.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         // Get the newly created user with roles to generate token
-        UserEntity userWithRoles = await userRepository.GetPublicUserWithRolesAndPermissionsAsync(
+        UserEntity? userWithRoles = await userRepository.GetUserWithRolesAndPermissionsByCredentialsOrThrow(
             email.Value,
             cancellationToken
         );
 
         // Extract user permissions from roles (already loaded by repository)
-        List<RolePermissionEntity> userPermissions = userWithRoles.UserRoles
+        List<RolePermissionEntity> userPermissions = userWithRoles!.UserRoles
             .SelectMany(ur => ur.Role.RolePermissions)
             .ToList();
 

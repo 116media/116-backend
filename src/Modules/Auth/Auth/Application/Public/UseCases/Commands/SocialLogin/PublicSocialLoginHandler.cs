@@ -1,5 +1,6 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
+using _116.Shared.Application.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Mappers;
 using _116.Auth.Application.Shared.Repositories;
@@ -14,16 +15,16 @@ namespace _116.Auth.Application.Public.UseCases.Commands.SocialLogin;
 /// Handles the <see cref="PublicSocialLoginCommand"/> for social authentication.
 /// </summary>
 /// <param name="userService">Service for user management operations.</param>
-/// <param name="userRepository">Repository for user data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="jwtService">Service for generating JWT tokens with user claims.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicSocialLoginHandler(
     IUserService userService,
-    IUserRepository userRepository,
     IRoleRepository roleRepository,
     IJwtService jwtService,
-    IFileRepository fileRepository
+    IFileRepository fileRepository,
+    IUnitOfWork unitOfWork
 ) : ICommandHandler<PublicSocialLoginCommand, PublicSocialLoginResult>
 {
     /// <summary>
@@ -42,7 +43,7 @@ public class PublicSocialLoginHandler(
         var provider = new AuthProvider(command.Provider);
 
         // Get or create external user for social authentication
-        UserEntity user = await userService.GetOrCreateExternalUserAsync(
+        UserEntity? user = await userService.GetOrCreateExternalUserAsync(
             email.Value,
             command.UserName,
             provider.Value,
@@ -50,11 +51,11 @@ public class PublicSocialLoginHandler(
         );
 
         // Update user avatar if provided
-        user = await userService.UpdateUserAvatarAsync(user, command.AvatarUrl, cancellationToken);
+        user = await userService.UpdateUserAvatarAsync(user!, command.AvatarUrl, cancellationToken);
 
         // Record login and save changes
         user.RecordLogin();
-        await userRepository.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         // Extract user permissions for JWT
         List<RolePermissionEntity> userPermissions = user.UserRoles
