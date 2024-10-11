@@ -1,4 +1,5 @@
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Errors;
 using _116.Auth.Application.Shared.Mappers;
@@ -17,11 +18,13 @@ namespace _116.Auth.Application.Admin.UseCases.Commands.Login;
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="passwordService">Service for verifying hashed passwords.</param>
 /// <param name="jwtService">Service for generating JWT tokens with admin claims.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminLoginHandler(
     IUserRepository userRepository,
     IRoleRepository roleRepository,
     IPasswordService passwordService,
-    IJwtService jwtService
+    IJwtService jwtService,
+    IUnitOfWork unitOfWork
 ) : ICommandHandler<AdminLoginCommand, AdminLoginResult>
 {
     /// <summary>
@@ -44,13 +47,17 @@ public class AdminLoginHandler(
         var email = new Email(command.Email);
 
         // Get admin user with all necessary data in one call
-        UserEntity user = await userRepository.GetActiveAdminUserWithRolesAndPermissionsAsync(
+        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByEmailOrThrow(
             email,
             cancellationToken
         );
 
+        // Validate admin account status
+        userRepository.IsUserAccountActive(user!);
+        userRepository.IsUserAdmin(user!);
+
         // Verify password
-        if (!passwordService.Verify(command.Password, user.PasswordHash))
+        if (!passwordService.Verify(command.Password, user!.PasswordHash))
         {
             throw UserErrors.InvalidCredentials();
         }
@@ -75,7 +82,7 @@ public class AdminLoginHandler(
 
         // Record successful login
         user.RecordLogin();
-        await userRepository.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         // Extract roles and permissions using repository
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(user.UserRoles);
