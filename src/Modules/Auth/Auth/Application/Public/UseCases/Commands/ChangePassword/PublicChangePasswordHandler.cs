@@ -1,4 +1,5 @@
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Errors;
 using _116.Auth.Application.Shared.Repositories;
@@ -12,9 +13,11 @@ namespace _116.Auth.Application.Public.UseCases.Commands.ChangePassword;
 /// </summary>
 /// <param name="userRepository">Repository for user data access operations.</param>
 /// <param name="passwordService">Service for password hashing and verification operations.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicChangePasswordHandler(
     IUserRepository userRepository,
-    IPasswordService passwordService
+    IPasswordService passwordService,
+    IUnitOfWork unitOfWork
 ) : ICommandHandler<PublicChangePasswordCommand, PublicChangePasswordResult>
 {
     /// <summary>
@@ -32,8 +35,7 @@ public class PublicChangePasswordHandler(
         CancellationToken cancellationToken
     )
     {
-        // Get user by ID
-        UserEntity? user = await userRepository.GetUserByIdAsync(command.UserId, cancellationToken);
+        UserEntity? user = await userRepository.FindUserByIdOrThrow(command.UserId, cancellationToken);
 
         // Validate user account status - must be active and verified
         userRepository.IsUserAccountActive(user!);
@@ -56,10 +58,8 @@ public class PublicChangePasswordHandler(
 
         // Update user's password
         user.UpdatePassword(hashedNewPassword);
-        await userRepository.UpdateAsync(user, cancellationToken);
 
-        // Save changes
-        await userRepository.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         return new PublicChangePasswordResult(
             IsSuccess: true
