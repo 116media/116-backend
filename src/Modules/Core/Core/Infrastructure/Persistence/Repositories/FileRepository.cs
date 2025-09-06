@@ -27,6 +27,7 @@ public class FileRepository(CoreDbContext context) : IFileRepository
     public async Task UpdateAsync(FileEntity file, CancellationToken cancellationToken = default)
     {
         context.Files.Update(file);
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc />
