@@ -95,4 +95,22 @@ public static class ValidationErrorMessage
     {
         return "File size must be greater than zero";
     }
+
+    /// <summary>
+    /// Gets the error message for invalid file URL format.
+    /// </summary>
+    /// <param name="fileUrl">The invalid file URL.</param>
+    /// <returns>A formatted error message indicating the URL format is invalid.</returns>
+    public static string InvalidFileUrl(string fileUrl)
+    {
+        return $"File URL '{fileUrl}' has an invalid format. Must be a valid HTTP or HTTPS URL";
+    }
+
+    /// <summary>
+    /// Error message indicating that file URL is required.
+    /// </summary>
+    public static string FileUrlRequired()
+    {
+        return "File URL is required";
+    }
 }

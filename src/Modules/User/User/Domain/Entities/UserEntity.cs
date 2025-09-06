@@ -170,7 +170,7 @@ public class UserEntity : Aggregate<Guid>
     /// </remarks>
     public static UserEntity CreateExternal(Guid id, string userName, AuthProvider authProvider, string? email = null)
     {
-        if (string.IsNullOrWhiteSpace(userName) || userName.Length > UserConstants.MaxUserNameLength)
+        if (string.IsNullOrWhiteSpace(userName))
         {
             throw UserErrors.InvalidUsernameFormat(userName);
         }

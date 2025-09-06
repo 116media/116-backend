@@ -68,6 +68,7 @@ public class UserRepository(UserDbContext context) : IUserRepository
                 .ThenInclude(ur => ur.Role)
                     .ThenInclude(r => r.RolePermissions)
                         .ThenInclude(rp => rp.Permission)
+            .AsSplitQuery()
             .FirstDefaultOrThrowAsync(
                 keyName: "email",
                 keyValue: email.Value,
@@ -90,7 +91,10 @@ public class UserRepository(UserDbContext context) : IUserRepository
     }
 
     /// <inheritdoc />
-    public async Task<UserEntity> GetPublicUserWithRolesAndPermissionsAsync(string credentials, CancellationToken cancellationToken = default)
+    public async Task<UserEntity> GetPublicUserWithRolesAndPermissionsAsync(
+        string credentials,
+        CancellationToken cancellationToken = default
+    )
     {
         // Check if credentials is an email (contains @ and .) or username
         bool isEmail = credentials.Contains('@') && credentials.Contains('.');
@@ -102,6 +106,7 @@ public class UserRepository(UserDbContext context) : IUserRepository
                 .ThenInclude(ur => ur.Role)
                     .ThenInclude(r => r.RolePermissions)
                         .ThenInclude(rp => rp.Permission)
+            .AsSplitQuery()
             .FirstDefaultOrThrowAsync(
                 keyName: "credentials",
                 keyValue: credentials,

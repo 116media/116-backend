@@ -10,7 +10,6 @@ using _116.User.Application.Shared.Repositories;
 using _116.User.Application.Shared.Services;
 using _116.User.Infrastructure.Repositories;
 using _116.User.Infrastructure.Persistence;
-using _116.User.Infrastructure.Persistence.Seeds;
 using _116.User.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.User.Infrastructure.Persistence.Seeds.Visitor;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

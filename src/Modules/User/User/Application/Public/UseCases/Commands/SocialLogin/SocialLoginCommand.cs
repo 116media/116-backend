@@ -20,7 +20,7 @@ public record SocialLoginCommand(
     string Email,
     string UserName,
     string? Avatar,
-    AuthProvider Provider
+    string Provider
 ) : ICommand<SocialLoginResult>;
 
 /// <summary>
