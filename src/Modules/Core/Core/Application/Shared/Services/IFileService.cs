@@ -1,4 +1,4 @@
-namespace _116.Core.Application.Services;
+namespace _116.Core.Application.Shared.Services;
 
 /// <summary>
 /// Service interface for file operations including download, storage, and management.

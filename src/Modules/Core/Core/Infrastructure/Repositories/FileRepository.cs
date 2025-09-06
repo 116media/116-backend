@@ -1,8 +1,9 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
+using _116.Core.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace _116.Core.Infrastructure.Persistence.Repositories;
+namespace _116.Core.Infrastructure.Repositories;
 
 /// <summary>
 /// Implementation of <see cref="IFileRepository"/> using Entity Framework Core.

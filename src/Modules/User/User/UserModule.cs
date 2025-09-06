@@ -12,6 +12,7 @@ using _116.User.Infrastructure.Repositories;
 using _116.User.Infrastructure.Persistence;
 using _116.User.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.User.Infrastructure.Persistence.Seeds.Visitor;
+using _116.User.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;

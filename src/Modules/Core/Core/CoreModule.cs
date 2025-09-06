@@ -1,9 +1,9 @@
-using _116.Core.Application.Services;
+using _116.Core.Application.Shared.Services;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Infrastructure.Services;
 using _116.Shared.Infrastructure;
 using _116.Core.Infrastructure.Persistence;
-using _116.Core.Infrastructure.Persistence.Repositories;
+using _116.Core.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
