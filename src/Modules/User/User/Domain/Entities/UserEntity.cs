@@ -125,22 +125,21 @@ public class UserEntity : Aggregate<Guid>
     /// </remarks>
     public static UserEntity Create(Guid id, string email, string userName, string passwordHash)
     {
-        if (string.IsNullOrWhiteSpace(email))
+        Exception? error = (email, userName, passwordHash) switch
         {
-            throw UserErrors.InvalidEmailFormat(email);
-        }
+            var (e, _, _) when string.IsNullOrWhiteSpace(e) => UserErrors.InvalidEmailFormat(e),
 
-        if (string.IsNullOrWhiteSpace(userName) || userName.Length > UserConstants.MaxUserNameLength)
-        {
-            throw UserErrors.InvalidUsernameFormat(userName);
-        }
+            var (_, u, _) when string.IsNullOrWhiteSpace(u) || u.Length > UserConstants.MaxUserNameLength
+                => UserErrors.InvalidUsernameFormat(u),
 
-        if (string.IsNullOrWhiteSpace(passwordHash))
-        {
-            throw UserErrors.InvalidPasswordFormat();
-        }
+            var (_, _, p) when string.IsNullOrWhiteSpace(p) => UserErrors.InvalidPasswordFormat(),
 
-        var user = new UserEntity
+            _ => null
+        };
+
+        if (error is not null) throw error;
+
+        return new UserEntity
         {
             Id = id,
             Email = email.ToLowerInvariant(),
@@ -148,8 +147,6 @@ public class UserEntity : Aggregate<Guid>
             PasswordHash = passwordHash,
             AuthProvider = AuthProvider.Local
         };
-
-        return user;
     }
 
     /// <summary>
@@ -266,9 +263,15 @@ public class UserEntity : Aggregate<Guid>
     /// </remarks>
     public void RecordLogin()
     {
-        if (!IsActive) throw UserErrors.AccountInactive(Email!);
+        if (!IsActive)
+        {
+            throw UserErrors.AccountInactive(Email!);
+        }
 
-        if (AuthProvider == AuthProvider.Local && !IsVerified) throw UserErrors.AccountNotVerified(Email!);
+        if (AuthProvider == AuthProvider.Local && !IsVerified)
+        {
+            throw UserErrors.AccountNotVerified(Email!);
+        }
 
         IsLoggedIn = UserConstants.LoggedInStatus;
         LastLoginAt = DateTime.UtcNow;
@@ -354,7 +357,10 @@ public class UserEntity : Aggregate<Guid>
     {
         UserRoleEntity? userRole = UserRoles.FirstOrDefault(ur => ur.RoleId == roleId);
 
-        if (userRole == null) return UserConstants.DeactivatedStatus;
+        if (userRole == null)
+        {
+            return UserConstants.DeactivatedStatus;
+        }
 
         UserRoles.Remove(userRole);
         return UserConstants.ActivatedStatus;

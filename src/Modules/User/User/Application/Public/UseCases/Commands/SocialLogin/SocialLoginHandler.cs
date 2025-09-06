@@ -1,4 +1,6 @@
 using _116.Core.Application.Services;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.User.Application.Shared.Errors;
@@ -19,11 +21,13 @@ namespace _116.User.Application.Public.UseCases.Commands.SocialLogin;
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="jwtService">Service for generating JWT tokens with user claims.</param>
 /// <param name="fileService">Service for downloading and storing avatar files.</param>
+/// <param name="fileRepository">Repository for accessing file metadata.</param>
 public class SocialLoginHandler(
     IUserRepository userRepository,
     IRoleRepository roleRepository,
     IJwtService jwtService,
-    IFileService fileService
+    IFileService fileService,
+    IFileRepository fileRepository
 ) : ICommandHandler<SocialLoginCommand, SocialLoginResult>
 {
     /// <summary>
@@ -104,8 +108,14 @@ public class SocialLoginHandler(
         // Extract roles and permissions using repository
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(user.UserRoles);
 
-        // Map to userDTO
-        var userDto = user.ToUserResponseDto(roles, permissions);
+        // Fetch the avatar file if the user has one
+        FileEntity? avatarFile = user.AvatarFileId.HasValue
+            ? await fileRepository.GetByIdAsync(user.AvatarFileId.Value, cancellationToken)
+            : null;
+
+        // Map to userDTO with avatar
+        var avatarDto = avatarFile.ToFileDto();
+        var userDto = user.ToUserResponseDto(roles, permissions, avatarDto);
         var authResult = new AuthenticationResult(userDto, token.Token, token.ExpiresAt);
 
         return new SocialLoginResult(authResult);
