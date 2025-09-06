@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using _116.BuildingBlocks.Constants;
 using _116.Core.Application.Shared.Errors;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
 
 namespace _116.Core.Domain.Entities;
@@ -73,17 +74,19 @@ public class FileEntity : Aggregate<Guid>
         long sizeInBytes
     )
     {
-        if (string.IsNullOrWhiteSpace(fileName)) throw CoreErrors.FileNameRequired();
+        BadRequestException? error = (fileName, originalFileName, mimeType, storageUrl, sizeInBytes) switch
+        {
+            var (f, _, _, _, _) when string.IsNullOrWhiteSpace(f) => CoreErrors.FileNameRequired(),
+            var (_, o, _, _, _) when string.IsNullOrWhiteSpace(o) => CoreErrors.OriginalFileNameRequired(),
+            var (_, _, m, _, _) when string.IsNullOrWhiteSpace(m) => CoreErrors.MimeTypeRequired(),
+            var (_, _, _, s, _) when string.IsNullOrWhiteSpace(s) => CoreErrors.StorageUrlRequired(),
+            (_, _, _, _, <= 0) => CoreErrors.FileSizeMustBeGreaterThanZero(),
+            _ => null
+        };
 
-        if (string.IsNullOrWhiteSpace(originalFileName)) throw CoreErrors.OriginalFileNameRequired();
+        if (error is not null) throw error;
 
-        if (string.IsNullOrWhiteSpace(mimeType)) throw CoreErrors.MimeTypeRequired();
-
-        if (string.IsNullOrWhiteSpace(storageUrl)) throw CoreErrors.StorageUrlRequired();
-
-        if (sizeInBytes <= 0) throw CoreErrors.FileSizeMustBeGreaterThanZero();
-
-        var file = new FileEntity
+        return new FileEntity
         {
             Id = id,
             FileName = fileName,
@@ -92,8 +95,6 @@ public class FileEntity : Aggregate<Guid>
             StorageUrl = storageUrl,
             SizeInBytes = sizeInBytes,
         };
-
-        return file;
     }
 
     /// <summary>
@@ -102,7 +103,10 @@ public class FileEntity : Aggregate<Guid>
     /// <param name="newStorageUrl">The new storage URL.</param>
     public void UpdateStorageUrl(string newStorageUrl)
     {
-        if (string.IsNullOrWhiteSpace(newStorageUrl)) throw CoreErrors.StorageUrlRequired();
+        if (string.IsNullOrWhiteSpace(newStorageUrl))
+        {
+            throw CoreErrors.StorageUrlRequired();
+        }
 
         StorageUrl = newStorageUrl;
     }

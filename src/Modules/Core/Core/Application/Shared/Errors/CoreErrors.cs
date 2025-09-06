@@ -100,7 +100,7 @@ public static class CoreErrors
         new(InternalServerErrorMessage.FileDownloadFailed(fileUrl, reason));
 
     /// <summary>
-    /// Throws when file URL format is invalid.
+    /// Throws when the file URL format is invalid.
     /// </summary>
     public static BadRequestException InvalidFileUrl(string fileUrl) =>
         new(ValidationErrorMessage.InvalidFileUrl(fileUrl));
