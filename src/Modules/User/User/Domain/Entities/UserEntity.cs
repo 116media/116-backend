@@ -224,6 +224,24 @@ public class UserEntity : Aggregate<Guid>
     }
 
     /// <summary>
+    /// Updates the user's username.
+    /// </summary>
+    /// <param name="newUserName">The new username.</param>
+    /// <exception cref="ArgumentException">Thrown when username is null, empty, or exceeds maximum length.</exception>
+    /// <remarks>
+    /// Updates the username for existing users. Username must be unique and follow validation rules.
+    /// </remarks>
+    public void UpdateUserName(string newUserName)
+    {
+        if (string.IsNullOrWhiteSpace(newUserName) || newUserName.Length > UserConstants.MaxUserNameLength)
+        {
+            throw UserErrors.InvalidUsernameFormat(newUserName);
+        }
+
+        UserName = newUserName;
+    }
+
+    /// <summary>
     /// Marks the user's email as verified.
     /// </summary>
     /// <remarks>

@@ -198,6 +198,48 @@ public class FileService(HttpClient httpClient, IFileRepository fileRepository) 
         );
     }
 
+    /// <inheritdoc />
+    public async Task<Guid> GetOrDownloadFileAsync(
+        Guid? currentFileId,
+        string fileUrl,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (string.IsNullOrWhiteSpace(fileUrl))
+        {
+            throw CoreErrors.FileUrlRequired();
+        }
+
+        // If no current file exists, download and store the new one
+        if (!currentFileId.HasValue)
+        {
+            return await DownloadAndStoreAsync(fileUrl, cancellationToken);
+        }
+
+        // Get the existing file to compare URLs
+        FileEntity? existingFile = await fileRepository.GetByIdAsync(currentFileId.Value, cancellationToken);
+
+        // If existing file not found, download the new one
+        if (existingFile == null)
+        {
+            return await DownloadAndStoreAsync(fileUrl, cancellationToken);
+        }
+
+        // If URLs are the same, return the existing file ID (no change needed)
+        if (string.Equals(existingFile.StorageUrl, fileUrl, StringComparison.OrdinalIgnoreCase))
+        {
+            return currentFileId.Value;
+        }
+
+        // URLs are different - download the new file and delete the old one
+        Guid newFileId = await DownloadAndStoreAsync(fileUrl, cancellationToken);
+
+        // Delete the old file (soft delete in the DB)
+        await DeleteFileAsync(currentFileId.Value, cancellationToken);
+
+        return newFileId;
+    }
+
     /// <summary>
     /// Gets the file extension from the specified content type.
     /// </summary>

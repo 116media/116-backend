@@ -59,4 +59,20 @@ public interface IFileService
     /// Useful for serving avatar images and other user-uploaded content.
     /// </remarks>
     Task<string?> GetPublicUrlAsync(Guid fileId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets or downloads a file by URL, avoiding duplicate downloads if URL hasn't changed.
+    /// </summary>
+    /// <param name="currentFileId">The current file ID (if any) to check against.</param>
+    /// <param name="fileUrl">The file URL to get or download.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The file ID of the existing or newly downloaded file.</returns>
+    /// <remarks>
+    /// This method optimizes file storage by:
+    /// - Returning the existing file ID if the URL hasn't changed
+    /// - Downloading new file and deleting old one if URL is different
+    /// - Only downloading and storing if no file exists
+    /// - Useful for avatar updates where the same URL shouldn't create duplicate files
+    /// </remarks>
+    Task<Guid> GetOrDownloadFileAsync(Guid? currentFileId, string fileUrl, CancellationToken cancellationToken = default);
 }

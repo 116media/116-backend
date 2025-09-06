@@ -57,6 +57,19 @@ public class SocialLoginHandler(
             {
                 throw UserErrors.EmailAlreadyExists(command.Email);
             }
+
+            // Update username if a new one is provided and it's different
+            if (!string.IsNullOrWhiteSpace(command.UserName) && user.UserName != command.UserName)
+            {
+                // Check if another user already takes the new username
+                bool usernameExists = await userRepository.ExistsByUserNameAsync(command.UserName, cancellationToken);
+                if (usernameExists)
+                {
+                    throw UserErrors.UsernameAlreadyExists(command.UserName);
+                }
+
+                user.UpdateUserName(command.UserName);
+            }
         }
         catch (NotFoundException)
         {
@@ -78,10 +91,14 @@ public class SocialLoginHandler(
             );
         }
 
-        // If command.Avatar exists, download and store it
+        // Handle avatar update - only download if URL changed or no avatar exists
         if (!string.IsNullOrEmpty(command.Avatar))
         {
-            Guid avatarFileId = await fileService.DownloadAndStoreAsync(command.Avatar, cancellationToken);
+            Guid avatarFileId = await fileService.GetOrDownloadFileAsync(
+                user.AvatarFileId,
+                command.Avatar,
+                cancellationToken
+            );
             user.UpdateAvatar(avatarFileId);
         }
 
