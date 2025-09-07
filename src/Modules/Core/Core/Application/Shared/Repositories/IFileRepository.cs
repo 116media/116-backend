@@ -31,6 +31,12 @@ public interface IFileRepository : IRepository<FileEntity>
     Task UpdateAsync(FileEntity file, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Removes a file entity from the repository (hard delete).
+    /// </summary>
+    /// <param name="file">The file entity to remove.</param>
+    void Remove(FileEntity file);
+
+    /// <summary>
     /// Persists all pending changes to the database.
     /// </summary>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>

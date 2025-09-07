@@ -32,6 +32,12 @@ public class FileRepository(CoreDbContext context) : IFileRepository
     }
 
     /// <inheritdoc />
+    public void Remove(FileEntity file)
+    {
+        context.Files.Remove(file);
+    }
+
+    /// <inheritdoc />
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await context.SaveChangesAsync(cancellationToken);

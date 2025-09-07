@@ -68,13 +68,11 @@ public class FileService(HttpClient httpClient, IFileRepository fileRepository) 
         FileEntity? fileEntity = await fileRepository.GetByIdAsync(fileId, cancellationToken);
         if (fileEntity == null) return false;
 
-        bool deleted = fileEntity.Delete();
-        if (deleted)
-        {
-            await fileRepository.SaveChangesAsync(cancellationToken);
-        }
+        // Hard delete - remove from the DB completely
+        fileRepository.Remove(fileEntity);
+        await fileRepository.SaveChangesAsync(cancellationToken);
 
-        return deleted;
+        return true;
     }
 
     /// <inheritdoc />
@@ -234,7 +232,7 @@ public class FileService(HttpClient httpClient, IFileRepository fileRepository) 
         // URLs are different - download the new file and delete the old one
         Guid newFileId = await DownloadAndStoreAsync(fileUrl, cancellationToken);
 
-        // Delete the old file (soft delete in the DB)
+        // Delete the old file (hard delete from DB)
         await DeleteFileAsync(currentFileId.Value, cancellationToken);
 
         return newFileId;
