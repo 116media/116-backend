@@ -4,12 +4,13 @@ using System.Text;
 using System.Text.Json;
 using _116.BuildingBlocks.Constants;
 using _116.Shared.Application.Configurations;
+using _116.User.Application.Shared.Services;
 using _116.User.Domain.Entities;
 using _116.User.Domain.Enums;
 using _116.User.Domain.Results;
 using Microsoft.IdentityModel.Tokens;
 
-namespace _116.User.Application.Shared.Services;
+namespace _116.User.Infrastructure.Services;
 
 /// <summary>
 /// Service responsible for generating JWT tokens with user claims, roles, and permissions.
@@ -42,13 +43,13 @@ public class JwtService : IJwtService
 
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, $"{userId}"),
-            new Claim(ClaimTypes.Name, userName),
-            new Claim(ClaimTypes.Email, email),
-            new Claim(JwtRegisteredClaimNames.Sub, $"{userId}"),
-            new Claim(JwtRegisteredClaimNames.Jti, $"{Guid.NewGuid()}"),
-            new Claim(JwtRegisteredClaimNames.Iat, $"{now.ToUnixTimeSeconds()}", ClaimValueTypes.Integer64),
-            new Claim(JwtClaimsConstants.AuthProvider, $"{authProvider}")
+            new(ClaimTypes.NameIdentifier, $"{userId}"),
+            new(ClaimTypes.Name, userName),
+            new(ClaimTypes.Email, email),
+            new(JwtRegisteredClaimNames.Sub, $"{userId}"),
+            new(JwtRegisteredClaimNames.Jti, $"{Guid.NewGuid()}"),
+            new(JwtRegisteredClaimNames.Iat, $"{now.ToUnixTimeSeconds()}", ClaimValueTypes.Integer64),
+            new(JwtClaimsConstants.AuthProvider, $"{authProvider}")
         };
 
         claims.AddRange(BuildRoleClaims(userRoles));

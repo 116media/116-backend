@@ -1,5 +1,9 @@
+using _116.Core.Application.Shared.Services;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Infrastructure.Services;
 using _116.Shared.Infrastructure;
 using _116.Core.Infrastructure.Persistence;
+using _116.Core.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -39,8 +43,11 @@ public static class CoreModule
         // Register the database with base module infrastructure
         services.AddModuleDatabase(GetModuleOptions());
 
-        // Register core management services here when necessary
-        // services.AddScoped<IFileService, FileService>();
+        // Register core repositories
+        services.AddScoped<IFileRepository, FileRepository>();
+
+        // Register core management services
+        services.AddHttpClient<IFileService, FileService>();
 
         return services;
     }

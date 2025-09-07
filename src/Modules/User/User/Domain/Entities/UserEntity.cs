@@ -125,22 +125,21 @@ public class UserEntity : Aggregate<Guid>
     /// </remarks>
     public static UserEntity Create(Guid id, string email, string userName, string passwordHash)
     {
-        if (string.IsNullOrWhiteSpace(email))
+        Exception? error = (email, userName, passwordHash) switch
         {
-            throw UserErrors.InvalidEmailFormat(email);
-        }
+            var (e, _, _) when string.IsNullOrWhiteSpace(e) => UserErrors.InvalidEmailFormat(e),
 
-        if (string.IsNullOrWhiteSpace(userName) || userName.Length > UserConstants.MaxUserNameLength)
-        {
-            throw UserErrors.InvalidUsernameFormat(userName);
-        }
+            var (_, u, _) when string.IsNullOrWhiteSpace(u) || u.Length > UserConstants.MaxUserNameLength
+                => UserErrors.InvalidUsernameFormat(u),
 
-        if (string.IsNullOrWhiteSpace(passwordHash))
-        {
-            throw UserErrors.InvalidPasswordFormat();
-        }
+            var (_, _, p) when string.IsNullOrWhiteSpace(p) => UserErrors.InvalidPasswordFormat(),
 
-        var user = new UserEntity
+            _ => null
+        };
+
+        if (error is not null) throw error;
+
+        return new UserEntity
         {
             Id = id,
             Email = email.ToLowerInvariant(),
@@ -148,8 +147,6 @@ public class UserEntity : Aggregate<Guid>
             PasswordHash = passwordHash,
             AuthProvider = AuthProvider.Local
         };
-
-        return user;
     }
 
     /// <summary>
@@ -170,7 +167,7 @@ public class UserEntity : Aggregate<Guid>
     /// </remarks>
     public static UserEntity CreateExternal(Guid id, string userName, AuthProvider authProvider, string? email = null)
     {
-        if (string.IsNullOrWhiteSpace(userName) || userName.Length > UserConstants.MaxUserNameLength)
+        if (string.IsNullOrWhiteSpace(userName))
         {
             throw UserErrors.InvalidUsernameFormat(userName);
         }
@@ -227,6 +224,24 @@ public class UserEntity : Aggregate<Guid>
     }
 
     /// <summary>
+    /// Updates the user's username.
+    /// </summary>
+    /// <param name="newUserName">The new username.</param>
+    /// <exception cref="ArgumentException">Thrown when username is null, empty, or exceeds maximum length.</exception>
+    /// <remarks>
+    /// Updates the username for existing users. Username must be unique and follow validation rules.
+    /// </remarks>
+    public void UpdateUserName(string newUserName)
+    {
+        if (string.IsNullOrWhiteSpace(newUserName) || newUserName.Length > UserConstants.MaxUserNameLength)
+        {
+            throw UserErrors.InvalidUsernameFormat(newUserName);
+        }
+
+        UserName = newUserName;
+    }
+
+    /// <summary>
     /// Marks the user's email as verified.
     /// </summary>
     /// <remarks>
@@ -266,9 +281,15 @@ public class UserEntity : Aggregate<Guid>
     /// </remarks>
     public void RecordLogin()
     {
-        if (!IsActive) throw UserErrors.AccountInactive(Email!);
+        if (!IsActive)
+        {
+            throw UserErrors.AccountInactive(Email!);
+        }
 
-        if (AuthProvider == AuthProvider.Local && !IsVerified) throw UserErrors.AccountNotVerified(Email!);
+        if (AuthProvider == AuthProvider.Local && !IsVerified)
+        {
+            throw UserErrors.AccountNotVerified(Email!);
+        }
 
         IsLoggedIn = UserConstants.LoggedInStatus;
         LastLoginAt = DateTime.UtcNow;
@@ -354,7 +375,10 @@ public class UserEntity : Aggregate<Guid>
     {
         UserRoleEntity? userRole = UserRoles.FirstOrDefault(ur => ur.RoleId == roleId);
 
-        if (userRole == null) return UserConstants.DeactivatedStatus;
+        if (userRole == null)
+        {
+            return UserConstants.DeactivatedStatus;
+        }
 
         UserRoles.Remove(userRole);
         return UserConstants.ActivatedStatus;

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using _116.BuildingBlocks.Constants;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
 using _116.User.Application.Shared.Errors;
 
@@ -48,20 +49,16 @@ public class PermissionEntity : Aggregate<Guid>
     /// <exception cref="ArgumentException">Thrown when parameters are null, empty, or exceed maximum length.</exception>
     public static PermissionEntity Create(Guid id, string resource, string action, string description)
     {
-        if (string.IsNullOrWhiteSpace(resource))
+        BadRequestException? error = (resource, action, description) switch
         {
-            throw UserErrors.PermissionResourceRequired();
-        }
+            var (r, _, _) when string.IsNullOrWhiteSpace(r) => UserErrors.PermissionResourceRequired(),
+            var (_, a, _) when string.IsNullOrWhiteSpace(a) => UserErrors.PermissionActionRequired(),
+            var (_, _, d) when string.IsNullOrWhiteSpace(d) => UserErrors.PermissionDescriptionRequired(),
+            _ => null
+        };
 
-        if (string.IsNullOrWhiteSpace(action))
-        {
-            throw UserErrors.PermissionActionRequired();
-        }
-
-        if (string.IsNullOrWhiteSpace(description))
-        {
-            throw UserErrors.PermissionDescriptionRequired();
-        }
+        if (error is not null)
+            throw error;
 
         return new PermissionEntity
         {

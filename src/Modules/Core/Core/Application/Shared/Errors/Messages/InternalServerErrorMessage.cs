@@ -24,4 +24,25 @@ public static class InternalServerErrorMessage
     {
         return "Unable to connect to the database";
     }
+
+    /// <summary>
+    /// Gets the error message for file download failure.
+    /// </summary>
+    /// <param name="fileUrl">The URL that failed to download.</param>
+    /// <param name="reason">The specific reason for the failure.</param>
+    /// <returns>A formatted error message indicating the file download failed.</returns>
+    public static string FileDownloadFailed(string fileUrl, string reason)
+    {
+        return $"Failed to download file from '{fileUrl}': {reason}";
+    }
+
+    /// <summary>
+    /// Gets the error message for file storage failure.
+    /// </summary>
+    /// <param name="reason">The specific reason for the storage failure.</param>
+    /// <returns>A formatted error message indicating the file storage failed.</returns>
+    public static string FileStorageFailed(string reason)
+    {
+        return $"Failed to store file: {reason}";
+    }
 }

@@ -94,6 +94,30 @@ public static class CoreErrors
         new(ValidationErrorMessage.FileSizeMustBeGreaterThanZero());
 
     /// <summary>
+    /// Throws when a file download fails from external URL.
+    /// </summary>
+    public static InternalServerException FileDownloadFailed(string fileUrl, string reason) =>
+        new(InternalServerErrorMessage.FileDownloadFailed(fileUrl, reason));
+
+    /// <summary>
+    /// Throws when the file URL format is invalid.
+    /// </summary>
+    public static BadRequestException InvalidFileUrl(string fileUrl) =>
+        new(ValidationErrorMessage.InvalidFileUrl(fileUrl));
+
+    /// <summary>
+    /// Throws when file storage operation fails.
+    /// </summary>
+    public static InternalServerException FileStorageFailed(string reason) =>
+        new(InternalServerErrorMessage.FileStorageFailed(reason));
+
+    /// <summary>
+    /// Throws when file URL is required.
+    /// </summary>
+    public static BadRequestException FileUrlRequired() =>
+        new(ValidationErrorMessage.FileUrlRequired());
+
+    /// <summary>
     /// Throws a generic bad request exception with the custom message.
     /// </summary>
     public static BadRequestException BadRequest(string message) =>

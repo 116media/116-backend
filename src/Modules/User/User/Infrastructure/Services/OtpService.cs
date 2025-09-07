@@ -1,8 +1,9 @@
 using _116.BuildingBlocks.Constants;
+using _116.User.Application.Shared.Services;
 using _116.User.Domain.Entities;
 using _116.User.Domain.Enums;
 
-namespace _116.User.Application.Shared.Services;
+namespace _116.User.Infrastructure.Services;
 
 /// <summary>
 /// Implementation of <see cref="IOtpService"/> for OTP generation and management operations.
@@ -15,7 +16,8 @@ public class OtpService : IOtpService
     public string GenerateOtpCode()
     {
         // Generate a random numeric OTP code
-        var code = _random.Next(0, (int)Math.Pow(10, UserConstants.OtpCodeLength))
+        string code = _random
+            .Next(0, (int)Math.Pow(10, UserConstants.OtpCodeLength))
             .ToString($"D{UserConstants.OtpCodeLength}");
 
         return code;
