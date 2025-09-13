@@ -33,16 +33,24 @@ public static class CqrsExtension
         // Register all handlers (command handlers, query handlers, etc.)
         services.Scan(scan => scan
             .FromAssemblies(assemblies)
-            .AddClasses(classes => classes.AssignableToAny(
-                typeof(IRequestHandler<>),
-                typeof(IRequestHandler<,>),
-                typeof(ICommandHandler<>),
-                typeof(ICommandHandler<,>),
-                typeof(IQueryHandler<,>)))
+            .AddClasses(
+                classes => classes.AssignableToAny(
+                    typeof(IRequestHandler<>),
+                    typeof(IRequestHandler<,>),
+                    typeof(ICommandHandler<>),
+                    typeof(ICommandHandler<,>),
+                    typeof(IQueryHandler<,>)
+                ),
+                publicOnly: true
+            )
             .AsImplementedInterfaces()
-            .WithScopedLifetime());
+            .WithScopedLifetime()
+        );
 
-        // TODO: Add decorators later - for now just get the basic functionality working
+        // Register decorators using Scrutor - validation first, then logging
+        // Decorate handlers with return values (all our current handlers use this)
+        services.Decorate(typeof(IRequestHandler<,>), typeof(ValidationDecorator<,>));
+        services.Decorate(typeof(IRequestHandler<,>), typeof(LoggingDecorator<,>));
 
         // Register domain event handlers
         services.Scan(scan => scan
@@ -52,7 +60,7 @@ public static class CqrsExtension
             .WithScopedLifetime());
 
         // Register FluentValidation validators
-        services.AddValidatorsFromAssemblies(assemblies);
+        services.AddValidatorsFromAssemblies(assemblies, includeInternalTypes: true);
 
         return services;
     }
