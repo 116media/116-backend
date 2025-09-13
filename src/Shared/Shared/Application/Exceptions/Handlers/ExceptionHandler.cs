@@ -76,7 +76,7 @@ public sealed class ExceptionHandler(ILogger<ExceptionHandler> logger, Exception
             context.Request.Path,
             DateTime.UtcNow,
             context.TraceIdentifier,
-            context.User?.Identity?.Name ?? "Anonymous"
+            context.User.Identity?.Name ?? "Anonymous"
         );
     }
 

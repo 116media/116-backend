@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Constants;
 using _116.User.Domain.DTOs;
 using Carter;
-using MediatR;
+using _116.Shared.Contracts.Application.CQRS;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -49,7 +49,7 @@ public class SocialLoginEndpoint : ICarterModule
             .MapGroup(RouteConstants.V1.Public.Auth)
             .WithTags("Public::authentication");
 
-        group.MapPost("/social-login", async (SocialLoginRequest request, ISender sender) =>
+        group.MapPost("/social-login", async (SocialLoginRequest request, IDispatcher dispatcher) =>
             {
                 // Send the command for social authentication
                 var command = new SocialLoginCommand(
@@ -59,7 +59,7 @@ public class SocialLoginEndpoint : ICarterModule
                     Provider: request.Provider
                 );
 
-                SocialLoginResult result = await sender.Send(command);
+                SocialLoginResult result = await dispatcher.Send(command);
 
                 // Create response
                 var response = new SocialLoginResponse(

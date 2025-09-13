@@ -1,11 +1,10 @@
-using MediatR;
-
 namespace _116.Shared.Domain;
 
 /// <summary>
-/// A domain event that can be handled via MediatR.
+/// Represents a domain event that occurred within the business domain.
+/// Contains metadata about when and what type of event was created.
 /// </summary>
-public interface IDomainEvent : INotification
+public interface IDomainEvent
 {
     /// <summary>
     /// Gets the unique identifier for the domain event.

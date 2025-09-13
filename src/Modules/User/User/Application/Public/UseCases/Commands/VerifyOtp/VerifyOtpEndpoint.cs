@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Constants;
 using Carter;
-using MediatR;
+using _116.Shared.Contracts.Application.CQRS;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -42,11 +42,11 @@ public class VerifyOtpEndpoint : ICarterModule
             .MapGroup(RouteConstants.V1.Public.Auth)
             .WithTags("Public::authentication");
 
-        group.MapPost("/verify-otp", async (VerifyOtpRequest request, ISender sender) =>
+        group.MapPost("/verify-otp", async (VerifyOtpRequest request, IDispatcher dispatcher) =>
             {
                 // Send the command to verify the OTP
                 var command = new VerifyOtpCommand(request.Email, request.Code);
-                VerifyOtpResult result = await sender.Send(command);
+                VerifyOtpResult result = await dispatcher.Send(command);
 
                 // Adapt the result to the response type
                 var response = new VerifyOtpResponse(
