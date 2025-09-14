@@ -37,20 +37,17 @@ public static class UserErrors
     /// <summary>
     /// Throws when a role is not found.
     /// </summary>
-    public static NotFoundException RoleNotFound(int roleId) =>
-        new("Role", roleId);
+    public static NotFoundException RoleNotFound(int roleId) => new("Role", roleId);
 
     /// <summary>
     /// Throws when a role is not found using the name.
     /// </summary>
-    public static NotFoundException RoleNotFoundByName(string roleName) =>
-        new("Role", "name", roleName);
+    public static NotFoundException RoleNotFoundByName(string roleName) => new("Role", "name", roleName);
 
     /// <summary>
     /// Throws when a permission is not found.
     /// </summary>
-    public static NotFoundException PermissionNotFound(int permissionId) =>
-        new("Permission", permissionId);
+    public static NotFoundException PermissionNotFound(int permissionId) => new("Permission", permissionId);
 
     /// <summary>
     /// Throws when the account is inactive.
@@ -165,4 +162,21 @@ public static class UserErrors
     /// </summary>
     public static AuthorizationException InsufficientPermissions() =>
         new(AuthenticationErrorMessage.InsufficientPermissions());
+
+    /// <summary>
+    /// Throws when a user is not found.
+    /// </summary>
+    public static NotFoundException UserNotFound() => new("User");
+
+    /// <summary>
+    /// Throws when the provided password is invalid.
+    /// </summary>
+    public static BadRequestException InvalidPassword() =>
+        new(AuthenticationErrorMessage.InvalidCredentials());
+
+    /// <summary>
+    /// Throws when the new password is the same as the old password.
+    /// </summary>
+    public static ConflictException NewPasswordSameAsOld() =>
+        new(ValidationErrorMessage.NewPasswordSameAsOld());
 }

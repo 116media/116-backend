@@ -31,7 +31,9 @@ public class PublicLoginHandler(
     /// <returns>A <see cref="PublicLoginResult"/> containing public user authentication information.</returns>
     /// <exception cref="NotFoundException">Thrown when no user is found with the specified credentials.</exception>
     /// <exception cref="BadRequestException">Thrown when password is invalid.</exception>
-    /// <exception cref="AuthorizationException">Thrown when the user account is inactive or not verified (HTTP 403 Forbidden).</exception>
+    /// <exception cref="AuthorizationException">
+    /// Thrown when the user account is inactive or not verified (HTTP 403 Forbidden).
+    /// </exception>
     public async Task<PublicLoginResult> Handle(PublicLoginCommand command, CancellationToken cancellationToken)
     {
         // Get user with roles/permissions without status checks

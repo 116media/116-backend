@@ -27,12 +27,15 @@ public class PublicResetPasswordHandler(
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>A <see cref="PublicResetPasswordResult"/> containing reset status.</returns>
     /// <exception cref="NotFoundException">Thrown when no user is found with the specified email.</exception>
-    /// <exception cref="BadRequestException">Thrown when account is not active or verified.</exception>
+    /// <exception cref="BadRequestException">Thrown when the account is not active or verified.</exception>
     /// <exception cref="NotFoundException">Thrown when no valid OTP is found.</exception>
     /// <exception cref="BadRequestException">Thrown when OTP code is invalid.</exception>
     /// <exception cref="AuthenticationException">Thrown when OTP is expired.</exception>
     /// <exception cref="AuthorizationException">Thrown when max attempts are reached.</exception>
-    public async Task<PublicResetPasswordResult> Handle(PublicResetPasswordCommand command, CancellationToken cancellationToken)
+    public async Task<PublicResetPasswordResult> Handle(
+        PublicResetPasswordCommand command,
+        CancellationToken cancellationToken
+    )
     {
         // Normalize email using value object
         var email = new Email(command.Email);

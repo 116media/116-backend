@@ -20,7 +20,10 @@ public class PublicForgotPasswordHandler(
     /// Handles the forgot password command by generating an OTP for password reset.
     /// Always returns success to prevent user enumeration attacks.
     /// </summary>
-    public async Task<PublicForgotPasswordResult> Handle(PublicForgotPasswordCommand command, CancellationToken cancellationToken)
+    public async Task<PublicForgotPasswordResult> Handle(
+        PublicForgotPasswordCommand command,
+        CancellationToken cancellationToken
+    )
     {
         var email = new Email(command.Email);
 
