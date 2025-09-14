@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Constants;
 using _116.Shared.Contracts.Application.CQRS;
+using _116.User.Application.Shared.Authorizations.Policies;
 using _116.User.Application.Shared.Errors;
-using _116.User.Domain.Enums;
 using Carter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -42,13 +42,6 @@ public class SignOutEndpoint : ICarterModule
                     throw UserErrors.InvalidUserAuthentication();
                 }
 
-                // Verify user has the Visitor role (public users only)
-                List<string> userRoles = user.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
-                if (!userRoles.Contains(nameof(CoreUserRole.Visitor)))
-                {
-                    throw UserErrors.InsufficientPermissions();
-                }
-
                 var command = new SignOutCommand(userId);
                 SignOutResult result = await dispatcher.Send(command);
 
@@ -59,7 +52,7 @@ public class SignOutEndpoint : ICarterModule
             .WithName(SignOutMetaField.SignOut.Name)
             .WithSummary(SignOutMetaField.SignOut.Summary)
             .WithDescription(SignOutMetaField.SignOut.Description)
-            .RequireAuthorization()
+            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
             .Produces<SignOutResponse>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden);

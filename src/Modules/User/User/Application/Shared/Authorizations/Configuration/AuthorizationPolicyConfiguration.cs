@@ -65,7 +65,8 @@ public static class AuthorizationPolicyConfiguration
         return new Dictionary<string, string[]>
         {
             { UserRolePolicies.RequireAdminOnly, [nameof(CoreUserRole.Admin)] },
-            { UserRolePolicies.RequireSuperAdminOnly, [nameof(CoreUserRole.SuperAdmin)] }
+            { UserRolePolicies.RequireSuperAdminOnly, [nameof(CoreUserRole.SuperAdmin)] },
+            { UserRolePolicies.RequireVisitorOnly, [nameof(CoreUserRole.Visitor)] }
         };
     }
 }
