@@ -66,7 +66,8 @@ public static class AuthorizationPolicyConfiguration
         {
             { UserRolePolicies.RequireAdminOnly, [nameof(CoreUserRole.Admin)] },
             { UserRolePolicies.RequireSuperAdminOnly, [nameof(CoreUserRole.SuperAdmin)] },
-            { UserRolePolicies.RequireVisitorOnly, [nameof(CoreUserRole.Visitor)] }
+            { UserRolePolicies.RequireVisitorOnly, [nameof(CoreUserRole.Visitor)] },
+            { UserRolePolicies.RequireAdminOrSuperAdmin, [nameof(CoreUserRole.Admin), nameof(CoreUserRole.SuperAdmin)] }
         };
     }
 }

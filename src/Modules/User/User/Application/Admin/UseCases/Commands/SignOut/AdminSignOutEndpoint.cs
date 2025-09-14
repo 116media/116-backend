@@ -8,30 +8,30 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using System.Security.Claims;
 
-namespace _116.User.Application.Public.UseCases.Commands.SignOut;
+namespace _116.User.Application.Admin.UseCases.Commands.SignOut;
 
 /// <summary>
-/// Response model for sign-out.
+/// Response model for admin sign-out.
 /// </summary>
 /// <param name="IsSuccess">Indicates if the sign-out operation was successful.</param>
-public record SignOutResponse(
+public record AdminSignOutResponse(
     bool IsSuccess
 );
 
 /// <summary>
-/// Defines the sign-out endpoint for authenticated public users.
+/// Defines the admin sign-out endpoint for authenticated admin users.
 /// </summary>
-public class SignOutEndpoint : ICarterModule
+public class AdminSignOutEndpoint : ICarterModule
 {
     /// <summary>
-    /// Configures the sign-out route within the API pipeline.
+    /// Configures the admin sign-out route within the API pipeline.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app
-            .MapGroup(RouteConstants.V1.Public.Auth)
-            .WithTags("Public::authentication");
+            .MapGroup(RouteConstants.V1.Admin.Auth)
+            .WithTags("Admin::authentication");
 
         group.MapPost("/signout", async (ClaimsPrincipal user, IDispatcher dispatcher) =>
             {
@@ -42,18 +42,18 @@ public class SignOutEndpoint : ICarterModule
                     throw UserErrors.InvalidUserAuthentication();
                 }
 
-                var command = new SignOutCommand(userId);
-                SignOutResult result = await dispatcher.Send(command);
+                var command = new AdminSignOutCommand(userId);
+                AdminSignOutResult result = await dispatcher.Send(command);
 
-                var response = new SignOutResponse(result.IsSuccess);
+                var response = new AdminSignOutResponse(result.IsSuccess);
 
                 return Results.Ok(response);
             })
-            .WithName(SignOutMetaField.SignOut.Name)
-            .WithSummary(SignOutMetaField.SignOut.Summary)
-            .WithDescription(SignOutMetaField.SignOut.Description)
-            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .Produces<SignOutResponse>()
+            .WithName(AdminSignOutMetaField.AdminSignOut.Name)
+            .WithSummary(AdminSignOutMetaField.AdminSignOut.Summary)
+            .WithDescription(AdminSignOutMetaField.AdminSignOut.Description)
+            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .Produces<AdminSignOutResponse>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden);
     }
