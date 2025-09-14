@@ -26,4 +26,13 @@ public class UserRolePolicies
     /// such as user management, content moderation, and general administrative functions.
     /// </remarks>
     public const string RequireAdminOnly = "RequireAdminOnly";
+
+    /// <summary>
+    /// Policy that requires Admin role access (Admin or SuperAdmin).
+    /// </summary>
+    /// <remarks>
+    /// Use this policy for endpoints that should be accessible to both Admin and SuperAdmin users,
+    /// such as user management, content moderation, and general administrative functions.
+    /// </remarks>
+    public const string RequireVisitorOnly = "RequireVisitorOnly";
 }

@@ -16,4 +16,20 @@ public static class AuthenticationErrorMessage
     {
         return "Invalid email or password";
     }
+
+    /// <summary>
+    /// Error message indicating that the user is not authenticated or the user ID is invalid.
+    /// </summary>
+    public static string InvalidUserAuthentication()
+    {
+        return "User not authenticated or invalid user ID";
+    }
+
+    /// <summary>
+    /// Error message indicating that the user does not have sufficient permissions for this operation.
+    /// </summary>
+    public static string InsufficientPermissions()
+    {
+        return "Insufficient permissions for this operation";
+    }
 }

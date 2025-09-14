@@ -153,4 +153,16 @@ public static class UserErrors
     /// </summary>
     public static AuthorizationException MaxOtpAttemptsReached() =>
         new(ValidationErrorMessage.MaxOtpAttemptsReached());
+
+    /// <summary>
+    /// Throws when the user is not authenticated or user ID is invalid.
+    /// </summary>
+    public static AuthenticationException InvalidUserAuthentication() =>
+        new(AuthenticationErrorMessage.InvalidUserAuthentication());
+
+    /// <summary>
+    /// Throws when the user does not have sufficient permissions for the operation.
+    /// </summary>
+    public static AuthorizationException InsufficientPermissions() =>
+        new(AuthenticationErrorMessage.InsufficientPermissions());
 }
