@@ -4,7 +4,7 @@ using _116.User.Domain.Results;
 namespace _116.User.Application.Public.UseCases.Commands.ForgotPassword;
 
 /// <summary>
-/// Command for initiating password reset process for existing users.
+/// Command for initiating the password reset process for existing users.
 /// </summary>
 /// <param name="Email">The user's registered email address.</param>
 /// <remarks>
@@ -16,15 +16,13 @@ public record ForgotPasswordCommand(
 ) : ICommand<ForgotPasswordResult>;
 
 /// <summary>
-/// Result of the <see cref="ForgotPasswordCommand"/> containing password reset details.
+/// Result of the <see cref="ForgotPasswordCommand"/> containing password reset status.
 /// </summary>
-/// <param name="AuthenticationResult">The authentication result with user info and JWT token.</param>
-/// <param name="VerificationRequired">Always true - OTP verification is required for password reset.</param>
+/// <param name="IsSuccess">Always true for security reasons to prevent user enumeration.</param>
 /// <remarks>
-/// Contains authentication information for the password reset flow.
-/// The user must verify the OTP sent to their email before proceeding with password reset.
+/// Returns success regardless of whether the email exists to prevent user enumeration attacks.
+/// The actual OTP is only generated and sent if a valid, active account exists.
 /// </remarks>
 public record ForgotPasswordResult(
-    AuthenticationResult AuthenticationResult,
-    bool VerificationRequired
+    bool IsSuccess
 );

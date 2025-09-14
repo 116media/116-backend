@@ -155,7 +155,7 @@ public interface IUserRepository : IRepository<UserEntity>
     /// Validates that a user account is verified for local authentication.
     /// </summary>
     /// <param name="user">The user entity to validate.</param>
-    /// <returns>True if the account is verified or not using local auth, otherwise throws an exception.</returns>
+    /// <returns>True, if the account is verified or not using local auth, otherwise throws an exception.</returns>
     /// <exception cref="AuthorizationException">Thrown when the local account is not verified (HTTP 403 Forbidden).</exception>
     /// <remarks>
     /// This method should be called after password verification to ensure verification status
