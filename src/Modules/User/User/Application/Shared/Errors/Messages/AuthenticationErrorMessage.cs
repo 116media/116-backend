@@ -32,4 +32,12 @@ public static class AuthenticationErrorMessage
     {
         return "Insufficient permissions for this operation";
     }
+
+    /// <summary>
+    /// Error message indicating that JWT Bearer token authentication is required.
+    /// </summary>
+    public static string JwtTokenRequired()
+    {
+        return "Authentication required. Please provide a valid JWT Bearer token";
+    }
 }

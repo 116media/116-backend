@@ -30,4 +30,12 @@ public static class AuthorizationErrorMessage
     {
         return $"The account associated with '{email}' is not verified. Please complete the verification process to continue.";
     }
+
+    /// <summary>
+    /// Error message indicating that access is denied due to insufficient permissions.
+    /// </summary>
+    public static string AccessDenied()
+    {
+        return "Access denied. You don't have sufficient permissions to access this resource";
+    }
 }

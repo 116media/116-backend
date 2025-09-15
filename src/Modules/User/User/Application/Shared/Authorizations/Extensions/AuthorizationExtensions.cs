@@ -4,6 +4,7 @@ using _116.Shared.Application.Exceptions.Handlers.Strategies;
 using _116.User.Application.Shared.Authorizations.Configuration;
 using _116.User.Application.Shared.Authorizations.Handlers;
 using _116.User.Application.Shared.Authorizations.Requirements;
+using _116.User.Application.Shared.Errors.Messages;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -134,8 +135,8 @@ public static class AuthorizationExtensions
                 context.HandleResponse();
 
                 // Create an AuthenticationException and use the existing handler
-                var authException = new AuthenticationException("Authentication required. Please provide a valid JWT Bearer token.");
                 var authHandler = new AuthenticationExceptionHandler();
+                var authException = new AuthenticationException(AuthenticationErrorMessage.JwtTokenRequired());
                 ProblemDetails problemDetails = authHandler.CreateProblemDetails(authException, context.HttpContext);
 
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
@@ -147,8 +148,8 @@ public static class AuthorizationExtensions
             OnForbidden = async context =>
             {
                 // Create an AuthorizationException and use the existing handler
-                var authException = new AuthorizationException("Access denied. You don't have sufficient permissions to access this resource.");
                 var authHandler = new AuthorizationExceptionHandler();
+                var authException = new AuthorizationException(AuthorizationErrorMessage.AccessDenied());
                 ProblemDetails problemDetails = authHandler.CreateProblemDetails(authException, context.HttpContext);
 
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
