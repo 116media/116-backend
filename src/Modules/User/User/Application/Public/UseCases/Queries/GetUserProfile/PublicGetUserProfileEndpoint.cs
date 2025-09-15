@@ -34,9 +34,9 @@ public class PublicGetUserProfileEndpoint : ICarterModule
     {
         RouteGroupBuilder group = app
             .MapGroup(RouteConstants.V1.Public.Profile)
-            .WithTags("Public::user");
+            .WithTags("Public::authentication");
 
-        group.MapGet("/profile", async (ClaimsPrincipal user, IDispatcher dispatcher) =>
+        group.MapGet("/", async (ClaimsPrincipal user, IDispatcher dispatcher) =>
             {
                 // Extract user ID from JWT token claims
                 string? userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;

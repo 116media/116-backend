@@ -1,7 +1,13 @@
+using System.Text.Json;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Handlers.Strategies;
 using _116.User.Application.Shared.Authorizations.Configuration;
 using _116.User.Application.Shared.Authorizations.Handlers;
 using _116.User.Application.Shared.Authorizations.Requirements;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace _116.User.Application.Shared.Authorizations.Extensions;
@@ -16,6 +22,13 @@ namespace _116.User.Application.Shared.Authorizations.Extensions;
 /// </remarks>
 public static class AuthorizationExtensions
 {
+    /// <summary>
+    /// Cached JsonSerializerOptions for consistent JSON serialization across JWT events.
+    /// </summary>
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
     /// <summary>
     /// Configures authorization policies and handlers for the User module.
     /// </summary>
@@ -101,5 +114,48 @@ public static class AuthorizationExtensions
         }
 
         return authBuilder;
+    }
+
+    /// <summary>
+    /// Configures JWT Bearer events for consistent authentication and authorization error handling.
+    /// </summary>
+    /// <param name="options">The JWT Bearer options to configure</param>
+    /// <remarks>
+    /// Leverages the existing exception handling system for consistent error responses.
+    /// Uses AuthenticationExceptionHandler and AuthorizationExceptionHandler for standardized ProblemDetails.
+    /// </remarks>
+    public static void ConfigureJwtBearerEvents(this JwtBearerOptions options)
+    {
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = async context =>
+            {
+                // Prevent default challenge response
+                context.HandleResponse();
+
+                // Create an AuthenticationException and use the existing handler
+                var authException = new AuthenticationException("Authentication required. Please provide a valid JWT Bearer token.");
+                var authHandler = new AuthenticationExceptionHandler();
+                ProblemDetails problemDetails = authHandler.CreateProblemDetails(authException, context.HttpContext);
+
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/problem+json";
+
+                await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, JsonOptions));
+            },
+
+            OnForbidden = async context =>
+            {
+                // Create an AuthorizationException and use the existing handler
+                var authException = new AuthorizationException("Access denied. You don't have sufficient permissions to access this resource.");
+                var authHandler = new AuthorizationExceptionHandler();
+                ProblemDetails problemDetails = authHandler.CreateProblemDetails(authException, context.HttpContext);
+
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                context.Response.ContentType = "application/problem+json";
+
+                await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, JsonOptions));
+            }
+        };
     }
 }

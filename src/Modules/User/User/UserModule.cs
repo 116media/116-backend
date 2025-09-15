@@ -91,6 +91,9 @@ public static class UserModule
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!)),
                 ClockSkew = TimeSpan.Zero
             };
+
+            // Configure custom JWT Bearer events for consistent error handling
+            options.ConfigureJwtBearerEvents();
         });
 
         // Configure Authorization using centralized configuration
