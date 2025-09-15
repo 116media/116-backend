@@ -33,7 +33,7 @@ public class AdminSignOutEndpoint : ICarterModule
             .MapGroup(RouteConstants.V1.Admin.Auth)
             .WithTags("Admin::authentication");
 
-        group.MapPost("/signout", async (ClaimsPrincipal user, IDispatcher dispatcher) =>
+        group.MapDelete("/signout", async (ClaimsPrincipal user, IDispatcher dispatcher) =>
             {
                 // Extract user ID from JWT token claims
                 string? userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
