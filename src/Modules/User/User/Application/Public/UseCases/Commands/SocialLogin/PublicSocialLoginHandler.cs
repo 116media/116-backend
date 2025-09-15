@@ -11,28 +11,28 @@ using _116.User.Domain.ValueObjects;
 namespace _116.User.Application.Public.UseCases.Commands.SocialLogin;
 
 /// <summary>
-/// Handles the <see cref="SocialLoginCommand"/> for social authentication.
+/// Handles the <see cref="PublicSocialLoginCommand"/> for social authentication.
 /// </summary>
 /// <param name="userService">Service for user management operations.</param>
 /// <param name="userRepository">Repository for user data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="jwtService">Service for generating JWT tokens with user claims.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
-public class SocialLoginHandler(
+public class PublicSocialLoginHandler(
     IUserService userService,
     IUserRepository userRepository,
     IRoleRepository roleRepository,
     IJwtService jwtService,
     IFileRepository fileRepository
-) : ICommandHandler<SocialLoginCommand, SocialLoginResult>
+) : ICommandHandler<PublicSocialLoginCommand, PublicSocialLoginResult>
 {
     /// <summary>
     /// Handles the social login command by finding or creating a user account.
     /// </summary>
     /// <param name="command">The social login command containing provider data.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>A <see cref="SocialLoginResult"/> containing authentication information.</returns>
-    public async Task<SocialLoginResult> Handle(SocialLoginCommand command, CancellationToken cancellationToken)
+    /// <returns>A <see cref="PublicSocialLoginResult"/> containing authentication information.</returns>
+    public async Task<PublicSocialLoginResult> Handle(PublicSocialLoginCommand command, CancellationToken cancellationToken)
     {
         // Normalize email and provider using value objects
         var email = new Email(command.Email);
@@ -84,6 +84,6 @@ public class SocialLoginHandler(
         var userDto = user.ToUserResponseDto(roles, permissions, avatarDto);
         var authResult = new AuthenticationResult(userDto, token.Token, token.ExpiresAt);
 
-        return new SocialLoginResult(authResult);
+        return new PublicSocialLoginResult(authResult);
     }
 }

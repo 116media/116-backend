@@ -5,7 +5,7 @@ namespace _116.User.Application.Public.UseCases.Commands.SocialLogin;
 /// <summary>
 /// Contains metadata information for the social login route.
 /// </summary>
-public static class SocialLoginMetaField
+public static class PublicSocialLoginMetaField
 {
     /// <summary>
     /// Metadata describing the social login endpoint.

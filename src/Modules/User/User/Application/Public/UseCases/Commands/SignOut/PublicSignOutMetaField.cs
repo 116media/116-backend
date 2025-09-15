@@ -5,7 +5,7 @@ namespace _116.User.Application.Public.UseCases.Commands.SignOut;
 /// <summary>
 /// Contains metadata information for the sign-out route.
 /// </summary>
-public static class SignOutMetaField
+public static class PublicSignOutMetaField
 {
     public static readonly RouteMetadata SignOut = new(
         name: "SignOut",

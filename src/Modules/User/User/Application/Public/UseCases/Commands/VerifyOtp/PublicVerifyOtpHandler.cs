@@ -9,28 +9,28 @@ using _116.User.Domain.ValueObjects;
 namespace _116.User.Application.Public.UseCases.Commands.VerifyOtp;
 
 /// <summary>
-/// Handles the <see cref="VerifyOtpCommand"/> to verify OTP codes for user account verification.
+/// Handles the <see cref="PublicVerifyOtpCommand"/> to verify OTP codes for user account verification.
 /// </summary>
 /// <param name="userRepository">Repository for user data access operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
-public class VerifyOtpHandler(
+public class PublicVerifyOtpHandler(
     IUserRepository userRepository,
     IOtpRepository otpRepository
-) : ICommandHandler<VerifyOtpCommand, VerifyOtpResult>
+) : ICommandHandler<PublicVerifyOtpCommand, PublicVerifyOtpResult>
 {
     /// <summary>
     /// Handles the OTP verification command by validating the code and updating user verification status.
     /// </summary>
     /// <param name="command">The OTP verification command containing email and code.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>A <see cref="VerifyOtpResult"/> containing verification status and message.</returns>
+    /// <returns>A <see cref="PublicVerifyOtpResult"/> containing verification status and message.</returns>
     /// <exception cref="NotFoundException">Thrown when no user is found with the specified email.</exception>
     /// <exception cref="ConflictException">Thrown when the account is already verified.</exception>
     /// <exception cref="NotFoundException">Thrown when no valid OTP is found.</exception>
     /// <exception cref="BadRequestException">Thrown when OTP code is invalid.</exception>
     /// <exception cref="AuthenticationException">Thrown when OTP is expired.</exception>
     /// <exception cref="AuthorizationException">Thrown when max attempts are reached.</exception>
-    public async Task<VerifyOtpResult> Handle(VerifyOtpCommand command, CancellationToken cancellationToken)
+    public async Task<PublicVerifyOtpResult> Handle(PublicVerifyOtpCommand command, CancellationToken cancellationToken)
     {
         // Normalize email using value object
         var email = new Email(command.Email);
@@ -69,7 +69,7 @@ public class VerifyOtpHandler(
 
         await otpRepository.SaveChangesAsync(cancellationToken);
 
-        return new VerifyOtpResult(
+        return new PublicVerifyOtpResult(
             IsSuccess: true
         );
     }

@@ -5,7 +5,7 @@ using FluentValidation;
 namespace _116.User.Application.Public.UseCases.Commands.SocialLogin;
 
 /// <summary>
-/// Validator for the <see cref="SocialLoginCommand"/> ensuring proper social login data format.
+/// Validator for the <see cref="PublicSocialLoginCommand"/> ensuring proper social login data format.
 /// </summary>
 /// <remarks>
 /// Validates email, username, avatar URL, and authentication provider according to requirements:
@@ -14,12 +14,12 @@ namespace _116.User.Application.Public.UseCases.Commands.SocialLogin;
 /// - Avatar: Optional, valid URL format if provided
 /// - Provider: Must be Google or Facebook only
 /// </remarks>
-public class SocialLoginValidator : AbstractValidator<SocialLoginCommand>
+public class PublicSocialLoginValidator : AbstractValidator<PublicSocialLoginCommand>
 {
     /// <summary>
     /// Configure validation rules for social login.
     /// </summary>
-    public SocialLoginValidator()
+    public PublicSocialLoginValidator()
     {
         // Email validation
         RuleFor(x => x.Email)

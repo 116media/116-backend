@@ -11,7 +11,7 @@ namespace _116.User.Application.Public.UseCases.Commands.ForgotPassword;
 /// Request model for forgot password.
 /// </summary>
 /// <param name="Email">The user's registered email address.</param>
-public record ForgotPasswordRequest(
+public record PublicForgotPasswordRequest(
     string Email
 );
 
@@ -19,14 +19,14 @@ public record ForgotPasswordRequest(
 /// Response model for forgot password.
 /// </summary>
 /// <param name="IsSuccess">Always true for security reasons to prevent user enumeration.</param>
-public record ForgotPasswordResponse(
+public record PublicForgotPasswordResponse(
     bool IsSuccess
 );
 
 /// <summary>
 /// Defines the forgot password endpoint for initiating password reset.
 /// </summary>
-public class ForgotPasswordEndpoint : ICarterModule
+public class PublicForgotPasswordEndpoint : ICarterModule
 {
     /// <summary>
     /// Configures the forgot password route within the API pipeline.
@@ -38,21 +38,21 @@ public class ForgotPasswordEndpoint : ICarterModule
             .MapGroup(RouteConstants.V1.Public.Auth)
             .WithTags("Public::authentication");
 
-        group.MapPost("/forgot-password", async (ForgotPasswordRequest request, IDispatcher dispatcher) =>
+        group.MapPost("/forgot-password", async (PublicForgotPasswordRequest request, IDispatcher dispatcher) =>
             {
-                var command = new ForgotPasswordCommand(request.Email);
-                ForgotPasswordResult result = await dispatcher.Send(command);
+                var command = new PublicForgotPasswordCommand(request.Email);
+                PublicForgotPasswordResult result = await dispatcher.Send(command);
 
-                var response = new ForgotPasswordResponse(result.IsSuccess);
+                var response = new PublicForgotPasswordResponse(result.IsSuccess);
 
                 return Results.Ok(response);
             })
-            .WithName(ForgotPasswordMetaField.ForgotPassword.Name)
-            .WithSummary(ForgotPasswordMetaField.ForgotPassword.Summary)
-            .WithDescription(ForgotPasswordMetaField.ForgotPassword.Description)
+            .WithName(PublicForgotPasswordMetaField.ForgotPassword.Name)
+            .WithSummary(PublicForgotPasswordMetaField.ForgotPassword.Summary)
+            .WithDescription(PublicForgotPasswordMetaField.ForgotPassword.Description)
             .AllowAnonymous()
             .ProducesValidationProblem()
-            .Produces<ForgotPasswordResponse>()
+            .Produces<PublicForgotPasswordResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 }

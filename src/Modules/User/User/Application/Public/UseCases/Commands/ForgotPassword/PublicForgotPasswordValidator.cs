@@ -3,9 +3,9 @@ using FluentValidation;
 namespace _116.User.Application.Public.UseCases.Commands.ForgotPassword;
 
 /// <summary>
-/// Validator for the <see cref="ForgotPasswordCommand"/> ensuring proper email format.
+/// Validator for the <see cref="PublicForgotPasswordCommand"/> ensuring proper email format.
 /// </summary>
-public class ForgotPasswordValidator : AbstractValidator<ForgotPasswordCommand>
+public class PublicForgotPasswordValidator : AbstractValidator<PublicForgotPasswordCommand>
 {
     /// <summary>
     /// Configure validation rules for password reset request.
@@ -13,7 +13,7 @@ public class ForgotPasswordValidator : AbstractValidator<ForgotPasswordCommand>
     /// <remarks>
     /// Validates email presence and format for password reset attempts.
     /// </remarks>
-    public ForgotPasswordValidator()
+    public PublicForgotPasswordValidator()
     {
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("Email is required.")

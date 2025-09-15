@@ -12,7 +12,7 @@ namespace _116.User.Application.Public.UseCases.Commands.VerifyOtp;
 /// </summary>
 /// <param name="Email">The user's email address.</param>
 /// <param name="Code">The OTP code to verify.</param>
-public record VerifyOtpRequest(
+public record PublicVerifyOtpRequest(
     string Email,
     string Code
 );
@@ -21,7 +21,7 @@ public record VerifyOtpRequest(
 /// Response model for successful OTP verification.
 /// </summary>
 /// <param name="IsSuccess">Indicates whether the verification was successful.</param>
-public record VerifyOtpResponse(
+public record PublicVerifyOtpResponse(
     bool IsSuccess
 );
 
@@ -29,7 +29,7 @@ public record VerifyOtpResponse(
 /// Defines the OTP verification endpoint for user account verification.
 /// Handles OTP code validation and account activation.
 /// </summary>
-public class VerifyOtpEndpoint : ICarterModule
+public class PublicVerifyOtpEndpoint : ICarterModule
 {
     /// <summary>
     /// Configures the OTP verification route within the API pipeline.
@@ -42,25 +42,25 @@ public class VerifyOtpEndpoint : ICarterModule
             .MapGroup(RouteConstants.V1.Public.Auth)
             .WithTags("Public::authentication");
 
-        group.MapPost("/verify-otp", async (VerifyOtpRequest request, IDispatcher dispatcher) =>
+        group.MapPost("/verify-otp", async (PublicVerifyOtpRequest request, IDispatcher dispatcher) =>
             {
                 // Send the command to verify the OTP
-                var command = new VerifyOtpCommand(request.Email, request.Code);
-                VerifyOtpResult result = await dispatcher.Send(command);
+                var command = new PublicVerifyOtpCommand(request.Email, request.Code);
+                PublicVerifyOtpResult result = await dispatcher.Send(command);
 
                 // Adapt the result to the response type
-                var response = new VerifyOtpResponse(
+                var response = new PublicVerifyOtpResponse(
                     result.IsSuccess
                 );
 
                 return Results.Ok(response);
             })
-            .WithName(VerifyOtpMetaField.VerifyOtp.Name)
-            .WithSummary(VerifyOtpMetaField.VerifyOtp.Summary)
-            .WithDescription(VerifyOtpMetaField.VerifyOtp.Description)
+            .WithName(PublicVerifyOtpMetaField.VerifyOtp.Name)
+            .WithSummary(PublicVerifyOtpMetaField.VerifyOtp.Summary)
+            .WithDescription(PublicVerifyOtpMetaField.VerifyOtp.Description)
             .AllowAnonymous()
             .ProducesValidationProblem()
-            .Produces<VerifyOtpResponse>()
+            .Produces<PublicVerifyOtpResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)

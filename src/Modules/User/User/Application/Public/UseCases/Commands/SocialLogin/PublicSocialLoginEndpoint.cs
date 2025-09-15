@@ -15,7 +15,7 @@ namespace _116.User.Application.Public.UseCases.Commands.SocialLogin;
 /// <param name="UserName">The user's display name from the social provider.</param>
 /// <param name="Avatar">Optional avatar URL from the social provider.</param>
 /// <param name="Provider">The social authentication provider (Google or Facebook).</param>
-public record SocialLoginRequest(
+public record PublicSocialLoginRequest(
     string Email,
     string UserName,
     string? Avatar,
@@ -27,7 +27,7 @@ public record SocialLoginRequest(
 /// </summary>
 /// <param name="User">The authenticated user information.</param>
 /// <param name="Token">The JWT access token.</param>
-public record SocialLoginResponse(
+public record PublicSocialLoginResponse(
     UserResponseDto User,
     string Token
 );
@@ -36,7 +36,7 @@ public record SocialLoginResponse(
 /// Defines the social login endpoint for external provider authentication.
 /// Handles Google and Facebook authentication with automatic user creation/update.
 /// </summary>
-public class SocialLoginEndpoint : ICarterModule
+public class PublicSocialLoginEndpoint : ICarterModule
 {
     /// <summary>
     /// Configures the social login route within the API pipeline.
@@ -49,32 +49,32 @@ public class SocialLoginEndpoint : ICarterModule
             .MapGroup(RouteConstants.V1.Public.Auth)
             .WithTags("Public::authentication");
 
-        group.MapPost("/social-login", async (SocialLoginRequest request, IDispatcher dispatcher) =>
+        group.MapPost("/social-login", async (PublicSocialLoginRequest request, IDispatcher dispatcher) =>
             {
                 // Send the command for social authentication
-                var command = new SocialLoginCommand(
+                var command = new PublicSocialLoginCommand(
                     Email: request.Email,
                     UserName: request.UserName,
                     Avatar: request.Avatar,
                     Provider: request.Provider
                 );
 
-                SocialLoginResult result = await dispatcher.Send(command);
+                PublicSocialLoginResult result = await dispatcher.Send(command);
 
                 // Create response
-                var response = new SocialLoginResponse(
+                var response = new PublicSocialLoginResponse(
                     result.AuthenticationResult.User,
                     result.AuthenticationResult.Token
                 );
 
                 return Results.Ok(response);
             })
-            .WithName(SocialLoginMetaField.SocialLogin.Name)
-            .WithSummary(SocialLoginMetaField.SocialLogin.Summary)
-            .WithDescription(SocialLoginMetaField.SocialLogin.Description)
+            .WithName(PublicSocialLoginMetaField.SocialLogin.Name)
+            .WithSummary(PublicSocialLoginMetaField.SocialLogin.Summary)
+            .WithDescription(PublicSocialLoginMetaField.SocialLogin.Description)
             .AllowAnonymous()
             .ProducesValidationProblem()
-            .Produces<SocialLoginResponse>()
+            .Produces<PublicSocialLoginResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status409Conflict);
     }

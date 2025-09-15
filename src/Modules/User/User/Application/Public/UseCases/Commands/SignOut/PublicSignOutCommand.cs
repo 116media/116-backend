@@ -10,17 +10,17 @@ namespace _116.User.Application.Public.UseCases.Commands.SignOut;
 /// This command updates the user's login status to indicate they are no longer active.
 /// User ID is extracted from JWT token at the endpoint level.
 /// </remarks>
-public record SignOutCommand(
+public record PublicSignOutCommand(
     Guid UserId
-) : ICommand<SignOutResult>;
+) : ICommand<PublicSignOutResult>;
 
 /// <summary>
-/// Result of the <see cref="SignOutCommand"/> containing sign-out status.
+/// Result of the <see cref="PublicSignOutCommand"/> containing sign-out status.
 /// </summary>
 /// <param name="IsSuccess">Indicates if the sign-out operation was successful.</param>
 /// <remarks>
 /// Simple result indicating successful logout operation.
 /// </remarks>
-public record SignOutResult(
+public record PublicSignOutResult(
     bool IsSuccess
 );

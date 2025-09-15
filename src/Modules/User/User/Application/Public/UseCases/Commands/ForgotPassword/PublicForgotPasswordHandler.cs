@@ -8,25 +8,25 @@ using _116.User.Domain.ValueObjects;
 namespace _116.User.Application.Public.UseCases.Commands.ForgotPassword;
 
 /// <summary>
-/// Handles the <see cref="ForgotPasswordCommand"/> to initiate password reset for existing users.
+/// Handles the <see cref="PublicForgotPasswordCommand"/> to initiate password reset for existing users.
 /// </summary>
-public class ForgotPasswordHandler(
+public class PublicForgotPasswordHandler(
     IUserRepository userRepository,
     IOtpRepository otpRepository,
     IOtpService otpService
-) : ICommandHandler<ForgotPasswordCommand, ForgotPasswordResult>
+) : ICommandHandler<PublicForgotPasswordCommand, PublicForgotPasswordResult>
 {
     /// <summary>
     /// Handles the forgot password command by generating an OTP for password reset.
     /// Always returns success to prevent user enumeration attacks.
     /// </summary>
-    public async Task<ForgotPasswordResult> Handle(ForgotPasswordCommand command, CancellationToken cancellationToken)
+    public async Task<PublicForgotPasswordResult> Handle(PublicForgotPasswordCommand command, CancellationToken cancellationToken)
     {
         var email = new Email(command.Email);
 
         if (!await userRepository.ExistsByEmailAsync(email, cancellationToken))
         {
-            return new ForgotPasswordResult(IsSuccess: true);
+            return new PublicForgotPasswordResult(IsSuccess: true);
         }
 
         UserEntity user = await userRepository.GetUserWithRolesOrThrowAsync(email, cancellationToken);
@@ -39,6 +39,6 @@ public class ForgotPasswordHandler(
         await otpRepository.AddAsync(passwordResetOtp, cancellationToken);
         await otpRepository.SaveChangesAsync(cancellationToken);
 
-        return new ForgotPasswordResult(IsSuccess: true);
+        return new PublicForgotPasswordResult(IsSuccess: true);
     }
 }

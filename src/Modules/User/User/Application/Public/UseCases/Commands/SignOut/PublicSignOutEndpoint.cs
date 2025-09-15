@@ -14,14 +14,14 @@ namespace _116.User.Application.Public.UseCases.Commands.SignOut;
 /// Response model for sign-out.
 /// </summary>
 /// <param name="IsSuccess">Indicates if the sign-out operation was successful.</param>
-public record SignOutResponse(
+public record PublicSignOutResponse(
     bool IsSuccess
 );
 
 /// <summary>
 /// Defines the sign-out endpoint for authenticated public users.
 /// </summary>
-public class SignOutEndpoint : ICarterModule
+public class PublicSignOutEndpoint : ICarterModule
 {
     /// <summary>
     /// Configures the sign-out route within the API pipeline.
@@ -42,18 +42,18 @@ public class SignOutEndpoint : ICarterModule
                     throw UserErrors.InvalidUserAuthentication();
                 }
 
-                var command = new SignOutCommand(userId);
-                SignOutResult result = await dispatcher.Send(command);
+                var command = new PublicSignOutCommand(userId);
+                PublicSignOutResult result = await dispatcher.Send(command);
 
-                var response = new SignOutResponse(result.IsSuccess);
+                var response = new PublicSignOutResponse(result.IsSuccess);
 
                 return Results.Ok(response);
             })
-            .WithName(SignOutMetaField.SignOut.Name)
-            .WithSummary(SignOutMetaField.SignOut.Summary)
-            .WithDescription(SignOutMetaField.SignOut.Description)
+            .WithName(PublicSignOutMetaField.SignOut.Name)
+            .WithSummary(PublicSignOutMetaField.SignOut.Summary)
+            .WithDescription(PublicSignOutMetaField.SignOut.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .Produces<SignOutResponse>()
+            .Produces<PublicSignOutResponse>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden);
     }

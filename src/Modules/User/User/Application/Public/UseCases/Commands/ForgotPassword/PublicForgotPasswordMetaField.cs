@@ -5,7 +5,7 @@ namespace _116.User.Application.Public.UseCases.Commands.ForgotPassword;
 /// <summary>
 /// Contains metadata information for the forgot password route.
 /// </summary>
-public static class ForgotPasswordMetaField
+public static class PublicForgotPasswordMetaField
 {
     public static readonly RouteMetadata ForgotPassword = new(
         name: "ForgotPassword",
