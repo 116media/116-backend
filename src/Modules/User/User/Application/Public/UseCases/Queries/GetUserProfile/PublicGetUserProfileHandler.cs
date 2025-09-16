@@ -2,7 +2,6 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
-using _116.User.Application.Shared.Errors;
 using _116.User.Application.Shared.Mappers;
 using _116.User.Application.Shared.Repositories;
 using _116.User.Domain.Entities;
@@ -28,7 +27,7 @@ public class PublicGetUserProfileHandler(
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>A <see cref="PublicGetUserProfileResult"/> containing complete user profile data.</returns>
     /// <exception cref="NotFoundException">Thrown when no user is found with the specified ID.</exception>
-    /// <exception cref="BadRequestException">Thrown when account is not active or verified.</exception>
+    /// <exception cref="BadRequestException">Thrown when the account is not active or verified.</exception>
     public async Task<PublicGetUserProfileResult> Handle(
         PublicGetUserProfileQuery query,
         CancellationToken cancellationToken
@@ -36,14 +35,9 @@ public class PublicGetUserProfileHandler(
     {
         // Get user with roles by ID
         UserEntity? user = await userRepository.GetUserWithRolesByIdAsync(query.UserId, cancellationToken);
-        if (user == null)
-        {
-            throw UserErrors.UserNotFound();
-        }
-
         // Validate user account status - must be active and verified
-        userRepository.IsUserAccountActive(user);
-        userRepository.IsUserAccountVerified(user);
+        userRepository.IsUserAccountActive(user!);
+        userRepository.IsUserAccountVerified(user!);
 
         // Extract roles and permissions using repository
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(user.UserRoles);

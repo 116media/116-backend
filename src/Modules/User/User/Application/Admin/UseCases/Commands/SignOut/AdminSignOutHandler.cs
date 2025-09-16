@@ -18,14 +18,9 @@ public class AdminSignOutHandler(
     {
         UserEntity? user = await userRepository.GetUserByIdAsync(command.UserId, cancellationToken);
 
-        if (user == null)
-        {
-            return new AdminSignOutResult(IsSuccess: true);
-        }
+        userRepository.IsUserAccountActive(user!);
 
-        userRepository.IsUserAccountActive(user);
-
-        if (user.IsLoggedIn)
+        if (user!.IsLoggedIn == false)
         {
             return new AdminSignOutResult(IsSuccess: true);
         }

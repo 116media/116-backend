@@ -34,17 +34,13 @@ public class PublicChangePasswordHandler(
     {
         // Get user by ID
         UserEntity? user = await userRepository.GetUserByIdAsync(command.UserId, cancellationToken);
-        if (user == null)
-        {
-            throw UserErrors.UserNotFound();
-        }
 
         // Validate user account status - must be active and verified
-        userRepository.IsUserAccountActive(user);
-        userRepository.IsUserAccountVerified(user);
+        userRepository.IsUserAccountActive(user!);
+        userRepository.IsUserAccountVerified(user!);
 
         // Verify old password
-        if (!passwordService.Verify(command.OldPassword, user.PasswordHash))
+        if (!passwordService.Verify(command.OldPassword, user!.PasswordHash))
         {
             throw UserErrors.InvalidPassword();
         }
