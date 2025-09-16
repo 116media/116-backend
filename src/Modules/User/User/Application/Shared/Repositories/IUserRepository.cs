@@ -48,6 +48,18 @@ public interface IUserRepository : IRepository<UserEntity>
     Task<UserEntity?> GetUserWithRolesByIdAsync(Guid userId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a user with their associated roles and permissions by unique identifier.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The user entity with roles and permissions loaded if found; otherwise, null.</returns>
+    /// <remarks>
+    /// This method includes the complete entity graph: user → roles → permissions.
+    /// Use this method when you need user information along with their roles and detailed permissions.
+    /// </remarks>
+    Task<UserEntity?> GetUserWithRolesAndPermissionsByIdAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Checks if a user exists with the specified email address.
     /// </summary>
     /// <param name="email">The email address to check for existence.</param>

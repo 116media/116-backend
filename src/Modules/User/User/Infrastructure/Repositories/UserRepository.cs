@@ -45,6 +45,20 @@ public class UserRepository(UserDbContext context) : IUserRepository
             );
     }
 
+    public async Task<UserEntity?> GetUserWithRolesAndPermissionsByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await context.Users
+            .Where(u => u.Id == userId)
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                    .ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
+            .FirstDefaultOrThrowAsync(
+                keyValue: userId,
+                cancellationToken: cancellationToken
+            );
+    }
+
     /// <inheritdoc />
     public async Task<bool> ExistsByEmailAsync(Email email, CancellationToken cancellationToken = default)
     {

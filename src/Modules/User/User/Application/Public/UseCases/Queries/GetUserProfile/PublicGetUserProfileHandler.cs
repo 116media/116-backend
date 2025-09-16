@@ -34,7 +34,7 @@ public class PublicGetUserProfileHandler(
     )
     {
         // Get user with roles by ID
-        UserEntity? user = await userRepository.GetUserWithRolesByIdAsync(query.UserId, cancellationToken);
+        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByIdAsync(query.UserId, cancellationToken);
         // Validate user account status - must be active and verified
         userRepository.IsUserAccountActive(user!);
         userRepository.IsUserAccountVerified(user!);
