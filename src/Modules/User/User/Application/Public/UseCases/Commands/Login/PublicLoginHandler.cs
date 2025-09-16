@@ -1,3 +1,5 @@
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.User.Application.Shared.Errors;
@@ -16,11 +18,13 @@ namespace _116.User.Application.Public.UseCases.Commands.Login;
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="passwordService">Service for verifying hashed passwords.</param>
 /// <param name="jwtService">Service for generating JWT tokens with user claims.</param>
+/// <param name="fileRepository">Repository for accessing file metadata.</param>
 public class PublicLoginHandler(
     IUserRepository userRepository,
     IRoleRepository roleRepository,
     IPasswordService passwordService,
-    IJwtService jwtService
+    IJwtService jwtService,
+    IFileRepository fileRepository
 ) : ICommandHandler<PublicLoginCommand, PublicLoginResult>
 {
     /// <summary>
@@ -77,8 +81,14 @@ public class PublicLoginHandler(
         // Extract roles and permissions using repository
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(user.UserRoles);
 
-        // Map to userDTO
-        var userDto = user.ToUserResponseDto(roles, permissions);
+        // Fetch the avatar file if the user has one
+        FileEntity? avatarFile = user.AvatarFileId.HasValue
+            ? await fileRepository.GetByIdAsync(user.AvatarFileId.Value, cancellationToken)
+            : null;
+
+        // Map to userDTO with avatar
+        var avatarDto = avatarFile.ToFileDto();
+        var userDto = user.ToUserResponseDto(roles, permissions, avatarDto);
         var authResult = new AuthenticationResult(userDto, token.Token, token.ExpiresAt);
 
         return new PublicLoginResult(authResult);
