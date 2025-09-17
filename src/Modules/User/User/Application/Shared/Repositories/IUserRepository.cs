@@ -36,6 +36,30 @@ public interface IUserRepository : IRepository<UserEntity>
     Task<UserEntity?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a user with their associated roles by unique identifier.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The user entity with roles loaded if found; otherwise, null.</returns>
+    /// <remarks>
+    /// This method includes the user's roles in the query for profile scenarios.
+    /// Use this method when you need user information along with their roles and permissions.
+    /// </remarks>
+    Task<UserEntity?> GetUserWithRolesByIdAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a user with their associated roles and permissions by unique identifier.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The user entity with roles and permissions loaded if found; otherwise, null.</returns>
+    /// <remarks>
+    /// This method includes the complete entity graph: user → roles → permissions.
+    /// Use this method when you need user information along with their roles and detailed permissions.
+    /// </remarks>
+    Task<UserEntity?> GetUserWithRolesAndPermissionsByIdAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Checks if a user exists with the specified email address.
     /// </summary>
     /// <param name="email">The email address to check for existence.</param>
@@ -155,13 +179,25 @@ public interface IUserRepository : IRepository<UserEntity>
     /// Validates that a user account is verified for local authentication.
     /// </summary>
     /// <param name="user">The user entity to validate.</param>
-    /// <returns>True if the account is verified or not using local auth, otherwise throws an exception.</returns>
+    /// <returns>True, if the account is verified or not using local auth, otherwise throws an exception.</returns>
     /// <exception cref="AuthorizationException">Thrown when the local account is not verified (HTTP 403 Forbidden).</exception>
     /// <remarks>
     /// This method should be called after password verification to ensure verification status
     /// is only revealed for valid credentials. Only applies to local authentication provider.
     /// </remarks>
     bool IsUserAccountVerified(UserEntity user);
+
+    /// <summary>
+    /// Validates that a user is currently logged in.
+    /// </summary>
+    /// <param name="user">The user entity to validate.</param>
+    /// <returns>True if the user is logged in, otherwise throws an exception.</returns>
+    /// <exception cref="AuthorizationException">Thrown when the user is not logged in (HTTP 403 Forbidden).</exception>
+    /// <remarks>
+    /// This method should be called to ensure the user's session is still valid
+    /// and they haven't been logged out.
+    /// </remarks>
+    bool IsUserLoggedIn(UserEntity user);
 
     /// <summary>
     /// Retrieves an active public user with roles and permissions by credentials (email or username).

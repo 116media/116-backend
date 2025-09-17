@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Constants;
+using _116.Shared.Contracts.Application.CQRS;
 using _116.User.Domain.DTOs;
 using Carter;
-using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -46,11 +46,11 @@ public class PublicLoginEndpoint : ICarterModule
             .MapGroup(RouteConstants.V1.Public.Auth)
             .WithTags("Public::authentication");
 
-        group.MapPost("/login", async (PublicLoginRequest request, ISender sender) =>
+        group.MapPost("/login", async (PublicLoginRequest request, IDispatcher dispatcher) =>
             {
                 // Send the command to log in the public user
                 var command = new PublicLoginCommand(request.Credentials, request.Password);
-                PublicLoginResult result = await sender.Send(command);
+                PublicLoginResult result = await dispatcher.Send(command);
 
                 // Adapt the result to the response type
                 var response = new PublicLoginResponse(

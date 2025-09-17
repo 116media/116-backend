@@ -16,19 +16,19 @@ namespace _116.User.Application.Public.UseCases.Commands.SocialLogin;
 /// Users authenticated via social login are automatically verified and marked as active.
 /// If an avatar URL is provided, it will be downloaded and stored locally.
 /// </remarks>
-public record SocialLoginCommand(
+public record PublicSocialLoginCommand(
     string Email,
     string UserName,
     string? Avatar,
     string Provider
-) : ICommand<SocialLoginResult>;
+) : ICommand<PublicSocialLoginResult>;
 
 /// <summary>
-/// Result of the <see cref="SocialLoginCommand"/> containing authentication details.
+/// Result of the <see cref="PublicSocialLoginCommand"/> containing authentication details.
 /// </summary>
 /// <param name="AuthenticationResult">The authentication result with user info and JWT token.</param>
 /// <remarks>
 /// Contains authentication information for social login.
 /// For new users, the account is automatically verified and activated.
 /// </remarks>
-public record SocialLoginResult(AuthenticationResult AuthenticationResult);
+public record PublicSocialLoginResult(AuthenticationResult AuthenticationResult);

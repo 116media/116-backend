@@ -5,7 +5,7 @@ namespace _116.User.Application.Public.UseCases.Commands.VerifyOtp;
 /// <summary>
 /// Contains metadata information for the OTP verification route.
 /// </summary>
-public static class VerifyOtpMetaField
+public static class PublicVerifyOtpMetaField
 {
     /// <summary>
     /// Metadata describing the OTP verification endpoint.

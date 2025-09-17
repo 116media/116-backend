@@ -29,6 +29,11 @@ public static class RouteConstants
             /// Route for administrative authentication (i.e., login, forgot-password, etc.).
             /// </summary>
             public const string Auth = $"{Base}/admin/auth";
+
+            /// <summary>
+            /// Route for accessing and updating admin profiles.
+            /// </summary>
+            public const string Profile = $"{Base}/admin/profile";
         }
 
         /// <summary>

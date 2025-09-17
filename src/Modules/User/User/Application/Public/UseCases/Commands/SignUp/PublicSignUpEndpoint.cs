@@ -1,8 +1,8 @@
 using _116.BuildingBlocks.Constants;
+using _116.Shared.Contracts.Application.CQRS;
 using _116.User.Application.Public.UseCases.Commands.Signup;
 using _116.User.Domain.DTOs;
 using Carter;
-using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -51,7 +51,7 @@ public class PublicSignUpEndpoint : ICarterModule
             .MapGroup(RouteConstants.V1.Public.Auth)
             .WithTags("Public::authentication");
 
-        group.MapPost("/signup", async (PublicSignUpRequest request, ISender sender) =>
+        group.MapPost("/signup", async (PublicSignUpRequest request, IDispatcher dispatcher) =>
             {
                 // Send the command to register the public user
                 var command = new PublicSignUpCommand(
@@ -59,7 +59,7 @@ public class PublicSignUpEndpoint : ICarterModule
                     UserName: request.UserName,
                     Password: request.Password
                 );
-                PublicSignUpResult result = await sender.Send(command);
+                PublicSignUpResult result = await dispatcher.Send(command);
 
                 // Adapt the result to the response type
                 var response = new PublicSignUpResponse(

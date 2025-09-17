@@ -7,7 +7,7 @@ namespace _116.User.Application.Shared.Authorizations.Policies;
 /// Contains string constants for authorization policies that restrict access based on user roles.
 /// These policies are registered in the UserModule and used with [Authorize (Policy = "PolicyName")] attributes.
 /// </remarks>
-public class UserRolePolicies
+public static class UserRolePolicies
 {
     /// <summary>
     /// Policy that requires SuperAdmin role access.
@@ -26,4 +26,22 @@ public class UserRolePolicies
     /// such as user management, content moderation, and general administrative functions.
     /// </remarks>
     public const string RequireAdminOnly = "RequireAdminOnly";
+
+    /// <summary>
+    /// Policy that requires Visitor role access.
+    /// </summary>
+    /// <remarks>
+    /// Use this policy for endpoints that should be accessible to visitor users,
+    /// such as public content access, user profile management, and standard user functions.
+    /// </remarks>
+    public const string RequireVisitorOnly = "RequireVisitorOnly";
+
+    /// <summary>
+    /// Policy that requires Admin or SuperAdmin role access.
+    /// </summary>
+    /// <remarks>
+    /// Use this policy for endpoints that should be accessible to Admin and SuperAdmin users,
+    /// such as administrative sign-out, admin-specific operations, and elevated privilege functions.
+    /// </remarks>
+    public const string RequireAdminOrSuperAdmin = "RequireAdminOrSuperAdmin";
 }

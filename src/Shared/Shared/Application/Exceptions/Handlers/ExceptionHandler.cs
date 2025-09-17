@@ -26,8 +26,10 @@ namespace _116.Shared.Application.Exceptions.Handlers;
 /// app.UseGlobalExceptionHandler();
 /// </code>
 /// </remarks>
-public sealed class ExceptionHandler(ILogger<ExceptionHandler> logger, ExceptionStrategyRegistry strategyRegistry)
-    : IExceptionHandler
+public sealed class ExceptionHandler(
+    ILogger<ExceptionHandler> logger,
+    ExceptionStrategyRegistry strategyRegistry
+) : IExceptionHandler
 {
     /// <summary>
     /// Attempts to handle an unhandled exception using the appropriate strategy.
@@ -39,7 +41,8 @@ public sealed class ExceptionHandler(ILogger<ExceptionHandler> logger, Exception
     public async ValueTask<bool> TryHandleAsync(
         HttpContext context,
         Exception exception,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         // Log the exception with structured data for observability
         LogException(exception, context);
@@ -76,7 +79,7 @@ public sealed class ExceptionHandler(ILogger<ExceptionHandler> logger, Exception
             context.Request.Path,
             DateTime.UtcNow,
             context.TraceIdentifier,
-            context.User?.Identity?.Name ?? "Anonymous"
+            context.User.Identity?.Name ?? "Anonymous"
         );
     }
 

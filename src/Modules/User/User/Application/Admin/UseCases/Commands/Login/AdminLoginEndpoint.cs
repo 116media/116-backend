@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Constants;
 using _116.User.Domain.DTOs;
 using Carter;
-using MediatR;
+using _116.Shared.Contracts.Application.CQRS;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -47,11 +47,11 @@ public class AdminLoginEndpoint : ICarterModule
             .MapGroup(RouteConstants.V1.Admin.Auth)
             .WithTags("Admin::authentication");
 
-        group.MapPost("/login", async (AdminLoginRequest request, ISender sender) =>
+        group.MapPost("/login", async (AdminLoginRequest request, IDispatcher dispatcher) =>
             {
                 // Send the command to log in the admin
                 var command = new AdminLoginCommand(request.Email, request.Password);
-                AdminLoginResult result = await sender.Send(command);
+                AdminLoginResult result = await dispatcher.Send(command);
 
                 // Adapt the result to the response type
                 var response = new AdminLoginResponse(

@@ -1,29 +1,26 @@
+using _116.Shared.Application.Services;
 using _116.Shared.Domain;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace _116.Shared.Infrastructure.interceptors;
 
 /// <summary>
-/// An EF Core SaveChanges interceptor that dispatches domain events from aggregate roots
-/// before the database save operation is completed.
+/// EF Core interceptor that automatically publishes domain events before saving changes to the database.
+/// Finds all aggregate entities with pending domain events, publishes them, and clears the events.
 /// </summary>
-/// <remarks>
-/// This interceptor inspects tracked entities implementing <see cref="IAggregate"/> that
-/// contain domain events, publishes those events via MediatR, and clears them afterward.
-/// </remarks>
 public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
 {
-    private readonly IMediator _mediator;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DispatchDomainEventsInterceptor"/> class.
     /// </summary>
-    /// <param name="mediator">The MediatR instance used to publish domain events.</param>
-    public DispatchDomainEventsInterceptor(IMediator mediator)
+    /// <param name="serviceScopeFactory">Factory to create scoped services for domain event publishing.</param>
+    public DispatchDomainEventsInterceptor(IServiceScopeFactory serviceScopeFactory)
     {
-        _mediator = mediator;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     /// <summary>
@@ -69,7 +66,7 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
     /// <item>Finds all aggregates implementing <see cref="IAggregate"/> with pending domain events.</item>
     /// <item>Collects and flattens all domain events into a single list.</item>
     /// <item>Clears domain events from the aggregate roots.</item>
-    /// <item>Publishes each event using the <see cref="IMediator"/> instance.</item>
+    /// <item>Publishes each event using the domain event publisher.</item>
     /// </list>
     /// </remarks>
     private async Task DispatchDomainEvents(DbContext? eventDataContext)
@@ -91,10 +88,13 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
         // Step 3: Clear domain events from aggregates
         aggregates.ForEach(aggregate => aggregate.ClearDomainEvents());
 
-        // Step 4: Publish each domain event using MediatR
+        // Step 4: Publish each event using scoped domain event publisher
+        using IServiceScope scope = _serviceScopeFactory.CreateScope();
+        var domainEventPublisher = scope.ServiceProvider.GetRequiredService<IDomainEventPublisher>();
+
         foreach (IDomainEvent domainEvent in domainEvents)
         {
-            await _mediator.Publish(domainEvent);
+            await domainEventPublisher.Publish(domainEvent);
         }
     }
 }

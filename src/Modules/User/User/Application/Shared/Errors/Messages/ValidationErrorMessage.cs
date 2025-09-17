@@ -117,4 +117,12 @@ public static class ValidationErrorMessage
     {
         return "Maximum verification attempts reached. Please request a new verification code";
     }
+
+    /// <summary>
+    /// Error message indicating that the new password cannot be the same as the old password.
+    /// </summary>
+    public static string NewPasswordSameAsOld()
+    {
+        return "New password must be different from your current password";
+    }
 }

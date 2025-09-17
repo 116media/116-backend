@@ -30,7 +30,33 @@ public class UserRepository(UserDbContext context) : IUserRepository
     /// <inheritdoc />
     public async Task<UserEntity?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await context.Users.FindAsync([userId], cancellationToken);
+        return await context.Users.FindOrThrowAsync([userId], cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<UserEntity?> GetUserWithRolesByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await context.Users
+            .Where(u => u.Id == userId)
+            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+            .FirstDefaultOrThrowAsync(
+                keyValue: userId,
+                cancellationToken: cancellationToken
+            );
+    }
+
+    public async Task<UserEntity?> GetUserWithRolesAndPermissionsByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await context.Users
+            .Where(u => u.Id == userId)
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                    .ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
+            .FirstDefaultOrThrowAsync(
+                keyValue: userId,
+                cancellationToken: cancellationToken
+            );
     }
 
     /// <inheritdoc />
@@ -130,6 +156,16 @@ public class UserRepository(UserDbContext context) : IUserRepository
         if (user is { AuthProvider: AuthProvider.Local, IsVerified: false })
         {
             throw UserErrors.AccountNotVerified(user.Email!);
+        }
+        return true;
+    }
+
+    /// <inheritdoc />
+    public bool IsUserLoggedIn(UserEntity user)
+    {
+        if (!user.IsLoggedIn)
+        {
+            throw UserErrors.UserNotLoggedIn(user.Email!);
         }
         return true;
     }

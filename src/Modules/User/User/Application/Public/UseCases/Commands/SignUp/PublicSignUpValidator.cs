@@ -22,11 +22,13 @@ public partial class PublicSignUpValidator : AbstractValidator<PublicSignUpComma
     {
         // Email validation
         RuleFor(x => x.Email)
+            .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("Email is required")
             .EmailAddress().WithMessage("Invalid email format");
 
         // Username validation - alphanumeric with spaces and hyphens, min 3 chars
         RuleFor(x => x.UserName)
+            .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("Username is required")
             .MinimumLength(UserConstants.MinUserNameLength)
             .WithMessage($"Username must be at least {UserConstants.MinUserNameLength} characters long")
@@ -37,6 +39,7 @@ public partial class PublicSignUpValidator : AbstractValidator<PublicSignUpComma
 
         // Password validation - strong password requirements
         RuleFor(x => x.Password)
+            .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("Password is required")
             .MinimumLength(UserConstants.MinPasswordLength)
             .WithMessage($"Password must be at least {UserConstants.MinPasswordLength} characters long")

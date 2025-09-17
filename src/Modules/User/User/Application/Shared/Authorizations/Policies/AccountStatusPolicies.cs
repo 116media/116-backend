@@ -7,7 +7,7 @@ namespace _116.User.Application.Shared.Authorizations.Policies;
 /// Contains string constants for authorization policies that restrict access based on user account status.
 /// These policies are used with [Authorize (Policy = "PolicyName")] attributes to enforce account requirements.
 /// </remarks>
-public class AccountStatusPolicies
+public static class AccountStatusPolicies
 {
     /// <summary>
     /// Policy that requires user account to be verified.
