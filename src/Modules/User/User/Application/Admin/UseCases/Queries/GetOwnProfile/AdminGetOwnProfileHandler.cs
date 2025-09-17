@@ -6,30 +6,30 @@ using _116.User.Application.Shared.Mappers;
 using _116.User.Application.Shared.Repositories;
 using _116.User.Domain.Entities;
 
-namespace _116.User.Application.Admin.UseCases.Queries.GetUserProfile;
+namespace _116.User.Application.Admin.UseCases.Queries.GetOwnProfile;
 
 /// <summary>
-/// Handles the <see cref="AdminGetUserProfileQuery"/> to retrieve complete admin user profile information.
+/// Handles the <see cref="AdminGetOwnProfileQuery"/> to retrieve complete admin user profile information.
 /// </summary>
 /// <param name="userRepository">Repository for user data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
-public class AdminGetUserProfileHandler(
+public class AdminGetOwnProfileHandler(
     IUserRepository userRepository,
     IRoleRepository roleRepository,
     IFileRepository fileRepository
-) : IQueryHandler<AdminGetUserProfileQuery, AdminGetUserProfileResult>
+) : IQueryHandler<AdminGetOwnProfileQuery, AdminGetOwnProfileResult>
 {
     /// <summary>
     /// Handles the admin user profile query by retrieving complete user information with roles and permissions.
     /// </summary>
     /// <param name="query">The admin user profile query containing user ID.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>A <see cref="AdminGetUserProfileResult"/> containing complete admin user profile data.</returns>
+    /// <returns>A <see cref="AdminGetOwnProfileResult"/> containing complete admin user profile data.</returns>
     /// <exception cref="NotFoundException">Thrown when no user is found with the specified ID.</exception>
     /// <exception cref="BadRequestException">Thrown when the account is not active.</exception>
-    public async Task<AdminGetUserProfileResult> Handle(
-        AdminGetUserProfileQuery query,
+    public async Task<AdminGetOwnProfileResult> Handle(
+        AdminGetOwnProfileQuery query,
         CancellationToken cancellationToken
     )
     {
@@ -51,6 +51,6 @@ public class AdminGetUserProfileHandler(
         var avatarDto = avatarFile.ToFileDto();
         var userDto = user.ToUserResponseDto(roles, permissions, avatarDto);
 
-        return new AdminGetUserProfileResult(userDto);
+        return new AdminGetOwnProfileResult(userDto);
     }
 }

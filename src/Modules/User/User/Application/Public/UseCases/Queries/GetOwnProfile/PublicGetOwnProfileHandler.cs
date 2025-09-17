@@ -6,30 +6,30 @@ using _116.User.Application.Shared.Mappers;
 using _116.User.Application.Shared.Repositories;
 using _116.User.Domain.Entities;
 
-namespace _116.User.Application.Public.UseCases.Queries.GetUserProfile;
+namespace _116.User.Application.Public.UseCases.Queries.GetOwnProfile;
 
 /// <summary>
-/// Handles the <see cref="PublicGetUserProfileQuery"/> to retrieve complete user profile information.
+/// Handles the <see cref="PublicGetOwnProfileQuery"/> to retrieve complete user profile information.
 /// </summary>
 /// <param name="userRepository">Repository for user data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
-public class PublicGetUserProfileHandler(
+public class PublicGetOwnProfileHandler(
     IUserRepository userRepository,
     IRoleRepository roleRepository,
     IFileRepository fileRepository
-) : IQueryHandler<PublicGetUserProfileQuery, PublicGetUserProfileResult>
+) : IQueryHandler<PublicGetOwnProfileQuery, PublicGetOwnProfileResult>
 {
     /// <summary>
     /// Handles the user profile query by retrieving complete user information with roles and permissions.
     /// </summary>
     /// <param name="query">The user profile query containing user ID.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>A <see cref="PublicGetUserProfileResult"/> containing complete user profile data.</returns>
+    /// <returns>A <see cref="PublicGetOwnProfileResult"/> containing complete user profile data.</returns>
     /// <exception cref="NotFoundException">Thrown when no user is found with the specified ID.</exception>
     /// <exception cref="BadRequestException">Thrown when the account is not active or verified.</exception>
-    public async Task<PublicGetUserProfileResult> Handle(
-        PublicGetUserProfileQuery query,
+    public async Task<PublicGetOwnProfileResult> Handle(
+        PublicGetOwnProfileQuery query,
         CancellationToken cancellationToken
     )
     {
@@ -51,6 +51,6 @@ public class PublicGetUserProfileHandler(
         var avatarDto = avatarFile.ToFileDto();
         var userDto = user.ToUserResponseDto(roles, permissions, avatarDto);
 
-        return new PublicGetUserProfileResult(userDto);
+        return new PublicGetOwnProfileResult(userDto);
     }
 }

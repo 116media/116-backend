@@ -1,7 +1,7 @@
 using _116.Shared.Contracts.Application.CQRS;
 using _116.User.Domain.DTOs;
 
-namespace _116.User.Application.Admin.UseCases.Queries.GetUserProfile;
+namespace _116.User.Application.Admin.UseCases.Queries.GetOwnProfile;
 
 /// <summary>
 /// Query for retrieving the authenticated admin user's complete profile information.
@@ -12,18 +12,18 @@ namespace _116.User.Application.Admin.UseCases.Queries.GetUserProfile;
 /// Only authenticated admin users can access their own profile information.
 /// The user ID is extracted from the JWT token at the endpoint level.
 /// </remarks>
-public record AdminGetUserProfileQuery(
+public record AdminGetOwnProfileQuery(
     Guid UserId
-) : IQuery<AdminGetUserProfileResult>;
+) : IQuery<AdminGetOwnProfileResult>;
 
 /// <summary>
-/// Result of the <see cref="AdminGetUserProfileQuery"/> containing complete admin user profile data.
+/// Result of the <see cref="AdminGetOwnProfileQuery"/> containing complete admin user profile data.
 /// </summary>
 /// <param name="User">The complete admin user profile information including roles and permissions.</param>
 /// <remarks>
 /// Contains the full UserResponseDto with all admin user details, roles, permissions, and avatar information.
 /// This information is used by the admin application to display user profile and manage permissions.
 /// </remarks>
-public record AdminGetUserProfileResult(
+public record AdminGetOwnProfileResult(
     UserResponseDto User
 );

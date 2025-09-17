@@ -9,32 +9,32 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using System.Security.Claims;
 
-namespace _116.User.Application.Admin.UseCases.Queries.GetUserProfile;
+namespace _116.User.Application.Public.UseCases.Queries.GetOwnProfile;
 
 /// <summary>
-/// Response model for admin user profile.
+/// Response model for user profile.
 /// </summary>
-/// <param name="User">The complete admin user profile information including roles and permissions.</param>
-public record AdminGetUserProfileResponse(
+/// <param name="User">The complete user profile information including roles and permissions.</param>
+public record PublicGetOwnProfileResponse(
     UserResponseDto User
 );
 
 /// <summary>
-/// Defines the admin user profile endpoint for authenticated admin users.
-/// Handles retrieval of complete admin user profile information.
+/// Defines the user profile endpoint for authenticated public users.
+/// Handles retrieval of complete user profile information.
 /// </summary>
-public class AdminGetUserProfileEndpoint : ICarterModule
+public class PublicGetOwnProfileEndpoint : ICarterModule
 {
     /// <summary>
-    /// Configures the admin user profile route within the API pipeline.
-    /// Maps the <c>/api/v1/admin/profile</c> endpoint to handle admin profile retrieval requests.
+    /// Configures the user profile route within the API pipeline.
+    /// Maps the <c>/api/v1/public/user/profile</c> endpoint to handle profile retrieval requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app
-            .MapGroup(RouteConstants.V1.Admin.Profile)
-            .WithTags("Admin::authentication");
+            .MapGroup(RouteConstants.V1.Public.Profile)
+            .WithTags("Public::authentication");
 
         group.MapGet("/", async (ClaimsPrincipal user, IDispatcher dispatcher) =>
             {
@@ -45,23 +45,23 @@ public class AdminGetUserProfileEndpoint : ICarterModule
                     throw UserErrors.InvalidUserAuthentication();
                 }
 
-                // Send the query to get admin user profile
-                var query = new AdminGetUserProfileQuery(userId);
-                AdminGetUserProfileResult result = await dispatcher.Send(query);
+                // Send the query to get user profile
+                var query = new PublicGetOwnProfileQuery(userId);
+                PublicGetOwnProfileResult result = await dispatcher.Send(query);
 
                 // Adapt the result to the response type
-                var response = new AdminGetUserProfileResponse(
+                var response = new PublicGetOwnProfileResponse(
                     result.User
                 );
 
                 return Results.Ok(response);
             })
-            .WithName(AdminGetUserProfileMetaField.GetUserProfile.Name)
-            .WithSummary(AdminGetUserProfileMetaField.GetUserProfile.Summary)
-            .WithDescription(AdminGetUserProfileMetaField.GetUserProfile.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithName(PublicGetOwnProfileMetaField.GetOwnProfile.Name)
+            .WithSummary(PublicGetOwnProfileMetaField.GetOwnProfile.Summary)
+            .WithDescription(PublicGetOwnProfileMetaField.GetOwnProfile.Description)
+            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
-            .Produces<AdminGetUserProfileResponse>()
+            .Produces<PublicGetOwnProfileResponse>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound);

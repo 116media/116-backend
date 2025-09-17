@@ -1,17 +1,17 @@
 using _116.Shared.Application.Metadata;
 
-namespace _116.User.Application.Admin.UseCases.Queries.GetUserProfile;
+namespace _116.User.Application.Admin.UseCases.Queries.GetOwnProfile;
 
 /// <summary>
 /// Contains metadata information for the admin user profile route.
 /// </summary>
-public static class AdminGetUserProfileMetaField
+public static class AdminGetOwnProfileMetaField
 {
     /// <summary>
     /// Metadata describing the admin user profile endpoint.
     /// </summary>
-    public static readonly RouteMetadata GetUserProfile = new(
-        name: "GetAdminUserProfile",
+    public static readonly RouteMetadata GetOwnProfile = new(
+        name: "GetAdminOwnProfile",
         summary: "Retrieve authenticated admin user's complete profile information",
         description: """
              Retrieves the complete profile information for the currently authenticated admin user.

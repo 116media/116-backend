@@ -1,17 +1,17 @@
 using _116.Shared.Application.Metadata;
 
-namespace _116.User.Application.Public.UseCases.Queries.GetUserProfile;
+namespace _116.User.Application.Public.UseCases.Queries.GetOwnProfile;
 
 /// <summary>
 /// Contains metadata information for the user profile route.
 /// </summary>
-public static class PublicGetUserProfileMetaField
+public static class PublicGetOwnProfileMetaField
 {
     /// <summary>
     /// Metadata describing the user profile endpoint.
     /// </summary>
-    public static readonly RouteMetadata GetUserProfile = new(
-        name: "GetUserProfile",
+    public static readonly RouteMetadata GetOwnProfile = new(
+        name: "GetOwnProfile",
         summary: "Retrieve authenticated user's complete profile information",
         description: """
              Retrieves the complete profile information for the currently authenticated user.
