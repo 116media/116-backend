@@ -60,6 +60,7 @@ public class PublicGetUserProfileEndpoint : ICarterModule
             .WithSummary(PublicGetUserProfileMetaField.GetUserProfile.Summary)
             .WithDescription(PublicGetUserProfileMetaField.GetUserProfile.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .Produces<PublicGetUserProfileResponse>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)

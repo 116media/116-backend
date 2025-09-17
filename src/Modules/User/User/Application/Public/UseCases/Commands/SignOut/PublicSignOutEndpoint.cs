@@ -53,6 +53,7 @@ public class PublicSignOutEndpoint : ICarterModule
             .WithSummary(PublicSignOutMetaField.SignOut.Summary)
             .WithDescription(PublicSignOutMetaField.SignOut.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .Produces<PublicSignOutResponse>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden);
