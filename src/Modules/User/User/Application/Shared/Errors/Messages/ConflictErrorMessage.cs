@@ -36,6 +36,20 @@ public static class ConflictErrorMessage
     }
 
     /// <summary>
+    /// Gets an error message for when the given phone number
+    /// is already taken.
+    /// </summary>
+    /// <param name="phoneNumber">The phone number that caused the conflict.</param>
+    /// <returns>
+    /// A formatted error message indicating that the specified phone number
+    /// is already taken.
+    /// </returns>
+    public static string PhoneNumberAlreadyExists(string phoneNumber)
+    {
+        return $"Phone number '{phoneNumber}' is already taken";
+    }
+
+    /// <summary>
     /// Gets an error message for when a role with the given name
     /// already exists.
     /// </summary>
