@@ -32,6 +32,18 @@ public static class AuthorizationErrorMessage
     }
 
     /// <summary>
+    /// Gets an error message for when a user is not logged in.
+    /// </summary>
+    /// <param name="email">The email of the user who is not logged in.</param>
+    /// <returns>
+    /// A formatted error message indicating that the user is not currently logged in.
+    /// </returns>
+    public static string UserNotLoggedIn(string email)
+    {
+        return $"The user '{email}' is not currently logged in. Please log in to access this resource.";
+    }
+
+    /// <summary>
     /// Error message indicating that access is denied due to insufficient permissions.
     /// </summary>
     public static string AccessDenied()

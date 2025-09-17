@@ -62,6 +62,12 @@ public static class UserErrors
         new(AuthorizationErrorMessage.AccountNotVerified(email));
 
     /// <summary>
+    /// Throws when the user is not logged in.
+    /// </summary>
+    public static UserNotLoggedInException UserNotLoggedIn(string email) =>
+        new(AuthorizationErrorMessage.UserNotLoggedIn(email));
+
+    /// <summary>
     /// Throws when password is invalid.
     /// </summary>
     public static AuthenticationException InvalidCredentials() =>

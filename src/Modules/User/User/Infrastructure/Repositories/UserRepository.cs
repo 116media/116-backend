@@ -161,6 +161,16 @@ public class UserRepository(UserDbContext context) : IUserRepository
     }
 
     /// <inheritdoc />
+    public bool IsUserLoggedIn(UserEntity user)
+    {
+        if (!user.IsLoggedIn)
+        {
+            throw UserErrors.UserNotLoggedIn(user.Email!);
+        }
+        return true;
+    }
+
+    /// <inheritdoc />
     public async Task<UserEntity> GetActivePublicUserWithRolesAndPermissionsAsync(string credentials, CancellationToken cancellationToken = default)
     {
         // Check if credentials is an email (contains @ and .) or username

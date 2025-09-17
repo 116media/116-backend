@@ -188,6 +188,18 @@ public interface IUserRepository : IRepository<UserEntity>
     bool IsUserAccountVerified(UserEntity user);
 
     /// <summary>
+    /// Validates that a user is currently logged in.
+    /// </summary>
+    /// <param name="user">The user entity to validate.</param>
+    /// <returns>True if the user is logged in, otherwise throws an exception.</returns>
+    /// <exception cref="AuthorizationException">Thrown when the user is not logged in (HTTP 403 Forbidden).</exception>
+    /// <remarks>
+    /// This method should be called to ensure the user's session is still valid
+    /// and they haven't been logged out.
+    /// </remarks>
+    bool IsUserLoggedIn(UserEntity user);
+
+    /// <summary>
     /// Retrieves an active public user with roles and permissions by credentials (email or username).
     /// Validates that the user exists and is active for public authentication.
     /// </summary>
