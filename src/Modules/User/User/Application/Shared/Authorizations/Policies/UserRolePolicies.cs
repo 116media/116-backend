@@ -7,7 +7,7 @@ namespace _116.User.Application.Shared.Authorizations.Policies;
 /// Contains string constants for authorization policies that restrict access based on user roles.
 /// These policies are registered in the UserModule and used with [Authorize (Policy = "PolicyName")] attributes.
 /// </remarks>
-public class UserRolePolicies
+public static class UserRolePolicies
 {
     /// <summary>
     /// Policy that requires SuperAdmin role access.
