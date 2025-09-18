@@ -87,7 +87,7 @@ public class PublicLoginHandler(
             : null;
 
         // Map to userDTO with avatar
-        var avatarDto = avatarFile.ToFileDto();
+        var avatarDto = avatarFile?.ToFileDto();
         var userDto = user.ToUserResponseDto(roles, permissions, avatarDto);
         var authResult = new AuthenticationResult(userDto, token.Token, token.ExpiresAt);
 

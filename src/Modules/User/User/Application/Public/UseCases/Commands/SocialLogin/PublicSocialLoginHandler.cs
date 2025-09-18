@@ -80,7 +80,7 @@ public class PublicSocialLoginHandler(
             : null;
 
         // Map to userDTO with avatar and create the result
-        var avatarDto = avatarFile.ToFileDto();
+        var avatarDto = avatarFile?.ToFileDto();
         var userDto = user.ToUserResponseDto(roles, permissions, avatarDto);
         var authResult = new AuthenticationResult(userDto, token.Token, token.ExpiresAt);
 

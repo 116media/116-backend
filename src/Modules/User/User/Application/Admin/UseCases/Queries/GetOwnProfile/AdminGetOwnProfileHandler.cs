@@ -48,7 +48,7 @@ public class AdminGetOwnProfileHandler(
             : null;
 
         // Map to userDTO with avatar
-        var avatarDto = avatarFile.ToFileDto();
+        var avatarDto = avatarFile?.ToFileDto();
         var userDto = user.ToUserResponseDto(roles, permissions, avatarDto);
 
         return new AdminGetOwnProfileResult(userDto);
