@@ -2,6 +2,7 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
+using _116.User.Application.Shared.Errors;
 using _116.User.Application.Shared.Mappers;
 using _116.User.Application.Shared.Repositories;
 using _116.User.Domain.Entities;
@@ -11,6 +12,7 @@ namespace _116.User.Application.Public.UseCases.Commands.UpdateOwnProfile;
 
 /// <summary>
 /// Handles the <see cref="PublicUpdateOwnProfileCommand"/> to update user's own profile information.
+/// This endpoint requires user authentication - only logged-in users can update their own profile.
 /// </summary>
 /// <param name="userRepository">Repository for user data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
@@ -35,18 +37,20 @@ public class PublicUpdateOwnProfileHandler(
         CancellationToken cancellationToken
     )
     {
-        // Get user by ID
-        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByIdAsync(command.UserId, cancellationToken);
+        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByIdAsync(
+            command.UserId,
+            cancellationToken
+        );
 
         // Validate user account status - must be active and verified
         userRepository.IsUserAccountActive(user!);
         userRepository.IsUserAccountVerified(user!);
 
-        bool isEmailUpdated = !string.IsNullOrEmpty(command.Email) && user.Email != command.Email.ToLowerInvariant();
-        bool isUsernameUpdated = !string.IsNullOrEmpty(command.UserName) && user.UserName != command.UserName;
+        bool isEmailUpdated = !string.IsNullOrEmpty(command.Email) && user!.Email != command.Email?.ToLowerInvariant();
+        bool isUsernameUpdated = !string.IsNullOrEmpty(command.UserName) && user!.UserName != command.UserName;
         bool isPhoneUpdated = !string.IsNullOrEmpty(command.PartialPhoneNumber);
 
-        // Validate uniqueness for email if being updated
+        // Validate uniqueness for email if being updated - check against other users
         if (isEmailUpdated)
         {
             bool emailExists = await userRepository.ExistsByEmailAsync(new Email(command.Email!), cancellationToken);
@@ -56,23 +60,28 @@ public class PublicUpdateOwnProfileHandler(
             }
         }
 
-        // Validate uniqueness for username if being updated
+        // Validate uniqueness for username if being updated - check against other users
         if (isUsernameUpdated)
         {
             bool usernameExists = await userRepository.ExistsByUserNameAsync(command.UserName!, cancellationToken);
+
             if (usernameExists)
             {
                 throw UserErrors.UsernameAlreadyExists(command.UserName!);
             }
         }
 
-        // Check phone number uniqueness if being updated
+        // Check phone number uniqueness if being updated - check against other users
         if (isPhoneUpdated && !string.IsNullOrEmpty(command.CountryDialCode))
         {
             string fullPhoneNumber = $"{command.CountryDialCode}{command.PartialPhoneNumber}";
 
             // Check if phone number already exists for another user
-            var existingUserWithPhone = await userRepository.GetUserByPhoneNumberAsync(fullPhoneNumber, cancellationToken);
+            UserEntity? existingUserWithPhone = await userRepository.GetUserByPhoneNumberAsync(
+                fullPhoneNumber,
+                cancellationToken
+            );
+
             if (existingUserWithPhone != null && existingUserWithPhone.Id != command.UserId)
             {
                 throw UserErrors.PhoneNumberAlreadyExists(fullPhoneNumber);
@@ -82,14 +91,13 @@ public class PublicUpdateOwnProfileHandler(
         // Update email if provided
         if (isEmailUpdated)
         {
-            user.UpdateEmail(command.Email!);
-            // Note: UpdateEmail method automatically resets IsVerified to false and sets IsLoggedIn to false
+            user!.UpdateEmail(command.Email!);
         }
 
         // Update username if provided
         if (isUsernameUpdated)
         {
-            user.UpdateUserName(command.UserName!);
+            user!.UpdateUserName(command.UserName!);
         }
 
         // Update phone and country information if provided
@@ -99,7 +107,7 @@ public class PublicUpdateOwnProfileHandler(
                 ? $"{command.CountryDialCode}{command.PartialPhoneNumber}"
                 : null;
 
-            user.UpdatePhoneNumber(
+            user!.UpdatePhoneNumber(
                 command.CountryName,
                 command.CountryFlagUrl,
                 command.CountryIsoCode,
@@ -109,12 +117,12 @@ public class PublicUpdateOwnProfileHandler(
             );
         }
 
-        // Save changes to database
-        await userRepository.UpdateAsync(user, cancellationToken);
+        // Save changes to the DB
+        await userRepository.UpdateAsync(user!, cancellationToken);
         await userRepository.SaveChangesAsync(cancellationToken);
 
         // Extract roles and permissions using repository
-        var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(user.UserRoles);
+        var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(user!.UserRoles);
 
         // Fetch the avatar file if the user has one
         FileEntity? avatarFile = user.AvatarFileId.HasValue
