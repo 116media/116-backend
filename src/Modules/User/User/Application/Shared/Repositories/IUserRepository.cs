@@ -82,6 +82,18 @@ public interface IUserRepository : IRepository<UserEntity>
     Task<bool> ExistsByUserNameAsync(string userName, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a user by their phone number.
+    /// </summary>
+    /// <param name="phoneNumber">The full phone number to search for.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The user entity if found; otherwise, null.</returns>
+    /// <remarks>
+    /// This method performs a simple lookup by phone number without loading related entities.
+    /// Useful for phone number uniqueness validation during profile updates.
+    /// </remarks>
+    Task<UserEntity?> GetUserByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Validates that both email and username are unique for user registration.
     /// </summary>
     /// <param name="email">The email address to check for uniqueness.</param>

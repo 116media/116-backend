@@ -72,6 +72,14 @@ public class UserRepository(UserDbContext context) : IUserRepository
     }
 
     /// <inheritdoc />
+    public async Task<UserEntity?> GetUserByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
+    {
+        return await context.Users
+            .Where(u => u.FullPhoneNumber == phoneNumber)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task AddAsync(UserEntity user, CancellationToken cancellationToken = default)
     {
         await context.Users.AddAsync(user, cancellationToken);

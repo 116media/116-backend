@@ -24,6 +24,8 @@ public partial class PublicSignUpValidator : AbstractValidator<PublicSignUpComma
         RuleFor(x => x.Email)
             .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("Email is required")
+            .MaximumLength(UserConstants.MaxEmailLength)
+            .WithMessage($"Email cannot exceed {UserConstants.MaxEmailLength} characters")
             .EmailAddress().WithMessage("Invalid email format");
 
         // Username validation - alphanumeric with spaces and hyphens, min 3 chars

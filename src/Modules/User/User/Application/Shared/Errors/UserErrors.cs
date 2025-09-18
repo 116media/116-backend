@@ -23,6 +23,12 @@ public static class UserErrors
         new(ConflictErrorMessage.UsernameAlreadyExists(username));
 
     /// <summary>
+    /// Throws when a phone number is already taken.
+    /// </summary>
+    public static ConflictException PhoneNumberAlreadyExists(string phoneNumber) =>
+        new(ConflictErrorMessage.PhoneNumberAlreadyExists(phoneNumber));
+
+    /// <summary>
     /// Throws when a role already exists.
     /// </summary>
     public static ConflictException RoleAlreadyExists(string roleName) =>
