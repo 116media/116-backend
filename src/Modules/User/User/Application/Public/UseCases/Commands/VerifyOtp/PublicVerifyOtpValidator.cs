@@ -1,4 +1,5 @@
 using FluentValidation;
+using _116.User.Application.Shared.Validators;
 
 namespace _116.User.Application.Public.UseCases.Commands.VerifyOtp;
 
@@ -18,13 +19,9 @@ public class PublicVerifyOtpValidator : AbstractValidator<PublicVerifyOtpCommand
     public PublicVerifyOtpValidator()
     {
         // Email validation
-        RuleFor(x => x.Email)
-            .Cascade(CascadeMode.Stop)
-            .NotEmpty().WithMessage("Email is required")
-            .EmailAddress().WithMessage("Invalid email format");
+        RuleFor(x => x.Email).EmailValidation();
 
         // OTP code validation
-        RuleFor(x => x.Code)
-            .NotEmpty().WithMessage("Verification code is required");
+        RuleFor(x => x.Code).OtpCodeValidation();
     }
 }

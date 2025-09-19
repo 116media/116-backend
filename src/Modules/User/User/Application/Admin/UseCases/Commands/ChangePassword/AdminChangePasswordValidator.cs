@@ -1,6 +1,5 @@
 using FluentValidation;
-using System.Text.RegularExpressions;
-using _116.BuildingBlocks.Constants;
+using _116.User.Application.Shared.Validators;
 
 namespace _116.User.Application.Admin.UseCases.Commands.ChangePassword;
 
@@ -26,13 +25,7 @@ public partial class AdminChangePasswordValidator : AbstractValidator<AdminChang
             .NotEmpty().WithMessage("Current password is required");
 
         // New password validation - strong password requirements
-        RuleFor(x => x.NewPassword)
-            .Cascade(CascadeMode.Stop)
-            .NotEmpty().WithMessage("New password is required")
-            .MinimumLength(UserConstants.MinPasswordLength)
-            .WithMessage($"Password must be at least {UserConstants.MinPasswordLength} characters long")
-            .Matches(PasswordRegex())
-            .WithMessage("Password must contain at least one lowercase letter, one uppercase letter, and one number");
+        RuleFor(x => x.NewPassword).PasswordValidation(fieldName: "New password");
 
         // Cross-field validation - new password must be different from old password
         RuleFor(x => x)
@@ -41,10 +34,4 @@ public partial class AdminChangePasswordValidator : AbstractValidator<AdminChang
             .WithName("NewPassword");
     }
 
-    /// <summary>
-    /// Generated regex for password validation - at least one lowercase, one uppercase, and one number.
-    /// Uses compile-time generation for better performance, AOT compatibility, and reduced startup time.
-    /// </summary>
-    [GeneratedRegex("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])")]
-    private static partial Regex PasswordRegex();
 }

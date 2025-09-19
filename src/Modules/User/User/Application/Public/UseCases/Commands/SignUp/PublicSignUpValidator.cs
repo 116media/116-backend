@@ -1,6 +1,5 @@
 using FluentValidation;
-using System.Text.RegularExpressions;
-using _116.BuildingBlocks.Constants;
+using _116.User.Application.Shared.Validators;
 
 namespace _116.User.Application.Public.UseCases.Commands.SignUp;
 
@@ -21,45 +20,13 @@ public partial class PublicSignUpValidator : AbstractValidator<PublicSignUpComma
     public PublicSignUpValidator()
     {
         // Email validation
-        RuleFor(x => x.Email)
-            .Cascade(CascadeMode.Stop)
-            .NotEmpty().WithMessage("Email is required")
-            .MaximumLength(UserConstants.MaxEmailLength)
-            .WithMessage($"Email cannot exceed {UserConstants.MaxEmailLength} characters")
-            .EmailAddress().WithMessage("Invalid email format");
+        RuleFor(x => x.Email).EmailValidation();
 
         // Username validation - alphanumeric with spaces and hyphens, min 3 chars
-        RuleFor(x => x.UserName)
-            .Cascade(CascadeMode.Stop)
-            .NotEmpty().WithMessage("Username is required")
-            .MinimumLength(UserConstants.MinUserNameLength)
-            .WithMessage($"Username must be at least {UserConstants.MinUserNameLength} characters long")
-            .MaximumLength(UserConstants.MaxUserNameLength)
-            .WithMessage($"Username cannot exceed {UserConstants.MaxUserNameLength} characters")
-            .Matches(UsernameRegex())
-            .WithMessage("Username can only contain letters, numbers, spaces, and hyphens");
+        RuleFor(x => x.UserName).UsernameValidation();
 
         // Password validation - strong password requirements
-        RuleFor(x => x.Password)
-            .Cascade(CascadeMode.Stop)
-            .NotEmpty().WithMessage("Password is required")
-            .MinimumLength(UserConstants.MinPasswordLength)
-            .WithMessage($"Password must be at least {UserConstants.MinPasswordLength} characters long")
-            .Matches(PasswordRegex())
-            .WithMessage("Password must contain at least one lowercase letter, one uppercase letter, and one number");
+        RuleFor(x => x.Password).PasswordValidation();
     }
 
-    /// <summary>
-    /// Generated regex for username validation - alphanumeric, spaces, and hyphens only.
-    /// Uses compile-time generation for better performance, AOT compatibility, and reduced startup time.
-    /// </summary>
-    [GeneratedRegex(@"^[a-zA-Z0-9\-\s]+$")]
-    private static partial Regex UsernameRegex();
-
-    /// <summary>
-    /// Generated regex for password validation - at least one lowercase, one uppercase, and one number.
-    /// Uses compile-time generation for better performance, AOT compatibility, and reduced startup time.
-    /// </summary>
-    [GeneratedRegex("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])")]
-    private static partial Regex PasswordRegex();
 }
