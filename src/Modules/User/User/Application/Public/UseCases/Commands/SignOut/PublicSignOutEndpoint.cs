@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Constants;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.User.Application.Shared.Authorizations.Policies;
-using _116.User.Application.Shared.Errors;
+using _116.User.Application.Shared.Repositories;
 using Carter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -33,14 +33,10 @@ public class PublicSignOutEndpoint : ICarterModule
             .MapGroup(RouteConstants.V1.Public.Auth)
             .WithTags("Public::authentication");
 
-        group.MapDelete("/signout", async (ClaimsPrincipal user, IDispatcher dispatcher) =>
+        group.MapDelete("/signout", async (ClaimsPrincipal user, IUserRepository userRepository, IDispatcher dispatcher) =>
             {
                 // Extract user ID from JWT token claims
-                string? userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
-                {
-                    throw UserErrors.InvalidUserAuthentication();
-                }
+                Guid userId = userRepository.GetUserIdFromClaims(user);
 
                 var command = new PublicSignOutCommand(userId);
                 PublicSignOutResult result = await dispatcher.Send(command);

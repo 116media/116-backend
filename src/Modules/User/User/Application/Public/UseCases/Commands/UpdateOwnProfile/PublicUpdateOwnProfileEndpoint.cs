@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Constants;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.User.Application.Shared.Authorizations.Policies;
-using _116.User.Application.Shared.Errors;
+using _116.User.Application.Shared.Repositories;
 using _116.User.Domain.DTOs;
 using Carter;
 using Microsoft.AspNetCore.Builder;
@@ -60,15 +60,12 @@ public class PublicUpdateOwnProfileEndpoint : ICarterModule
         group.MapPatch("/", async (
                 PublicUpdateOwnProfileRequest request,
                 ClaimsPrincipal user,
+                IUserRepository userRepository,
                 IDispatcher dispatcher
             ) =>
             {
                 // Extract user ID from JWT token claims
-                string? userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
-                {
-                    throw UserErrors.InvalidUserAuthentication();
-                }
+                Guid userId = userRepository.GetUserIdFromClaims(user);
 
                 // Send the command to update the profile
                 var command = new PublicUpdateOwnProfileCommand(

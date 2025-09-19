@@ -6,6 +6,7 @@ using _116.User.Domain.Enums;
 using _116.User.Domain.ValueObjects;
 using _116.User.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace _116.User.Infrastructure.Repositories;
 
@@ -244,6 +245,17 @@ public class UserRepository(UserDbContext context) : IUserRepository
 
         // Use the domain method to assign the role
         user?.AssignRole(userRole);
+    }
+
+    /// <inheritdoc />
+    public Guid GetUserIdFromClaims(ClaimsPrincipal user)
+    {
+        string? userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+        {
+            throw UserErrors.InvalidUserAuthentication();
+        }
+        return userId;
     }
 
     /// <inheritdoc />

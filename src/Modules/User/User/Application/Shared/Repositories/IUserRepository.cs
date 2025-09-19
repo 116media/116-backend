@@ -2,6 +2,7 @@ using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
 using _116.User.Domain.Entities;
 using _116.User.Domain.ValueObjects;
+using System.Security.Claims;
 
 namespace _116.User.Application.Shared.Repositories;
 
@@ -228,6 +229,18 @@ public interface IUserRepository : IRepository<UserEntity>
     /// Use this for public user authentication scenarios to ensure proper error handling.
     /// </remarks>
     Task<UserEntity> GetActivePublicUserWithRolesAndPermissionsAsync(string credentials, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Extracts the user ID from JWT claims and validates authentication.
+    /// </summary>
+    /// <param name="user">The claims principal from the authenticated user.</param>
+    /// <returns>The extracted user ID as a Guid.</returns>
+    /// <exception cref="AuthenticationException">Thrown when user authentication is invalid or user ID cannot be parsed.</exception>
+    /// <remarks>
+    /// This method centralizes the logic for extracting user IDs from JWT tokens
+    /// and provides consistent error handling across all endpoints.
+    /// </remarks>
+    Guid GetUserIdFromClaims(ClaimsPrincipal user);
 
     /// <summary>
     /// Persists all pending changes in the repository to the database.

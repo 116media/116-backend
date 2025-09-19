@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Constants;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.User.Application.Shared.Authorizations.Policies;
-using _116.User.Application.Shared.Errors;
+using _116.User.Application.Shared.Repositories;
 using Carter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -48,15 +48,12 @@ public class PublicChangePasswordEndpoint : ICarterModule
         group.MapPatch("/change-password", async (
                 PublicChangePasswordRequest request,
                 ClaimsPrincipal user,
+                IUserRepository userRepository,
                 IDispatcher dispatcher
             ) =>
             {
                 // Extract user ID from JWT token claims
-                string? userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
-                {
-                    throw UserErrors.InvalidUserAuthentication();
-                }
+                Guid userId = userRepository.GetUserIdFromClaims(user);
 
                 // Send the command to change the password
                 var command = new PublicChangePasswordCommand(
