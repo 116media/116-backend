@@ -2,6 +2,7 @@ using System.Reflection;
 using FluentValidation;
 using System.Text.RegularExpressions;
 using _116.BuildingBlocks.Constants;
+using _116.User.Domain.Enums;
 
 namespace _116.User.Application.Shared.Validators;
 
@@ -217,6 +218,55 @@ public static partial class UserValidationRules
     }
 
     /// <summary>
+    /// Configures OTP purpose validation rules.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the OTP purpose property.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string> OtpPurposeValidation<T>(
+        this IRuleBuilderInitial<T, string> ruleBuilder
+    )
+    {
+        return ruleBuilder
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty().WithMessage("OTP purpose is required.")
+            .Must(purpose => purpose != null && Enum.IsDefined(typeof(OtpPurpose), purpose))
+            .WithMessage("Invalid OTP purpose specified.");
+    }
+
+    /// <summary>
+    /// Configures old password validation rules (required for verification).
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the old password property.</param>
+    /// <param name="fieldName">The name of the field for error messages (default: "Current password").</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> OldPasswordValidation<T>(
+        this IRuleBuilder<T, string?> ruleBuilder,
+        string fieldName = "Current password"
+    )
+    {
+        return ruleBuilder
+            .NotEmpty().WithMessage($"{fieldName} is required");
+    }
+
+    /// <summary>
+    /// Configures cross-field validation to ensure new password is different from old password.
+    /// </summary>
+    /// <typeparam name="T">The type being validated (must have OldPassword and NewPassword properties).</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the command object.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, T> NewPasswordMustBeDifferent<T>(
+        this IRuleBuilderInitial<T, T> ruleBuilder
+    )
+    {
+        return ruleBuilder
+            .Must(command => GetOldPasswordValue(command) != GetNewPasswordValue(command))
+            .WithMessage("New password must be different from current password")
+            .WithName("NewPassword");
+    }
+
+    /// <summary>
     /// Validates that a URL is in proper format.
     /// </summary>
     /// <param name="url">The URL to validate.</param>
@@ -307,6 +357,28 @@ public static partial class UserValidationRules
     private static string? GetPartialPhoneNumberValue<T>(T instance)
     {
         return GetPropertyValue(instance, "PartialPhoneNumber");
+    }
+
+    /// <summary>
+    /// Gets the OldPassword property value from an instance using reflection.
+    /// </summary>
+    /// <typeparam name="T">The type of the instance.</typeparam>
+    /// <param name="instance">The instance to get the OldPassword property from.</param>
+    /// <returns>The OldPassword property value as a string, or null if not found.</returns>
+    private static string? GetOldPasswordValue<T>(T instance)
+    {
+        return GetPropertyValue(instance, "OldPassword");
+    }
+
+    /// <summary>
+    /// Gets the NewPassword property value from an instance using reflection.
+    /// </summary>
+    /// <typeparam name="T">The type of the instance.</typeparam>
+    /// <param name="instance">The instance to get the NewPassword property from.</param>
+    /// <returns>The NewPassword property value as a string, or null if not found.</returns>
+    private static string? GetNewPasswordValue<T>(T instance)
+    {
+        return GetPropertyValue(instance, "NewPassword");
     }
 
     /// <summary>

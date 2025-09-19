@@ -42,6 +42,7 @@ public class PublicResendOtpHandler(
         UserEntity user = await userRepository.GetUserWithRolesOrThrowAsync(email, cancellationToken);
 
         userRepository.IsUserAccountActive(user);
+        userRepository.IsUserAccountVerified(user);
 
         // Invalidate existing OTPs for this purpose
         await otpRepository.InvalidateExistingOtpsAsync(user.Id, purpose, cancellationToken);

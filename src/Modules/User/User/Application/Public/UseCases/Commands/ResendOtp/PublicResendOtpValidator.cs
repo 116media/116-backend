@@ -23,10 +23,6 @@ public class PublicResendOtpValidator : AbstractValidator<PublicResendOtpCommand
         RuleFor(x => x.Email).EmailValidation();
 
         // Purpose validation - must be a valid enum value
-        RuleFor(x => x.Purpose)
-            .Cascade(CascadeMode.Stop)
-            .NotEmpty().WithMessage("OTP purpose is required.")
-            .Must(purpose => purpose != null && Enum.IsDefined(typeof(OtpPurpose), purpose))
-            .WithMessage("Invalid OTP purpose specified.");
+        RuleFor(x => x.Purpose).OtpPurposeValidation();
     }
 }

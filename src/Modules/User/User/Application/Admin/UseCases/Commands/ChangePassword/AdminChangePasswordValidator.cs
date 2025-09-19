@@ -20,18 +20,13 @@ public partial class AdminChangePasswordValidator : AbstractValidator<AdminChang
     public AdminChangePasswordValidator()
     {
         // Old password validation - required for verification
-        RuleFor(x => x.OldPassword)
-            .Cascade(CascadeMode.Stop)
-            .NotEmpty().WithMessage("Current password is required");
+        RuleFor(x => x.OldPassword).OldPasswordValidation();
 
         // New password validation - strong password requirements
         RuleFor(x => x.NewPassword).PasswordValidation(fieldName: "New password");
 
         // Cross-field validation - new password must be different from old password
-        RuleFor(x => x)
-            .Must(command => command.OldPassword != command.NewPassword)
-            .WithMessage("New password must be different from current password")
-            .WithName("NewPassword");
+        RuleFor(x => x).NewPasswordMustBeDifferent();
     }
 
 }
