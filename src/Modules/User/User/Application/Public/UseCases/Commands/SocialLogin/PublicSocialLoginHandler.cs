@@ -75,9 +75,7 @@ public class PublicSocialLoginHandler(
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(user.UserRoles);
 
         // Fetch the avatar file if the user has one
-        FileEntity? avatarFile = user.AvatarFileId.HasValue
-            ? await fileRepository.GetByIdAsync(user.AvatarFileId.Value, cancellationToken)
-            : null;
+        FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(user.AvatarFileId, cancellationToken);
 
         // Map to userDTO with avatar and create the result
         var avatarDto = avatarFile?.ToFileDto();

@@ -37,6 +37,14 @@ public interface IFileRepository : IRepository<FileEntity>
     void Remove(FileEntity file);
 
     /// <summary>
+    /// Gets an avatar file by user's avatar file ID if it exists.
+    /// </summary>
+    /// <param name="avatarFileId">The avatar file ID from user entity.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The avatar file entity if found; otherwise, null.</returns>
+    Task<FileEntity?> GetAvatarFileAsync(Guid? avatarFileId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Persists all pending changes to the database.
     /// </summary>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>

@@ -38,6 +38,14 @@ public class FileRepository(CoreDbContext context) : IFileRepository
     }
 
     /// <inheritdoc />
+    public async Task<FileEntity?> GetAvatarFileAsync(Guid? avatarFileId, CancellationToken cancellationToken = default)
+    {
+        return avatarFileId.HasValue
+            ? await GetByIdAsync(avatarFileId.Value, cancellationToken)
+            : null;
+    }
+
+    /// <inheritdoc />
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await context.SaveChangesAsync(cancellationToken);
