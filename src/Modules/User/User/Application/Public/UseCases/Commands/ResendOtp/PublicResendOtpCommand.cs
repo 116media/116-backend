@@ -14,17 +14,16 @@ namespace _116.User.Application.Public.UseCases.Commands.ResendOtp;
 /// </remarks>
 public record PublicResendOtpCommand(
     string Email,
-    OtpPurpose Purpose
+    string Purpose
 ) : ICommand<PublicResendOtpResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicResendOtpCommand"/> containing OTP resend status.
 /// </summary>
-/// <param name="IsSuccess">Always true for security reasons to prevent user enumeration.</param>
-/// <param name="Message">A generic message indicating the operation status.</param>
+/// <param name="IsSuccess">Indicates whether the OTP was successfully resent.</param>
 /// <remarks>
-/// Returns success regardless of whether the email exists to prevent user enumeration attacks.
-/// The actual OTP is only generated and sent if a valid, active account exists.
+/// Returns success when a new OTP has been generated and the previous ones invalidated.
+/// The actual OTP is only generated and sent if a valid, active user account exists.
 /// </remarks>
 public record PublicResendOtpResult(
     bool IsSuccess
