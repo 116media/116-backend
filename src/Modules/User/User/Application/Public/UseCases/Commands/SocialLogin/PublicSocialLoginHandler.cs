@@ -36,7 +36,7 @@ public class PublicSocialLoginHandler(
     {
         // Normalize email and provider using value objects
         var email = new Email(command.Email);
-        var provider = new Provider(command.Provider);
+        var provider = new AuthProvider(command.Provider);
 
         // Get or create external user for social authentication
         UserEntity user = await userService.GetOrCreateExternalUserAsync(

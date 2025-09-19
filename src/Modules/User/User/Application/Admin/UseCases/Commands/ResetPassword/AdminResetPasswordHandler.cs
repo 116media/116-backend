@@ -5,6 +5,7 @@ using _116.User.Application.Shared.Services;
 using _116.User.Domain.Entities;
 using _116.User.Domain.Enums;
 using _116.User.Domain.ValueObjects;
+using OtpPurpose = _116.User.Domain.Enums.OtpPurpose;
 
 namespace _116.User.Application.Admin.UseCases.Commands.ResetPassword;
 

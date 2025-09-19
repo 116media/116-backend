@@ -14,7 +14,7 @@ namespace _116.User.Application.Admin.UseCases.Commands.ResendOtp;
 /// </remarks>
 public record AdminResendOtpCommand(
     string Email,
-    OtpPurpose Purpose
+    string Purpose
 ) : ICommand<AdminResendOtpResult>;
 
 /// <summary>

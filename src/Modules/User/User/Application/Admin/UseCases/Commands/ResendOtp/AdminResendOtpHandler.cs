@@ -30,6 +30,7 @@ public class AdminResendOtpHandler(
     )
     {
         var email = new Email(command.Email);
+        var purpose = new OtpPurpose(command.Purpose);
 
         // Verify admin user exists
         if (!await userRepository.ExistsByEmailAsync(email, cancellationToken))
@@ -43,10 +44,10 @@ public class AdminResendOtpHandler(
         userRepository.IsUserAccountActive(user);
 
         // Invalidate existing OTPs for this purpose
-        await otpRepository.InvalidateExistingOtpsAsync(user.Id, command.Purpose, cancellationToken);
+        await otpRepository.InvalidateExistingOtpsAsync(user.Id, purpose, cancellationToken);
 
         // Create new OTP
-        OtpEntity newOtp = otpService.CreateOtp(user.Id, command.Purpose);
+        OtpEntity newOtp = otpService.CreateOtp(user.Id, purpose);
 
         // Save the new OTP
         await otpRepository.AddAsync(newOtp, cancellationToken);
