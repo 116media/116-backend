@@ -39,5 +39,4 @@ public class PublicSocialLoginValidator : AbstractValidator<PublicSocialLoginCom
             .Must(provider => provider != null && Enum.IsDefined(typeof(AuthProvider), provider))
             .WithMessage("Auth provider must be Facebook or Google");
     }
-
 }
