@@ -1,4 +1,5 @@
 using FluentValidation;
+using _116.User.Application.Shared.Validators;
 
 namespace _116.User.Application.Admin.UseCases.Commands.Login;
 
@@ -15,10 +16,7 @@ public class AdminLoginValidator : AbstractValidator<AdminLoginCommand>
     /// </remarks>
     public AdminLoginValidator()
     {
-        RuleFor(x => x.Email)
-            .Cascade(CascadeMode.Stop)
-            .NotEmpty().WithMessage("Email is required.")
-            .EmailAddress().WithMessage("Invalid email format.");
+        RuleFor(x => x.Email).EmailValidation();
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Password cannot be empty.");

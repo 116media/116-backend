@@ -1,24 +1,22 @@
-using _116.User.Domain.Enums;
-
 namespace _116.User.Domain.ValueObjects;
 
 /// <summary>
 /// Value object that encapsulates and validates the <see cref="AuthProvider"/> enum.
 /// Provides implicit conversions to and from <see cref="string"/> and <see cref="AuthProvider"/>.
 /// </summary>
-public record Provider
+public record AuthProvider
 {
     /// <summary>
     /// The validated authentication provider value.
     /// </summary>
-    public AuthProvider Value { get; init; }
+    public Enums.AuthProvider Value { get; init; }
 
     /// <summary>
-    /// Initializes a new <see cref="Provider"/> from an <see cref="AuthProvider"/> enum value.
+    /// Initializes a new <see cref="AuthProvider"/> from an <see cref="AuthProvider"/> enum value.
     /// </summary>
     /// <param name="value">The <see cref="AuthProvider"/> to wrap.</param>
     /// <exception cref="ArgumentException">Thrown when the provided enum value is not defined.</exception>
-    public Provider(AuthProvider value)
+    public AuthProvider(Enums.AuthProvider value)
     {
         if (!Enum.IsDefined(value))
         {
@@ -29,13 +27,13 @@ public record Provider
     }
 
     /// <summary>
-    /// Initializes a new <see cref="Provider"/> from a string representation.
+    /// Initializes a new <see cref="AuthProvider"/> from a string representation.
     /// </summary>
     /// <param name="value">The string to parse into an <see cref="AuthProvider"/>.</param>
     /// <exception cref="ArgumentException">Thrown when the provided string cannot be parsed or is invalid.</exception>
-    public Provider(string value)
+    public AuthProvider(string value)
     {
-        if (!Enum.TryParse(value, true, out AuthProvider parsed) || !Enum.IsDefined(parsed))
+        if (!Enum.TryParse(value, true, out Enums.AuthProvider parsed) || !Enum.IsDefined(parsed))
         {
             throw new ArgumentException($"Invalid auth provider: {value}");
         }
@@ -44,23 +42,23 @@ public record Provider
     }
 
     /// <summary>
-    /// Implicit conversion from <see cref="Provider"/> to <see cref="AuthProvider"/>.
+    /// Implicit conversion from <see cref="AuthProvider"/> to <see cref="AuthProvider"/>.
     /// </summary>
-    public static implicit operator AuthProvider(Provider provider) => provider.Value;
+    public static implicit operator Enums.AuthProvider(AuthProvider provider) => provider.Value;
 
     /// <summary>
-    /// Implicit conversion from <see cref="Provider"/> to <see cref="string"/>.
+    /// Implicit conversion from <see cref="AuthProvider"/> to <see cref="string"/>.
     /// Returns the string representation of the provider.
     /// </summary>
-    public static implicit operator string(Provider provider) => provider.Value.ToString();
+    public static implicit operator string(AuthProvider provider) => provider.Value.ToString();
 
     /// <summary>
-    /// Implicit conversion from <see cref="AuthProvider"/> to <see cref="Provider"/>.
+    /// Implicit conversion from <see cref="AuthProvider"/> to <see cref="AuthProvider"/>.
     /// </summary>
-    public static implicit operator Provider(AuthProvider provider) => new(provider);
+    public static implicit operator AuthProvider(Enums.AuthProvider provider) => new(provider);
 
     /// <summary>
-    /// Implicit conversion from <see cref="string"/> to <see cref="Provider"/>.
+    /// Implicit conversion from <see cref="string"/> to <see cref="AuthProvider"/>.
     /// </summary>
-    public static implicit operator Provider(string provider) => new(provider);
+    public static implicit operator AuthProvider(string provider) => new(provider);
 }

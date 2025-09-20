@@ -1,4 +1,5 @@
 using FluentValidation;
+using _116.User.Application.Shared.Validators;
 
 namespace _116.User.Application.Public.UseCases.Commands.ForgotPassword;
 
@@ -15,8 +16,6 @@ public class PublicForgotPasswordValidator : AbstractValidator<PublicForgotPassw
     /// </remarks>
     public PublicForgotPasswordValidator()
     {
-        RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email is required.")
-            .EmailAddress().WithMessage("Please provide a valid email address.");
+        RuleFor(x => x.Email).EmailValidation();
     }
 }

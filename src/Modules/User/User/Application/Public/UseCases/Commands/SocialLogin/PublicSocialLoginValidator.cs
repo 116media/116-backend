@@ -1,5 +1,5 @@
-using _116.BuildingBlocks.Constants;
 using _116.User.Domain.Enums;
+using _116.User.Application.Shared.Validators;
 using FluentValidation;
 
 namespace _116.User.Application.Public.UseCases.Commands.SocialLogin;
@@ -22,21 +22,14 @@ public class PublicSocialLoginValidator : AbstractValidator<PublicSocialLoginCom
     public PublicSocialLoginValidator()
     {
         // Email validation
-        RuleFor(x => x.Email)
-            .Cascade(CascadeMode.Stop)
-            .NotEmpty().WithMessage("Email is required")
-            .EmailAddress().WithMessage("Invalid email format");
+        RuleFor(x => x.Email).EmailValidation();
 
         // Username validation
-        RuleFor(x => x.UserName)
-            .Cascade(CascadeMode.Stop)
-            .NotEmpty().WithMessage("Username is required")
-            .MinimumLength(UserConstants.MinUserNameLength)
-            .WithMessage($"Username must be at least {UserConstants.MinUserNameLength} characters long");
+        RuleFor(x => x.UserName).UsernameValidation();
 
         // Avatar URL validation (optional)
         RuleFor(x => x.Avatar)
-            .Must(BeValidUrlWhenProvided)
+            .Must(UserValidationRules.BeValidUrl)
             .WithMessage("Avatar must be a valid URL when provided");
 
         // Provider validation - only Google and Facebook allowed
@@ -45,16 +38,5 @@ public class PublicSocialLoginValidator : AbstractValidator<PublicSocialLoginCom
             .NotEmpty().WithMessage("Auth provider is required.")
             .Must(provider => provider != null && Enum.IsDefined(typeof(AuthProvider), provider))
             .WithMessage("Auth provider must be Facebook or Google");
-    }
-
-    /// <summary>
-    /// Validates that avatar is a valid URL when provided.
-    /// </summary>
-    private static bool BeValidUrlWhenProvided(string? avatar)
-    {
-        if (string.IsNullOrEmpty(avatar)) return true;
-
-        return Uri.TryCreate(avatar, UriKind.Absolute, out Uri? uri) &&
-               (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
 }

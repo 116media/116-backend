@@ -58,7 +58,7 @@ public class JwtService : IJwtService
 
         int expirationHours = int.TryParse(expiration, out int parsed)
             ? parsed
-            : CoreConstants.JwtDefaultExpiration;
+            : JwtClaimsConstants.DefaultExpiration;
 
         DateTime expiresAt = now.AddHours(expirationHours).UtcDateTime;
 

@@ -6,6 +6,8 @@ using _116.User.Domain.Enums;
 using _116.User.Domain.ValueObjects;
 using _116.User.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using AuthProvider = _116.User.Domain.Enums.AuthProvider;
 
 namespace _116.User.Infrastructure.Repositories;
 
@@ -15,7 +17,10 @@ namespace _116.User.Infrastructure.Repositories;
 public class UserRepository(UserDbContext context) : IUserRepository
 {
     /// <inheritdoc />
-    public async Task<UserEntity> GetUserWithRolesOrThrowAsync(Email email, CancellationToken cancellationToken = default)
+    public async Task<UserEntity> GetUserWithRolesOrThrowAsync(
+        Email email,
+        CancellationToken cancellationToken = default
+    )
     {
         return await context.Users
             .Where(u => u.Email == email.Value)
@@ -34,7 +39,10 @@ public class UserRepository(UserDbContext context) : IUserRepository
     }
 
     /// <inheritdoc />
-    public async Task<UserEntity?> GetUserWithRolesByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<UserEntity?> GetUserWithRolesByIdAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
     {
         return await context.Users
             .Where(u => u.Id == userId)
@@ -45,7 +53,10 @@ public class UserRepository(UserDbContext context) : IUserRepository
             );
     }
 
-    public async Task<UserEntity?> GetUserWithRolesAndPermissionsByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<UserEntity?> GetUserWithRolesAndPermissionsByIdAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
     {
         return await context.Users
             .Where(u => u.Id == userId)
@@ -72,7 +83,10 @@ public class UserRepository(UserDbContext context) : IUserRepository
     }
 
     /// <inheritdoc />
-    public async Task<UserEntity?> GetUserByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
+    public async Task<UserEntity?> GetUserByPhoneNumberAsync(
+        string phoneNumber,
+        CancellationToken cancellationToken = default
+    )
     {
         return await context.Users
             .Where(u => u.FullPhoneNumber == phoneNumber)
@@ -93,7 +107,10 @@ public class UserRepository(UserDbContext context) : IUserRepository
     }
 
     /// <inheritdoc />
-    public async Task<UserEntity> GetActiveAdminUserWithRolesAndPermissionsAsync(Email email, CancellationToken cancellationToken = default)
+    public async Task<UserEntity> GetActiveAdminUserWithRolesAndPermissionsAsync(
+        Email email,
+        CancellationToken cancellationToken = default
+    )
     {
         // First, get the user without filtering by IsActive to provide specific error messages
         UserEntity user = await context.Users
@@ -179,7 +196,10 @@ public class UserRepository(UserDbContext context) : IUserRepository
     }
 
     /// <inheritdoc />
-    public async Task<UserEntity> GetActivePublicUserWithRolesAndPermissionsAsync(string credentials, CancellationToken cancellationToken = default)
+    public async Task<UserEntity> GetActivePublicUserWithRolesAndPermissionsAsync(
+        string credentials,
+        CancellationToken cancellationToken = default
+    )
     {
         // Check if credentials is an email (contains @ and .) or username
         bool isEmail = credentials.Contains('@') && credentials.Contains('.');
@@ -207,7 +227,11 @@ public class UserRepository(UserDbContext context) : IUserRepository
     }
 
     /// <inheritdoc />
-    public async Task ValidateUniqueCredentialsAsync(Email email, string userName, CancellationToken cancellationToken = default)
+    public async Task ValidateUniqueCredentialsAsync(
+        Email email,
+        string userName,
+        CancellationToken cancellationToken = default
+    )
     {
         // Check for existing email first
         bool emailExists = await context.Users.AnyAsync(u => u.Email == email.Value, cancellationToken);
@@ -244,6 +268,17 @@ public class UserRepository(UserDbContext context) : IUserRepository
 
         // Use the domain method to assign the role
         user?.AssignRole(userRole);
+    }
+
+    /// <inheritdoc />
+    public Guid GetUserIdFromClaims(ClaimsPrincipal user)
+    {
+        string? userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+        {
+            throw UserErrors.InvalidUserAuthentication();
+        }
+        return userId;
     }
 
     /// <inheritdoc />

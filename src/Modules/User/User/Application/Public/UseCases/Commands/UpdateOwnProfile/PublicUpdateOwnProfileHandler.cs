@@ -46,74 +46,36 @@ public class PublicUpdateOwnProfileHandler(
         userRepository.IsUserAccountActive(user!);
         userRepository.IsUserAccountVerified(user!);
 
-        bool isEmailUpdated = !string.IsNullOrEmpty(command.Email) && user!.Email != command.Email?.ToLowerInvariant();
-        bool isUsernameUpdated = !string.IsNullOrEmpty(command.UserName) && user!.UserName != command.UserName;
         bool isPhoneUpdated = !string.IsNullOrEmpty(command.PartialPhoneNumber);
+        bool isUsernameUpdated = !string.IsNullOrEmpty(command.UserName) && user!.UserName != command.UserName;
+        bool isEmailUpdated = !string.IsNullOrEmpty(command.Email) && user!.Email != command.Email?.ToLowerInvariant();
 
         // Validate uniqueness for email if being updated - check against other users
         if (isEmailUpdated)
         {
-            bool emailExists = await userRepository.ExistsByEmailAsync(new Email(command.Email!), cancellationToken);
-            if (emailExists)
-            {
-                throw UserErrors.EmailAlreadyExists(command.Email!);
-            }
+            await EnsureEmailUnique(command.Email!, cancellationToken);
+            user!.UpdateEmail(command.Email!);
         }
 
         // Validate uniqueness for username if being updated - check against other users
         if (isUsernameUpdated)
         {
-            bool usernameExists = await userRepository.ExistsByUserNameAsync(command.UserName!, cancellationToken);
-
-            if (usernameExists)
-            {
-                throw UserErrors.UsernameAlreadyExists(command.UserName!);
-            }
-        }
-
-        // Check phone number uniqueness if being updated - check against other users
-        if (isPhoneUpdated && !string.IsNullOrEmpty(command.CountryDialCode))
-        {
-            string fullPhoneNumber = $"{command.CountryDialCode}{command.PartialPhoneNumber}";
-
-            // Check if phone number already exists for another user
-            UserEntity? existingUserWithPhone = await userRepository.GetUserByPhoneNumberAsync(
-                fullPhoneNumber,
-                cancellationToken
-            );
-
-            if (existingUserWithPhone != null && existingUserWithPhone.Id != command.UserId)
-            {
-                throw UserErrors.PhoneNumberAlreadyExists(fullPhoneNumber);
-            }
-        }
-
-        // Update email if provided
-        if (isEmailUpdated)
-        {
-            user!.UpdateEmail(command.Email!);
-        }
-
-        // Update username if provided
-        if (isUsernameUpdated)
-        {
+            await EnsureUsernameUnique(command.UserName!, cancellationToken);
             user!.UpdateUserName(command.UserName!);
         }
 
-        // Update phone and country information if provided
+        // Check phone number uniqueness if being updated - check against other users
         if (isPhoneUpdated)
         {
-            string? fullPhoneNumber = !string.IsNullOrEmpty(command.CountryDialCode)
-                ? $"{command.CountryDialCode}{command.PartialPhoneNumber}"
-                : null;
+            await EnsurePhoneUnique(command, cancellationToken);
 
             user!.UpdatePhoneNumber(
-                command.CountryName,
-                command.CountryFlagUrl,
-                command.CountryIsoCode,
-                command.CountryDialCode,
-                fullPhoneNumber,
-                command.PartialPhoneNumber
+                countryName: command.CountryName,
+                countryFlagUrl: command.CountryFlagUrl,
+                countryIsoCode: command.CountryIsoCode,
+                countryDialCode: command.CountryDialCode,
+                partialPhoneNumber: command.PartialPhoneNumber,
+                fullPhoneNumber: $"{command.CountryDialCode}{command.PartialPhoneNumber}"
             );
         }
 
@@ -125,14 +87,39 @@ public class PublicUpdateOwnProfileHandler(
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(user!.UserRoles);
 
         // Fetch the avatar file if the user has one
-        FileEntity? avatarFile = user.AvatarFileId.HasValue
-            ? await fileRepository.GetByIdAsync(user.AvatarFileId.Value, cancellationToken)
-            : null;
+        FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(user.AvatarFileId, cancellationToken);
 
         // Map to userDTO with avatar
-        var avatarDto = avatarFile.ToFileDto();
+        var avatarDto = avatarFile?.ToFileDto();
         var userDto = user.ToUserResponseDto(roles, permissions, avatarDto);
 
         return new PublicUpdateOwnProfileResult(userDto);
+    }
+
+    private async Task EnsureEmailUnique(string email, CancellationToken cancellationToken)
+    {
+        if (await userRepository.ExistsByEmailAsync(new Email(email), cancellationToken))
+        {
+            throw UserErrors.EmailAlreadyExists(email);
+        }
+    }
+
+    private async Task EnsureUsernameUnique(string username, CancellationToken cancellationToken)
+    {
+        if (await userRepository.ExistsByUserNameAsync(username, cancellationToken))
+        {
+            throw UserErrors.UsernameAlreadyExists(username);
+        }
+    }
+
+    private async Task EnsurePhoneUnique(PublicUpdateOwnProfileCommand command, CancellationToken cancellationToken)
+    {
+        string fullPhone = $"{command.CountryDialCode}{command.PartialPhoneNumber}";
+        UserEntity? existing = await userRepository.GetUserByPhoneNumberAsync(fullPhone, cancellationToken);
+
+        if (existing is not null && existing.Id != command.UserId)
+        {
+            throw UserErrors.PhoneNumberAlreadyExists(fullPhone);
+        }
     }
 }

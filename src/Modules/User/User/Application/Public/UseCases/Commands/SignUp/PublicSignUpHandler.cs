@@ -4,9 +4,9 @@ using _116.User.Application.Shared.Mappers;
 using _116.User.Application.Shared.Repositories;
 using _116.User.Application.Shared.Services;
 using _116.User.Domain.Entities;
-using _116.User.Domain.Enums;
 using _116.User.Domain.Results;
 using _116.User.Domain.ValueObjects;
+using OtpPurpose = _116.User.Domain.Enums.OtpPurpose;
 
 namespace _116.User.Application.Public.UseCases.Commands.SignUp;
 

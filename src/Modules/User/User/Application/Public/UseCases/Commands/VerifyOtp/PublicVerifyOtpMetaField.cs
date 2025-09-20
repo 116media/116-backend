@@ -14,7 +14,11 @@ public static class PublicVerifyOtpMetaField
         name: "VerifyOtp",
         summary: "Verify OTP code for account activation",
         description: """
-             Verifies the OTP (One-Time Password) code sent to the user's email during registration.
+             Verifies the OTP (One-Time Password) code sent to the user's email for various purposes.
+
+             **Supported OTP Purposes:**
+             - **Email Verification**: During user account registration
+             - **Account Recovery**: For account recovery processes
 
              This endpoint performs the following operations:
              - Validates the OTP code format (6-digit numeric)

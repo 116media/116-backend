@@ -1,4 +1,5 @@
 using FluentValidation;
+using _116.User.Application.Shared.Validators;
 
 namespace _116.User.Application.Public.UseCases.Commands.VerifyOtp;
 
@@ -6,9 +7,10 @@ namespace _116.User.Application.Public.UseCases.Commands.VerifyOtp;
 /// Validator for the <see cref="PublicVerifyOtpCommand"/> ensuring proper OTP verification data format.
 /// </summary>
 /// <remarks>
-/// Validates email and OTP code according to format requirements:
+/// Validates email, OTP code, and purpose according to format requirements:
 /// - Email: Valid email format
 /// - Code: 6-digit numeric code
+/// - Purpose: Must be EmailVerification or AccountRecovery
 /// </remarks>
 public class PublicVerifyOtpValidator : AbstractValidator<PublicVerifyOtpCommand>
 {
@@ -18,13 +20,12 @@ public class PublicVerifyOtpValidator : AbstractValidator<PublicVerifyOtpCommand
     public PublicVerifyOtpValidator()
     {
         // Email validation
-        RuleFor(x => x.Email)
-            .Cascade(CascadeMode.Stop)
-            .NotEmpty().WithMessage("Email is required")
-            .EmailAddress().WithMessage("Invalid email format");
+        RuleFor(x => x.Email).EmailValidation();
 
         // OTP code validation
-        RuleFor(x => x.Code)
-            .NotEmpty().WithMessage("Verification code is required");
+        RuleFor(x => x.Code).OtpCodeValidation();
+
+        // Purpose validation
+        RuleFor(x => x.Purpose).OtpPurposeValidation();
     }
 }
