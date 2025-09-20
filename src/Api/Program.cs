@@ -77,6 +77,7 @@ app.UseAppExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapCarter();
+app.UseResourceNotFoundHandler();
 
 // Configure middleware extensions  modules.
 app
