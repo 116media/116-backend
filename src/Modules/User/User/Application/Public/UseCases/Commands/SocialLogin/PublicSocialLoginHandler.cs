@@ -47,7 +47,7 @@ public class PublicSocialLoginHandler(
         );
 
         // Update user avatar if provided
-        user = await userService.UpdateUserAvatarAsync(user, command.Avatar, cancellationToken);
+        user = await userService.UpdateUserAvatarAsync(user, command.AvatarUrl, cancellationToken);
 
         // Record login and save changes
         user.RecordLogin();

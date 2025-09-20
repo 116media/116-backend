@@ -382,6 +382,51 @@ public static partial class UserValidationRules
     }
 
     /// <summary>
+    /// Configures avatar URL validation rules.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the avatar URL property.</param>
+    /// <param name="isRequired">Whether the avatar URL is required (default: false).</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> AvatarUrlValidation<T>(
+        this IRuleBuilder<T, string?> ruleBuilder,
+        bool isRequired = false
+    )
+    {
+        IRuleBuilderOptions<T, string?> builder;
+
+        if (isRequired)
+        {
+            builder = ruleBuilder
+                .NotEmpty().WithMessage("Avatar URL is required")
+                .Must(BeValidUrl).WithMessage("Avatar URL must be a valid URL")
+                .MaximumLength(FileConstants.MaxStorageUrlLength)
+                .WithMessage($"Avatar URL cannot exceed {FileConstants.MaxStorageUrlLength} characters");
+        }
+        else
+        {
+            builder = ruleBuilder
+                .Must(BeValidUrl).WithMessage("Avatar URL must be a valid URL")
+                .MaximumLength(FileConstants.MaxStorageUrlLength)
+                .WithMessage($"Avatar URL cannot exceed {FileConstants.MaxStorageUrlLength} characters")
+                .When(x => !string.IsNullOrWhiteSpace(GetAvatarUrlValue(x)));
+        }
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Gets the AvatarUrl property value from an instance using reflection.
+    /// </summary>
+    /// <typeparam name="T">The type of the instance.</typeparam>
+    /// <param name="instance">The instance to get the AvatarUrl property from.</param>
+    /// <returns>The AvatarUrl property value as a string, or null if not found.</returns>
+    private static string? GetAvatarUrlValue<T>(T instance)
+    {
+        return GetPropertyValue(instance, "AvatarUrl");
+    }
+
+    /// <summary>
     /// Gets a property value from an instance using reflection.
     /// </summary>
     /// <typeparam name="T">The type of the instance.</typeparam>

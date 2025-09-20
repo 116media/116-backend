@@ -13,12 +13,12 @@ namespace _116.User.Application.Public.UseCases.Commands.SocialLogin;
 /// </summary>
 /// <param name="Email">The user's email address from the social provider.</param>
 /// <param name="UserName">The user's display name from the social provider.</param>
-/// <param name="Avatar">Optional avatar URL from the social provider.</param>
+/// <param name="AvatarUrl">Optional avatar URL from the social provider.</param>
 /// <param name="Provider">The social authentication provider (Google or Facebook).</param>
 public record PublicSocialLoginRequest(
     string Email,
     string UserName,
-    string? Avatar,
+    string? AvatarUrl,
     string Provider
 );
 
@@ -55,7 +55,7 @@ public class PublicSocialLoginEndpoint : ICarterModule
                 var command = new PublicSocialLoginCommand(
                     Email: request.Email,
                     UserName: request.UserName,
-                    Avatar: request.Avatar,
+                    AvatarUrl: request.AvatarUrl,
                     Provider: request.Provider
                 );
 

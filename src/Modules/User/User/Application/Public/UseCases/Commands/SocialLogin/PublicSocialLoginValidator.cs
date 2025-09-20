@@ -28,7 +28,7 @@ public class PublicSocialLoginValidator : AbstractValidator<PublicSocialLoginCom
         RuleFor(x => x.UserName).UsernameValidation();
 
         // Avatar URL validation (optional)
-        RuleFor(x => x.Avatar)
+        RuleFor(x => x.AvatarUrl)
             .Must(UserValidationRules.BeValidUrl)
             .WithMessage("Avatar must be a valid URL when provided");
 
