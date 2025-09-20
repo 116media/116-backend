@@ -1,10 +1,8 @@
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
-using _116.User.Application.Shared.Errors;
 using _116.User.Application.Shared.Repositories;
 using _116.User.Domain.Entities;
 using _116.User.Domain.ValueObjects;
-using OtpPurpose = _116.User.Domain.Enums.OtpPurpose;
 
 namespace _116.User.Application.Admin.UseCases.Commands.VerifyOtp;
 
@@ -32,8 +30,9 @@ public class AdminVerifyOtpHandler(
     /// <exception cref="AuthorizationException">Thrown when max attempts are reached.</exception>
     public async Task<AdminVerifyOtpResult> Handle(AdminVerifyOtpCommand command, CancellationToken cancellationToken)
     {
-        // Normalize email using value object
+        // Normalize email and purpose using value objects
         var email = new Email(command.Email);
+        var purpose = new OtpPurpose(command.Purpose);
 
         // Get admin user by email
         UserEntity user = await userRepository.GetUserWithRolesOrThrowAsync(email, cancellationToken);
@@ -42,7 +41,7 @@ public class AdminVerifyOtpHandler(
         OtpEntity otp = await otpRepository.ValidateOtpAsync(
             user.Id,
             command.Code,
-            OtpPurpose.EmailVerification,
+            purpose,
             cancellationToken
         );
 
@@ -57,7 +56,7 @@ public class AdminVerifyOtpHandler(
         // Invalidate any remaining OTPs for this purpose
         await otpRepository.InvalidateExistingOtpsAsync(
             user.Id,
-            OtpPurpose.EmailVerification,
+            purpose,
             cancellationToken
         );
 

@@ -14,7 +14,11 @@ public static class AdminVerifyOtpMetaField
         name: "AdminVerifyOtp",
         summary: "Verify OTP code for admin account activation",
         description: """
-             Verifies the OTP (One-Time Password) code sent to the admin user's email during registration.
+             Verifies the OTP (One-Time Password) code sent to the admin user's email for various purposes.
+
+             **Supported OTP Purposes:**
+             - **Email Verification**: During admin account registration
+             - **Account Recovery**: For account recovery processes
 
              This endpoint performs the following operations:
              - Validates the OTP code format (6-digit numeric)

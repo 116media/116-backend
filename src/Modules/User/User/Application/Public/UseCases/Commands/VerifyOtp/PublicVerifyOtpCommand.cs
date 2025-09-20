@@ -7,13 +7,15 @@ namespace _116.User.Application.Public.UseCases.Commands.VerifyOtp;
 /// </summary>
 /// <param name="Email">The user's email address.</param>
 /// <param name="Code">The OTP code to verify.</param>
+/// <param name="Purpose">The purpose for which the OTP is being verified (EmailVerification or AccountRecovery).</param>
 /// <remarks>
-/// This command is used to verify the OTP code sent to the user's email during registration.
-/// Upon successful verification, the user's account will be marked as verified.
+/// This command is used to verify the OTP code sent to the user's email for various purposes.
+/// Upon successful verification, the user's account will be marked as verified for email verification purpose.
 /// </remarks>
 public record PublicVerifyOtpCommand(
     string Email,
-    string Code
+    string Code,
+    string Purpose
 ) : ICommand<PublicVerifyOtpResult>;
 
 /// <summary>

@@ -12,9 +12,11 @@ namespace _116.User.Application.Admin.UseCases.Commands.VerifyOtp;
 /// </summary>
 /// <param name="Email">The admin user's email address.</param>
 /// <param name="Code">The OTP code to verify.</param>
+/// <param name="Purpose">The purpose for which the OTP is being verified (EmailVerification or AccountRecovery).</param>
 public record AdminVerifyOtpRequest(
     string Email,
-    string Code
+    string Code,
+    string Purpose
 );
 
 /// <summary>
@@ -45,7 +47,7 @@ public class AdminVerifyOtpEndpoint : ICarterModule
         group.MapPost("/verify-otp", async (AdminVerifyOtpRequest request, IDispatcher dispatcher) =>
             {
                 // Send the command to verify the OTP
-                var command = new AdminVerifyOtpCommand(request.Email, request.Code);
+                var command = new AdminVerifyOtpCommand(request.Email, request.Code, request.Purpose);
                 AdminVerifyOtpResult result = await dispatcher.Send(command);
 
                 // Adapt the result to the response type
