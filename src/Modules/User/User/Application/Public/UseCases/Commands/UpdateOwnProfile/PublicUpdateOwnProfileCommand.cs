@@ -16,7 +16,7 @@ namespace _116.User.Application.Public.UseCases.Commands.UpdateOwnProfile;
 /// <param name="CountryDialCode">The new country dial code (optional).</param>
 /// <remarks>
 /// This command allows authenticated users to update their own profile information.
-/// If email is updated, the user's verification status will be reset and they will be logged out.
+/// If the email is updated, the user's verification status will be reset, and they will be logged out.
 /// All phone and country information is updated together to maintain consistency.
 /// Users must be authenticated, active, and verified to update their profile.
 /// </remarks>
