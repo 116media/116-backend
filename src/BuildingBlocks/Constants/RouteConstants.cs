@@ -50,8 +50,6 @@ public static class RouteConstants
             /// Route for accessing and updating user profiles.
             /// </summary>
             public const string Profile = $"{Base}/public/profile";
-
-            public const string Roles = $"{Base}/public/avatar";
         }
     }
 }
