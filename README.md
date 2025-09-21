@@ -1,5 +1,5 @@
 # 116-backend
-116 is a bold digital platform that promotes music and hip-hop culture in DR and beyond. Through articles, video shows, and exclusive behind-the-scenes content, it connects fans with artists, highlights emerging talent, and tells the stories shaping the culture.
+116 (Cent-Seize) is a bold digital platform that promotes music and hip-hop culture in DR and beyond. Through articles, video shows, and exclusive behind-the-scenes content, it connects fans with artists, highlights emerging talent, and tells the stories shaping the culture.
 
 ## 🚀 Getting Started
 
@@ -124,7 +124,7 @@ The project includes comprehensive formatting configuration that works automatic
 
 #### Rider Setup:
 1. Rider will automatically detect and apply the project's code style settings
-2. To enable format on save in Rider:
+2. To enable "format on save" in Rider:
    - Go to **File > Settings > Tools > Actions on Save**
    - Enable **Reformat code** and **Optimize imports**
 
