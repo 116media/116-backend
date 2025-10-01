@@ -13,6 +13,7 @@ public class AppEnvironment
     /// are provided via environment variables (e.g., from a .env file or local shell).
     ///
     /// Expected environment variables:
+    /// - POSTGRES_HOST
     /// - POSTGRES_PORT
     /// - POSTGRES_DB
     /// - POSTGRES_USER
@@ -20,19 +21,21 @@ public class AppEnvironment
     /// </remarks>
     /// <returns>
     /// A tuple containing:
+    /// - <c>host</c>: The database host
     /// - <c>port</c>: The postgresql port (e.g., "5432")
     /// - <c>db</c>: The database name
     /// - <c>user</c>: The database username
     /// - <c>pass</c>: The database password
     /// </returns>
-    public static (string? port, string? db, string? user, string? pass) Database()
+    public static (string? host, string? port, string? db, string? user, string? pass) Database()
     {
+        string? host = Environment.GetEnvironmentVariable("POSTGRES_HOST");
         string? port = Environment.GetEnvironmentVariable("POSTGRES_PORT");
         string? db = Environment.GetEnvironmentVariable("POSTGRES_DB");
         string? user = Environment.GetEnvironmentVariable("POSTGRES_USER");
         string? pass = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
 
-        return (port, db, user, pass);
+        return (host, port, db, user, pass);
     }
 
     /// <summary>
