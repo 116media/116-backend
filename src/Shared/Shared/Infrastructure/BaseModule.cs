@@ -100,8 +100,8 @@ public static class BaseModule
     /// <returns>The formatted connection string</returns>
     private static string GetDefaultConnectionString()
     {
-        var (port, db, user, pass) = AppEnvironment.Database();
-        return $"Host=127.0.0.1;Port={port};Database={db};Username={user};Password={pass};";
+        var (host, port, db, user, pass) = AppEnvironment.Database();
+        return $"Host={host};Port={port};Database={db};Username={user};Password={pass};";
     }
 
     /// <summary>
