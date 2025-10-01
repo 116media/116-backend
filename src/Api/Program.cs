@@ -1,6 +1,5 @@
 using System.Reflection;
 using _116.Shared.Application.Extensions;
-using _116.Core;
 using Asp.Versioning;
 using Carter;
 using Microsoft.OpenApi.Models;
@@ -22,13 +21,13 @@ Assembly coreAssembly = typeof(CoreModule).Assembly;
 Assembly authAssembly = typeof(AuthModule).Assembly;
 
 builder.Services.AddCarterWithAssemblies(
-    coreAssembly,
-    authAssembly
+    authAssembly,
+    coreAssembly
 );
 
 builder.Services.AddCqrsWithAssemblies(
-    coreAssembly,
-    authAssembly
+    authAssembly,
+    coreAssembly
 );
 
 // Configure API Versioning
@@ -51,8 +50,8 @@ builder.Services.AddApiVersioning(options =>
 builder.Services.AddAuthorization();
 
 builder.Services
-    .AddCoreModule()
     .AddAuthModule()
+    .AddCoreModule()
     .AddEndpointsApiExplorer()
     .AddSwaggerGen(c =>
         {
@@ -102,8 +101,8 @@ app.UseResourceNotFoundHandler();
 
 // Configure middleware extensions  modules.
 app
-    .UseCoreModule()
-    .UseAuthModule();
+    .UseAuthModule()
+    .UseCoreModule();
 
 app.Run();
 
