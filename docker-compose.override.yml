@@ -10,6 +10,12 @@ services:
             - "5432:5432"
         volumes:
             - postgres_116_db:/var/lib/postgres/data/
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
     116_seq:
         container_name: 116_seq
         environment:
@@ -18,3 +24,20 @@ services:
         ports:
             - "5341:5341"
             - "9091:80"
+    116_api:
+        container_name: 116_api
+        environment:
+            - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+            - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_HOST=${POSTGRES_DB}
+            - POSTGRES_PORT=${POSTGRES_PORT}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - JWT_SECRET=${JWT_SECRET}
+            - JWT_ISSUER=${JWT_ISSUER}
+            - JWT_AUDIENCE=${JWT_AUDIENCE}
+            - JWT_EXPIRATION=${JWT_EXPIRATION}
+            - DEFAULT_USER_PASSWORD=${DEFAULT_USER_PASSWORD}
+        restart: always
+        ports:
+            - "5025:8080"

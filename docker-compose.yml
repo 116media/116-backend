@@ -3,5 +3,15 @@ services:
         image: postgres
     116_seq:
         image: datalust/seq:latest
+    116_api:
+        image: 116_api:latest
+        build:
+            context: .
+            dockerfile: Dockerfile
+        depends_on:
+            116_db:
+                condition: service_healthy
+            116_seq:
+                condition: service_started
 volumes:
     postgres_116_db:
