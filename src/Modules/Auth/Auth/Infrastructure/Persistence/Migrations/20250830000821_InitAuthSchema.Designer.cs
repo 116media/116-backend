@@ -12,15 +12,15 @@ using _116.Auth.Infrastructure.Persistence;
 namespace _116.Auth.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20250830000821_InitUserSchema")]
-    partial class InitUserSchema
+    [Migration("20250830000821_InitAuthSchema")]
+    partial class InitAuthSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasDefaultSchema("user")
+                .HasDefaultSchema("authentication")
                 .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -74,7 +74,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_permissions_resource_action");
 
-                    b.ToTable("permissions", "user");
+                    b.ToTable("permissions", "authentication");
                 });
 
             modelBuilder.Entity("_116.Auth.Domain.Entities.RoleEntity", b =>
@@ -119,7 +119,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_roles_name");
 
-                    b.ToTable("roles", "user");
+                    b.ToTable("roles", "authentication");
                 });
 
             modelBuilder.Entity("_116.Auth.Domain.Entities.RolePermissionEntity", b =>
@@ -163,7 +163,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_role_permissions_role_id_permission_id");
 
-                    b.ToTable("role_permissions", "user");
+                    b.ToTable("role_permissions", "authentication");
                 });
 
             modelBuilder.Entity("_116.Auth.Domain.Entities.UserEntity", b =>
@@ -276,7 +276,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_users_user_name");
 
-                    b.ToTable("users", "user");
+                    b.ToTable("users", "authentication");
                 });
 
             modelBuilder.Entity("_116.Auth.Domain.Entities.UserRoleEntity", b =>
@@ -320,7 +320,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_user_roles_user_id_role_id");
 
-                    b.ToTable("user_roles", "user");
+                    b.ToTable("user_roles", "authentication");
                 });
 
             modelBuilder.Entity("_116.Auth.Domain.Entities.RolePermissionEntity", b =>

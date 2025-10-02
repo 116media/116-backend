@@ -6,17 +6,17 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace _116.Auth.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitUserSchema : Migration
+    public partial class InitAuthSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.EnsureSchema(
-                name: "user");
+                name: "authentication");
 
             migrationBuilder.CreateTable(
                 name: "permissions",
-                schema: "user",
+                schema: "authentication",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -35,7 +35,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
 
             migrationBuilder.CreateTable(
                 name: "roles",
-                schema: "user",
+                schema: "authentication",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -53,7 +53,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
 
             migrationBuilder.CreateTable(
                 name: "users",
-                schema: "user",
+                schema: "authentication",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -84,7 +84,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
 
             migrationBuilder.CreateTable(
                 name: "role_permissions",
-                schema: "user",
+                schema: "authentication",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -101,14 +101,14 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                     table.ForeignKey(
                         name: "fk_role_permissions_permissions_permission_id",
                         column: x => x.permission_id,
-                        principalSchema: "user",
+                        principalSchema: "authentication",
                         principalTable: "permissions",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "fk_role_permissions_roles_role_id",
                         column: x => x.role_id,
-                        principalSchema: "user",
+                        principalSchema: "authentication",
                         principalTable: "roles",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -116,7 +116,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
 
             migrationBuilder.CreateTable(
                 name: "user_roles",
-                schema: "user",
+                schema: "authentication",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -133,14 +133,14 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                     table.ForeignKey(
                         name: "fk_user_roles_roles_role_id",
                         column: x => x.role_id,
-                        principalSchema: "user",
+                        principalSchema: "authentication",
                         principalTable: "roles",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "fk_user_roles_users_user_id",
                         column: x => x.user_id,
-                        principalSchema: "user",
+                        principalSchema: "authentication",
                         principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -148,54 +148,54 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_permissions_resource_action",
-                schema: "user",
+                schema: "authentication",
                 table: "permissions",
                 columns: new[] { "resource", "action" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_role_permissions_permission_id",
-                schema: "user",
+                schema: "authentication",
                 table: "role_permissions",
                 column: "permission_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_role_permissions_role_id_permission_id",
-                schema: "user",
+                schema: "authentication",
                 table: "role_permissions",
                 columns: new[] { "role_id", "permission_id" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_roles_name",
-                schema: "user",
+                schema: "authentication",
                 table: "roles",
                 column: "name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_user_roles_role_id",
-                schema: "user",
+                schema: "authentication",
                 table: "user_roles",
                 column: "role_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_user_roles_user_id_role_id",
-                schema: "user",
+                schema: "authentication",
                 table: "user_roles",
                 columns: new[] { "user_id", "role_id" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_users_email",
-                schema: "user",
+                schema: "authentication",
                 table: "users",
                 column: "email",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_users_user_name",
-                schema: "user",
+                schema: "authentication",
                 table: "users",
                 column: "user_name",
                 unique: true);
@@ -206,23 +206,23 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
         {
             migrationBuilder.DropTable(
                 name: "role_permissions",
-                schema: "user");
+                schema: "authentication");
 
             migrationBuilder.DropTable(
                 name: "user_roles",
-                schema: "user");
+                schema: "authentication");
 
             migrationBuilder.DropTable(
                 name: "permissions",
-                schema: "user");
+                schema: "authentication");
 
             migrationBuilder.DropTable(
                 name: "roles",
-                schema: "user");
+                schema: "authentication");
 
             migrationBuilder.DropTable(
                 name: "users",
-                schema: "user");
+                schema: "authentication");
         }
     }
 }

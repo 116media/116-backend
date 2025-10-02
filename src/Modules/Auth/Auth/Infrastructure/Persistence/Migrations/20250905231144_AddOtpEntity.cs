@@ -13,7 +13,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
         {
             migrationBuilder.CreateTable(
                 name: "otps",
-                schema: "user",
+                schema: "authentication",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -35,7 +35,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                     table.ForeignKey(
                         name: "fk_otps_users_user_id",
                         column: x => x.user_id,
-                        principalSchema: "user",
+                        principalSchema: "authentication",
                         principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -43,25 +43,25 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Otps_ExpiresAt",
-                schema: "user",
+                schema: "authentication",
                 table: "otps",
                 column: "expires_at");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Otps_Purpose_ExpiresAt",
-                schema: "user",
+                schema: "authentication",
                 table: "otps",
                 columns: new[] { "purpose", "expires_at" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Otps_UserId_Code_Purpose",
-                schema: "user",
+                schema: "authentication",
                 table: "otps",
                 columns: new[] { "user_id", "code", "purpose" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Otps_UserId_Purpose",
-                schema: "user",
+                schema: "authentication",
                 table: "otps",
                 columns: new[] { "user_id", "purpose" });
         }
@@ -71,7 +71,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
         {
             migrationBuilder.DropTable(
                 name: "otps",
-                schema: "user");
+                schema: "authentication");
         }
     }
 }
