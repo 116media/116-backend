@@ -1,7 +1,7 @@
 services:
     116_db:
         image: postgres
-    seq:
+    116_seq:
         image: datalust/seq:latest
 volumes:
     postgres_116_db:

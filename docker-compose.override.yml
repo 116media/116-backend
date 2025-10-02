@@ -10,8 +10,8 @@ services:
             - "5432:5432"
         volumes:
             - postgres_116_db:/var/lib/postgres/data/
-    seq:
-        container_name: seq
+    116_seq:
+        container_name: 116_seq
         environment:
             - ACCEPT_EULA=Y
         restart: always
