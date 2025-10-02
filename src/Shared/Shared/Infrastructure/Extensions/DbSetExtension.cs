@@ -36,7 +36,7 @@ public static class DbSetExtension
 
         if (entity is null)
         {
-            throw new NotFoundException(typeof(T).Name, string.Join(", ", keyValues));
+            throw new NotFoundException(typeof(T).Name, (object)string.Join(", ", keyValues));
         }
 
         return entity;
