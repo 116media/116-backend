@@ -1,6 +1,7 @@
 using System.Reflection;
 using _116.Shared.Application.Extensions;
 using _116.Core;
+using Asp.Versioning;
 using Carter;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -18,23 +19,40 @@ DotNetEnv.Env.TraversePath().Load();
 // Add services to the container.
 // Register Carter and CQRS Assemblies
 Assembly coreAssembly = typeof(CoreModule).Assembly;
-Assembly userAssembly = typeof(UserModule).Assembly;
+Assembly authAssembly = typeof(AuthModule).Assembly;
 
 builder.Services.AddCarterWithAssemblies(
     coreAssembly,
-    userAssembly
+    authAssembly
 );
 
 builder.Services.AddCqrsWithAssemblies(
     coreAssembly,
-    userAssembly
+    authAssembly
 );
+
+// Configure API Versioning
+builder.Services.AddApiVersioning(options =>
+{
+    options.ReportApiVersions = true;
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.ApiVersionReader = ApiVersionReader.Combine(
+        new UrlSegmentApiVersionReader(),
+        new HeaderApiVersionReader("X-Api-Version")
+    );
+})
+.AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'V";
+    options.SubstituteApiVersionInUrl = true;
+});
 
 builder.Services.AddAuthorization();
 
 builder.Services
     .AddCoreModule()
-    .AddUserModule()
+    .AddAuthModule()
     .AddEndpointsApiExplorer()
     .AddSwaggerGen(c =>
         {
@@ -76,13 +94,16 @@ app.UseSerilogRequestLogging();
 app.UseAppExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseApiVersioning();
+
 app.MapCarter();
 app.UseResourceNotFoundHandler();
 
 // Configure middleware extensions  modules.
 app
     .UseCoreModule()
-    .UseUserModule();
+    .UseAuthModule();
 
 app.Run();
 

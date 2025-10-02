@@ -1,7 +1,8 @@
+using _116.Shared.Infrastructure.Extensions;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Application.Shared.Specifications;
 using _116.Core.Domain.Entities;
 using _116.Core.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 
 namespace _116.Core.Infrastructure.Repositories;
 
@@ -13,9 +14,10 @@ public class FileRepository(CoreDbContext context) : IFileRepository
     /// <inheritdoc />
     public async Task<FileEntity?> GetByIdAsync(Guid fileId, CancellationToken cancellationToken = default)
     {
+        var specification = new FileByIdNotDeletedSpecification(fileId);
+
         return await context.Files
-            .Where(f => !f.IsDeleted)
-            .FirstOrDefaultAsync(f => f.Id == fileId, cancellationToken);
+            .FirstOrDefaultBySpecificationAsync(specification, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -38,7 +40,10 @@ public class FileRepository(CoreDbContext context) : IFileRepository
     }
 
     /// <inheritdoc />
-    public async Task<FileEntity?> GetAvatarFileAsync(Guid? avatarFileId, CancellationToken cancellationToken = default)
+    public async Task<FileEntity?> GetAvatarFileAsync(
+        Guid? avatarFileId,
+        CancellationToken cancellationToken = default
+    )
     {
         return avatarFileId.HasValue
             ? await GetByIdAsync(avatarFileId.Value, cancellationToken)
