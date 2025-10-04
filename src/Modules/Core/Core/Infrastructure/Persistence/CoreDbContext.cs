@@ -1,4 +1,5 @@
 using System.Reflection;
+using _116.Core.Domain.Constants;
 using _116.Core.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,7 +31,7 @@ public class CoreDbContext(DbContextOptions<CoreDbContext> options) : DbContext(
     /// </remarks>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema("core");
+        modelBuilder.HasDefaultSchema(CoreConstants.SchemaName);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         base.OnModelCreating(modelBuilder);
     }

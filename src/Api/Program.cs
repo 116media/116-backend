@@ -2,7 +2,6 @@ using System.Reflection;
 using _116.Shared.Application.Extensions;
 using Asp.Versioning;
 using Carter;
-using Microsoft.OpenApi.Models;
 using Serilog;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -53,34 +52,7 @@ builder.Services
     .AddAuthModule()
     .AddCoreModule()
     .AddEndpointsApiExplorer()
-    .AddSwaggerGen(c =>
-        {
-            // Add JWT authentication to Swagger
-            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Description = "JWT Authorization header uses Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-                Name = "Authorization",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.ApiKey,
-                Scheme = "Bearer"
-            });
-
-            c.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    Array.Empty<string>()
-                }
-            });
-        }
-    );
+    .AddSwaggerGen(c => c.AddSwaggerOptions());
 
 builder.Services.AddAppExceptionHandler();
 

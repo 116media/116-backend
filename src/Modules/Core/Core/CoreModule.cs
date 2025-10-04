@@ -1,5 +1,6 @@
 using _116.Core.Application.Shared.Services;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Constants;
 using _116.Core.Infrastructure.Services;
 using _116.Shared.Infrastructure;
 using _116.Core.Infrastructure.Persistence;
@@ -19,8 +20,8 @@ public static class CoreModule
     /// </summary>
     private static ModuleOptions<CoreDbContext> GetModuleOptions() => new()
     {
-        ModuleName = "Core",
-        SchemaName = "core",
+        ModuleName = CoreConstants.ModuleName,
+        SchemaName = CoreConstants.SchemaName,
         EnableMigrations = true,
         EnableSeeding = false
     };
