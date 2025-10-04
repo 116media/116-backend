@@ -12,6 +12,7 @@ public static class PublicForgotPasswordMetaField
         summary: "Initiate password reset process for existing users",
         description: """
              Initiates the password reset process by generating an OTP for the specified email address.
+             The generated OTP can be used with the verify-otp endpoint to proceed with password reset.
 
              This endpoint follows security best practices by:
              - Always returning success to prevent user enumeration attacks
@@ -35,9 +36,7 @@ public static class PublicForgotPasswordMetaField
              1. Validates email format
              2. Checks if user exists and is active/verified
              3. Generates OTP for password reset
-             4. Returns success response (regardless of actual outcome)
-
-             The generated OTP can be used with the verify-otp endpoint to proceed with password reset.
+             4. Returns success response (regardless of actual outcome).
          """
     );
 }

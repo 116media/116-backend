@@ -65,9 +65,6 @@ public static class AdminGetOwnProfileMetaField
              4. Fetches avatar file information if available
              5. Maps complete user data to response DTO
              6. Returns comprehensive admin user profile information
-
-             This endpoint provides all necessary admin user information for admin applications
-             to display profile details and manage admin-specific functionality.
          """
     );
 }

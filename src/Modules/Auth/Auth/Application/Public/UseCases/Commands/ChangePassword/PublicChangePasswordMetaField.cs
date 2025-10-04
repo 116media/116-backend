@@ -16,6 +16,9 @@ public static class PublicChangePasswordMetaField
         description: """
              Changes a user's password after verifying their current password for security.
 
+             After successful password change, the user continues using their existing session.
+             The new password will be required for future logins.
+
              This endpoint performs the following operations:
              - Validates JWT token authentication and extracts user ID
              - Verifies user account is active and verified
@@ -65,10 +68,7 @@ public static class PublicChangePasswordMetaField
              5. Ensures new password is different from current password
              6. Hashes new password securely
              7. Updates user's password in database
-             8. Returns success response
-
-             After successful password change, the user continues using their existing session.
-             The new password will be required for future logins.
+             8. Returns success response.
          """
     );
 }

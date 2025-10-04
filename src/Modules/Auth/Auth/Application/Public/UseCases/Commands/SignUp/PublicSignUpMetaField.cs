@@ -15,6 +15,8 @@ public static class PublicSignUpMetaField
         summary: "Register a new public user account",
         description: """
              Registers a new public user by creating an account with the provided details.
+             The created user account will initially have the Visitor role and related permissions,
+             granting basic public access until further elevated by admins.
 
              This endpoint performs the following operations:
              - Validates signup data (email, username, password, etc.)
@@ -38,10 +40,7 @@ public static class PublicSignUpMetaField
 
              **Error Handling:**
              - BadRequestException (400): Invalid signup data (missing/invalid fields, weak password)
-             - ConflictException (409): Email or username already in use
-
-             The created user account will initially have the Visitor role and related permissions,
-             granting basic public access until further elevated by admins.
+             - ConflictException (409): Email or username already in use.
          """
     );
 }

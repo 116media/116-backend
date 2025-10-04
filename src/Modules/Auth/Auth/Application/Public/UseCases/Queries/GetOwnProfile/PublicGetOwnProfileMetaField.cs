@@ -15,6 +15,8 @@ public static class PublicGetOwnProfileMetaField
         summary: "Retrieve authenticated user's complete profile information",
         description: """
              Retrieves the complete profile information for the currently authenticated user.
+             This endpoint provides all necessary user information for client applications
+             to display profile details and manage user-specific functionality.
 
              This endpoint performs the following operations:
              - Validates JWT token authentication and extracts user ID
@@ -65,10 +67,7 @@ public static class PublicGetOwnProfileMetaField
              3. Retrieves user roles and permissions
              4. Fetches avatar file information if available
              5. Maps complete user data to response DTO
-             6. Returns comprehensive user profile information
-
-             This endpoint provides all necessary user information for client applications
-             to display profile details and manage user-specific functionality.
+             6. Returns comprehensive user profile information.
          """
     );
 }

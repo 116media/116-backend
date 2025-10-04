@@ -19,6 +19,8 @@ public static class AdminUpdateAvatarMetaField
              This endpoint allows logged-in admin users to update their profile avatar from an external URL.
              The system will download and store the avatar file, and automatically delete any previous avatar.
 
+             Admin users only need to have active accounts (no verification requirement).
+
              **Authentication Requirements:**
              - Admin user must be logged in (JWT token required)
              - Must have Admin or SuperAdmin role
@@ -56,8 +58,6 @@ public static class AdminUpdateAvatarMetaField
              4. Deletes the previous avatar file (if exists)
              5. Updates admin user record with new avatar reference
              6. Returns updated admin user information with avatar details
-
-             Admin users only need to have active accounts (no verification requirement).
          """
     );
 }

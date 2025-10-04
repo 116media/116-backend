@@ -15,6 +15,7 @@ public static class PublicVerifyOtpMetaField
         summary: "Verify OTP code for account activation",
         description: """
              Verifies the OTP (One-Time Password) code sent to the user's email for various purposes.
+             The user must verify their account within the OTP expiration window to gain full access.
 
              **Supported OTP Purposes:**
              - **Email Verification**: During user account registration
@@ -49,9 +50,7 @@ public static class PublicVerifyOtpMetaField
              - AuthenticationException (401): OTP has expired
              - AuthorizationException (403): Maximum verification attempts reached
              - NotFoundException (404): No valid OTP found for the user
-             - ConflictException (409): User account is already verified
-
-             The user must verify their account within the OTP expiration window to gain full access.
+             - ConflictException (409): User account is already verified.
          """
     );
 }

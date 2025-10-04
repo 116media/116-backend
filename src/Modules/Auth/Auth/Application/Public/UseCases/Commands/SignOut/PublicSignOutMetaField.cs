@@ -12,6 +12,7 @@ public static class PublicSignOutMetaField
         summary: "Sign out the authenticated user",
         description: """
              Signs out the currently authenticated user by updating their login status.
+             After successful sign-out, the client should discard the JWT token.
 
              This endpoint performs secure sign-out by:
              - Validating JWT token authentication
@@ -38,9 +39,7 @@ public static class PublicSignOutMetaField
              1. Extracts user ID from JWT token
              2. Validates account is active
              3. Updates login status if currently logged in
-             4. Returns success response
-
-             After successful sign-out, the client should discard the JWT token.
+             4. Returns success response.
          """
     );
 }

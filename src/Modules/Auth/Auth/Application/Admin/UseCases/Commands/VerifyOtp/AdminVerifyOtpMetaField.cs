@@ -16,6 +16,8 @@ public static class AdminVerifyOtpMetaField
         description: """
              Verifies the OTP (One-Time Password) code sent to the admin user's email for various purposes.
 
+             The admin user must verify their account within the OTP expiration window to gain full access.
+
              **Supported OTP Purposes:**
              - **Email Verification**: During admin account registration
              - **Account Recovery**: For account recovery processes
@@ -49,9 +51,7 @@ public static class AdminVerifyOtpMetaField
              - BadRequestException (400): Invalid OTP code format or value
              - AuthenticationException (401): OTP has expired
              - AuthorizationException (403): Maximum verification attempts reached
-             - NotFoundException (404): No valid OTP found for the admin user
-
-             The admin user must verify their account within the OTP expiration window to gain full access.
+             - NotFoundException (404): No valid OTP found for the admin user.
          """
     );
 }

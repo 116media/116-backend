@@ -12,6 +12,7 @@ public static class AdminLoginMetaField
         summary: "Authenticate admin and return JWT token with admin claims",
         description: """
              Authenticates an admin user using email and password credentials.
+             The returned JWT token includes admin-specific claims for accessing administrative endpoints.
 
              This endpoint performs enhanced authentication by:
              - Validating email and password
@@ -42,9 +43,7 @@ public static class AdminLoginMetaField
              - AuthenticationException (401): Missing admin role - user authenticated but lacks Admin/SuperAdmin privileges
              - AuthorizationException (403): Account inactive - user exists but account is disabled/suspended
              - BadRequestException (400): Invalid password - email exists but password is incorrect
-             - NotFoundException (404): User not found - no account exists with the provided email
-
-             The returned JWT token includes admin-specific claims for accessing administrative endpoints.
+             - NotFoundException (404): User not found - no account exists with the provided email.
          """
     );
 }

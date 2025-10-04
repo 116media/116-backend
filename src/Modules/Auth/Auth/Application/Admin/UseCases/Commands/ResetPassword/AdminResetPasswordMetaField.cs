@@ -15,6 +15,7 @@ public static class AdminResetPasswordMetaField
         summary: "Reset admin user password using OTP verification",
         description: """
              Resets an admin user's password after validating the OTP code sent during the forgot password process.
+             After successful password reset, the admin user can login with their new password.
 
              This endpoint performs the following operations:
              - Validates the OTP code format and authenticity
@@ -62,9 +63,7 @@ public static class AdminResetPasswordMetaField
              5. Hashes new password securely
              6. Updates admin user's password
              7. Marks OTP as used and invalidates remaining OTPs
-             8. Returns success response
-
-             After successful password reset, the admin user can login with their new password.
+             8. Returns success response.
          """
     );
 }

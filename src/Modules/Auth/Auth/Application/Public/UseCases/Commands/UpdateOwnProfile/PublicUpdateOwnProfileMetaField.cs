@@ -17,6 +17,8 @@ public static class PublicUpdateOwnProfileMetaField
         description: """
              Updates the profile information for the currently authenticated user.
              This endpoint requires user authentication - only logged-in users can update their own profile.
+             This endpoint provides secure profile management for authenticated users
+             while maintaining data integrity and security requirements.
 
              This endpoint performs the following operations:
              - Validates JWT token authentication and extracts user ID
@@ -74,10 +76,7 @@ public static class PublicUpdateOwnProfileMetaField
              - Email updates reset verification status and force logout
              - Phone number updates include country information
              - Only provided fields are updated (partial updates supported)
-             - All validations are performed before any updates
-
-             This endpoint provides secure profile management for authenticated users
-             while maintaining data integrity and security requirements.
+             - All validations are performed before any updates.
          """
     );
 }

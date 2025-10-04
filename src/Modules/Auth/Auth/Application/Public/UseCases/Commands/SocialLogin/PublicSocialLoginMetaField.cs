@@ -15,6 +15,8 @@ public static class PublicSocialLoginMetaField
         summary: "Authenticate user via social provider",
         description: """
              Authenticates a user through external social providers (Google or Facebook).
+             Social users are automatically verified and granted visitor role permissions.
+             Avatar images from social providers are downloaded and stored locally.
 
              This endpoint performs the following operations:
              - Validates social provider data (email, username, avatar URL, provider)
@@ -44,10 +46,7 @@ public static class PublicSocialLoginMetaField
 
              **Error Handling:**
              - BadRequestException (400): Invalid provider or malformed social data
-             - ConflictException (409): Local account already exists with email
-
-             Social users are automatically verified and granted visitor role permissions.
-             Avatar images from social providers are downloaded and stored locally.
+             - ConflictException (409): Local account already exists with email.
          """
     );
 }

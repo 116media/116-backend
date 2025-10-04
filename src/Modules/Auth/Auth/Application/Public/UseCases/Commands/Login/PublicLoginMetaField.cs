@@ -12,6 +12,7 @@ public static class PublicLoginMetaField
         summary: "Authenticate public user and return JWT token with user claims",
         description: """
              Authenticates a public user using email/userName and password credentials.
+             The returned JWT token includes claims for accessing public user's endpoints.
 
              This endpoint performs enhanced authentication by:
              - Validating credentials and password
@@ -37,9 +38,7 @@ public static class PublicLoginMetaField
              **Error Handling:**
              - AuthorizationException (403): Account inactive - user exists but account is disabled/suspended
              - BadRequestException (400): Invalid password - email/userName exists but password is incorrect
-             - NotFoundException (404): User not found - no account exists with the provided email/userName
-
-             The returned JWT token includes claims for accessing public user's endpoints.
+             - NotFoundException (404): User not found - no account exists with the provided email/userName.
          """
     );
 }
