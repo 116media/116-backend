@@ -14,44 +14,44 @@ public static class AdminVerifyOtpMetaField
         name: "AdminVerifyOtp",
         summary: "Verify OTP code for admin account activation",
         description: """
-             Verifies the OTP (One-Time Password) code sent to the admin user's email for various purposes.
-
-             **Supported OTP Purposes:**
-             - **Email Verification**: During admin account registration
-             - **Account Recovery**: For account recovery processes
-
-             This endpoint performs the following operations:
-             - Validates the OTP code format (6-digit numeric)
-             - Checks if the admin user exists and is not already verified
-             - Validates the OTP against the database (not expired, not used, under attempt limit)
-             - Marks the admin user account as verified upon successful validation
-             - Invalidates all remaining OTPs for the admin user
-
-             **Authentication Requirements:**
-             - No authentication required; open to admin users with unverified accounts
-
-             **Security Features:**
-             - OTP expiration (60 minutes)
-             - Maximum 3 verification attempts per OTP
-             - Single-use OTP codes
-             - Automatic cleanup of expired/used OTPs
-             - Admin role verification
-
-             **Response Codes:**
-             - Returns 200 OK with verification success status
-             - Returns 400 Bad Request for invalid OTP code format
-             - Returns 401 Unauthorized for expired OTP
-             - Returns 403 Forbidden for maximum attempts reached
-             - Returns 404 Not Found for no valid OTP found
-             - Returns 409 Conflict if account is already verified
-
-             **Error Handling:**
-             - BadRequestException (400): Invalid OTP code format or value
-             - AuthenticationException (401): OTP has expired
-             - AuthorizationException (403): Maximum verification attempts reached
-             - NotFoundException (404): No valid OTP found for the admin user
-
-             The admin user must verify their account within the OTP expiration window to gain full access.
+             Verifies the OTP (One-Time Password) code sent to the admin user's email for various purposes.\n
+             \n
+             The admin user must verify their account within the OTP expiration window to gain full access.\n
+             \n
+             **Supported OTP Purposes:**\n
+             - **Email Verification**: During admin account registration\n
+             - **Account Recovery**: For account recovery processes\n
+             \n
+             This endpoint performs the following operations:\n
+             - Validates the OTP code format (6-digit numeric)\n
+             - Checks if the admin user exists and is not already verified\n
+             - Validates the OTP against the database (not expired, not used, under attempt limit)\n
+             - Marks the admin user account as verified upon successful validation\n
+             - Invalidates all remaining OTPs for the admin user\n
+             \n
+             **Authentication Requirements:**\n
+             - No authentication required; open to admin users with unverified accounts\n
+             \n
+             **Security Features:**\n
+             - OTP expiration (60 minutes)\n
+             - Maximum 3 verification attempts per OTP\n
+             - Single-use OTP codes\n
+             - Automatic cleanup of expired/used OTPs\n
+             - Admin role verification\n
+             \n
+             **Response Codes:**\n
+             - Returns 200 OK with verification success status\n
+             - Returns 400 Bad Request for invalid OTP code format\n
+             - Returns 401 Unauthorized for expired OTP\n
+             - Returns 403 Forbidden for maximum attempts reached\n
+             - Returns 404 Not Found for no valid OTP found\n
+             - Returns 409 Conflict if account is already verified\n
+             \n
+             **Error Handling:**\n
+             - BadRequestException (400): Invalid OTP code format or value\n
+             - AuthenticationException (401): OTP has expired\n
+             - AuthorizationException (403): Maximum verification attempts reached\n
+             - NotFoundException (404): No valid OTP found for the admin user.
          """
     );
 }

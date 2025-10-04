@@ -11,36 +11,35 @@ public static class PublicSignOutMetaField
         name: "SignOut",
         summary: "Sign out the authenticated user",
         description: """
-             Signs out the currently authenticated user by updating their login status.
-
-             This endpoint performs secure sign-out by:
-             - Validating JWT token authentication
-             - Verifying account is active (not suspended/banned)
-             - Updating user login status in the database
-             - Allowing unverified accounts to sign out
-
-             **Authentication Requirements:**
-             - Valid JWT Bearer token
-             - Account must be active (not suspended)
-             - Verification status is not required for sign-out
-
-             **Security Features:**
-             - Only active accounts can perform sign-out
-             - Prevents unnecessary database updates if already logged out
-             - Always returns success for consistent UX
-
-             **Response Codes:**
-             - Returns 200 OK with success status
-             - Returns 401 Unauthorized for invalid/missing JWT token
-             - Returns 403 Forbidden for inactive accounts
-
-             **Process Flow:**
-             1. Extracts user ID from JWT token
-             2. Validates account is active
-             3. Updates login status if currently logged in
-             4. Returns success response
-
-             After successful sign-out, the client should discard the JWT token.
+             Signs out the currently authenticated user by updating their login status.\n
+             After successful sign-out, the client should discard the JWT token.\n
+             \n
+             This endpoint performs secure sign-out by:\n
+             - Validating JWT token authentication\n
+             - Verifying account is active (not suspended/banned)\n
+             - Updating user login status in the database\n
+             - Allowing unverified accounts to sign out\n
+             \n
+             **Authentication Requirements:**\n
+             - Valid JWT Bearer token\n
+             - Account must be active (not suspended)\n
+             - Verification status is not required for sign-out\n
+             \n
+             **Security Features:**\n
+             - Only active accounts can perform sign-out\n
+             - Prevents unnecessary database updates if already logged out\n
+             - Always returns success for consistent UX\n
+             \n
+             **Response Codes:**\n
+             - Returns 200 OK with success status\n
+             - Returns 401 Unauthorized for invalid/missing JWT token\n
+             - Returns 403 Forbidden for inactive accounts\n
+             \n
+             **Process Flow:**\n
+             1. Extracts user ID from JWT token\n
+             2. Validates account is active\n
+             3. Updates login status if currently logged in\n
+             4. Returns success response.
          """
     );
 }

@@ -14,34 +14,33 @@ public static class PublicSignUpMetaField
         name: "PublicSignUp",
         summary: "Register a new public user account",
         description: """
-             Registers a new public user by creating an account with the provided details.
-
-             This endpoint performs the following operations:
-             - Validates signup data (email, username, password, etc.)
-             - Ensures the email/username is unique
-             - Hashes the password using secure algorithms (bcrypt)
-             - Creates a new public user account in the system
-             - Triggers optional account verification (email/SMS)
-
-             **Authentication Requirements:**
-             - No authentication required; open to the public for account creation
-
-             **Security Features:**
-             - Password securely hashed before storage
-             - Uniqueness checks on email and username
-             - Optional verification workflow (e.g., email confirmation)
-
-             **Response Codes:**
-             - Returns 201 Created with newly created user info (excluding sensitive data)
-             - Returns 400 Bad Request for invalid input or weak password
-             - Returns 409 Conflict if email/username already exists
-
-             **Error Handling:**
-             - BadRequestException (400): Invalid signup data (missing/invalid fields, weak password)
-             - ConflictException (409): Email or username already in use
-
-             The created user account will initially have the Visitor role and related permissions,
-             granting basic public access until further elevated by admins.
+             Registers a new public user by creating an account with the provided details.\n
+             The created user account will initially have the Visitor role and related permissions,\n
+             granting basic public access until further elevated by admins.\n
+             \n
+             This endpoint performs the following operations:\n
+             - Validates signup data (email, username, password, etc.)\n
+             - Ensures the email/username is unique\n
+             - Hashes the password using secure algorithms (bcrypt)\n
+             - Creates a new public user account in the system\n
+             - Triggers optional account verification (email/SMS)\n
+             \n
+             **Authentication Requirements:**\n
+             - No authentication required; open to the public for account creation\n
+             \n
+             **Security Features:**\n
+             - Password securely hashed before storage\n
+             - Uniqueness checks on email and username\n
+             - Optional verification workflow (e.g., email confirmation)\n
+             \n
+             **Response Codes:**\n
+             - Returns 201 Created with newly created user info (excluding sensitive data)\n
+             - Returns 400 Bad Request for invalid input or weak password\n
+             - Returns 409 Conflict if email/username already exists\n
+             \n
+             **Error Handling:**\n
+             - BadRequestException (400): Invalid signup data (missing/invalid fields, weak password)\n
+             - ConflictException (409): Email or username already in use.
          """
     );
 }

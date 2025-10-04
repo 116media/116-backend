@@ -11,33 +11,32 @@ public static class PublicForgotPasswordMetaField
         name: "ForgotPassword",
         summary: "Initiate password reset process for existing users",
         description: """
-             Initiates the password reset process by generating an OTP for the specified email address.
-
-             This endpoint follows security best practices by:
-             - Always returning success to prevent user enumeration attacks
-             - Only generating OTP for valid, active, and verified accounts
-             - Silently handling cases where email doesn't exist or account is inactive
-
-             **Request Requirements:**
-             - Valid email address format
-             - Email must belong to an existing, active, and verified account
-
-             **Security Features:**
-             - User enumeration protection (consistent response regardless of email existence)
-             - Account status validation (active and verified)
-             - OTP generation with expiration time
-
-             **Response Codes:**
-             - Returns 200 OK with success status (always true for security)
-             - Returns 400 Bad Request for invalid email format
-
-             **Process Flow:**
-             1. Validates email format
-             2. Checks if user exists and is active/verified
-             3. Generates OTP for password reset
-             4. Returns success response (regardless of actual outcome)
-
-             The generated OTP can be used with the verify-otp endpoint to proceed with password reset.
+             Initiates the password reset process by generating an OTP for the specified email address.\n
+             The generated OTP can be used with the verify-otp endpoint to proceed with password reset.\n
+             \n
+             This endpoint follows security best practices by:\n
+             - Always returning success to prevent user enumeration attacks\n
+             - Only generating OTP for valid, active, and verified accounts\n
+             - Silently handling cases where email doesn't exist or account is inactive\n
+             \n
+             **Request Requirements:**\n
+             - Valid email address format\n
+             - Email must belong to an existing, active, and verified account\n
+             \n
+             **Security Features:**\n
+             - User enumeration protection (consistent response regardless of email existence)\n
+             - Account status validation (active and verified)\n
+             - OTP generation with expiration time\n
+             \n
+             **Response Codes:**\n
+             - Returns 200 OK with success status (always true for security)\n
+             - Returns 400 Bad Request for invalid email format\n
+             \n
+             **Process Flow:**\n
+             1. Validates email format\n
+             2. Checks if user exists and is active/verified\n
+             3. Generates OTP for password reset\n
+             4. Returns success response (regardless of actual outcome).
          """
     );
 }
