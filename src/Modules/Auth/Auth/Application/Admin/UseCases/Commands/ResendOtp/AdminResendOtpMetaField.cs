@@ -11,8 +11,8 @@ public static class AdminResendOtpMetaField
         name: "AdminResendOtp",
         summary: "Resend OTP verification code for admin users",
         description: """
-             Resends a new OTP verification code for admin users by invalidating existing OTPs and generating a fresh one.\n
-             This endpoint enables admins to request a new verification code when:\n
+             Resends a new OTP verification code for admin users by invalidating existing OTPs and generating a fresh one.
+             This endpoint enables admins to request a new verification code when:
              \n
              - The original OTP wasn't received\n
              - The previous OTP has expired\n

@@ -11,8 +11,8 @@ public static class PublicLoginMetaField
         name: "PublicLogin",
         summary: "Authenticate public user and return JWT token with user claims",
         description: """
-             Authenticates a public user using email/userName and password credentials.\n
-             The returned JWT token includes claims for accessing public user's endpoints.\n
+             Authenticates a public user using email/userName and password credentials.
+             The returned JWT token includes claims for accessing public user's endpoints.
              \n
              This endpoint performs enhanced authentication by:\n
              - Validating credentials and password\n

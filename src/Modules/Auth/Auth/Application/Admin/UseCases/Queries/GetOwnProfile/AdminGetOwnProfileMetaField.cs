@@ -14,7 +14,7 @@ public static class AdminGetOwnProfileMetaField
         name: "GetAdminOwnProfile",
         summary: "Retrieve authenticated admin user's complete profile information",
         description: """
-             Retrieves the complete profile information for the currently authenticated admin user.\n
+             Retrieves the complete profile information for the currently authenticated admin user.
              \n
              This endpoint performs the following operations:\n
              - Validates JWT token authentication and extracts user ID\n

@@ -15,8 +15,8 @@ public static class PublicSignUpMetaField
         summary: "Register a new public user account",
         description: """
              Registers a new public user by creating an account with the provided details.\n
-             The created user account will initially have the Visitor role and related permissions,\n
-             granting basic public access until further elevated by admins.\n
+             The created user account will initially have the Visitor role and related permissions,
+             granting basic public access until further elevated by admins.
              \n
              This endpoint performs the following operations:\n
              - Validates signup data (email, username, password, etc.)\n

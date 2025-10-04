@@ -14,7 +14,7 @@ public static class AdminChangePasswordMetaField
         name: "AdminChangePassword",
         summary: "Change admin user password with current password verification",
         description: """
-             Changes an admin user's password after verifying their current password for security.\n
+             Changes an admin user's password after verifying their current password for security.
              \n
              This endpoint performs the following operations:\n
              - Validates JWT token authentication and extracts user ID\n

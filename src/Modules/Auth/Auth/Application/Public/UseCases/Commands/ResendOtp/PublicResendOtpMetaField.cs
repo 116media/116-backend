@@ -11,7 +11,7 @@ public static class PublicResendOtpMetaField
         name: "PublicResendOtp",
         summary: "Resend OTP verification code for public users",
         description: """
-             Resends a new OTP verification code for public users by invalidating existing OTPs and generating a fresh one.\n
+             Resends a new OTP verification code for public users by invalidating existing OTPs and generating a fresh one.
              \n
              This endpoint enables users to request a new verification code when:\n
              - The original OTP wasn't received\n

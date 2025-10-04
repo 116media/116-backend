@@ -14,12 +14,11 @@ public static class AdminUpdateAvatarMetaField
         name: "AdminUpdateAvatar",
         summary: "Update admin user avatar",
         description: """
-             Updates the authenticated admin user's avatar by providing a new avatar URL.\n
+             Updates the authenticated admin user's avatar by providing a new avatar URL.
+             This endpoint allows logged-in admin users to update their profile avatar from an external URL.
+             The system will download and store the avatar file, and automatically delete any previous avatar.
              \n
-             This endpoint allows logged-in admin users to update their profile avatar from an external URL.\n
-             The system will download and store the avatar file, and automatically delete any previous avatar.\n
-             \n
-             Admin users only need to have active accounts (no verification requirement).\n
+             Admin users only need to have active accounts (no verification requirement).
              \n
              **Authentication Requirements:**\n
              - Admin user must be logged in (JWT token required)\n
