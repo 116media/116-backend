@@ -17,8 +17,8 @@ public static class PublicUpdateOwnProfileMetaField
         description: """
              Updates the profile information for the currently authenticated user.\n
              This endpoint requires user authentication - only logged-in users can update their own profile,
-             providing secure profile management for authenticated users\n
-             while maintaining data integrity and security requirements.\n
+             providing secure profile management for authenticated users
+             while maintaining data integrity and security requirements.
              \n
              This endpoint performs the following operations:\n
              - Validates JWT token authentication and extracts user ID\n

@@ -10,12 +10,9 @@ builder.Host.UseSerilog((context, config) =>
     config.ReadFrom.Configuration(context.Configuration)
 );
 
-// Load environments variables from .env file
 DotNetEnv.Env.Load();
 DotNetEnv.Env.TraversePath().Load();
 
-// Add services to the container.
-// Register Carter and CQRS Assemblies
 Assembly coreAssembly = typeof(CoreModule).Assembly;
 Assembly authAssembly = typeof(AuthModule).Assembly;
 
@@ -29,7 +26,6 @@ builder.Services.AddCqrsWithAssemblies(
     coreAssembly
 );
 
-// Configure API Versioning
 builder.Services.AddApiVersioning(options =>
 {
     options.ReportApiVersions = true;
@@ -58,6 +54,7 @@ builder.Services.AddAppExceptionHandler();
 
 WebApplication app = builder.Build();
 
+app.UseSwaggerFormatting();
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -71,7 +68,6 @@ app.UseApiVersioning();
 app.MapCarter();
 app.UseResourceNotFoundHandler();
 
-// Configure middleware extensions  modules.
 app
     .UseAuthModule()
     .UseCoreModule();

@@ -11,8 +11,8 @@ public static class AdminSignOutMetaField
         name: "AdminSignOut",
         summary: "Sign out the authenticated admin user",
         description: """
-             Signs out the currently authenticated admin user by updating their login status.\n
-             After successful sign-out, the client should discard the JWT token.\n
+             Signs out the currently authenticated admin user by updating their login status.
+             After successful sign-out, the client should discard the JWT token.
              \n
              This endpoint performs secure sign-out by:\n
              - Validating JWT token authentication\n

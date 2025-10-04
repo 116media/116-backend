@@ -12,8 +12,8 @@ public static class AdminForgotPasswordMetaField
         summary: "Initiate password reset process for existing admin users",
         description: """
              Initiates the password reset process by generating an OTP for the specified admin email address.\n
-             The generated OTP can be used with the verify-otp endpoint to proceed with password reset.\n
-             This endpoint follows security best practices by:\n
+             The generated OTP can be used with the verify-otp endpoint to proceed with password reset.
+             This endpoint follows security best practices by:
              \n
              - Always returning success to prevent user enumeration attacks\n
              - Only generating OTP for valid and active admin accounts\n

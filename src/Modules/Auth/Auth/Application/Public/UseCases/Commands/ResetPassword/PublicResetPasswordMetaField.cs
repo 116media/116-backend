@@ -14,8 +14,8 @@ public static class PublicResetPasswordMetaField
         name: "ResetPassword",
         summary: "Reset user password using OTP verification",
         description: """
-             Resets a user's password after validating the OTP code sent during the forgot password process.\n
-             After successful password reset, the user can login with their new password.\n
+             Resets a user's password after validating the OTP code sent during the forgot password process.
+             After successful password reset, the user can login with their new password.
              \n
              This endpoint performs the following operations:\n
              - Validates the OTP code format and authenticity\n

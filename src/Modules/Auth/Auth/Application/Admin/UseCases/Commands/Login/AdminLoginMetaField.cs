@@ -11,8 +11,8 @@ public static class AdminLoginMetaField
         name: "AdminLogin",
         summary: "Authenticate admin and return JWT token with admin claims",
         description: """
-             Authenticates an admin user using email and password credentials.\n
-             The returned JWT token includes admin-specific claims for accessing administrative endpoints.\n
+             Authenticates an admin user using email and password credentials.
+             The returned JWT token includes admin-specific claims for accessing administrative endpoints.
              \n
              This endpoint performs enhanced authentication by:\n
              - Validating email and password\n

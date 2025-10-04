@@ -15,11 +15,9 @@ public static class PublicUpdateAvatarMetaField
         summary: "Update user avatar",
         description: """
              Updates the authenticated user's avatar by providing a new avatar URL.\n
-             \n
-             This endpoint allows logged-in users to update their profile avatar from an external URL.\n
-             The system will download and store the avatar file, and automatically delete any previous avatar.\n
-             \n
-             Only verified users can update their avatar to maintain profile quality and security.\n
+             This endpoint allows logged-in users to update their profile avatar from an external URL.
+             The system will download and store the avatar file, and automatically delete any previous avatar.
+             Only verified users can update their avatar to maintain profile quality and security.
              \n
              **Authentication Requirements:**\n
              - User must be logged in (JWT token required)\n

@@ -18,7 +18,7 @@ public static class AdminUpdateOwnProfileMetaField
              Updates the profile information for the currently authenticated admin user.\n
              This endpoint requires admin user authentication - only logged-in admin users can update their own profile,
              providing secure profile management for authenticated admin users
-             while maintaining data integrity and security requirements.\n
+             while maintaining data integrity and security requirements.
              \n
              This endpoint performs the following operations:\n
              - Validates JWT token authentication and extracts user ID\n

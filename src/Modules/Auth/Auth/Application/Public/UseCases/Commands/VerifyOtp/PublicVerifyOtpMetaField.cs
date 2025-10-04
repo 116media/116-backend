@@ -14,8 +14,8 @@ public static class PublicVerifyOtpMetaField
         name: "VerifyOtp",
         summary: "Verify OTP code for account activation",
         description: """
-             Verifies the OTP (One-Time Password) code sent to the user's email for various purposes.\n
-             The user must verify their account within the OTP expiration window to gain full access.\n
+             Verifies the OTP (One-Time Password) code sent to the user's email for various purposes.
+             The user must verify their account within the OTP expiration window to gain full access.
              \n
              **Supported OTP Purposes:**\n
              - **Email Verification**: During user account registration\n
