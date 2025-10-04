@@ -37,18 +37,15 @@ public class FileConfiguration : IEntityTypeConfiguration<FileEntity>
             .HasMaxLength(FileConstants.MaxStorageUrlLength)
             .IsRequired();
 
-        builder.Property(f => f.SizeInBytes)
-            .IsRequired();
+        builder.Property(f => f.SizeInBytes).IsRequired();
 
         builder.Property(f => f.IsDeleted)
             .HasDefaultValue(FileConstants.DefaultIsDeleted);
 
-        builder.Property(f => f.DeletedAt)
-            .IsRequired(false);
+        builder.Property(f => f.DeletedAt).IsRequired(false);
 
         // Indexes
-        builder.HasIndex(f => f.FileName)
-            .IsUnique();
+        builder.HasIndex(f => f.FileName).IsUnique();
 
         builder.HasIndex(f => f.IsDeleted);
     }
