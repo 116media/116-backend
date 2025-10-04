@@ -14,47 +14,47 @@ public static class PublicUpdateAvatarMetaField
         name: "PublicUpdateAvatar",
         summary: "Update user avatar",
         description: """
-             Updates the authenticated user's avatar by providing a new avatar URL.
-
-             This endpoint allows logged-in users to update their profile avatar from an external URL.
-             The system will download and store the avatar file, and automatically delete any previous avatar.
-
-             Only verified users can update their avatar to maintain profile quality and security.
-
-             **Authentication Requirements:**
-             - User must be logged in (JWT token required)
-             - Account must be active and verified
-
-             **Request Requirements:**
-             - Valid avatar URL (required)
-             - URL must be accessible and point to a valid image
-             - Maximum URL length: 2048 characters
-
-             **Avatar Management:**
-             - Previous avatar is automatically deleted when updating
-             - New avatar is downloaded and stored in the system
-             - Supports common image formats (JPEG, PNG, GIF, WebP)
-             - Smart deduplication: if the same URL is provided again, no duplicate download occurs
-
-             **Response Codes:**
-             - Returns 200 OK with updated user information including new avatar
-             - Returns 400 Bad Request for invalid avatar URL format
-             - Returns 401 Unauthorized for unauthenticated requests
-             - Returns 403 Forbidden for inactive or unverified accounts
-             - Returns 404 Not Found when user doesn't exist
-
-             **Security Features:**
-             - Only the authenticated user can update their own avatar
-             - Account verification required (verified accounts only)
-             - URL validation to ensure proper format
-             - Automatic cleanup of old avatar files
-
-             **Process Flow:**
-             1. Validates user authentication and account status
-             2. Validates the provided avatar URL format
-             3. Downloads the new avatar from the URL
-             4. Deletes the previous avatar file (if exists)
-             5. Updates user record with new avatar reference
+             Updates the authenticated user's avatar by providing a new avatar URL.\n
+             \n
+             This endpoint allows logged-in users to update their profile avatar from an external URL.\n
+             The system will download and store the avatar file, and automatically delete any previous avatar.\n
+             \n
+             Only verified users can update their avatar to maintain profile quality and security.\n
+             \n
+             **Authentication Requirements:**\n
+             - User must be logged in (JWT token required)\n
+             - Account must be active and verified\n
+             \n
+             **Request Requirements:**\n
+             - Valid avatar URL (required)\n
+             - URL must be accessible and point to a valid image\n
+             - Maximum URL length: 2048 characters\n
+             \n
+             **Avatar Management:**\n
+             - Previous avatar is automatically deleted when updating\n
+             - New avatar is downloaded and stored in the system\n
+             - Supports common image formats (JPEG, PNG, GIF, WebP)\n
+             - Smart deduplication: if the same URL is provided again, no duplicate download occurs\n
+             \n
+             **Response Codes:**\n
+             - Returns 200 OK with updated user information including new avatar\n
+             - Returns 400 Bad Request for invalid avatar URL format\n
+             - Returns 401 Unauthorized for unauthenticated requests\n
+             - Returns 403 Forbidden for inactive or unverified accounts\n
+             - Returns 404 Not Found when user doesn't exist\n
+             \n
+             **Security Features:**\n
+             - Only the authenticated user can update their own avatar\n
+             - Account verification required (verified accounts only)\n
+             - URL validation to ensure proper format\n
+             - Automatic cleanup of old avatar files\n
+             \n
+             **Process Flow:**\n
+             1. Validates user authentication and account status\n
+             2. Validates the provided avatar URL format\n
+             3. Downloads the new avatar from the URL\n
+             4. Deletes the previous avatar file (if exists)\n
+             5. Updates user record with new avatar reference\n
              6. Returns updated user information with avatar details.
          """
     );
