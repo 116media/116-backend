@@ -44,6 +44,17 @@ builder.Services.AddApiVersioning(options =>
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        //TODO: should update this to only allow frontend domain name
+        policy.AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 builder.Services
     .AddAuthModule()
     .AddCoreModule()
@@ -60,6 +71,7 @@ app.UseSwaggerUI();
 
 app.UseSerilogRequestLogging();
 app.UseAppExceptionHandler();
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 

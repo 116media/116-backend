@@ -22,7 +22,7 @@ public partial class SwaggerDescriptionMiddleware(RequestDelegate next)
             return;
         }
 
-        // Capture response in memory stream to process before sending to client
+        // Capture response in memory stream to process before sending to the client
         Stream originalBody = context.Response.Body;
         using var memoryStream = new MemoryStream();
         context.Response.Body = memoryStream;
