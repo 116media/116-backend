@@ -39,7 +39,7 @@ public abstract class BaseExceptionStrategy<TException>
         string? type = null
     )
     {
-        return new ProblemDetails
+        var problemDetails = new ProblemDetails
         {
             Type = type,
             Title = title,
@@ -47,5 +47,10 @@ public abstract class BaseExceptionStrategy<TException>
             Status = statusCode,
             Instance = context.Request.Path
         };
+
+        problemDetails.Extensions["traceId"] = context.TraceIdentifier;
+        problemDetails.Extensions["timestamp"] = DateTime.UtcNow;
+
+        return problemDetails;
     }
 }
