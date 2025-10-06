@@ -40,6 +40,9 @@ public static class SwaggerExtensions
             }
         });
 
+        options.SupportNonNullableReferenceTypes();
+        options.NonNullableReferenceTypesAsRequired();
+
         return options;
     }
 }
