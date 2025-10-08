@@ -154,13 +154,13 @@ public static class UserErrors
     /// <summary>
     /// Throws when OTP has expired.
     /// </summary>
-    public static AuthenticationException OtpExpired() =>
+    public static OtpExpirationException OtpExpired() =>
         new(ValidationErrorMessage.OtpExpired());
 
     /// <summary>
     /// Throws when maximum OTP verification attempts are reached.
     /// </summary>
-    public static AuthorizationException MaxOtpAttemptsReached() =>
+    public static OtpAttemptsLimitException MaxOtpAttemptsReached() =>
         new(ValidationErrorMessage.MaxOtpAttemptsReached());
 
     /// <summary>

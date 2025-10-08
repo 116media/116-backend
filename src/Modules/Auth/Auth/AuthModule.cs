@@ -104,6 +104,8 @@ public static class AuthModule
         services.AddSingleton<IExceptionStrategy, AccountInactiveExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, AccountNotVerifiedExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, UserNotLoggedInExceptionHandler>();
+        services.AddSingleton<IExceptionStrategy, OtpAttemptsLimitExceptionHandler>();
+        services.AddSingleton<IExceptionStrategy, OtpExpirationExceptionHandler>();
 
         return services;
     }
