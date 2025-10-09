@@ -35,7 +35,7 @@ public class AdminVerifyOtpHandler(
         var purpose = new OtpPurpose(command.Purpose);
 
         // Get admin user by email
-        UserEntity user = await userRepository.GetUserWithRolesOrThrowAsync(email, cancellationToken);
+        UserEntity user = await userRepository.GetActiveAdminUserWithRolesAndPermissionsAsync(email, cancellationToken);
 
         // Validate the OTP (throws appropriate exceptions on failure)
         OtpEntity otp = await otpRepository.ValidateOtpAsync(

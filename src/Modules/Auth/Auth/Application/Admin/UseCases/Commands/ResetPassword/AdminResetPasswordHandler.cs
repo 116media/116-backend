@@ -40,11 +40,8 @@ public class AdminResetPasswordHandler(
         // Normalize email using value object
         var email = new Email(command.Email);
 
-        // Get user by email
-        UserEntity user = await userRepository.GetUserWithRolesOrThrowAsync(email, cancellationToken);
-
-        // Validate user account status - admin accounts must be active
-        userRepository.IsUserAccountActive(user);
+        // Get admin user by email
+        UserEntity user = await userRepository.GetActiveAdminUserWithRolesAndPermissionsAsync(email, cancellationToken);
 
         // Validate the OTP for password reset (throws appropriate exceptions on failure)
         OtpEntity otp = await otpRepository.ValidateOtpAsync(

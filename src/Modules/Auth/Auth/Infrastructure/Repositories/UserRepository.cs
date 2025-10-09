@@ -27,7 +27,8 @@ public class UserRepository(AuthDbContext context) : IUserRepository
 
         return await context.Users
             .ApplySpecification(specification)
-            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
             .FirstDefaultOrThrowAsync(
                 keyName: "credentials",
                 keyValue: email.Value,
@@ -140,12 +141,8 @@ public class UserRepository(AuthDbContext context) : IUserRepository
         // Check if the account is active
         IsUserAccountActive(user);
 
-        // Validate admin privileges using specification
-        var adminRoleSpec = new UserHasAdminRoleSpecification();
-        if (!adminRoleSpec.IsSatisfiedBy(user))
-        {
-            throw UserErrors.InvalidCredentials();
-        }
+        // Validate admin privileges
+        IsUserAdmin(user);
 
         return user;
     }
@@ -200,6 +197,17 @@ public class UserRepository(AuthDbContext context) : IUserRepository
         if (!user.IsLoggedIn)
         {
             throw UserErrors.UserNotLoggedIn(user.Email!);
+        }
+        return true;
+    }
+
+    /// <inheritdoc />
+    public bool IsUserAdmin(UserEntity user)
+    {
+        var adminRoleSpec = new UserHasAdminRoleSpecification();
+        if (!adminRoleSpec.IsSatisfiedBy(user))
+        {
+            throw UserErrors.InvalidCredentials();
         }
         return true;
     }

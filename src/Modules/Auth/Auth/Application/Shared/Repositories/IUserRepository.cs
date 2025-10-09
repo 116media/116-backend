@@ -213,6 +213,18 @@ public interface IUserRepository : IRepository<UserEntity>
     bool IsUserLoggedIn(UserEntity user);
 
     /// <summary>
+    /// Validates that a user has administrative privileges (Admin or SuperAdmin role).
+    /// </summary>
+    /// <param name="user">The user entity to validate.</param>
+    /// <returns>True if the user has admin privileges, otherwise throws an exception.</returns>
+    /// <exception cref="AuthenticationException">Thrown when the user lacks administrative privileges (HTTP 401 Unauthorized).</exception>
+    /// <remarks>
+    /// This method checks if the user has either Admin or SuperAdmin role.
+    /// Should be called after authentication to validate admin access.
+    /// </remarks>
+    bool IsUserAdmin(UserEntity user);
+
+    /// <summary>
     /// Retrieves an active public user with roles and permissions by credentials (email or username).
     /// Validates that the user exists and is active for public authentication.
     /// </summary>
