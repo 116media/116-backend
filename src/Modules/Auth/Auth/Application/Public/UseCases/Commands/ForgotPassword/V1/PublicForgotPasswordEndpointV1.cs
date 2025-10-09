@@ -21,8 +21,10 @@ public record PublicForgotPasswordRequest(
 /// Response model for the forgot password use-case.
 /// </summary>
 /// <param name="IsSuccess">Always true for security reasons to prevent user enumeration.</param>
+/// <param name="Email">The email address from the request for client reference.</param>
 public record PublicForgotPasswordResponse(
-    bool IsSuccess
+    bool IsSuccess,
+    string Email
 );
 
 /// <summary>
@@ -49,7 +51,7 @@ public class PublicForgotPasswordEndpointV1 : ICarterModule
                 var command = new PublicForgotPasswordCommand(request.Email);
                 PublicForgotPasswordResult result = await dispatcher.Send(command);
 
-                var response = new PublicForgotPasswordResponse(result.IsSuccess);
+                var response = new PublicForgotPasswordResponse(result.IsSuccess, request.Email);
 
                 return Results.Ok(response);
             })

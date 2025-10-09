@@ -21,8 +21,10 @@ public record AdminForgotPasswordRequest(
 /// Response model for admin forgot password.
 /// </summary>
 /// <param name="IsSuccess">Always true for security reasons to prevent user enumeration.</param>
+/// <param name="Email">The email address from the request for client reference.</param>
 public record AdminForgotPasswordResponse(
-    bool IsSuccess
+    bool IsSuccess,
+    string Email
 );
 
 /// <summary>
@@ -49,7 +51,7 @@ public class AdminForgotPasswordEndpointV1 : ICarterModule
                 var command = new AdminForgotPasswordCommand(request.Email);
                 AdminForgotPasswordResult result = await dispatcher.Send(command);
 
-                var response = new AdminForgotPasswordResponse(result.IsSuccess);
+                var response = new AdminForgotPasswordResponse(result.IsSuccess, request.Email);
 
                 return Results.Ok(response);
             })
