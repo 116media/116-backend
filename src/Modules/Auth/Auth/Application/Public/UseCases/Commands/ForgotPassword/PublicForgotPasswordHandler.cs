@@ -29,7 +29,7 @@ public class PublicForgotPasswordHandler(
 
         if (!await userRepository.ExistsByEmailAsync(email, cancellationToken))
         {
-            return new PublicForgotPasswordResult(IsSuccess: true);
+            return new PublicForgotPasswordResult(IsSuccess: true, Email: command.Email);
         }
 
         UserEntity user = await userRepository.GetUserWithRolesOrThrowAsync(email, cancellationToken);
@@ -42,6 +42,6 @@ public class PublicForgotPasswordHandler(
         await otpRepository.AddAsync(passwordResetOtp, cancellationToken);
         await otpRepository.SaveChangesAsync(cancellationToken);
 
-        return new PublicForgotPasswordResult(IsSuccess: true);
+        return new PublicForgotPasswordResult(IsSuccess: true, Email: command.Email);
     }
 }
