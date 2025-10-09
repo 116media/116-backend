@@ -38,10 +38,8 @@ public class AdminResendOtpHandler(
             return new AdminResendOtpResult(IsSuccess: true);
         }
 
-        // Get the admin user with roles
-        UserEntity user = await userRepository.GetUserWithRolesOrThrowAsync(email, cancellationToken);
-
-        userRepository.IsUserAccountActive(user);
+        // Get admin user by email
+        UserEntity user = await userRepository.GetActiveAdminUserWithRolesAndPermissionsAsync(email, cancellationToken);
 
         // Invalidate existing OTPs for this purpose
         await otpRepository.InvalidateExistingOtpsAsync(user.Id, purpose, cancellationToken);
