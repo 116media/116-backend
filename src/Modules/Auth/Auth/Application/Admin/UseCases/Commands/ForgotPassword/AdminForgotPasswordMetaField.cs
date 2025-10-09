@@ -29,7 +29,7 @@ public static class AdminForgotPasswordMetaField
              - OTP generation with expiration time\n
              \n
              **Response Codes:**\n
-             - Returns 200 OK with success status (always true for security)\n
+             - Returns 200 OK with success status (always true for security) and the email address\n
              - Returns 400 Bad Request for invalid email format\n
              \n
              **Process Flow:**\n
