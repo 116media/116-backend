@@ -110,6 +110,7 @@ public static class AuthModule
         services.AddSingleton<IExceptionStrategy, UserNotLoggedInExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, OtpAttemptsLimitExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, OtpExpirationExceptionHandler>();
+        services.AddSingleton<IExceptionStrategy, AccessDeniedExceptionHandler>();
 
         return services;
     }
