@@ -53,6 +53,28 @@ public interface IOtpRepository : IRepository<OtpEntity>
     Task<OtpEntity> ValidateOtpAsync(Guid userId, string code, OtpPurpose purpose, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Validates that an OTP code was previously used for a specific user and purpose.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="code">The OTP code to validate.</param>
+    /// <param name="purpose">The purpose of the OTP.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The used OTP entity if validation succeeds.</returns>
+    /// <exception cref="NotFoundException">Thrown when no matching OTP is found.</exception>
+    /// <exception cref="BadRequestException">Thrown when OTP code is invalid or not yet used.</exception>
+    /// <exception cref="AuthenticationException">Thrown when OTP is expired.</exception>
+    /// <remarks>
+    /// This method verifies that an OTP was already successfully used by the user.
+    /// Useful for operations that require prior OTP verification (e.g., password reset after OTP verification).
+    /// </remarks>
+    Task<OtpEntity> ValidateUsedOtpAsync(
+        Guid userId,
+        string code,
+        OtpPurpose purpose,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Invalidates all existing OTPs for a user and specific purpose.
     /// </summary>
     /// <param name="userId">The unique identifier of the user.</param>

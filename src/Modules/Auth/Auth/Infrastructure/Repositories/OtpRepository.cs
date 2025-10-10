@@ -115,6 +115,43 @@ public class OtpRepository(AuthDbContext context) : IOtpRepository
 
 
     /// <inheritdoc />
+    public async Task<OtpEntity> ValidateUsedOtpAsync(
+        Guid userId,
+        string code,
+        OtpPurpose purpose,
+        CancellationToken cancellationToken = default
+    )
+    {
+        // Use specification to find OTP with the provided code
+        var specification = new OtpForValidationSpecification(userId, code, purpose);
+
+        OtpEntity? matchingOtp = await context.Otps
+            .ApplySpecification(specification)
+            .OrderByDescending(o => o.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        // Check if OTP exists
+        if (matchingOtp == null)
+        {
+            throw UserErrors.NoValidOtpFound();
+        }
+
+        // Check if the OTP has expired
+        if (matchingOtp.IsExpired())
+        {
+            throw UserErrors.OtpExpired();
+        }
+
+        // Check if the OTP was already used
+        if (!matchingOtp.IsUsed)
+        {
+            throw UserErrors.OtpNotYetVerified();
+        }
+
+        return matchingOtp;
+    }
+
+    /// <inheritdoc />
     public async Task InvalidateExistingOtpsAsync(
         Guid userId,
         OtpPurpose purpose,
