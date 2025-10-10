@@ -164,6 +164,12 @@ public static class UserErrors
         new(ValidationErrorMessage.MaxOtpAttemptsReached());
 
     /// <summary>
+    /// Throws when OTP has not been verified yet.
+    /// </summary>
+    public static BadRequestException OtpNotYetVerified() =>
+        new(ValidationErrorMessage.OtpNotYetVerified());
+
+    /// <summary>
     /// Throws when the user is not authenticated or user ID is invalid.
     /// </summary>
     public static AuthenticationException InvalidUserAuthentication() =>
@@ -172,7 +178,7 @@ public static class UserErrors
     /// <summary>
     /// Throws when the user does not have sufficient permissions for the operation.
     /// </summary>
-    public static AuthorizationException InsufficientPermissions() =>
+    public static AccessDeniedException InsufficientPermissions() =>
         new(AuthenticationErrorMessage.InsufficientPermissions());
 
     /// <summary>
