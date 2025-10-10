@@ -119,6 +119,14 @@ public static class ValidationErrorMessage
     }
 
     /// <summary>
+    /// Error message indicating that the OTP has not been verified yet.
+    /// </summary>
+    public static string OtpNotYetVerified()
+    {
+        return "Please complete the verification step before proceeding";
+    }
+
+    /// <summary>
     /// Error message indicating that the new password cannot be the same as the old password.
     /// </summary>
     public static string NewPasswordSameAsOld()
