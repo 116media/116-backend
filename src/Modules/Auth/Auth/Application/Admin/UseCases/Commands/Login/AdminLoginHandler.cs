@@ -8,6 +8,8 @@ using _116.Auth.Application.Shared.Services;
 using _116.Auth.Domain.Entities;
 using _116.Auth.Domain.Results;
 using _116.Auth.Domain.ValueObjects;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 
 namespace _116.Auth.Application.Admin.UseCases.Commands.Login;
 
@@ -22,6 +24,7 @@ namespace _116.Auth.Application.Admin.UseCases.Commands.Login;
 public class AdminLoginHandler(
     IUserRepository userRepository,
     IRoleRepository roleRepository,
+    IFileRepository fileRepository,
     IPasswordService passwordService,
     IJwtService jwtService,
     IAuthUnitOfWork unitOfWork
@@ -87,8 +90,12 @@ public class AdminLoginHandler(
         // Extract roles and permissions using repository
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(user.UserRoles);
 
-        // Map to userDTO
-        var userDto = user.ToUserResponseDto(roles, permissions);
+        // Fetch the avatar file if the user has one
+        FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(user.AvatarFileId, cancellationToken);
+
+        // Map to userDTO with avatar
+        var avatarDto = avatarFile?.ToFileDto();
+        var userDto = user.ToUserResponseDto(roles, permissions, avatarDto);
         var authResult = new AuthenticationResult(userDto, token.Token, token.ExpiresAt);
 
         return new AdminLoginResult(authResult);
