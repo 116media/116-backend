@@ -1,5 +1,5 @@
 using _116.Shared.Application.Exceptions;
-using _116.Shared.Application.Persistence;
+using _116.Auth.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Errors;
 using _116.Auth.Application.Shared.Mappers;
@@ -24,7 +24,7 @@ public class AdminLoginHandler(
     IRoleRepository roleRepository,
     IPasswordService passwordService,
     IJwtService jwtService,
-    IUnitOfWork unitOfWork
+    IAuthUnitOfWork unitOfWork
 ) : ICommandHandler<AdminLoginCommand, AdminLoginResult>
 {
     /// <summary>

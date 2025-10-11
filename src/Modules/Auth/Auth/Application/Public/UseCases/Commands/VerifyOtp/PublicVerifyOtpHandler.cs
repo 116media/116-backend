@@ -1,5 +1,5 @@
 using _116.Shared.Application.Exceptions;
-using _116.Shared.Application.Persistence;
+using _116.Auth.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Errors;
 using _116.Auth.Application.Shared.Repositories;
@@ -17,7 +17,7 @@ namespace _116.Auth.Application.Public.UseCases.Commands.VerifyOtp;
 public class PublicVerifyOtpHandler(
     IUserRepository userRepository,
     IOtpRepository otpRepository,
-    IUnitOfWork unitOfWork
+    IAuthUnitOfWork unitOfWork
 ) : ICommandHandler<PublicVerifyOtpCommand, PublicVerifyOtpResult>
 {
     /// <summary>
