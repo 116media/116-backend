@@ -41,6 +41,7 @@ public class AdminResendOtpHandler(
 
         UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
 
+        // Validate admin account status
         userRepository.IsUserAdmin(user!);
         userRepository.IsUserAccountActive(user!);
 

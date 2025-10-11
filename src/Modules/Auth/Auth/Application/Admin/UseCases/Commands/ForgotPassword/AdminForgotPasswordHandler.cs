@@ -36,10 +36,8 @@ public class AdminForgotPasswordHandler(
 
         UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
 
-        // Ensure the account is an admin
+        // Validate admin account status
         userRepository.IsUserAdmin(user!);
-
-        // Ensure the account is active (admin users only need to be active)
         userRepository.IsUserAccountActive(user!);
 
         OtpEntity passwordResetOtp = otpService.CreateOtp(user!.Id, OtpPurpose.PasswordReset);
