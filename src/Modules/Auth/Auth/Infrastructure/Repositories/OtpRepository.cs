@@ -122,8 +122,8 @@ public class OtpRepository(AuthDbContext context) : IOtpRepository
         CancellationToken cancellationToken = default
     )
     {
-        // Use specification to find OTP with the provided code
-        var specification = new OtpForValidationSpecification(userId, code, purpose);
+        // Use specification to find used OTP with the provided code
+        var specification = new OtpForUsedValidationSpecification(userId, code, purpose);
 
         OtpEntity? matchingOtp = await context.Otps
             .ApplySpecification(specification)
@@ -133,19 +133,13 @@ public class OtpRepository(AuthDbContext context) : IOtpRepository
         // Check if OTP exists
         if (matchingOtp == null)
         {
-            throw UserErrors.NoValidOtpFound();
+            throw UserErrors.OtpNotYetVerified();
         }
 
         // Check if the OTP has expired
         if (matchingOtp.IsExpired())
         {
             throw UserErrors.OtpExpired();
-        }
-
-        // Check if the OTP was already used
-        if (!matchingOtp.IsUsed)
-        {
-            throw UserErrors.OtpNotYetVerified();
         }
 
         return matchingOtp;
