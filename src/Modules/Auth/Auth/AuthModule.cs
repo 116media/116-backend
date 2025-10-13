@@ -2,6 +2,7 @@ using System.Text;
 using _116.Auth.Domain.Constants;
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
+using _116.Shared.Application.Persistence;
 using _116.Shared.Infrastructure;
 using _116.Shared.Infrastructure.Seed;
 using _116.Auth.Application.Shared.Authorizations.Extensions;
@@ -63,6 +64,9 @@ public static class AuthModule
 
         // Configure Mapster mappings for optimal performance
         UserMapper.Configure();
+
+        // Register Unit of Work for transaction management
+        services.AddScoped<IUnitOfWork, AuthUnitOfWork>();
 
         // Register user management services
         services.AddScoped<IJwtService, JwtService>();

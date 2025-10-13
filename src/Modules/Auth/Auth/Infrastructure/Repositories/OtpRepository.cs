@@ -73,7 +73,9 @@ public class OtpRepository(AuthDbContext context) : IOtpRepository
 
             // Now increment the attempt count
             matchingOtp.IncrementAttemptCount();
+
             await UpdateAsync(matchingOtp, cancellationToken);
+            await SaveChangesAsync(cancellationToken);
 
             if (matchingOtp.HasMaxAttemptsReached()) throw UserErrors.MaxOtpAttemptsReached();
 
@@ -101,6 +103,7 @@ public class OtpRepository(AuthDbContext context) : IOtpRepository
         // Increment attempts for wrong code
         latestOtp.IncrementAttemptCount();
         await UpdateAsync(latestOtp, cancellationToken);
+        await SaveChangesAsync(cancellationToken);
 
         if (latestOtp.HasMaxAttemptsReached())
         {
@@ -144,10 +147,10 @@ public class OtpRepository(AuthDbContext context) : IOtpRepository
     }
 
     /// <inheritdoc />
-    public async Task UpdateAsync(OtpEntity otp, CancellationToken cancellationToken = default)
+    public Task UpdateAsync(OtpEntity otp, CancellationToken cancellationToken = default)
     {
         context.Otps.Update(otp);
-        await context.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc />

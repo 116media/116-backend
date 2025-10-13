@@ -1,4 +1,5 @@
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Repositories;
 using _116.Auth.Application.Shared.Services;
@@ -13,7 +14,8 @@ namespace _116.Auth.Application.Public.UseCases.Commands.ResendOtp;
 public class PublicResendOtpHandler(
     IUserRepository userRepository,
     IOtpRepository otpRepository,
-    IOtpService otpService
+    IOtpService otpService,
+    IUnitOfWork unitOfWork
 ) : ICommandHandler<PublicResendOtpCommand, PublicResendOtpResult>
 {
     /// <summary>
@@ -32,27 +34,25 @@ public class PublicResendOtpHandler(
         var email = new Email(command.Email);
         var purpose = new OtpPurpose(command.Purpose);
 
-        // Verify user exists
         if (!await userRepository.ExistsByEmailAsync(email, cancellationToken))
         {
             return new PublicResendOtpResult(IsSuccess: true);
         }
 
-        // Get the user with roles
-        UserEntity user = await userRepository.GetUserWithRolesOrThrowAsync(email, cancellationToken);
+        UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
 
-        userRepository.IsUserAccountActive(user);
-        userRepository.IsUserAccountVerified(user);
+        userRepository.IsUserAccountActive(user!);
+        userRepository.IsUserAccountVerified(user!);
 
         // Invalidate existing OTPs for this purpose
-        await otpRepository.InvalidateExistingOtpsAsync(user.Id, purpose, cancellationToken);
+        await otpRepository.InvalidateExistingOtpsAsync(user!.Id, purpose, cancellationToken);
 
         // Create new OTP
         OtpEntity newOtp = otpService.CreateOtp(user.Id, purpose);
 
         // Save the new OTP
         await otpRepository.AddAsync(newOtp, cancellationToken);
-        await otpRepository.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         return new PublicResendOtpResult(IsSuccess: true);
     }

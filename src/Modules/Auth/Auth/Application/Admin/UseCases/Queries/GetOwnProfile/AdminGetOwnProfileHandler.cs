@@ -33,8 +33,10 @@ public class AdminGetOwnProfileHandler(
         CancellationToken cancellationToken
     )
     {
-        // Get user with roles by ID
-        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByIdAsync(query.UserId, cancellationToken);
+        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
+            query.UserId,
+            cancellationToken
+        );
 
         // Validate user account status - admin accounts must be active
         userRepository.IsUserAccountActive(user!);

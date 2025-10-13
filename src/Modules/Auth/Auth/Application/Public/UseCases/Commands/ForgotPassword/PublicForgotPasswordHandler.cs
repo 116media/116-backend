@@ -1,3 +1,4 @@
+using _116.Shared.Application.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Repositories;
 using _116.Auth.Application.Shared.Services;
@@ -13,7 +14,8 @@ namespace _116.Auth.Application.Public.UseCases.Commands.ForgotPassword;
 public class PublicForgotPasswordHandler(
     IUserRepository userRepository,
     IOtpRepository otpRepository,
-    IOtpService otpService
+    IOtpService otpService,
+    IUnitOfWork unitOfWork
 ) : ICommandHandler<PublicForgotPasswordCommand, PublicForgotPasswordResult>
 {
     /// <summary>
@@ -32,15 +34,16 @@ public class PublicForgotPasswordHandler(
             return new PublicForgotPasswordResult(IsSuccess: true, Email: command.Email);
         }
 
-        UserEntity user = await userRepository.GetUserWithRolesOrThrowAsync(email, cancellationToken);
+        UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
 
-        userRepository.IsUserAccountActive(user);
-        userRepository.IsUserAccountVerified(user);
+        // Validate user account status - must be active and verified
+        userRepository.IsUserAccountActive(user!);
+        userRepository.IsUserAccountVerified(user!);
 
-        OtpEntity passwordResetOtp = otpService.CreateOtp(user.Id, OtpPurpose.PasswordReset);
+        OtpEntity passwordResetOtp = otpService.CreateOtp(user!.Id, OtpPurpose.PasswordReset);
 
         await otpRepository.AddAsync(passwordResetOtp, cancellationToken);
-        await otpRepository.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         return new PublicForgotPasswordResult(IsSuccess: true, Email: command.Email);
     }

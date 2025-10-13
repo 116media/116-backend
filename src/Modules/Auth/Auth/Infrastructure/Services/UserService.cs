@@ -22,24 +22,24 @@ public class UserService(IUserRepository userRepository, IFileService fileServic
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>User entity with roles and permissions loaded.</returns>
     /// <exception cref="ConflictException">Thrown when a local account exists with the same email.</exception>
-    public async Task<UserEntity> GetOrCreateExternalUserAsync(
+    public async Task<UserEntity?> GetOrCreateExternalUserAsync(
         string email,
         string? userName,
         AuthProvider authProvider,
         CancellationToken cancellationToken
     )
     {
-        UserEntity user;
+        UserEntity? user;
 
         try
         {
             // Try to load existing user including roles and permissions
-            user = await userRepository.GetPublicUserWithRolesAndPermissionsAsync(
+            user = await userRepository.GetUserWithRolesAndPermissionsByCredentialsOrThrow(
                 email, cancellationToken
             );
 
             // Prevent social login if a local account exists
-            if (user.AuthProvider == AuthProvider.Local)
+            if (user!.AuthProvider == AuthProvider.Local)
             {
                 throw UserErrors.EmailAlreadyExists(email);
             }
@@ -72,7 +72,7 @@ public class UserService(IUserRepository userRepository, IFileService fileServic
             await userRepository.SaveChangesAsync(cancellationToken);
 
             // Reload user with roles and permissions after creation
-            user = await userRepository.GetPublicUserWithRolesAndPermissionsAsync(
+            user = await userRepository.GetUserWithRolesAndPermissionsByCredentialsOrThrow(
                 email, cancellationToken
             );
         }

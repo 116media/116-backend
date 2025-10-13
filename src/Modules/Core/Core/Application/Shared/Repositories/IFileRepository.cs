@@ -28,6 +28,9 @@ public interface IFileRepository : IRepository<FileEntity>
     /// </summary>
     /// <param name="file">The file entity to update.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <remarks>
+    /// This method marks the file as modified in the context. Call SaveChangesAsync() to persist changes.
+    /// </remarks>
     Task UpdateAsync(FileEntity file, CancellationToken cancellationToken = default);
 
     /// <summary>

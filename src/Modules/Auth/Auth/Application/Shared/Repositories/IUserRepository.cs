@@ -13,28 +13,18 @@ namespace _116.Auth.Application.Shared.Repositories;
 public interface IUserRepository : IRepository<UserEntity>
 {
     /// <summary>
-    /// Retrieves a user with their associated roles by email address.
-    /// </summary>
-    /// <param name="email">The email address to search for.</param>
-    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>The user entity with roles loaded.</returns>
-    /// <exception cref="NotFoundException">Thrown when no user is found with the specified email.</exception>
-    /// <remarks>
-    /// This method includes the user's roles in the query for authentication scenarios.
-    /// Use this method when you need to validate user credentials and roles.
-    /// </remarks>
-    Task<UserEntity> GetUserWithRolesOrThrowAsync(Email email, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Retrieves a user by their unique identifier.
     /// </summary>
     /// <param name="userId">The unique identifier of the user.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>The user entity if found; otherwise, null.</returns>
+    /// <exception cref="NotFoundException">
+    /// Thrown when an entity with the specified primary key values is not found.
+    /// </exception>
     /// <remarks>
     /// This method performs a simple lookup by primary key without loading related entities.
     /// </remarks>
-    Task<UserEntity?> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<UserEntity?> FindUserByIdOrThrow(Guid userId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a user with their associated roles by unique identifier.
@@ -46,7 +36,20 @@ public interface IUserRepository : IRepository<UserEntity>
     /// This method includes the user's roles in the query for profile scenarios.
     /// Use this method when you need user information along with their roles and permissions.
     /// </remarks>
-    Task<UserEntity?> GetUserWithRolesByIdAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<UserEntity?> GetUserWithRolesByIdOrThrow(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a user with their associated roles by email address.
+    /// </summary>
+    /// <param name="email">The email address to search for.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The user entity with roles loaded.</returns>
+    /// <exception cref="NotFoundException">Thrown when no user is found with the specified email.</exception>
+    /// <remarks>
+    /// This method includes the user's roles in the query for authentication scenarios.
+    /// Use this method when you need to validate user credentials and roles.
+    /// </remarks>
+    Task<UserEntity?> GetUserWithRolesByEmailOrThrow(Email email, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a user with their associated roles and permissions by unique identifier.
@@ -58,7 +61,46 @@ public interface IUserRepository : IRepository<UserEntity>
     /// This method includes the complete entity graph: user → roles → permissions.
     /// Use this method when you need user information along with their roles and detailed permissions.
     /// </remarks>
-    Task<UserEntity?> GetUserWithRolesAndPermissionsByIdAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<UserEntity?> GetUserWithRolesAndPermissionsByIdOrThrow(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Retrieves a user with their associated roles and permissions by email address.
+    /// </summary>
+    /// <param name="email">The email address to search for.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The user entity with roles and permissions loaded.</returns>
+    /// <exception cref="NotFoundException">Thrown when no user is found with the specified email.</exception>
+    /// <remarks>
+    /// This method includes the complete entity graph: user → roles → permissions.
+    /// Uses AsSplitQuery for optimized loading of related entities.
+    /// Use this method when you need user information along with their roles and detailed permissions by email.
+    /// </remarks>
+    Task<UserEntity?> GetUserWithRolesAndPermissionsByEmailOrThrow(
+        Email email,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Retrieves a user with their associated roles and permissions by credentials (email or username).
+    /// </summary>
+    /// <param name="credentials">The credentials to search for (email or username).</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The user entity with roles and permissions loaded.</returns>
+    /// <exception cref="NotFoundException">Thrown when no user is found with the specified credentials.</exception>
+    /// <remarks>
+    /// This method includes the complete entity graph: user → roles → permissions.
+    /// Uses AsSplitQuery for optimized loading of related entities.
+    /// Accepts either email address or username as credentials.
+    /// Do not perform account status or verification checks - use this when you need to
+    /// validate credentials first before checking account status separately.
+    /// </remarks>
+    Task<UserEntity?> GetUserWithRolesAndPermissionsByCredentialsOrThrow(
+        string credentials,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Checks if a user exists with the specified email address.
@@ -139,49 +181,18 @@ public interface IUserRepository : IRepository<UserEntity>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     /// <remarks>
-    /// This method marks the user as modified and automatically saves changes to the database.
+    /// This method marks the user as modified in the context. Call UnitOfWork.CommitAsync() to persist changes.
     /// </remarks>
     Task UpdateAsync(UserEntity user, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves an active admin user with roles and permissions by email address.
-    /// Validates that the user exists, is active, and has administrative privileges.
-    /// </summary>
-    /// <param name="email">The email address to search for.</param>
-    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>The admin user entity with roles and permissions loaded.</returns>
-    /// <exception cref="NotFoundException">Thrown when no user is found with the specified email.</exception>
-    /// <exception cref="AuthorizationException">Thrown when the user account is inactive (HTTP 403 Forbidden).</exception>
-    /// <exception cref="AuthenticationException">Thrown when the user lacks administrative privileges (HTTP 401 Unauthorized).</exception>
-    /// <remarks>
-    /// This method specifically validates admin privileges and account status with proper HTTP status mapping:
-    /// - AuthorizationException: User exists but the account is inactive (403 Forbidden)
-    /// - AuthenticationException: User lacks Admin or SuperAdmin role (401 Unauthorized)
-    /// Use this for admin authentication scenarios to ensure proper error handling.
-    /// </remarks>
-    Task<UserEntity> GetActiveAdminUserWithRolesAndPermissionsAsync(Email email, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves a public user with roles and permissions by credentials (email or username).
-    /// Only validates that the user exists - does not check verification or account status.
-    /// </summary>
-    /// <param name="credentials">The credentials to search for (email or username).</param>
-    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>The public user entity with roles and permissions loaded.</returns>
-    /// <exception cref="NotFoundException">Thrown when no user is found with the specified credentials.</exception>
-    /// <remarks>
-    /// This method accepts either email address or username as credentials.
-    /// It does not perform account status or verification checks - use this when you need to
-    /// validate credentials first before checking account status.
-    /// </remarks>
-    Task<UserEntity> GetPublicUserWithRolesAndPermissionsAsync(string credentials, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Validates that a user account is active.
     /// </summary>
     /// <param name="user">The user entity to validate.</param>
-    /// <returns>True if the account is active, otherwise throws an exception.</returns>
-    /// <exception cref="AuthorizationException">Thrown when the user account is inactive (HTTP 403 Forbidden).</exception>
+    /// <returns>True, if the account is active, otherwise throws an exception.</returns>
+    /// <exception cref="AuthorizationException">
+    /// Thrown when the user account is inactive (HTTP 403 Forbidden).
+    /// </exception>
     /// <remarks>
     /// This method should be called after password verification to ensure account status
     /// is only revealed for valid credentials.
@@ -193,7 +204,9 @@ public interface IUserRepository : IRepository<UserEntity>
     /// </summary>
     /// <param name="user">The user entity to validate.</param>
     /// <returns>True, if the account is verified or not using local auth, otherwise throws an exception.</returns>
-    /// <exception cref="AuthorizationException">Thrown when the local account is not verified (HTTP 403 Forbidden).</exception>
+    /// <exception cref="AuthorizationException">
+    /// Thrown when the local account is not verified (HTTP 403 Forbidden).
+    /// </exception>
     /// <remarks>
     /// This method should be called after password verification to ensure verification status
     /// is only revealed for valid credentials. Only applies to local authentication provider.
@@ -204,10 +217,12 @@ public interface IUserRepository : IRepository<UserEntity>
     /// Validates that a user is currently logged in.
     /// </summary>
     /// <param name="user">The user entity to validate.</param>
-    /// <returns>True if the user is logged in, otherwise throws an exception.</returns>
-    /// <exception cref="AuthorizationException">Thrown when the user is not logged in (HTTP 403 Forbidden).</exception>
+    /// <returns>True, if the user is logged in, otherwise throws an exception.</returns>
+    /// <exception cref="AuthorizationException">
+    /// Thrown when the user is not logged in (HTTP 403 Forbidden).
+    /// </exception>
     /// <remarks>
-    /// This method should be called to ensure the user's session is still valid
+    /// This method should be called to ensure the user's session is still valid,
     /// and they haven't been logged out.
     /// </remarks>
     bool IsUserLoggedIn(UserEntity user);
@@ -216,8 +231,10 @@ public interface IUserRepository : IRepository<UserEntity>
     /// Validates that a user has administrative privileges (Admin or SuperAdmin role).
     /// </summary>
     /// <param name="user">The user entity to validate.</param>
-    /// <returns>True if the user has admin privileges, otherwise throws an exception.</returns>
-    /// <exception cref="AuthenticationException">Thrown when the user lacks administrative privileges (HTTP 401 Unauthorized).</exception>
+    /// <returns>True, if the user has admin privileges, otherwise throws an exception.</returns>
+    /// <exception cref="AuthenticationException">
+    /// Thrown when the user lacks administrative privileges (HTTP 401 Unauthorized).
+    /// </exception>
     /// <remarks>
     /// This method checks if the user has either Admin or SuperAdmin role.
     /// Should be called after authentication to validate admin access.
@@ -225,29 +242,13 @@ public interface IUserRepository : IRepository<UserEntity>
     bool IsUserAdmin(UserEntity user);
 
     /// <summary>
-    /// Retrieves an active public user with roles and permissions by credentials (email or username).
-    /// Validates that the user exists and is active for public authentication.
-    /// </summary>
-    /// <param name="credentials">The credentials to search for (email or username).</param>
-    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>The public user entity with roles and permissions loaded.</returns>
-    /// <exception cref="NotFoundException">Thrown when no user is found with the specified credentials.</exception>
-    /// <exception cref="AuthorizationException">Thrown when the user account is inactive (HTTP 403 Forbidden).</exception>
-    /// <exception cref="AuthorizationException">Thrown when the user account is not verified (HTTP 403 Forbidden).</exception>
-    /// <remarks>
-    /// This method accepts either email address or username as credentials for public user authentication.
-    /// It validates account status with proper HTTP status mapping:
-    /// - AuthorizationException: User exists, but the account is inactive or not verified (403 Forbidden)
-    /// Use this for public user authentication scenarios to ensure proper error handling.
-    /// </remarks>
-    Task<UserEntity> GetActivePublicUserWithRolesAndPermissionsAsync(string credentials, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Extracts the user ID from JWT claims and validates authentication.
     /// </summary>
     /// <param name="user">The claims principal from the authenticated user.</param>
     /// <returns>The extracted user ID as a Guid.</returns>
-    /// <exception cref="AuthenticationException">Thrown when user authentication is invalid or user ID cannot be parsed.</exception>
+    /// <exception cref="AuthenticationException">
+    /// Thrown when user authentication is invalid or user ID cannot be parsed.
+    /// </exception>
     /// <remarks>
     /// This method centralizes the logic for extracting user IDs from JWT tokens
     /// and provides consistent error handling across all endpoints.

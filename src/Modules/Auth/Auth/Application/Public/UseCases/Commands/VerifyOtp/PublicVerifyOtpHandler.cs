@@ -1,4 +1,5 @@
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Errors;
 using _116.Auth.Application.Shared.Repositories;
@@ -12,9 +13,11 @@ namespace _116.Auth.Application.Public.UseCases.Commands.VerifyOtp;
 /// </summary>
 /// <param name="userRepository">Repository for user data access operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicVerifyOtpHandler(
     IUserRepository userRepository,
-    IOtpRepository otpRepository
+    IOtpRepository otpRepository,
+    IUnitOfWork unitOfWork
 ) : ICommandHandler<PublicVerifyOtpCommand, PublicVerifyOtpResult>
 {
     /// <summary>
@@ -35,11 +38,10 @@ public class PublicVerifyOtpHandler(
         var email = new Email(command.Email);
         var purpose = new OtpPurpose(command.Purpose);
 
-        // Get user by email
-        UserEntity user = await userRepository.GetUserWithRolesOrThrowAsync(email, cancellationToken);
+        UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
 
         // Check if user is already verified
-        if (user.IsVerified)
+        if (user!.IsVerified)
         {
             throw UserErrors.AccountAlreadyVerified();
         }
@@ -52,12 +54,9 @@ public class PublicVerifyOtpHandler(
             cancellationToken
         );
 
-        // Mark OTP as used
+        // Mark OTP as used and user as verified
         otp.MarkAsUsed();
-        await otpRepository.UpdateAsync(otp, cancellationToken);
-
         user.MarkAsVerified();
-        await userRepository.UpdateAsync(user, cancellationToken);
 
         // Invalidate any remaining OTPs for this purpose
         await otpRepository.InvalidateExistingOtpsAsync(
@@ -66,7 +65,7 @@ public class PublicVerifyOtpHandler(
             cancellationToken
         );
 
-        await otpRepository.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         return new PublicVerifyOtpResult(
             IsSuccess: true

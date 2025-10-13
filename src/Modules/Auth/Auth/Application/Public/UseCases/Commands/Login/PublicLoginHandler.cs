@@ -1,6 +1,7 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Errors;
 using _116.Auth.Application.Shared.Mappers;
@@ -19,12 +20,14 @@ namespace _116.Auth.Application.Public.UseCases.Commands.Login;
 /// <param name="passwordService">Service for verifying hashed passwords.</param>
 /// <param name="jwtService">Service for generating JWT tokens with user claims.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicLoginHandler(
     IUserRepository userRepository,
     IRoleRepository roleRepository,
     IPasswordService passwordService,
     IJwtService jwtService,
-    IFileRepository fileRepository
+    IFileRepository fileRepository,
+    IUnitOfWork unitOfWork
 ) : ICommandHandler<PublicLoginCommand, PublicLoginResult>
 {
     /// <summary>
@@ -40,14 +43,13 @@ public class PublicLoginHandler(
     /// </exception>
     public async Task<PublicLoginResult> Handle(PublicLoginCommand command, CancellationToken cancellationToken)
     {
-        // Get user with roles/permissions without status checks
-        UserEntity user = await userRepository.GetPublicUserWithRolesAndPermissionsAsync(
+        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByCredentialsOrThrow(
             command.Credentials,
             cancellationToken
         );
 
         // Verify password first before revealing account status
-        if (!passwordService.Verify(command.Password, user.PasswordHash))
+        if (!passwordService.Verify(command.Password, user!.PasswordHash))
         {
             throw UserErrors.InvalidCredentials();
         }
@@ -76,7 +78,7 @@ public class PublicLoginHandler(
 
         // Record successful login
         user.RecordLogin();
-        await userRepository.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         // Extract roles and permissions using repository
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(user.UserRoles);

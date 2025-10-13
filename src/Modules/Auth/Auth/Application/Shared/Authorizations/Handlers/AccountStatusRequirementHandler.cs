@@ -46,7 +46,7 @@ public class AccountStatusRequirementHandler(IUserRepository userRepository)
 
         try
         {
-            UserEntity? user = await userRepository.GetUserByIdAsync(userId);
+            UserEntity? user = await userRepository.FindUserByIdOrThrow(userId);
             if (user is not null && CheckRequirementAgainstUser(user, requirement))
             {
                 context.Succeed(requirement);

@@ -1,6 +1,7 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Errors;
 using _116.Auth.Application.Shared.Mappers;
@@ -16,10 +17,12 @@ namespace _116.Auth.Application.Admin.UseCases.Commands.UpdateOwnProfile;
 /// <param name="userRepository">Repository for user data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
+/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminUpdateOwnProfileHandler(
     IUserRepository userRepository,
     IRoleRepository roleRepository,
-    IFileRepository fileRepository
+    IFileRepository fileRepository,
+    IUnitOfWork unitOfWork
 ) : ICommandHandler<AdminUpdateOwnProfileCommand, AdminUpdateOwnProfileResult>
 {
     /// <summary>
@@ -36,7 +39,7 @@ public class AdminUpdateOwnProfileHandler(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByIdAsync(
+        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
             command.UserId,
             cancellationToken
         );
@@ -69,9 +72,7 @@ public class AdminUpdateOwnProfileHandler(
             );
         }
 
-        // Save changes to the DB
-        await userRepository.UpdateAsync(user!, cancellationToken);
-        await userRepository.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         // Extract roles and permissions using repository
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(user!.UserRoles);

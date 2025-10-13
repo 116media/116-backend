@@ -27,10 +27,10 @@ public class FileRepository(CoreDbContext context) : IFileRepository
     }
 
     /// <inheritdoc />
-    public async Task UpdateAsync(FileEntity file, CancellationToken cancellationToken = default)
+    public Task UpdateAsync(FileEntity file, CancellationToken cancellationToken = default)
     {
         context.Files.Update(file);
-        await context.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc />

@@ -83,7 +83,7 @@ public interface IOtpRepository : IRepository<OtpEntity>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     /// <remarks>
-    /// This method marks the OTP as modified. Call <see cref="SaveChangesAsync"/> to persist changes.
+    /// This method marks the OTP as modified in the context. Call UnitOfWork.CommitAsync() to persist changes.
     /// </remarks>
     Task UpdateAsync(OtpEntity otp, CancellationToken cancellationToken = default);
 
