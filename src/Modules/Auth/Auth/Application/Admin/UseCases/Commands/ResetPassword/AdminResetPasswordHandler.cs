@@ -1,5 +1,6 @@
+using _116.Auth.Application.Shared.Errors;
 using _116.Shared.Application.Exceptions;
-using _116.Shared.Application.Persistence;
+using _116.Auth.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Repositories;
 using _116.Auth.Application.Shared.Services;
@@ -20,7 +21,7 @@ public class AdminResetPasswordHandler(
     IUserRepository userRepository,
     IOtpRepository otpRepository,
     IPasswordService passwordService,
-    IUnitOfWork unitOfWork
+    IAuthUnitOfWork unitOfWork
 ) : ICommandHandler<AdminResetPasswordCommand, AdminResetPasswordResult>
 {
     /// <summary>
@@ -49,29 +50,25 @@ public class AdminResetPasswordHandler(
         userRepository.IsUserAdmin(user!);
         userRepository.IsUserAccountActive(user!);
 
-        // Validate the OTP for password reset (throws appropriate exceptions on failure)
-        OtpEntity otp = await otpRepository.ValidateOtpAsync(
+        // Validate the OTP was already used for password reset
+        await otpRepository.ValidateUsedOtpAsync(
             user!.Id,
             command.Code,
             OtpPurpose.PasswordReset,
             cancellationToken
         );
 
+        // Check if new password is different from old password
+        if (passwordService.Verify(command.NewPassword, user.PasswordHash))
+        {
+            throw UserErrors.NewPasswordSameAsOld();
+        }
+
         // Hash the new password
         string hashedPassword = passwordService.Hash(command.NewPassword);
 
         // Update user's password
         user.UpdatePassword(hashedPassword);
-
-        // Mark OTP as used
-        otp.MarkAsUsed();
-
-        // Invalidate any remaining password reset OTPs for this user
-        await otpRepository.InvalidateExistingOtpsAsync(
-            user.Id,
-            OtpPurpose.PasswordReset,
-            cancellationToken
-        );
 
         await unitOfWork.CommitAsync(cancellationToken);
 

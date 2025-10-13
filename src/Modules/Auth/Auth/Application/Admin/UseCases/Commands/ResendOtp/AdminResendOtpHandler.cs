@@ -1,5 +1,5 @@
 using _116.Shared.Application.Exceptions;
-using _116.Shared.Application.Persistence;
+using _116.Auth.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Repositories;
 using _116.Auth.Application.Shared.Services;
@@ -15,7 +15,7 @@ public class AdminResendOtpHandler(
     IUserRepository userRepository,
     IOtpRepository otpRepository,
     IOtpService otpService,
-    IUnitOfWork unitOfWork
+    IAuthUnitOfWork unitOfWork
 ) : ICommandHandler<AdminResendOtpCommand, AdminResendOtpResult>
 {
     /// <summary>
@@ -41,6 +41,7 @@ public class AdminResendOtpHandler(
 
         UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
 
+        // Validate admin account status
         userRepository.IsUserAdmin(user!);
         userRepository.IsUserAccountActive(user!);
 

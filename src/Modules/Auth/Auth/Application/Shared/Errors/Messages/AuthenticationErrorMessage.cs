@@ -30,7 +30,7 @@ public static class AuthenticationErrorMessage
     /// </summary>
     public static string InsufficientPermissions()
     {
-        return "Insufficient permissions for this operation";
+        return "Access Denied. Insufficient permissions for this operation";
     }
 
     /// <summary>

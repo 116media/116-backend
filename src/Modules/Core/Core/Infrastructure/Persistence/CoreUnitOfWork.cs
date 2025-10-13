@@ -1,4 +1,4 @@
-using _116.Shared.Application.Persistence;
+using _116.Core.Application.Shared.Persistence;
 
 namespace _116.Core.Infrastructure.Persistence;
 
@@ -6,7 +6,7 @@ namespace _116.Core.Infrastructure.Persistence;
 /// Unit of Work implementation for the Core module.
 /// Coordinates saving changes across all repositories that share the CoreDbContext.
 /// </summary>
-public class CoreUnitOfWork(CoreDbContext context) : IUnitOfWork
+public class CoreUnitOfWork(CoreDbContext context) : ICoreUnitOfWork
 {
     /// <inheritdoc />
     public async Task<int> CommitAsync(CancellationToken cancellationToken = default)

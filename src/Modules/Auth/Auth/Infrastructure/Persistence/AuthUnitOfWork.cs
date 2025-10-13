@@ -1,4 +1,4 @@
-using _116.Shared.Application.Persistence;
+using _116.Auth.Application.Shared.Persistence;
 
 namespace _116.Auth.Infrastructure.Persistence;
 
@@ -6,7 +6,7 @@ namespace _116.Auth.Infrastructure.Persistence;
 /// Unit of Work implementation for the Auth module.
 /// Coordinates saving changes across all repositories that share the AuthDbContext.
 /// </summary>
-public class AuthUnitOfWork(AuthDbContext context) : IUnitOfWork
+public class AuthUnitOfWork(AuthDbContext context) : IAuthUnitOfWork
 {
     /// <inheritdoc />
     public async Task<int> CommitAsync(CancellationToken cancellationToken = default)

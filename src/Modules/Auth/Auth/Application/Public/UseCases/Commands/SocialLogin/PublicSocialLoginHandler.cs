@@ -1,6 +1,6 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
-using _116.Shared.Application.Persistence;
+using _116.Auth.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Mappers;
 using _116.Auth.Application.Shared.Repositories;
@@ -24,7 +24,7 @@ public class PublicSocialLoginHandler(
     IRoleRepository roleRepository,
     IJwtService jwtService,
     IFileRepository fileRepository,
-    IUnitOfWork unitOfWork
+    IAuthUnitOfWork unitOfWork
 ) : ICommandHandler<PublicSocialLoginCommand, PublicSocialLoginResult>
 {
     /// <summary>

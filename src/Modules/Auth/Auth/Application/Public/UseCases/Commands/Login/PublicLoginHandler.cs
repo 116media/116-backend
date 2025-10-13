@@ -1,7 +1,7 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
-using _116.Shared.Application.Persistence;
+using _116.Auth.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Errors;
 using _116.Auth.Application.Shared.Mappers;
@@ -27,7 +27,7 @@ public class PublicLoginHandler(
     IPasswordService passwordService,
     IJwtService jwtService,
     IFileRepository fileRepository,
-    IUnitOfWork unitOfWork
+    IAuthUnitOfWork unitOfWork
 ) : ICommandHandler<PublicLoginCommand, PublicLoginResult>
 {
     /// <summary>

@@ -4,7 +4,7 @@ using _116.Auth.Application.Shared.Services;
 using _116.Auth.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
-using _116.Shared.Application.Persistence;
+using _116.Auth.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Auth.Application.Public.UseCases.Commands.UpdateAvatar;
@@ -21,7 +21,7 @@ public class PublicUpdateAvatarHandler(
     IFileRepository fileRepository,
     IRoleRepository roleRepository,
     IUserService userService,
-    IUnitOfWork unitOfWork
+    IAuthUnitOfWork unitOfWork
 ) : ICommandHandler<PublicUpdateAvatarCommand, PublicUpdateAvatarResult>
 {
     /// <summary>

@@ -1,4 +1,4 @@
-using _116.Shared.Application.Persistence;
+using _116.Auth.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Repositories;
 using _116.Auth.Application.Shared.Services;
@@ -15,7 +15,7 @@ public class AdminForgotPasswordHandler(
     IUserRepository userRepository,
     IOtpRepository otpRepository,
     IOtpService otpService,
-    IUnitOfWork unitOfWork
+    IAuthUnitOfWork unitOfWork
 ) : ICommandHandler<AdminForgotPasswordCommand, AdminForgotPasswordResult>
 {
     /// <summary>
@@ -36,10 +36,8 @@ public class AdminForgotPasswordHandler(
 
         UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
 
-        // Ensure the account is an admin
+        // Validate admin account status
         userRepository.IsUserAdmin(user!);
-
-        // Ensure the account is active (admin users only need to be active)
         userRepository.IsUserAccountActive(user!);
 
         OtpEntity passwordResetOtp = otpService.CreateOtp(user!.Id, OtpPurpose.PasswordReset);

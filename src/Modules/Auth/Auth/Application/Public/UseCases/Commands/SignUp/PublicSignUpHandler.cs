@@ -1,5 +1,5 @@
 using _116.Shared.Application.Exceptions;
-using _116.Shared.Application.Persistence;
+using _116.Auth.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Mappers;
 using _116.Auth.Application.Shared.Repositories;
@@ -28,7 +28,7 @@ public class PublicSignUpHandler(
     IPasswordService passwordService,
     IOtpService otpService,
     IJwtService jwtService,
-    IUnitOfWork unitOfWork
+    IAuthUnitOfWork unitOfWork
 ) : ICommandHandler<PublicSignUpCommand, PublicSignUpResult>
 {
     /// <summary>
@@ -68,7 +68,6 @@ public class PublicSignUpHandler(
         await otpRepository.AddAsync(verificationOtp, cancellationToken);
 
         // Save all changes atomically in a single transaction
-        // (user creation, visitor role assignment, and OTP generation) succeed or fail together
         await unitOfWork.CommitAsync(cancellationToken);
 
         // Get the newly created user with roles to generate token

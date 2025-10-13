@@ -200,7 +200,7 @@ public class UserRepository(AuthDbContext context) : IUserRepository
         var adminRoleSpec = new UserHasAdminRoleSpecification();
         if (!adminRoleSpec.IsSatisfiedBy(user))
         {
-            throw UserErrors.InvalidCredentials();
+            throw UserErrors.InsufficientPermissions();
         }
         return true;
     }

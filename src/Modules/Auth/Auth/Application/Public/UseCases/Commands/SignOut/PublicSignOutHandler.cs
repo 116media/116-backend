@@ -1,4 +1,4 @@
-using _116.Shared.Application.Persistence;
+using _116.Auth.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Repositories;
 using _116.Auth.Domain.Entities;
@@ -10,7 +10,7 @@ namespace _116.Auth.Application.Public.UseCases.Commands.SignOut;
 /// </summary>
 public class PublicSignOutHandler(
     IUserRepository userRepository,
-    IUnitOfWork unitOfWork
+    IAuthUnitOfWork unitOfWork
 ) : ICommandHandler<PublicSignOutCommand, PublicSignOutResult>
 {
     /// <summary>

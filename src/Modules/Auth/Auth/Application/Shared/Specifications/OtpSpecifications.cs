@@ -152,3 +152,25 @@ public class OtpForInvalidationSpecification(Guid userId, OtpPurpose purpose) : 
             .ToExpression();
     }
 }
+
+/// <summary>
+/// Composite specification that matches used OTPs for verification.
+/// Combines user ID, code, purpose, and used specifications.
+/// Used for validating that an OTP was already verified/used.
+/// </summary>
+public class OtpForUsedValidationSpecification(Guid userId, string code, OtpPurpose purpose) : Specification<OtpEntity>
+{
+    public override Expression<Func<OtpEntity, bool>> ToExpression()
+    {
+        var userSpec = new OtpByUserIdSpecification(userId);
+        var codeSpec = new OtpByCodeSpecification(code);
+        var purposeSpec = new OtpByPurposeSpecification(purpose);
+        var usedSpec = new OtpIsUsedSpecification();
+
+        return userSpec
+            .And(codeSpec)
+            .And(purposeSpec)
+            .And(usedSpec)
+            .ToExpression();
+    }
+}

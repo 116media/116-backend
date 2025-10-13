@@ -1,6 +1,6 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
-using _116.Shared.Application.Persistence;
+using _116.Auth.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Mappers;
 using _116.Auth.Application.Shared.Repositories;
@@ -22,7 +22,7 @@ public class AdminUpdateAvatarHandler(
     IFileRepository fileRepository,
     IRoleRepository roleRepository,
     IUserService userService,
-    IUnitOfWork unitOfWork
+    IAuthUnitOfWork unitOfWork
 ) : ICommandHandler<AdminUpdateAvatarCommand, AdminUpdateAvatarResult>
 {
     /// <summary>
