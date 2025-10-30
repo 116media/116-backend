@@ -14,7 +14,7 @@ To get started with development, run the setup script:
 
 ```bash
 # Run the automated setup script
-./setup.sh
+../scripts/setup.sh
 ```
 
 This script will:
@@ -24,7 +24,7 @@ This script will:
 
 ### 💡 Development Workflow
 
-1. 🚀 **Run setup**: `./setup.sh` (first time only)
+1. 🚀 **Run setup**: `./scripts/setup.sh` (first time only)
 2. 🌿 **Create feature branch**: Following naming conventions
 3. 💻 **Make your changes**: Code will be auto-formatted on save
 4. 💾 **Commit changes**: Pre-commit hook formats code automatically
