@@ -29,27 +29,26 @@ public abstract class BaseExceptionStrategy<TException>
     /// <param name="detail">The error detail message.</param>
     /// <param name="statusCode">The HTTP status code.</param>
     /// <param name="context">The HTTP context.</param>
-    /// <param name="type">the exception type</param>
     /// <returns>A configured ProblemDetails object.</returns>
     protected static ProblemDetails CreateStandardProblemDetails(
         string title,
         string detail,
         int statusCode,
-        HttpContext context,
-        string? type = null
+        HttpContext context
     )
     {
         var problemDetails = new ProblemDetails
         {
-            Type = type,
             Title = title,
             Detail = detail,
             Status = statusCode,
-            Instance = context.Request.Path
+            Instance = context.Request.Path,
+            Extensions =
+            {
+                ["traceId"] = context.TraceIdentifier,
+                ["timestamp"] = DateTime.UtcNow
+            }
         };
-
-        problemDetails.Extensions["traceId"] = context.TraceIdentifier;
-        problemDetails.Extensions["timestamp"] = DateTime.UtcNow;
 
         return problemDetails;
     }
