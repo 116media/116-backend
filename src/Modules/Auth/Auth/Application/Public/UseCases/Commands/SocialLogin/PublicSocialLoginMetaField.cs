@@ -11,7 +11,7 @@ public static class PublicSocialLoginMetaField
     /// Metadata describing the social login endpoint.
     /// </summary>
     public static readonly RouteMetadata SocialLogin = new(
-        name: "SocialLogin",
+        name: "PublicSocialLogin",
         summary: "Authenticate user via social provider",
         description: """
              Authenticates a user through external social providers (Google or Facebook).\n

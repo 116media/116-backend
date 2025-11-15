@@ -11,7 +11,7 @@ public static class PublicGetOwnProfileMetaField
     /// Metadata describing the user profile endpoint.
     /// </summary>
     public static readonly RouteMetadata GetOwnProfile = new(
-        name: "GetOwnProfile",
+        name: "PublicGetOwnProfile",
         summary: "Retrieve authenticated user's complete profile information",
         description: """
              Retrieves the complete profile information for the currently authenticated user.\n

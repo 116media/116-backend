@@ -8,7 +8,7 @@ namespace _116.Auth.Application.Public.UseCases.Commands.SignOut;
 public static class PublicSignOutMetaField
 {
     public static readonly RouteMetadata SignOut = new(
-        name: "SignOut",
+        name: "PublicSignOut",
         summary: "Sign out the authenticated user",
         description: """
              Signs out the currently authenticated user by updating their login status.

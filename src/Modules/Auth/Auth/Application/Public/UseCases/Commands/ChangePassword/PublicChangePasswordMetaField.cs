@@ -11,7 +11,7 @@ public static class PublicChangePasswordMetaField
     /// Metadata describing the password change endpoint.
     /// </summary>
     public static readonly RouteMetadata ChangePassword = new(
-        name: "ChangePassword",
+        name: "PublicChangePassword",
         summary: "Change user password with current password verification",
         description: """
              Changes a user's password after verifying their current password for security.\n

@@ -11,7 +11,7 @@ public static class PublicVerifyOtpMetaField
     /// Metadata describing the OTP verification endpoint.
     /// </summary>
     public static readonly RouteMetadata VerifyOtp = new(
-        name: "VerifyOtp",
+        name: "PublicVerifyOtp",
         summary: "Verify OTP code for account activation",
         description: """
              Verifies the OTP (One-Time Password) code sent to the user's email for various purposes.
