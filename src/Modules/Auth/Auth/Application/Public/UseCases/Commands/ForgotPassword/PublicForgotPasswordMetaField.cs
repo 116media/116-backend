@@ -8,7 +8,7 @@ namespace _116.Auth.Application.Public.UseCases.Commands.ForgotPassword;
 public static class PublicForgotPasswordMetaField
 {
     public static readonly RouteMetadata ForgotPassword = new(
-        name: "ForgotPassword",
+        name: "PublicForgotPassword",
         summary: "Initiate password reset process for existing users",
         description: """
              Initiates the password reset process by generating an OTP for the specified email address.

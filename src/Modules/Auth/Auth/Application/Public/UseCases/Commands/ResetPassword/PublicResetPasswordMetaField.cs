@@ -11,7 +11,7 @@ public static class PublicResetPasswordMetaField
     /// Metadata describing the password reset endpoint.
     /// </summary>
     public static readonly RouteMetadata ResetPassword = new(
-        name: "ResetPassword",
+        name: "PublicResetPassword",
         summary: "Reset user password using OTP verification",
         description: """
              Resets a user's password after validating the OTP code sent during the forgot password process.

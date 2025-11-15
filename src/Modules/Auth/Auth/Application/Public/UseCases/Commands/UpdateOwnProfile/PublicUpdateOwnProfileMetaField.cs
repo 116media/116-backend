@@ -12,7 +12,7 @@ public static class PublicUpdateOwnProfileMetaField
     /// Metadata describing the update own profile endpoint.
     /// </summary>
     public static readonly RouteMetadata UpdateOwnProfile = new(
-        name: "UpdateOwnProfile",
+        name: "PublicUpdateOwnProfile",
         summary: "Update authenticated user's own profile information",
         description: """
              Updates the profile information for the currently authenticated user.\n

@@ -11,7 +11,7 @@ public static class AdminGetOwnProfileMetaField
     /// Metadata describing the admin user profile endpoint.
     /// </summary>
     public static readonly RouteMetadata GetOwnProfile = new(
-        name: "GetAdminOwnProfile",
+        name: "AdminGetOwnProfile",
         summary: "Retrieve authenticated admin user's complete profile information",
         description: """
              Retrieves the complete profile information for the currently authenticated admin user.
