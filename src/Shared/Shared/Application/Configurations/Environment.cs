@@ -81,4 +81,28 @@ public class AppEnvironment
 
         return (secret, issuer, audience, expiration);
     }
+
+    /// <summary>
+    /// Retrieves Cloudinary configuration values from environment variables.
+    /// </summary>
+    /// <remarks>
+    /// Expected environment variables:
+    /// - CLOUDINARY_CLOUD_NAME: The Cloudinary cloud name from account settings
+    /// - CLOUDINARY_API_KEY: The Cloudinary API key for authentication
+    /// - CLOUDINARY_API_SECRET: The Cloudinary API secret for signing requests
+    /// </remarks>
+    /// <returns>
+    /// A tuple containing:
+    /// - <c>cloudName</c>: The Cloudinary cloud name
+    /// - <c>apiKey</c>: The Cloudinary API key
+    /// - <c>apiSecret</c>: The Cloudinary API secret
+    /// </returns>
+    public static (string? cloudName, string? apiKey, string? apiSecret) Cloudinary()
+    {
+        string? cloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME");
+        string? apiKey = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY");
+        string? apiSecret = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET");
+
+        return (cloudName, apiKey, apiSecret);
+    }
 }
