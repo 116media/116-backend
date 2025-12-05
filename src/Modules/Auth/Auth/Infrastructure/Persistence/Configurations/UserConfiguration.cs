@@ -75,6 +75,10 @@ public class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         builder.Property(u => u.AvatarFileId)
             .IsRequired(false);
 
+        builder.Property(u => u.AvatarSource)
+            .HasConversion<string>()
+            .IsRequired();
+
         // Indexes
         builder.HasIndex(u => u.Email)
             .IsUnique();
