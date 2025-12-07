@@ -10,16 +10,16 @@ using System.Security.Claims;
 using _116.Auth.Application.Shared.Constants;
 using _116.Auth.Domain.Constants;
 using _116.Shared.Application.Extensions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace _116.Auth.Application.Public.UseCases.Commands.UpdateAvatar.V1;
 
 /// <summary>
 /// Request model for updating user avatar.
-/// This endpoint requires user authentication - only logged-in verified users can update their avatar.
 /// </summary>
-/// <param name="AvatarUrl">The new avatar URL to set for the user.</param>
+/// <param name="AvatarFile">The avatar image file to upload.</param>
 public record PublicUpdateAvatarRequest(
-    string AvatarUrl
+    IFormFile AvatarFile
 );
 
 /// <summary>
@@ -32,7 +32,7 @@ public record PublicUpdateAvatarResponse(
 
 /// <summary>
 /// Defines the update avatar endpoint for authenticated public users.
-/// This endpoint requires user authentication - only logged-in verified users can update their avatar.
+/// This endpoint accepts multipart/form-data file uploads.
 /// </summary>
 public class PublicUpdateAvatarEndpointV1 : ICarterModule
 {
@@ -49,7 +49,7 @@ public class PublicUpdateAvatarEndpointV1 : ICarterModule
             .WithTags($"{AuthConstants.Public}::{AuthRouteConstants.Profile}");
 
         group.MapPatch(AuthRouteConstants.Avatar, async (
-                PublicUpdateAvatarRequest request,
+                [FromForm] PublicUpdateAvatarRequest request,
                 ClaimsPrincipal user,
                 IUserRepository userRepository,
                 IDispatcher dispatcher
@@ -58,19 +58,20 @@ public class PublicUpdateAvatarEndpointV1 : ICarterModule
                 // Extract user ID from JWT token claims
                 Guid userId = userRepository.GetUserIdFromClaims(user);
 
-                // Send the command to update the avatar
-                var command = new PublicUpdateAvatarCommand(userId, request.AvatarUrl);
+                // Send the command with the uploaded file (validation happens in validator)
+                var command = new PublicUpdateAvatarCommand(userId, request.AvatarFile);
                 PublicUpdateAvatarResult result = await dispatcher.Send(command);
 
-                // Adapt the result to the response type
+                // Return response
                 var response = new PublicUpdateAvatarResponse(result.User);
-
                 return Results.Ok(response);
             })
             .WithName(PublicUpdateAvatarMetaField.UpdateAvatar.Name)
             .WithSummary(PublicUpdateAvatarMetaField.UpdateAvatar.Summary)
             .WithDescription(PublicUpdateAvatarMetaField.UpdateAvatar.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .DisableAntiforgery()
+            .Accepts<PublicUpdateAvatarRequest>("multipart/form-data")
             .ProducesValidationProblem()
             .Produces<PublicUpdateAvatarResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)

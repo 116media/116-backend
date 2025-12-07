@@ -4,11 +4,11 @@ using _116.Auth.Application.Shared.Validators;
 namespace _116.Auth.Application.Public.UseCases.Commands.UpdateAvatar;
 
 /// <summary>
-/// Validator for the <see cref="PublicUpdateAvatarCommand"/> ensuring proper avatar URL format.
+/// Validator for the <see cref="PublicUpdateAvatarCommand"/> ensuring proper file constraints.
 /// </summary>
 /// <remarks>
-/// Validates avatar URL according to format requirements:
-/// - AvatarUrl: Required, valid URL format, max length according to FileConstants
+/// Validates avatar file according to requirements:
+/// - AvatarFile: Required, valid image type, max size per FileConstants
 /// </remarks>
 public class PublicUpdateAvatarValidator : AbstractValidator<PublicUpdateAvatarCommand>
 {
@@ -17,7 +17,7 @@ public class PublicUpdateAvatarValidator : AbstractValidator<PublicUpdateAvatarC
     /// </summary>
     public PublicUpdateAvatarValidator()
     {
-        // Avatar URL validation - required for this endpoint
-        RuleFor(x => x.AvatarUrl).AvatarUrlValidation(isRequired: true);
+        // Avatar file validation - required for this endpoint
+        RuleFor(x => x.AvatarFile).AvatarValidation(isRequired: true);
     }
 }

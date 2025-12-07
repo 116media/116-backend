@@ -1,20 +1,22 @@
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Domain.DTOs;
+using Microsoft.AspNetCore.Http;
 
 namespace _116.Auth.Application.Public.UseCases.Commands.UpdateAvatar;
 
 /// <summary>
-/// Command for updating user avatar.
+/// Command for updating user avatar via file upload.
 /// </summary>
 /// <param name="UserId">The ID of the user to update (from JWT claims).</param>
-/// <param name="AvatarUrl">The new avatar URL to set for the user.</param>
+/// <param name="AvatarFile">The avatar image file to upload.</param>
 /// <remarks>
-/// This command allows logged-in users to update their avatar by providing a new avatar URL.
-/// The previous avatar file will be deleted if it exists. Only verified accounts can update their avatar.
+/// This command allows logged-in users to update their avatar by uploading an image file.
+/// The file is uploaded to Cloudinary, and the previous avatar is automatically deleted.
+/// Only verified accounts can update their avatar.
 /// </remarks>
 public record PublicUpdateAvatarCommand(
     Guid UserId,
-    string AvatarUrl
+    IFormFile AvatarFile
 ) : ICommand<PublicUpdateAvatarResult>;
 
 /// <summary>

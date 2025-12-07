@@ -12,11 +12,11 @@ public static class AdminUpdateAvatarMetaField
     /// </summary>
     public static readonly RouteMetadata UpdateAvatar = new(
         name: "AdminUpdateAvatar",
-        summary: "Update admin user avatar",
+        summary: "Update admin user avatar via file upload",
         description: """
-             Updates the authenticated admin user's avatar by providing a new avatar URL.
-             This endpoint allows logged-in admin users to update their profile avatar from an external URL.
-             The system will download and store the avatar file, and automatically delete any previous avatar.
+             Updates the authenticated admin user's avatar by uploading an image file.\n
+             This endpoint accepts multipart/form-data file uploads and stores the image in Cloudinary cloud storage.
+             The system will automatically delete any previous avatar when a new one is uploaded.
              \n
              Admin users only need to have active accounts (no verification requirement).
              \n
@@ -26,19 +26,21 @@ public static class AdminUpdateAvatarMetaField
              - Account must be active\n
              \n
              **Request Requirements:**\n
-             - Valid avatar URL (required)\n
-             - URL must be accessible and point to a valid image\n
-             - Maximum URL length: 2048 characters\n
+             - Content-Type: multipart/form-data\n
+             - Form field name: "avatarFile"\n
+             - Allowed file types: JPEG, PNG, GIF, WebP\n
+             - Maximum file size: 1MB\n
+             - File must be a valid image\n
              \n
              **Avatar Management:**\n
-             - Previous avatar is automatically deleted when updating\n
-             - New avatar is downloaded and stored in the system\n
-             - Supports common image formats (JPEG, PNG, GIF, WebP)\n
-             - Smart deduplication: if the same URL is provided again, no duplicate download occurs\n
+             - Previous avatar is automatically deleted from cloud storage\n
+             - Images are stored in Cloudinary with automatic optimization\n
+             - Secure HTTPS URLs are generated for accessing avatars\n
+             - Smart quality optimization and format conversion\n
              \n
              **Response Codes:**\n
              - Returns 200 OK with updated admin user information including new avatar\n
-             - Returns 400 Bad Request for invalid avatar URL format\n
+             - Returns 400 Bad Request for invalid file type, size, or missing file\n
              - Returns 401 Unauthorized for unauthenticated requests\n
              - Returns 403 Forbidden for non-admin users or inactive accounts\n
              - Returns 404 Not Found when admin user doesn't exist\n
@@ -47,16 +49,24 @@ public static class AdminUpdateAvatarMetaField
              - Only authenticated admin users can update their own avatar\n
              - Role-based authorization (Admin/SuperAdmin required)\n
              - Account activity verification (active accounts only)\n
-             - URL validation to ensure proper format\n
-             - Automatic cleanup of old avatar files\n
+             - File type and size validation\n
+             - Automatic cleanup of old avatar files from cloud storage\n
+             - Secure signed uploads to Cloudinary\n
              \n
              **Process Flow:**\n
              1. Validates admin authentication and account status\n
-             2. Validates the provided avatar URL format\n
-             3. Downloads the new avatar from the URL\n
-             4. Deletes the previous avatar file (if exists)\n
+             2. Validates the uploaded file (type, size, format)\n
+             3. Uploads the new avatar to Cloudinary cloud storage\n
+             4. Deletes the previous avatar from cloud storage (if exists)\n
              5. Updates admin user record with new avatar reference\n
-             6. Returns updated admin user information with avatar details
+             6. Returns updated admin user information with avatar details\n
+             \n
+             **Example cURL Request:**\n
+             ```
+             curl -X PATCH https://api.example.com/api/v1/admin/profile/avatar \
+               -H "Authorization: Bearer ADMIN_JWT_TOKEN" \
+               -F "avatarFile=@/path/to/image.jpg"
+             ```
          """
     );
 }
