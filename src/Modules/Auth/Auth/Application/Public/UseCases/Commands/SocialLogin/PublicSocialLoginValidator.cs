@@ -36,7 +36,7 @@ public class PublicSocialLoginValidator : AbstractValidator<PublicSocialLoginCom
         RuleFor(x => x.Provider)
             .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("Auth provider is required.")
-            .Must(provider => provider != null && Enum.IsDefined(typeof(AuthProvider), provider))
+            .Must(provider => provider != null && Enum.IsDefined(typeof(EnumAuthProvider), provider))
             .WithMessage("Auth provider must be Facebook or Google");
     }
 }
