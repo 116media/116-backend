@@ -22,7 +22,7 @@ public static class SuperAdminConfiguration
     /// <summary>
     /// Super Admin role name derived from CoreUserRole enum.
     /// </summary>
-    public static string RoleName => nameof(CoreUserRole.SuperAdmin);
+    public static string RoleName => nameof(EnumCoreUserRole.SuperAdmin);
 
     /// <summary>
     /// Super Admin role description.

@@ -11,7 +11,7 @@ namespace _116.Auth.Infrastructure.Persistence.Seeds.Visitor;
 /// Seeder responsible for creating the Visitor role with appropriate permissions for public users.
 /// </summary>
 /// <remarks>
-/// Creates the Visitor role as defined in CoreUserRole.Visitor with permissions from VisitorPermissions.
+/// Creates the Visitor role as defined in EnumCoreUserRole.Visitor with permissions from VisitorPermissions.
 /// All permissions are exactly 8 words describing what the permission allows users to do.
 /// </remarks>
 public class VisitorRoleSeeder(AuthDbContext context, ILogger<VisitorRoleSeeder> logger) : IDataSeeder
@@ -25,7 +25,7 @@ public class VisitorRoleSeeder(AuthDbContext context, ILogger<VisitorRoleSeeder>
 
             // Check if the visitor role already exists
             bool visitorRoleExists = await context.Roles
-                .AnyAsync(r => r.Name == nameof(CoreUserRole.Visitor));
+                .AnyAsync(r => r.Name == nameof(EnumCoreUserRole.Visitor));
 
             if (visitorRoleExists)
             {
@@ -53,7 +53,7 @@ public class VisitorRoleSeeder(AuthDbContext context, ILogger<VisitorRoleSeeder>
         // Create Visitor role
         var visitorRole = RoleEntity.Create(
             id: Guid.NewGuid(),
-            name: nameof(CoreUserRole.Visitor),
+            name: nameof(EnumCoreUserRole.Visitor),
             description: "Standard public/visitor user with content access and interaction permissions"
         );
 
