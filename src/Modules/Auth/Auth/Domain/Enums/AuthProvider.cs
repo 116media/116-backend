@@ -7,7 +7,7 @@ namespace _116.Auth.Domain.Enums;
 /// This enumeration is typically used to determine how a user was authenticated,
 /// whether by the application's local identity system or by an external identity provider.
 /// </remarks>
-public enum AuthProvider
+public enum EnumAuthProvider
 {
     /// <summary>
     /// Authentication via local credentials (username/password).

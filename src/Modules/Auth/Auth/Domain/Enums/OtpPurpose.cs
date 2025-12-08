@@ -3,7 +3,7 @@ namespace _116.Auth.Domain.Enums;
 /// <summary>
 /// Defines the different purposes for which an OTP can be used.
 /// </summary>
-public enum OtpPurpose
+public enum EnumOtpPurpose
 {
     /// <summary>
     /// OTP used for email verification during account registration.
