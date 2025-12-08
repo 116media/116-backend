@@ -265,4 +265,29 @@ public interface IUserRepository : IRepository<UserEntity>
     /// Should be called after performing repository operations that need persistence.
     /// </remarks>
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the existing external user or creates a new one for social authentication.
+    /// </summary>
+    /// <param name="email">User's email address.</param>
+    /// <param name="userName">Username from social provider.</param>
+    /// <param name="authProvider">Authentication provider.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>User entity with roles and permissions loaded.</returns>
+    /// <exception cref="ConflictException">Thrown when a local account exists with the same email.</exception>
+    /// <remarks>
+    /// This method handles the complete workflow for social authentication:
+    /// - Checks if a user with the email exists
+    /// - Prevents social login if a local account exists
+    /// - Updates username if provided and different from existing
+    /// - Creates a new external user if none exists
+    /// - Assigns the Visitor role to new users
+    /// - Returns the user with roles and permissions loaded
+    /// </remarks>
+    Task<UserEntity?> GetOrCreateExternalUserAsync(
+        string email,
+        string? userName,
+        AuthProvider authProvider,
+        CancellationToken cancellationToken = default
+    );
 }

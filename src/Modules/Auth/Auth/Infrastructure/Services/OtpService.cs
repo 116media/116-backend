@@ -24,7 +24,7 @@ public class OtpService : IOtpService
     }
 
     /// <inheritdoc />
-    public OtpEntity CreateOtp(Guid userId, OtpPurpose purpose)
+    public OtpEntity CreateOtp(Guid userId, EnumOtpPurpose purpose)
     {
         string code = GenerateOtpCode();
         DateTime expiresAt = CalculateExpirationTime();

@@ -26,7 +26,7 @@ public interface IOtpService
     /// <remarks>
     /// This method generates a new OTP code and sets the expiration time based on UserConstants.OtpExpirationMinutes.
     /// </remarks>
-    OtpEntity CreateOtp(Guid userId, OtpPurpose purpose);
+    OtpEntity CreateOtp(Guid userId, EnumOtpPurpose purpose);
 
     /// <summary>
     /// Calculates the expiration time for an OTP.

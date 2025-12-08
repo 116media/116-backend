@@ -36,6 +36,6 @@ public interface IJwtService
         bool isVerified,
         bool isActive,
         bool isLoggedIn,
-        AuthProvider authProvider
+        EnumAuthProvider authProvider
     );
 }
