@@ -3,6 +3,7 @@ using FluentValidation;
 using System.Text.RegularExpressions;
 using _116.BuildingBlocks.Constants;
 using _116.Auth.Domain.Enums;
+using Microsoft.AspNetCore.Http;
 
 namespace _116.Auth.Application.Shared.Validators;
 
@@ -230,7 +231,7 @@ public static partial class UserValidationRules
         return ruleBuilder
             .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("OTP purpose is required.")
-            .Must(purpose => purpose != null && Enum.IsDefined(typeof(OtpPurpose), purpose))
+            .Must(purpose => purpose != null && Enum.IsDefined(typeof(EnumOtpPurpose), purpose))
             .WithMessage("Invalid OTP purpose specified.");
     }
 
@@ -382,48 +383,81 @@ public static partial class UserValidationRules
     }
 
     /// <summary>
-    /// Configures avatar URL validation rules.
+    /// Configures avatar file validation rules.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
-    /// <param name="ruleBuilder">The rule builder for the avatar URL property.</param>
-    /// <param name="isRequired">Whether the avatar URL is required (default: false).</param>
+    /// <param name="ruleBuilder">The rule builder for the avatar file property.</param>
+    /// <param name="isRequired">Whether the avatar file is required (default: false).</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, string?> AvatarUrlValidation<T>(
-        this IRuleBuilder<T, string?> ruleBuilder,
+    public static IRuleBuilderOptions<T, IFormFile?> AvatarValidation<T>(
+        this IRuleBuilder<T, IFormFile?> ruleBuilder,
         bool isRequired = false
     )
     {
-        IRuleBuilderOptions<T, string?> builder;
+        IRuleBuilderOptions<T, IFormFile?> builder;
 
         if (isRequired)
         {
             builder = ruleBuilder
-                .NotEmpty().WithMessage("Avatar URL is required")
-                .Must(BeValidUrl).WithMessage("Avatar URL must be a valid URL")
-                .MaximumLength(FileConstants.MaxStorageUrlLength)
-                .WithMessage($"Avatar URL cannot exceed {FileConstants.MaxStorageUrlLength} characters");
+                .NotNull().WithMessage("Avatar file is required")
+                .Must(BeValidFileSize).WithMessage($"File size must not exceed {FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)}MB")
+                .Must(BeValidImageType).WithMessage($"Only image files are allowed: {string.Join(", ", FileConstants.AllowedAvatarMimeTypes)}")
+                .Must(BeValidFileExtension).WithMessage($"Only these extensions are allowed: {string.Join(", ", FileConstants.AllowedAvatarExtensions)}");
         }
         else
         {
             builder = ruleBuilder
-                .Must(BeValidUrl).WithMessage("Avatar URL must be a valid URL")
-                .MaximumLength(FileConstants.MaxStorageUrlLength)
-                .WithMessage($"Avatar URL cannot exceed {FileConstants.MaxStorageUrlLength} characters")
-                .When(x => !string.IsNullOrWhiteSpace(GetAvatarUrlValue(x)));
+                .Must(BeValidFileSize).WithMessage($"File size must not exceed {FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)}MB")
+                .Must(BeValidImageType).WithMessage($"Only image files are allowed: {string.Join(", ", FileConstants.AllowedAvatarMimeTypes)}")
+                .Must(BeValidFileExtension).WithMessage($"Only these extensions are allowed: {string.Join(", ", FileConstants.AllowedAvatarExtensions)}")
+                .When(x => GetAvatarFileValue(x) != null);
         }
 
         return builder;
     }
 
     /// <summary>
-    /// Gets the AvatarUrl property value from an instance using reflection.
+    /// Validates that a file has valid size constraints.
+    /// </summary>
+    /// <param name="file">The file to validate.</param>
+    /// <returns>True if file size is valid, false otherwise.</returns>
+    private static bool BeValidFileSize(IFormFile? file)
+    {
+        return file?.Length is > 0 and <= FileConstants.MaxAvatarFileSizeBytes;
+    }
+
+    /// <summary>
+    /// Validates that a file has a valid image MIME type.
+    /// </summary>
+    /// <param name="file">The file to validate.</param>
+    /// <returns>True if MIME type is valid, false otherwise.</returns>
+    private static bool BeValidImageType(IFormFile? file)
+    {
+        return file != null && FileConstants.AllowedAvatarMimeTypes.Contains(file.ContentType.ToLowerInvariant());
+    }
+
+    /// <summary>
+    /// Validates that a file has valid extension.
+    /// </summary>
+    /// <param name="file">The file to validate.</param>
+    /// <returns>True if extension is valid, false otherwise.</returns>
+    private static bool BeValidFileExtension(IFormFile? file)
+    {
+        if (file == null) return false;
+        string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        return FileConstants.AllowedAvatarExtensions.Contains(extension);
+    }
+
+    /// <summary>
+    /// Gets the AvatarFile property value from an instance using reflection.
     /// </summary>
     /// <typeparam name="T">The type of the instance.</typeparam>
-    /// <param name="instance">The instance to get the AvatarUrl property from.</param>
-    /// <returns>The AvatarUrl property value as a string, or null if not found.</returns>
-    private static string? GetAvatarUrlValue<T>(T instance)
+    /// <param name="instance">The instance to get the AvatarFile property from.</param>
+    /// <returns>The AvatarFile property value, or null if not found.</returns>
+    private static IFormFile? GetAvatarFileValue<T>(T instance)
     {
-        return GetPropertyValue(instance, "AvatarUrl");
+        PropertyInfo? property = typeof(T).GetProperty("AvatarFile");
+        return property?.GetValue(instance) as IFormFile;
     }
 
     /// <summary>

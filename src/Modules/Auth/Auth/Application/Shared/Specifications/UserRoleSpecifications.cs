@@ -14,8 +14,8 @@ public class UserHasAdminRoleSpecification : Specification<UserEntity>
     public override Expression<Func<UserEntity, bool>> ToExpression()
     {
         return user => user.UserRoles.Any(ur =>
-            ur.Role.Name == nameof(CoreUserRole.Admin) ||
-            ur.Role.Name == nameof(CoreUserRole.SuperAdmin));
+            ur.Role.Name == nameof(EnumCoreUserRole.Admin) ||
+            ur.Role.Name == nameof(EnumCoreUserRole.SuperAdmin));
     }
 }
 
@@ -37,7 +37,7 @@ public class UserHasVisitorRoleSpecification : Specification<UserEntity>
 {
     public override Expression<Func<UserEntity, bool>> ToExpression()
     {
-        return user => user.UserRoles.Any(ur => ur.Role.Name == nameof(CoreUserRole.Visitor));
+        return user => user.UserRoles.Any(ur => ur.Role.Name == nameof(EnumCoreUserRole.Visitor));
     }
 }
 

@@ -1,7 +1,7 @@
 using _116.Shared.Application.Specifications;
 using _116.Auth.Domain.Entities;
 using System.Linq.Expressions;
-using AuthProvider = _116.Auth.Domain.Enums.AuthProvider;
+using _116.Auth.Domain.Enums;
 
 namespace _116.Auth.Application.Shared.Specifications;
 
@@ -27,7 +27,7 @@ public class UserIsVerifiedSpecification : Specification<UserEntity>
 {
     public override Expression<Func<UserEntity, bool>> ToExpression()
     {
-        return user => user.AuthProvider != AuthProvider.Local || user.IsVerified;
+        return user => user.AuthProvider != EnumAuthProvider.Local || user.IsVerified;
     }
 }
 
