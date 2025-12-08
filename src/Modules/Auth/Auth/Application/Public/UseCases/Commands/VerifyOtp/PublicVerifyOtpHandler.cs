@@ -4,8 +4,8 @@ using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Errors;
 using _116.Auth.Application.Shared.Repositories;
 using _116.Auth.Domain.Entities;
+using _116.Auth.Domain.Enums;
 using _116.Auth.Domain.ValueObjects;
-using OtpPurposeEnum = _116.Auth.Domain.Enums.OtpPurpose;
 
 namespace _116.Auth.Application.Public.UseCases.Commands.VerifyOtp;
 
@@ -42,7 +42,7 @@ public class PublicVerifyOtpHandler(
         UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
 
         // Check if user is already verified (only for email verification purpose)
-        if (user!.IsVerified && purpose.Value == OtpPurposeEnum.EmailVerification)
+        if (user!.IsVerified && purpose.Value == EnumOtpPurpose.EmailVerification)
         {
             throw UserErrors.AccountAlreadyVerified();
         }

@@ -5,8 +5,8 @@ using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Repositories;
 using _116.Auth.Application.Shared.Services;
 using _116.Auth.Domain.Entities;
+using _116.Auth.Domain.Enums;
 using _116.Auth.Domain.ValueObjects;
-using OtpPurpose = _116.Auth.Domain.Enums.OtpPurpose;
 
 namespace _116.Auth.Application.Admin.UseCases.Commands.ResetPassword;
 
@@ -54,7 +54,7 @@ public class AdminResetPasswordHandler(
         await otpRepository.ValidateUsedOtpAsync(
             user!.Id,
             command.Code,
-            OtpPurpose.PasswordReset,
+            EnumOtpPurpose.PasswordReset,
             cancellationToken
         );
 
