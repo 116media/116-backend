@@ -1,0 +1,45 @@
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# IDE files
+**/.vs/
+**/.vscode/
+**/.idea/
+**/*.user
+**/*.suo
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+**/Dockerfile*
+**/docker-compose*
+**/.dockerignore
+
+# Documentation
+**/*.md
+**/docs/
+
+# Tests
+**/TestResults/
+
+# Environment files (should be handled separately)
+**/.env
+**/.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+**/logs/
+**/*.log
+
+# NuGet packages (will be restored during build)
+**/packages/
+**/*.nupkg

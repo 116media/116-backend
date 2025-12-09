@@ -10,17 +10,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using System.Security.Claims;
 using _116.Auth.Application.Shared.Constants;
-using Microsoft.AspNetCore.Mvc;
 
 namespace _116.Auth.Application.Admin.UseCases.Commands.UpdateAvatar.V1;
-
-/// <summary>
-/// Request model for updating admin user avatar.
-/// </summary>
-/// <param name="AvatarFile">The avatar image file to upload.</param>
-public record AdminUpdateAvatarRequest(
-    IFormFile AvatarFile
-);
 
 /// <summary>
 /// Response model for updating admin user avatar.
@@ -49,7 +40,7 @@ public class AdminUpdateAvatarEndpointV1 : ICarterModule
             .WithTags($"{AuthConstants.Admin}::{AuthRouteConstants.Profile}");
 
         group.MapPatch(AuthRouteConstants.Avatar, async (
-                [FromForm] AdminUpdateAvatarRequest request,
+                IFormFile avatarFile,
                 ClaimsPrincipal user,
                 IUserRepository userRepository,
                 IDispatcher dispatcher
@@ -59,7 +50,7 @@ public class AdminUpdateAvatarEndpointV1 : ICarterModule
                 Guid userId = userRepository.GetUserIdFromClaims(user);
 
                 // Send the command with the uploaded file (validation happens in validator)
-                var command = new AdminUpdateAvatarCommand(userId, request.AvatarFile);
+                var command = new AdminUpdateAvatarCommand(userId, avatarFile);
                 AdminUpdateAvatarResult result = await dispatcher.Send(command);
 
                 // Return response
@@ -71,7 +62,6 @@ public class AdminUpdateAvatarEndpointV1 : ICarterModule
             .WithDescription(AdminUpdateAvatarMetaField.UpdateAvatar.Description)
             .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .DisableAntiforgery()
-            .Accepts<AdminUpdateAvatarRequest>("multipart/form-data")
             .ProducesValidationProblem()
             .Produces<AdminUpdateAvatarResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)

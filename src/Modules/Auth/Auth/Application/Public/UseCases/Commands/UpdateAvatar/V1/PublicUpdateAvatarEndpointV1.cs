@@ -10,17 +10,8 @@ using System.Security.Claims;
 using _116.Auth.Application.Shared.Constants;
 using _116.Auth.Domain.Constants;
 using _116.Shared.Application.Extensions;
-using Microsoft.AspNetCore.Mvc;
 
 namespace _116.Auth.Application.Public.UseCases.Commands.UpdateAvatar.V1;
-
-/// <summary>
-/// Request model for updating user avatar.
-/// </summary>
-/// <param name="AvatarFile">The avatar image file to upload.</param>
-public record PublicUpdateAvatarRequest(
-    IFormFile AvatarFile
-);
 
 /// <summary>
 /// Response model for updating user avatar.
@@ -49,7 +40,7 @@ public class PublicUpdateAvatarEndpointV1 : ICarterModule
             .WithTags($"{AuthConstants.Public}::{AuthRouteConstants.Profile}");
 
         group.MapPatch(AuthRouteConstants.Avatar, async (
-                [FromForm] PublicUpdateAvatarRequest request,
+                IFormFile avatarFile,
                 ClaimsPrincipal user,
                 IUserRepository userRepository,
                 IDispatcher dispatcher
@@ -59,7 +50,7 @@ public class PublicUpdateAvatarEndpointV1 : ICarterModule
                 Guid userId = userRepository.GetUserIdFromClaims(user);
 
                 // Send the command with the uploaded file (validation happens in validator)
-                var command = new PublicUpdateAvatarCommand(userId, request.AvatarFile);
+                var command = new PublicUpdateAvatarCommand(userId, avatarFile);
                 PublicUpdateAvatarResult result = await dispatcher.Send(command);
 
                 // Return response
@@ -71,7 +62,6 @@ public class PublicUpdateAvatarEndpointV1 : ICarterModule
             .WithDescription(PublicUpdateAvatarMetaField.UpdateAvatar.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
             .DisableAntiforgery()
-            .Accepts<PublicUpdateAvatarRequest>("multipart/form-data")
             .ProducesValidationProblem()
             .Produces<PublicUpdateAvatarResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)

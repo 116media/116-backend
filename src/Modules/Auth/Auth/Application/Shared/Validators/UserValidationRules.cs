@@ -433,7 +433,23 @@ public static partial class UserValidationRules
     /// <returns>True if MIME type is valid, false otherwise.</returns>
     private static bool BeValidImageType(IFormFile? file)
     {
-        return file != null && FileConstants.AllowedAvatarMimeTypes.Contains(file.ContentType.ToLowerInvariant());
+        if (file == null) return false;
+
+        // Extract content type without parameters (e.g., "image/jpeg" from "image/jpeg; boundary=...")
+        string contentType = file.ContentType?.Split(';')[0].Trim().ToLowerInvariant() ?? string.Empty;
+
+        // Accept if content type is in the allowed list
+        if (FileConstants.AllowedAvatarMimeTypes.Contains(contentType))
+        {
+            return true;
+        }
+
+        // For generic/missing content types (common with mobile uploads), validate by extension
+        bool isGenericContentType = string.IsNullOrEmpty(contentType) ||
+                                     contentType == "application/octet-stream" ||
+                                     contentType == "multipart/form-data";
+
+        return isGenericContentType && BeValidFileExtension(file);
     }
 
     /// <summary>
