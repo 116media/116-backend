@@ -13,6 +13,9 @@ builder.Host.UseSerilog((context, config) =>
 DotNetEnv.Env.Load();
 DotNetEnv.Env.TraversePath().Load();
 
+// Load Cloudinary configuration from environment variables
+builder.Services.AddCloudinaryConfiguration();
+
 Assembly coreAssembly = typeof(CoreModule).Assembly;
 Assembly authAssembly = typeof(AuthModule).Assembly;
 
