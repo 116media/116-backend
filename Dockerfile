@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
@@ -12,13 +13,15 @@ COPY src/Modules/Core/Core/*.csproj ./src/Modules/Core/Core/
 COPY src/Modules/Auth/Auth/*.csproj ./src/Modules/Auth/Auth/
 
 # Restore dependencies (cached layer - only rebuilds if dependencies change)
-RUN dotnet restore
+RUN --mount=type=cache,target=/root/.nuget/packages \
+    dotnet restore
 
 # Copy source code (this layer changes frequently)
 COPY src/ ./src/
 
 # Build and publish
-RUN dotnet publish src/Api/Api.csproj -c Release -o /app/publish
+RUN --mount=type=cache,target=/root/.nuget/packages \
+    dotnet publish src/Api/Api.csproj -c Release -o /app/publish
 
 # Runtime stage (smallest possible image)
 FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
