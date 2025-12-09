@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
@@ -13,14 +12,17 @@ COPY src/Modules/Core/Core/*.csproj ./src/Modules/Core/Core/
 COPY src/Modules/Auth/Auth/*.csproj ./src/Modules/Auth/Auth/
 
 # Restore dependencies (cached layer - only rebuilds if dependencies change)
+# Use BuildKit cache mount for faster restores
 RUN --mount=type=cache,target=/root/.nuget/packages \
     dotnet restore
 
 # Copy source code (this layer changes frequently)
 COPY src/ ./src/
 
-# Build and publish
+# Build and publish with BuildKit cache mounts
 RUN --mount=type=cache,target=/root/.nuget/packages \
+    --mount=type=cache,target=/src/obj \
+    --mount=type=cache,target=/src/bin \
     dotnet publish src/Api/Api.csproj -c Release -o /app/publish
 
 # Runtime stage (smallest possible image)
