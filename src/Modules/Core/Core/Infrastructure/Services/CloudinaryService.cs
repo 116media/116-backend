@@ -109,16 +109,7 @@ public class CloudinaryService : ICloudinaryService
             throw CoreErrors.FileTooLarge(file.Length, FileConstants.MaxAvatarFileSizeBytes, maxSizeMb);
         }
 
-        // Check MIME type
-        if (!FileConstants.AllowedAvatarMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
-        {
-            throw CoreErrors.InvalidFileType(
-                file.ContentType,
-                string.Join(", ", FileConstants.AllowedAvatarMimeTypes)
-            );
-        }
-
-        // Additional check: file extension
+        // Check file extension first (more reliable than MIME type for mobile uploads)
         string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (!FileConstants.AllowedAvatarExtensions.Contains(extension))
         {
@@ -126,6 +117,20 @@ public class CloudinaryService : ICloudinaryService
                 extension,
                 string.Join(", ", FileConstants.AllowedAvatarExtensions)
             );
+        }
+
+        // Extract content type without parameters (e.g., "image/jpeg" from "image/jpeg; boundary=...")
+        string contentType = (file.ContentType?.Split(';')[0] ?? string.Empty).Trim().ToLowerInvariant();
+
+        // Allow if content type is in allowed list OR if it's a generic type (mobile uploads)
+        bool isValidContentType = FileConstants.AllowedAvatarMimeTypes.Contains(contentType) ||
+                                   string.IsNullOrEmpty(contentType) ||
+                                   contentType == "application/octet-stream" ||
+                                   contentType == "multipart/form-data";
+
+        if (!isValidContentType)
+        {
+            throw CoreErrors.InvalidFileType(contentType, string.Join(", ", FileConstants.AllowedAvatarMimeTypes));
         }
     }
 }
