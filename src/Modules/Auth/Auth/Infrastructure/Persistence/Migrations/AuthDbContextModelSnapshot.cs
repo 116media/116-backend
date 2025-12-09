@@ -255,6 +255,11 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("avatar_file_id");
 
+                    b.Property<string>("AvatarSource")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("avatar_source");
+
                     b.Property<string>("CountryDialCode")
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)")
