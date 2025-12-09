@@ -5,9 +5,9 @@ using _116.Auth.Application.Shared.Mappers;
 using _116.Auth.Application.Shared.Repositories;
 using _116.Auth.Application.Shared.Services;
 using _116.Auth.Domain.Entities;
+using _116.Auth.Domain.Enums;
 using _116.Auth.Domain.Results;
 using _116.Auth.Domain.ValueObjects;
-using OtpPurpose = _116.Auth.Domain.Enums.OtpPurpose;
 
 namespace _116.Auth.Application.Public.UseCases.Commands.SignUp;
 
@@ -64,7 +64,7 @@ public class PublicSignUpHandler(
         await userRepository.AssignVisitorRoleAsync(newUser.Id, cancellationToken);
 
         // Generate OTP for email verification
-        OtpEntity verificationOtp = otpService.CreateOtp(newUser.Id, OtpPurpose.EmailVerification);
+        OtpEntity verificationOtp = otpService.CreateOtp(newUser.Id, EnumOtpPurpose.EmailVerification);
         await otpRepository.AddAsync(verificationOtp, cancellationToken);
 
         // Save all changes atomically in a single transaction

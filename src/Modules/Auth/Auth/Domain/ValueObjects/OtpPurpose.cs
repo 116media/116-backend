@@ -1,3 +1,5 @@
+using _116.Auth.Domain.Enums;
+
 namespace _116.Auth.Domain.ValueObjects;
 
 /// <summary>
@@ -9,14 +11,14 @@ public record OtpPurpose
     /// <summary>
     /// The validated OTP purpose value.
     /// </summary>
-    public Enums.OtpPurpose Value { get; init; }
+    public EnumOtpPurpose Value { get; init; }
 
     /// <summary>
-    /// Initializes a new <see cref="OtpPurpose"/> from an <see cref="Enums.OtpPurpose"/> enum value.
+    /// Initializes a new <see cref="OtpPurpose"/> from an <see cref="EnumOtpPurpose"/> enum value.
     /// </summary>
-    /// <param name="value">The <see cref="Enums.OtpPurpose"/> to wrap.</param>
+    /// <param name="value">The <see cref="EnumOtpPurpose"/> to wrap.</param>
     /// <exception cref="ArgumentException">Thrown when the provided enum value is not defined.</exception>
-    public OtpPurpose(Enums.OtpPurpose value)
+    public OtpPurpose(EnumOtpPurpose value)
     {
         if (!Enum.IsDefined(value))
         {
@@ -29,11 +31,11 @@ public record OtpPurpose
     /// <summary>
     /// Initializes a new <see cref="OtpPurpose"/> from a string representation.
     /// </summary>
-    /// <param name="value">The string to parse into an <see cref="Enums.OtpPurpose"/>.</param>
+    /// <param name="value">The string to parse into an <see cref="EnumOtpPurpose"/>.</param>
     /// <exception cref="ArgumentException">Thrown when the provided string cannot be parsed or is invalid.</exception>
     public OtpPurpose(string value)
     {
-        if (!Enum.TryParse(value, true, out Enums.OtpPurpose parsed) || !Enum.IsDefined(parsed))
+        if (!Enum.TryParse(value, true, out EnumOtpPurpose parsed) || !Enum.IsDefined(parsed))
         {
             throw new ArgumentException($"Invalid OTP purpose: {value}");
         }
@@ -42,9 +44,9 @@ public record OtpPurpose
     }
 
     /// <summary>
-    /// Implicit conversion from <see cref="OtpPurpose"/> to <see cref="Enums.OtpPurpose"/>.
+    /// Implicit conversion from <see cref="OtpPurpose"/> to <see cref="EnumOtpPurpose"/>.
     /// </summary>
-    public static implicit operator Enums.OtpPurpose(OtpPurpose otpPurpose) => otpPurpose.Value;
+    public static implicit operator EnumOtpPurpose(OtpPurpose otpPurpose) => otpPurpose.Value;
 
     /// <summary>
     /// Implicit conversion from <see cref="OtpPurpose"/> to <see cref="string"/>.
@@ -53,9 +55,9 @@ public record OtpPurpose
     public static implicit operator string(OtpPurpose otpPurpose) => otpPurpose.Value.ToString();
 
     /// <summary>
-    /// Implicit conversion from <see cref="Enums.OtpPurpose"/> to <see cref="OtpPurpose"/>.
+    /// Implicit conversion from <see cref="EnumOtpPurpose"/> to <see cref="OtpPurpose"/>.
     /// </summary>
-    public static implicit operator OtpPurpose(Enums.OtpPurpose otpPurpose) => new(otpPurpose);
+    public static implicit operator OtpPurpose(EnumOtpPurpose otpPurpose) => new(otpPurpose);
 
     /// <summary>
     /// Implicit conversion from <see cref="string"/> to <see cref="OtpPurpose"/>.

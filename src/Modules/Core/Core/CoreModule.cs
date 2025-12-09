@@ -53,6 +53,7 @@ public static class CoreModule
 
         // Register core management services
         services.AddHttpClient<IFileService, FileService>();
+        services.AddScoped<ICloudinaryService, CloudinaryService>();
 
         return services;
     }

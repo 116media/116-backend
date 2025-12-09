@@ -8,7 +8,7 @@ using _116.Auth.Domain.ValueObjects;
 using _116.Auth.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using AuthProvider = _116.Auth.Domain.Enums.AuthProvider;
+using _116.Shared.Application.Exceptions;
 
 namespace _116.Auth.Infrastructure.Repositories;
 
@@ -177,7 +177,7 @@ public class UserRepository(AuthDbContext context) : IUserRepository
     /// <inheritdoc />
     public bool IsUserAccountVerified(UserEntity user)
     {
-        if (user is { AuthProvider: AuthProvider.Local, IsVerified: false })
+        if (user is { AuthProvider: EnumAuthProvider.Local, IsVerified: false })
         {
             throw UserErrors.AccountNotVerified(user.Email!);
         }
@@ -236,13 +236,13 @@ public class UserRepository(AuthDbContext context) : IUserRepository
         UserEntity? user = await context.Users.FindAsync([userId], cancellationToken);
 
         // Find the Visitor role using specification
-        var roleSpec = new RoleByNameSpecification(nameof(CoreUserRole.Visitor));
+        var roleSpec = new RoleByNameSpecification(nameof(EnumCoreUserRole.Visitor));
         RoleEntity? visitorRole = await context.Roles
             .FirstOrDefaultBySpecificationAsync(roleSpec, cancellationToken);
 
         if (visitorRole == null)
         {
-            throw UserErrors.RoleNotFoundByName(nameof(CoreUserRole.Visitor));
+            throw UserErrors.RoleNotFoundByName(nameof(EnumCoreUserRole.Visitor));
         }
 
         // Create user-role association using the static factory method
@@ -267,5 +267,63 @@ public class UserRepository(AuthDbContext context) : IUserRepository
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await context.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<UserEntity?> GetOrCreateExternalUserAsync(
+        string email,
+        string? userName,
+        AuthProvider authProvider,
+        CancellationToken cancellationToken = default
+    )
+    {
+        UserEntity? user;
+        try
+        {
+            // Try to load existing user including roles and permissions
+            user = await GetUserWithRolesAndPermissionsByCredentialsOrThrow(
+                email, cancellationToken
+            );
+
+            // Prevent social login if a local account exists
+            if (user!.AuthProvider == EnumAuthProvider.Local)
+            {
+                throw UserErrors.EmailAlreadyExists(email);
+            }
+
+            // Update username if a new one is provided and it's different
+            if (!string.IsNullOrWhiteSpace(userName) && user.UserName != userName)
+            {
+                // Check if another user already takes the new username
+                bool usernameExists = await ExistsByUserNameAsync(userName, cancellationToken);
+                if (usernameExists)
+                {
+                    throw UserErrors.UsernameAlreadyExists(userName);
+                }
+
+                user.UpdateUserName(userName);
+            }
+        }
+        catch (NotFoundException)
+        {
+            // User doesn't exist, create a new one
+            user = UserEntity.CreateExternal(
+                id: Guid.NewGuid(),
+                userName: userName!,
+                authProvider: authProvider.Value,
+                email: email
+            );
+
+            await AddAsync(user, cancellationToken);
+            await AssignVisitorRoleAsync(user.Id, cancellationToken);
+            await SaveChangesAsync(cancellationToken);
+
+            // Reload user with roles and permissions after creation
+            user = await GetUserWithRolesAndPermissionsByCredentialsOrThrow(
+                email, cancellationToken
+            );
+        }
+
+        return user;
     }
 }

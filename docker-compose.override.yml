@@ -38,6 +38,9 @@ services:
             - JWT_AUDIENCE=${JWT_AUDIENCE}
             - JWT_EXPIRATION=${JWT_EXPIRATION}
             - DEFAULT_USER_PASSWORD=${DEFAULT_USER_PASSWORD}
+            - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+            - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+            - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
         restart: always
         ports:
             - "5025:8080"

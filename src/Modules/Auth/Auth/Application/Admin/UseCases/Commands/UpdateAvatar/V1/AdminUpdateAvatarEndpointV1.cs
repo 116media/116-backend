@@ -10,16 +10,16 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using System.Security.Claims;
 using _116.Auth.Application.Shared.Constants;
+using Microsoft.AspNetCore.Mvc;
 
 namespace _116.Auth.Application.Admin.UseCases.Commands.UpdateAvatar.V1;
 
 /// <summary>
 /// Request model for updating admin user avatar.
-/// This endpoint requires admin authentication - only logged-in admin users can update their avatar.
 /// </summary>
-/// <param name="AvatarUrl">The new avatar URL to set for the admin user.</param>
+/// <param name="AvatarFile">The avatar image file to upload.</param>
 public record AdminUpdateAvatarRequest(
-    string AvatarUrl
+    IFormFile AvatarFile
 );
 
 /// <summary>
@@ -31,8 +31,8 @@ public record AdminUpdateAvatarResponse(
 );
 
 /// <summary>
-/// Defines the update avatar endpoint for authenticated admin users (V1).
-/// This endpoint requires admin authentication - only logged-in admin users can update their avatar.
+/// Defines the update avatar endpoint for authenticated admin users.
+/// This endpoint accepts multipart/form-data file uploads.
 /// </summary>
 public class AdminUpdateAvatarEndpointV1 : ICarterModule
 {
@@ -49,7 +49,7 @@ public class AdminUpdateAvatarEndpointV1 : ICarterModule
             .WithTags($"{AuthConstants.Admin}::{AuthRouteConstants.Profile}");
 
         group.MapPatch(AuthRouteConstants.Avatar, async (
-                AdminUpdateAvatarRequest request,
+                [FromForm] AdminUpdateAvatarRequest request,
                 ClaimsPrincipal user,
                 IUserRepository userRepository,
                 IDispatcher dispatcher
@@ -58,19 +58,20 @@ public class AdminUpdateAvatarEndpointV1 : ICarterModule
                 // Extract user ID from JWT token claims
                 Guid userId = userRepository.GetUserIdFromClaims(user);
 
-                // Send the command to update the avatar
-                var command = new AdminUpdateAvatarCommand(userId, request.AvatarUrl);
+                // Send the command with the uploaded file (validation happens in validator)
+                var command = new AdminUpdateAvatarCommand(userId, request.AvatarFile);
                 AdminUpdateAvatarResult result = await dispatcher.Send(command);
 
-                // Adapt the result to the response type
+                // Return response
                 var response = new AdminUpdateAvatarResponse(result.User);
-
                 return Results.Ok(response);
             })
             .WithName(AdminUpdateAvatarMetaField.UpdateAvatar.Name)
             .WithSummary(AdminUpdateAvatarMetaField.UpdateAvatar.Summary)
             .WithDescription(AdminUpdateAvatarMetaField.UpdateAvatar.Description)
             .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .DisableAntiforgery()
+            .Accepts<AdminUpdateAvatarRequest>("multipart/form-data")
             .ProducesValidationProblem()
             .Produces<AdminUpdateAvatarResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)

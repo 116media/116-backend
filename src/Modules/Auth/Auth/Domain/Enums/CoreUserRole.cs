@@ -29,7 +29,7 @@ namespace _116.Auth.Domain.Enums;
 /// "Moderator" and "AdsManager" functions, allowing them to moderate content and manage
 /// advertisements while maintaining their core administrative privileges.
 /// </remarks>
-public enum CoreUserRole
+public enum EnumCoreUserRole
 {
     /// <summary>
     /// Administrative role with elevated system privileges.

@@ -24,22 +24,22 @@ public class OtpEntity : Aggregate<Guid>
     /// <summary>
     /// The purpose of the OTP (EmailVerification, PasswordReset, etc.).
     /// </summary>
-    public OtpPurpose Purpose { get; private set; }
+    public EnumOtpPurpose Purpose { get; private set; }
 
     /// <summary>
     /// The date and time when the OTP expires, in UTC.
     /// </summary>
-    public DateTime ExpiresAt { get; private set; }
+    public DateTime ExpiresAt { get; private init; }
 
     /// <summary>
     /// The number of verification attempts made with this OTP.
     /// </summary>
-    public int AttemptCount { get; private set; } = 0;
+    public int AttemptCount { get; private set; }
 
     /// <summary>
     /// Indicates whether the OTP has been used successfully.
     /// </summary>
-    public bool IsUsed { get; private set; } = false;
+    public bool IsUsed { get; private set; }
 
     /// <summary>
     /// The date and time when the OTP was used, in UTC.
@@ -60,7 +60,7 @@ public class OtpEntity : Aggregate<Guid>
     /// <param name="purpose">The purpose of the OTP.</param>
     /// <param name="expiresAt">When the OTP expires.</param>
     /// <returns>A new <see cref="OtpEntity"/> instance.</returns>
-    public static OtpEntity Create(Guid id, Guid userId, string code, OtpPurpose purpose, DateTime expiresAt)
+    public static OtpEntity Create(Guid id, Guid userId, string code, EnumOtpPurpose purpose, DateTime expiresAt)
     {
         return new OtpEntity
         {

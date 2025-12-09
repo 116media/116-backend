@@ -41,6 +41,11 @@ public class UserEntity : Aggregate<Guid>
     public Guid? AvatarFileId { get; private set; }
 
     /// <summary>
+    /// Source of the user's avatar (Manual, Provider or None).
+    /// </summary>
+    public EnumAvatarSource AvatarSource { get; private set; } = EnumAvatarSource.None;
+
+    /// <summary>
     /// Navigation property:
     /// Collection of roles assigned to the user.
     /// </summary>
@@ -49,7 +54,7 @@ public class UserEntity : Aggregate<Guid>
     /// <summary>
     /// Authentication provider used by the user (e.g., Local, Google, Facebook).
     /// </summary>
-    public AuthProvider AuthProvider { get; private set; }
+    public EnumAuthProvider AuthProvider { get; private set; }
 
     /// <summary>
     /// Indicates whether the user's email/account has been verified.
@@ -145,7 +150,7 @@ public class UserEntity : Aggregate<Guid>
             Email = email.ToLowerInvariant(),
             UserName = userName,
             PasswordHash = passwordHash,
-            AuthProvider = AuthProvider.Local
+            AuthProvider = EnumAuthProvider.Local
         };
     }
 
@@ -165,7 +170,12 @@ public class UserEntity : Aggregate<Guid>
     /// This method creates a user with the external authentication provider. Email may be null
     /// if not provided by the external provider. External users start as verified and active.
     /// </remarks>
-    public static UserEntity CreateExternal(Guid id, string userName, AuthProvider authProvider, string? email = null)
+    public static UserEntity CreateExternal(
+        Guid id,
+        string userName,
+        EnumAuthProvider authProvider,
+        string? email = null
+    )
     {
         if (string.IsNullOrWhiteSpace(userName))
         {
@@ -215,7 +225,7 @@ public class UserEntity : Aggregate<Guid>
             throw UserErrors.InvalidPasswordFormat();
         }
 
-        if (AuthProvider != AuthProvider.Local && string.IsNullOrEmpty(Email))
+        if (AuthProvider != EnumAuthProvider.Local && string.IsNullOrEmpty(Email))
         {
             throw UserErrors.BadRequest("Cannot update password for a user without email.");
         }
@@ -286,7 +296,7 @@ public class UserEntity : Aggregate<Guid>
             throw UserErrors.AccountInactive(Email!);
         }
 
-        if (AuthProvider == AuthProvider.Local && !IsVerified)
+        if (AuthProvider == EnumAuthProvider.Local && !IsVerified)
         {
             throw UserErrors.AccountNotVerified(Email!);
         }
@@ -307,10 +317,12 @@ public class UserEntity : Aggregate<Guid>
     /// Updates the user's avatar file reference.
     /// </summary>
     /// <param name="avatarFileId">The identifier of the avatar file, or null to remove avatar.</param>
-    /// <remarks>
-    /// Associates the user with an uploaded avatar file from the file management system.
-    /// </remarks>
-    public void UpdateAvatar(Guid? avatarFileId) => AvatarFileId = avatarFileId;
+    /// <param name="avatarSource">The source of the avatar (Manual or Provider).</param>
+    public void UpdateAvatar(Guid? avatarFileId, EnumAvatarSource avatarSource)
+    {
+        AvatarFileId = avatarFileId;
+        AvatarSource = avatarSource;
+    }
 
     /// <summary>
     /// Updates the user's phone number information.

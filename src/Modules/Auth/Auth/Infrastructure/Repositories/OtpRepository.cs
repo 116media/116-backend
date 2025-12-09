@@ -23,7 +23,7 @@ public class OtpRepository(AuthDbContext context) : IOtpRepository
     /// <inheritdoc />
     public async Task<OtpEntity?> GetLatestValidOtpAsync(
         Guid userId,
-        OtpPurpose purpose,
+        EnumOtpPurpose purpose,
         CancellationToken cancellationToken = default
     )
     {
@@ -39,7 +39,7 @@ public class OtpRepository(AuthDbContext context) : IOtpRepository
     public async Task<OtpEntity> ValidateOtpAsync(
         Guid userId,
         string code,
-        OtpPurpose purpose,
+        EnumOtpPurpose purpose,
         CancellationToken cancellationToken = default
     )
     {
@@ -118,7 +118,7 @@ public class OtpRepository(AuthDbContext context) : IOtpRepository
     public async Task<OtpEntity> ValidateUsedOtpAsync(
         Guid userId,
         string code,
-        OtpPurpose purpose,
+        EnumOtpPurpose purpose,
         CancellationToken cancellationToken = default
     )
     {
@@ -148,7 +148,7 @@ public class OtpRepository(AuthDbContext context) : IOtpRepository
     /// <inheritdoc />
     public async Task InvalidateExistingOtpsAsync(
         Guid userId,
-        OtpPurpose purpose,
+        EnumOtpPurpose purpose,
         CancellationToken cancellationToken = default
     )
     {

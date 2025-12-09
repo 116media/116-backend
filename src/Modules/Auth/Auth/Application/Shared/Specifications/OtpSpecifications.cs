@@ -21,7 +21,7 @@ public class OtpByUserIdSpecification(Guid userId) : Specification<OtpEntity>
 /// Specification that matches OTPs by purpose.
 /// Used for filtering OTPs based on their intended purpose.
 /// </summary>
-public class OtpByPurposeSpecification(OtpPurpose purpose) : Specification<OtpEntity>
+public class OtpByPurposeSpecification(EnumOtpPurpose purpose) : Specification<OtpEntity>
 {
     public override Expression<Func<OtpEntity, bool>> ToExpression()
     {
@@ -94,7 +94,7 @@ public class OtpIsExpiredSpecification : Specification<OtpEntity>
 /// Combines user ID, purpose, not used, and not expired specifications.
 /// Used for finding OTPs that can be validated.
 /// </summary>
-public class OtpIsValidForUserAndPurposeSpecification(Guid userId, OtpPurpose purpose) : Specification<OtpEntity>
+public class OtpIsValidForUserAndPurposeSpecification(Guid userId, EnumOtpPurpose purpose) : Specification<OtpEntity>
 {
     public override Expression<Func<OtpEntity, bool>> ToExpression()
     {
@@ -116,7 +116,7 @@ public class OtpIsValidForUserAndPurposeSpecification(Guid userId, OtpPurpose pu
 /// Combines user ID, code, purpose, and not used specifications.
 /// Used for finding OTPs during the validation process.
 /// </summary>
-public class OtpForValidationSpecification(Guid userId, string code, OtpPurpose purpose) : Specification<OtpEntity>
+public class OtpForValidationSpecification(Guid userId, string code, EnumOtpPurpose purpose) : Specification<OtpEntity>
 {
     public override Expression<Func<OtpEntity, bool>> ToExpression()
     {
@@ -138,7 +138,7 @@ public class OtpForValidationSpecification(Guid userId, string code, OtpPurpose 
 /// Combines user ID, purpose, and not used specifications.
 /// Used for invalidating existing OTPs when generating new ones.
 /// </summary>
-public class OtpForInvalidationSpecification(Guid userId, OtpPurpose purpose) : Specification<OtpEntity>
+public class OtpForInvalidationSpecification(Guid userId, EnumOtpPurpose purpose) : Specification<OtpEntity>
 {
     public override Expression<Func<OtpEntity, bool>> ToExpression()
     {
@@ -158,7 +158,7 @@ public class OtpForInvalidationSpecification(Guid userId, OtpPurpose purpose) : 
 /// Combines user ID, code, purpose, and used specifications.
 /// Used for validating that an OTP was already verified/used.
 /// </summary>
-public class OtpForUsedValidationSpecification(Guid userId, string code, OtpPurpose purpose) : Specification<OtpEntity>
+public class OtpForUsedValidationSpecification(Guid userId, string code, EnumOtpPurpose purpose) : Specification<OtpEntity>
 {
     public override Expression<Func<OtpEntity, bool>> ToExpression()
     {

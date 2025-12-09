@@ -15,5 +15,9 @@
         <ProjectReference Include="../../../Shared/Shared.Contracts/Shared.Contracts.csproj" />
         <ProjectReference Include="../../../BuildingBlocks/BuildingBlocks.csproj" />
     </ItemGroup>
-    
+
+    <ItemGroup>
+      <PackageReference Include="CloudinaryDotNet" Version="1.27.9" />
+    </ItemGroup>
+
 </Project>

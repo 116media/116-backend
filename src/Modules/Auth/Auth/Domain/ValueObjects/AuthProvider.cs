@@ -1,3 +1,5 @@
+using _116.Auth.Domain.Enums;
+
 namespace _116.Auth.Domain.ValueObjects;
 
 /// <summary>
@@ -9,14 +11,14 @@ public record AuthProvider
     /// <summary>
     /// The validated authentication provider value.
     /// </summary>
-    public Enums.AuthProvider Value { get; init; }
+    public EnumAuthProvider Value { get; init; }
 
     /// <summary>
     /// Initializes a new <see cref="AuthProvider"/> from an <see cref="AuthProvider"/> enum value.
     /// </summary>
     /// <param name="value">The <see cref="AuthProvider"/> to wrap.</param>
     /// <exception cref="ArgumentException">Thrown when the provided enum value is not defined.</exception>
-    public AuthProvider(Enums.AuthProvider value)
+    public AuthProvider(EnumAuthProvider value)
     {
         if (!Enum.IsDefined(value))
         {
@@ -33,7 +35,7 @@ public record AuthProvider
     /// <exception cref="ArgumentException">Thrown when the provided string cannot be parsed or is invalid.</exception>
     public AuthProvider(string value)
     {
-        if (!Enum.TryParse(value, true, out Enums.AuthProvider parsed) || !Enum.IsDefined(parsed))
+        if (!Enum.TryParse(value, true, out EnumAuthProvider parsed) || !Enum.IsDefined(parsed))
         {
             throw new ArgumentException($"Invalid auth provider: {value}");
         }
@@ -44,7 +46,7 @@ public record AuthProvider
     /// <summary>
     /// Implicit conversion from <see cref="AuthProvider"/> to <see cref="AuthProvider"/>.
     /// </summary>
-    public static implicit operator Enums.AuthProvider(AuthProvider provider) => provider.Value;
+    public static implicit operator EnumAuthProvider(AuthProvider provider) => provider.Value;
 
     /// <summary>
     /// Implicit conversion from <see cref="AuthProvider"/> to <see cref="string"/>.
@@ -55,7 +57,7 @@ public record AuthProvider
     /// <summary>
     /// Implicit conversion from <see cref="AuthProvider"/> to <see cref="AuthProvider"/>.
     /// </summary>
-    public static implicit operator AuthProvider(Enums.AuthProvider provider) => new(provider);
+    public static implicit operator AuthProvider(EnumAuthProvider provider) => new(provider);
 
     /// <summary>
     /// Implicit conversion from <see cref="string"/> to <see cref="AuthProvider"/>.

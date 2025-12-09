@@ -122,4 +122,46 @@ public static class CoreErrors
     /// </summary>
     public static BadRequestException BadRequest(string message) =>
         new(message);
+
+    /// <summary>
+    /// Error for when no file is provided in the upload request.
+    /// </summary>
+    public static BadRequestException FileRequired() =>
+        new("File.Required", "No file was provided for upload");
+
+    /// <summary>
+    /// Error for when the uploaded file exceeds size limits (overload with detailed info).
+    /// </summary>
+    public static BadRequestException FileTooLarge(long actualSize, long maxSize, long maxSizeMB) =>
+        new(
+            "File.TooLarge",
+            $"File size ({actualSize} bytes) exceeds maximum allowed size of {maxSizeMB}MB ({maxSize} bytes)"
+        );
+
+    /// <summary>
+    /// Error for Invalid filetype.
+    /// </summary>
+    public static BadRequestException InvalidFileType(string providedType, string allowedTypes) =>
+        new(
+            "File.InvalidType",
+            $"File type '{providedType}' is not allowed. Allowed types: {allowedTypes}"
+        );
+
+    /// <summary>
+    /// Error for invalid file extension.
+    /// </summary>
+    public static BadRequestException InvalidFileExtension(string providedExtension, string allowedExtensions) =>
+        new(
+            "File.InvalidExtension",
+            $"File extension '{providedExtension}' is not allowed. Allowed extensions: {allowedExtensions}"
+        );
+
+    /// <summary>
+    /// Error for file upload failures (overload with just reason).
+    /// </summary>
+    public static BadGatewayException FileUploadFailed(string reason) =>
+        new(
+            "File.UploadFailed",
+            $"File upload failed: {reason}"
+        );
 }

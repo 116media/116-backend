@@ -1,21 +1,49 @@
 using _116.Core.Application.Shared.Services;
 using _116.Core.Application.Shared.Errors;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
+using Microsoft.AspNetCore.Http;
 
 namespace _116.Core.Infrastructure.Services;
 
 /// <summary>
 /// Implementation of <see cref="IFileService"/> for file operations including download, storage, and management.
-/// Handles remote file metadata retrieval, persistence, and lifecycle operations.
+/// Handles remote file metadata retrieval and cloud storage operations.
 /// </summary>
 /// <param name="httpClient">HTTP client for downloading files from URLs.</param>
-/// <param name="fileRepository">Repository for file entity persistence.</param>
-public class FileService(HttpClient httpClient, IFileRepository fileRepository) : IFileService
+/// <param name="cloudinaryService">Service for Cloudinary cloud storage operations.</param>
+public class FileService(HttpClient httpClient, ICloudinaryService cloudinaryService) : IFileService
 {
     /// <inheritdoc />
-    public async Task<Guid> DownloadAndStoreAsync(string fileUrl, CancellationToken cancellationToken = default)
+    public async Task<FileUploadResult> UploadFileAsync(
+        IFormFile file,
+        string publicId,
+        string? folder = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        // Upload to Cloudinary (with overwrite enabled)
+        CloudinaryUploadResult uploadResult = await cloudinaryService.UploadImageAsync(
+            file,
+            publicId,
+            folder,
+            cancellationToken
+        );
+
+        // Generate file ID and return result
+        var fileId = Guid.NewGuid();
+
+        return new FileUploadResult(
+            FileId: fileId,
+            SecureUrl: uploadResult.SecureUrl,
+            Format: uploadResult.Format,
+            Width: uploadResult.Width,
+            Height: uploadResult.Height,
+            Bytes: uploadResult.Bytes
+        );
+    }
+
+    /// <inheritdoc />
+    public async Task<FileDownloadResult> DownloadFileAsync(string fileUrl, CancellationToken cancellationToken = default)
     {
         ValidateFileUrl(fileUrl, out Uri? uri);
 
@@ -23,27 +51,22 @@ public class FileService(HttpClient httpClient, IFileRepository fileRepository) 
         {
             var (contentType, contentLength) = await GetFileMetadataAsync(uri, cancellationToken);
 
+            string localPath = uri?.LocalPath ?? string.Empty;
+            string extension = ResolveExtension(localPath, contentType);
+            string resolvedContentType = ResolveContentType(extension, contentType);
+
             var fileId = Guid.NewGuid();
-            if (uri?.LocalPath != null)
-            {
-                string extension = ResolveExtension(uri.LocalPath, contentType);
-                string resolvedContentType = ResolveContentType(extension, contentType);
+            string fileName = $"{fileId}{extension}";
+            string originalFileName = Path.GetFileName(localPath);
 
-                FileEntity fileEntity = CreateFileEntity(
-                    fileId,
-                    uri,
-                    fileUrl,
-                    extension,
-                    resolvedContentType,
-                    contentLength
-                );
-
-                await fileRepository.AddAsync(fileEntity, cancellationToken);
-            }
-
-            await fileRepository.SaveChangesAsync(cancellationToken);
-
-            return fileId;
+            return new FileDownloadResult(
+                FileId: fileId,
+                FileName: fileName,
+                OriginalFileName: originalFileName,
+                MimeType: resolvedContentType,
+                StorageUrl: fileUrl,
+                SizeInBytes: contentLength
+            );
         }
         catch (HttpRequestException ex)
         {
@@ -53,33 +76,6 @@ public class FileService(HttpClient httpClient, IFileRepository fileRepository) 
         {
             throw CoreErrors.FileStorageFailed(ex.Message);
         }
-    }
-
-    /// <inheritdoc />
-    public async Task<string?> GetFilePathAsync(Guid fileId, CancellationToken cancellationToken = default)
-    {
-        FileEntity? fileEntity = await fileRepository.GetByIdAsync(fileId, cancellationToken);
-        return fileEntity?.StorageUrl;
-    }
-
-    /// <inheritdoc />
-    public async Task<bool> DeleteFileAsync(Guid fileId, CancellationToken cancellationToken = default)
-    {
-        FileEntity? fileEntity = await fileRepository.GetByIdAsync(fileId, cancellationToken);
-        if (fileEntity == null) return false;
-
-        // Hard delete - remove from the DB completely
-        fileRepository.Remove(fileEntity);
-        await fileRepository.SaveChangesAsync(cancellationToken);
-
-        return true;
-    }
-
-    /// <inheritdoc />
-    public async Task<string?> GetPublicUrlAsync(Guid fileId, CancellationToken cancellationToken = default)
-    {
-        FileEntity? fileEntity = await fileRepository.GetByIdAsync(fileId, cancellationToken);
-        return fileEntity?.StorageUrl;
     }
 
     /// <summary>
@@ -164,78 +160,6 @@ public class FileService(HttpClient httpClient, IFileRepository fileRepository) 
     private static string ResolveContentType(string extension, string? contentType)
     {
         return string.IsNullOrEmpty(contentType) ? GetContentTypeFromExtension(extension) : contentType;
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="FileEntity"/> for persistence.
-    /// </summary>
-    private static FileEntity CreateFileEntity(
-        Guid fileId,
-        Uri? uri,
-        string fileUrl,
-        string extension,
-        string contentType,
-        long contentLength
-    )
-    {
-        string fileName = $"{fileId}{extension}";
-        string originalFileName = Path.GetFileName(uri!.LocalPath);
-
-        if (string.IsNullOrEmpty(originalFileName))
-        {
-            originalFileName = $"avatar{extension}";
-        }
-
-        return FileEntity.Create(
-            id: fileId,
-            fileName: fileName,
-            originalFileName: originalFileName,
-            mimeType: contentType,
-            storageUrl: fileUrl,
-            sizeInBytes: contentLength
-        );
-    }
-
-    /// <inheritdoc />
-    public async Task<Guid> GetOrDownloadFileAsync(
-        Guid? currentFileId,
-        string fileUrl,
-        CancellationToken cancellationToken = default
-    )
-    {
-        if (string.IsNullOrWhiteSpace(fileUrl))
-        {
-            throw CoreErrors.FileUrlRequired();
-        }
-
-        // If no current file exists, download and store the new one
-        if (!currentFileId.HasValue)
-        {
-            return await DownloadAndStoreAsync(fileUrl, cancellationToken);
-        }
-
-        // Get the existing file to compare URLs
-        FileEntity? existingFile = await fileRepository.GetByIdAsync(currentFileId.Value, cancellationToken);
-
-        // If existing file not found, download the new one
-        if (existingFile == null)
-        {
-            return await DownloadAndStoreAsync(fileUrl, cancellationToken);
-        }
-
-        // If URLs are the same, return the existing file ID (no change needed)
-        if (string.Equals(existingFile.StorageUrl, fileUrl, StringComparison.OrdinalIgnoreCase))
-        {
-            return currentFileId.Value;
-        }
-
-        // URLs are different - download the new file and delete the old one
-        Guid newFileId = await DownloadAndStoreAsync(fileUrl, cancellationToken);
-
-        // Delete the old file (hard delete from DB)
-        await DeleteFileAsync(currentFileId.Value, cancellationToken);
-
-        return newFileId;
     }
 
     /// <summary>

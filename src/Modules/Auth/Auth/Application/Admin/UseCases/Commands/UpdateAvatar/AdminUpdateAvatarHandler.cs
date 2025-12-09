@@ -4,8 +4,8 @@ using _116.Auth.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Mappers;
 using _116.Auth.Application.Shared.Repositories;
-using _116.Auth.Application.Shared.Services;
 using _116.Auth.Domain.Entities;
+using _116.Auth.Domain.Enums;
 
 namespace _116.Auth.Application.Admin.UseCases.Commands.UpdateAvatar;
 
@@ -15,13 +15,11 @@ namespace _116.Auth.Application.Admin.UseCases.Commands.UpdateAvatar;
 /// <param name="userRepository">Repository for user data access operations.</param>
 /// <param name="fileRepository">Repository for file data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
-/// <param name="userService">Service for user operations including avatar updates.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminUpdateAvatarHandler(
     IUserRepository userRepository,
     IFileRepository fileRepository,
     IRoleRepository roleRepository,
-    IUserService userService,
     IAuthUnitOfWork unitOfWork
 ) : ICommandHandler<AdminUpdateAvatarCommand, AdminUpdateAvatarResult>
 {
@@ -44,8 +42,18 @@ public class AdminUpdateAvatarHandler(
         // Ensure the account is active (admin users only need to be active)
         userRepository.IsUserAccountActive(user!);
 
-        // Update user avatar using the user service (this handles the file management)
-        user = await userService.UpdateUserAvatarAsync(user!, command.AvatarUrl, cancellationToken);
+        // Update avatar (deletes old and uploads new)
+        FileEntity fileEntity = await fileRepository.UpdateAvatarFromFileAsync(
+            currentAvatarFileId: user!.AvatarFileId,
+            avatarFile: command.AvatarFile,
+            userId: user.Id.ToString(),
+            originalFileName: command.AvatarFile.FileName,
+            mimeType: command.AvatarFile.ContentType,
+            cancellationToken: cancellationToken
+        );
+
+        // Update user with new avatar file ID
+        user.UpdateAvatar(fileEntity.Id, EnumAvatarSource.Manual);
 
         await unitOfWork.CommitAsync(cancellationToken);
 

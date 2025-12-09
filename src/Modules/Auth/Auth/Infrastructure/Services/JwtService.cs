@@ -27,7 +27,7 @@ public class JwtService : IJwtService
         bool isVerified,
         bool isActive,
         bool isLoggedIn,
-        AuthProvider authProvider
+        EnumAuthProvider authProvider
     )
     {
         var (secret, issuer, audience, expiration) = AppEnvironment.Jwt();

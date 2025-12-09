@@ -1,11 +1,12 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Auth.Application.Shared.Persistence;
+using _116.Auth.Application.Shared.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Auth.Application.Shared.Mappers;
 using _116.Auth.Application.Shared.Repositories;
-using _116.Auth.Application.Shared.Services;
 using _116.Auth.Domain.Entities;
+using _116.Auth.Domain.Enums;
 using _116.Auth.Domain.Results;
 using _116.Auth.Domain.ValueObjects;
 
@@ -14,13 +15,13 @@ namespace _116.Auth.Application.Public.UseCases.Commands.SocialLogin;
 /// <summary>
 /// Handles the <see cref="PublicSocialLoginCommand"/> for social authentication.
 /// </summary>
-/// <param name="userService">Service for user management operations.</param>
+/// <param name="userRepository">Repository for user data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="jwtService">Service for generating JWT tokens with user claims.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicSocialLoginHandler(
-    IUserService userService,
+    IUserRepository userRepository,
     IRoleRepository roleRepository,
     IJwtService jwtService,
     IFileRepository fileRepository,
@@ -43,15 +44,29 @@ public class PublicSocialLoginHandler(
         var provider = new AuthProvider(command.Provider);
 
         // Get or create external user for social authentication
-        UserEntity? user = await userService.GetOrCreateExternalUserAsync(
-            email.Value,
-            command.UserName,
-            provider.Value,
-            cancellationToken
+        UserEntity? user = await userRepository.GetOrCreateExternalUserAsync(
+            email: email.Value,
+            userName: command.UserName,
+            authProvider: provider,
+            cancellationToken: cancellationToken
         );
 
-        // Update user avatar if provided
-        user = await userService.UpdateUserAvatarAsync(user!, command.AvatarUrl, cancellationToken);
+        // Update avatar from provider URL if allowed
+
+        bool isAvatarSourceManual = user!.AvatarSource == EnumAvatarSource.Manual;
+
+        FileEntity? avatarFileEntity = await fileRepository.UpdateAvatarUrlFromSourceAsync(
+            currentAvatarFileId: user.AvatarFileId,
+            avatarUrl: command.AvatarUrl,
+            userId: user.Id.ToString(),
+            isAvatarSourceManual: isAvatarSourceManual,
+            cancellationToken: cancellationToken
+        );
+
+        if (avatarFileEntity != null)
+        {
+            user.UpdateAvatar(avatarFileEntity.Id, EnumAvatarSource.Provider);
+        }
 
         // Record login and save changes
         user.RecordLogin();
