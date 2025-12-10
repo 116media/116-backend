@@ -110,10 +110,5 @@ public sealed class ExceptionHandler(
     {
         problemDetails.Extensions["traceId"] = context.TraceIdentifier;
         problemDetails.Extensions["timestamp"] = DateTime.UtcNow;
-
-        if (!string.IsNullOrEmpty(context.User.Identity?.Name))
-        {
-            problemDetails.Extensions["userId"] = context.User.Identity.Name;
-        }
     }
 }
