@@ -42,5 +42,7 @@ public interface IRoleRepository : IRepository<RoleEntity>
     /// This method is optimized for scenarios where both roles and permissions are needed,
     /// performing the extraction in a single pass for better performance.
     /// </remarks>
-    (IReadOnlyCollection<RoleDto> Roles, IReadOnlyCollection<PermissionDto> Permissions) GetUserRolesAndPermissions(ICollection<UserRoleEntity> userRoles);
+    (IReadOnlyCollection<RoleDto> Roles, IReadOnlyCollection<PermissionDto> Permissions) GetUserRolesAndPermissions(
+        ICollection<UserRoleEntity> userRoles
+    );
 }

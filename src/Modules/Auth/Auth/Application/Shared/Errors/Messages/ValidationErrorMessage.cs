@@ -1,3 +1,5 @@
+using _116.Auth.Domain.Enums;
+
 namespace _116.Auth.Application.Shared.Errors.Messages;
 
 /// <summary>
@@ -132,5 +134,17 @@ public static class ValidationErrorMessage
     public static string NewPasswordSameAsOld()
     {
         return "New password must be different from your current password";
+    }
+
+    /// <summary>
+    /// Error message indicating that a password has not been configured for the account.
+    /// </summary>
+    /// <param name="provider">The OAuth provider name (e.g., Google, Facebook).</param>
+    /// <returns>
+    /// A formatted error message indicating that the user must set a password first.
+    /// </returns>
+    public static string PasswordNotConfigured(EnumAuthProvider provider)
+    {
+        return $"This account was created via {provider}. Please set a password before changing it.";
     }
 }
