@@ -30,6 +30,7 @@ public class AdminChangePasswordHandler(
     /// <exception cref="BadRequestException">Thrown when the account is not active.</exception>
     /// <exception cref="BadRequestException">Thrown when old password is invalid.</exception>
     /// <exception cref="ConflictException">Thrown when new password is the same as old password.</exception>
+    /// <exception cref="BadRequestException">Thrown when the current password is incorrect.</exception>
     public async Task<AdminChangePasswordResult> Handle(
         AdminChangePasswordCommand command,
         CancellationToken cancellationToken
@@ -43,7 +44,7 @@ public class AdminChangePasswordHandler(
         // Verify old password
         if (!passwordService.Verify(command.OldPassword, user!.PasswordHash))
         {
-            throw UserErrors.InvalidPassword();
+            throw UserErrors.IncorrectCurrentPassword();
         }
 
         // Check if new password is different from old password
