@@ -252,22 +252,6 @@ public static partial class UserValidationRules
     }
 
     /// <summary>
-    /// Configures cross-field validation to ensure new password is different from old password.
-    /// </summary>
-    /// <typeparam name="T">The type being validated (must have OldPassword and NewPassword properties).</typeparam>
-    /// <param name="ruleBuilder">The rule builder for the command object.</param>
-    /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, T> NewPasswordMustBeDifferent<T>(
-        this IRuleBuilderInitial<T, T> ruleBuilder
-    )
-    {
-        return ruleBuilder
-            .Must(command => GetOldPasswordValue(command) != GetNewPasswordValue(command))
-            .WithMessage("New password must be different from current password")
-            .WithName("NewPassword");
-    }
-
-    /// <summary>
     /// Validates that a URL is in proper format.
     /// </summary>
     /// <param name="url">The URL to validate.</param>
