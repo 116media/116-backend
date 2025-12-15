@@ -32,7 +32,11 @@ public interface IOtpRepository : IRepository<OtpEntity>
     /// <remarks>
     /// This method returns the most recently created valid OTP that hasn't expired or been used.
     /// </remarks>
-    Task<OtpEntity?> GetLatestValidOtpAsync(Guid userId, EnumOtpPurpose purpose, CancellationToken cancellationToken = default);
+    Task<OtpEntity?> GetLatestValidOtpAsync(
+        Guid userId,
+        EnumOtpPurpose purpose,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Validates an OTP code for a specific user and purpose.
@@ -50,7 +54,12 @@ public interface IOtpRepository : IRepository<OtpEntity>
     /// This method finds an OTP that matches the code, user, and purpose, validates it,
     /// and throws appropriate exceptions for different failure scenarios.
     /// </remarks>
-    Task<OtpEntity> ValidateOtpAsync(Guid userId, string code, EnumOtpPurpose purpose, CancellationToken cancellationToken = default);
+    Task<OtpEntity> ValidateOtpAsync(
+        Guid userId,
+        string code,
+        EnumOtpPurpose purpose,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Validates that an OTP code was previously used for a specific user and purpose.
@@ -85,7 +94,11 @@ public interface IOtpRepository : IRepository<OtpEntity>
     /// This method marks all existing OTPs for the user and purpose as used to prevent reuse.
     /// Useful when generating a new OTP to replace existing ones.
     /// </remarks>
-    Task InvalidateExistingOtpsAsync(Guid userId, EnumOtpPurpose purpose, CancellationToken cancellationToken = default);
+    Task InvalidateExistingOtpsAsync(
+        Guid userId,
+        EnumOtpPurpose purpose,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Removes expired OTPs from the database.
