@@ -24,9 +24,5 @@ public partial class AdminChangePasswordValidator : AbstractValidator<AdminChang
 
         // New password validation - strong password requirements
         RuleFor(x => x.NewPassword).PasswordValidation(fieldName: "New password");
-
-        // Cross-field validation - new password must be different from old password
-        RuleFor(x => x).NewPasswordMustBeDifferent();
     }
-
 }
