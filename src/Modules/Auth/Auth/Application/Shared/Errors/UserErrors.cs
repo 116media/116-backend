@@ -1,6 +1,7 @@
 using _116.Shared.Application.Exceptions;
 using _116.Auth.Application.Shared.Errors.Messages;
 using _116.Auth.Application.Shared.Exceptions;
+using _116.Auth.Domain.Enums;
 
 namespace _116.Auth.Application.Shared.Errors;
 
@@ -197,4 +198,11 @@ public static class UserErrors
     /// </summary>
     public static ConflictException NewPasswordSameAsOld() =>
         new(ValidationErrorMessage.NewPasswordSameAsOld());
+
+    /// <summary>
+    /// Throws when a password has not been configured for the account.
+    /// </summary>
+    /// <param name="provider">The OAuth provider name (e.g., Google, Facebook).</param>
+    public static BadRequestException PasswordNotConfigured(EnumAuthProvider provider) =>
+        new(ValidationErrorMessage.PasswordNotConfigured(provider));
 }
