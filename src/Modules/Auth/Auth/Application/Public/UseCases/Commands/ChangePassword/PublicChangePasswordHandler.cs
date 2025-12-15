@@ -41,8 +41,14 @@ public class PublicChangePasswordHandler(
         userRepository.IsUserAccountActive(user!);
         userRepository.IsUserAccountVerified(user!);
 
+        // Check if password is configured (OAuth users don't have passwords)
+        if (string.IsNullOrEmpty(user!.PasswordHash))
+        {
+            throw UserErrors.PasswordNotConfigured(user.AuthProvider);
+        }
+
         // Verify old password
-        if (!passwordService.Verify(command.OldPassword, user!.PasswordHash))
+        if (!passwordService.Verify(command.OldPassword, user.PasswordHash))
         {
             throw UserErrors.InvalidPassword();
         }

@@ -145,6 +145,6 @@ public static class ValidationErrorMessage
     /// </returns>
     public static string PasswordNotConfigured(EnumAuthProvider provider)
     {
-        return $"Your account was created with {provider}. Please set a password first before you can change it";
+        return $"This account was created via {provider}. Please set a password before changing it.";
     }
 }
