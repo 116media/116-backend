@@ -188,12 +188,6 @@ public static class UserErrors
     public static NotFoundException UserNotFound() => new("User");
 
     /// <summary>
-    /// Throws when the provided password is invalid.
-    /// </summary>
-    public static BadRequestException InvalidPassword() =>
-        new(AuthenticationErrorMessage.InvalidCredentials());
-
-    /// <summary>
     /// Throws when the new password is the same as the old password.
     /// </summary>
     public static ConflictException NewPasswordSameAsOld() =>
@@ -205,4 +199,10 @@ public static class UserErrors
     /// <param name="provider">The OAuth provider name (e.g., Google, Facebook).</param>
     public static BadRequestException PasswordNotConfigured(EnumAuthProvider provider) =>
         new(ValidationErrorMessage.PasswordNotConfigured(provider));
+
+    /// <summary>
+    /// Throws when the current password is incorrect (e.g., during password change).
+    /// </summary>
+    public static BadRequestException IncorrectCurrentPassword() =>
+        new(ValidationErrorMessage.IncorrectCurrentPassword());
 }

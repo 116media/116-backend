@@ -147,4 +147,15 @@ public static class ValidationErrorMessage
     {
         return $"This account was created via {provider}. Please set a password before changing it.";
     }
+
+    /// <summary>
+    /// Error message indicating that the current password is incorrect.
+    /// </summary>
+    /// <returns>
+    /// An error message indicating that the provided current password does not match.
+    /// </returns>
+    public static string IncorrectCurrentPassword()
+    {
+        return "The current password you entered is incorrect.";
+    }
 }

@@ -28,7 +28,8 @@ public class PublicChangePasswordHandler(
     /// <returns>A <see cref="PublicChangePasswordResult"/> containing change status.</returns>
     /// <exception cref="NotFoundException">Thrown when no user is found with the specified ID.</exception>
     /// <exception cref="BadRequestException">Thrown when the account is not active or verified.</exception>
-    /// <exception cref="BadRequestException">Thrown when old password is invalid.</exception>
+    /// <exception cref="BadRequestException">Thrown when password is not configured (OAuth users).</exception>
+    /// <exception cref="BadRequestException">Thrown when the current password is incorrect.</exception>
     /// <exception cref="ConflictException">Thrown when new password is the same as old password.</exception>
     public async Task<PublicChangePasswordResult> Handle(
         PublicChangePasswordCommand command,
@@ -50,7 +51,7 @@ public class PublicChangePasswordHandler(
         // Verify old password
         if (!passwordService.Verify(command.OldPassword, user.PasswordHash))
         {
-            throw UserErrors.InvalidPassword();
+            throw UserErrors.IncorrectCurrentPassword();
         }
 
         // Check if new password is different from old password
