@@ -1,9 +1,10 @@
 using System;
-using Microsoft.EntityFrameworkCore.Migrations;
 
+using Microsoft.EntityFrameworkCore.Migrations;
 #nullable disable
 
 namespace _116.Identity.Infrastructure.Persistence.Migrations
+
 {
     /// <inheritdoc />
     public partial class InitAuthSchema : Migration
@@ -13,7 +14,6 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
         {
             migrationBuilder.EnsureSchema(
                 name: "authentication");
-
             migrationBuilder.CreateTable(
                 name: "permissions",
                 schema: "authentication",
@@ -32,7 +32,6 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                 {
                     table.PrimaryKey("pk_permissions", x => x.id);
                 });
-
             migrationBuilder.CreateTable(
                 name: "roles",
                 schema: "authentication",
@@ -50,7 +49,6 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                 {
                     table.PrimaryKey("pk_roles", x => x.id);
                 });
-
             migrationBuilder.CreateTable(
                 name: "users",
                 schema: "authentication",
@@ -81,7 +79,6 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                 {
                     table.PrimaryKey("pk_users", x => x.id);
                 });
-
             migrationBuilder.CreateTable(
                 name: "role_permissions",
                 schema: "authentication",
@@ -113,7 +110,6 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
             migrationBuilder.CreateTable(
                 name: "user_roles",
                 schema: "authentication",
@@ -145,54 +141,46 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
             migrationBuilder.CreateIndex(
                 name: "IX_permissions_resource_action",
                 schema: "authentication",
                 table: "permissions",
                 columns: new[] { "resource", "action" },
                 unique: true);
-
             migrationBuilder.CreateIndex(
                 name: "ix_role_permissions_permission_id",
                 schema: "authentication",
                 table: "role_permissions",
                 column: "permission_id");
-
             migrationBuilder.CreateIndex(
                 name: "IX_role_permissions_role_id_permission_id",
                 schema: "authentication",
                 table: "role_permissions",
                 columns: new[] { "role_id", "permission_id" },
                 unique: true);
-
             migrationBuilder.CreateIndex(
                 name: "ix_roles_name",
                 schema: "authentication",
                 table: "roles",
                 column: "name",
                 unique: true);
-
             migrationBuilder.CreateIndex(
                 name: "ix_user_roles_role_id",
                 schema: "authentication",
                 table: "user_roles",
                 column: "role_id");
-
             migrationBuilder.CreateIndex(
                 name: "IX_user_roles_user_id_role_id",
                 schema: "authentication",
                 table: "user_roles",
                 columns: new[] { "user_id", "role_id" },
                 unique: true);
-
             migrationBuilder.CreateIndex(
                 name: "ix_users_email",
                 schema: "authentication",
                 table: "users",
                 column: "email",
                 unique: true);
-
             migrationBuilder.CreateIndex(
                 name: "ix_users_user_name",
                 schema: "authentication",
@@ -200,26 +188,21 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                 column: "user_name",
                 unique: true);
         }
-
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
                 name: "role_permissions",
                 schema: "authentication");
-
             migrationBuilder.DropTable(
                 name: "user_roles",
                 schema: "authentication");
-
             migrationBuilder.DropTable(
                 name: "permissions",
                 schema: "authentication");
-
             migrationBuilder.DropTable(
                 name: "roles",
                 schema: "authentication");
-
             migrationBuilder.DropTable(
                 name: "users",
                 schema: "authentication");

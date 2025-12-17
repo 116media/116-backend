@@ -1,9 +1,10 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using _116.Shared.Infrastructure.Seed;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
+using _116.Shared.Infrastructure.Seed;
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
 
@@ -22,20 +23,16 @@ public class VisitorRoleSeeder(IdentityDbContext context, ILogger<VisitorRoleSee
         try
         {
             logger.LogInformation("Starting Visitor role seeding process...");
-
             // Check if the visitor role already exists
             bool visitorRoleExists = await context.Roles
                 .AnyAsync(r => r.Name == nameof(EnumCoreUserRole.Visitor));
-
             if (visitorRoleExists)
             {
                 logger.LogInformation("Visitor role already exists. Skipping seeding.");
                 return;
             }
-
             // Create the visitor role with permissions
             await ExecuteSeedingAsync();
-
             logger.LogInformation("Visitor role seeding completed successfully!");
         }
         catch (Exception ex)
@@ -44,7 +41,6 @@ public class VisitorRoleSeeder(IdentityDbContext context, ILogger<VisitorRoleSee
             throw;
         }
     }
-
     /// <summary>
     /// Creates the Visitor role with all the permissions defined in VisitorPermissions.
     /// </summary>
@@ -56,23 +52,18 @@ public class VisitorRoleSeeder(IdentityDbContext context, ILogger<VisitorRoleSee
             name: nameof(EnumCoreUserRole.Visitor),
             description: "Standard public/visitor user with content access and interaction permissions"
         );
-
         // Get all visitor permissions from the typed permissions class
         PermissionEntity[] visitorPermissions = VisitorPermissions.GetAllPermissions();
-
         // Prepare role-permission associations
         RolePermissionEntity[] rolePermissions = visitorPermissions
             .Select(p => RolePermissionEntity.Create(Guid.NewGuid(), visitorRole.Id, p.Id))
             .ToArray();
-
         // Add everything in bulk
         await context.Roles.AddAsync(visitorRole);
         await context.Permissions.AddRangeAsync(visitorPermissions);
         await context.RolePermissions.AddRangeAsync(rolePermissions);
-
         // Persist changes to the database asynchronously
         await context.SaveChangesAsync();
-
         logger.LogInformation("Created Visitor role with {PermissionCount} permissions", visitorPermissions.Length);
     }
 }

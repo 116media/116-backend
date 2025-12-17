@@ -1,4 +1,5 @@
 using _116.Identity.Domain.Entities;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -18,19 +19,15 @@ public class RolePermissionConfiguration : IEntityTypeConfiguration<RolePermissi
     {
         // Primary key
         builder.HasKey(rp => rp.Id);
-
         // Properties configuration
         builder.Property(rp => rp.RoleId)
             .IsRequired();
-
         builder.Property(rp => rp.PermissionId)
             .IsRequired();
-
         // Indexes
         builder.HasIndex(rp => new { rp.RoleId, rp.PermissionId })
             .IsUnique()
             .HasDatabaseName("IX_role_permissions_role_id_permission_id");
-
         // Relationships are configured in RoleConfiguration and PermissionConfiguration
         // to avoid circular dependencies
     }

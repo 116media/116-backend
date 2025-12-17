@@ -1,7 +1,8 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using _116.Identity.Domain.Entities;
+
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 
@@ -21,10 +22,8 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
             .Include(u => u.UserRoles)
             .ThenInclude(ur => ur.Role)
             .FirstOrDefaultAsync(u => u.Email == SuperAdminConfiguration.Email);
-
         return existingSuperAdmin != null;
     }
-
     /// <summary>
     /// Finds an existing permission by resource and action.
     /// </summary>
@@ -36,7 +35,6 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
         return await context.Permissions
             .FirstOrDefaultAsync(p => p.Resource == resource && p.Action == action);
     }
-
     /// <summary>
     /// Finds an existing role by name.
     /// </summary>
@@ -47,7 +45,6 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
         return await context.Roles
             .FirstOrDefaultAsync(r => r.Name == roleName);
     }
-
     /// <summary>
     /// Checks if a role-permission association already exists.
     /// </summary>
@@ -59,7 +56,6 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
         return await context.RolePermissions
             .AnyAsync(rp => rp.RoleId == roleId && rp.PermissionId == permissionId);
     }
-
     /// <summary>
     /// Checks if a user-role association already exists.
     /// </summary>
@@ -71,7 +67,6 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
         return await context.UserRoles
             .AnyAsync(ur => ur.UserId == userId && ur.RoleId == roleId);
     }
-
     /// <summary>
     /// Adds a permission entity to the context.
     /// </summary>
@@ -81,7 +76,6 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
         context.Permissions.Add(permission);
         logger.LogDebug("Added permission: {Resource}.{Action}", permission.Resource, permission.Action);
     }
-
     /// <summary>
     /// Adds a role entity to the context.
     /// </summary>
@@ -91,7 +85,6 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
         context.Roles.Add(role);
         logger.LogDebug("Added role: {RoleName}", role.Name);
     }
-
     /// <summary>
     /// Adds a user entity to the context.
     /// </summary>
@@ -101,7 +94,6 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
         context.Users.Add(user);
         logger.LogDebug("Added user: {Username}", user.UserName);
     }
-
     /// <summary>
     /// Adds a role-permission association to the context.
     /// </summary>
@@ -114,7 +106,6 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
             rolePermission.RoleId, rolePermission.PermissionId
         );
     }
-
     /// <summary>
     /// Adds a user-role association to the context.
     /// </summary>
@@ -127,7 +118,6 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
             userRole.UserId, userRole.RoleId
         );
     }
-
     /// <summary>
     /// Saves all changes to the database.
     /// </summary>
@@ -137,7 +127,6 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
         await context.SaveChangesAsync();
         logger.LogDebug("Saved changes to database");
     }
-
     /// <summary>
     /// Begins a database transaction.
     /// </summary>

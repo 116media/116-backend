@@ -1,20 +1,22 @@
 using System.Text;
-using _116.Identity.Domain.Constants;
-using _116.Shared.Application.Configurations;
-using _116.Shared.Application.Exceptions.Handlers.Contracts;
-using _116.Shared.Infrastructure;
-using _116.Shared.Infrastructure.Seed;
+
 using _116.Identity.Application.Shared.Authorizations.Extensions;
 using _116.Identity.Application.Shared.Exceptions.Handlers;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.Shared.Services;
-using _116.Identity.Infrastructure.Repositories;
+using _116.Identity.Domain.Constants;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
+using _116.Identity.Infrastructure.Repositories;
 using _116.Identity.Infrastructure.Services;
+using _116.Shared.Application.Configurations;
+using _116.Shared.Application.Exceptions.Handlers.Contracts;
+using _116.Shared.Infrastructure;
+using _116.Shared.Infrastructure.Seed;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,7 +39,6 @@ public static class IdentityModule
         EnableMigrations = true,
         EnableSeeding = true
     };
-
     /// <summary>
     /// Adds the Identity module's services to the dependency injection container.
     /// </summary>
@@ -58,16 +59,12 @@ public static class IdentityModule
         // Api Endpoint services.
         // Application UseCase services.
         // DataSource - Infrastructure services.
-
         // Register the database with base module infrastructure
         services.AddModuleDatabase(GetModuleOptions());
-
         // Configure Mapster mappings for optimal performance
         UserMapper.Configure();
-
         // Register Unit of Work for transaction management
         services.AddScoped<IIdentityUnitOfWork, IdentityUnitOfWork>();
-
         // Register user management services
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IPasswordService, PasswordService>();
@@ -75,11 +72,9 @@ public static class IdentityModule
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IOtpRepository, OtpRepository>();
-
         // Register data seeder for initial user data population
         services.AddScoped<IDataSeeder, SuperAdminSeeder>();
         services.AddScoped<IDataSeeder, VisitorRoleSeeder>();
-
         // Configure JWT Authentication
         var (secret, issuer, audience, _) = AppEnvironment.Jwt();
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
@@ -95,14 +90,11 @@ public static class IdentityModule
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!)),
                 ClockSkew = TimeSpan.Zero
             };
-
             // Configure custom JWT Bearer events for consistent error handling
             options.ConfigureJwtBearerEvents();
         });
-
-        // Configure Identityorization using centralized configuration
+        // Configure Authorization using centralized configuration
         services.AddIdentityModuleAuthorization();
-
         // Register custom exception handlers for this module
         services.AddSingleton<IExceptionStrategy, AccountInactiveExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, AccountNotVerifiedExceptionHandler>();
@@ -110,10 +102,8 @@ public static class IdentityModule
         services.AddSingleton<IExceptionStrategy, OtpAttemptsLimitExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, OtpExpirationExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, AccessDeniedExceptionHandler>();
-
         return services;
     }
-
     /// <summary>
     /// Configures the Identity module's middleware in the application pipeline.
     /// </summary>
@@ -134,7 +124,6 @@ public static class IdentityModule
         // Use application UseCase services.
         // Use DataSource - Infrastructure services.
         app.UseModuleDatabase(GetModuleOptions());
-
         return app;
     }
 }

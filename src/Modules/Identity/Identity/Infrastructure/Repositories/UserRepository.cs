@@ -1,4 +1,5 @@
-using _116.Shared.Infrastructure.Extensions;
+using System.Security.Claims;
+
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.Shared.Specifications;
@@ -6,9 +7,10 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Identity.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using _116.Shared.Application.Exceptions;
+using _116.Shared.Infrastructure.Extensions;
+
+using Microsoft.EntityFrameworkCore;
 
 namespace _116.Identity.Infrastructure.Repositories;
 
@@ -22,7 +24,6 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
     {
         return await context.Users.FindOrThrowAsync([userId], cancellationToken);
     }
-
     /// <inheritdoc />
     public async Task<UserEntity?> GetUserWithRolesByIdOrThrow(
         Guid userId,
@@ -30,7 +31,6 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
     )
     {
         var specification = new UserByIdSpecification(userId);
-
         return await context.Users
             .ApplySpecification(specification)
             .Include(u => u.UserRoles)
@@ -40,7 +40,6 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
                 cancellationToken: cancellationToken
             );
     }
-
     /// <inheritdoc />
     public async Task<UserEntity?> GetUserWithRolesByEmailOrThrow(
         Email email,
@@ -48,7 +47,6 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
     )
     {
         var specification = new UserByEmailSpecification(email.Value);
-
         return await context.Users
             .ApplySpecification(specification)
             .Include(u => u.UserRoles)
@@ -59,7 +57,6 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
                 cancellationToken: cancellationToken
             );
     }
-
     /// <inheritdoc />
     public async Task<UserEntity?> GetUserWithRolesAndPermissionsByIdOrThrow(
         Guid userId,
@@ -67,7 +64,6 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
     )
     {
         var specification = new UserByIdSpecification(userId);
-
         return await context.Users
             .ApplySpecification(specification)
             .Include(u => u.UserRoles)
@@ -80,7 +76,6 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
                 cancellationToken: cancellationToken
             );
     }
-
     /// <inheritdoc />
     public async Task<UserEntity?> GetUserWithRolesAndPermissionsByEmailOrThrow(
         Email email,
@@ -88,7 +83,6 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
     )
     {
         var specification = new UserByEmailSpecification(email.Value);
-
         return await context.Users
             .ApplySpecification(specification)
             .Include(u => u.UserRoles)
@@ -102,7 +96,6 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
                 cancellationToken: cancellationToken
             );
     }
-
     /// <inheritdoc />
     public async Task<UserEntity?> GetUserWithRolesAndPermissionsByCredentialsOrThrow(
         string credentials,
@@ -111,7 +104,6 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
     {
         // Use specification to determine if credentials is an email or username
         var specification = new UserByCredentialsSpecification(credentials);
-
         // Get the user by email or username without any status checks
         return await context.Users
             .ApplySpecification(specification)
@@ -126,21 +118,18 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
                 cancellationToken: cancellationToken
             );
     }
-
     /// <inheritdoc />
     public async Task<bool> ExistsByEmailAsync(Email email, CancellationToken cancellationToken = default)
     {
         var specification = new UserByEmailSpecification(email.Value);
         return await context.Users.AnyBySpecificationAsync(specification, cancellationToken);
     }
-
     /// <inheritdoc />
     public async Task<bool> ExistsByUserNameAsync(string userName, CancellationToken cancellationToken = default)
     {
         var specification = new UserByUserNameSpecification(userName);
         return await context.Users.AnyBySpecificationAsync(specification, cancellationToken);
     }
-
     /// <inheritdoc />
     public async Task<UserEntity?> GetUserByPhoneNumberAsync(
         string phoneNumber,
@@ -150,20 +139,17 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
         var specification = new UserByPhoneNumberSpecification(phoneNumber);
         return await context.Users.FirstOrDefaultBySpecificationAsync(specification, cancellationToken);
     }
-
     /// <inheritdoc />
     public async Task AddAsync(UserEntity user, CancellationToken cancellationToken = default)
     {
         await context.Users.AddAsync(user, cancellationToken);
     }
-
     /// <inheritdoc />
     public Task UpdateAsync(UserEntity user, CancellationToken cancellationToken = default)
     {
         context.Users.Update(user);
         return Task.CompletedTask;
     }
-
     /// <inheritdoc />
     public bool IsUserAccountActive(UserEntity user)
     {
@@ -173,7 +159,6 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
         }
         return true;
     }
-
     /// <inheritdoc />
     public bool IsUserAccountVerified(UserEntity user)
     {
@@ -183,17 +168,16 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
         }
         return true;
     }
-
     /// <inheritdoc />
     public bool IsUserLoggedIn(UserEntity user)
     {
-        if (!user.IsLoggedIn)
+        bool hasActiveSessions = user.Sessions.Any(s => s.IsActive());
+        if (!hasActiveSessions)
         {
             throw UserErrors.UserNotLoggedIn(user.Email!);
         }
         return true;
     }
-
     /// <inheritdoc />
     public bool IsUserAdmin(UserEntity user)
     {
@@ -204,7 +188,6 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
         }
         return true;
     }
-
     /// <inheritdoc />
     public async Task ValidateUniqueCredentialsAsync(
         Email email,
@@ -219,7 +202,6 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
         {
             throw UserErrors.EmailAlreadyExists(email.Value);
         }
-
         // Check for existing username second using specification
         var usernameSpec = new UserByUserNameSpecification(userName);
         bool usernameExists = await context.Users.AnyBySpecificationAsync(usernameSpec, cancellationToken);
@@ -228,30 +210,24 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
             throw UserErrors.UsernameAlreadyExists(userName);
         }
     }
-
     /// <inheritdoc />
     public async Task AssignVisitorRoleAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         // Find the user
         UserEntity? user = await context.Users.FindAsync([userId], cancellationToken);
-
         // Find the Visitor role using specification
         var roleSpec = new RoleByNameSpecification(nameof(EnumCoreUserRole.Visitor));
         RoleEntity? visitorRole = await context.Roles
             .FirstOrDefaultBySpecificationAsync(roleSpec, cancellationToken);
-
         if (visitorRole == null)
         {
             throw UserErrors.RoleNotFoundByName(nameof(EnumCoreUserRole.Visitor));
         }
-
         // Create user-role association using the static factory method
         var userRole = UserRoleEntity.Create(Guid.NewGuid(), userId, visitorRole.Id);
-
         // Use the domain method to assign the role
         user?.AssignRole(userRole);
     }
-
     /// <inheritdoc />
     public Guid GetUserIdFromClaims(ClaimsPrincipal user)
     {
@@ -262,13 +238,11 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
         }
         return userId;
     }
-
     /// <inheritdoc />
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await context.SaveChangesAsync(cancellationToken);
     }
-
     /// <inheritdoc />
     public async Task<UserEntity?> GetOrCreateExternalUserAsync(
         string email,
@@ -284,13 +258,11 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
             user = await GetUserWithRolesAndPermissionsByCredentialsOrThrow(
                 email, cancellationToken
             );
-
             // Prevent social login if a local account exists
             if (user!.AuthProvider == EnumAuthProvider.Local)
             {
                 throw UserErrors.EmailAlreadyExists(email);
             }
-
             // Update username if a new one is provided and it's different
             if (!string.IsNullOrWhiteSpace(userName) && user.UserName != userName)
             {
@@ -300,7 +272,6 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
                 {
                     throw UserErrors.UsernameAlreadyExists(userName);
                 }
-
                 user.UpdateUserName(userName);
             }
         }
@@ -313,20 +284,16 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
                 authProvider: authProvider.Value,
                 email: email
             );
-
             await AddAsync(user, cancellationToken);
             await AssignVisitorRoleAsync(user.Id, cancellationToken);
             await SaveChangesAsync(cancellationToken);
-
             // Reload user with roles and permissions after creation
             user = await GetUserWithRolesAndPermissionsByCredentialsOrThrow(
                 email, cancellationToken
             );
         }
-
         return user;
     }
-
     /// <inheritdoc />
     public void SetPasswordForExternalUser(UserEntity user, string hashedPassword)
     {
@@ -335,13 +302,11 @@ public class UserRepository(IdentityDbContext context) : IUserRepository
         {
             throw UserErrors.EmailRequiredToSetPassword();
         }
-
         // Check if user already has a password set
         if (user.AuthProvider == EnumAuthProvider.Local)
         {
             throw UserErrors.PasswordOnlyForExternalAuth();
         }
-
         user.SetPasswordAndChangeToLocal(hashedPassword);
     }
 }

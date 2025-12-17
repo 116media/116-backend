@@ -17,22 +17,18 @@ public class SuperAdminEntityFactory(IPasswordService passwordService)
     {
         string password = SuperAdminConfiguration.GetPassword();
         string hashedPassword = passwordService.Hash(password);
-
         var superAdminUser = UserEntity.Create(
             Guid.NewGuid(),
             SuperAdminConfiguration.Email,
             SuperAdminConfiguration.Username,
             hashedPassword
         );
-
         // Configure Super Admin as verified and active
         // IsLoggedIn remains false as per specification
         superAdminUser.MarkAsVerified();
         superAdminUser.Activate();
-
         return superAdminUser;
     }
-
     /// <summary>
     /// Creates the Super Admin role entity.
     /// </summary>
@@ -45,7 +41,6 @@ public class SuperAdminEntityFactory(IPasswordService passwordService)
             SuperAdminConfiguration.RoleDescription
         );
     }
-
     /// <summary>
     /// Creates the system-wide "system.all" permission entity.
     /// </summary>
@@ -59,7 +54,6 @@ public class SuperAdminEntityFactory(IPasswordService passwordService)
             SuperAdminConfiguration.PermissionDescription
         );
     }
-
     /// <summary>
     /// Creates a user-role association entity.
     /// </summary>
@@ -70,7 +64,6 @@ public class SuperAdminEntityFactory(IPasswordService passwordService)
     {
         return UserRoleEntity.Create(Guid.NewGuid(), userId, roleId);
     }
-
     /// <summary>
     /// Creates a role-permission association entity.
     /// </summary>

@@ -2,12 +2,14 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+
 using _116.BuildingBlocks.Constants;
-using _116.Shared.Application.Configurations;
 using _116.Identity.Application.Shared.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Results;
+using _116.Shared.Application.Configurations;
+
 using Microsoft.IdentityModel.Tokens;
 
 namespace _116.Identity.Infrastructure.Services;
@@ -26,12 +28,10 @@ public class JwtService : IJwtService
         ICollection<RolePermissionEntity> userPermissions,
         bool isVerified,
         bool isActive,
-        bool isLoggedIn,
         EnumAuthProvider authProvider
     )
     {
         var (secret, issuer, audience, expiration) = AppEnvironment.Jwt();
-
         if (string.IsNullOrWhiteSpace(secret))
         {
             throw new InvalidOperationException("JWT_SECRET env variable is missing or empty.");
@@ -52,14 +52,13 @@ public class JwtService : IJwtService
             new(JwtClaimsConstants.AuthProvider, $"{authProvider}")
         };
 
+        claims.AddRange(BuildAccountStatusClaims(isVerified, isActive));
         claims.AddRange(BuildRoleClaims(userRoles));
         claims.AddRange(BuildPermissionsClaims(userPermissions));
-        claims.AddRange(BuildStatusClaims(isVerified, isActive, isLoggedIn));
 
         int expirationHours = int.TryParse(expiration, out int parsed)
             ? parsed
             : JwtClaimsConstants.DefaultExpiration;
-
         DateTime expiresAt = now.AddHours(expirationHours).UtcDateTime;
 
         var descriptor = new SecurityTokenDescriptor
@@ -80,25 +79,18 @@ public class JwtService : IJwtService
     /// <summary>
     /// Builds account status claims for the JWT token.
     /// </summary>
-    /// <param name="isVerified">Whether the user's account is verified</param>
-    /// <param name="isActive">Whether the user's account is active</param>
-    /// <param name="isLoggedIn">Whether the user is currently logged in</param>
-    /// <returns>Collection of status claims</returns>
-    private static List<Claim> BuildStatusClaims(bool isVerified, bool isActive, bool isLoggedIn)
+    private static List<Claim> BuildAccountStatusClaims(bool isVerified, bool isActive)
     {
         return new Dictionary<string, bool>
         {
             [JwtClaimsConstants.IsVerified] = isVerified,
-            [JwtClaimsConstants.IsActive] = isActive,
-            [JwtClaimsConstants.IsLoggedIn] = isLoggedIn
+            [JwtClaimsConstants.IsActive] = isActive
         }.Select(kvp => new Claim(kvp.Key, kvp.Value ? "true" : "false", ClaimValueTypes.Boolean)).ToList();
     }
 
     /// <summary>
     /// Builds role claims from the user's assigned roles.
     /// </summary>
-    /// <param name="userRoles">Collection of user role entities</param>
-    /// <returns>Collection of role claims</returns>
     private static List<Claim> BuildRoleClaims(ICollection<UserRoleEntity> userRoles)
     {
         return userRoles.Select(r => new Claim(ClaimTypes.Role, r.Role.Name)).ToList();
@@ -107,8 +99,6 @@ public class JwtService : IJwtService
     /// <summary>
     /// Builds permission claims from the user's assigned permissions as a JSON array.
     /// </summary>
-    /// <param name="permissions">Collection of role permission entities</param>
-    /// <returns>Collection of permission claims in the format "resource:action"</returns>
     private static List<Claim> BuildPermissionsClaims(ICollection<RolePermissionEntity> permissions)
     {
         string[] permissionsList = permissions

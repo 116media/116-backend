@@ -1,9 +1,10 @@
 using System;
-using Microsoft.EntityFrameworkCore.Migrations;
 
+using Microsoft.EntityFrameworkCore.Migrations;
 #nullable disable
 
 namespace _116.Identity.Infrastructure.Persistence.Migrations
+
 {
     /// <inheritdoc />
     public partial class AddOtpEntity : Migration
@@ -40,32 +41,27 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Otps_ExpiresAt",
                 schema: "authentication",
                 table: "otps",
                 column: "expires_at");
-
             migrationBuilder.CreateIndex(
                 name: "IX_Otps_Purpose_ExpiresAt",
                 schema: "authentication",
                 table: "otps",
                 columns: new[] { "purpose", "expires_at" });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Otps_UserId_Code_Purpose",
                 schema: "authentication",
                 table: "otps",
                 columns: new[] { "user_id", "code", "purpose" });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Otps_UserId_Purpose",
                 schema: "authentication",
                 table: "otps",
                 columns: new[] { "user_id", "purpose" });
         }
-
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {

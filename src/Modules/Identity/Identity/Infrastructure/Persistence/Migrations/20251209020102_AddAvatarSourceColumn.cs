@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore.Migrations;
-
 #nullable disable
 
 namespace _116.Identity.Infrastructure.Persistence.Migrations
+
 {
     /// <inheritdoc />
     public partial class AddAvatarSourceColumn : Migration
@@ -18,7 +18,6 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                 nullable: false,
                 defaultValue: "");
         }
-
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {

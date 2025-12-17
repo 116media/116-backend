@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Domain.Entities;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -19,51 +20,38 @@ public class OtpConfiguration : IEntityTypeConfiguration<OtpEntity>
     {
         // Primary key
         builder.HasKey(o => o.Id);
-
         // Properties configuration
         builder.Property(o => o.UserId)
             .IsRequired();
-
         builder.Property(o => o.Code)
             .HasMaxLength(UserConstants.OtpCodeLength)
             .IsRequired();
-
         builder.Property(o => o.Purpose)
             .HasConversion<string>()
             .IsRequired();
-
         builder.Property(o => o.ExpiresAt)
             .IsRequired();
-
         builder.Property(o => o.AttemptCount)
             .HasDefaultValue(0)
             .IsRequired();
-
         builder.Property(o => o.IsUsed)
             .HasDefaultValue(false)
             .IsRequired();
-
         builder.Property(o => o.UsedAt)
             .IsRequired(false);
-
         // Relationships
         builder.HasOne(o => o.User)
             .WithMany()
             .HasForeignKey(o => o.UserId)
             .OnDelete(DeleteBehavior.Cascade);
-
         // Indexes for performance
         builder.HasIndex(o => new { o.UserId, o.Purpose })
             .HasDatabaseName("IX_Otps_UserId_Purpose");
-
         builder.HasIndex(o => new { o.UserId, o.Code, o.Purpose })
             .HasDatabaseName("IX_Otps_UserId_Code_Purpose");
-
         builder.HasIndex(o => o.ExpiresAt)
             .HasDatabaseName("IX_Otps_ExpiresAt");
-
         builder.HasIndex(o => new { o.Purpose, o.ExpiresAt })
             .HasDatabaseName("IX_Otps_Purpose_ExpiresAt");
-
     }
 }
