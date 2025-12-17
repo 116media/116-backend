@@ -205,4 +205,16 @@ public static class UserErrors
     /// </summary>
     public static BadRequestException IncorrectCurrentPassword() =>
         new(ValidationErrorMessage.IncorrectCurrentPassword());
+
+    /// <summary>
+    /// Throws when an email address is required to set a password.
+    /// </summary>
+    public static BadRequestException EmailRequiredToSetPassword() =>
+        new(ValidationErrorMessage.EmailRequiredToSetPassword());
+
+    /// <summary>
+    /// Throws when setting password is only allowed for external auth users (Google/Facebook).
+    /// </summary>
+    public static BadRequestException PasswordOnlyForExternalAuth() =>
+        new(ValidationErrorMessage.PasswordOnlyForExternalAuth());
 }
