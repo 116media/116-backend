@@ -10,14 +10,12 @@ public class OtpAttemptsLimitException : Exception
     /// Gets additional details about the OTP attempts limit, if provided.
     /// </summary>
     public string? Details { get; }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="OtpAttemptsLimitException"/> class
     /// with a custom message describing the error.
     /// </summary>
     /// <param name="message">The error message explaining the OTP attempts limit.</param>
     public OtpAttemptsLimitException(string message) : base(message) { }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="OtpAttemptsLimitException"/> class
     /// with a custom message and additional details.

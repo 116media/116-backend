@@ -16,7 +16,6 @@ public sealed record AuthorizationConfiguration
     /// Contains mappings between policy names and their claim type/value requirements.
     /// </remarks>
     public required Dictionary<string, (string ClaimType, string ClaimValue)> AccountStatusPolicies { get; init; }
-
     /// <summary>
     /// Gets or sets the user role policy configurations.
     /// </summary>

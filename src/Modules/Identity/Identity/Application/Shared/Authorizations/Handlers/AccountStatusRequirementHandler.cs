@@ -1,10 +1,13 @@
+using System.Security.Claims;
+
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Shared.Authorizations.Requirements;
 using _116.Identity.Application.Shared.Repositories;
-using Microsoft.AspNetCore.Authorization;
-using Npgsql;
-using System.Security.Claims;
 using _116.Identity.Domain.Entities;
+
+using Microsoft.AspNetCore.Authorization;
+
+using Npgsql;
 
 namespace _116.Identity.Application.Shared.Authorizations.Handlers;
 
@@ -43,7 +46,6 @@ public class AccountStatusRequirementHandler(IUserRepository userRepository)
         {
             return;
         }
-
         try
         {
             UserEntity? user = await userRepository.FindUserByIdOrThrow(userId);
@@ -65,7 +67,6 @@ public class AccountStatusRequirementHandler(IUserRepository userRepository)
             }
         }
     }
-
     /// <summary>
     /// Maps the requirement to the correct user property and checks if it matches the expected value.
     /// </summary>
@@ -86,19 +87,15 @@ public class AccountStatusRequirementHandler(IUserRepository userRepository)
         {
             JwtClaimsConstants.IsVerified => user.IsVerified,
             JwtClaimsConstants.IsActive => user.IsActive,
-            JwtClaimsConstants.IsLoggedIn => user.IsLoggedIn,
             _ => false
         };
-
         // Compare with expected requirement value
         if (bool.TryParse(requirement.ClaimValue, out bool expectedValue))
         {
             return actualValue == expectedValue;
         }
-
         return false;
     }
-
     /// <summary>
     /// Determines if the exception is a database connectivity error that should trigger JWT fallback.
     /// </summary>
@@ -112,7 +109,6 @@ public class AccountStatusRequirementHandler(IUserRepository userRepository)
             TimeoutException => true,
             TaskCanceledException => true,
             OperationCanceledException => true,
-
             // PostgresQL-specific connectivity errors
             NpgsqlException npgsqlEx => npgsqlEx.SqlState switch
             {
@@ -127,7 +123,6 @@ public class AccountStatusRequirementHandler(IUserRepository userRepository)
                 "57P03" => true, // cannot_connect_now
                 _ => false
             },
-
             _ => false
         };
     }

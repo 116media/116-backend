@@ -1,6 +1,7 @@
-using _116.Shared.Application.Specifications;
-using _116.Identity.Domain.Entities;
 using System.Linq.Expressions;
+
+using _116.Identity.Domain.Entities;
+using _116.Shared.Application.Specifications;
 
 namespace _116.Identity.Application.Shared.Specifications;
 
@@ -15,7 +16,6 @@ public class RoleByNameSpecification(string roleName) : Specification<RoleEntity
         return role => role.Name == roleName;
     }
 }
-
 /// <summary>
 /// Specification that matches roles by their unique identifier.
 /// Used for direct role lookup operations.

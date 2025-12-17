@@ -20,7 +20,6 @@ public static class ConflictErrorMessage
     {
         return $"User with email '{email}' already exists";
     }
-
     /// <summary>
     /// Gets an error message for when the given username
     /// is already taken.
@@ -34,7 +33,6 @@ public static class ConflictErrorMessage
     {
         return $"Username '{username}' is already taken";
     }
-
     /// <summary>
     /// Gets an error message for when the given phone number
     /// is already taken.
@@ -48,7 +46,6 @@ public static class ConflictErrorMessage
     {
         return $"Phone number '{phoneNumber}' is already taken";
     }
-
     /// <summary>
     /// Gets an error message for when a role with the given name
     /// already exists.
@@ -62,7 +59,6 @@ public static class ConflictErrorMessage
     {
         return $"Role '{name}' already exists";
     }
-
     /// <summary>
     /// Gets an error message for when a permission with the given
     /// resource and action already exists.
@@ -77,7 +73,6 @@ public static class ConflictErrorMessage
     {
         return $"Permission '{resource}.{action}' already exists";
     }
-
     /// <summary>
     /// Gets an error message for when a role is already assigned to a user.
     /// </summary>

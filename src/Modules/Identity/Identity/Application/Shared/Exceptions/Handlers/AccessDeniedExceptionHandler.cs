@@ -1,4 +1,5 @@
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,4 +21,3 @@ public sealed class AccessDeniedExceptionHandler : BaseExceptionStrategy<AccessD
         );
     }
 }
-

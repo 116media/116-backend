@@ -1,8 +1,9 @@
-using _116.Shared.Application.Exceptions;
-using _116.Shared.Domain;
+using System.Security.Claims;
+
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
-using System.Security.Claims;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Domain;
 
 namespace _116.Identity.Application.Shared.Repositories;
 
@@ -25,7 +26,6 @@ public interface IUserRepository : IRepository<UserEntity>
     /// This method performs a simple lookup by primary key without loading related entities.
     /// </remarks>
     Task<UserEntity?> FindUserByIdOrThrow(Guid userId, CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Retrieves a user with their associated roles by unique identifier.
     /// </summary>
@@ -37,7 +37,6 @@ public interface IUserRepository : IRepository<UserEntity>
     /// Use this method when you need user information along with their roles and permissions.
     /// </remarks>
     Task<UserEntity?> GetUserWithRolesByIdOrThrow(Guid userId, CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Retrieves a user with their associated roles by email address.
     /// </summary>
@@ -50,7 +49,6 @@ public interface IUserRepository : IRepository<UserEntity>
     /// Use this method when you need to validate user credentials and roles.
     /// </remarks>
     Task<UserEntity?> GetUserWithRolesByEmailOrThrow(Email email, CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Retrieves a user with their associated roles and permissions by unique identifier.
     /// </summary>
@@ -65,7 +63,6 @@ public interface IUserRepository : IRepository<UserEntity>
         Guid userId,
         CancellationToken cancellationToken = default
     );
-
     /// <summary>
     /// Retrieves a user with their associated roles and permissions by email address.
     /// </summary>
@@ -82,7 +79,6 @@ public interface IUserRepository : IRepository<UserEntity>
         Email email,
         CancellationToken cancellationToken = default
     );
-
     /// <summary>
     /// Retrieves a user with their associated roles and permissions by credentials (email or username).
     /// </summary>
@@ -101,7 +97,6 @@ public interface IUserRepository : IRepository<UserEntity>
         string credentials,
         CancellationToken cancellationToken = default
     );
-
     /// <summary>
     /// Checks if a user exists with the specified email address.
     /// </summary>
@@ -112,7 +107,6 @@ public interface IUserRepository : IRepository<UserEntity>
     /// This method is useful for email uniqueness validation during user registration.
     /// </remarks>
     Task<bool> ExistsByEmailAsync(Email email, CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Checks if a user exists with the specified username.
     /// </summary>
@@ -123,7 +117,6 @@ public interface IUserRepository : IRepository<UserEntity>
     /// This method is useful for username uniqueness validation during user registration.
     /// </remarks>
     Task<bool> ExistsByUserNameAsync(string userName, CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Retrieves a user by their phone number.
     /// </summary>
@@ -135,7 +128,6 @@ public interface IUserRepository : IRepository<UserEntity>
     /// Useful for phone number uniqueness validation during profile updates.
     /// </remarks>
     Task<UserEntity?> GetUserByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Validates that both email and username are unique for user registration.
     /// </summary>
@@ -149,7 +141,6 @@ public interface IUserRepository : IRepository<UserEntity>
     /// It throws specific conflict exceptions for email or username conflicts.
     /// </remarks>
     Task ValidateUniqueCredentialsAsync(Email email, string userName, CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Assigns the Visitor role to a new user during registration.
     /// </summary>
@@ -162,7 +153,6 @@ public interface IUserRepository : IRepository<UserEntity>
     /// Should be called as part of the user registration process.
     /// </remarks>
     Task AssignVisitorRoleAsync(Guid userId, CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Adds a new user entity to the repository.
     /// </summary>
@@ -173,7 +163,6 @@ public interface IUserRepository : IRepository<UserEntity>
     /// This method only adds the user to the context. Call <see cref="SaveChangesAsync"/> to persist changes.
     /// </remarks>
     Task AddAsync(UserEntity user, CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Updates an existing user entity in the repository.
     /// </summary>
@@ -184,7 +173,6 @@ public interface IUserRepository : IRepository<UserEntity>
     /// This method marks the user as modified in the context. Call UnitOfWork.CommitAsync() to persist changes.
     /// </remarks>
     Task UpdateAsync(UserEntity user, CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Validates that a user account is active.
     /// </summary>
@@ -198,7 +186,6 @@ public interface IUserRepository : IRepository<UserEntity>
     /// is only revealed for valid credentials.
     /// </remarks>
     bool IsUserAccountActive(UserEntity user);
-
     /// <summary>
     /// Validates that a user account is verified for local authentication.
     /// </summary>
@@ -212,7 +199,6 @@ public interface IUserRepository : IRepository<UserEntity>
     /// is only revealed for valid credentials. Only applies to local authentication provider.
     /// </remarks>
     bool IsUserAccountVerified(UserEntity user);
-
     /// <summary>
     /// Validates that a user is currently logged in.
     /// </summary>
@@ -226,7 +212,6 @@ public interface IUserRepository : IRepository<UserEntity>
     /// and they haven't been logged out.
     /// </remarks>
     bool IsUserLoggedIn(UserEntity user);
-
     /// <summary>
     /// Validates that a user has administrative privileges (Admin or SuperAdmin role).
     /// </summary>
@@ -240,7 +225,6 @@ public interface IUserRepository : IRepository<UserEntity>
     /// Should be called after authentication to validate admin access.
     /// </remarks>
     bool IsUserAdmin(UserEntity user);
-
     /// <summary>
     /// Extracts the user ID from JWT claims and validates authentication.
     /// </summary>
@@ -254,7 +238,6 @@ public interface IUserRepository : IRepository<UserEntity>
     /// and provides consistent error handling across all endpoints.
     /// </remarks>
     Guid GetUserIdFromClaims(ClaimsPrincipal user);
-
     /// <summary>
     /// Persists all pending changes in the repository to the database.
     /// </summary>
@@ -265,7 +248,6 @@ public interface IUserRepository : IRepository<UserEntity>
     /// Should be called after performing repository operations that need persistence.
     /// </remarks>
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Gets the existing external user or creates a new one for social authentication.
     /// </summary>
@@ -290,7 +272,6 @@ public interface IUserRepository : IRepository<UserEntity>
         AuthProvider authProvider,
         CancellationToken cancellationToken = default
     );
-
     /// <summary>
     /// Sets a password for an external authentication user and changes their auth provider to Local.
     /// </summary>

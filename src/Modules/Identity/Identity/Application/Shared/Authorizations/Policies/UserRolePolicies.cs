@@ -17,7 +17,6 @@ public static class UserRolePolicies
     /// such as system configuration, user role management, and critical administrative functions.
     /// </remarks>
     public const string RequireSuperAdminOnly = "RequireSuperAdminOnly";
-
     /// <summary>
     /// Policy that requires Admin role access (Admin or SuperAdmin).
     /// </summary>
@@ -26,7 +25,6 @@ public static class UserRolePolicies
     /// such as user management, content moderation, and general administrative functions.
     /// </remarks>
     public const string RequireAdminOnly = "RequireAdminOnly";
-
     /// <summary>
     /// Policy that requires Visitor role access.
     /// </summary>
@@ -35,7 +33,6 @@ public static class UserRolePolicies
     /// such as public content access, user profile management, and standard user functions.
     /// </remarks>
     public const string RequireVisitorOnly = "RequireVisitorOnly";
-
     /// <summary>
     /// Policy that requires Admin or SuperAdmin role access.
     /// </summary>

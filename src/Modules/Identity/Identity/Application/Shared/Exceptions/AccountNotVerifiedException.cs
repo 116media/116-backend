@@ -10,14 +10,12 @@ public class AccountNotVerifiedException : Exception
     /// Gets additional details about why the account is not verified, if provided.
     /// </summary>
     public string? Details { get; }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AccountNotVerifiedException"/> class
     /// with a custom message describing the error.
     /// </summary>
     /// <param name="message">The error message that explains the verification issue.</param>
     public AccountNotVerifiedException(string message) : base(message) { }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AccountNotVerifiedException"/> class
     /// with a custom message and additional details.

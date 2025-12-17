@@ -1,8 +1,11 @@
 using System.Reflection;
-using FluentValidation;
 using System.Text.RegularExpressions;
+
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Domain.Enums;
+
+using FluentValidation;
+
 using Microsoft.AspNetCore.Http;
 
 namespace _116.Identity.Application.Shared.Validators;
@@ -26,7 +29,6 @@ public static partial class UserValidationRules
     )
     {
         IRuleBuilderOptions<T, string?> builder;
-
         if (isRequired)
         {
             builder = ruleBuilder
@@ -43,10 +45,8 @@ public static partial class UserValidationRules
                 .EmailAddress().WithMessage("Invalid email format")
                 .When(x => !string.IsNullOrWhiteSpace(GetEmailValue(x)));
         }
-
         return builder;
     }
-
     /// <summary>
     /// Configures password validation rules with strength requirements.
     /// </summary>
@@ -67,7 +67,6 @@ public static partial class UserValidationRules
             .Matches(PasswordRegex())
             .WithMessage($"{fieldName} must contain at least one lowercase letter, one uppercase letter, and one number");
     }
-
     /// <summary>
     /// Configures OTP code validation rules.
     /// </summary>
@@ -86,7 +85,6 @@ public static partial class UserValidationRules
             .Matches(OtpCodeRegex())
             .WithMessage("Verification code must contain only numbers");
     }
-
     /// <summary>
     /// Configures username validation rules.
     /// </summary>
@@ -100,7 +98,6 @@ public static partial class UserValidationRules
     )
     {
         IRuleBuilderOptions<T, string?> builder;
-
         if (isRequired)
         {
             builder = ruleBuilder
@@ -125,10 +122,8 @@ public static partial class UserValidationRules
                 .WithMessage("Username can only contain letters, numbers, spaces, and hyphens")
                 .When(x => !string.IsNullOrWhiteSpace(GetUsernameValue(x)));
         }
-
         return builder;
     }
-
     /// <summary>
     /// Configures country name validation rules.
     /// </summary>
@@ -144,7 +139,6 @@ public static partial class UserValidationRules
             .WithMessage($"Country name cannot exceed {UserConstants.MaxCountryNameLength} characters")
             .When(x => !string.IsNullOrWhiteSpace(GetCountryNameValue(x)));
     }
-
     /// <summary>
     /// Configures country flag URL validation rules.
     /// </summary>
@@ -163,7 +157,6 @@ public static partial class UserValidationRules
             .WithMessage("Country flag URL must be a valid URL")
             .When(x => !string.IsNullOrWhiteSpace(GetCountryFlagUrlValue(x)));
     }
-
     /// <summary>
     /// Configures country ISO code validation rules.
     /// </summary>
@@ -182,7 +175,6 @@ public static partial class UserValidationRules
             .WithMessage("Country ISO code must contain only uppercase letters")
             .When(x => !string.IsNullOrWhiteSpace(GetCountryIsoCodeValue(x)));
     }
-
     /// <summary>
     /// Configures country dial code validation rules.
     /// </summary>
@@ -201,7 +193,6 @@ public static partial class UserValidationRules
             .WithMessage($"Country dial code must start with + followed by 1-{UserConstants.MaxCountryDialCodeLength} digits")
             .When(x => !string.IsNullOrWhiteSpace(GetCountryDialCodeValue(x)));
     }
-
     /// <summary>
     /// Configures partial phone number validation rules.
     /// </summary>
@@ -217,7 +208,6 @@ public static partial class UserValidationRules
             .WithMessage($"Partial phone number cannot exceed {UserConstants.MaxPartialPhoneNumberLength} characters")
             .When(x => !string.IsNullOrWhiteSpace(GetPartialPhoneNumberValue(x)));
     }
-
     /// <summary>
     /// Configures OTP purpose validation rules.
     /// </summary>
@@ -234,7 +224,6 @@ public static partial class UserValidationRules
             .Must(purpose => purpose != null && Enum.IsDefined(typeof(EnumOtpPurpose), purpose))
             .WithMessage("Invalid OTP purpose specified.");
     }
-
     /// <summary>
     /// Configures old password validation rules (required for verification).
     /// </summary>
@@ -250,7 +239,6 @@ public static partial class UserValidationRules
         return ruleBuilder
             .NotEmpty().WithMessage($"{fieldName} is required");
     }
-
     /// <summary>
     /// Validates that a URL is in proper format.
     /// </summary>
@@ -262,11 +250,9 @@ public static partial class UserValidationRules
         {
             return true;
         }
-
         return Uri.TryCreate(url, UriKind.Absolute, out Uri? result) &&
                (result.Scheme == Uri.UriSchemeHttp || result.Scheme == Uri.UriSchemeHttps);
     }
-
     /// <summary>
     /// Gets the Email property value from an instance using reflection.
     /// </summary>
@@ -277,7 +263,6 @@ public static partial class UserValidationRules
     {
         return GetPropertyValue(instance, "Email");
     }
-
     /// <summary>
     /// Gets the UserName property value from an instance using reflection.
     /// </summary>
@@ -288,7 +273,6 @@ public static partial class UserValidationRules
     {
         return GetPropertyValue(instance, "UserName");
     }
-
     /// <summary>
     /// Gets the CountryName property value from an instance using reflection.
     /// </summary>
@@ -299,7 +283,6 @@ public static partial class UserValidationRules
     {
         return GetPropertyValue(instance, "CountryName");
     }
-
     /// <summary>
     /// Gets the CountryFlagUrl property value from an instance using reflection.
     /// </summary>
@@ -310,7 +293,6 @@ public static partial class UserValidationRules
     {
         return GetPropertyValue(instance, "CountryFlagUrl");
     }
-
     /// <summary>
     /// Gets the CountryIsoCode property value from an instance using reflection.
     /// </summary>
@@ -321,7 +303,6 @@ public static partial class UserValidationRules
     {
         return GetPropertyValue(instance, "CountryIsoCode");
     }
-
     /// <summary>
     /// Gets the CountryDialCode property value from an instance using reflection.
     /// </summary>
@@ -332,7 +313,6 @@ public static partial class UserValidationRules
     {
         return GetPropertyValue(instance, "CountryDialCode");
     }
-
     /// <summary>
     /// Gets the PartialPhoneNumber property value from an instance using reflection.
     /// </summary>
@@ -343,7 +323,6 @@ public static partial class UserValidationRules
     {
         return GetPropertyValue(instance, "PartialPhoneNumber");
     }
-
     /// <summary>
     /// Gets the OldPassword property value from an instance using reflection.
     /// </summary>
@@ -354,7 +333,6 @@ public static partial class UserValidationRules
     {
         return GetPropertyValue(instance, "OldPassword");
     }
-
     /// <summary>
     /// Gets the NewPassword property value from an instance using reflection.
     /// </summary>
@@ -365,7 +343,6 @@ public static partial class UserValidationRules
     {
         return GetPropertyValue(instance, "NewPassword");
     }
-
     /// <summary>
     /// Configures avatar file validation rules.
     /// </summary>
@@ -379,7 +356,6 @@ public static partial class UserValidationRules
     )
     {
         IRuleBuilderOptions<T, IFormFile?> builder;
-
         if (isRequired)
         {
             builder = ruleBuilder
@@ -396,10 +372,8 @@ public static partial class UserValidationRules
                 .Must(BeValidFileExtension).WithMessage($"Only these extensions are allowed: {string.Join(", ", FileConstants.AllowedAvatarExtensions)}")
                 .When(x => GetAvatarFileValue(x) != null);
         }
-
         return builder;
     }
-
     /// <summary>
     /// Validates that a file has valid size constraints.
     /// </summary>
@@ -409,7 +383,6 @@ public static partial class UserValidationRules
     {
         return file?.Length is > 0 and <= FileConstants.MaxAvatarFileSizeBytes;
     }
-
     /// <summary>
     /// Validates that a file has a valid image MIME type.
     /// </summary>
@@ -418,24 +391,19 @@ public static partial class UserValidationRules
     private static bool BeValidImageType(IFormFile? file)
     {
         if (file == null) return false;
-
         // Extract content type without parameters (e.g., "image/jpeg" from "image/jpeg; boundary=...")
         string contentType = file.ContentType?.Split(';')[0].Trim().ToLowerInvariant() ?? string.Empty;
-
         // Accept if content type is in the allowed list
         if (FileConstants.AllowedAvatarMimeTypes.Contains(contentType))
         {
             return true;
         }
-
         // For generic/missing content types (common with mobile uploads), validate by extension
         bool isGenericContentType = string.IsNullOrEmpty(contentType) ||
                                      contentType == "application/octet-stream" ||
                                      contentType == "multipart/form-data";
-
         return isGenericContentType && BeValidFileExtension(file);
     }
-
     /// <summary>
     /// Validates that a file has valid extension.
     /// </summary>
@@ -447,7 +415,6 @@ public static partial class UserValidationRules
         string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         return FileConstants.AllowedAvatarExtensions.Contains(extension);
     }
-
     /// <summary>
     /// Gets the AvatarFile property value from an instance using reflection.
     /// </summary>
@@ -459,7 +426,6 @@ public static partial class UserValidationRules
         PropertyInfo? property = typeof(T).GetProperty("AvatarFile");
         return property?.GetValue(instance) as IFormFile;
     }
-
     /// <summary>
     /// Gets a property value from an instance using reflection.
     /// </summary>
@@ -472,21 +438,18 @@ public static partial class UserValidationRules
         PropertyInfo? property = typeof(T).GetProperty(propertyName);
         return property?.GetValue(instance) as string;
     }
-
     /// <summary>
     /// Generated regex for password validation - at least one lowercase, one uppercase, and one number.
     /// Uses compile-time generation for better performance, AOT compatibility, and reduced startup time.
     /// </summary>
     [GeneratedRegex("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])")]
     private static partial Regex PasswordRegex();
-
     /// <summary>
     /// Generated regex for OTP code validation - 6-digit numeric only.
     /// Uses compile-time generation for better performance, AOT compatibility, and reduced startup time.
     /// </summary>
     [GeneratedRegex(@"^\d{6}$")]
     private static partial Regex OtpCodeRegex();
-
     /// <summary>
     /// Generated regex for username validation - alphanumeric, spaces, and hyphens only.
     /// Uses compile-time generation for better performance, AOT compatibility, and reduced startup time.

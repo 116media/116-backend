@@ -1,7 +1,7 @@
-using _116.Shared.Application.Exceptions;
-using _116.Shared.Domain;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Domain;
 
 namespace _116.Identity.Application.Shared.Repositories;
 
@@ -21,7 +21,6 @@ public interface IOtpRepository : IRepository<OtpEntity>
     /// This method only adds the OTP to the context. Call <see cref="SaveChangesAsync"/> to persist changes.
     /// </remarks>
     Task AddAsync(OtpEntity otp, CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Retrieves the latest valid OTP for a user and specific purpose.
     /// </summary>
@@ -37,7 +36,6 @@ public interface IOtpRepository : IRepository<OtpEntity>
         EnumOtpPurpose purpose,
         CancellationToken cancellationToken = default
     );
-
     /// <summary>
     /// Validates an OTP code for a specific user and purpose.
     /// </summary>
@@ -60,7 +58,6 @@ public interface IOtpRepository : IRepository<OtpEntity>
         EnumOtpPurpose purpose,
         CancellationToken cancellationToken = default
     );
-
     /// <summary>
     /// Validates that an OTP code was previously used for a specific user and purpose.
     /// </summary>
@@ -82,7 +79,6 @@ public interface IOtpRepository : IRepository<OtpEntity>
         EnumOtpPurpose purpose,
         CancellationToken cancellationToken = default
     );
-
     /// <summary>
     /// Invalidates all existing OTPs for a user and specific purpose.
     /// </summary>
@@ -99,7 +95,6 @@ public interface IOtpRepository : IRepository<OtpEntity>
         EnumOtpPurpose purpose,
         CancellationToken cancellationToken = default
     );
-
     /// <summary>
     /// Removes expired OTPs from the database.
     /// </summary>
@@ -110,7 +105,6 @@ public interface IOtpRepository : IRepository<OtpEntity>
     /// Should be called periodically via a background service.
     /// </remarks>
     Task<int> CleanupExpiredOtpsAsync(CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Updates an existing OTP entity in the repository.
     /// </summary>
@@ -121,7 +115,6 @@ public interface IOtpRepository : IRepository<OtpEntity>
     /// This method marks the OTP as modified in the context. Call UnitOfWork.CommitAsync() to persist changes.
     /// </remarks>
     Task UpdateAsync(OtpEntity otp, CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Persists all pending changes in the repository to the database.
     /// </summary>

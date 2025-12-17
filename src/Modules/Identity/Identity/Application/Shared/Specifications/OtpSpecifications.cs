@@ -1,7 +1,8 @@
-using _116.Shared.Application.Specifications;
+using System.Linq.Expressions;
+
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using System.Linq.Expressions;
+using _116.Shared.Application.Specifications;
 
 namespace _116.Identity.Application.Shared.Specifications;
 
@@ -16,7 +17,6 @@ public class OtpByUserIdSpecification(Guid userId) : Specification<OtpEntity>
         return otp => otp.UserId == userId;
     }
 }
-
 /// <summary>
 /// Specification that matches OTPs by purpose.
 /// Used for filtering OTPs based on their intended purpose.
@@ -28,7 +28,6 @@ public class OtpByPurposeSpecification(EnumOtpPurpose purpose) : Specification<O
         return otp => otp.Purpose == purpose;
     }
 }
-
 /// <summary>
 /// Specification that matches OTPs by code.
 /// Used for finding OTPs with a specific verification code.
@@ -40,7 +39,6 @@ public class OtpByCodeSpecification(string code) : Specification<OtpEntity>
         return otp => otp.Code == code;
     }
 }
-
 /// <summary>
 /// Specification that matches unused OTPs.
 /// Used for filtering OTPs that haven't been used yet.
@@ -52,7 +50,6 @@ public class OtpIsNotUsedSpecification : Specification<OtpEntity>
         return otp => otp.IsUsed == false;
     }
 }
-
 /// <summary>
 /// Specification that matches used OTPs.
 /// Used for filtering OTPs that have been marked as used.
@@ -64,7 +61,6 @@ public class OtpIsUsedSpecification : Specification<OtpEntity>
         return otp => otp.IsUsed == true;
     }
 }
-
 /// <summary>
 /// Specification that matches non-expired OTPs.
 /// Used for filtering OTPs that are still valid based on expiration time.
@@ -76,7 +72,6 @@ public class OtpIsNotExpiredSpecification : Specification<OtpEntity>
         return otp => otp.ExpiresAt > DateTime.UtcNow;
     }
 }
-
 /// <summary>
 /// Specification that matches expired OTPs.
 /// Used for cleanup operations and filtering expired OTPs.
@@ -88,7 +83,6 @@ public class OtpIsExpiredSpecification : Specification<OtpEntity>
         return otp => otp.ExpiresAt <= DateTime.UtcNow;
     }
 }
-
 /// <summary>
 /// Composite specification that matches valid OTPs for a user and purpose.
 /// Combines user ID, purpose, not used, and not expired specifications.
@@ -102,7 +96,6 @@ public class OtpIsValidForUserAndPurposeSpecification(Guid userId, EnumOtpPurpos
         var purposeSpec = new OtpByPurposeSpecification(purpose);
         var notUsedSpec = new OtpIsNotUsedSpecification();
         var notExpiredSpec = new OtpIsNotExpiredSpecification();
-
         return userSpec
             .And(purposeSpec)
             .And(notUsedSpec)
@@ -110,7 +103,6 @@ public class OtpIsValidForUserAndPurposeSpecification(Guid userId, EnumOtpPurpos
             .ToExpression();
     }
 }
-
 /// <summary>
 /// Composite specification that matches OTPs for validation.
 /// Combines user ID, code, purpose, and not used specifications.
@@ -124,7 +116,6 @@ public class OtpForValidationSpecification(Guid userId, string code, EnumOtpPurp
         var codeSpec = new OtpByCodeSpecification(code);
         var purposeSpec = new OtpByPurposeSpecification(purpose);
         var notUsedSpec = new OtpIsNotUsedSpecification();
-
         return userSpec
             .And(codeSpec)
             .And(purposeSpec)
@@ -132,7 +123,6 @@ public class OtpForValidationSpecification(Guid userId, string code, EnumOtpPurp
             .ToExpression();
     }
 }
-
 /// <summary>
 /// Composite specification that matches unused OTPs for a user and purpose.
 /// Combines user ID, purpose, and not used specifications.
@@ -145,14 +135,12 @@ public class OtpForInvalidationSpecification(Guid userId, EnumOtpPurpose purpose
         var userSpec = new OtpByUserIdSpecification(userId);
         var purposeSpec = new OtpByPurposeSpecification(purpose);
         var notUsedSpec = new OtpIsNotUsedSpecification();
-
         return userSpec
             .And(purposeSpec)
             .And(notUsedSpec)
             .ToExpression();
     }
 }
-
 /// <summary>
 /// Composite specification that matches used OTPs for verification.
 /// Combines user ID, code, purpose, and used specifications.
@@ -166,7 +154,6 @@ public class OtpForUsedValidationSpecification(Guid userId, string code, EnumOtp
         var codeSpec = new OtpByCodeSpecification(code);
         var purposeSpec = new OtpByPurposeSpecification(purpose);
         var usedSpec = new OtpIsUsedSpecification();
-
         return userSpec
             .And(codeSpec)
             .And(purposeSpec)

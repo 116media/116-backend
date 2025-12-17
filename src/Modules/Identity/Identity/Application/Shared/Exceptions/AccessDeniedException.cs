@@ -9,13 +9,11 @@ public class AccessDeniedException : Exception
     /// Gets additional details about the access denied error, if provided.
     /// </summary>
     public string? Details { get; }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AccessDeniedException"/> class with a custom message.
     /// </summary>
     /// <param name="message">The error message that describes the access denied error.</param>
     public AccessDeniedException(string message) : base(message) { }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AccessDeniedException"/> class with a custom message and additional details.
     /// </summary>

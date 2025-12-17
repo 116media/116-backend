@@ -11,7 +11,6 @@ public interface IPasswordService
     /// <param name="password">The plain text password to hash</param>
     /// <returns>The hashed password string</returns>
     string Hash(string password);
-
     /// <summary>
     /// Verifies a plain text password against a hashed password.
     /// </summary>

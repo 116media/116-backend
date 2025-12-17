@@ -16,7 +16,6 @@ public interface IOtpService
     /// The generated code will be numeric and have the length specified in UserConstants.OtpCodeLength.
     /// </remarks>
     string GenerateOtpCode();
-
     /// <summary>
     /// Creates a new OTP entity with generated code and expiration.
     /// </summary>
@@ -27,7 +26,6 @@ public interface IOtpService
     /// This method generates a new OTP code and sets the expiration time based on UserConstants.OtpExpirationMinutes.
     /// </remarks>
     OtpEntity CreateOtp(Guid userId, EnumOtpPurpose purpose);
-
     /// <summary>
     /// Calculates the expiration time for an OTP.
     /// </summary>

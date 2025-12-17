@@ -1,8 +1,8 @@
 using _116.Core.Domain.DTOs;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Shared.DTOs;
-using _116.Identity.Domain.DTOs;
 using _116.Identity.Domain.Entities;
+
 using Mapster;
 
 namespace _116.Identity.Application.Shared.Mappers;
@@ -28,7 +28,6 @@ public static class UserMapper
             .Map(dest => dest.AuthProvider, src => src.AuthProvider.ToString()) // Convert enum to string
             .Compile(); // Compile for performance
     }
-
     /// <summary>
     /// High-performance extension method to map UserEntity to UserResponseDto with roles, permissions, and avatar.
     /// Leverage Mapster's compiled mappings with selective property override.
@@ -47,7 +46,6 @@ public static class UserMapper
     {
         // Use base mapping then override specific collections and avatar - avoids repetitive property mapping
         var dto = user.Adapt<UserResponseDto>();
-
         // Only override the collections and avatar that can't be auto-mapped
         return dto with
         {
@@ -56,7 +54,6 @@ public static class UserMapper
             Avatar = avatar
         };
     }
-
     /// <summary>
     /// Maps FileEntity to FileDto.
     /// </summary>

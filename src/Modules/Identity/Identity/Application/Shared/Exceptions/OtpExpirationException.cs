@@ -9,14 +9,12 @@ public class OtpExpirationException : Exception
     /// Gets additional details about the OTP expiration, if provided.
     /// </summary>
     public string? Details { get; }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="OtpExpirationException"/> class
     /// with a custom message describing the error.
     /// </summary>
     /// <param name="message">The error message explaining the OTP expiration.</param>
     public OtpExpirationException(string message) : base(message) { }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="OtpExpirationException"/> class
     /// with a custom message and additional details.

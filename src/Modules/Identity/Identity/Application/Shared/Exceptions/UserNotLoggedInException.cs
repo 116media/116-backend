@@ -10,14 +10,12 @@ public class UserNotLoggedInException : Exception
     /// Gets additional details about the login state, if provided.
     /// </summary>
     public string? Details { get; }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="UserNotLoggedInException"/> class
     /// with a custom message describing the error.
     /// </summary>
     /// <param name="message">The error message explaining the login requirement.</param>
     public UserNotLoggedInException(string message) : base(message) { }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="UserNotLoggedInException"/> class
     /// with a custom message and additional details.

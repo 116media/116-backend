@@ -1,7 +1,8 @@
-using _116.Shared.Application.Specifications;
+using System.Linq.Expressions;
+
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using System.Linq.Expressions;
+using _116.Shared.Application.Specifications;
 
 namespace _116.Identity.Application.Shared.Specifications;
 
@@ -18,7 +19,6 @@ public class UserHasAdminRoleSpecification : Specification<UserEntity>
             ur.Role.Name == nameof(EnumCoreUserRole.SuperAdmin));
     }
 }
-
 /// <summary>
 /// Specification that matches users with a specific role.
 /// </summary>
@@ -29,7 +29,6 @@ public class UserHasRoleSpecification(string roleName) : Specification<UserEntit
         return user => user.UserRoles.Any(ur => ur.Role.Name == roleName);
     }
 }
-
 /// <summary>
 /// Specification that matches users with the Visitor role.
 /// </summary>
@@ -40,7 +39,6 @@ public class UserHasVisitorRoleSpecification : Specification<UserEntity>
         return user => user.UserRoles.Any(ur => ur.Role.Name == nameof(EnumCoreUserRole.Visitor));
     }
 }
-
 /// <summary>
 /// Composite specification for active admin users.
 /// Combines IsActive and HasAdminRole specifications, commonly used for admin authentication flows.
@@ -51,7 +49,6 @@ public class UserIsActiveAdminSpecification : Specification<UserEntity>
     {
         var activeSpec = new UserIsActiveSpecification();
         var adminSpec = new UserHasAdminRoleSpecification();
-
         return activeSpec.And(adminSpec).ToExpression();
     }
 }

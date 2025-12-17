@@ -1,10 +1,12 @@
 using System.Text.Json;
-using _116.Shared.Application.Exceptions;
-using _116.Shared.Application.Exceptions.Handlers.Strategies;
+
 using _116.Identity.Application.Shared.Authorizations.Configuration;
 using _116.Identity.Application.Shared.Authorizations.Handlers;
 using _116.Identity.Application.Shared.Authorizations.Requirements;
 using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Handlers.Strategies;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -19,7 +21,7 @@ namespace _116.Identity.Application.Shared.Authorizations.Extensions;
 /// <remarks>
 /// Centralizes authorization configuration to promote consistency and reusability across modules.
 /// Follows the modular monolithic architecture pattern by encapsulating authorization concerns
-/// within the Auth module while providing extensibility for other modules.
+/// within the Identity module while providing extensibility for other modules.
 /// </remarks>
 public static class AuthorizationExtensions
 {
@@ -45,18 +47,15 @@ public static class AuthorizationExtensions
     ///
     /// The configuration is data-driven and easily extensible for new policy requirements.
     /// </remarks>
-    public static IServiceCollection AddAuthModuleAuthorization(this IServiceCollection services)
+    public static IServiceCollection AddIdentityModuleAuthorization(this IServiceCollection services)
     {
         // Register authorization requirement handlers
         services.AddScoped<IAuthorizationHandler, UserRoleRequirementHandler>();
         services.AddScoped<IAuthorizationHandler, AccountStatusRequirementHandler>();
-
         // Configure authorization policies
         services.ConfigureAuthorizationPolicies();
-
         return services;
     }
-
     /// <summary>
     /// Configures authorization policies using a centralized, data-driven approach.
     /// </summary>
@@ -65,16 +64,12 @@ public static class AuthorizationExtensions
     private static IServiceCollection ConfigureAuthorizationPolicies(this IServiceCollection services)
     {
         AuthorizationBuilder authBuilder = services.AddAuthorizationBuilder();
-
         // Configure policies using centralized configuration
         AuthorizationConfiguration policyConfiguration = AuthorizationPolicyConfiguration.GetConfiguration();
-
         authBuilder.ConfigureAccountStatusPolicies(policyConfiguration.AccountStatusPolicies);
         authBuilder.ConfigureUserRolePolicies(policyConfiguration.UserRolePolicies);
-
         return services;
     }
-
     /// <summary>
     /// Configures account status policies using requirements.
     /// </summary>
@@ -92,10 +87,8 @@ public static class AuthorizationExtensions
                 policy.Requirements.Add(new AccountStatusRequirement(claimType, claimValue))
             );
         }
-
         return authBuilder;
     }
-
     /// <summary>
     /// Configures user role policies using requirements.
     /// </summary>
@@ -113,10 +106,8 @@ public static class AuthorizationExtensions
                 policy.Requirements.Add(new UserRoleRequirement(roles))
             );
         }
-
         return authBuilder;
     }
-
     /// <summary>
     /// Configures JWT Bearer events for consistent authentication and authorization error handling.
     /// </summary>
@@ -133,28 +124,22 @@ public static class AuthorizationExtensions
             {
                 // Prevent default challenge response
                 context.HandleResponse();
-
                 // Create an AuthenticationException and use the existing handler
                 var authHandler = new AuthenticationExceptionHandler();
                 var authException = new AuthenticationException(AuthenticationErrorMessage.JwtTokenRequired());
                 ProblemDetails problemDetails = authHandler.CreateProblemDetails(authException, context.HttpContext);
-
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 context.Response.ContentType = "application/problem+json";
-
                 await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, JsonOptions));
             },
-
             OnForbidden = async context =>
             {
                 // Create an AuthorizationException and use the existing handler
                 var authHandler = new AuthorizationExceptionHandler();
                 var authException = new AuthorizationException(AuthorizationErrorMessage.AccessDenied());
                 ProblemDetails problemDetails = authHandler.CreateProblemDetails(authException, context.HttpContext);
-
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 context.Response.ContentType = "application/problem+json";
-
                 await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, JsonOptions));
             }
         };

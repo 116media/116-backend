@@ -32,7 +32,6 @@ public static class AuthorizationPolicyConfiguration
             UserRolePolicies = GetUserRolePolicies()
         };
     }
-
     /// <summary>
     /// Defines account status policies with their corresponding claim requirements.
     /// </summary>
@@ -47,10 +46,8 @@ public static class AuthorizationPolicyConfiguration
         {
             { AccountStatusPolicies.RequireVerifiedUser, (JwtClaimsConstants.IsVerified, "true") },
             { AccountStatusPolicies.RequireActiveUser, (JwtClaimsConstants.IsActive, "true") },
-            { AccountStatusPolicies.RequireLoggedInUser, (JwtClaimsConstants.IsLoggedIn, "true") }
         };
     }
-
     /// <summary>
     /// Defines user role policies with their corresponding role requirements.
     /// </summary>

@@ -16,7 +16,6 @@ public static class AuthenticationErrorMessage
     {
         return "Invalid email or password";
     }
-
     /// <summary>
     /// Error message indicating that the user is not authenticated or the user ID is invalid.
     /// </summary>
@@ -24,7 +23,6 @@ public static class AuthenticationErrorMessage
     {
         return "User not authenticated or invalid user ID";
     }
-
     /// <summary>
     /// Error message indicating that the user does not have sufficient permissions for this operation.
     /// </summary>
@@ -32,7 +30,6 @@ public static class AuthenticationErrorMessage
     {
         return "Access Denied. Insufficient permissions for this operation";
     }
-
     /// <summary>
     /// Error message indicating that JWT Bearer token authentication is required.
     /// </summary>

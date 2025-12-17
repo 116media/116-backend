@@ -10,14 +10,12 @@ public class AccountInactiveException : Exception
     /// Gets additional details about why the account is inactive, if provided.
     /// </summary>
     public string? Details { get; }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AccountInactiveException"/> class
     /// with a custom message describing the error.
     /// </summary>
     /// <param name="message">The error message explaining the account inactivity.</param>
     public AccountInactiveException(string message) : base(message) { }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AccountInactiveException"/> class
     /// with a custom message and additional details.

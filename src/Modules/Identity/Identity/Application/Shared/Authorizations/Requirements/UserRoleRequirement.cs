@@ -1,4 +1,5 @@
 using _116.Identity.Application.Shared.Authorizations.Handlers;
+
 using Microsoft.AspNetCore.Authorization;
 
 namespace _116.Identity.Application.Shared.Authorizations.Requirements;

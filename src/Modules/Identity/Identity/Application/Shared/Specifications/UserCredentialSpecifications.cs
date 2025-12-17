@@ -1,6 +1,7 @@
-using _116.Shared.Application.Specifications;
-using _116.Identity.Domain.Entities;
 using System.Linq.Expressions;
+
+using _116.Identity.Domain.Entities;
+using _116.Shared.Application.Specifications;
 
 namespace _116.Identity.Application.Shared.Specifications;
 
@@ -15,7 +16,6 @@ public class UserByEmailSpecification(string email) : Specification<UserEntity>
         return user => user.Email == email;
     }
 }
-
 /// <summary>
 /// Specification that matches users by their username.
 /// Performs exact string comparison for username lookup operations.
@@ -27,7 +27,6 @@ public class UserByUserNameSpecification(string userName) : Specification<UserEn
         return user => user.UserName == userName;
     }
 }
-
 /// <summary>
 /// Specification that matches users by their full phone number.
 /// Useful for phone number uniqueness validation and user lookup by phone.
@@ -39,7 +38,6 @@ public class UserByPhoneNumberSpecification(string phoneNumber) : Specification<
         return user => user.FullPhoneNumber == phoneNumber;
     }
 }
-
 /// <summary>
 /// Specification that matches users by their unique identifier.
 /// Used for direct user lookup operations.
@@ -51,7 +49,6 @@ public class UserByIdSpecification(Guid userId) : Specification<UserEntity>
         return user => user.Id == userId;
     }
 }
-
 /// <summary>
 /// Specification that matches users by login credentials (email or username).
 /// Automatically detects whether the provided credentials are an email or username

@@ -1,7 +1,8 @@
-using _116.Shared.Application.Specifications;
-using _116.Identity.Domain.Entities;
 using System.Linq.Expressions;
+
+using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
+using _116.Shared.Application.Specifications;
 
 namespace _116.Identity.Application.Shared.Specifications;
 
@@ -16,7 +17,6 @@ public class UserIsActiveSpecification : Specification<UserEntity>
         return user => user.IsActive;
     }
 }
-
 /// <summary>
 /// Specification that matches verified user accounts.
 /// For local authentication users, verification is required.
@@ -30,19 +30,6 @@ public class UserIsVerifiedSpecification : Specification<UserEntity>
         return user => user.AuthProvider != EnumAuthProvider.Local || user.IsVerified;
     }
 }
-
-/// <summary>
-/// Specification that matches currently logged-in users.
-/// Used to validate active user sessions and prevent operations on logged-out users.
-/// </summary>
-public class UserIsLoggedInSpecification : Specification<UserEntity>
-{
-    public override Expression<Func<UserEntity, bool>> ToExpression()
-    {
-        return user => user.IsLoggedIn;
-    }
-}
-
 /// <summary>
 /// Composite specification for active and verified public users.
 /// Combines IsActive and IsVerified specifications, commonly used for public user authentication flows.
@@ -53,7 +40,6 @@ public class UserIsActiveAndVerifiedSpecification : Specification<UserEntity>
     {
         var activeSpec = new UserIsActiveSpecification();
         var verifiedSpec = new UserIsVerifiedSpecification();
-
         return activeSpec.And(verifiedSpec).ToExpression();
     }
 }
