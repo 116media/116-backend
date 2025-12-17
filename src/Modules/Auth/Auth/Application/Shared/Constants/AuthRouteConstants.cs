@@ -29,6 +29,13 @@ public static class AuthRouteConstants
     public const string ChangePassword = "change-password";
 
     /// <summary>
+    /// Route segment for password set endpoints.
+    /// Used when external auth users (Google/Facebook) want to set their initial password.
+    /// Example: /api/v1/admin/auth/set-password.
+    /// </summary>
+    public const string SetPassword = "set-password";
+
+    /// <summary>
     /// Route segment for password recovery initiation endpoints.
     /// Used when users request a password reset via email.
     /// Example: /api/v1/public/auth/forgot-password.
