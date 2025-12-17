@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+
 using _116.BuildingBlocks.Constants;
 using _116.Core.Application.Shared.Errors;
 using _116.Shared.Application.Exceptions;
