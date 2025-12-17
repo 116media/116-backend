@@ -11,22 +11,18 @@ public class UserRoleEntity : Aggregate<Guid>
     /// Foreign key referencing the associated user.
     /// </summary>
     public Guid UserId { get; private set; }
-
     /// <summary>
     /// Foreign key referencing the associated role.
     /// </summary>
     public Guid RoleId { get; private set; }
-
     /// <summary>
     /// Navigation property for the associated user.
     /// </summary>
     public UserEntity User { get; private set; } = null!;
-
     /// <summary>
     /// Navigation property for the associated role.
     /// </summary>
     public RoleEntity Role { get; private set; } = null!;
-
     /// <summary>
     /// Creates a new user-role association.
     /// </summary>

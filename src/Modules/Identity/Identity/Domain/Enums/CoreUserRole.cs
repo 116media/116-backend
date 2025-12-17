@@ -40,7 +40,6 @@ public enum EnumCoreUserRole
     /// additional domain-specific roles and permissions as needed.
     /// </remarks>
     Admin,
-
     /// <summary>
     /// Highest privilege role with complete system control.
     /// </summary>
@@ -50,7 +49,6 @@ public enum EnumCoreUserRole
     /// This role should be assigned sparingly and only to trusted system administrators.
     /// </remarks>
     SuperAdmin,
-
     /// <summary>
     /// Public user role with standard permissions.
     /// </summary>

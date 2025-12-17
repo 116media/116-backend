@@ -12,7 +12,6 @@ public record OtpPurpose
     /// The validated OTP purpose value.
     /// </summary>
     public EnumOtpPurpose Value { get; init; }
-
     /// <summary>
     /// Initializes a new <see cref="OtpPurpose"/> from an <see cref="EnumOtpPurpose"/> enum value.
     /// </summary>
@@ -24,10 +23,8 @@ public record OtpPurpose
         {
             throw new ArgumentException($"Invalid OTP purpose: {value}");
         }
-
         Value = value;
     }
-
     /// <summary>
     /// Initializes a new <see cref="OtpPurpose"/> from a string representation.
     /// </summary>
@@ -39,26 +36,21 @@ public record OtpPurpose
         {
             throw new ArgumentException($"Invalid OTP purpose: {value}");
         }
-
         Value = parsed;
     }
-
     /// <summary>
     /// Implicit conversion from <see cref="OtpPurpose"/> to <see cref="EnumOtpPurpose"/>.
     /// </summary>
     public static implicit operator EnumOtpPurpose(OtpPurpose otpPurpose) => otpPurpose.Value;
-
     /// <summary>
     /// Implicit conversion from <see cref="OtpPurpose"/> to <see cref="string"/>.
     /// Returns the string representation of the OTP purpose.
     /// </summary>
     public static implicit operator string(OtpPurpose otpPurpose) => otpPurpose.Value.ToString();
-
     /// <summary>
     /// Implicit conversion from <see cref="EnumOtpPurpose"/> to <see cref="OtpPurpose"/>.
     /// </summary>
     public static implicit operator OtpPurpose(EnumOtpPurpose otpPurpose) => new(otpPurpose);
-
     /// <summary>
     /// Implicit conversion from <see cref="string"/> to <see cref="OtpPurpose"/>.
     /// </summary>

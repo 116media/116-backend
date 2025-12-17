@@ -1,149 +1,103 @@
 using System.ComponentModel.DataAnnotations;
+
 using _116.BuildingBlocks.Constants;
-using _116.Shared.Domain;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Enums;
+using _116.Shared.Domain;
 
 namespace _116.Identity.Domain.Entities;
 
 /// <summary>
-/// Represents a user in the authentication system, containing identity, credential,
-/// and profile-related information.
+/// Represents a user account with authentication credentials and profile information.
+/// This is the main entity for user management - handles both login credentials and profile data.
 /// </summary>
-/// <remarks>
-/// This entity serves as an aggregate root with a unique identifier, managing
-/// authentication and profile data such as email, password hash, roles, and login state.
-/// </remarks>
 public class UserEntity : Aggregate<Guid>
 {
+    // Authentication & Identity
     /// <summary>
-    /// Email address of the user.
-    /// May be <c>null</c> for external authentication providers (e.g., Facebook).
+    /// User's email address. Required for local auth, optional for social providers.
     /// </summary>
     [MaxLength(UserConstants.MaxEmailLength)]
     public string? Email { get; private set; }
-
     /// <summary>
-    /// Unique username chosen by the user (max {UserConstants.MaxUserNameLength} characters).
+    /// Unique username for the user.
     /// </summary>
     [MaxLength(UserConstants.MaxUserNameLength)]
     public string UserName { get; private set; } = null!;
-
     /// <summary>
-    /// Hashed password used for authentication.
-    /// May be <c>null</c> for external authentication providers (e.g., Google).
+    /// Hashed password. Only set for local auth - null for social login users.
     /// </summary>
     public string? PasswordHash { get; private set; }
-
     /// <summary>
-    /// Identifier of the user's avatar file, if uploaded.
-    /// </summary>
-    public Guid? AvatarFileId { get; private set; }
-
-    /// <summary>
-    /// Source of the user's avatar (Manual, Provider or None).
-    /// </summary>
-    public EnumAvatarSource AvatarSource { get; private set; } = EnumAvatarSource.None;
-
-    /// <summary>
-    /// Navigation property:
-    /// Collection of roles assigned to the user.
-    /// </summary>
-    public ICollection<UserRoleEntity> UserRoles { get; private set; } = new List<UserRoleEntity>();
-
-    /// <summary>
-    /// Authentication provider used by the user (e.g., Local, Google, Facebook).
+    /// How the user authenticated - Local (email/password), Google, Facebook, etc.
     /// </summary>
     public EnumAuthProvider AuthProvider { get; private set; }
-
     /// <summary>
-    /// Indicates whether the user's email/account has been verified.
+    /// Whether the user has verified their email. Auto-true for social logins.
     /// </summary>
     public bool IsVerified { get; private set; } = UserConstants.DefaultIsVerified;
-
     /// <summary>
-    /// Indicates whether the user account is currently active.
+    /// Whether the account is active. Inactive users cannot log in.
     /// </summary>
     public bool IsActive { get; private set; } = UserConstants.DefaultIsActive;
-
+    // Profile Data
     /// <summary>
-    /// Indicates whether the user is currently logged in.
+    /// ID of the uploaded avatar file, if any.
     /// </summary>
-    public bool IsLoggedIn { get; private set; } = UserConstants.DefaultIsLoggedIn;
-
+    public Guid? AvatarFileId { get; private set; }
     /// <summary>
-    /// Date and time of the user's last login, in UTC.
+    /// Where the avatar came from - manually uploaded, from social provider, or none.
     /// </summary>
-    public DateTime? LastLoginAt { get; private set; }
-
+    public EnumAvatarSource AvatarSource { get; private set; } = EnumAvatarSource.None;
     /// <summary>
-    /// Full country name associated with the user.
+    /// Country name (e.g., "United States", "Rwanda").
     /// </summary>
     [MaxLength(UserConstants.MaxCountryNameLength)]
     public string? CountryName { get; private set; }
-
-    /// <summary>
-    /// URL link to the flag of the user's country.
-    /// </summary>
-    [MaxLength(UserConstants.MaxCountryFlagUrlLength)]
-    public string? CountryFlagUrl { get; private set; }
-
     /// <summary>
     /// ISO country code (e.g., "US", "RW").
     /// </summary>
     [MaxLength(UserConstants.MaxCountryIsoCodeLength)]
     public string? CountryIsoCode { get; private set; }
-
     /// <summary>
     /// Country dialing code (e.g., "+1", "+250").
     /// </summary>
     [MaxLength(UserConstants.MaxCountryDialCodeLength)]
     public string? CountryDialCode { get; private set; }
-
     /// <summary>
-    /// Partial (masked) phone number for privacy display.
+    /// Masked phone number for display (e.g., "***-***-1234").
     /// </summary>
     [MaxLength(UserConstants.MaxPartialPhoneNumberLength)]
     public string? PartialPhoneNumber { get; private set; }
-
     /// <summary>
-    /// Full phone number including country code.
+    /// Full phone number with country code.
     /// </summary>
     [MaxLength(UserConstants.MaxFullPhoneNumberLength)]
     public string? FullPhoneNumber { get; private set; }
-
+    // Navigation Properties
     /// <summary>
-    /// Creates a new user entity with local authentication provider.
+    /// Roles assigned to this user.
     /// </summary>
-    /// <param name="id">The unique identifier of the user.</param>
-    /// <param name="email">The user email address. Cannot be null for local authentication.</param>
-    /// <param name="userName">The user's unique username (max {UserConstants.MaxUserNameLength} characters).</param>
-    /// <param name="passwordHash">The hashed password for authentication.</param>
-    /// <returns>A new <see cref="UserEntity"/> instance.</returns>
-    /// <exception cref="ArgumentException">
-    /// Thrown when email is null or empty for local auth, or username exceeds {UserConstants.MaxUserNameLength} characters.
-    /// </exception>
-    /// <exception cref="ArgumentNullException">Thrown when required parameters are null.</exception>
-    /// <remarks>
-    /// This method creates a user with the local authentication provider. The user starts as active but unverified.
-    /// Email verification should be handled separately after creation.
-    /// </remarks>
+    public ICollection<UserRoleEntity> UserRoles { get; private set; } = new List<UserRoleEntity>();
+    /// <summary>
+    /// Active login sessions for this user.
+    /// </summary>
+    public ICollection<SessionEntity> Sessions { get; private set; } = new List<SessionEntity>();
+    // Factory Methods
+    /// <summary>
+    /// Creates a new user with local authentication (email + password).
+    /// </summary>
     public static UserEntity Create(Guid id, string email, string userName, string passwordHash)
     {
         Exception? error = (email, userName, passwordHash) switch
         {
             var (e, _, _) when string.IsNullOrWhiteSpace(e) => UserErrors.InvalidEmailFormat(e),
-
             var (_, u, _) when string.IsNullOrWhiteSpace(u) || u.Length > UserConstants.MaxUserNameLength
                 => UserErrors.InvalidUsernameFormat(u),
-
             var (_, _, p) when string.IsNullOrWhiteSpace(p) => UserErrors.InvalidPasswordFormat(),
-
             _ => null
         };
-
         if (error is not null) throw error;
-
         return new UserEntity
         {
             Id = id,
@@ -153,23 +107,10 @@ public class UserEntity : Aggregate<Guid>
             AuthProvider = EnumAuthProvider.Local
         };
     }
-
     /// <summary>
-    /// Creates a new user entity with external authentication provider.
+    /// Creates a new user from external authentication (Google, Facebook, etc).
+    /// Email is optional since some providers don't share it.
     /// </summary>
-    /// <param name="id">The unique identifier of the user.</param>
-    /// <param name="userName">The user's unique username (max {UserConstants.MaxUserNameLength} characters).</param>
-    /// <param name="authProvider">The external authentication provider (Google, Facebook, etc.).</param>
-    /// <param name="email">Optional email address from the external provider.</param>
-    /// <returns>A new <see cref="UserEntity"/> instance.</returns>
-    /// <exception cref="ArgumentException">
-    /// Thrown when the username exceeds {UserConstants.MaxUserNameLength} characters or auth provider is Local.
-    /// </exception>
-    /// <exception cref="ArgumentNullException">Thrown when username is null.</exception>
-    /// <remarks>
-    /// This method creates a user with the external authentication provider. Email may be null
-    /// if not provided by the external provider. External users start as verified and active.
-    /// </remarks>
     public static UserEntity CreateExternal(
         Guid id,
         string userName,
@@ -181,191 +122,114 @@ public class UserEntity : Aggregate<Guid>
         {
             throw UserErrors.InvalidUsernameFormat(userName);
         }
-
-        var user = new UserEntity
+        return new UserEntity
         {
             Id = id,
             Email = email?.ToLowerInvariant(),
             UserName = userName,
             AuthProvider = authProvider,
-            IsVerified = UserConstants.ExternalAuthIsVerified,
+            IsVerified = UserConstants.ExternalAuthIsVerified
         };
-
-        return user;
     }
-
+    // Authentication Methods
     /// <summary>
-    /// Updates the user's email address.
+    /// Updates the user's email. Resets verification status since they need to verify the new email.
     /// </summary>
-    /// <param name="newEmail">The new email address.</param>
-    /// <exception cref="ArgumentException">Thrown when email is null or empty.</exception>
-    /// <remarks>
-    /// When email is changed, the user's verification status is reset to false for local authentication.
-    /// </remarks>
     public void UpdateEmail(string newEmail)
     {
         if (string.IsNullOrWhiteSpace(newEmail))
         {
             throw UserErrors.InvalidEmailFormat(newEmail);
         }
-
         Email = newEmail.ToLowerInvariant();
         IsVerified = UserConstants.EmailUpdatedVerificationStatus;
     }
-
     /// <summary>
-    /// Updates the user's password hash.
+    /// Updates the password hash for existing local auth users.
     /// </summary>
-    /// <param name="newPasswordHash">The new hashed password.</param>
-    /// <exception cref="ArgumentNullException">Thrown when password hash is null or empty.</exception>
     public void UpdatePassword(string newPasswordHash)
     {
         if (string.IsNullOrWhiteSpace(newPasswordHash))
         {
             throw UserErrors.InvalidPasswordFormat();
         }
-
         if (AuthProvider != EnumAuthProvider.Local && string.IsNullOrEmpty(Email))
         {
             throw UserErrors.BadRequest("Cannot update password for a user without email.");
         }
-
         PasswordHash = newPasswordHash;
     }
-
     /// <summary>
-    /// Sets the user's password and changes the authentication provider to Local.
+    /// Sets a password for social login users, converting them to local auth.
+    /// Useful when a Google/Facebook user wants to also login with password.
     /// </summary>
-    /// <param name="passwordHash">The hashed password to set.</param>
-    /// <exception cref="ArgumentNullException">Thrown when password hash is null or empty.</exception>
-    /// <exception cref="BadRequestException">Thrown when user doesn't have an email address.</exception>
-    /// <remarks>
-    /// This method is used when external authentication users (Google/Facebook) set their password for the first time.
-    /// It updates both the password hash and changes the auth provider to Local to enable password-based login.
-    /// </remarks>
     public void SetPasswordAndChangeToLocal(string passwordHash)
     {
         if (string.IsNullOrWhiteSpace(passwordHash))
         {
             throw UserErrors.InvalidPasswordFormat();
         }
-
         if (string.IsNullOrEmpty(Email))
         {
             throw UserErrors.EmailRequiredToSetPassword();
         }
-
         PasswordHash = passwordHash;
         AuthProvider = EnumAuthProvider.Local;
     }
-
     /// <summary>
-    /// Updates the user's username.
+    /// Updates the username. Must still be unique across all users.
     /// </summary>
-    /// <param name="newUserName">The new username.</param>
-    /// <exception cref="ArgumentException">Thrown when username is null, empty, or exceeds maximum length.</exception>
-    /// <remarks>
-    /// Updates the username for existing users. Username must be unique and follow validation rules.
-    /// </remarks>
     public void UpdateUserName(string newUserName)
     {
         if (string.IsNullOrWhiteSpace(newUserName) || newUserName.Length > UserConstants.MaxUserNameLength)
         {
             throw UserErrors.InvalidUsernameFormat(newUserName);
         }
-
         UserName = newUserName;
     }
-
     /// <summary>
-    /// Marks the user's email as verified.
+    /// Marks the email as verified. Call this after successful email verification.
     /// </summary>
-    /// <remarks>
-    /// This method should be called after a successful email verification process.
-    /// </remarks>
     public void MarkAsVerified() => IsVerified = UserConstants.ExternalAuthIsVerified;
-
     /// <summary>
-    /// Activates the user account.
+    /// Activates the account. User can now log in.
     /// </summary>
-    /// <remarks>
-    /// Activated users can log in and use the system.
-    /// </remarks>
     public void Activate() => IsActive = UserConstants.ActivatedStatus;
-
     /// <summary>
-    /// Deactivates the user account.
+    /// Deactivates the account. User cannot log in anymore.
+    /// You should also invalidate all their sessions separately.
     /// </summary>
-    /// <remarks>
-    /// Deactivated users cannot log in or use the system.
-    /// </remarks>
-    public void Deactivate()
-    {
-        IsActive = UserConstants.DeactivatedStatus;
-        // Force logout when deactivating
-        IsLoggedIn = UserConstants.LoggedOutStatus;
-    }
-
+    public void Deactivate() => IsActive = UserConstants.DeactivatedStatus;
     /// <summary>
-    /// Records a successful login for the user.
+    /// Checks if this user can log in. Throws an exception if not.
+    /// Call this before creating a new session.
     /// </summary>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when the user is not active or not verified (for local auth).
-    /// </exception>
-    /// <remarks>
-    /// Updates the login status and last login timestamp.
-    /// </remarks>
-    public void RecordLogin()
+    public void ValidateCanLogin()
     {
         if (!IsActive)
         {
             throw UserErrors.AccountInactive(Email!);
         }
-
         if (AuthProvider == EnumAuthProvider.Local && !IsVerified)
         {
             throw UserErrors.AccountNotVerified(Email!);
         }
-
-        IsLoggedIn = UserConstants.LoggedInStatus;
-        LastLoginAt = DateTime.UtcNow;
     }
-
+    // Profile Methods
     /// <summary>
-    /// Records a logout for the user.
+    /// Updates or removes the user's avatar.
     /// </summary>
-    /// <remarks>
-    /// Updates the login status to false.
-    /// </remarks>
-    public void RecordLogout() => IsLoggedIn = UserConstants.LoggedOutStatus;
-
-    /// <summary>
-    /// Updates the user's avatar file reference.
-    /// </summary>
-    /// <param name="avatarFileId">The identifier of the avatar file, or null to remove avatar.</param>
-    /// <param name="avatarSource">The source of the avatar (Manual or Provider).</param>
     public void UpdateAvatar(Guid? avatarFileId, EnumAvatarSource avatarSource)
     {
         AvatarFileId = avatarFileId;
         AvatarSource = avatarSource;
     }
-
     /// <summary>
-    /// Updates the user's phone number information.
+    /// Updates the user's phone number and country information.
+    /// Pass nulls to clear the phone number.
     /// </summary>
-    /// <param name="countryName">Full country name.</param>
-    /// <param name="countryFlagUrl">URL to the country flag image.</param>
-    /// <param name="countryIsoCode">ISO country code (e.g., "US", "RW").</param>
-    /// <param name="countryDialCode">Country dialing code (e.g., "+1", "+250").</param>
-    /// <param name="fullPhoneNumber">Complete phone number including country code.</param>
-    /// <param name="partialPhoneNumber">Masked phone number for privacy display.</param>
-    /// <remarks>
-    ///  Updates all country-related information in a single operation to maintain consistency.
-    ///  Updates both full and partial phone numbers to maintain consistency for privacy and display purposes.
-    /// </remarks>
     public void UpdatePhoneNumber(
         string? countryName,
-        string? countryFlagUrl,
         string? countryIsoCode,
         string? countryDialCode,
         string? fullPhoneNumber,
@@ -373,63 +237,36 @@ public class UserEntity : Aggregate<Guid>
     )
     {
         CountryName = countryName;
-        CountryFlagUrl = countryFlagUrl;
         CountryIsoCode = countryIsoCode;
         CountryDialCode = countryDialCode;
         FullPhoneNumber = fullPhoneNumber;
         PartialPhoneNumber = partialPhoneNumber;
     }
-
+    // Role Methods
     /// <summary>
-    /// Assigns a role to the user.
+    /// Assigns a role to this user. Throws if the role is already assigned.
     /// </summary>
-    /// <param name="userRole">The user-role association to add.</param>
-    /// <exception cref="ArgumentNullException">Thrown when userRole is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when the role is already assigned.</exception>
-    /// <remarks>
-    /// Adds a new role assignment if not already present.
-    /// </remarks>
     public void AssignRole(UserRoleEntity userRole)
     {
         ArgumentNullException.ThrowIfNull(userRole);
-
         if (HasRole(userRole.RoleId))
         {
             throw UserErrors.RoleAlreadyAssignedToUser();
         }
-
         UserRoles.Add(userRole);
     }
-
     /// <summary>
-    /// Removes a role from the user.
+    /// Removes a role from this user. Returns true if removed, false if wasn't assigned.
     /// </summary>
-    /// <param name="roleId">The identifier of the role to remove.</param>
-    /// <returns>True if the role was removed, false if the role was not assigned.</returns>
-    /// <remarks>
-    /// Removes the role assignment if it exists.
-    /// </remarks>
     public bool RemoveRole(Guid roleId)
     {
         UserRoleEntity? userRole = UserRoles.FirstOrDefault(ur => ur.RoleId == roleId);
-
-        if (userRole == null)
-        {
-            return UserConstants.DeactivatedStatus;
-        }
-
+        if (userRole == null) return false;
         UserRoles.Remove(userRole);
-        return UserConstants.ActivatedStatus;
+        return true;
     }
-
     /// <summary>
-    /// Checks if the user has a specific role assigned.
+    /// Checks if this user has a specific role.
     /// </summary>
-    /// <param name="roleId">The identifier of the role to check.</param>
-    /// <returns>True if the user has the role, false otherwise.</returns>
-    /// <remarks>
-    /// Useful for authorization and role-based access control.
-    /// </remarks>
     public bool HasRole(Guid roleId) => UserRoles.Any(ur => ur.RoleId == roleId);
-
 }

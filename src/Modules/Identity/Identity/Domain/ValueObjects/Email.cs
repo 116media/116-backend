@@ -16,7 +16,6 @@ public record Email
     /// Gets the normalized email address value in lowercase.
     /// </summary>
     public string Value { get; init; }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="Email"/> record with validation.
     /// </summary>
@@ -31,15 +30,12 @@ public record Email
         {
             throw new ArgumentException("Email cannot be empty", nameof(value));
         }
-
         if (!IsValidEmail(value))
         {
             throw new ArgumentException("Invalid email format", nameof(value));
         }
-
         Value = value.ToLowerInvariant();
     }
-
     /// <summary>
     /// Determines whether the specified string is a valid email address.
     /// </summary>
@@ -57,13 +53,11 @@ public record Email
             return false;
         }
     }
-
     /// <summary>
     /// Implicitly converts an <see cref="Email"/> to a <see cref="string"/>.
     /// </summary>
     /// <param name="email">The <see cref="Email"/> instance.</param>
     public static implicit operator string(Email email) => email.Value;
-
     /// <summary>
     /// Implicitly converts a <see cref="string"/> to an <see cref="Email"/> instance.
     /// </summary>

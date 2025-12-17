@@ -12,7 +12,6 @@ public record AuthProvider
     /// The validated authentication provider value.
     /// </summary>
     public EnumAuthProvider Value { get; init; }
-
     /// <summary>
     /// Initializes a new <see cref="AuthProvider"/> from an <see cref="AuthProvider"/> enum value.
     /// </summary>
@@ -24,10 +23,8 @@ public record AuthProvider
         {
             throw new ArgumentException($"Invalid auth provider: {value}");
         }
-
         Value = value;
     }
-
     /// <summary>
     /// Initializes a new <see cref="AuthProvider"/> from a string representation.
     /// </summary>
@@ -39,26 +36,21 @@ public record AuthProvider
         {
             throw new ArgumentException($"Invalid auth provider: {value}");
         }
-
         Value = parsed;
     }
-
     /// <summary>
     /// Implicit conversion from <see cref="AuthProvider"/> to <see cref="AuthProvider"/>.
     /// </summary>
     public static implicit operator EnumAuthProvider(AuthProvider provider) => provider.Value;
-
     /// <summary>
     /// Implicit conversion from <see cref="AuthProvider"/> to <see cref="string"/>.
     /// Returns the string representation of the provider.
     /// </summary>
     public static implicit operator string(AuthProvider provider) => provider.Value.ToString();
-
     /// <summary>
     /// Implicit conversion from <see cref="AuthProvider"/> to <see cref="AuthProvider"/>.
     /// </summary>
     public static implicit operator AuthProvider(EnumAuthProvider provider) => new(provider);
-
     /// <summary>
     /// Implicit conversion from <see cref="string"/> to <see cref="AuthProvider"/>.
     /// </summary>

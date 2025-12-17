@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations;
+
 using _116.BuildingBlocks.Constants;
-using _116.Shared.Domain;
 using _116.Identity.Domain.Enums;
+using _116.Shared.Domain;
 
 namespace _116.Identity.Domain.Entities;
 
@@ -14,43 +15,35 @@ public class OtpEntity : Aggregate<Guid>
     /// Foreign key referencing the associated user.
     /// </summary>
     public Guid UserId { get; private set; }
-
     /// <summary>
     /// The OTP code sent to the user.
     /// </summary>
     [MaxLength(UserConstants.OtpCodeLength)]
     public string Code { get; private set; } = null!;
-
     /// <summary>
     /// The purpose of the OTP (EmailVerification, PasswordReset, etc.).
     /// </summary>
     public EnumOtpPurpose Purpose { get; private set; }
-
     /// <summary>
     /// The date and time when the OTP expires, in UTC.
     /// </summary>
     public DateTime ExpiresAt { get; private init; }
-
     /// <summary>
     /// The number of verification attempts made with this OTP.
     /// </summary>
     public int AttemptCount { get; private set; }
-
     /// <summary>
     /// Indicates whether the OTP has been used successfully.
     /// </summary>
     public bool IsUsed { get; private set; }
-
     /// <summary>
     /// The date and time when the OTP was used, in UTC.
     /// </summary>
     public DateTime? UsedAt { get; private set; }
-
     /// <summary>
     /// Navigation property for the associated user.
     /// </summary>
     public UserEntity User { get; private set; } = null!;
-
     /// <summary>
     /// Creates a new OTP entity.
     /// </summary>
@@ -71,7 +64,6 @@ public class OtpEntity : Aggregate<Guid>
             ExpiresAt = expiresAt
         };
     }
-
     /// <summary>
     /// Marks the OTP as used.
     /// </summary>
@@ -80,7 +72,6 @@ public class OtpEntity : Aggregate<Guid>
         IsUsed = true;
         UsedAt = DateTime.UtcNow;
     }
-
     /// <summary>
     /// Increments the attempt count.
     /// </summary>
@@ -88,7 +79,6 @@ public class OtpEntity : Aggregate<Guid>
     {
         AttemptCount++;
     }
-
     /// <summary>
     /// Checks if the OTP is valid for verification.
     /// </summary>
@@ -99,7 +89,6 @@ public class OtpEntity : Aggregate<Guid>
                && DateTime.UtcNow <= ExpiresAt
                && AttemptCount < UserConstants.MaxOtpAttempts;
     }
-
     /// <summary>
     /// Checks if the OTP has expired.
     /// </summary>
@@ -108,7 +97,6 @@ public class OtpEntity : Aggregate<Guid>
     {
         return DateTime.UtcNow > ExpiresAt;
     }
-
     /// <summary>
     /// Checks if the maximum attempts have been reached.
     /// </summary>

@@ -1,4 +1,4 @@
-using _116.Identity.Domain.DTOs;
+using _116.Identity.Application.Shared.DTOs;
 
 namespace _116.Identity.Domain.Results;
 

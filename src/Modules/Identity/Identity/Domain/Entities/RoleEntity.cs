@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations;
+
 using _116.BuildingBlocks.Constants;
-using _116.Shared.Domain;
 using _116.Identity.Application.Shared.Errors;
+using _116.Shared.Domain;
 
 namespace _116.Identity.Domain.Entities;
 
@@ -15,25 +16,21 @@ public class RoleEntity : Aggregate<Guid>
     /// </summary>
     [MaxLength(RoleConstants.MaxRoleNameLength)]
     public string Name { get; private set; } = null!;
-
     /// <summary>
     /// Human-readable description of the role's purpose or scope.
     /// </summary>
     [MaxLength(RoleConstants.MaxRoleDescriptionLength)]
     public string Description { get; private set; } = null!;
-
     /// <summary>
     /// Navigation property:
     /// Collection of user-role associations linking users to this role.
     /// </summary>
     public ICollection<UserRoleEntity> UserRoles { get; private set; } = new List<UserRoleEntity>();
-
     /// <summary>
     /// Navigation property:
     /// Collection of role-permission associations linking this role to its permissions.
     /// </summary>
     public ICollection<RolePermissionEntity> RolePermissions { get; private set; } = new List<RolePermissionEntity>();
-
     /// <summary>
     /// Creates a new role entity.
     /// </summary>
@@ -48,12 +45,10 @@ public class RoleEntity : Aggregate<Guid>
         {
             throw UserErrors.RoleNameRequired();
         }
-
         if (string.IsNullOrWhiteSpace(description))
         {
             throw UserErrors.RoleDescriptionRequired();
         }
-
         return new RoleEntity
         {
             Id = id,
