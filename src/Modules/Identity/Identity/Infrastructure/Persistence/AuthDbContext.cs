@@ -1,9 +1,9 @@
 using System.Reflection;
-using _116.Auth.Domain.Constants;
-using _116.Auth.Domain.Entities;
+using _116.Identity.Domain.Constants;
+using _116.Identity.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace _116.Auth.Infrastructure.Persistence;
+namespace _116.Identity.Infrastructure.Persistence;
 
 /// <summary>
 /// Entity Framework database context for the auth module.

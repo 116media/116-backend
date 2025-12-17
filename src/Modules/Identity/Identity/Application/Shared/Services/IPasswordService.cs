@@ -1,4 +1,4 @@
-namespace _116.Auth.Application.Shared.Services;
+namespace _116.Identity.Application.Shared.Services;
 
 /// <summary>
 /// Service for password hashing and verification operations.

@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.Login;
+namespace _116.Identity.Application.Public.UseCases.Commands.Login;
 
 /// <summary>
 /// Validator for the <see cref="PublicLoginCommand"/> ensuring proper user credential format.

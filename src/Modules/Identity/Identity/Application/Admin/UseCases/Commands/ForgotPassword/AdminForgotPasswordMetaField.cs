@@ -1,6 +1,6 @@
 using _116.Shared.Application.Metadata;
 
-namespace _116.Auth.Application.Admin.UseCases.Commands.ForgotPassword;
+namespace _116.Identity.Application.Admin.UseCases.Commands.ForgotPassword;
 
 /// <summary>
 /// Contains metadata information for the admin forgot password route.

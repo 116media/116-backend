@@ -1,6 +1,6 @@
 using _116.Shared.Application.Metadata;
 
-namespace _116.Auth.Application.Admin.UseCases.Commands.UpdateOwnProfile;
+namespace _116.Identity.Application.Admin.UseCases.Commands.UpdateOwnProfile;
 
 /// <summary>
 /// Contains metadata information for the admin update own profile route.

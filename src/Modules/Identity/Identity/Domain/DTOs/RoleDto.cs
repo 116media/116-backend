@@ -1,4 +1,4 @@
-namespace _116.Auth.Domain.DTOs;
+namespace _116.Identity.Domain.DTOs;
 
 /// <summary>
 /// Data transfer object representing role information with associated permissions.

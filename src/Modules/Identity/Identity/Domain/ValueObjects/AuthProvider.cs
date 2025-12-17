@@ -1,6 +1,6 @@
-using _116.Auth.Domain.Enums;
+using _116.Identity.Domain.Enums;
 
-namespace _116.Auth.Domain.ValueObjects;
+namespace _116.Identity.Domain.ValueObjects;
 
 /// <summary>
 /// Value object that encapsulates and validates the <see cref="AuthProvider"/> enum.

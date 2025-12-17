@@ -1,13 +1,13 @@
-using _116.Auth.Application.Shared.Mappers;
-using _116.Auth.Application.Shared.Repositories;
-using _116.Auth.Domain.Entities;
-using _116.Auth.Domain.Enums;
+using _116.Identity.Application.Shared.Mappers;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
-using _116.Auth.Application.Shared.Persistence;
+using _116.Identity.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.UpdateAvatar;
+namespace _116.Identity.Application.Public.UseCases.Commands.UpdateAvatar;
 
 /// <summary>
 /// Handles the <see cref="PublicUpdateAvatarCommand"/> to update user avatar.

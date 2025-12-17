@@ -1,6 +1,6 @@
 using _116.Shared.Contracts.Application.CQRS;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.SetPassword;
+namespace _116.Identity.Application.Public.UseCases.Commands.SetPassword;
 
 /// <summary>
 /// Command for setting a password for a public user who authenticated via Google/Facebook.

@@ -1,4 +1,4 @@
-namespace _116.Auth.Application.Shared.Exceptions;
+namespace _116.Identity.Application.Shared.Exceptions;
 
 /// <summary>
 /// Exception that represents when an OTP code has expired and is no longer valid for verification.

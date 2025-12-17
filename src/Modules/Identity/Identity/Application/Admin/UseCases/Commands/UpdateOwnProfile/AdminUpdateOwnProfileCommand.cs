@@ -1,7 +1,7 @@
 using _116.Shared.Contracts.Application.CQRS;
-using _116.Auth.Domain.DTOs;
+using _116.Identity.Domain.DTOs;
 
-namespace _116.Auth.Application.Admin.UseCases.Commands.UpdateOwnProfile;
+namespace _116.Identity.Application.Admin.UseCases.Commands.UpdateOwnProfile;
 
 /// <summary>
 /// Command for updating an admin user's own profile information.

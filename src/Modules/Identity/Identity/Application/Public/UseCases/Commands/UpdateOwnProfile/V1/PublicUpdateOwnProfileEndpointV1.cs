@@ -1,17 +1,17 @@
 using _116.Shared.Contracts.Application.CQRS;
-using _116.Auth.Application.Shared.Authorizations.Policies;
-using _116.Auth.Application.Shared.Repositories;
-using _116.Auth.Domain.DTOs;
+using _116.Identity.Application.Shared.Authorizations.Policies;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Domain.DTOs;
 using Carter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using System.Security.Claims;
-using _116.Auth.Application.Shared.Constants;
-using _116.Auth.Domain.Constants;
+using _116.Identity.Application.Shared.Constants;
+using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.UpdateOwnProfile.V1;
+namespace _116.Identity.Application.Public.UseCases.Commands.UpdateOwnProfile.V1;
 
 /// <summary>
 /// Request model for updating own profile.

@@ -1,4 +1,4 @@
-namespace _116.Auth.Domain.Enums;
+namespace _116.Identity.Domain.Enums;
 
 /// <summary>
 /// Defines the different purposes for which an OTP can be used.

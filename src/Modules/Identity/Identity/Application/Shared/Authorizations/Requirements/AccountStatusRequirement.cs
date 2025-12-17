@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 
-namespace _116.Auth.Application.Shared.Authorizations.Requirements;
+namespace _116.Identity.Application.Shared.Authorizations.Requirements;
 
 /// <summary>
 /// Authorization requirement that validates user account status against claim requirements.

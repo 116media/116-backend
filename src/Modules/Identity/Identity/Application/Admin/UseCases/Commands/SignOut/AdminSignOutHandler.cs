@@ -1,9 +1,9 @@
-using _116.Auth.Application.Shared.Persistence;
+using _116.Identity.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
-using _116.Auth.Application.Shared.Repositories;
-using _116.Auth.Domain.Entities;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Domain.Entities;
 
-namespace _116.Auth.Application.Admin.UseCases.Commands.SignOut;
+namespace _116.Identity.Application.Admin.UseCases.Commands.SignOut;
 
 /// <summary>
 /// Handles the <see cref="AdminSignOutCommand"/> to sign out an admin user.

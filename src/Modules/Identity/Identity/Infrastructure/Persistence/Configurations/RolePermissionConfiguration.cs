@@ -1,8 +1,8 @@
-using _116.Auth.Domain.Entities;
+using _116.Identity.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace _116.Auth.Infrastructure.Persistence.Configurations;
+namespace _116.Identity.Infrastructure.Persistence.Configurations;
 
 /// <summary>
 /// Entity Framework configuration for the RolePermissionEntity.

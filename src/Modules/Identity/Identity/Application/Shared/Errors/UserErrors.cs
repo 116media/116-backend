@@ -1,9 +1,9 @@
 using _116.Shared.Application.Exceptions;
-using _116.Auth.Application.Shared.Errors.Messages;
-using _116.Auth.Application.Shared.Exceptions;
-using _116.Auth.Domain.Enums;
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Exceptions;
+using _116.Identity.Domain.Enums;
 
-namespace _116.Auth.Application.Shared.Errors;
+namespace _116.Identity.Application.Shared.Errors;
 
 /// <summary>
 /// User domain error factory providing simple, readable exception creation.

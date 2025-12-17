@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using _116.Shared.Infrastructure.Seed;
-using _116.Auth.Domain.Entities;
-using _116.Auth.Domain.Enums;
-using _116.Auth.Domain.ValueObjects;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.ValueObjects;
 
-namespace _116.Auth.Infrastructure.Persistence.Seeds.Visitor;
+namespace _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
 
 /// <summary>
 /// Seeder responsible for creating the Visitor role with appropriate permissions for public users.

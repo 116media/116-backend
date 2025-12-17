@@ -1,9 +1,9 @@
 using _116.Core.Domain.DTOs;
 using _116.Shared.Domain;
-using _116.Auth.Domain.DTOs;
-using _116.Auth.Domain.Entities;
+using _116.Identity.Domain.DTOs;
+using _116.Identity.Domain.Entities;
 
-namespace _116.Auth.Application.Shared.Repositories;
+namespace _116.Identity.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for managing role entities and role-related operations.

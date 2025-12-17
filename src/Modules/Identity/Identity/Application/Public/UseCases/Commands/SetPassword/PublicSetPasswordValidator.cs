@@ -1,7 +1,7 @@
 using FluentValidation;
-using _116.Auth.Application.Shared.Validators;
+using _116.Identity.Application.Shared.Validators;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.SetPassword;
+namespace _116.Identity.Application.Public.UseCases.Commands.SetPassword;
 
 /// <summary>
 /// Validator for the <see cref="PublicSetPasswordCommand"/> ensuring proper password format.

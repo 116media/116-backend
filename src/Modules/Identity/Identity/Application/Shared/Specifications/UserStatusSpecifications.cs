@@ -1,9 +1,9 @@
 using _116.Shared.Application.Specifications;
-using _116.Auth.Domain.Entities;
+using _116.Identity.Domain.Entities;
 using System.Linq.Expressions;
-using _116.Auth.Domain.Enums;
+using _116.Identity.Domain.Enums;
 
-namespace _116.Auth.Application.Shared.Specifications;
+namespace _116.Identity.Application.Shared.Specifications;
 
 /// <summary>
 /// Specification that matches only active user accounts.

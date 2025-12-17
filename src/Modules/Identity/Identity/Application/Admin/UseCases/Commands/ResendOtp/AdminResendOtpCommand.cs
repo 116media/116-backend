@@ -1,6 +1,6 @@
 using _116.Shared.Contracts.Application.CQRS;
 
-namespace _116.Auth.Application.Admin.UseCases.Commands.ResendOtp;
+namespace _116.Identity.Application.Admin.UseCases.Commands.ResendOtp;
 
 /// <summary>
 /// Command for resending OTP codes to admin users.

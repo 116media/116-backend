@@ -1,4 +1,4 @@
-namespace _116.Auth.Application.Shared.Errors.Messages;
+namespace _116.Identity.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides conflict-related error messages for the <c>User</c> domain.

@@ -1,6 +1,6 @@
-using _116.Auth.Domain.Enums;
+using _116.Identity.Domain.Enums;
 
-namespace _116.Auth.Application.Shared.Errors.Messages;
+namespace _116.Identity.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides validation-related error messages for the <c>User</c> domain.

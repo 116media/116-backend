@@ -1,17 +1,17 @@
 using _116.Shared.Application.Exceptions;
-using _116.Auth.Application.Shared.Persistence;
+using _116.Identity.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
-using _116.Auth.Application.Shared.Errors;
-using _116.Auth.Application.Shared.Mappers;
-using _116.Auth.Application.Shared.Repositories;
-using _116.Auth.Application.Shared.Services;
-using _116.Auth.Domain.Entities;
-using _116.Auth.Domain.Results;
-using _116.Auth.Domain.ValueObjects;
+using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Mappers;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Application.Shared.Services;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Results;
+using _116.Identity.Domain.ValueObjects;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 
-namespace _116.Auth.Application.Admin.UseCases.Commands.Login;
+namespace _116.Identity.Application.Admin.UseCases.Commands.Login;
 
 /// <summary>
 /// Handles the <see cref="AdminLoginCommand"/> to authenticate admin users.

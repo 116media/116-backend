@@ -1,4 +1,4 @@
-namespace _116.Auth.Domain.Constants;
+namespace _116.Identity.Domain.Constants;
 
 /// <summary>
 /// Contains constant values for the Auth module.

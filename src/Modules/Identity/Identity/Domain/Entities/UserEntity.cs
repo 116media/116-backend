@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using _116.BuildingBlocks.Constants;
 using _116.Shared.Domain;
-using _116.Auth.Application.Shared.Errors;
-using _116.Auth.Domain.Enums;
+using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Domain.Enums;
 
-namespace _116.Auth.Domain.Entities;
+namespace _116.Identity.Domain.Entities;
 
 /// <summary>
 /// Represents a user in the authentication system, containing identity, credential,

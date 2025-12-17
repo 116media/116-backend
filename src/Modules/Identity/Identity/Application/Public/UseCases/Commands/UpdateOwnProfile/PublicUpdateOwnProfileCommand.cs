@@ -1,7 +1,7 @@
 using _116.Shared.Contracts.Application.CQRS;
-using _116.Auth.Domain.DTOs;
+using _116.Identity.Domain.DTOs;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.UpdateOwnProfile;
+namespace _116.Identity.Application.Public.UseCases.Commands.UpdateOwnProfile;
 
 /// <summary>
 /// Command for updating a user's own profile information.

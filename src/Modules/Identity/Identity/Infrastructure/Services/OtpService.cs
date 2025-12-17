@@ -1,9 +1,9 @@
 using _116.BuildingBlocks.Constants;
-using _116.Auth.Application.Shared.Services;
-using _116.Auth.Domain.Entities;
-using _116.Auth.Domain.Enums;
+using _116.Identity.Application.Shared.Services;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 
-namespace _116.Auth.Infrastructure.Services;
+namespace _116.Identity.Infrastructure.Services;
 
 /// <summary>
 /// Implementation of <see cref="IOtpService"/> for OTP generation and management operations.

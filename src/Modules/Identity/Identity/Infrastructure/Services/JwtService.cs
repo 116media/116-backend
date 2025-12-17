@@ -4,13 +4,13 @@ using System.Text;
 using System.Text.Json;
 using _116.BuildingBlocks.Constants;
 using _116.Shared.Application.Configurations;
-using _116.Auth.Application.Shared.Services;
-using _116.Auth.Domain.Entities;
-using _116.Auth.Domain.Enums;
-using _116.Auth.Domain.Results;
+using _116.Identity.Application.Shared.Services;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Results;
 using Microsoft.IdentityModel.Tokens;
 
-namespace _116.Auth.Infrastructure.Services;
+namespace _116.Identity.Infrastructure.Services;
 
 /// <summary>
 /// Service responsible for generating JWT tokens with user claims, roles, and permissions.

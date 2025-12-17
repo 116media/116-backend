@@ -1,6 +1,6 @@
-using _116.Auth.Domain.Constants;
+using _116.Identity.Domain.Constants;
 
-namespace _116.Auth.Application.Shared.Constants;
+namespace _116.Identity.Application.Shared.Constants;
 
 /// <summary>
 /// Contains route path constants for authentication-related API endpoints.

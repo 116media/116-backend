@@ -1,5 +1,5 @@
-using _116.Auth.Application.Shared.Constants;
-using _116.Auth.Domain.Constants;
+using _116.Identity.Application.Shared.Constants;
+using _116.Identity.Domain.Constants;
 using _116.Shared.Contracts.Application.CQRS;
 using _116.Shared.Application.Extensions;
 using Carter;
@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.ResendOtp.V1;
+namespace _116.Identity.Application.Public.UseCases.Commands.ResendOtp.V1;
 
 /// <summary>
 /// Request model for public resend OTP.

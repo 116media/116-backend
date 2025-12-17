@@ -1,6 +1,6 @@
 using _116.Shared.Application.Persistence;
 
-namespace _116.Auth.Application.Shared.Persistence;
+namespace _116.Identity.Application.Shared.Persistence;
 
 /// <summary>
 /// Unit of Work interface specific to the Auth module.

@@ -1,7 +1,7 @@
 using _116.Shared.Contracts.Application.CQRS;
-using _116.Auth.Domain.Results;
+using _116.Identity.Domain.Results;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.Login;
+namespace _116.Identity.Application.Public.UseCases.Commands.Login;
 
 /// <summary>
 /// Command used to authenticate a public user.

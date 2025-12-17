@@ -1,6 +1,6 @@
-using _116.Auth.Domain.Entities;
+using _116.Identity.Domain.Entities;
 
-namespace _116.Auth.Domain.ValueObjects;
+namespace _116.Identity.Domain.ValueObjects;
 
 /// <summary>
 /// Defines the permissions available for Visitor role users using PermissionEntity for type safety.

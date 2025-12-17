@@ -1,4 +1,4 @@
-namespace _116.Auth.Application.Shared.Exceptions;
+namespace _116.Identity.Application.Shared.Exceptions;
 
 /// <summary>
 /// Exception that represents access denied errors (403 Forbidden).

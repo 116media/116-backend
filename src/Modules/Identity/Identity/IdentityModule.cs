@@ -1,26 +1,26 @@
 using System.Text;
-using _116.Auth.Domain.Constants;
+using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Infrastructure;
 using _116.Shared.Infrastructure.Seed;
-using _116.Auth.Application.Shared.Authorizations.Extensions;
-using _116.Auth.Application.Shared.Exceptions.Handlers;
-using _116.Auth.Application.Shared.Mappers;
-using _116.Auth.Application.Shared.Persistence;
-using _116.Auth.Application.Shared.Repositories;
-using _116.Auth.Application.Shared.Services;
-using _116.Auth.Infrastructure.Repositories;
-using _116.Auth.Infrastructure.Persistence;
-using _116.Auth.Infrastructure.Persistence.Seeds.SuperAdmin;
-using _116.Auth.Infrastructure.Persistence.Seeds.Visitor;
-using _116.Auth.Infrastructure.Services;
+using _116.Identity.Application.Shared.Authorizations.Extensions;
+using _116.Identity.Application.Shared.Exceptions.Handlers;
+using _116.Identity.Application.Shared.Mappers;
+using _116.Identity.Application.Shared.Persistence;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Application.Shared.Services;
+using _116.Identity.Infrastructure.Repositories;
+using _116.Identity.Infrastructure.Persistence;
+using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
+using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
+using _116.Identity.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
-namespace _116.Auth;
+namespace _116.Identity;
 
 /// <summary>
 /// Provides extension methods to register and configure the Auth module's services and middleware.

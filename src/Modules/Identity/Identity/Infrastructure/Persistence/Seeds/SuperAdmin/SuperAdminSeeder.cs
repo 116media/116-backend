@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
 using _116.Shared.Infrastructure.Seed;
-using _116.Auth.Application.Shared.Services;
+using _116.Identity.Application.Shared.Services;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace _116.Auth.Infrastructure.Persistence.Seeds.SuperAdmin;
+namespace _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 
 /// <summary>
 /// Orchestrator for Super Admin seeding operations.

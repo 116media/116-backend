@@ -1,12 +1,12 @@
 using _116.Shared.Application.Exceptions;
-using _116.Auth.Application.Shared.Persistence;
+using _116.Identity.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
-using _116.Auth.Application.Shared.Repositories;
-using _116.Auth.Application.Shared.Services;
-using _116.Auth.Domain.Entities;
-using _116.Auth.Domain.ValueObjects;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Application.Shared.Services;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.ValueObjects;
 
-namespace _116.Auth.Application.Admin.UseCases.Commands.ResendOtp;
+namespace _116.Identity.Application.Admin.UseCases.Commands.ResendOtp;
 
 /// <summary>
 /// Handles the <see cref="AdminResendOtpCommand"/> to resend OTP codes for admin users.

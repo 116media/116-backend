@@ -1,4 +1,4 @@
-namespace _116.Auth.Domain.Results;
+namespace _116.Identity.Domain.Results;
 
 /// <summary>
 /// Represents the result of JWT token generation including the token and its expiration time.

@@ -1,7 +1,7 @@
 using FluentValidation;
-using _116.Auth.Application.Shared.Validators;
+using _116.Identity.Application.Shared.Validators;
 
-namespace _116.Auth.Application.Admin.UseCases.Commands.VerifyOtp;
+namespace _116.Identity.Application.Admin.UseCases.Commands.VerifyOtp;
 
 /// <summary>
 /// Validator for the <see cref="AdminVerifyOtpCommand"/> ensuring proper OTP verification data format.

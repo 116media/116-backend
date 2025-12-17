@@ -1,6 +1,6 @@
 using _116.Shared.Contracts.Application.CQRS;
 
-namespace _116.Auth.Application.Admin.UseCases.Commands.ChangePassword;
+namespace _116.Identity.Application.Admin.UseCases.Commands.ChangePassword;
 
 /// <summary>
 /// Command for changing an admin user's password using their current password for verification.

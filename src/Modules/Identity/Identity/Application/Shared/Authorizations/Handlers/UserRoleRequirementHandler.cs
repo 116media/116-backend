@@ -1,8 +1,8 @@
 using System.Security.Claims;
-using _116.Auth.Application.Shared.Authorizations.Requirements;
+using _116.Identity.Application.Shared.Authorizations.Requirements;
 using Microsoft.AspNetCore.Authorization;
 
-namespace _116.Auth.Application.Shared.Authorizations.Handlers;
+namespace _116.Identity.Application.Shared.Authorizations.Handlers;
 
 /// <summary>
 /// Authorization handler that validates user roles against policy requirements.

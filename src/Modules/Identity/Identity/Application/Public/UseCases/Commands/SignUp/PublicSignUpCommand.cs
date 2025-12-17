@@ -1,7 +1,7 @@
 using _116.Shared.Contracts.Application.CQRS;
-using _116.Auth.Domain.Results;
+using _116.Identity.Domain.Results;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.SignUp;
+namespace _116.Identity.Application.Public.UseCases.Commands.SignUp;
 
 /// <summary>
 /// Command for public user registration with local authentication provider.

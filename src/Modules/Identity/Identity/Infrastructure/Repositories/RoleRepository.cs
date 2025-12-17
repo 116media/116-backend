@@ -1,9 +1,9 @@
-using _116.Auth.Application.Shared.Repositories;
-using _116.Auth.Domain.DTOs;
-using _116.Auth.Domain.Entities;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Domain.DTOs;
+using _116.Identity.Domain.Entities;
 using Mapster;
 
-namespace _116.Auth.Infrastructure.Repositories;
+namespace _116.Identity.Infrastructure.Repositories;
 
 /// <summary>
 /// Implementation of <see cref="IRoleRepository"/> for processing user roles and permissions.

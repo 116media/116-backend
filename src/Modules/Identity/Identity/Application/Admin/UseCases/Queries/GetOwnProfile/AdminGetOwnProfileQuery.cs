@@ -1,7 +1,7 @@
 using _116.Shared.Contracts.Application.CQRS;
-using _116.Auth.Domain.DTOs;
+using _116.Identity.Domain.DTOs;
 
-namespace _116.Auth.Application.Admin.UseCases.Queries.GetOwnProfile;
+namespace _116.Identity.Application.Admin.UseCases.Queries.GetOwnProfile;
 
 /// <summary>
 /// Query for retrieving the authenticated admin user's complete profile information.

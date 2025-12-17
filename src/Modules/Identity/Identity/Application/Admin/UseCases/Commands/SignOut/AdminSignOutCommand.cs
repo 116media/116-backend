@@ -1,6 +1,6 @@
 using _116.Shared.Contracts.Application.CQRS;
 
-namespace _116.Auth.Application.Admin.UseCases.Commands.SignOut;
+namespace _116.Identity.Application.Admin.UseCases.Commands.SignOut;
 
 /// <summary>
 /// Command for signing out an admin user and marking them as logged out.

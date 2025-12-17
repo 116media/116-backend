@@ -1,7 +1,7 @@
 using FluentValidation;
-using _116.Auth.Application.Shared.Validators;
+using _116.Identity.Application.Shared.Validators;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.SignUp;
+namespace _116.Identity.Application.Public.UseCases.Commands.SignUp;
 
 /// <summary>
 /// Validator for the <see cref="PublicSignUpCommand"/> ensuring proper user registration data format.

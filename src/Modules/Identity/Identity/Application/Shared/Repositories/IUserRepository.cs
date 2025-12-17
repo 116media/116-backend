@@ -1,10 +1,10 @@
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
-using _116.Auth.Domain.Entities;
-using _116.Auth.Domain.ValueObjects;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.ValueObjects;
 using System.Security.Claims;
 
-namespace _116.Auth.Application.Shared.Repositories;
+namespace _116.Identity.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for managing user entities and their related data.

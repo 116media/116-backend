@@ -1,6 +1,6 @@
 using _116.Shared.Contracts.Application.CQRS;
 
-namespace _116.Auth.Application.Admin.UseCases.Commands.ForgotPassword;
+namespace _116.Identity.Application.Admin.UseCases.Commands.ForgotPassword;
 
 /// <summary>
 /// Command for initiating the password reset process for existing admin users.

@@ -1,12 +1,12 @@
 using _116.BuildingBlocks.Constants;
-using _116.Auth.Application.Shared.Authorizations.Requirements;
-using _116.Auth.Application.Shared.Repositories;
+using _116.Identity.Application.Shared.Authorizations.Requirements;
+using _116.Identity.Application.Shared.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Npgsql;
 using System.Security.Claims;
-using _116.Auth.Domain.Entities;
+using _116.Identity.Domain.Entities;
 
-namespace _116.Auth.Application.Shared.Authorizations.Handlers;
+namespace _116.Identity.Application.Shared.Authorizations.Handlers;
 
 /// <summary>
 /// Authorization handler that validates account status requirements against user data.

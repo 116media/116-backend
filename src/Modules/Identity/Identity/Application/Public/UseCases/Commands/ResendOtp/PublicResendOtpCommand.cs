@@ -1,7 +1,7 @@
 using _116.Shared.Contracts.Application.CQRS;
-using _116.Auth.Domain.Enums;
+using _116.Identity.Domain.Enums;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.ResendOtp;
+namespace _116.Identity.Application.Public.UseCases.Commands.ResendOtp;
 
 /// <summary>
 /// Command for resending OTP codes to public users.

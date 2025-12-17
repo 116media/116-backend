@@ -1,4 +1,4 @@
-namespace _116.Auth.Application.Shared.Authorizations.Configuration;
+namespace _116.Identity.Application.Shared.Authorizations.Configuration;
 
 /// <summary>
 /// Represents the complete authorization configuration for the Auth module.

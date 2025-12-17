@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace _116.Auth.Infrastructure.Persistence.Migrations
+namespace _116.Identity.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class InitAuthSchema : Migration

@@ -1,7 +1,7 @@
 using _116.Shared.Application.Configurations;
-using _116.Auth.Domain.Enums;
+using _116.Identity.Domain.Enums;
 
-namespace _116.Auth.Infrastructure.Persistence.Seeds.SuperAdmin;
+namespace _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 
 /// <summary>
 /// Configuration class for Super Admin seeding operations.

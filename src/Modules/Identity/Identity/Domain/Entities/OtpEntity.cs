@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using _116.BuildingBlocks.Constants;
 using _116.Shared.Domain;
-using _116.Auth.Domain.Enums;
+using _116.Identity.Domain.Enums;
 
-namespace _116.Auth.Domain.Entities;
+namespace _116.Identity.Domain.Entities;
 
 /// <summary>
 /// Represents a one-time password (OTP) for user verification.

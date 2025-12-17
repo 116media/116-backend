@@ -1,6 +1,6 @@
 using System.Net.Mail;
 
-namespace _116.Auth.Domain.ValueObjects;
+namespace _116.Identity.Domain.ValueObjects;
 
 /// <summary>
 /// Represents a validated email address as a value object.

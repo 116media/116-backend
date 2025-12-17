@@ -1,17 +1,17 @@
 using System.Text.Json;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
-using _116.Auth.Application.Shared.Authorizations.Configuration;
-using _116.Auth.Application.Shared.Authorizations.Handlers;
-using _116.Auth.Application.Shared.Authorizations.Requirements;
-using _116.Auth.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Authorizations.Configuration;
+using _116.Identity.Application.Shared.Authorizations.Handlers;
+using _116.Identity.Application.Shared.Authorizations.Requirements;
+using _116.Identity.Application.Shared.Errors.Messages;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace _116.Auth.Application.Shared.Authorizations.Extensions;
+namespace _116.Identity.Application.Shared.Authorizations.Extensions;
 
 /// <summary>
 /// Provides extension methods for configuring authorization policies and requirements.

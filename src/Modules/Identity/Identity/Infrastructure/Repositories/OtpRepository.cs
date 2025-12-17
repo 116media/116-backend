@@ -1,13 +1,13 @@
 using _116.Shared.Infrastructure.Extensions;
-using _116.Auth.Application.Shared.Errors;
-using _116.Auth.Application.Shared.Repositories;
-using _116.Auth.Application.Shared.Specifications;
-using _116.Auth.Domain.Entities;
-using _116.Auth.Domain.Enums;
-using _116.Auth.Infrastructure.Persistence;
+using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Application.Shared.Specifications;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
+using _116.Identity.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace _116.Auth.Infrastructure.Repositories;
+namespace _116.Identity.Infrastructure.Repositories;
 
 /// <summary>
 /// Implementation of <see cref="IOtpRepository"/> using Entity Framework Core.

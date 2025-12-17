@@ -1,6 +1,6 @@
 using _116.Shared.Contracts.Application.CQRS;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.ResetPassword;
+namespace _116.Identity.Application.Public.UseCases.Commands.ResetPassword;
 
 /// <summary>
 /// Command for resetting a user's password using OTP verification.

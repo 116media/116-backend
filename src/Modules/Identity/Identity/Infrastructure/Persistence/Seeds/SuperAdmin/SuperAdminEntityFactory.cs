@@ -1,7 +1,7 @@
-using _116.Auth.Application.Shared.Services;
-using _116.Auth.Domain.Entities;
+using _116.Identity.Application.Shared.Services;
+using _116.Identity.Domain.Entities;
 
-namespace _116.Auth.Infrastructure.Persistence.Seeds.SuperAdmin;
+namespace _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 
 /// <summary>
 /// Factory class for creating Super Admin related entities.

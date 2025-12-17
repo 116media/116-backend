@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using _116.Auth.Infrastructure.Persistence;
+using _116.Identity.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace _116.Auth.Infrastructure.Persistence.Migrations
+namespace _116.Identity.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
     partial class AuthDbContextModelSnapshot : ModelSnapshot
@@ -23,7 +23,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("_116.Auth.Domain.Entities.OtpEntity", b =>
+            modelBuilder.Entity("_116.Identity.Domain.Entities.OtpEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -99,7 +99,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                     b.ToTable("otps", "authentication");
                 });
 
-            modelBuilder.Entity("_116.Auth.Domain.Entities.PermissionEntity", b =>
+            modelBuilder.Entity("_116.Identity.Domain.Entities.PermissionEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -150,7 +150,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                     b.ToTable("permissions", "authentication");
                 });
 
-            modelBuilder.Entity("_116.Auth.Domain.Entities.RoleEntity", b =>
+            modelBuilder.Entity("_116.Identity.Domain.Entities.RoleEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -195,7 +195,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                     b.ToTable("roles", "authentication");
                 });
 
-            modelBuilder.Entity("_116.Auth.Domain.Entities.RolePermissionEntity", b =>
+            modelBuilder.Entity("_116.Identity.Domain.Entities.RolePermissionEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -239,7 +239,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                     b.ToTable("role_permissions", "authentication");
                 });
 
-            modelBuilder.Entity("_116.Auth.Domain.Entities.UserEntity", b =>
+            modelBuilder.Entity("_116.Identity.Domain.Entities.UserEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -357,7 +357,7 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                     b.ToTable("users", "authentication");
                 });
 
-            modelBuilder.Entity("_116.Auth.Domain.Entities.UserRoleEntity", b =>
+            modelBuilder.Entity("_116.Identity.Domain.Entities.UserRoleEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -401,9 +401,9 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                     b.ToTable("user_roles", "authentication");
                 });
 
-            modelBuilder.Entity("_116.Auth.Domain.Entities.OtpEntity", b =>
+            modelBuilder.Entity("_116.Identity.Domain.Entities.OtpEntity", b =>
                 {
-                    b.HasOne("_116.Auth.Domain.Entities.UserEntity", "User")
+                    b.HasOne("_116.Identity.Domain.Entities.UserEntity", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -413,16 +413,16 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("_116.Auth.Domain.Entities.RolePermissionEntity", b =>
+            modelBuilder.Entity("_116.Identity.Domain.Entities.RolePermissionEntity", b =>
                 {
-                    b.HasOne("_116.Auth.Domain.Entities.PermissionEntity", "Permission")
+                    b.HasOne("_116.Identity.Domain.Entities.PermissionEntity", "Permission")
                         .WithMany("RolePermissions")
                         .HasForeignKey("PermissionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_role_permissions_permissions_permission_id");
 
-                    b.HasOne("_116.Auth.Domain.Entities.RoleEntity", "Role")
+                    b.HasOne("_116.Identity.Domain.Entities.RoleEntity", "Role")
                         .WithMany("RolePermissions")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -434,16 +434,16 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("_116.Auth.Domain.Entities.UserRoleEntity", b =>
+            modelBuilder.Entity("_116.Identity.Domain.Entities.UserRoleEntity", b =>
                 {
-                    b.HasOne("_116.Auth.Domain.Entities.RoleEntity", "Role")
+                    b.HasOne("_116.Identity.Domain.Entities.RoleEntity", "Role")
                         .WithMany("UserRoles")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_user_roles_roles_role_id");
 
-                    b.HasOne("_116.Auth.Domain.Entities.UserEntity", "User")
+                    b.HasOne("_116.Identity.Domain.Entities.UserEntity", "User")
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -455,19 +455,19 @@ namespace _116.Auth.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("_116.Auth.Domain.Entities.PermissionEntity", b =>
+            modelBuilder.Entity("_116.Identity.Domain.Entities.PermissionEntity", b =>
                 {
                     b.Navigation("RolePermissions");
                 });
 
-            modelBuilder.Entity("_116.Auth.Domain.Entities.RoleEntity", b =>
+            modelBuilder.Entity("_116.Identity.Domain.Entities.RoleEntity", b =>
                 {
                     b.Navigation("RolePermissions");
 
                     b.Navigation("UserRoles");
                 });
 
-            modelBuilder.Entity("_116.Auth.Domain.Entities.UserEntity", b =>
+            modelBuilder.Entity("_116.Identity.Domain.Entities.UserEntity", b =>
                 {
                     b.Navigation("UserRoles");
                 });

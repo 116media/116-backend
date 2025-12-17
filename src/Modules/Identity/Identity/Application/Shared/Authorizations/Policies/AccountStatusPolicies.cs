@@ -1,4 +1,4 @@
-namespace _116.Auth.Application.Shared.Authorizations.Policies;
+namespace _116.Identity.Application.Shared.Authorizations.Policies;
 
 /// <summary>
 /// Defines authorization policy names for accounts status-based access control.

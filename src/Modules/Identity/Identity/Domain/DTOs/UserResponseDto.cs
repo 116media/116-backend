@@ -1,7 +1,7 @@
 using _116.Core.Domain.DTOs;
-using _116.Auth.Domain.Enums;
+using _116.Identity.Domain.Enums;
 
-namespace _116.Auth.Domain.DTOs;
+namespace _116.Identity.Domain.DTOs;
 
 /// <summary>
 /// Data transfer object representing comprehensive user information in API responses.

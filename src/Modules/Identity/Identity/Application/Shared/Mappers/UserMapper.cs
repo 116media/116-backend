@@ -1,10 +1,10 @@
 using _116.Core.Domain.DTOs;
 using _116.Core.Domain.Entities;
-using _116.Auth.Domain.DTOs;
-using _116.Auth.Domain.Entities;
+using _116.Identity.Domain.DTOs;
+using _116.Identity.Domain.Entities;
 using Mapster;
 
-namespace _116.Auth.Application.Shared.Mappers;
+namespace _116.Identity.Application.Shared.Mappers;
 
 /// <summary>
 /// Mapster configuration for User entity mappings.

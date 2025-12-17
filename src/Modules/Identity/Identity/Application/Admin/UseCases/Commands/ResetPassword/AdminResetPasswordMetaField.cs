@@ -1,6 +1,6 @@
 using _116.Shared.Application.Metadata;
 
-namespace _116.Auth.Application.Admin.UseCases.Commands.ResetPassword;
+namespace _116.Identity.Application.Admin.UseCases.Commands.ResetPassword;
 
 /// <summary>
 /// Contains metadata information for the admin password reset route.

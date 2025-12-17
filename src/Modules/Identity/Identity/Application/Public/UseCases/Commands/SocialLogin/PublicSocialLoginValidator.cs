@@ -1,8 +1,8 @@
-using _116.Auth.Domain.Enums;
-using _116.Auth.Application.Shared.Validators;
+using _116.Identity.Domain.Enums;
+using _116.Identity.Application.Shared.Validators;
 using FluentValidation;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.SocialLogin;
+namespace _116.Identity.Application.Public.UseCases.Commands.SocialLogin;
 
 /// <summary>
 /// Validator for the <see cref="PublicSocialLoginCommand"/> ensuring proper social login data format.

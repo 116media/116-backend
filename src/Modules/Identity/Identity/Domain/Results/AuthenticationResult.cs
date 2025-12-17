@@ -1,6 +1,6 @@
-using _116.Auth.Domain.DTOs;
+using _116.Identity.Domain.DTOs;
 
-namespace _116.Auth.Domain.Results;
+namespace _116.Identity.Domain.Results;
 
 /// <summary>
 /// Data transfer object representing the result of a successful authentication operation.

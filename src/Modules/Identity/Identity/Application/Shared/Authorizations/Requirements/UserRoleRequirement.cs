@@ -1,7 +1,7 @@
-using _116.Auth.Application.Shared.Authorizations.Handlers;
+using _116.Identity.Application.Shared.Authorizations.Handlers;
 using Microsoft.AspNetCore.Authorization;
 
-namespace _116.Auth.Application.Shared.Authorizations.Requirements;
+namespace _116.Identity.Application.Shared.Authorizations.Requirements;
 
 /// <summary>
 /// Authorization requirement that validates user roles against a list of allowed roles.

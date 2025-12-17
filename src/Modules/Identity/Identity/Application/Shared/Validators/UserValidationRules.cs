@@ -2,10 +2,10 @@ using System.Reflection;
 using FluentValidation;
 using System.Text.RegularExpressions;
 using _116.BuildingBlocks.Constants;
-using _116.Auth.Domain.Enums;
+using _116.Identity.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Auth.Application.Shared.Validators;
+namespace _116.Identity.Application.Shared.Validators;
 
 /// <summary>
 /// Contains common validation rules and helpers for user-related validators.

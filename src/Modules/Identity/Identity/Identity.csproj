@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <RootNamespace>_116.Auth</RootNamespace>
+        <RootNamespace>_116.Identity</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

@@ -1,12 +1,12 @@
 using _116.Shared.Application.Exceptions;
-using _116.Auth.Application.Shared.Persistence;
+using _116.Identity.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
-using _116.Auth.Application.Shared.Errors;
-using _116.Auth.Application.Shared.Repositories;
-using _116.Auth.Application.Shared.Services;
-using _116.Auth.Domain.Entities;
+using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Application.Shared.Services;
+using _116.Identity.Domain.Entities;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.ChangePassword;
+namespace _116.Identity.Application.Public.UseCases.Commands.ChangePassword;
 
 /// <summary>
 /// Handles the <see cref="PublicChangePasswordCommand"/> to change user password with current password verification.

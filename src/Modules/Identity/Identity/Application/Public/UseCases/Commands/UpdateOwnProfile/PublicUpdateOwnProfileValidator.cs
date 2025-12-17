@@ -1,7 +1,7 @@
 using FluentValidation;
-using _116.Auth.Application.Shared.Validators;
+using _116.Identity.Application.Shared.Validators;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.UpdateOwnProfile;
+namespace _116.Identity.Application.Public.UseCases.Commands.UpdateOwnProfile;
 
 /// <summary>
 /// Validator for the <see cref="PublicUpdateOwnProfileCommand"/> ensuring proper profile update data format.

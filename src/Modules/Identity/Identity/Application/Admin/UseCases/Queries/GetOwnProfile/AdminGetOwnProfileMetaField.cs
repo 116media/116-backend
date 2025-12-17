@@ -1,6 +1,6 @@
 using _116.Shared.Application.Metadata;
 
-namespace _116.Auth.Application.Admin.UseCases.Queries.GetOwnProfile;
+namespace _116.Identity.Application.Admin.UseCases.Queries.GetOwnProfile;
 
 /// <summary>
 /// Contains metadata information for the admin user profile route.

@@ -1,6 +1,6 @@
 using _116.Shared.Domain;
 
-namespace _116.Auth.Domain.Entities;
+namespace _116.Identity.Domain.Entities;
 
 /// <summary>
 /// Represents the many-to-many association between users and roles.

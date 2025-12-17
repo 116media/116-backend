@@ -1,6 +1,6 @@
 using _116.Shared.Application.Metadata;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.UpdateAvatar;
+namespace _116.Identity.Application.Public.UseCases.Commands.UpdateAvatar;
 
 /// <summary>
 /// Contains metadata information for the public update avatar route.

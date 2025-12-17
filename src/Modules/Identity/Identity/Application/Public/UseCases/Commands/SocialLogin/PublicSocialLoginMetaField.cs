@@ -1,6 +1,6 @@
 using _116.Shared.Application.Metadata;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.SocialLogin;
+namespace _116.Identity.Application.Public.UseCases.Commands.SocialLogin;
 
 /// <summary>
 /// Contains metadata information for the social login route.

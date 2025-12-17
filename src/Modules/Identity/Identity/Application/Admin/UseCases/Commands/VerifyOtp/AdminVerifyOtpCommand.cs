@@ -1,6 +1,6 @@
 using _116.Shared.Contracts.Application.CQRS;
 
-namespace _116.Auth.Application.Admin.UseCases.Commands.VerifyOtp;
+namespace _116.Identity.Application.Admin.UseCases.Commands.VerifyOtp;
 
 /// <summary>
 /// Command for verifying an OTP code for admin account verification.

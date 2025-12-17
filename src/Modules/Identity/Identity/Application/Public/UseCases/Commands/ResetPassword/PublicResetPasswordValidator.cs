@@ -1,7 +1,7 @@
 using FluentValidation;
-using _116.Auth.Application.Shared.Validators;
+using _116.Identity.Application.Shared.Validators;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.ResetPassword;
+namespace _116.Identity.Application.Public.UseCases.Commands.ResetPassword;
 
 /// <summary>
 /// Validator for the <see cref="PublicResetPasswordCommand"/> ensuring proper password reset data format.

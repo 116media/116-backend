@@ -1,8 +1,8 @@
 using _116.Shared.Contracts.Application.CQRS;
-using _116.Auth.Domain.DTOs;
+using _116.Identity.Domain.DTOs;
 using Microsoft.AspNetCore.Http;
 
-namespace _116.Auth.Application.Public.UseCases.Commands.UpdateAvatar;
+namespace _116.Identity.Application.Public.UseCases.Commands.UpdateAvatar;
 
 /// <summary>
 /// Command for updating user avatar via file upload.

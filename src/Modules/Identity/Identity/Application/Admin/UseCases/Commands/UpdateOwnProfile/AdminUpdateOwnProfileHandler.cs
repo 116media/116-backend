@@ -1,14 +1,14 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
-using _116.Auth.Application.Shared.Persistence;
+using _116.Identity.Application.Shared.Persistence;
 using _116.Shared.Contracts.Application.CQRS;
-using _116.Auth.Application.Shared.Errors;
-using _116.Auth.Application.Shared.Mappers;
-using _116.Auth.Application.Shared.Repositories;
-using _116.Auth.Domain.Entities;
+using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Mappers;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Domain.Entities;
 
-namespace _116.Auth.Application.Admin.UseCases.Commands.UpdateOwnProfile;
+namespace _116.Identity.Application.Admin.UseCases.Commands.UpdateOwnProfile;
 
 /// <summary>
 /// Handles the <see cref="AdminUpdateOwnProfileCommand"/> to update admin user's own profile information.

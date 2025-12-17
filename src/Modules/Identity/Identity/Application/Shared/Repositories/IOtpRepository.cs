@@ -1,9 +1,9 @@
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
-using _116.Auth.Domain.Entities;
-using _116.Auth.Domain.Enums;
+using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 
-namespace _116.Auth.Application.Shared.Repositories;
+namespace _116.Identity.Application.Shared.Repositories;
 
 /// <summary>
 /// Repository interface for managing OTP entities and verification operations.

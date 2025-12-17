@@ -2,11 +2,11 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
-using _116.Auth.Application.Shared.Mappers;
-using _116.Auth.Application.Shared.Repositories;
-using _116.Auth.Domain.Entities;
+using _116.Identity.Application.Shared.Mappers;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Domain.Entities;
 
-namespace _116.Auth.Application.Admin.UseCases.Queries.GetOwnProfile;
+namespace _116.Identity.Application.Admin.UseCases.Queries.GetOwnProfile;
 
 /// <summary>
 /// Handles the <see cref="AdminGetOwnProfileQuery"/> to retrieve complete admin user profile information.
