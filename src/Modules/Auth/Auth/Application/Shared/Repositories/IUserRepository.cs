@@ -290,4 +290,21 @@ public interface IUserRepository : IRepository<UserEntity>
         AuthProvider authProvider,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Sets a password for an external authentication user and changes their auth provider to Local.
+    /// </summary>
+    /// <param name="user">The user entity to set password for.</param>
+    /// <param name="hashedPassword">The hashed password to set.</param>
+    /// <exception cref="BadRequestException">Thrown when user already has Local auth provider.</exception>
+    /// <exception cref="BadRequestException">Thrown when user auth provider is not Google or Facebook.</exception>
+    /// <exception cref="BadRequestException">Thrown when user doesn't have an email address.</exception>
+    /// <remarks>
+    /// This method validates that:
+    /// - User doesn't already have Local auth (password not already set)
+    /// - User's auth provider is Google or Facebook
+    /// - User has an email address configured
+    /// Upon success, sets the password hash and changes auth provider to Local.
+    /// </remarks>
+    void SetPasswordForExternalUser(UserEntity user, string hashedPassword);
 }
