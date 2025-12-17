@@ -17,7 +17,7 @@ public class SuperAdminSeeder : IDataSeeder
     private readonly ILogger<SuperAdminSeeder> _logger;
 
     public SuperAdminSeeder(
-        AuthDbContext context,
+        IdentityDbContext context,
         IPasswordService passwordService,
         ILogger<SuperAdminSeeder> logger,
         ILogger<SuperAdminRepositoryManager> repositoryLogger,

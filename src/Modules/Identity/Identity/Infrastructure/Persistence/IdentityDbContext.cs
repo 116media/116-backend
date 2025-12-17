@@ -14,7 +14,7 @@ namespace _116.Identity.Infrastructure.Persistence;
 /// This context provides access to user authentication data including user accounts, roles,
 /// permissions, and their many-to-many relationships. All entities are stored in the "authentication" schema.
 /// </remarks>
-public class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbContext(options)
+public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : DbContext(options)
 {
     /// <summary>
     /// Gets the collection of user entities representing user accounts in the system.
@@ -64,7 +64,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbContext(
     /// </remarks>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema(AuthConstants.SchemaName);
+        modelBuilder.HasDefaultSchema(IdentityConstants.SchemaName);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         base.OnModelCreating(modelBuilder);
     }

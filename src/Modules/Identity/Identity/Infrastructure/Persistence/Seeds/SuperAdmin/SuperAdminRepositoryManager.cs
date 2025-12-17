@@ -9,7 +9,7 @@ namespace _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 /// Manages database operations for Super Admin seeding.
 /// Implements Repository pattern to encapsulate data access logic.
 /// </summary>
-public class SuperAdminRepositoryManager(AuthDbContext context, ILogger<SuperAdminRepositoryManager> logger)
+public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<SuperAdminRepositoryManager> logger)
 {
     /// <summary>
     /// Checks if a Super Admin user already exists in the database.

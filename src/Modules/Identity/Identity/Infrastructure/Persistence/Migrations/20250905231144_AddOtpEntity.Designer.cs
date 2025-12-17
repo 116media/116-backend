@@ -11,7 +11,7 @@ using _116.Identity.Infrastructure.Persistence;
 
 namespace _116.Identity.Infrastructure.Persistence.Migrations
 {
-    [DbContext(typeof(AuthDbContext))]
+    [DbContext(typeof(IdentityDbContext))]
     [Migration("20250905231144_AddOtpEntity")]
     partial class AddOtpEntity
     {

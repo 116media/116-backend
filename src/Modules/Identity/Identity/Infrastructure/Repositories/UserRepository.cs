@@ -15,7 +15,7 @@ namespace _116.Identity.Infrastructure.Repositories;
 /// <summary>
 /// Implementation of <see cref="IUserRepository"/> using Entity Framework Core.
 /// </summary>
-public class UserRepository(AuthDbContext context) : IUserRepository
+public class UserRepository(IdentityDbContext context) : IUserRepository
 {
     /// <inheritdoc />
     public async Task<UserEntity?> FindUserByIdOrThrow(Guid userId, CancellationToken cancellationToken = default)

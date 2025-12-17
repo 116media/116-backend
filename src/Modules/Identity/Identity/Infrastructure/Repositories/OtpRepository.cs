@@ -12,7 +12,7 @@ namespace _116.Identity.Infrastructure.Repositories;
 /// <summary>
 /// Implementation of <see cref="IOtpRepository"/> using Entity Framework Core.
 /// </summary>
-public class OtpRepository(AuthDbContext context) : IOtpRepository
+public class OtpRepository(IdentityDbContext context) : IOtpRepository
 {
     /// <inheritdoc />
     public async Task AddAsync(OtpEntity otp, CancellationToken cancellationToken = default)

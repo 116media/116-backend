@@ -23,23 +23,23 @@ using Microsoft.IdentityModel.Tokens;
 namespace _116.Identity;
 
 /// <summary>
-/// Provides extension methods to register and configure the Auth module's services and middleware.
+/// Provides extension methods to register and configure the Identity module's services and middleware.
 /// </summary>
-public static class AuthModule
+public static class IdentityModule
 {
     /// <summary>
-    /// Gets the shared module configuration options for the Auth module.
+    /// Gets the shared module configuration options for the Identity module.
     /// </summary>
-    private static ModuleOptions<AuthDbContext> GetModuleOptions() => new()
+    private static ModuleOptions<IdentityDbContext> GetModuleOptions() => new()
     {
-        ModuleName = AuthConstants.ModuleName,
-        SchemaName = AuthConstants.SchemaName,
+        ModuleName = IdentityConstants.ModuleName,
+        SchemaName = IdentityConstants.SchemaName,
         EnableMigrations = true,
         EnableSeeding = true
     };
 
     /// <summary>
-    /// Adds the Auth module's services to the dependency injection container.
+    /// Adds the Identity module's services to the dependency injection container.
     /// </summary>
     /// <param name="services">The service collection to register services into.</param>
     /// <returns>The updated <see cref="IServiceCollection"/> for chaining.</returns>
@@ -49,10 +49,10 @@ public static class AuthModule
     /// </remarks>
     /// <example>
     /// <code>
-    /// builder.Services.AddAuthModule(builder.Configuration);
+    /// builder.Services.AddIdentityModule(builder.Configuration);
     /// </code>
     /// </example>
-    public static IServiceCollection AddAuthModule(this IServiceCollection services)
+    public static IServiceCollection AddIdentityModule(this IServiceCollection services)
     {
         // Add services to the container.
         // Api Endpoint services.
@@ -66,7 +66,7 @@ public static class AuthModule
         UserMapper.Configure();
 
         // Register Unit of Work for transaction management
-        services.AddScoped<IAuthUnitOfWork, AuthUnitOfWork>();
+        services.AddScoped<IIdentityUnitOfWork, IdentityUnitOfWork>();
 
         // Register user management services
         services.AddScoped<IJwtService, JwtService>();
@@ -100,8 +100,8 @@ public static class AuthModule
             options.ConfigureJwtBearerEvents();
         });
 
-        // Configure Authorization using centralized configuration
-        services.AddAuthModuleAuthorization();
+        // Configure Identityorization using centralized configuration
+        services.AddIdentityModuleAuthorization();
 
         // Register custom exception handlers for this module
         services.AddSingleton<IExceptionStrategy, AccountInactiveExceptionHandler>();
@@ -115,7 +115,7 @@ public static class AuthModule
     }
 
     /// <summary>
-    /// Configures the Auth module's middleware in the application pipeline.
+    /// Configures the Identity module's middleware in the application pipeline.
     /// </summary>
     /// <param name="app">The application builder.</param>
     /// <returns>The updated <see cref="IApplicationBuilder"/> for chaining.</returns>
@@ -124,10 +124,10 @@ public static class AuthModule
     /// </remarks>
     /// <example>
     /// <code>
-    /// app.UseAuthModule();
+    /// app.UseIdentityModule();
     /// </code>
     /// </example>
-    public static IApplicationBuilder UseAuthModule(this IApplicationBuilder app)
+    public static IApplicationBuilder UseIdentityModule(this IApplicationBuilder app)
     {
         // Configure Http request pipeline.
         // Use Api endpoint services.

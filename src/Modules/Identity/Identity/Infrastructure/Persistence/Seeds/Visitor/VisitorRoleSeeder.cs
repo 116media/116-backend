@@ -14,7 +14,7 @@ namespace _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
 /// Creates the Visitor role as defined in EnumCoreUserRole.Visitor with permissions from VisitorPermissions.
 /// All permissions are exactly 8 words describing what the permission allows users to do.
 /// </remarks>
-public class VisitorRoleSeeder(AuthDbContext context, ILogger<VisitorRoleSeeder> logger) : IDataSeeder
+public class VisitorRoleSeeder(IdentityDbContext context, ILogger<VisitorRoleSeeder> logger) : IDataSeeder
 {
     /// <inheritdoc />
     public async Task SeedAllAsync()
