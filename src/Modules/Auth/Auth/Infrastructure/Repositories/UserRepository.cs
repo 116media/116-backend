@@ -326,4 +326,22 @@ public class UserRepository(AuthDbContext context) : IUserRepository
 
         return user;
     }
+
+    /// <inheritdoc />
+    public void SetPasswordForExternalUser(UserEntity user, string hashedPassword)
+    {
+        // Check if user has an email address
+        if (string.IsNullOrEmpty(user.Email))
+        {
+            throw UserErrors.EmailRequiredToSetPassword();
+        }
+
+        // Check if user already has a password set
+        if (user.AuthProvider == EnumAuthProvider.Local)
+        {
+            throw UserErrors.PasswordOnlyForExternalAuth();
+        }
+
+        user.SetPasswordAndChangeToLocal(hashedPassword);
+    }
 }
