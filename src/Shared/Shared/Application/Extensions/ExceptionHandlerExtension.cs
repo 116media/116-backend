@@ -1,9 +1,11 @@
+using System.Reflection;
+
 using _116.Shared.Application.Exceptions.Handlers;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace _116.Shared.Application.Extensions;
 

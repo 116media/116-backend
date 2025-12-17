@@ -1,5 +1,7 @@
 using System.Reflection;
+
 using _116.Shared.Domain;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace _116.Shared.Application.Services;

@@ -1,4 +1,5 @@
 using _116.Shared.Application.Configurations;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace _116.Shared.Application.Extensions;
