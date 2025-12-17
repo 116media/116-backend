@@ -1,7 +1,11 @@
 using System.Reflection;
+
 using _116.Shared.Application.Extensions;
+
 using Asp.Versioning;
+
 using Carter;
+
 using Serilog;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -17,15 +21,15 @@ DotNetEnv.Env.TraversePath().Load();
 builder.Services.AddCloudinaryConfiguration();
 
 Assembly coreAssembly = typeof(CoreModule).Assembly;
-Assembly authAssembly = typeof(AuthModule).Assembly;
+Assembly identityAssembly = typeof(IdentityModule).Assembly;
 
 builder.Services.AddCarterWithAssemblies(
-    authAssembly,
+    identityAssembly,
     coreAssembly
 );
 
 builder.Services.AddCqrsWithAssemblies(
-    authAssembly,
+    identityAssembly,
     coreAssembly
 );
 
@@ -59,7 +63,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services
-    .AddAuthModule()
+    .AddIdentityModule()
     .AddCoreModule()
     .AddEndpointsApiExplorer()
     .AddSwaggerGen(c => c.AddSwaggerOptions());
@@ -84,7 +88,7 @@ app.MapCarter();
 app.UseResourceNotFoundHandler();
 
 app
-    .UseAuthModule()
+    .UseIdentityModule()
     .UseCoreModule();
 
 app.Run();

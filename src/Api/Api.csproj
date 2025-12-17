@@ -11,7 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Modules\Auth\Auth\Auth.csproj" />
+        <ProjectReference Include="../Modules/Identity/Identity/Identity.csproj" />
     </ItemGroup>
 
     <ItemGroup>
