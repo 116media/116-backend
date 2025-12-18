@@ -26,6 +26,4 @@ public record PublicResetPasswordCommand(
 /// Simple result indicating successful password reset operation.
 /// Upon success, the user can log in with their new password.
 /// </remarks>
-public record PublicResetPasswordResult(
-    bool IsSuccess
-);
+public record PublicResetPasswordResult(bool IsSuccess);
