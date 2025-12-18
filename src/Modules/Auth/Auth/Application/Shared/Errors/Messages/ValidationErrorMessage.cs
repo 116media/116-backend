@@ -158,4 +158,26 @@ public static class ValidationErrorMessage
     {
         return "The current password you entered is incorrect.";
     }
+
+    /// <summary>
+    /// Error message indicating that an email address is required to set a password.
+    /// </summary>
+    /// <returns>
+    /// An error message indicating that the user must have an email address before setting a password.
+    /// </returns>
+    public static string EmailRequiredToSetPassword()
+    {
+        return "An email address is required to set a password";
+    }
+
+    /// <summary>
+    /// Error message indicating that setting password is only allowed for external auth users.
+    /// </summary>
+    /// <returns>
+    /// An error message indicating that only Google or Facebook users can set a password.
+    /// </returns>
+    public static string PasswordOnlyForExternalAuth()
+    {
+        return "Setting password is only allowed for Google or Facebook users.";
+    }
 }

@@ -234,6 +234,32 @@ public class UserEntity : Aggregate<Guid>
     }
 
     /// <summary>
+    /// Sets the user's password and changes the authentication provider to Local.
+    /// </summary>
+    /// <param name="passwordHash">The hashed password to set.</param>
+    /// <exception cref="ArgumentNullException">Thrown when password hash is null or empty.</exception>
+    /// <exception cref="BadRequestException">Thrown when user doesn't have an email address.</exception>
+    /// <remarks>
+    /// This method is used when external authentication users (Google/Facebook) set their password for the first time.
+    /// It updates both the password hash and changes the auth provider to Local to enable password-based login.
+    /// </remarks>
+    public void SetPasswordAndChangeToLocal(string passwordHash)
+    {
+        if (string.IsNullOrWhiteSpace(passwordHash))
+        {
+            throw UserErrors.InvalidPasswordFormat();
+        }
+
+        if (string.IsNullOrEmpty(Email))
+        {
+            throw UserErrors.EmailRequiredToSetPassword();
+        }
+
+        PasswordHash = passwordHash;
+        AuthProvider = EnumAuthProvider.Local;
+    }
+
+    /// <summary>
     /// Updates the user's username.
     /// </summary>
     /// <param name="newUserName">The new username.</param>
