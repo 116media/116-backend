@@ -39,10 +39,16 @@ public class SessionConfiguration : IEntityTypeConfiguration<SessionEntity>
         builder.Property(s => s.DeviceName)
             .HasMaxLength(SessionConstants.MaxDeviceNameLength)
             .IsRequired(false);
+        builder.Property(s => s.IsDeleted)
+            .HasDefaultValue(false)
+            .IsRequired();
+        builder.Property(s => s.DeletedAt)
+            .IsRequired(false);
         // Indexes
         builder.HasIndex(s => s.UserId);
         builder.HasIndex(s => s.RefreshTokenHash);
         builder.HasIndex(s => s.ExpiresAt);
+        builder.HasIndex(s => s.IsDeleted);
         // Relationships configured in UserConfiguration
     }
 }
