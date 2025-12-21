@@ -4,15 +4,19 @@ namespace _116.Identity.Domain.Results;
 
 /// <summary>
 /// Data transfer object representing the result of a successful authentication operation.
-/// Contains both user information and the JWT token for API access.
+/// Contains user information, access token (JWT), and refresh token for session management.
 /// </summary>
 /// <param name="User">Complete user information including roles, permissions, and avatar</param>
-/// <param name="Token">JWT token for authenticating further API requests</param>
-/// <param name="ExpiresAt">Date and time when the token expires in UTC</param>
+/// <param name="AccessToken">JWT access token for authenticating API requests</param>
+/// <param name="AccessTokenExpiresAt">Date and time when the access token expires in UTC</param>
+/// <param name="RefreshToken">Refresh token for obtaining new access tokens</param>
+/// <param name="RefreshTokenExpiresAt">Date and time when the refresh token expires in UTC</param>
 /// <param name="TokenType">Type of token (typically "Bearer")</param>
 public record AuthenticationResult(
     UserResponseDto User,
-    string Token,
-    DateTime ExpiresAt,
+    string AccessToken,
+    DateTime AccessTokenExpiresAt,
+    string RefreshToken,
+    DateTime RefreshTokenExpiresAt,
     string TokenType = "Bearer"
 );
