@@ -25,10 +25,18 @@ public record PublicLoginRequest(
 /// Response model for successful public user authentication.
 /// </summary>
 /// <param name="User">The authenticated user information.</param>
-/// <param name="Token">The JWT access token.</param>
+/// <param name="AccessToken">The JWT access token.</param>
+/// <param name="AccessTokenExpiresAt">Date and time when the access token expires in UTC.</param>
+/// <param name="RefreshToken">Refresh token for obtaining new access tokens.</param>
+/// <param name="RefreshTokenExpiresAt">Date and time when the refresh token expires in UTC.</param>
+/// <param name="TokenType">Type of token (typically "Bearer").</param>
 public record PublicLoginResponse(
     UserResponseDto User,
-    string Token
+    string AccessToken,
+    DateTime AccessTokenExpiresAt,
+    string RefreshToken,
+    DateTime RefreshTokenExpiresAt,
+    string TokenType
 );
 /// <summary>
 /// Defines the public login endpoint for user authentication.
@@ -56,7 +64,11 @@ public class PublicLoginEndpointV1 : ICarterModule
                 // Adapt the result to the response type
                 var response = new PublicLoginResponse(
                     result.AuthenticationResult.User,
-                    result.AuthenticationResult.Token
+                    result.AuthenticationResult.AccessToken,
+                    result.AuthenticationResult.AccessTokenExpiresAt,
+                    result.AuthenticationResult.RefreshToken,
+                    result.AuthenticationResult.RefreshTokenExpiresAt,
+                    result.AuthenticationResult.TokenType
                 );
                 return Results.Ok(response);
             })
