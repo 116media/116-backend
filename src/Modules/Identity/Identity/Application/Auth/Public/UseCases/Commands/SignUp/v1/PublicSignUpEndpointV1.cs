@@ -28,11 +28,19 @@ public record PublicSignUpRequest(
 /// Response model for successful public user signup.
 /// </summary>
 /// <param name="User">The created user information.</param>
-/// <param name="Token">The JWT access token.</param>
+/// <param name="AccessToken">The JWT access token.</param>
+/// <param name="AccessTokenExpiresAt">Date and time when the access token expires in UTC.</param>
+/// <param name="RefreshToken">Refresh token for obtaining new access tokens.</param>
+/// <param name="RefreshTokenExpiresAt">Date and time when the refresh token expires in UTC.</param>
+/// <param name="TokenType">Type of token (typically "Bearer").</param>
 /// <param name="VerificationRequired">Indicates whether the user must verify their email before full access.</param>
 public record PublicSignUpResponse(
     UserResponseDto User,
-    string Token,
+    string AccessToken,
+    DateTime AccessTokenExpiresAt,
+    string RefreshToken,
+    DateTime RefreshTokenExpiresAt,
+    string TokenType,
     bool VerificationRequired
 );
 /// <summary>
@@ -69,7 +77,11 @@ public class PublicSignUpEndpointV1 : ICarterModule
                 // Adapt the result to the response type
                 var response = new PublicSignUpResponse(
                     result.AuthenticationResult.User,
-                    result.AuthenticationResult.Token,
+                    result.AuthenticationResult.AccessToken,
+                    result.AuthenticationResult.AccessTokenExpiresAt,
+                    result.AuthenticationResult.RefreshToken,
+                    result.AuthenticationResult.RefreshTokenExpiresAt,
+                    result.AuthenticationResult.TokenType,
                     result.VerificationRequired
                 );
                 string userPath = $"{IdentityConstants.Public}/{AuthRouteConstants.Users}/{response.User.Id}";
