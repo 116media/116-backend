@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Shared.Errors;
@@ -10,22 +11,32 @@ using _116.Identity.Domain.Results;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
+using Microsoft.AspNetCore.Http;
+
 namespace _116.Identity.Application.Auth.Public.UseCases.Commands.Login;
 
 /// <summary>
 /// Handles the <see cref="PublicLoginCommand"/> to authenticate public users.
 /// </summary>
-/// <param name="userRepository">Repository for user data access operations.</param>
+/// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="passwordService">Service for verifying hashed passwords.</param>
 /// <param name="jwtService">Service for generating JWT tokens with user claims.</param>
+/// <param name="refreshTokenService">Service for generating and hashing refresh tokens.</param>
+/// <param name="sessionRepository">Repository for managing user sessions.</param>
+/// <param name="sessionMetadataService">Service for extracting session metadata from HTTP context.</param>
+/// <param name="httpContextAccessor">Accessor for HTTP context.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicLoginHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
     IRoleRepository roleRepository,
     IPasswordService passwordService,
     IJwtService jwtService,
+    IRefreshTokenService refreshTokenService,
+    ISessionRepository sessionRepository,
+    ISessionMetadataService sessionMetadataService,
+    IHttpContextAccessor httpContextAccessor,
     IFileRepository fileRepository,
     IIdentityUnitOfWork unitOfWork
 ) : ICommandHandler<PublicLoginCommand, PublicLoginResult>
@@ -43,7 +54,7 @@ public class PublicLoginHandler(
     /// </exception>
     public async Task<PublicLoginResult> Handle(PublicLoginCommand command, CancellationToken cancellationToken)
     {
-        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByCredentialsOrThrow(
+        UserEntity? user = await authRepository.GetUserWithRolesAndPermissionsByCredentialsOrThrow(
             command.Credentials,
             cancellationToken
         );
@@ -58,8 +69,8 @@ public class PublicLoginHandler(
         List<RolePermissionEntity> userPermissions = user.UserRoles
             .SelectMany(ur => ur.Role.RolePermissions)
             .ToList();
-        // Generate JWT token with user claims
-        JwtGenerationResult token = jwtService.GenerateToken(
+        // Generate JWT access token with user claims
+        JwtGenerationResult accessToken = jwtService.GenerateToken(
             userId: user.Id,
             email: user.Email!,
             userName: user.UserName,
@@ -69,8 +80,25 @@ public class PublicLoginHandler(
             isActive: user.IsActive,
             authProvider: user.AuthProvider
         );
-        // TODO: Create SessionEntity with refresh token when implementing session management
-        // For now, login works with access token only
+        // Generate refresh token and create session
+        string refreshToken = refreshTokenService.GenerateRefreshToken();
+        string refreshTokenHash = refreshTokenService.HashRefreshToken(refreshToken);
+        DateTime refreshTokenExpiresAt = DateTime.UtcNow.AddDays(SessionConstants.RefreshTokenExpirationDays);
+        // Extract session metadata from HTTP context
+        HttpContext? httpContext = httpContextAccessor.HttpContext;
+        string? ipAddress = sessionMetadataService.ExtractIpAddress(httpContext);
+        string? userAgent = sessionMetadataService.ExtractUserAgent(httpContext);
+        string? deviceName = sessionMetadataService.ParseDeviceName(userAgent);
+        SessionEntity session = SessionEntity.Create(
+            id: Guid.NewGuid(),
+            userId: user.Id,
+            refreshTokenHash: refreshTokenHash,
+            expiresAt: refreshTokenExpiresAt,
+            ipAddress: ipAddress,
+            userAgent: userAgent,
+            deviceName: deviceName
+        );
+        await sessionRepository.CreateAsync(session, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
         // Extract roles and permissions using repository
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(user.UserRoles);
@@ -79,7 +107,13 @@ public class PublicLoginHandler(
         // Map to userDTO with avatar
         var avatarDto = avatarFile?.ToFileDto();
         var userDto = user.ToUserResponseDto(roles, permissions, avatarDto);
-        var authResult = new AuthenticationResult(userDto, token.Token, token.ExpiresAt);
+        var authResult = new AuthenticationResult(
+            userDto,
+            accessToken.Token,
+            accessToken.ExpiresAt,
+            refreshToken,
+            refreshTokenExpiresAt
+        );
         return new PublicLoginResult(authResult);
     }
 }
