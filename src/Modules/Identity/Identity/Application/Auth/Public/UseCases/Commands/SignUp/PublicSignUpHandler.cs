@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
@@ -9,25 +10,35 @@ using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
+using Microsoft.AspNetCore.Http;
+
 namespace _116.Identity.Application.Auth.Public.UseCases.Commands.SignUp;
 
 /// <summary>
 /// Handles the <see cref="PublicSignUpCommand"/> to register new public users.
 /// </summary>
-/// <param name="userRepository">Repository for user data access operations.</param>
+/// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
 /// <param name="passwordService">Service for hashing passwords.</param>
 /// <param name="otpService">Service for generating OTP codes.</param>
 /// <param name="jwtService">Service for generating JWT tokens with user claims.</param>
+/// <param name="refreshTokenService">Service for generating and hashing refresh tokens.</param>
+/// <param name="sessionRepository">Repository for managing user sessions.</param>
+/// <param name="sessionMetadataService">Service for extracting session metadata from HTTP context.</param>
+/// <param name="httpContextAccessor">Accessor for HTTP context.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicSignUpHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
     IRoleRepository roleRepository,
     IOtpRepository otpRepository,
     IPasswordService passwordService,
     IOtpService otpService,
     IJwtService jwtService,
+    IRefreshTokenService refreshTokenService,
+    ISessionRepository sessionRepository,
+    ISessionMetadataService sessionMetadataService,
+    IHttpContextAccessor httpContextAccessor,
     IIdentityUnitOfWork unitOfWork
 ) : ICommandHandler<PublicSignUpCommand, PublicSignUpResult>
 {
@@ -43,7 +54,7 @@ public class PublicSignUpHandler(
         // Normalize email using value object
         var email = new Email(command.Email);
         // Validate unique credentials (email and username) in single repository call
-        await userRepository.ValidateUniqueCredentialsAsync(email, command.UserName, cancellationToken);
+        await authRepository.ValidateUniqueCredentialsAsync(email, command.UserName, cancellationToken);
         // Hash the password
         string hashedPassword = passwordService.Hash(command.Password);
         // Create new user entity
@@ -54,16 +65,16 @@ public class PublicSignUpHandler(
             passwordHash: hashedPassword
         );
         // Add user to repository
-        await userRepository.AddAsync(newUser, cancellationToken);
+        await authRepository.AddAsync(newUser, cancellationToken);
         // Assign the visitor role to the new user
-        await userRepository.AssignVisitorRoleAsync(newUser.Id, cancellationToken);
+        await authRepository.AssignVisitorRoleAsync(newUser.Id, cancellationToken);
         // Generate OTP for email verification
         OtpEntity verificationOtp = otpService.CreateOtp(newUser.Id, EnumOtpPurpose.EmailVerification);
         await otpRepository.AddAsync(verificationOtp, cancellationToken);
         // Save all changes atomically in a single transaction
         await unitOfWork.CommitAsync(cancellationToken);
         // Get the newly created user with roles to generate token
-        UserEntity? userWithRoles = await userRepository.GetUserWithRolesAndPermissionsByCredentialsOrThrow(
+        UserEntity? userWithRoles = await authRepository.GetUserWithRolesAndPermissionsByCredentialsOrThrow(
             email.Value,
             cancellationToken
         );
@@ -71,8 +82,8 @@ public class PublicSignUpHandler(
         List<RolePermissionEntity> userPermissions = userWithRoles!.UserRoles
             .SelectMany(ur => ur.Role.RolePermissions)
             .ToList();
-        // Generate JWT token with user claims
-        JwtGenerationResult token = jwtService.GenerateToken(
+        // Generate JWT access token with user claims
+        JwtGenerationResult accessToken = jwtService.GenerateToken(
             userId: userWithRoles.Id,
             email: email.Value,
             userName: userWithRoles.UserName,
@@ -82,11 +93,37 @@ public class PublicSignUpHandler(
             isActive: userWithRoles.IsActive,
             authProvider: userWithRoles.AuthProvider
         );
+        // Generate refresh token and create session
+        string refreshToken = refreshTokenService.GenerateRefreshToken();
+        string refreshTokenHash = refreshTokenService.HashRefreshToken(refreshToken);
+        DateTime refreshTokenExpiresAt = DateTime.UtcNow.AddDays(SessionConstants.RefreshTokenExpirationDays);
+        // Extract session metadata from HTTP context
+        HttpContext? httpContext = httpContextAccessor.HttpContext;
+        string? ipAddress = sessionMetadataService.ExtractIpAddress(httpContext);
+        string? userAgent = sessionMetadataService.ExtractUserAgent(httpContext);
+        string? deviceName = sessionMetadataService.ParseDeviceName(userAgent);
+        SessionEntity session = SessionEntity.Create(
+            id: Guid.NewGuid(),
+            userId: userWithRoles.Id,
+            refreshTokenHash: refreshTokenHash,
+            expiresAt: refreshTokenExpiresAt,
+            ipAddress: ipAddress,
+            userAgent: userAgent,
+            deviceName: deviceName
+        );
+        await sessionRepository.CreateAsync(session, cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
         // Extract roles and permissions using repository
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userWithRoles.UserRoles);
         // Map to userDTO
         var userDto = userWithRoles.ToUserResponseDto(roles, permissions);
-        var authResult = new AuthenticationResult(userDto, token.Token, token.ExpiresAt);
+        var authResult = new AuthenticationResult(
+            userDto,
+            accessToken.Token,
+            accessToken.ExpiresAt,
+            refreshToken,
+            refreshTokenExpiresAt
+        );
         // Return result with verification required flag (new users need email verification)
         return new PublicSignUpResult(authResult, VerificationRequired: true);
     }
