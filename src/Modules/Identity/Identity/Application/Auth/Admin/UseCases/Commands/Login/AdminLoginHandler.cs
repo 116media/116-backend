@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Shared.Errors;
@@ -8,8 +9,9 @@ using _116.Identity.Application.Shared.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Results;
 using _116.Identity.Domain.ValueObjects;
-using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
+
+using Microsoft.AspNetCore.Http;
 
 namespace _116.Identity.Application.Auth.Admin.UseCases.Commands.Login;
 
@@ -17,11 +19,15 @@ namespace _116.Identity.Application.Auth.Admin.UseCases.Commands.Login;
 /// Handles the <see cref="AdminLoginCommand"/> to authenticate admin users.
 /// </summary>
 public class AdminLoginHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
     IRoleRepository roleRepository,
     IFileRepository fileRepository,
     IPasswordService passwordService,
     IJwtService jwtService,
+    IRefreshTokenService refreshTokenService,
+    ISessionRepository sessionRepository,
+    ISessionMetadataService sessionMetadataService,
+    IHttpContextAccessor httpContextAccessor,
     IIdentityUnitOfWork unitOfWork
 ) : ICommandHandler<AdminLoginCommand, AdminLoginResult>
 {
@@ -34,7 +40,7 @@ public class AdminLoginHandler(
         var email = new Email(command.Email);
 
         // Get admin user with all necessary data in one call
-        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByEmailOrThrow(
+        UserEntity? user = await authRepository.GetUserWithRolesAndPermissionsByEmailOrThrow(
             email,
             cancellationToken
         );
@@ -49,15 +55,15 @@ public class AdminLoginHandler(
         user.ValidateCanLogin();
 
         // Verify admin has admin role
-        userRepository.IsUserAdmin(user);
+        authRepository.IsUserAdmin(user);
 
         // Extract user permissions from roles (already loaded by repository)
         List<RolePermissionEntity> userPermissions = user.UserRoles
             .SelectMany(ur => ur.Role.RolePermissions)
             .ToList();
 
-        // Generate JWT token with admin claims
-        JwtGenerationResult token = jwtService.GenerateToken(
+        // Generate JWT access token with admin claims
+        JwtGenerationResult accessToken = jwtService.GenerateToken(
             userId: user.Id,
             email: user.Email!,
             userName: user.UserName,
@@ -68,8 +74,25 @@ public class AdminLoginHandler(
             authProvider: user.AuthProvider
         );
 
-        // TODO: Create SessionEntity with refresh token when implementing session management
-        // For now, login works with access token only
+        // Generate refresh token and create session
+        string refreshToken = refreshTokenService.GenerateRefreshToken();
+        string refreshTokenHash = refreshTokenService.HashRefreshToken(refreshToken);
+        DateTime refreshTokenExpiresAt = DateTime.UtcNow.AddDays(SessionConstants.RefreshTokenExpirationDays);
+        // Extract session metadata from HTTP context
+        HttpContext? httpContext = httpContextAccessor.HttpContext;
+        string? ipAddress = sessionMetadataService.ExtractIpAddress(httpContext);
+        string? userAgent = sessionMetadataService.ExtractUserAgent(httpContext);
+        string? deviceName = sessionMetadataService.ParseDeviceName(userAgent);
+        SessionEntity session = SessionEntity.Create(
+            id: Guid.NewGuid(),
+            userId: user.Id,
+            refreshTokenHash: refreshTokenHash,
+            expiresAt: refreshTokenExpiresAt,
+            ipAddress: ipAddress,
+            userAgent: userAgent,
+            deviceName: deviceName
+        );
+        await sessionRepository.CreateAsync(session, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
 
         // Extract roles and permissions using repository
@@ -81,7 +104,13 @@ public class AdminLoginHandler(
         // Map to userDTO with avatar
         var avatarDto = avatarFile?.ToFileDto();
         var userDto = user.ToUserResponseDto(roles, permissions, avatarDto);
-        var authResult = new AuthenticationResult(userDto, token.Token, token.ExpiresAt);
+        var authResult = new AuthenticationResult(
+            userDto,
+            accessToken.Token,
+            accessToken.ExpiresAt,
+            refreshToken,
+            refreshTokenExpiresAt
+        );
 
         return new AdminLoginResult(authResult);
     }
