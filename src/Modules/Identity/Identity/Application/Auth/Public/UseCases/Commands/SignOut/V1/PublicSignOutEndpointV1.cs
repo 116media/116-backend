@@ -16,12 +16,21 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Identity.Application.Auth.Public.UseCases.Commands.SignOut.V1;
 
 /// <summary>
+/// Request model for sign-out (RFC 7009 compliant).
+/// </summary>
+/// <param name="RefreshToken">The refresh token to revoke.</param>
+public record PublicSignOutRequest(
+    string RefreshToken
+);
+
+/// <summary>
 /// Response model for sign-out.
 /// </summary>
 /// <param name="IsSuccess">Indicates if the sign-out operation was successful.</param>
 public record PublicSignOutResponse(
     bool IsSuccess
 );
+
 /// <summary>
 /// Defines the sign-out endpoint for authenticated public users.
 /// </summary>
@@ -37,15 +46,16 @@ public class PublicSignOutEndpointV1 : ICarterModule
             .MapApiVersionGroup(version: 1)
             .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
-        group.MapDelete(AuthRouteConstants.SignOut, async (
+        group.MapPost(AuthRouteConstants.SignOut, async (
+                PublicSignOutRequest request,
                 ClaimsPrincipal user,
-                IUserRepository userRepository,
+                IAuthRepository authRepository,
                 IDispatcher dispatcher
             ) =>
             {
                 // Extract user ID from JWT token claims
-                Guid userId = userRepository.GetUserIdFromClaims(user);
-                var command = new PublicSignOutCommand(userId);
+                Guid userId = authRepository.GetUserIdFromClaims(user);
+                var command = new PublicSignOutCommand(userId, request.RefreshToken);
                 PublicSignOutResult result = await dispatcher.Send(command);
                 var response = new PublicSignOutResponse(result.IsSuccess);
                 return Results.Ok(response);
