@@ -16,12 +16,21 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Identity.Application.Auth.Admin.UseCases.Commands.SignOut.V1;
 
 /// <summary>
+/// Request model for admin sign-out (RFC 7009 compliant).
+/// </summary>
+/// <param name="RefreshToken">The refresh token to revoke.</param>
+public record AdminSignOutRequest(
+    string RefreshToken
+);
+
+/// <summary>
 /// Response model for admin sign-out.
 /// </summary>
 /// <param name="IsSuccess">Indicates if the sign-out operation was successful.</param>
 public record AdminSignOutResponse(
     bool IsSuccess
 );
+
 /// <summary>
 /// Defines the admin sign-out endpoint for authenticated admin users (V1).
 /// </summary>
@@ -38,15 +47,16 @@ public class AdminSignOutEndpointV1 : ICarterModule
             .MapApiVersionGroup(version: 1)
             .MapGroup($"{IdentityConstants.Admin}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.SchemaName}");
-        group.MapDelete(AuthRouteConstants.SignOut, async (
+        group.MapPost(AuthRouteConstants.SignOut, async (
+                AdminSignOutRequest request,
                 ClaimsPrincipal user,
-                IUserRepository userRepository,
+                IAuthRepository authRepository,
                 IDispatcher dispatcher
             ) =>
             {
                 // Extract user ID from JWT token claims
-                Guid userId = userRepository.GetUserIdFromClaims(user);
-                var command = new AdminSignOutCommand(userId);
+                Guid userId = authRepository.GetUserIdFromClaims(user);
+                var command = new AdminSignOutCommand(userId, request.RefreshToken);
                 AdminSignOutResult result = await dispatcher.Send(command);
                 var response = new AdminSignOutResponse(result.IsSuccess);
                 return Results.Ok(response);
