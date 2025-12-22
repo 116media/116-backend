@@ -3,15 +3,17 @@ using _116.Shared.Contracts.Application.CQRS;
 namespace _116.Identity.Application.Auth.Admin.UseCases.Commands.SignOut;
 
 /// <summary>
-/// Command for signing out an admin user and marking them as logged out.
+/// Command for signing out an admin user from the current device/session.
 /// </summary>
 /// <param name="UserId">The unique identifier of the admin user to sign out.</param>
+/// <param name="RefreshToken">The refresh token identifying the session to invalidate.</param>
 /// <remarks>
-/// This command updates the admin user's login status to indicate they are no longer active.
+/// This command invalidates the specific session associated with the refresh token.
 /// User ID is extracted from JWT token at the endpoint level.
 /// </remarks>
 public record AdminSignOutCommand(
-    Guid UserId
+    Guid UserId,
+    string RefreshToken
 ) : ICommand<AdminSignOutResult>;
 /// <summary>
 /// Result of the <see cref="AdminSignOutCommand"/> containing sign-out status.
