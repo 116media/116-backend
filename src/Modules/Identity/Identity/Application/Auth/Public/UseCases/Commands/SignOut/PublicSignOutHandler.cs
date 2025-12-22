@@ -1,29 +1,45 @@
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Application.Shared.Services;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.Public.UseCases.Commands.SignOut;
 
 /// <summary>
-/// Handles the <see cref="PublicSignOutCommand"/> to sign out a user.
+/// Handles the <see cref="PublicSignOutCommand"/> to sign out a user from current device.
 /// </summary>
 public class PublicSignOutHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
+    ISessionRepository sessionRepository,
+    IRefreshTokenService refreshTokenService,
     IIdentityUnitOfWork unitOfWork
 ) : ICommandHandler<PublicSignOutCommand, PublicSignOutResult>
 {
     /// <summary>
-    /// Handles the sign-out command by invalidating user sessions.
+    /// Handles the sign-out command by invalidating the specific session.
+    /// This operation is idempotent - if the session doesn't exist, user is already logged out.
     /// </summary>
     public async Task<PublicSignOutResult> Handle(PublicSignOutCommand command, CancellationToken cancellationToken)
     {
-        UserEntity? user = await userRepository.FindUserByIdOrThrow(command.UserId, cancellationToken);
+        UserEntity? user = await authRepository.FindUserByIdOrThrow(command.UserId, cancellationToken);
         // Validate user account status
-        userRepository.IsUserAccountActive(user!);
-        // TODO: Delete SessionEntity records when implementing session management
-        // For now, sign out only invalidates the client-side token
-        await unitOfWork.CommitAsync(cancellationToken);
+        authRepository.IsUserAccountActive(user!);
+
+        string refreshTokenHash = refreshTokenService.HashRefreshToken(command.RefreshToken);
+        SessionEntity? session = await sessionRepository.GetByRefreshTokenHashAsync(
+            refreshTokenHash,
+            cancellationToken
+        );
+
+        if (session != null)
+        {
+            await sessionRepository.DeleteAsync(session.Id, cancellationToken);
+            await unitOfWork.CommitAsync(cancellationToken);
+        }
+
+        // Always return success - logout is idempotent
+        // If session doesn't exist, user is effectively already logged out
         return new PublicSignOutResult(IsSuccess: true);
     }
 }
