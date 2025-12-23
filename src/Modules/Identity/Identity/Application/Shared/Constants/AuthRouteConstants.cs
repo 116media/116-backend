@@ -74,6 +74,12 @@ public static class AuthRouteConstants
     /// </summary>
     public const string SignOut = "sign-out";
     /// <summary>
+    /// Route segment for sign-out from all devices endpoints.
+    /// Used to terminate all user sessions across all devices.
+    /// Example: /api/v1/public/auth/sign-out-all.
+    /// </summary>
+    public const string SignOutAll = "sign-out-all";
+    /// <summary>
     /// Route segment for social authentication endpoints.
     /// Used for OAuth-based login with providers like Google, Facebook, etc.
     /// Example: /api/v1/public/auth/social-login.
