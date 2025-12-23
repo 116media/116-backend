@@ -35,6 +35,7 @@ public class PasswordService : IPasswordService
         Array.Copy(hash, 0, hashBytes, SaltSize, HashSize);
         return $"v1:{Convert.ToBase64String(hashBytes)}";
     }
+
     /// <inheritdoc />
     public bool Verify(string password, string? hash)
     {
