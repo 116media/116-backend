@@ -11,6 +11,7 @@ namespace _116.Identity.Infrastructure.Services;
 public class OtpService : IOtpService
 {
     private readonly Random _random = new();
+
     /// <inheritdoc />
     public string GenerateOtpCode()
     {
@@ -20,6 +21,7 @@ public class OtpService : IOtpService
             .ToString($"D{UserConstants.OtpCodeLength}");
         return code;
     }
+
     /// <inheritdoc />
     public OtpEntity CreateOtp(Guid userId, EnumOtpPurpose purpose)
     {
@@ -33,6 +35,7 @@ public class OtpService : IOtpService
             expiresAt: expiresAt
         );
     }
+
     /// <inheritdoc />
     public DateTime CalculateExpirationTime()
     {
