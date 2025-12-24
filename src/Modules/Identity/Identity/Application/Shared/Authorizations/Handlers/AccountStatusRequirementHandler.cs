@@ -18,7 +18,7 @@ namespace _116.Identity.Application.Shared.Authorizations.Handlers;
 /// Checks user account status from the database first, with JWT token claims as fallback for DB errors.
 /// Used for enforcing account status policies like verification, active status, etc.
 /// </remarks>
-public class AccountStatusRequirementHandler(IUserRepository userRepository)
+public class AccountStatusRequirementHandler(IAuthRepository authRepository)
     : AuthorizationHandler<AccountStatusRequirement>
 {
     /// <summary>
@@ -48,7 +48,7 @@ public class AccountStatusRequirementHandler(IUserRepository userRepository)
         }
         try
         {
-            UserEntity? user = await userRepository.FindUserByIdOrThrow(userId);
+            UserEntity? user = await authRepository.FindUserByIdOrThrow(userId);
             if (user is not null && CheckRequirementAgainstUser(user, requirement))
             {
                 context.Succeed(requirement);
