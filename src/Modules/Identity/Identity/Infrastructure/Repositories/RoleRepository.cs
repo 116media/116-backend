@@ -18,6 +18,7 @@ public class RoleRepository : IRoleRepository
             .Select(ur => ur.Role.Adapt<RoleDto>())
             .ToList();
     }
+
     /// <inheritdoc />
     public IReadOnlyCollection<PermissionDto> GetUserPermissions(ICollection<UserRoleEntity> userRoles)
     {
@@ -27,6 +28,7 @@ public class RoleRepository : IRoleRepository
             .DistinctBy(p => p.Id)
             .ToList();
     }
+
     /// <inheritdoc />
     public (IReadOnlyCollection<RoleDto> Roles, IReadOnlyCollection<PermissionDto> Permissions)
         GetUserRolesAndPermissions(ICollection<UserRoleEntity> userRoles)
