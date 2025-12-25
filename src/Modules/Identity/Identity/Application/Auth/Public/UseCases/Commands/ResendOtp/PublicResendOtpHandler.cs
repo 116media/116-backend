@@ -12,7 +12,7 @@ namespace _116.Identity.Application.Auth.Public.UseCases.Commands.ResendOtp;
 /// Handles the <see cref="PublicResendOtpCommand"/> to resend OTP codes for public users.
 /// </summary>
 public class PublicResendOtpHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
     IOtpRepository otpRepository,
     IOtpService otpService,
     IIdentityUnitOfWork unitOfWork
@@ -33,12 +33,12 @@ public class PublicResendOtpHandler(
     {
         var email = new Email(command.Email);
         var purpose = new OtpPurpose(command.Purpose);
-        if (!await userRepository.ExistsByEmailAsync(email, cancellationToken))
+        if (!await authRepository.ExistsByEmailAsync(email, cancellationToken))
         {
             return new PublicResendOtpResult(IsSuccess: true);
         }
-        UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
-        userRepository.IsUserAccountActive(user!);
+        UserEntity? user = await authRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
+        authRepository.IsUserAccountActive(user!);
         // Invalidate existing OTPs for this purpose
         await otpRepository.InvalidateExistingOtpsAsync(user!.Id, purpose, cancellationToken);
         // Create new OTP
