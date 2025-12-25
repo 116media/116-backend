@@ -10,11 +10,11 @@ namespace _116.Identity.Application.Auth.Admin.UseCases.Commands.VerifyOtp;
 /// <summary>
 /// Handles the <see cref="AdminVerifyOtpCommand"/> to verify OTP codes for admin account verification.
 /// </summary>
-/// <param name="userRepository">Repository for user data access operations.</param>
+/// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminVerifyOtpHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
     IOtpRepository otpRepository,
     IIdentityUnitOfWork unitOfWork
 ) : ICommandHandler<AdminVerifyOtpCommand, AdminVerifyOtpResult>
@@ -36,10 +36,10 @@ public class AdminVerifyOtpHandler(
         // Normalize email and purpose using value objects
         var email = new Email(command.Email);
         var purpose = new OtpPurpose(command.Purpose);
-        UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
+        UserEntity? user = await authRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
         // Validate admin account status
-        userRepository.IsUserAdmin(user!);
-        userRepository.IsUserAccountActive(user!);
+        authRepository.IsUserAdmin(user!);
+        authRepository.IsUserAccountActive(user!);
         // Validate the OTP (throws appropriate exceptions on failure)
         OtpEntity otp = await otpRepository.ValidateOtpAsync(
             user!.Id,
