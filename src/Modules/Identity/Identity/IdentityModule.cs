@@ -68,10 +68,13 @@ public static class IdentityModule
         // Register user management services
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IPasswordService, PasswordService>();
-        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+        services.AddScoped<IAuthRepository, AuthRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IOtpRepository, OtpRepository>();
+        services.AddScoped<ISessionRepository, SessionRepository>();
+        services.AddScoped<ISessionMetadataService, SessionMetadataService>();
         // Register data seeder for initial user data population
         services.AddScoped<IDataSeeder, SuperAdminSeeder>();
         services.AddScoped<IDataSeeder, VisitorRoleSeeder>();
