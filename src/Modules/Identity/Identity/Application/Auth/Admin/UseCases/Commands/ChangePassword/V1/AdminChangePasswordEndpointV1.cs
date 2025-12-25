@@ -51,12 +51,12 @@ public class AdminChangePasswordEndpointV1 : ICarterModule
         group.MapPatch(AuthRouteConstants.ChangePassword, async (
                 AdminChangePasswordRequest request,
                 ClaimsPrincipal user,
-                IUserRepository userRepository,
+                IAuthRepository authRepository,
                 IDispatcher dispatcher
             ) =>
             {
                 // Extract user ID from JWT token claims
-                Guid userId = userRepository.GetUserIdFromClaims(user);
+                Guid userId = authRepository.GetUserIdFromClaims(user);
                 // Send the command to change the password
                 var command = new AdminChangePasswordCommand(
                     userId,
