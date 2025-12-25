@@ -13,12 +13,12 @@ namespace _116.Identity.Application.Auth.Admin.UseCases.Commands.ResetPassword;
 /// <summary>
 /// Handles the <see cref="AdminResetPasswordCommand"/> to reset admin user password using OTP verification.
 /// </summary>
-/// <param name="userRepository">Repository for user data access operations.</param>
+/// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
 /// <param name="passwordService">Service for password hashing operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminResetPasswordHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
     IOtpRepository otpRepository,
     IPasswordService passwordService,
     IIdentityUnitOfWork unitOfWork
@@ -43,10 +43,10 @@ public class AdminResetPasswordHandler(
     {
         // Normalize email using value object
         var email = new Email(command.Email);
-        UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
+        UserEntity? user = await authRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
         // Validate user account status
-        userRepository.IsUserAdmin(user!);
-        userRepository.IsUserAccountActive(user!);
+        authRepository.IsUserAdmin(user!);
+        authRepository.IsUserAccountActive(user!);
         // Validate the OTP was already used for password reset
         await otpRepository.ValidateUsedOtpAsync(
             user!.Id,
