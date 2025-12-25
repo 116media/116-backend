@@ -12,7 +12,7 @@ namespace _116.Identity.Application.Auth.Public.UseCases.Commands.ForgotPassword
 /// Handles the <see cref="PublicForgotPasswordCommand"/> to initiate password reset for existing users.
 /// </summary>
 public class PublicForgotPasswordHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
     IOtpRepository otpRepository,
     IOtpService otpService,
     IIdentityUnitOfWork unitOfWork
@@ -28,14 +28,14 @@ public class PublicForgotPasswordHandler(
     )
     {
         var email = new Email(command.Email);
-        if (!await userRepository.ExistsByEmailAsync(email, cancellationToken))
+        if (!await authRepository.ExistsByEmailAsync(email, cancellationToken))
         {
             return new PublicForgotPasswordResult(IsSuccess: true, Email: command.Email);
         }
-        UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
+        UserEntity? user = await authRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
         // Validate user account status - must be active and verified
-        userRepository.IsUserAccountActive(user!);
-        userRepository.IsUserAccountVerified(user!);
+        authRepository.IsUserAccountActive(user!);
+        authRepository.IsUserAccountVerified(user!);
         OtpEntity passwordResetOtp = otpService.CreateOtp(user!.Id, EnumOtpPurpose.PasswordReset);
         await otpRepository.AddAsync(passwordResetOtp, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
