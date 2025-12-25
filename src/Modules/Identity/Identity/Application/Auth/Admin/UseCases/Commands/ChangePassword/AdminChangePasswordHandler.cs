@@ -11,11 +11,11 @@ namespace _116.Identity.Application.Auth.Admin.UseCases.Commands.ChangePassword;
 /// <summary>
 /// Handles the <see cref="AdminChangePasswordCommand"/> to change admin user password with current password verification.
 /// </summary>
-/// <param name="userRepository">Repository for user data access operations.</param>
+/// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="passwordService">Service for password hashing and verification operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminChangePasswordHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
     IPasswordService passwordService,
     IIdentityUnitOfWork unitOfWork
 ) : ICommandHandler<AdminChangePasswordCommand, AdminChangePasswordResult>
@@ -36,9 +36,11 @@ public class AdminChangePasswordHandler(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user = await userRepository.FindUserByIdOrThrow(command.UserId, cancellationToken);
+        UserEntity? user = await authRepository.FindUserByIdOrThrow(command.UserId, cancellationToken);
         // Validate user account status - admin accounts must be active
-        userRepository.IsUserAccountActive(user!);
+        authRepository.IsUserAccountActive(user!);
+        authRepository.IsUserLoggedIn(user!);
+
         // Verify old password
         if (!passwordService.Verify(command.OldPassword, user!.PasswordHash))
         {
