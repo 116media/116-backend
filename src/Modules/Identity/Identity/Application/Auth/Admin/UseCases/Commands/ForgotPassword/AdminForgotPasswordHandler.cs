@@ -12,7 +12,7 @@ namespace _116.Identity.Application.Auth.Admin.UseCases.Commands.ForgotPassword;
 /// Handles the <see cref="AdminForgotPasswordCommand"/> to initiate password reset for existing admin users.
 /// </summary>
 public class AdminForgotPasswordHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
     IOtpRepository otpRepository,
     IOtpService otpService,
     IIdentityUnitOfWork unitOfWork
@@ -28,14 +28,14 @@ public class AdminForgotPasswordHandler(
     )
     {
         var email = new Email(command.Email);
-        if (!await userRepository.ExistsByEmailAsync(email, cancellationToken))
+        if (!await authRepository.ExistsByEmailAsync(email, cancellationToken))
         {
             return new AdminForgotPasswordResult(IsSuccess: true, Email: command.Email);
         }
-        UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
+        UserEntity? user = await authRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
         // Validate admin account status
-        userRepository.IsUserAdmin(user!);
-        userRepository.IsUserAccountActive(user!);
+        authRepository.IsUserAdmin(user!);
+        authRepository.IsUserAccountActive(user!);
         OtpEntity passwordResetOtp = otpService.CreateOtp(user!.Id, EnumOtpPurpose.PasswordReset);
         await otpRepository.AddAsync(passwordResetOtp, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
