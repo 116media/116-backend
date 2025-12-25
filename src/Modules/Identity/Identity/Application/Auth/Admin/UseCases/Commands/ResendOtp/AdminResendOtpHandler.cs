@@ -12,7 +12,7 @@ namespace _116.Identity.Application.Auth.Admin.UseCases.Commands.ResendOtp;
 /// Handles the <see cref="AdminResendOtpCommand"/> to resend OTP codes for admin users.
 /// </summary>
 public class AdminResendOtpHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
     IOtpRepository otpRepository,
     IOtpService otpService,
     IIdentityUnitOfWork unitOfWork
@@ -33,14 +33,14 @@ public class AdminResendOtpHandler(
     {
         var email = new Email(command.Email);
         var purpose = new OtpPurpose(command.Purpose);
-        if (!await userRepository.ExistsByEmailAsync(email, cancellationToken))
+        if (!await authRepository.ExistsByEmailAsync(email, cancellationToken))
         {
             return new AdminResendOtpResult(IsSuccess: true);
         }
-        UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
+        UserEntity? user = await authRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
         // Validate admin account status
-        userRepository.IsUserAdmin(user!);
-        userRepository.IsUserAccountActive(user!);
+        authRepository.IsUserAdmin(user!);
+        authRepository.IsUserAccountActive(user!);
         // Invalidate existing OTPs for this purpose
         await otpRepository.InvalidateExistingOtpsAsync(user!.Id, purpose, cancellationToken);
         // Create new OTP
