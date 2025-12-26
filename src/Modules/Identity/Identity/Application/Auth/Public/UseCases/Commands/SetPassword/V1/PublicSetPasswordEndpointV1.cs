@@ -45,12 +45,12 @@ public class PublicSetPasswordEndpointV1 : ICarterModule
         group.MapPost(AuthRouteConstants.SetPassword, async (
                 PublicSetPasswordRequest request,
                 ClaimsPrincipal user,
-                IUserRepository userRepository,
+                IAuthRepository authRepository,
                 IDispatcher dispatcher
             ) =>
             {
                 // Extract user ID from JWT token claims
-                Guid userId = userRepository.GetUserIdFromClaims(user);
+                Guid userId = authRepository.GetUserIdFromClaims(user);
                 // Send the command to set the password
                 var command = new PublicSetPasswordCommand(userId, request.Password);
                 PublicSetPasswordResult result = await dispatcher.Send(command);
