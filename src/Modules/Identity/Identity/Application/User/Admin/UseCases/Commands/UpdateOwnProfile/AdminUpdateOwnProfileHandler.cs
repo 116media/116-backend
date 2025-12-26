@@ -14,12 +14,12 @@ namespace _116.Identity.Application.User.Admin.UseCases.Commands.UpdateOwnProfil
 /// Handles the <see cref="AdminUpdateOwnProfileCommand"/> to update admin user's own profile information.
 /// This endpoint requires admin user authentication - only logged-in admin users can update their own profile.
 /// </summary>
-/// <param name="userRepository">Repository for user data access operations.</param>
+/// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminUpdateOwnProfileHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
     IRoleRepository roleRepository,
     IFileRepository fileRepository,
     IIdentityUnitOfWork unitOfWork
@@ -39,12 +39,14 @@ public class AdminUpdateOwnProfileHandler(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
+        UserEntity? user = await authRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
             command.UserId,
             cancellationToken
         );
         // Validate user account status - admin accounts must be active
-        userRepository.IsUserAccountActive(user!);
+        authRepository.IsUserAccountActive(user!);
+        authRepository.IsUserLoggedIn(user!);
+
         bool isPhoneUpdated = !string.IsNullOrEmpty(command.PartialPhoneNumber);
         bool isUsernameUpdated = !string.IsNullOrEmpty(command.UserName) && user!.UserName != command.UserName;
         // Validate uniqueness for username if being updated - check against other users
@@ -77,7 +79,7 @@ public class AdminUpdateOwnProfileHandler(
     }
     private async Task EnsureUsernameUnique(string username, CancellationToken cancellationToken)
     {
-        if (await userRepository.ExistsByUserNameAsync(username, cancellationToken))
+        if (await authRepository.ExistsByUserNameAsync(username, cancellationToken))
         {
             throw UserErrors.UsernameAlreadyExists(username);
         }
@@ -85,7 +87,7 @@ public class AdminUpdateOwnProfileHandler(
     private async Task EnsurePhoneUnique(AdminUpdateOwnProfileCommand command, CancellationToken cancellationToken)
     {
         string fullPhone = $"{command.CountryDialCode}{command.PartialPhoneNumber}";
-        UserEntity? existing = await userRepository.GetUserByPhoneNumberAsync(fullPhone, cancellationToken);
+        UserEntity? existing = await authRepository.GetUserByPhoneNumberAsync(fullPhone, cancellationToken);
         if (existing is not null && existing.Id != command.UserId)
         {
             throw UserErrors.PhoneNumberAlreadyExists(fullPhone);
