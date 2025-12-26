@@ -12,11 +12,11 @@ namespace _116.Identity.Application.Auth.Public.UseCases.Commands.VerifyOtp;
 /// <summary>
 /// Handles the <see cref="PublicVerifyOtpCommand"/> to verify OTP codes for user account verification.
 /// </summary>
-/// <param name="userRepository">Repository for user data access operations.</param>
+/// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicVerifyOtpHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
     IOtpRepository otpRepository,
     IIdentityUnitOfWork unitOfWork
 ) : ICommandHandler<PublicVerifyOtpCommand, PublicVerifyOtpResult>
@@ -38,7 +38,7 @@ public class PublicVerifyOtpHandler(
         // Normalize email and purpose using value objects
         var email = new Email(command.Email);
         var purpose = new OtpPurpose(command.Purpose);
-        UserEntity? user = await userRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
+        UserEntity? user = await authRepository.GetUserWithRolesByEmailOrThrow(email, cancellationToken);
         // Check if user is already verified (only for email verification purpose)
         if (user!.IsVerified && purpose.Value == EnumOtpPurpose.EmailVerification)
         {
