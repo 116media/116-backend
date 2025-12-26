@@ -11,11 +11,11 @@ namespace _116.Identity.Application.User.Admin.UseCases.Queries.GetOwnProfile;
 /// <summary>
 /// Handles the <see cref="AdminGetOwnProfileQuery"/> to retrieve complete admin user profile information.
 /// </summary>
-/// <param name="userRepository">Repository for user data access operations.</param>
+/// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
 public class AdminGetOwnProfileHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
     IRoleRepository roleRepository,
     IFileRepository fileRepository
 ) : IQueryHandler<AdminGetOwnProfileQuery, AdminGetOwnProfileResult>
@@ -33,12 +33,12 @@ public class AdminGetOwnProfileHandler(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
+        UserEntity? user = await authRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
             query.UserId,
             cancellationToken
         );
         // Validate user account status - admin accounts must be active
-        userRepository.IsUserAccountActive(user!);
+        authRepository.IsUserAccountActive(user!);
         // Extract roles and permissions using repository
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(user!.UserRoles);
         // Fetch the avatar file if the user has one
