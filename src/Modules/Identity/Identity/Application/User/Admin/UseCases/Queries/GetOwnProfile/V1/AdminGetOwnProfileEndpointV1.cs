@@ -42,12 +42,12 @@ public class AdminGetOwnProfileEndpointV1 : ICarterModule
             .WithTags($"{IdentityConstants.Admin}::{AuthRouteConstants.Profile}");
         group.MapGet("/", async (
                 ClaimsPrincipal user,
-                IUserRepository userRepository,
+                IAuthRepository authRepository,
                 IDispatcher dispatcher
             ) =>
             {
                 // Extract user ID from JWT token claims
-                Guid userId = userRepository.GetUserIdFromClaims(user);
+                Guid userId = authRepository.GetUserIdFromClaims(user);
                 // Send the query to get admin user profile
                 var query = new AdminGetOwnProfileQuery(userId);
                 AdminGetOwnProfileResult result = await dispatcher.Send(query);
