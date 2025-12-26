@@ -61,12 +61,12 @@ public class AdminUpdateOwnProfileEndpointV1 : ICarterModule
         group.MapPatch("/", async (
                 AdminUpdateOwnProfileRequest request,
                 ClaimsPrincipal user,
-                IUserRepository userRepository,
+                IAuthRepository authRepository,
                 IDispatcher dispatcher
             ) =>
             {
                 // Extract user ID from JWT token claims
-                Guid userId = userRepository.GetUserIdFromClaims(user);
+                Guid userId = authRepository.GetUserIdFromClaims(user);
                 // Send the command to update the profile
                 var command = new AdminUpdateOwnProfileCommand(
                     userId,
