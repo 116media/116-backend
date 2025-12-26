@@ -43,16 +43,16 @@ public class PublicUpdateAvatarEndpointV1 : ICarterModule
         group.MapPatch(AuthRouteConstants.Avatar, async (
                 IFormFile avatarFile,
                 ClaimsPrincipal user,
-                IUserRepository userRepository,
+                IAuthRepository authRepository,
                 IDispatcher dispatcher
             ) =>
             {
                 // Extract user ID from JWT token claims
-                Guid userId = userRepository.GetUserIdFromClaims(user);
-                // Send the command with the uploaded file (validation happens in validator)
+                Guid userId = authRepository.GetUserIdFromClaims(user);
+
                 var command = new PublicUpdateAvatarCommand(userId, avatarFile);
                 PublicUpdateAvatarResult result = await dispatcher.Send(command);
-                // Return response
+
                 var response = new PublicUpdateAvatarResponse(result.User);
                 return Results.Ok(response);
             })
