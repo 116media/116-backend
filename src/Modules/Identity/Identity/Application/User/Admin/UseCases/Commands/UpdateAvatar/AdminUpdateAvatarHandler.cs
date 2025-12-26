@@ -12,12 +12,12 @@ namespace _116.Identity.Application.User.Admin.UseCases.Commands.UpdateAvatar;
 /// <summary>
 /// Handles the <see cref="AdminUpdateAvatarCommand"/> to update admin user avatar.
 /// </summary>
-/// <param name="userRepository">Repository for user data access operations.</param>
+/// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="fileRepository">Repository for file data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminUpdateAvatarHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
     IFileRepository fileRepository,
     IRoleRepository roleRepository,
     IIdentityUnitOfWork unitOfWork
@@ -34,12 +34,14 @@ public class AdminUpdateAvatarHandler(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
+        UserEntity? user = await authRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
             command.UserId,
             cancellationToken
         );
         // Ensure the account is active (admin users only need to be active)
-        userRepository.IsUserAccountActive(user!);
+        authRepository.IsUserAccountActive(user!);
+        authRepository.IsUserLoggedIn(user!);
+
         // Update avatar (deletes old and uploads new)
         FileEntity fileEntity = await fileRepository.UpdateAvatarFromFileAsync(
             currentAvatarFileId: user!.AvatarFileId,
