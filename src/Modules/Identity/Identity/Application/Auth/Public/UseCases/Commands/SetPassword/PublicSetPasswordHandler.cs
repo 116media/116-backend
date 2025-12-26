@@ -10,11 +10,11 @@ namespace _116.Identity.Application.Auth.Public.UseCases.Commands.SetPassword;
 /// <summary>
 /// Handles the <see cref="PublicSetPasswordCommand"/> to set a password for external auth users (Google/Facebook).
 /// </summary>
-/// <param name="userRepository">Repository for user data access operations.</param>
+/// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="passwordService">Service for password hashing operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicSetPasswordHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
     IPasswordService passwordService,
     IIdentityUnitOfWork unitOfWork
 ) : ICommandHandler<PublicSetPasswordCommand, PublicSetPasswordResult>
@@ -34,12 +34,12 @@ public class PublicSetPasswordHandler(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user = await userRepository.FindUserByIdOrThrow(command.UserId, cancellationToken);
+        UserEntity? user = await authRepository.FindUserByIdOrThrow(command.UserId, cancellationToken);
         // Validate user account status - accounts must be active
-        userRepository.IsUserAccountActive(user!);
+        authRepository.IsUserAccountActive(user!);
         // Hash the new password
         string hashedPassword = passwordService.Hash(command.Password);
-        userRepository.SetPasswordForExternalUser(user!, hashedPassword);
+        authRepository.SetPasswordForExternalUser(user!, hashedPassword);
         await unitOfWork.CommitAsync(cancellationToken);
         return new PublicSetPasswordResult(IsSuccess: true);
     }
