@@ -9,14 +9,17 @@ public enum EnumOtpPurpose
     /// OTP used for email verification during account registration.
     /// </summary>
     EmailVerification,
+
     /// <summary>
     /// OTP used for password reset requests.
     /// </summary>
     PasswordReset,
+
     /// <summary>
     /// OTP used for two-factor authentication.
     /// </summary>
     TwoFactorAuthentication,
+
     /// <summary>
     /// OTP used for account recovery.
     /// </summary>

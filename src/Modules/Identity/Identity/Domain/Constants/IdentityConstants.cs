@@ -12,16 +12,19 @@ public static class IdentityConstants
     /// Used in Entity Framework configurations to organize identity tables under the "authentication" schema.
     /// </summary>
     public const string SchemaName = "authentication";
+
     /// <summary>
     /// Identifies the Identity module within the application.
     /// Used for module registration and configuration.
     /// </summary>
     public const string ModuleName = "Identity";
+
     /// <summary>
     /// Route prefix for administrative authentication endpoints.
     /// Used to construct admin-specific API routes (e.g., /api/v1/admin/auth).
     /// </summary>
     public const string Admin = "admin";
+
     /// <summary>
     /// Route prefix for public authentication endpoints.
     /// Used to construct publicly accessible API routes (e.g., /api/v1/public/auth).

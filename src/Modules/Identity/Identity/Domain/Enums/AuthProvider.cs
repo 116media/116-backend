@@ -13,12 +13,14 @@ public enum EnumAuthProvider
     /// Authentication via local credentials (username/password).
     /// </summary>
     Local,
+
     /// <summary>
     /// Authentication via Google.
     /// </summary>
     Google,
+
     /// <summary>
     /// Authentication via Facebook.
     /// </summary>
-    Facebook,
+    Facebook
 }

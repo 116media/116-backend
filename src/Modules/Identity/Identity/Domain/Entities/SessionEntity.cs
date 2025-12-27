@@ -19,7 +19,7 @@ public class SessionEntity : Aggregate<Guid>
     /// <summary>
     /// Hashed refresh token. Never store the raw token - hash it first!
     /// </summary>
-    [MaxLength(SessionConstants.MaxRefreshTokenHashLength)]
+    [MaxLength(length: SessionConstants.MaxRefreshTokenHashLength)]
     public string RefreshTokenHash { get; private set; } = null!;
 
     /// <summary>
@@ -30,19 +30,19 @@ public class SessionEntity : Aggregate<Guid>
     /// <summary>
     /// IP address where the login happened. Useful for security monitoring.
     /// </summary>
-    [MaxLength(SessionConstants.MaxIpAddressLength)]
+    [MaxLength(length: SessionConstants.MaxIpAddressLength)]
     public string? IpAddress { get; private set; }
 
     /// <summary>
     /// Raw user agent string from the browser/device.
     /// </summary>
-    [MaxLength(SessionConstants.MaxUserAgentLength)]
+    [MaxLength(length: SessionConstants.MaxUserAgentLength)]
     public string? UserAgent { get; private set; }
 
     /// <summary>
     /// Friendly device name parsed from user agent (e.g., "Chrome on Windows", "Safari on iPhone").
     /// </summary>
-    [MaxLength(SessionConstants.MaxDeviceNameLength)]
+    [MaxLength(length: SessionConstants.MaxDeviceNameLength)]
     public string? DeviceName { get; private set; }
 
     /// <summary>
@@ -89,7 +89,10 @@ public class SessionEntity : Aggregate<Guid>
     /// <summary>
     /// Checks if this session is still valid (not expired and not deleted).
     /// </summary>
-    public bool IsActive() => ExpiresAt > DateTime.UtcNow && !IsDeleted;
+    public bool IsActive()
+    {
+        return ExpiresAt > DateTime.UtcNow && !IsDeleted;
+    }
 
     /// <summary>
     /// Updates the refresh token (for token rotation).
