@@ -15,12 +15,12 @@ namespace _116.Identity.Application.User.Public.UseCases.Commands.UpdateOwnProfi
 /// Handles the <see cref="PublicUpdateOwnProfileCommand"/> to update user's own profile information.
 /// This endpoint requires user authentication - only logged-in users can update their own profile.
 /// </summary>
-/// <param name="userRepository">Repository for user data access operations.</param>
+/// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicUpdateOwnProfileHandler(
-    IUserRepository userRepository,
+    IAuthRepository authRepository,
     IRoleRepository roleRepository,
     IFileRepository fileRepository,
     IIdentityUnitOfWork unitOfWork
@@ -40,13 +40,15 @@ public class PublicUpdateOwnProfileHandler(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user = await userRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
+        UserEntity? user = await authRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
             command.UserId,
             cancellationToken
         );
         // Validate user account status - must be active and verified
-        userRepository.IsUserAccountActive(user!);
-        userRepository.IsUserAccountVerified(user!);
+        authRepository.IsUserAccountActive(user!);
+        authRepository.IsUserAccountVerified(user!);
+        authRepository.IsUserLoggedIn(user!);
+
         bool isPhoneUpdated = !string.IsNullOrEmpty(command.PartialPhoneNumber);
         bool isUsernameUpdated = !string.IsNullOrEmpty(command.UserName) && user!.UserName != command.UserName;
         bool isEmailUpdated = !string.IsNullOrEmpty(command.Email) && user!.Email != command.Email?.ToLowerInvariant();
@@ -86,14 +88,14 @@ public class PublicUpdateOwnProfileHandler(
     }
     private async Task EnsureEmailUnique(string email, CancellationToken cancellationToken)
     {
-        if (await userRepository.ExistsByEmailAsync(new Email(email), cancellationToken))
+        if (await authRepository.ExistsByEmailAsync(new Email(email), cancellationToken))
         {
             throw UserErrors.EmailAlreadyExists(email);
         }
     }
     private async Task EnsureUsernameUnique(string username, CancellationToken cancellationToken)
     {
-        if (await userRepository.ExistsByUserNameAsync(username, cancellationToken))
+        if (await authRepository.ExistsByUserNameAsync(username, cancellationToken))
         {
             throw UserErrors.UsernameAlreadyExists(username);
         }
@@ -101,7 +103,7 @@ public class PublicUpdateOwnProfileHandler(
     private async Task EnsurePhoneUnique(PublicUpdateOwnProfileCommand command, CancellationToken cancellationToken)
     {
         string fullPhone = $"{command.CountryDialCode}{command.PartialPhoneNumber}";
-        UserEntity? existing = await userRepository.GetUserByPhoneNumberAsync(fullPhone, cancellationToken);
+        UserEntity? existing = await authRepository.GetUserByPhoneNumberAsync(fullPhone, cancellationToken);
         if (existing is not null && existing.Id != command.UserId)
         {
             throw UserErrors.PhoneNumberAlreadyExists(fullPhone);
