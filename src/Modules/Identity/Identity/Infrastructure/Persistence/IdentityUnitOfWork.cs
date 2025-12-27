@@ -11,6 +11,6 @@ public class IdentityUnitOfWork(IdentityDbContext context) : IIdentityUnitOfWork
     /// <inheritdoc />
     public async Task<int> CommitAsync(CancellationToken cancellationToken = default)
     {
-        return await context.SaveChangesAsync(cancellationToken);
+        return await context.SaveChangesAsync(cancellationToken: cancellationToken);
     }
 }

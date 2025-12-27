@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 
 using _116.BuildingBlocks.Constants;
-using _116.Identity.Application.Shared.Services;
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Results;
@@ -32,38 +32,39 @@ public class JwtService : IJwtService
     )
     {
         var (secret, issuer, audience, expiration) = AppEnvironment.Jwt();
-        if (string.IsNullOrWhiteSpace(secret))
+        if (string.IsNullOrWhiteSpace(value: secret))
         {
             throw new InvalidOperationException("JWT_SECRET env variable is missing or empty.");
         }
 
         DateTimeOffset now = DateTimeOffset.UtcNow;
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(s: secret));
+        var credentials = new SigningCredentials(key: key, algorithm: SecurityAlgorithms.HmacSha256);
 
         var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, $"{userId}"),
-            new(ClaimTypes.Name, userName),
-            new(ClaimTypes.Email, email),
-            new(JwtRegisteredClaimNames.Sub, $"{userId}"),
-            new(JwtRegisteredClaimNames.Jti, $"{Guid.NewGuid()}"),
-            new(JwtRegisteredClaimNames.Iat, $"{now.ToUnixTimeSeconds()}", ClaimValueTypes.Integer64),
-            new(JwtClaimsConstants.AuthProvider, $"{authProvider}")
+            new(type: ClaimTypes.NameIdentifier, $"{userId}"),
+            new(type: ClaimTypes.Name, value: userName),
+            new(type: ClaimTypes.Email, value: email),
+            new(type: JwtRegisteredClaimNames.Sub, $"{userId}"),
+            new(type: JwtRegisteredClaimNames.Jti, $"{Guid.NewGuid()}"),
+            new(type: JwtRegisteredClaimNames.Iat, $"{now.ToUnixTimeSeconds()}",
+                valueType: ClaimValueTypes.Integer64),
+            new(type: JwtClaimsConstants.AuthProvider, $"{authProvider}")
         };
 
-        claims.AddRange(BuildAccountStatusClaims(isVerified, isActive));
-        claims.AddRange(BuildRoleClaims(userRoles));
-        claims.AddRange(BuildPermissionsClaims(userPermissions));
+        claims.AddRange(BuildAccountStatusClaims(isVerified: isVerified, isActive: isActive));
+        claims.AddRange(BuildRoleClaims(userRoles: userRoles));
+        claims.AddRange(BuildPermissionsClaims(permissions: userPermissions));
 
-        int expirationHours = int.TryParse(expiration, out int parsed)
+        int expirationHours = int.TryParse(s: expiration, out int parsed)
             ? parsed
             : JwtClaimsConstants.DefaultExpiration;
-        DateTime expiresAt = now.AddHours(expirationHours).UtcDateTime;
+        DateTime expiresAt = now.AddHours(hours: expirationHours).UtcDateTime;
 
         var descriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(claims),
+            Subject = new ClaimsIdentity(claims: claims),
             Expires = expiresAt,
             SigningCredentials = credentials,
             Issuer = issuer,
@@ -71,9 +72,9 @@ public class JwtService : IJwtService
         };
 
         var handler = new JwtSecurityTokenHandler();
-        string? token = handler.WriteToken(handler.CreateToken(descriptor));
+        string? token = handler.WriteToken(handler.CreateToken(tokenDescriptor: descriptor));
 
-        return new JwtGenerationResult(token, expiresAt);
+        return new JwtGenerationResult(Token: token, ExpiresAt: expiresAt);
     }
 
     /// <summary>
@@ -83,9 +84,11 @@ public class JwtService : IJwtService
     {
         return new Dictionary<string, bool>
         {
-            [JwtClaimsConstants.IsVerified] = isVerified,
-            [JwtClaimsConstants.IsActive] = isActive
-        }.Select(kvp => new Claim(kvp.Key, kvp.Value ? "true" : "false", ClaimValueTypes.Boolean)).ToList();
+            [key: JwtClaimsConstants.IsVerified] = isVerified,
+            [key: JwtClaimsConstants.IsActive] = isActive
+        }.Select(kvp =>
+            new Claim(type: kvp.Key, kvp.Value ? "true" : "false", valueType: ClaimValueTypes.Boolean))
+        .ToList();
     }
 
     /// <summary>
@@ -93,7 +96,7 @@ public class JwtService : IJwtService
     /// </summary>
     private static List<Claim> BuildRoleClaims(ICollection<UserRoleEntity> userRoles)
     {
-        return userRoles.Select(r => new Claim(ClaimTypes.Role, r.Role.Name)).ToList();
+        return userRoles.Select(r => new Claim(type: ClaimTypes.Role, value: r.Role.Name)).ToList();
     }
 
     /// <summary>
@@ -113,9 +116,9 @@ public class JwtService : IJwtService
         {
             permissionClaims.Add(
                 new Claim(
-                    JwtClaimsConstants.Permissions,
-                    JsonSerializer.Serialize(permissionsList),
-                    JsonClaimValueTypes.JsonArray
+                    type: JwtClaimsConstants.Permissions,
+                    JsonSerializer.Serialize(value: permissionsList),
+                    valueType: JsonClaimValueTypes.JsonArray
                 )
             );
         }

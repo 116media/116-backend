@@ -1,8 +1,9 @@
 using System.Security.Claims;
 
+using _116.Identity.Application.Auth.Specifications;
+using _116.Identity.Application.Roles.Specifications;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Repositories;
-using _116.Identity.Application.Shared.Specifications;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
@@ -15,14 +16,14 @@ using Microsoft.EntityFrameworkCore;
 namespace _116.Identity.Infrastructure.Repositories;
 
 /// <summary>
-/// Implementation of <see cref="IAuthRepository"/> using Entity Framework Core.
+/// Implementation of <see cref="IAuthRepository" /> using Entity Framework Core.
 /// </summary>
 public class AuthRepository(IdentityDbContext context) : IAuthRepository
 {
     /// <inheritdoc />
     public async Task<UserEntity?> FindUserByIdOrThrow(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await context.Users.FindOrThrowAsync([userId], cancellationToken);
+        return await context.Users.FindOrThrowAsync([userId], cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -31,11 +32,11 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new UserByEmailSpecification(email.Value);
+        var specification = new UserByEmailSpecification(email: email.Value);
         return await context.Users
-            .ApplySpecification(specification)
+            .ApplySpecification(specification: specification)
             .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
+            .ThenInclude(ur => ur.Role)
             .FirstDefaultOrThrowAsync(
                 keyName: "credentials",
                 keyValue: email.Value,
@@ -49,13 +50,13 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new UserByIdSpecification(userId);
+        var specification = new UserByIdSpecification(userId: userId);
         return await context.Users
-            .ApplySpecification(specification)
+            .ApplySpecification(specification: specification)
             .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
-                    .ThenInclude(r => r.RolePermissions)
-                        .ThenInclude(rp => rp.Permission)
+            .ThenInclude(ur => ur.Role)
+            .ThenInclude(r => r.RolePermissions)
+            .ThenInclude(rp => rp.Permission)
             .AsSplitQuery()
             .FirstDefaultOrThrowAsync(
                 keyValue: userId,
@@ -69,13 +70,13 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new UserByEmailSpecification(email.Value);
+        var specification = new UserByEmailSpecification(email: email.Value);
         return await context.Users
-            .ApplySpecification(specification)
+            .ApplySpecification(specification: specification)
             .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
-                    .ThenInclude(r => r.RolePermissions)
-                        .ThenInclude(rp => rp.Permission)
+            .ThenInclude(ur => ur.Role)
+            .ThenInclude(r => r.RolePermissions)
+            .ThenInclude(rp => rp.Permission)
             .AsSplitQuery()
             .FirstDefaultOrThrowAsync(
                 keyName: "email",
@@ -91,10 +92,10 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     )
     {
         // Use specification to determine if credentials is an email or username
-        var specification = new UserByCredentialsSpecification(credentials);
+        var specification = new UserByCredentialsSpecification(credentials: credentials);
         // Get the user by email or username without any status checks
         return await context.Users
-            .ApplySpecification(specification)
+            .ApplySpecification(specification: specification)
             .Include(u => u.UserRoles)
             .ThenInclude(ur => ur.Role)
             .ThenInclude(r => r.RolePermissions)
@@ -110,15 +111,17 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     /// <inheritdoc />
     public async Task<bool> ExistsByEmailAsync(Email email, CancellationToken cancellationToken = default)
     {
-        var specification = new UserByEmailSpecification(email.Value);
-        return await context.Users.AnyBySpecificationAsync(specification, cancellationToken);
+        var specification = new UserByEmailSpecification(email: email.Value);
+        return await context.Users.AnyBySpecificationAsync(specification: specification,
+            cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<bool> ExistsByUserNameAsync(string userName, CancellationToken cancellationToken = default)
     {
-        var specification = new UserByUserNameSpecification(userName);
-        return await context.Users.AnyBySpecificationAsync(specification, cancellationToken);
+        var specification = new UserByUserNameSpecification(userName: userName);
+        return await context.Users.AnyBySpecificationAsync(specification: specification,
+            cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -127,14 +130,15 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new UserByPhoneNumberSpecification(phoneNumber);
-        return await context.Users.FirstOrDefaultBySpecificationAsync(specification, cancellationToken);
+        var specification = new UserByPhoneNumberSpecification(phoneNumber: phoneNumber);
+        return await context.Users.FirstOrDefaultBySpecificationAsync(specification: specification,
+            cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task AddAsync(UserEntity user, CancellationToken cancellationToken = default)
     {
-        await context.Users.AddAsync(user, cancellationToken);
+        await context.Users.AddAsync(entity: user, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -144,6 +148,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         {
             throw UserErrors.AccountInactive(user.Email!);
         }
+
         return true;
     }
 
@@ -154,6 +159,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         {
             throw UserErrors.AccountNotVerified(user.Email!);
         }
+
         return true;
     }
 
@@ -165,6 +171,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         {
             throw UserErrors.UserNotLoggedIn(user.Email!);
         }
+
         return true;
     }
 
@@ -172,10 +179,11 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     public bool IsUserAdmin(UserEntity user)
     {
         var adminRoleSpec = new UserHasAdminRoleSpecification();
-        if (!adminRoleSpec.IsSatisfiedBy(user))
+        if (!adminRoleSpec.IsSatisfiedBy(entity: user))
         {
             throw UserErrors.InsufficientPermissions();
         }
+
         return true;
     }
 
@@ -187,18 +195,22 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     )
     {
         // Check for existing email first using specification
-        var emailSpec = new UserByEmailSpecification(email.Value);
-        bool emailExists = await context.Users.AnyBySpecificationAsync(emailSpec, cancellationToken);
+        var emailSpec = new UserByEmailSpecification(email: email.Value);
+        bool emailExists =
+            await context.Users.AnyBySpecificationAsync(specification: emailSpec, cancellationToken: cancellationToken);
         if (emailExists)
         {
-            throw UserErrors.EmailAlreadyExists(email.Value);
+            throw UserErrors.EmailAlreadyExists(email: email.Value);
         }
+
         // Check for existing username second using specification
-        var usernameSpec = new UserByUserNameSpecification(userName);
-        bool usernameExists = await context.Users.AnyBySpecificationAsync(usernameSpec, cancellationToken);
+        var usernameSpec = new UserByUserNameSpecification(userName: userName);
+        bool usernameExists =
+            await context.Users.AnyBySpecificationAsync(specification: usernameSpec,
+                cancellationToken: cancellationToken);
         if (usernameExists)
         {
-            throw UserErrors.UsernameAlreadyExists(userName);
+            throw UserErrors.UsernameAlreadyExists(username: userName);
         }
     }
 
@@ -206,29 +218,31 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     public async Task AssignVisitorRoleAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         // Find the user
-        UserEntity? user = await context.Users.FindAsync([userId], cancellationToken);
+        UserEntity? user = await context.Users.FindAsync([userId], cancellationToken: cancellationToken);
         // Find the Visitor role using specification
         var roleSpec = new RoleByNameSpecification(nameof(EnumCoreUserRole.Visitor));
         RoleEntity? visitorRole = await context.Roles
-            .FirstOrDefaultBySpecificationAsync(roleSpec, cancellationToken);
+            .FirstOrDefaultBySpecificationAsync(specification: roleSpec, cancellationToken: cancellationToken);
         if (visitorRole == null)
         {
             throw UserErrors.RoleNotFoundByName(nameof(EnumCoreUserRole.Visitor));
         }
+
         // Create user-role association using the static factory method
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), userId, visitorRole.Id);
+        var userRole = UserRoleEntity.Create(Guid.NewGuid(), userId: userId, roleId: visitorRole.Id);
         // Use the domain method to assign the role
-        user?.AssignRole(userRole);
+        user?.AssignRole(userRole: userRole);
     }
 
     /// <inheritdoc />
     public Guid GetUserIdFromClaims(ClaimsPrincipal user)
     {
-        string? userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+        string? userIdClaim = user.FindFirst(type: ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(value: userIdClaim) || !Guid.TryParse(input: userIdClaim, out Guid userId))
         {
             throw UserErrors.InvalidUserAuthentication();
         }
+
         return userId;
     }
 
@@ -245,43 +259,47 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         {
             // Try to load existing user including roles and permissions
             user = await GetUserWithRolesAndPermissionsByCredentialsOrThrow(
-                email, cancellationToken
+                credentials: email, cancellationToken: cancellationToken
             );
             // Prevent social login if a local account exists
             if (user!.AuthProvider == EnumAuthProvider.Local)
             {
-                throw UserErrors.EmailAlreadyExists(email);
+                throw UserErrors.EmailAlreadyExists(email: email);
             }
+
             // Update username if a new one is provided and it's different
-            if (!string.IsNullOrWhiteSpace(userName) && user.UserName != userName)
+            if (!string.IsNullOrWhiteSpace(value: userName) && user.UserName != userName)
             {
                 // Check if another user already takes the new username
-                bool usernameExists = await ExistsByUserNameAsync(userName, cancellationToken);
+                bool usernameExists =
+                    await ExistsByUserNameAsync(userName: userName, cancellationToken: cancellationToken);
                 if (usernameExists)
                 {
-                    throw UserErrors.UsernameAlreadyExists(userName);
+                    throw UserErrors.UsernameAlreadyExists(username: userName);
                 }
-                user.UpdateUserName(userName);
+
+                user.UpdateUserName(newUserName: userName);
             }
         }
         catch (NotFoundException)
         {
             // User doesn't exist, create a new one
             user = UserEntity.CreateExternal(
-                id: Guid.NewGuid(),
-                userName: userName!,
+                Guid.NewGuid(),
+                userName!,
                 authProvider: authProvider.Value,
                 email: email
             );
-            await AddAsync(user, cancellationToken);
-            await AssignVisitorRoleAsync(user.Id, cancellationToken);
-            await context.SaveChangesAsync(cancellationToken);
+            await AddAsync(user: user, cancellationToken: cancellationToken);
+            await AssignVisitorRoleAsync(userId: user.Id, cancellationToken: cancellationToken);
+            await context.SaveChangesAsync(cancellationToken: cancellationToken);
 
             // Reload user with roles and permissions after creation
             user = await GetUserWithRolesAndPermissionsByCredentialsOrThrow(
-                email, cancellationToken
+                credentials: email, cancellationToken: cancellationToken
             );
         }
+
         return user;
     }
 
@@ -289,15 +307,17 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     public void SetPasswordForExternalUser(UserEntity user, string hashedPassword)
     {
         // Check if user has an email address
-        if (string.IsNullOrEmpty(user.Email))
+        if (string.IsNullOrEmpty(value: user.Email))
         {
             throw UserErrors.EmailRequiredToSetPassword();
         }
+
         // Check if user already has a password set
         if (user.AuthProvider == EnumAuthProvider.Local)
         {
             throw UserErrors.PasswordOnlyForExternalAuth();
         }
-        user.SetPasswordAndChangeToLocal(hashedPassword);
+
+        user.SetPasswordAndChangeToLocal(passwordHash: hashedPassword);
     }
 }

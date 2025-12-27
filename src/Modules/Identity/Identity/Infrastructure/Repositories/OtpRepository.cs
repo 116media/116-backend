@@ -1,6 +1,6 @@
+using _116.Identity.Application.Auth.Repositories;
+using _116.Identity.Application.Auth.Specifications;
 using _116.Identity.Application.Shared.Errors;
-using _116.Identity.Application.Shared.Repositories;
-using _116.Identity.Application.Shared.Specifications;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
@@ -11,14 +11,14 @@ using Microsoft.EntityFrameworkCore;
 namespace _116.Identity.Infrastructure.Repositories;
 
 /// <summary>
-/// Implementation of <see cref="IOtpRepository"/> using Entity Framework Core.
+/// Implementation of <see cref="IOtpRepository" /> using Entity Framework Core.
 /// </summary>
 public class OtpRepository(IdentityDbContext context) : IOtpRepository
 {
     /// <inheritdoc />
     public async Task AddAsync(OtpEntity otp, CancellationToken cancellationToken = default)
     {
-        await context.Otps.AddAsync(otp, cancellationToken);
+        await context.Otps.AddAsync(entity: otp, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -30,11 +30,11 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
     )
     {
         // Use specification to find OTP with the provided code
-        var specification = new OtpForValidationSpecification(userId, code, purpose);
+        var specification = new OtpForValidationSpecification(userId: userId, code: code, purpose: purpose);
         OtpEntity? matchingOtp = await context.Otps
-            .ApplySpecification(specification)
+            .ApplySpecification(specification: specification)
             .OrderByDescending(o => o.CreatedAt)
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         if (matchingOtp != null)
         {
@@ -59,16 +59,20 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
             // Now increment the attempt count
             matchingOtp.IncrementAttemptCount();
 
-            context.Otps.Update(matchingOtp);
-            await context.SaveChangesAsync(cancellationToken);
+            context.Otps.Update(entity: matchingOtp);
+            await context.SaveChangesAsync(cancellationToken: cancellationToken);
 
-            if (matchingOtp.HasMaxAttemptsReached()) throw UserErrors.MaxOtpAttemptsReached();
+            if (matchingOtp.HasMaxAttemptsReached())
+            {
+                throw UserErrors.MaxOtpAttemptsReached();
+            }
 
             throw UserErrors.InvalidOtpCode();
         }
 
         // No matching OTP found — check the latest valid OTP for this purpose
-        OtpEntity? latestOtp = await GetLatestValidOtpAsync(userId, purpose, cancellationToken);
+        OtpEntity? latestOtp =
+            await GetLatestValidOtpAsync(userId: userId, purpose: purpose, cancellationToken: cancellationToken);
 
         if (latestOtp == null)
         {
@@ -87,8 +91,8 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
 
         // Increment attempts for wrong code
         latestOtp.IncrementAttemptCount();
-        context.Otps.Update(latestOtp);
-        await context.SaveChangesAsync(cancellationToken);
+        context.Otps.Update(entity: latestOtp);
+        await context.SaveChangesAsync(cancellationToken: cancellationToken);
 
         if (latestOtp.HasMaxAttemptsReached())
         {
@@ -107,11 +111,11 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
     )
     {
         // Use specification to find used OTP with the provided code
-        var specification = new OtpForUsedValidationSpecification(userId, code, purpose);
+        var specification = new OtpForUsedValidationSpecification(userId: userId, code: code, purpose: purpose);
         OtpEntity? matchingOtp = await context.Otps
-            .ApplySpecification(specification)
+            .ApplySpecification(specification: specification)
             .OrderByDescending(o => o.CreatedAt)
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         // Check if OTP exists
         if (matchingOtp == null)
@@ -135,10 +139,10 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new OtpForInvalidationSpecification(userId, purpose);
+        var specification = new OtpForInvalidationSpecification(userId: userId, purpose: purpose);
         List<OtpEntity> expiredOtpList = await context.Otps
-            .ApplySpecification(specification)
-            .ToListAsync(cancellationToken);
+            .ApplySpecification(specification: specification)
+            .ToListAsync(cancellationToken: cancellationToken);
 
         foreach (OtpEntity otp in expiredOtpList)
         {
@@ -151,10 +155,10 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
     {
         var specification = new OtpIsExpiredSpecification();
         List<OtpEntity> expiredOtpList = await context.Otps
-            .ApplySpecification(specification)
-            .ToListAsync(cancellationToken);
+            .ApplySpecification(specification: specification)
+            .ToListAsync(cancellationToken: cancellationToken);
 
-        context.Otps.RemoveRange(expiredOtpList);
+        context.Otps.RemoveRange(entities: expiredOtpList);
         return expiredOtpList.Count;
     }
 
@@ -174,10 +178,10 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
         CancellationToken cancellationToken = default
     )
     {
-        var specification = new OtpIsValidForUserAndPurposeSpecification(userId, purpose);
+        var specification = new OtpIsValidForUserAndPurposeSpecification(userId: userId, purpose: purpose);
         return await context.Otps
-            .ApplySpecification(specification)
+            .ApplySpecification(specification: specification)
             .OrderByDescending(o => o.CreatedAt)
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
     }
 }

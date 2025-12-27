@@ -1,4 +1,4 @@
-using _116.Identity.Application.Shared.Services;
+using _116.Identity.Application.Auth.Services;
 using _116.Shared.Infrastructure.Seed;
 
 using Microsoft.EntityFrameworkCore.Storage;
@@ -13,9 +13,10 @@ namespace _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 /// </summary>
 public class SuperAdminSeeder : IDataSeeder
 {
+    private readonly ILogger<SuperAdminSeeder> _logger;
     private readonly SuperAdminRepositoryManager _repositoryManager;
     private readonly SuperAdminSeedingStrategy _seedingStrategy;
-    private readonly ILogger<SuperAdminSeeder> _logger;
+
     public SuperAdminSeeder(
         IdentityDbContext context,
         IPasswordService passwordService,
@@ -25,10 +26,12 @@ public class SuperAdminSeeder : IDataSeeder
     )
     {
         _logger = logger;
-        _repositoryManager = new SuperAdminRepositoryManager(context, repositoryLogger);
-        var entityFactory = new SuperAdminEntityFactory(passwordService);
-        _seedingStrategy = new SuperAdminSeedingStrategy(entityFactory, _repositoryManager, strategyLogger);
+        _repositoryManager = new SuperAdminRepositoryManager(context: context, logger: repositoryLogger);
+        var entityFactory = new SuperAdminEntityFactory(passwordService: passwordService);
+        _seedingStrategy = new SuperAdminSeedingStrategy(entityFactory: entityFactory,
+            repositoryManager: _repositoryManager, logger: strategyLogger);
     }
+
     /// <inheritdoc />
     /// <summary>
     /// Executes the Super Admin seeding process using the orchestrated components.
@@ -45,16 +48,18 @@ public class SuperAdminSeeder : IDataSeeder
                 _logger.LogInformation("Super Admin user already exists. Skipping seeding.");
                 return;
             }
+
             // Execute seeding within a transaction (UnitOfWork pattern)
             await ExecuteSeedingWithTransactionAsync();
             _logger.LogInformation("Super Admin seeding completed successfully!");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to seed Super Admin data");
+            _logger.LogError(exception: ex, "Failed to seed Super Admin data");
             throw;
         }
     }
+
     /// <summary>
     /// Executes the seeding process within a database transaction.
     /// Implements UnitOfWork pattern to ensure data consistency.
@@ -74,7 +79,7 @@ public class SuperAdminSeeder : IDataSeeder
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            _logger.LogError(ex, "Error occurred during Super Admin seeding. Transaction rolled back.");
+            _logger.LogError(exception: ex, "Error occurred during Super Admin seeding. Transaction rolled back.");
             throw;
         }
     }

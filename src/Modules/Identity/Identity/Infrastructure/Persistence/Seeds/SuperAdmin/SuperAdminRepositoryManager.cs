@@ -24,6 +24,7 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
             .FirstOrDefaultAsync(u => u.Email == SuperAdminConfiguration.Email);
         return existingSuperAdmin != null;
     }
+
     /// <summary>
     /// Finds an existing permission by resource and action.
     /// </summary>
@@ -35,6 +36,7 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
         return await context.Permissions
             .FirstOrDefaultAsync(p => p.Resource == resource && p.Action == action);
     }
+
     /// <summary>
     /// Finds an existing role by name.
     /// </summary>
@@ -45,6 +47,7 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
         return await context.Roles
             .FirstOrDefaultAsync(r => r.Name == roleName);
     }
+
     /// <summary>
     /// Checks if a role-permission association already exists.
     /// </summary>
@@ -56,6 +59,7 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
         return await context.RolePermissions
             .AnyAsync(rp => rp.RoleId == roleId && rp.PermissionId == permissionId);
     }
+
     /// <summary>
     /// Checks if a user-role association already exists.
     /// </summary>
@@ -67,57 +71,63 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
         return await context.UserRoles
             .AnyAsync(ur => ur.UserId == userId && ur.RoleId == roleId);
     }
+
     /// <summary>
     /// Adds a permission entity to the context.
     /// </summary>
     /// <param name="permission">The permission to add.</param>
     public void AddPermission(PermissionEntity permission)
     {
-        context.Permissions.Add(permission);
+        context.Permissions.Add(entity: permission);
         logger.LogDebug("Added permission: {Resource}.{Action}", permission.Resource, permission.Action);
     }
+
     /// <summary>
     /// Adds a role entity to the context.
     /// </summary>
     /// <param name="role">The role to add.</param>
     public void AddRole(RoleEntity role)
     {
-        context.Roles.Add(role);
+        context.Roles.Add(entity: role);
         logger.LogDebug("Added role: {RoleName}", role.Name);
     }
+
     /// <summary>
     /// Adds a user entity to the context.
     /// </summary>
     /// <param name="user">The user to add.</param>
     public void AddUser(UserEntity user)
     {
-        context.Users.Add(user);
+        context.Users.Add(entity: user);
         logger.LogDebug("Added user: {Username}", user.UserName);
     }
+
     /// <summary>
     /// Adds a role-permission association to the context.
     /// </summary>
     /// <param name="rolePermission">The role-permission association to add.</param>
     public void AddRolePermission(RolePermissionEntity rolePermission)
     {
-        context.RolePermissions.Add(rolePermission);
+        context.RolePermissions.Add(entity: rolePermission);
         logger.LogDebug(
             "Added role-permission association: RoleId={RoleId}, PermissionId={PermissionId}",
             rolePermission.RoleId, rolePermission.PermissionId
         );
     }
+
     /// <summary>
     /// Adds a user-role association to the context.
     /// </summary>
     /// <param name="userRole">The user-role association to add.</param>
     public void AddUserRole(UserRoleEntity userRole)
     {
-        context.UserRoles.Add(userRole);
+        context.UserRoles.Add(entity: userRole);
         logger.LogDebug(
             "Added user-role association: UserId={UserId}, RoleId={RoleId}",
             userRole.UserId, userRole.RoleId
         );
     }
+
     /// <summary>
     /// Saves all changes to the database.
     /// </summary>
@@ -127,6 +137,7 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
         await context.SaveChangesAsync();
         logger.LogDebug("Saved changes to database");
     }
+
     /// <summary>
     /// Begins a database transaction.
     /// </summary>

@@ -7,7 +7,7 @@ using Mapster;
 namespace _116.Identity.Infrastructure.Repositories;
 
 /// <summary>
-/// Implementation of <see cref="IRoleRepository"/> for processing user roles and permissions.
+/// Implementation of <see cref="IRoleRepository" /> for processing user roles and permissions.
 /// </summary>
 public class RoleRepository : IRoleRepository
 {
@@ -33,8 +33,8 @@ public class RoleRepository : IRoleRepository
     public (IReadOnlyCollection<RoleDto> Roles, IReadOnlyCollection<PermissionDto> Permissions)
         GetUserRolesAndPermissions(ICollection<UserRoleEntity> userRoles)
     {
-        IReadOnlyCollection<RoleDto> roles = GetUserRoles(userRoles);
-        IReadOnlyCollection<PermissionDto> permissions = GetUserPermissions(userRoles);
+        IReadOnlyCollection<RoleDto> roles = GetUserRoles(userRoles: userRoles);
+        IReadOnlyCollection<PermissionDto> permissions = GetUserPermissions(userRoles: userRoles);
         return (roles, permissions);
     }
 }

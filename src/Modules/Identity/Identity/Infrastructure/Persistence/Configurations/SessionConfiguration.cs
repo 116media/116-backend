@@ -24,20 +24,20 @@ public class SessionConfiguration : IEntityTypeConfiguration<SessionEntity>
         builder.Property(s => s.UserId)
             .IsRequired();
         builder.Property(s => s.RefreshTokenHash)
-            .HasMaxLength(SessionConstants.MaxRefreshTokenHashLength)
+            .HasMaxLength(maxLength: SessionConstants.MaxRefreshTokenHashLength)
             .IsRequired();
         builder.Property(s => s.CreatedAt)
             .IsRequired();
         builder.Property(s => s.ExpiresAt)
             .IsRequired();
         builder.Property(s => s.IpAddress)
-            .HasMaxLength(SessionConstants.MaxIpAddressLength)
+            .HasMaxLength(maxLength: SessionConstants.MaxIpAddressLength)
             .IsRequired(false);
         builder.Property(s => s.UserAgent)
-            .HasMaxLength(SessionConstants.MaxUserAgentLength)
+            .HasMaxLength(maxLength: SessionConstants.MaxUserAgentLength)
             .IsRequired(false);
         builder.Property(s => s.DeviceName)
-            .HasMaxLength(SessionConstants.MaxDeviceNameLength)
+            .HasMaxLength(maxLength: SessionConstants.MaxDeviceNameLength)
             .IsRequired(false);
         builder.Property(s => s.IsDeleted)
             .HasDefaultValue(false)

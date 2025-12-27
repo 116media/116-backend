@@ -1,5 +1,5 @@
-using _116.Identity.Application.Shared.Repositories;
-using _116.Identity.Application.Shared.Specifications;
+using _116.Identity.Application.Session.Repositories;
+using _116.Identity.Application.Session.Specifications;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Shared.Application.Specifications;
@@ -16,7 +16,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     /// <inheritdoc />
     public async Task CreateAsync(SessionEntity session, CancellationToken cancellationToken = default)
     {
-        await context.Sessions.AddAsync(session, cancellationToken);
+        await context.Sessions.AddAsync(entity: session, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -25,27 +25,27 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
         CancellationToken cancellationToken = default
     )
     {
-        var spec = new ValidRefreshTokenSessionSpecification(refreshTokenHash);
+        var spec = new ValidRefreshTokenSessionSpecification(refreshTokenHash: refreshTokenHash);
         return await context.Sessions
             .Where(spec.ToExpression())
             .Include(s => s.User)
-                .ThenInclude(u => u.UserRoles)
-                    .ThenInclude(ur => ur.Role)
-                        .ThenInclude(r => r.RolePermissions)
-                            .ThenInclude(rp => rp.Permission)
-            .FirstOrDefaultAsync(cancellationToken);
+            .ThenInclude(u => u.UserRoles)
+            .ThenInclude(ur => ur.Role)
+            .ThenInclude(r => r.RolePermissions)
+            .ThenInclude(rp => rp.Permission)
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task DeleteAsync(Guid sessionId, CancellationToken cancellationToken = default)
     {
-        var idSpec = new SessionByIdSpecification(sessionId);
+        var idSpec = new SessionByIdSpecification(sessionId: sessionId);
         var notDeletedSpec = new SessionIsNotDeletedSpecification();
-        Specification<SessionEntity> spec = idSpec.And(notDeletedSpec);
+        Specification<SessionEntity> spec = idSpec.And(other: notDeletedSpec);
 
         SessionEntity? session = await context.Sessions
             .Where(spec.ToExpression())
-            .FirstOrDefaultAsync(cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         session?.Delete();
     }
@@ -53,10 +53,10 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     /// <inheritdoc />
     public async Task DeleteAllByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var spec = new ActiveSessionsByUserIdSpecification(userId);
+        var spec = new ActiveSessionsByUserIdSpecification(userId: userId);
         List<SessionEntity> sessions = await context.Sessions
             .Where(spec.ToExpression())
-            .ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken: cancellationToken);
 
         foreach (SessionEntity session in sessions)
         {
@@ -69,11 +69,11 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     {
         var expiredSpec = new SessionIsExpiredSpecification();
         var notDeletedSpec = new SessionIsNotDeletedSpecification();
-        Specification<SessionEntity> spec = expiredSpec.And(notDeletedSpec);
+        Specification<SessionEntity> spec = expiredSpec.And(other: notDeletedSpec);
 
         List<SessionEntity> expiredSessions = await context.Sessions
             .Where(spec.ToExpression())
-            .ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken: cancellationToken);
 
         foreach (SessionEntity session in expiredSessions)
         {

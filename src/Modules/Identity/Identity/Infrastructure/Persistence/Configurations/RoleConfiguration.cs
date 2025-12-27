@@ -22,10 +22,10 @@ public class RoleConfiguration : IEntityTypeConfiguration<RoleEntity>
         builder.HasKey(r => r.Id);
         // Properties configuration
         builder.Property(r => r.Name)
-            .HasMaxLength(RoleConstants.MaxRoleNameLength)
+            .HasMaxLength(maxLength: RoleConstants.MaxRoleNameLength)
             .IsRequired();
         builder.Property(r => r.Description)
-            .HasMaxLength(RoleConstants.MaxRoleDescriptionLength)
+            .HasMaxLength(maxLength: RoleConstants.MaxRoleDescriptionLength)
             .IsRequired();
         // Indexes
         builder.HasIndex(r => r.Name)
@@ -34,10 +34,10 @@ public class RoleConfiguration : IEntityTypeConfiguration<RoleEntity>
         builder.HasMany(r => r.UserRoles)
             .WithOne(ur => ur.Role)
             .HasForeignKey(ur => ur.RoleId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(deleteBehavior: DeleteBehavior.Cascade);
         builder.HasMany(r => r.RolePermissions)
             .WithOne(rp => rp.Role)
             .HasForeignKey(rp => rp.RoleId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(deleteBehavior: DeleteBehavior.Cascade);
     }
 }

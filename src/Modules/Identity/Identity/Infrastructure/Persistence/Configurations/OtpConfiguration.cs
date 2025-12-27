@@ -24,7 +24,7 @@ public class OtpConfiguration : IEntityTypeConfiguration<OtpEntity>
         builder.Property(o => o.UserId)
             .IsRequired();
         builder.Property(o => o.Code)
-            .HasMaxLength(UserConstants.OtpCodeLength)
+            .HasMaxLength(maxLength: UserConstants.OtpCodeLength)
             .IsRequired();
         builder.Property(o => o.Purpose)
             .HasConversion<string>()
@@ -43,7 +43,7 @@ public class OtpConfiguration : IEntityTypeConfiguration<OtpEntity>
         builder.HasOne(o => o.User)
             .WithMany()
             .HasForeignKey(o => o.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(deleteBehavior: DeleteBehavior.Cascade);
         // Indexes for performance
         builder.HasIndex(o => new { o.UserId, o.Purpose })
             .HasDatabaseName("IX_Otps_UserId_Purpose");

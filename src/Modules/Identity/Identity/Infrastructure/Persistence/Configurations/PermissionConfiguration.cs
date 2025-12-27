@@ -22,13 +22,13 @@ public class PermissionConfiguration : IEntityTypeConfiguration<PermissionEntity
         builder.HasKey(p => p.Id);
         // Properties configuration
         builder.Property(p => p.Resource)
-            .HasMaxLength(PermissionConstants.MaxPermissionResourceLength)
+            .HasMaxLength(maxLength: PermissionConstants.MaxPermissionResourceLength)
             .IsRequired();
         builder.Property(p => p.Action)
-            .HasMaxLength(PermissionConstants.MaxPermissionActionLength)
+            .HasMaxLength(maxLength: PermissionConstants.MaxPermissionActionLength)
             .IsRequired();
         builder.Property(p => p.Description)
-            .HasMaxLength(PermissionConstants.MaxPermissionDescriptionLength)
+            .HasMaxLength(maxLength: PermissionConstants.MaxPermissionDescriptionLength)
             .IsRequired();
         // Indexes
         builder.HasIndex(p => new { p.Resource, p.Action })
@@ -38,6 +38,6 @@ public class PermissionConfiguration : IEntityTypeConfiguration<PermissionEntity
         builder.HasMany(p => p.RolePermissions)
             .WithOne(rp => rp.Permission)
             .HasForeignKey(rp => rp.PermissionId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(deleteBehavior: DeleteBehavior.Cascade);
     }
 }
