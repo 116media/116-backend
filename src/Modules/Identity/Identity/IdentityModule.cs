@@ -1,11 +1,15 @@
 using System.Text;
 
+using _116.Identity.Application.Auth.Exceptions.Handlers;
+using _116.Identity.Application.Auth.Repositories;
+using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Session.Repositories;
+using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Authorizations.Extensions;
 using _116.Identity.Application.Shared.Exceptions.Handlers;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
-using _116.Identity.Application.Shared.Services;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
@@ -32,24 +36,28 @@ public static class IdentityModule
     /// <summary>
     /// Gets the shared module configuration options for the Identity module.
     /// </summary>
-    private static ModuleOptions<IdentityDbContext> GetModuleOptions() => new()
+    private static ModuleOptions<IdentityDbContext> GetModuleOptions()
     {
-        ModuleName = IdentityConstants.ModuleName,
-        SchemaName = IdentityConstants.SchemaName,
-        EnableMigrations = true,
-        EnableSeeding = true
-    };
+        return new ModuleOptions<IdentityDbContext>
+        {
+            ModuleName = IdentityConstants.ModuleName,
+            SchemaName = IdentityConstants.SchemaName,
+            EnableMigrations = true,
+            EnableSeeding = true
+        };
+    }
+
     /// <summary>
     /// Adds the Identity module's services to the dependency injection container.
     /// </summary>
     /// <param name="services">The service collection to register services into.</param>
-    /// <returns>The updated <see cref="IServiceCollection"/> for chaining.</returns>
+    /// <returns>The updated <see cref="IServiceCollection" /> for chaining.</returns>
     /// <remarks>
     /// Registers database context with interceptors, authentication services, JWT configuration,
     /// and authorization policies for user management.
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// builder.Services.AddIdentityModule(builder.Configuration);
     /// </code>
     /// </example>
@@ -80,7 +88,7 @@ public static class IdentityModule
         services.AddScoped<IDataSeeder, VisitorRoleSeeder>();
         // Configure JWT Authentication
         var (secret, issuer, audience, _) = AppEnvironment.Jwt();
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+        services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
             options.TokenValidationParameters = new TokenValidationParameters
             {
@@ -107,16 +115,17 @@ public static class IdentityModule
         services.AddSingleton<IExceptionStrategy, AccessDeniedExceptionHandler>();
         return services;
     }
+
     /// <summary>
     /// Configures the Identity module's middleware in the application pipeline.
     /// </summary>
     /// <param name="app">The application builder.</param>
-    /// <returns>The updated <see cref="IApplicationBuilder"/> for chaining.</returns>
+    /// <returns>The updated <see cref="IApplicationBuilder" /> for chaining.</returns>
     /// <remarks>
     /// Applies pending EF Core migrations and executes the data seeder for user management.
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// app.UseIdentityModule();
     /// </code>
     /// </example>
