@@ -42,12 +42,12 @@ public class PublicGetOwnProfileEndpointV1 : ICarterModule
             .WithTags($"{IdentityConstants.Public}::{AuthRouteConstants.Profile}");
         group.MapGet("/", async (
                 ClaimsPrincipal user,
-                IUserRepository userRepository,
+                IAuthRepository authRepository,
                 IDispatcher dispatcher
             ) =>
             {
                 // Extract user ID from JWT token claims
-                Guid userId = userRepository.GetUserIdFromClaims(user);
+                Guid userId = authRepository.GetUserIdFromClaims(user);
                 // Send the query to get user profile
                 var query = new PublicGetOwnProfileQuery(userId);
                 PublicGetOwnProfileResult result = await dispatcher.Send(query);
