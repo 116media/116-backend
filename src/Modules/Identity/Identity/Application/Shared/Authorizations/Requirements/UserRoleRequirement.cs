@@ -10,7 +10,7 @@ namespace _116.Identity.Application.Shared.Authorizations.Requirements;
 /// <remarks>
 /// This requirement is used by the authorization system to determine if a user's role
 /// matches any of the specified allowed roles. It works in conjunction with
-/// <see cref="UserRoleRequirementHandler"/> to perform the actual authorization logic.
+/// <see cref="UserRoleRequirementHandler" /> to perform the actual authorization logic.
 /// The requirement supports multiple allowed roles, meaning users with any of the specified
 /// roles will be authorized to access the protected resource.
 /// </remarks>

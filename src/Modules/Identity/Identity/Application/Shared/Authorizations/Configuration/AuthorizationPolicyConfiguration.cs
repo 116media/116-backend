@@ -32,6 +32,7 @@ public static class AuthorizationPolicyConfiguration
             UserRolePolicies = GetUserRolePolicies()
         };
     }
+
     /// <summary>
     /// Defines account status policies with their corresponding claim requirements.
     /// </summary>
@@ -45,9 +46,10 @@ public static class AuthorizationPolicyConfiguration
         return new Dictionary<string, (string ClaimType, string ClaimValue)>
         {
             { AccountStatusPolicies.RequireVerifiedUser, (JwtClaimsConstants.IsVerified, "true") },
-            { AccountStatusPolicies.RequireActiveUser, (JwtClaimsConstants.IsActive, "true") },
+            { AccountStatusPolicies.RequireActiveUser, (JwtClaimsConstants.IsActive, "true") }
         };
     }
+
     /// <summary>
     /// Defines user role policies with their corresponding role requirements.
     /// </summary>
@@ -55,7 +57,7 @@ public static class AuthorizationPolicyConfiguration
     /// <remarks>
     /// These policies control access based on user roles. Each policy can specify
     /// multiple allowed roles, providing flexibility in role-based authorization.
-    /// Uses core system roles defined in <see cref="EnumCoreUserRole"/> enumeration.
+    /// Uses core system roles defined in <see cref="EnumCoreUserRole" /> enumeration.
     /// </remarks>
     private static Dictionary<string, string[]> GetUserRolePolicies()
     {
@@ -64,8 +66,8 @@ public static class AuthorizationPolicyConfiguration
             { UserRolePolicies.RequireAdminOnly, [nameof(EnumCoreUserRole.Admin)] },
             { UserRolePolicies.RequireSuperAdminOnly, [nameof(EnumCoreUserRole.SuperAdmin)] },
             { UserRolePolicies.RequireVisitorOnly, [nameof(EnumCoreUserRole.Visitor)] },
-            { UserRolePolicies.RequireAdminOrSuperAdmin,
-                [
+            {
+                UserRolePolicies.RequireAdminOrSuperAdmin, [
                     nameof(EnumCoreUserRole.Admin),
                     nameof(EnumCoreUserRole.SuperAdmin)
                 ]

@@ -17,6 +17,7 @@ public class UserIsActiveSpecification : Specification<UserEntity>
         return user => user.IsActive;
     }
 }
+
 /// <summary>
 /// Specification that matches verified user accounts.
 /// For local authentication users, verification is required.
@@ -30,6 +31,7 @@ public class UserIsVerifiedSpecification : Specification<UserEntity>
         return user => user.AuthProvider != EnumAuthProvider.Local || user.IsVerified;
     }
 }
+
 /// <summary>
 /// Composite specification for active and verified public users.
 /// Combines IsActive and IsVerified specifications, commonly used for public user authentication flows.
@@ -40,6 +42,6 @@ public class UserIsActiveAndVerifiedSpecification : Specification<UserEntity>
     {
         var activeSpec = new UserIsActiveSpecification();
         var verifiedSpec = new UserIsVerifiedSpecification();
-        return activeSpec.And(verifiedSpec).ToExpression();
+        return activeSpec.And(other: verifiedSpec).ToExpression();
     }
 }

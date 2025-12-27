@@ -20,6 +20,7 @@ public class AccountStatusRequirement(string claimType, string claimValue) : IAu
     /// (e.g., "is_verified", "is_active", "is_logged_in").
     /// </remarks>
     public string ClaimType { get; } = claimType ?? throw new ArgumentNullException(nameof(claimType));
+
     /// <summary>
     /// Gets the required value for the claim.
     /// </summary>

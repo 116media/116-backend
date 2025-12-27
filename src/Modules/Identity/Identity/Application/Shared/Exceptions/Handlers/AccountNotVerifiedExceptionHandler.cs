@@ -14,7 +14,7 @@ public sealed class AccountNotVerifiedExceptionHandler : BaseExceptionStrategy<A
     public override ProblemDetails CreateProblemDetails(AccountNotVerifiedException exception, HttpContext context)
     {
         return CreateStandardProblemDetails(
-            title: nameof(AccountNotVerifiedException),
+            nameof(AccountNotVerifiedException),
             detail: exception.Message,
             statusCode: StatusCodes.Status403Forbidden,
             context: context

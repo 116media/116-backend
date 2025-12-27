@@ -19,6 +19,7 @@ public static class ValidationErrorMessage
     {
         return $"Invalid email format: {email}";
     }
+
     /// <summary>
     /// Error message indicating that a password does not meet security requirements.
     /// </summary>
@@ -26,6 +27,7 @@ public static class ValidationErrorMessage
     {
         return "Password does not meet security requirements";
     }
+
     /// <summary>
     /// Gets an error message for when a username does not meet required rules or format.
     /// </summary>
@@ -37,6 +39,7 @@ public static class ValidationErrorMessage
     {
         return $"Username '{userName}' does not meet requirements";
     }
+
     /// <summary>
     /// Error message indicating that permission resource is required.
     /// </summary>
@@ -44,6 +47,7 @@ public static class ValidationErrorMessage
     {
         return "Permission resource is required";
     }
+
     /// <summary>
     /// Error message indicating that permission action is required.
     /// </summary>
@@ -51,6 +55,7 @@ public static class ValidationErrorMessage
     {
         return "Permission action is required";
     }
+
     /// <summary>
     /// Error message indicating that permission description is required.
     /// </summary>
@@ -58,6 +63,7 @@ public static class ValidationErrorMessage
     {
         return "Permission description is required";
     }
+
     /// <summary>
     /// Error message indicating that role name is required.
     /// </summary>
@@ -65,6 +71,7 @@ public static class ValidationErrorMessage
     {
         return "Role name is required";
     }
+
     /// <summary>
     /// Error message indicating that role description is required.
     /// </summary>
@@ -72,6 +79,7 @@ public static class ValidationErrorMessage
     {
         return "Role description is required";
     }
+
     /// <summary>
     /// Error message indicating that the user account is already verified.
     /// </summary>
@@ -79,6 +87,7 @@ public static class ValidationErrorMessage
     {
         return "Account is already verified";
     }
+
     /// <summary>
     /// Error message indicating that no valid OTP was found for verification.
     /// </summary>
@@ -86,6 +95,7 @@ public static class ValidationErrorMessage
     {
         return "No valid verification code found. Please request a new verification code";
     }
+
     /// <summary>
     /// Error message indicating that the provided OTP code is invalid.
     /// </summary>
@@ -93,6 +103,7 @@ public static class ValidationErrorMessage
     {
         return "Invalid verification code. Please check and try again";
     }
+
     /// <summary>
     /// Error message indicating that the OTP has expired.
     /// </summary>
@@ -100,6 +111,7 @@ public static class ValidationErrorMessage
     {
         return "Verification code has expired. Please request a new verification code";
     }
+
     /// <summary>
     /// Error message indicating that maximum OTP verification attempts have been reached.
     /// </summary>
@@ -107,6 +119,7 @@ public static class ValidationErrorMessage
     {
         return "Maximum verification attempts reached. Please request a new verification code";
     }
+
     /// <summary>
     /// Error message indicating that the OTP has not been verified yet.
     /// </summary>
@@ -114,6 +127,7 @@ public static class ValidationErrorMessage
     {
         return "Please complete the verification step before proceeding";
     }
+
     /// <summary>
     /// Error message indicating that the new password cannot be the same as the old password.
     /// </summary>
@@ -121,6 +135,7 @@ public static class ValidationErrorMessage
     {
         return "New password must be different from your current password";
     }
+
     /// <summary>
     /// Error message indicating that a password has not been configured for the account.
     /// </summary>
@@ -132,6 +147,7 @@ public static class ValidationErrorMessage
     {
         return $"This account was created via {provider}. Please set a password before changing it.";
     }
+
     /// <summary>
     /// Error message indicating that the current password is incorrect.
     /// </summary>
@@ -142,6 +158,7 @@ public static class ValidationErrorMessage
     {
         return "The current password you entered is incorrect.";
     }
+
     /// <summary>
     /// Error message indicating that an email address is required to set a password.
     /// </summary>
@@ -152,6 +169,7 @@ public static class ValidationErrorMessage
     {
         return "An email address is required to set a password";
     }
+
     /// <summary>
     /// Error message indicating that setting password is only allowed for external auth users.
     /// </summary>

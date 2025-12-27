@@ -18,6 +18,7 @@ public static class AuthorizationErrorMessage
     {
         return $"Account associated with '{email}' is inactive. Please contact support for assistance.";
     }
+
     /// <summary>
     /// Gets an error message for when an account is not verified.
     /// </summary>
@@ -27,8 +28,10 @@ public static class AuthorizationErrorMessage
     /// </returns>
     public static string AccountNotVerified(string email)
     {
-        return $"The account associated with '{email}' is not verified. Please complete the verification process to continue.";
+        return
+            $"The account associated with '{email}' is not verified. Please complete the verification process to continue.";
     }
+
     /// <summary>
     /// Gets an error message for when a user is not logged in.
     /// </summary>
@@ -40,6 +43,7 @@ public static class AuthorizationErrorMessage
     {
         return $"The user '{email}' is not currently logged in. Please log in to access this resource.";
     }
+
     /// <summary>
     /// Error message indicating that access is denied due to insufficient permissions.
     /// </summary>

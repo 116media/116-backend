@@ -41,32 +41,34 @@ public class AccountStatusRequirementHandler(IAuthRepository authRepository)
     )
     {
         // Extract user ID from JWT token claims
-        string? userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+        string? userIdClaim = context.User.FindFirst(type: ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(value: userIdClaim) || !Guid.TryParse(input: userIdClaim, out Guid userId))
         {
             return;
         }
+
         try
         {
-            UserEntity? user = await authRepository.FindUserByIdOrThrow(userId);
-            if (user is not null && CheckRequirementAgainstUser(user, requirement))
+            UserEntity? user = await authRepository.FindUserByIdOrThrow(userId: userId);
+            if (user is not null && CheckRequirementAgainstUser(user: user, requirement: requirement))
             {
-                context.Succeed(requirement);
+                context.Succeed(requirement: requirement);
             }
         }
-        catch (Exception ex) when (IsDbConnectivityError(ex))
+        catch (Exception ex) when (IsDbConnectivityError(exception: ex))
         {
             // Fallback to JWT claims for database connectivity errors
-            string? claimValue = context.User.FindFirst(requirement.ClaimType)?.Value;
+            string? claimValue = context.User.FindFirst(type: requirement.ClaimType)?.Value;
             if (
-                !string.IsNullOrEmpty(claimValue) &&
-                claimValue.Equals(requirement.ClaimValue, StringComparison.OrdinalIgnoreCase)
+                !string.IsNullOrEmpty(value: claimValue) &&
+                claimValue.Equals(value: requirement.ClaimValue, comparisonType: StringComparison.OrdinalIgnoreCase)
             )
             {
-                context.Succeed(requirement);
+                context.Succeed(requirement: requirement);
             }
         }
     }
+
     /// <summary>
     /// Maps the requirement to the correct user property and checks if it matches the expected value.
     /// </summary>
@@ -90,12 +92,14 @@ public class AccountStatusRequirementHandler(IAuthRepository authRepository)
             _ => false
         };
         // Compare with expected requirement value
-        if (bool.TryParse(requirement.ClaimValue, out bool expectedValue))
+        if (bool.TryParse(value: requirement.ClaimValue, out bool expectedValue))
         {
             return actualValue == expectedValue;
         }
+
         return false;
     }
+
     /// <summary>
     /// Determines if the exception is a database connectivity error that should trigger JWT fallback.
     /// </summary>

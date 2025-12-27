@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace _116.Identity.Application.Shared.Exceptions.Handlers;
 
 /// <summary>
-/// Strategy for handling <see cref="AccountInactiveException"/> instances.
+/// Strategy for handling <see cref="AccountInactiveException" /> instances.
 /// </summary>
 public sealed class AccountInactiveExceptionHandler : BaseExceptionStrategy<AccountInactiveException>
 {
@@ -14,7 +14,7 @@ public sealed class AccountInactiveExceptionHandler : BaseExceptionStrategy<Acco
     public override ProblemDetails CreateProblemDetails(AccountInactiveException exception, HttpContext context)
     {
         return CreateStandardProblemDetails(
-            title: nameof(AccountInactiveException),
+            nameof(AccountInactiveException),
             detail: exception.Message,
             statusCode: StatusCodes.Status423Locked,
             context: context

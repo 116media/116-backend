@@ -32,6 +32,7 @@ public static class AuthorizationExtensions
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
+
     /// <summary>
     /// Configures authorization policies and handlers for the Auth module.
     /// </summary>
@@ -40,11 +41,10 @@ public static class AuthorizationExtensions
     /// <remarks>
     /// This method encapsulates the complete authorization setup including:
     /// <list type="bullet">
-    /// <item>Registration of authorization requirement handlers</item>
-    /// <item>Configuration of account status policies</item>
-    /// <item>Configuration of user role policies</item>
+    ///     <item>Registration of authorization requirement handlers</item>
+    ///     <item>Configuration of account status policies</item>
+    ///     <item>Configuration of user role policies</item>
     /// </list>
-    ///
     /// The configuration is data-driven and easily extensible for new policy requirements.
     /// </remarks>
     public static IServiceCollection AddIdentityModuleAuthorization(this IServiceCollection services)
@@ -56,6 +56,7 @@ public static class AuthorizationExtensions
         services.ConfigureAuthorizationPolicies();
         return services;
     }
+
     /// <summary>
     /// Configures authorization policies using a centralized, data-driven approach.
     /// </summary>
@@ -66,10 +67,11 @@ public static class AuthorizationExtensions
         AuthorizationBuilder authBuilder = services.AddAuthorizationBuilder();
         // Configure policies using centralized configuration
         AuthorizationConfiguration policyConfiguration = AuthorizationPolicyConfiguration.GetConfiguration();
-        authBuilder.ConfigureAccountStatusPolicies(policyConfiguration.AccountStatusPolicies);
-        authBuilder.ConfigureUserRolePolicies(policyConfiguration.UserRolePolicies);
+        authBuilder.ConfigureAccountStatusPolicies(policies: policyConfiguration.AccountStatusPolicies);
+        authBuilder.ConfigureUserRolePolicies(policies: policyConfiguration.UserRolePolicies);
         return services;
     }
+
     /// <summary>
     /// Configures account status policies using requirements.
     /// </summary>
@@ -83,12 +85,14 @@ public static class AuthorizationExtensions
     {
         foreach (var (policyName, (claimType, claimValue)) in policies)
         {
-            authBuilder.AddPolicy(policyName, policy =>
-                policy.Requirements.Add(new AccountStatusRequirement(claimType, claimValue))
+            authBuilder.AddPolicy(name: policyName, policy =>
+                policy.Requirements.Add(new AccountStatusRequirement(claimType: claimType, claimValue: claimValue))
             );
         }
+
         return authBuilder;
     }
+
     /// <summary>
     /// Configures user role policies using requirements.
     /// </summary>
@@ -102,12 +106,14 @@ public static class AuthorizationExtensions
     {
         foreach (var (policyName, roles) in policies)
         {
-            authBuilder.AddPolicy(policyName, policy =>
-                policy.Requirements.Add(new UserRoleRequirement(roles))
+            authBuilder.AddPolicy(name: policyName, policy =>
+                policy.Requirements.Add(new UserRoleRequirement(allowedRoles: roles))
             );
         }
+
         return authBuilder;
     }
+
     /// <summary>
     /// Configures JWT Bearer events for consistent authentication and authorization error handling.
     /// </summary>
@@ -127,20 +133,24 @@ public static class AuthorizationExtensions
                 // Create an AuthenticationException and use the existing handler
                 var authHandler = new AuthenticationExceptionHandler();
                 var authException = new AuthenticationException(AuthenticationErrorMessage.JwtTokenRequired());
-                ProblemDetails problemDetails = authHandler.CreateProblemDetails(authException, context.HttpContext);
+                ProblemDetails problemDetails =
+                    authHandler.CreateProblemDetails(exception: authException, context: context.HttpContext);
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 context.Response.ContentType = "application/problem+json";
-                await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, JsonOptions));
+                await context.Response.WriteAsync(JsonSerializer.Serialize(value: problemDetails,
+                    options: JsonOptions));
             },
             OnForbidden = async context =>
             {
                 // Create an AuthorizationException and use the existing handler
                 var authHandler = new AuthorizationExceptionHandler();
                 var authException = new AuthorizationException(AuthorizationErrorMessage.AccessDenied());
-                ProblemDetails problemDetails = authHandler.CreateProblemDetails(authException, context.HttpContext);
+                ProblemDetails problemDetails =
+                    authHandler.CreateProblemDetails(exception: authException, context: context.HttpContext);
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 context.Response.ContentType = "application/problem+json";
-                await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, JsonOptions));
+                await context.Response.WriteAsync(JsonSerializer.Serialize(value: problemDetails,
+                    options: JsonOptions));
             }
         };
     }

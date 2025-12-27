@@ -20,6 +20,7 @@ public interface IRoleRepository : IRepository<RoleEntity>
     /// for API response purposes.
     /// </remarks>
     IReadOnlyCollection<RoleDto> GetUserRoles(ICollection<UserRoleEntity> userRoles);
+
     /// <summary>
     /// Extracts and aggregates all unique permissions from user roles.
     /// </summary>
@@ -30,6 +31,7 @@ public interface IRoleRepository : IRepository<RoleEntity>
     /// Use this when you need all permissions available to a user regardless of source role.
     /// </remarks>
     IReadOnlyCollection<PermissionDto> GetUserPermissions(ICollection<UserRoleEntity> userRoles);
+
     /// <summary>
     /// Extracts both roles and permissions from user roles in a single operation.
     /// </summary>

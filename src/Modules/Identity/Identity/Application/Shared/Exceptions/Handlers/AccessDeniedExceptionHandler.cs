@@ -14,7 +14,7 @@ public sealed class AccessDeniedExceptionHandler : BaseExceptionStrategy<AccessD
     public override ProblemDetails CreateProblemDetails(AccessDeniedException exception, HttpContext context)
     {
         return CreateStandardProblemDetails(
-            title: nameof(AccessDeniedException),
+            nameof(AccessDeniedException),
             detail: exception.Message,
             statusCode: StatusCodes.Status403Forbidden,
             context: context

@@ -17,6 +17,7 @@ public static class AccountStatusPolicies
     /// such as sensitive account operations or premium features.
     /// </remarks>
     public const string RequireVerifiedUser = "RequireVerifiedUser";
+
     /// <summary>
     /// Policy that requires user account to be active (not suspended/banned).
     /// </summary>
@@ -25,6 +26,7 @@ public static class AccountStatusPolicies
     /// such as posting or reacting to contents or accessing user features.
     /// </remarks>
     public const string RequireActiveUser = "RequireActiveUser";
+
     /// <summary>
     /// Policy that requires user to be logged in with valid authentication.
     /// </summary>

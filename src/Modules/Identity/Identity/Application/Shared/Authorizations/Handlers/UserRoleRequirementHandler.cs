@@ -27,13 +27,15 @@ public class UserRoleRequirementHandler : AuthorizationHandler<UserRoleRequireme
     )
     {
         // Extract user's role from JWT token claims
-        string? userRole = context.User.FindFirst(ClaimTypes.Role)?.Value;
+        string? userRole = context.User.FindFirst(type: ClaimTypes.Role)?.Value;
         // Authorize if the user role matches any allowed role (case-insensitive)
-        bool isUserRoleMatching = requirement.AllowedRoles.Contains(userRole, StringComparer.OrdinalIgnoreCase);
-        if (!string.IsNullOrEmpty(userRole) && isUserRoleMatching)
+        bool isUserRoleMatching =
+            requirement.AllowedRoles.Contains(value: userRole, comparer: StringComparer.OrdinalIgnoreCase);
+        if (!string.IsNullOrEmpty(value: userRole) && isUserRoleMatching)
         {
-            context.Succeed(requirement);
+            context.Succeed(requirement: requirement);
         }
+
         return Task.CompletedTask;
     }
 }
