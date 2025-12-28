@@ -25,7 +25,6 @@ public class PublicUpdateOwnProfileValidator : AbstractValidator<PublicUpdateOwn
         RuleFor(x => x.Email).ValidEmail(false);
         RuleFor(x => x.UserName).ValidUsername(false);
         RuleFor(x => x.CountryName).ValidCountryName();
-        RuleFor(x => x.CountryFlagUrl).ValidCountryFlagUrl();
         RuleFor(x => x.CountryIsoCode).ValidCountryIsoCode();
         RuleFor(x => x.CountryDialCode).ValidCountryDialCode();
         RuleFor(x => x.PartialPhoneNumber).ValidPartialPhoneNumber();

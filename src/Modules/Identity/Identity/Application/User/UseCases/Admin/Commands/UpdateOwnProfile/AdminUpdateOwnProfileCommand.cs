@@ -9,7 +9,6 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfil
 /// <param name="UserId">The unique identifier of the admin user updating their profile.</param>
 /// <param name="UserName">The new username (optional).</param>
 /// <param name="CountryName">The new country name (optional).</param>
-/// <param name="CountryFlagUrl">The new country flag URL (optional).</param>
 /// <param name="PartialPhoneNumber">The new partial phone number (optional).</param>
 /// <param name="CountryIsoCode">The new country ISO code (optional).</param>
 /// <param name="CountryDialCode">The new country dial code (optional).</param>
@@ -23,7 +22,6 @@ public record AdminUpdateOwnProfileCommand(
     Guid UserId,
     string? UserName,
     string? CountryName,
-    string? CountryFlagUrl,
     string? PartialPhoneNumber,
     string? CountryIsoCode,
     string? CountryDialCode

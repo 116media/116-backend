@@ -65,7 +65,6 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                     is_logged_in = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     last_login_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     country_name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    country_flag_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     country_iso_code = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
                     country_dial_code = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
                     partial_phone_number = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),

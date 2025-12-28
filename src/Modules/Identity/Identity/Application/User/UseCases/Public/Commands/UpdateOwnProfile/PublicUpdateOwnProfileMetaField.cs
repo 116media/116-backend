@@ -37,7 +37,7 @@ public static class PublicUpdateOwnProfileMetaField
             - Email address (triggers re-verification and logout)\n
             - Username (must be unique across the system)\n
             - Phone number with country information\n
-            - Country details (name, flag, ISO code, dial code)\n
+            - Country details (name, ISO code, dial code)\n
             \n
             **Security Features:**\n
             - User can only update their own profile information\n

@@ -128,7 +128,7 @@ public class PublicSignUpHandler(
             RefreshToken: refreshToken,
             RefreshTokenExpiresAt: refreshTokenExpiresAt
         );
-        // Return result with verification required flag (new users need email verification)
+
         return new PublicSignUpResult(AuthenticationResult: authResult, true);
     }
 }

@@ -36,7 +36,7 @@ public static class AdminUpdateOwnProfileMetaField
             **Updateable Information:**\n
             - Username (must be unique across the system)\n
             - Phone number with country information\n
-            - Country details (name, flag, ISO code, dial code)\n
+            - Country details (name, ISO code, dial code)\n
             \n
             **Restrictions:**\n
             - Email updates are not allowed for admin users (security restriction)\n

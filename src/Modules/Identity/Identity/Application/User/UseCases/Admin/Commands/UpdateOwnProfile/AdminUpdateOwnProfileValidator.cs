@@ -22,17 +22,10 @@ public class AdminUpdateOwnProfileValidator : AbstractValidator<AdminUpdateOwnPr
     /// </summary>
     public AdminUpdateOwnProfileValidator()
     {
-        // Username validation - optional but must meet requirements if provided
         RuleFor(x => x.UserName).ValidUsername(false);
-        // Country name validation - if provided
         RuleFor(x => x.CountryName).ValidCountryName();
-        // Country flag URL validation - if provided
-        RuleFor(x => x.CountryFlagUrl).ValidCountryFlagUrl();
-        // Country ISO code validation - if provided
         RuleFor(x => x.CountryIsoCode).ValidCountryIsoCode();
-        // Country dial code validation - if provided
         RuleFor(x => x.CountryDialCode).ValidCountryDialCode();
-        // Partial phone number validation - if provided
         RuleFor(x => x.PartialPhoneNumber).ValidPartialPhoneNumber();
     }
 }

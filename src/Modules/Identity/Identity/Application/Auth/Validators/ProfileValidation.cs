@@ -26,25 +26,6 @@ public static class ProfileValidation
     }
 
     /// <summary>
-    /// Validates country flag URL with format and length constraints.
-    /// </summary>
-    /// <typeparam name="T">The type being validated.</typeparam>
-    /// <param name="ruleBuilder">The rule builder for the country flag URL property.</param>
-    /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, string?> ValidCountryFlagUrl<T>(
-        this IRuleBuilderInitial<T, string?> ruleBuilder
-    )
-    {
-        return ruleBuilder
-            .Cascade(cascadeMode: CascadeMode.Stop)
-            .MaximumLength(maximumLength: UserConstants.MaxCountryFlagUrlLength)
-            .WithMessage($"Country flag URL cannot exceed {UserConstants.MaxCountryFlagUrlLength} characters")
-            .Must(predicate: ValidationUtils.ValidUrl)
-            .WithMessage("Country flag URL must be a valid URL")
-            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "CountryFlagUrl")));
-    }
-
-    /// <summary>
     /// Validates country ISO code (2-3 uppercase letters).
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>

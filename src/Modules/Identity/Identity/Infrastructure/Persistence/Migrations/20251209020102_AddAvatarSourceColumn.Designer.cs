@@ -210,10 +210,6 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)")
                         .HasColumnName("country_dial_code");
-                    b.Property<string>("CountryFlagUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("country_flag_url");
                     b.Property<string>("CountryIsoCode")
                         .HasMaxLength(3)
                         .HasColumnType("character varying(3)")

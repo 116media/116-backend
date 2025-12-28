@@ -22,14 +22,12 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfil
 /// </summary>
 /// <param name="UserName">The new username (optional).</param>
 /// <param name="CountryName">The new country name (optional).</param>
-/// <param name="CountryFlagUrl">The new country flag URL (optional).</param>
 /// <param name="PartialPhoneNumber">The new partial phone number (optional).</param>
 /// <param name="CountryIsoCode">The new country ISO code (optional).</param>
 /// <param name="CountryDialCode">The new country dial code (optional).</param>
 public record AdminUpdateOwnProfileRequest(
     string? UserName,
     string? CountryName,
-    string? CountryFlagUrl,
     string? PartialPhoneNumber,
     string? CountryIsoCode,
     string? CountryDialCode
@@ -74,7 +72,6 @@ public class AdminUpdateOwnProfileEndpointV1 : ICarterModule
                     UserId: userId,
                     UserName: request.UserName,
                     CountryName: request.CountryName,
-                    CountryFlagUrl: request.CountryFlagUrl,
                     PartialPhoneNumber: request.PartialPhoneNumber,
                     CountryIsoCode: request.CountryIsoCode,
                     CountryDialCode: request.CountryDialCode
