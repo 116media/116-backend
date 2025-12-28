@@ -22,19 +22,12 @@ public class PublicUpdateOwnProfileValidator : AbstractValidator<PublicUpdateOwn
     /// </summary>
     public PublicUpdateOwnProfileValidator()
     {
-        // Email validation - optional but must be valid format if provided
-        RuleFor(x => x.Email).EmailValidation(false);
-        // Username validation - optional but must meet requirements if provided
-        RuleFor(x => x.UserName).UsernameValidation(false);
-        // Country name validation - if provided
-        RuleFor(x => x.CountryName).CountryNameValidation();
-        // Country flag URL validation - if provided
-        RuleFor(x => x.CountryFlagUrl).CountryFlagUrlValidation();
-        // Country ISO code validation - if provided
-        RuleFor(x => x.CountryIsoCode).CountryIsoCodeValidation();
-        // Country dial code validation - if provided
-        RuleFor(x => x.CountryDialCode).CountryDialCodeValidation();
-        // Partial phone number validation - if provided
-        RuleFor(x => x.PartialPhoneNumber).PartialPhoneNumberValidation();
+        RuleFor(x => x.Email).ValidEmail(false);
+        RuleFor(x => x.UserName).ValidUsername(false);
+        RuleFor(x => x.CountryName).ValidCountryName();
+        RuleFor(x => x.CountryFlagUrl).ValidCountryFlagUrl();
+        RuleFor(x => x.CountryIsoCode).ValidCountryIsoCode();
+        RuleFor(x => x.CountryDialCode).ValidCountryDialCode();
+        RuleFor(x => x.PartialPhoneNumber).ValidPartialPhoneNumber();
     }
 }

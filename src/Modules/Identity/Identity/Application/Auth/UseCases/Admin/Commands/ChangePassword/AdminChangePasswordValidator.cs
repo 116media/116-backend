@@ -20,9 +20,7 @@ public class AdminChangePasswordValidator : AbstractValidator<AdminChangePasswor
     /// </summary>
     public AdminChangePasswordValidator()
     {
-        // Old password validation - required for verification
-        RuleFor(x => x.OldPassword).OldPasswordValidation();
-        // New password validation - strong password requirements
-        RuleFor(x => x.NewPassword).PasswordValidation("New password");
+        RuleFor(x => x.OldPassword).ValidOldPassword();
+        RuleFor(x => x.NewPassword).ValidPassword("New password");
     }
 }

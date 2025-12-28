@@ -19,6 +19,6 @@ public class AdminUpdateAvatarValidator : AbstractValidator<AdminUpdateAvatarCom
     public AdminUpdateAvatarValidator()
     {
         // Avatar file validation - required for this endpoint
-        RuleFor(x => x.AvatarFile).AvatarValidation(true);
+        RuleFor(x => x.AvatarFile).ValidAvatar(true);
     }
 }

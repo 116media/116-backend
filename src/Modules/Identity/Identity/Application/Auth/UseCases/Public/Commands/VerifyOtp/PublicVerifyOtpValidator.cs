@@ -20,11 +20,8 @@ public class PublicVerifyOtpValidator : AbstractValidator<PublicVerifyOtpCommand
     /// </summary>
     public PublicVerifyOtpValidator()
     {
-        // Email validation
-        RuleFor(x => x.Email).EmailValidation();
-        // OTP code validation
-        RuleFor(x => x.Code).OtpCodeValidation();
-        // Purpose validation
-        RuleFor(x => x.Purpose).OtpPurposeValidation();
+        RuleFor(x => x.Email).ValidEmail();
+        RuleFor(x => x.Code).ValidOtpCode();
+        RuleFor(x => x.Purpose).ValidOtpPurpose();
     }
 }

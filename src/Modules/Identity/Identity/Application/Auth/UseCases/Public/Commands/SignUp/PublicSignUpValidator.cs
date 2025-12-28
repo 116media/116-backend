@@ -20,11 +20,8 @@ public class PublicSignUpValidator : AbstractValidator<PublicSignUpCommand>
     /// </summary>
     public PublicSignUpValidator()
     {
-        // Email validation
-        RuleFor(x => x.Email).EmailValidation();
-        // Username validation - alphanumeric with spaces and hyphens, min 3 chars
-        RuleFor(x => x.UserName).UsernameValidation();
-        // Password validation - strong password requirements
-        RuleFor(x => x.Password).PasswordValidation();
+        RuleFor(x => x.Email).ValidEmail();
+        RuleFor(x => x.UserName).ValidUsername();
+        RuleFor(x => x.Password).ValidPassword();
     }
 }

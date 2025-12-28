@@ -17,7 +17,7 @@ public class AdminLoginValidator : AbstractValidator<AdminLoginCommand>
     /// </remarks>
     public AdminLoginValidator()
     {
-        RuleFor(x => x.Email).EmailValidation();
+        RuleFor(x => x.Email).ValidEmail();
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Password cannot be empty.");
     }

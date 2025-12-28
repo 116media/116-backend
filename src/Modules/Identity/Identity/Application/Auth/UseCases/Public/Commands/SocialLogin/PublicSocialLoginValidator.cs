@@ -22,15 +22,11 @@ public class PublicSocialLoginValidator : AbstractValidator<PublicSocialLoginCom
     /// </summary>
     public PublicSocialLoginValidator()
     {
-        // Email validation
-        RuleFor(x => x.Email).EmailValidation();
-        // Username validation
-        RuleFor(x => x.UserName).UsernameValidation();
-        // Avatar URL validation (optional)
+        RuleFor(x => x.Email).ValidEmail();
+        RuleFor(x => x.UserName).ValidUsername();
         RuleFor(x => x.AvatarUrl)
-            .Must(predicate: UserValidationRules.BeValidUrl)
+            .Must(predicate: ValidationUtils.ValidUrl)
             .WithMessage("Avatar must be a valid URL when provided");
-        // Provider validation - only Google and Facebook allowed
         RuleFor(x => x.Provider)
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty().WithMessage("Auth provider is required.")

@@ -18,7 +18,6 @@ public class PublicSetPasswordValidator : AbstractValidator<PublicSetPasswordCom
     /// </summary>
     public PublicSetPasswordValidator()
     {
-        // Password validation - strong password requirements
-        RuleFor(x => x.Password).PasswordValidation();
+        RuleFor(x => x.Password).ValidPassword();
     }
 }

@@ -18,7 +18,6 @@ public class PublicUpdateAvatarValidator : AbstractValidator<PublicUpdateAvatarC
     /// </summary>
     public PublicUpdateAvatarValidator()
     {
-        // Avatar file validation - required for this endpoint
-        RuleFor(x => x.AvatarFile).AvatarValidation(true);
+        RuleFor(x => x.AvatarFile).ValidAvatar(true);
     }
 }

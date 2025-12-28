@@ -20,11 +20,8 @@ public class PublicResetPasswordValidator : AbstractValidator<PublicResetPasswor
     /// </summary>
     public PublicResetPasswordValidator()
     {
-        // Email validation
-        RuleFor(x => x.Email).EmailValidation();
-        // OTP code validation
-        RuleFor(x => x.Code).OtpCodeValidation();
-        // New password validation - strong password requirements
-        RuleFor(x => x.NewPassword).PasswordValidation("New password");
+        RuleFor(x => x.Email).ValidEmail();
+        RuleFor(x => x.Code).ValidOtpCode();
+        RuleFor(x => x.NewPassword).ValidPassword("New password");
     }
 }

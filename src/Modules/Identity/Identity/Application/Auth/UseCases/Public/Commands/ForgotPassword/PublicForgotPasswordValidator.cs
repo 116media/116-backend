@@ -17,6 +17,6 @@ public class PublicForgotPasswordValidator : AbstractValidator<PublicForgotPassw
     /// </remarks>
     public PublicForgotPasswordValidator()
     {
-        RuleFor(x => x.Email).EmailValidation();
+        RuleFor(x => x.Email).ValidEmail();
     }
 }

@@ -19,9 +19,7 @@ public class PublicResendOtpValidator : AbstractValidator<PublicResendOtpCommand
     /// </summary>
     public PublicResendOtpValidator()
     {
-        // Email validation
-        RuleFor(x => x.Email).EmailValidation();
-        // Purpose validation - must be a valid enum value
-        RuleFor(x => x.Purpose).OtpPurposeValidation();
+        RuleFor(x => x.Email).ValidEmail();
+        RuleFor(x => x.Purpose).ValidOtpPurpose();
     }
 }
