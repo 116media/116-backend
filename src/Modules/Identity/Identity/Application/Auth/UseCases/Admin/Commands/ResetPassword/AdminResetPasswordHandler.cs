@@ -1,12 +1,6 @@
 using _116.Identity.Application.Auth.Repositories;
-using _116.Identity.Application.Auth.Services;
-using _116.Identity.Application.Shared.Errors;
-using _116.Identity.Application.Shared.Persistence;
-using _116.Identity.Application.Shared.Repositories;
-using _116.Identity.Domain.Entities;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword.Contracts;
 using _116.Identity.Domain.Enums;
-using _116.Identity.Domain.ValueObjects;
-using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword;
@@ -14,15 +8,11 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword;
 /// <summary>
 /// Handles the <see cref="AdminResetPasswordCommand" /> to reset admin user password using OTP verification.
 /// </summary>
-/// <param name="authRepository">Repository for user data access operations.</param>
+/// <param name="authFactory">Factory for handling admin user password reset logic.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
-/// <param name="passwordService">Service for password hashing operations.</param>
-/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminResetPasswordHandler(
-    IAuthRepository authRepository,
-    IOtpRepository otpRepository,
-    IPasswordService passwordService,
-    IIdentityUnitOfWork unitOfWork
+    IAdminResetPasswordAuthFactory authFactory,
+    IOtpRepository otpRepository
 ) : ICommandHandler<AdminResetPasswordCommand, AdminResetPasswordResult>
 {
     /// <summary>
@@ -42,33 +32,24 @@ public class AdminResetPasswordHandler(
         CancellationToken cancellationToken
     )
     {
-        // Normalize email using value object
-        var email = new Email(value: command.Email);
-        UserEntity? user =
-            await authRepository.GetUserWithRolesByEmailOrThrow(email: email, cancellationToken: cancellationToken);
-        // Validate user account status
-        authRepository.IsUserAdmin(user!);
-        authRepository.IsUserAccountActive(user!);
-        // Validate the OTP was already used for password reset
+        AdminResetPasswordAuthData authData = await authFactory.GetUserForResetAsync(
+            email: command.Email,
+            cancellationToken: cancellationToken
+        );
+
         await otpRepository.ValidateUsedOtpAsync(
-            userId: user!.Id,
+            userId: authData.User.Id,
             code: command.Code,
             purpose: EnumOtpPurpose.PasswordReset,
             cancellationToken: cancellationToken
         );
-        // Check if new password is different from old password
-        if (passwordService.Verify(password: command.NewPassword, hash: user.PasswordHash))
-        {
-            throw UserErrors.NewPasswordSameAsOld();
-        }
 
-        // Hash the new password
-        string hashedPassword = passwordService.Hash(password: command.NewPassword);
-        // Update user's password
-        user.UpdatePassword(newPasswordHash: hashedPassword);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-        return new AdminResetPasswordResult(
-            true
+        await authFactory.ResetPasswordAsync(
+            user: authData.User,
+            newPassword: command.NewPassword,
+            cancellationToken: cancellationToken
         );
+
+        return new AdminResetPasswordResult(true);
     }
 }
