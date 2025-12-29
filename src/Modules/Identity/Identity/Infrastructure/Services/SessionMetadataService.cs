@@ -9,22 +9,23 @@ namespace _116.Identity.Infrastructure.Services;
 /// <summary>
 /// Service for extracting session metadata from HTTP context using DeviceDetector.NET.
 /// </summary>
-public class SessionMetadataService : ISessionMetadataService
+/// <param name="httpContextAccessor">Accessor for the current HTTP context.</param>
+public class SessionMetadataService(IHttpContextAccessor httpContextAccessor) : ISessionMetadataService
 {
     /// <summary>
     /// Extracts the client's IP address from the HTTP context.
     /// </summary>
-    public string? ExtractIpAddress(HttpContext? httpContext)
+    public string? ExtractIpAddress()
     {
-        return httpContext?.Connection.RemoteIpAddress?.ToString();
+        return httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
     }
 
     /// <summary>
     /// Extracts the User-Agent header from the HTTP context.
     /// </summary>
-    public string? ExtractUserAgent(HttpContext? httpContext)
+    public string? ExtractUserAgent()
     {
-        return httpContext?.Request.Headers.UserAgent.FirstOrDefault();
+        return httpContextAccessor.HttpContext?.Request.Headers.UserAgent.FirstOrDefault();
     }
 
     /// <summary>
@@ -49,7 +50,7 @@ public class SessionMetadataService : ISessionMetadataService
             (not null, not null) => $"{client} - {os}",
             (not null, _) => client,
             (_, not null) => os,
-            _ => "Unknown"
+            _ => "unknown"
         };
     }
 }
