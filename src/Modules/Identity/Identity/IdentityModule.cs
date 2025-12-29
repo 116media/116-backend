@@ -3,6 +3,30 @@ using System.Text;
 using _116.Identity.Application.Auth.Exceptions.Handlers;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword.Contracts;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp.Contracts;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword.Contracts;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut.Contracts;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.Contracts;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.Contracts;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp.Contracts;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword.Contracts;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.SignOut;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.SignOut.Contracts;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contracts;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Authorizations.Extensions;
@@ -10,6 +34,14 @@ using _116.Identity.Application.Shared.Exceptions.Handlers;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
+using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.Contracts;
+using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile;
+using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile.Contracts;
+using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
+using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar.Contracts;
+using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
+using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
@@ -63,16 +95,11 @@ public static class IdentityModule
     /// </example>
     public static IServiceCollection AddIdentityModule(this IServiceCollection services)
     {
-        // Add services to the container.
-        // Api Endpoint services.
-        // Application UseCase services.
-        // DataSource - Infrastructure services.
-        // Register the database with base module infrastructure
         services.AddModuleDatabase(GetModuleOptions());
-        // Configure Mapster mappings for optimal performance
         UserMapper.Configure();
-        // Register Unit of Work for transaction management
+
         services.AddScoped<IIdentityUnitOfWork, IdentityUnitOfWork>();
+
         // Register user management services
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IPasswordService, PasswordService>();
@@ -83,10 +110,32 @@ public static class IdentityModule
         services.AddScoped<IOtpRepository, OtpRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<ISessionMetadataService, SessionMetadataService>();
-        // Register data seeder for initial user data population
+
+        // Register authentication factories
+        services.AddScoped<IPublicLoginAuthFactory, PublicLoginAuthFactory>();
+        services.AddScoped<IPublicLoginSessionFactory, PublicLoginSessionFactory>();
+        services.AddScoped<IPublicSignUpAuthFactory, PublicSignUpAuthFactory>();
+        services.AddScoped<IPublicSignUpSessionFactory, PublicSignUpSessionFactory>();
+        services.AddScoped<IAdminLoginAuthFactory, AdminLoginAuthFactory>();
+        services.AddScoped<IAdminLoginSessionFactory, AdminLoginSessionFactory>();
+        services.AddScoped<IPublicSocialLoginAuthFactory, PublicSocialLoginAuthFactory>();
+        services.AddScoped<IPublicSocialLoginSessionFactory, PublicSocialLoginSessionFactory>();
+        services.AddScoped<IPublicUpdateProfileAuthFactory, PublicUpdateProfileAuthFactory>();
+        services.AddScoped<IAdminUpdateProfileAuthFactory, AdminUpdateProfileAuthFactory>();
+        services.AddScoped<IPublicUpdateAvatarAuthFactory, PublicUpdateAvatarAuthFactory>();
+        services.AddScoped<IAdminUpdateAvatarAuthFactory, AdminUpdateAvatarAuthFactory>();
+        services.AddScoped<IPublicResetPasswordAuthFactory, PublicResetPasswordAuthFactory>();
+        services.AddScoped<IAdminResetPasswordAuthFactory, AdminResetPasswordAuthFactory>();
+        services.AddScoped<IPublicForgotPasswordOtpFactory, PublicForgotPasswordOtpFactory>();
+        services.AddScoped<IAdminForgotPasswordOtpFactory, AdminForgotPasswordOtpFactory>();
+        services.AddScoped<IPublicResendOtpFactory, PublicResendOtpFactory>();
+        services.AddScoped<IAdminResendOtpFactory, AdminResendOtpFactory>();
+        services.AddScoped<IPublicSignOutSessionFactory, PublicSignOutSessionFactory>();
+        services.AddScoped<IAdminSignOutSessionFactory, AdminSignOutSessionFactory>();
+
         services.AddScoped<IDataSeeder, SuperAdminSeeder>();
         services.AddScoped<IDataSeeder, VisitorRoleSeeder>();
-        // Configure JWT Authentication
+
         var (secret, issuer, audience, _) = AppEnvironment.Jwt();
         services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
@@ -101,11 +150,12 @@ public static class IdentityModule
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!)),
                 ClockSkew = TimeSpan.Zero
             };
-            // Configure custom JWT Bearer events for consistent error handling
+
             options.ConfigureJwtBearerEvents();
         });
-        // Configure Authorization using centralized configuration
+
         services.AddIdentityModuleAuthorization();
+
         // Register custom exception handlers for this module
         services.AddSingleton<IExceptionStrategy, AccountInactiveExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, AccountNotVerifiedExceptionHandler>();
@@ -113,6 +163,7 @@ public static class IdentityModule
         services.AddSingleton<IExceptionStrategy, OtpAttemptsLimitExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, OtpExpirationExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, AccessDeniedExceptionHandler>();
+
         return services;
     }
 
@@ -131,10 +182,6 @@ public static class IdentityModule
     /// </example>
     public static IApplicationBuilder UseIdentityModule(this IApplicationBuilder app)
     {
-        // Configure Http request pipeline.
-        // Use Api endpoint services.
-        // Use application UseCase services.
-        // Use DataSource - Infrastructure services.
         app.UseModuleDatabase(GetModuleOptions());
         return app;
     }
