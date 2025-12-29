@@ -1,10 +1,7 @@
-using _116.Identity.Application.Auth.Repositories;
-using _116.Identity.Application.Auth.Services;
-using _116.Identity.Application.Shared.Persistence;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp.Contracts;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
-using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
@@ -12,11 +9,11 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
 /// <summary>
 /// Handles the <see cref="PublicResendOtpCommand" /> to resend OTP codes for public users.
 /// </summary>
+/// <param name="otpFactory">Factory for handling OTP resend logic.</param>
+/// <param name="authRepository">Repository for user data access operations.</param>
 public class PublicResendOtpHandler(
-    IAuthRepository authRepository,
-    IOtpRepository otpRepository,
-    IOtpService otpService,
-    IIdentityUnitOfWork unitOfWork
+    IPublicResendOtpFactory otpFactory,
+    IAuthRepository authRepository
 ) : ICommandHandler<PublicResendOtpCommand, PublicResendOtpResult>
 {
     /// <summary>
@@ -42,14 +39,13 @@ public class PublicResendOtpHandler(
         UserEntity? user =
             await authRepository.GetUserWithRolesByEmailOrThrow(email: email, cancellationToken: cancellationToken);
         authRepository.IsUserAccountActive(user!);
-        // Invalidate existing OTPs for this purpose
-        await otpRepository.InvalidateExistingOtpsAsync(userId: user!.Id, purpose: purpose,
-            cancellationToken: cancellationToken);
-        // Create new OTP
-        OtpEntity newOtp = otpService.CreateOtp(userId: user.Id, purpose: purpose);
-        // Save the new OTP
-        await otpRepository.AddAsync(otp: newOtp, cancellationToken: cancellationToken);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        await otpFactory.ResendOtpAsync(
+            userId: user!.Id,
+            purpose: purpose,
+            cancellationToken: cancellationToken
+        );
+
         return new PublicResendOtpResult(true);
     }
 }
