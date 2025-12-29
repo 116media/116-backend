@@ -1,6 +1,4 @@
-using _116.Identity.Application.Auth.Services;
-using _116.Identity.Application.Session.Repositories;
-using _116.Identity.Application.Shared.Persistence;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.SignOut.Contracts;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
@@ -10,11 +8,11 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignOut;
 /// <summary>
 /// Handles the <see cref="PublicSignOutCommand" /> to sign out a user from current device.
 /// </summary>
+/// <param name="sessionFactory">Factory for handling user sign-out session management.</param>
+/// <param name="authRepository">Repository for user data access operations.</param>
 public class PublicSignOutHandler(
-    IAuthRepository authRepository,
-    ISessionRepository sessionRepository,
-    IRefreshTokenService refreshTokenService,
-    IIdentityUnitOfWork unitOfWork
+    IPublicSignOutSessionFactory sessionFactory,
+    IAuthRepository authRepository
 ) : ICommandHandler<PublicSignOutCommand, PublicSignOutResult>
 {
     /// <summary>
@@ -25,23 +23,14 @@ public class PublicSignOutHandler(
     {
         UserEntity? user =
             await authRepository.FindUserByIdOrThrow(userId: command.UserId, cancellationToken: cancellationToken);
-        // Validate user account status
+
         authRepository.IsUserAccountActive(user!);
 
-        string refreshTokenHash = refreshTokenService.HashRefreshToken(refreshToken: command.RefreshToken);
-        SessionEntity? session = await sessionRepository.GetByRefreshTokenHashAsync(
-            refreshTokenHash: refreshTokenHash,
+        await sessionFactory.SignOutAsync(
+            refreshToken: command.RefreshToken,
             cancellationToken: cancellationToken
         );
 
-        if (session != null)
-        {
-            await sessionRepository.DeleteAsync(sessionId: session.Id, cancellationToken: cancellationToken);
-            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-        }
-
-        // Always return success - logout is idempotent
-        // If session doesn't exist, user is effectively already logged out
         return new PublicSignOutResult(true);
     }
 }
