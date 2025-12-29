@@ -1,10 +1,7 @@
-using _116.Identity.Application.Auth.Repositories;
-using _116.Identity.Application.Auth.Services;
-using _116.Identity.Application.Shared.Persistence;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp.Contracts;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
-using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp;
@@ -12,11 +9,11 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp;
 /// <summary>
 /// Handles the <see cref="AdminResendOtpCommand" /> to resend OTP codes for admin users.
 /// </summary>
+/// <param name="otpFactory">Factory for handling admin OTP resend logic.</param>
+/// <param name="authRepository">Repository for user data access operations.</param>
 public class AdminResendOtpHandler(
-    IAuthRepository authRepository,
-    IOtpRepository otpRepository,
-    IOtpService otpService,
-    IIdentityUnitOfWork unitOfWork
+    IAdminResendOtpFactory otpFactory,
+    IAuthRepository authRepository
 ) : ICommandHandler<AdminResendOtpCommand, AdminResendOtpResult>
 {
     /// <summary>
@@ -41,17 +38,16 @@ public class AdminResendOtpHandler(
 
         UserEntity? user =
             await authRepository.GetUserWithRolesByEmailOrThrow(email: email, cancellationToken: cancellationToken);
-        // Validate admin account status
+
         authRepository.IsUserAdmin(user!);
         authRepository.IsUserAccountActive(user!);
-        // Invalidate existing OTPs for this purpose
-        await otpRepository.InvalidateExistingOtpsAsync(userId: user!.Id, purpose: purpose,
-            cancellationToken: cancellationToken);
-        // Create new OTP
-        OtpEntity newOtp = otpService.CreateOtp(userId: user.Id, purpose: purpose);
-        // Save the new OTP
-        await otpRepository.AddAsync(otp: newOtp, cancellationToken: cancellationToken);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        await otpFactory.ResendOtpAsync(
+            userId: user!.Id,
+            purpose: purpose,
+            cancellationToken: cancellationToken
+        );
+
         return new AdminResendOtpResult(true);
     }
 }
