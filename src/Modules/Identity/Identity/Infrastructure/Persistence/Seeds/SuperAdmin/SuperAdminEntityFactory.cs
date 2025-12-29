@@ -17,14 +17,14 @@ public class SuperAdminEntityFactory(IPasswordService passwordService)
     {
         string password = SuperAdminConfiguration.GetPassword();
         string hashedPassword = passwordService.Hash(password: password);
+
         var superAdminUser = UserEntity.Create(
             Guid.NewGuid(),
             email: SuperAdminConfiguration.Email,
             userName: SuperAdminConfiguration.Username,
             passwordHash: hashedPassword
         );
-        // Configure Super Admin as verified and active
-        // IsLoggedIn remains false as per specification
+
         superAdminUser.MarkAsVerified();
         superAdminUser.Activate();
         return superAdminUser;
