@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Http;
-
 namespace _116.Identity.Application.Session.Services;
 
 /// <summary>
@@ -10,16 +8,14 @@ public interface ISessionMetadataService
     /// <summary>
     /// Extracts the client's IP address from the HTTP context.
     /// </summary>
-    /// <param name="httpContext">The HTTP context containing connection information.</param>
     /// <returns>The IP address as a string, or null if unavailable.</returns>
-    string? ExtractIpAddress(HttpContext? httpContext);
+    string? ExtractIpAddress();
 
     /// <summary>
     /// Extracts the User-Agent header from the HTTP context.
     /// </summary>
-    /// <param name="httpContext">The HTTP context containing request headers.</param>
     /// <returns>The User-Agent string, or null if unavailable.</returns>
-    string? ExtractUserAgent(HttpContext? httpContext);
+    string? ExtractUserAgent();
 
     /// <summary>
     /// Parses a device name from the User-Agent string.
