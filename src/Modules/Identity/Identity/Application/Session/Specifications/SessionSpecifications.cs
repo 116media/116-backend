@@ -133,3 +133,51 @@ public class ValidRefreshTokenSessionSpecification(string refreshTokenHash) : Sp
         return tokenSpec.And(other: activeSpec).ToExpression();
     }
 }
+
+/// <summary>
+/// Specification that matches sessions by IP address (partial match).
+/// Used for filtering sessions based on IP address patterns.
+/// </summary>
+public class SessionByIpAddressSpecification(string ipAddress) : Specification<SessionEntity>
+{
+    public override Expression<Func<SessionEntity, bool>> ToExpression()
+    {
+        return session => session.IpAddress!.Contains(ipAddress);
+    }
+}
+
+/// <summary>
+/// Specification that matches sessions by device name (partial match).
+/// Used for filtering sessions based on device name patterns.
+/// </summary>
+public class SessionByDeviceNameSpecification(string deviceName) : Specification<SessionEntity>
+{
+    public override Expression<Func<SessionEntity, bool>> ToExpression()
+    {
+        return session => session.DeviceName!.Contains(deviceName, StringComparison.CurrentCultureIgnoreCase);
+    }
+}
+
+/// <summary>
+/// Specification that matches sessions created after a specific date.
+/// Used for filtering sessions by minimum creation date.
+/// </summary>
+public class SessionCreatedAfterSpecification(DateTime fromDate) : Specification<SessionEntity>
+{
+    public override Expression<Func<SessionEntity, bool>> ToExpression()
+    {
+        return session => session.CreatedAt >= fromDate;
+    }
+}
+
+/// <summary>
+/// Specification that matches sessions created before a specific date.
+/// Used for filtering sessions by maximum creation date.
+/// </summary>
+public class SessionCreatedBeforeSpecification(DateTime toDate) : Specification<SessionEntity>
+{
+    public override Expression<Func<SessionEntity, bool>> ToExpression()
+    {
+        return session => session.CreatedAt <= toDate;
+    }
+}
