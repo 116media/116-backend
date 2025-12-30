@@ -40,4 +40,12 @@ public static class AuthenticationErrorMessage
     {
         return "Authentication required. Please provide a valid JWT Bearer token";
     }
+
+    /// <summary>
+    /// Error message indicating that the provided refresh token is invalid or has expired.
+    /// </summary>
+    public static string InvalidRefreshToken()
+    {
+        return "Invalid or expired refresh token. Please log in again";
+    }
 }
