@@ -18,6 +18,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="ClosedXML" Version="0.105.0"/>
+        <PackageReference Include="CsvHelper" Version="33.1.0"/>
         <PackageReference Include="DeviceDetector.NET" Version="6.4.7"/>
         <PackageReference Include="FluentValidation" Version="12.0.0"/>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11"/>
