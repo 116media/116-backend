@@ -46,6 +46,13 @@ public class SessionEntity : Aggregate<Guid>
     public string? DeviceName { get; private set; }
 
     /// <summary>
+    /// Client platform identifier sent from the application via Client-Platform header.
+    /// Allowed values: "ios-mobile", "android-mobile", "browser-web", "pwa-browser"
+    /// </summary>
+    [MaxLength(length: SessionConstants.MaxClientPlatformLength)]
+    public string? ClientPlatform { get; private set; }
+
+    /// <summary>
     /// Whether this session has been deleted (logged out/revoked).
     /// Sessions are soft-deleted to keep historical data for analytics.
     /// </summary>
@@ -71,7 +78,8 @@ public class SessionEntity : Aggregate<Guid>
         DateTime expiresAt,
         string? ipAddress = null,
         string? userAgent = null,
-        string? deviceName = null
+        string? deviceName = null,
+        string? clientPlatform = null
     )
     {
         return new SessionEntity
@@ -82,7 +90,8 @@ public class SessionEntity : Aggregate<Guid>
             ExpiresAt = expiresAt,
             IpAddress = ipAddress,
             UserAgent = userAgent,
-            DeviceName = deviceName
+            DeviceName = deviceName,
+            ClientPlatform = clientPlatform
         };
     }
 
@@ -104,7 +113,7 @@ public class SessionEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Soft deletes this session (for logout).
+    /// Softly deletes this session (for logout).
     /// Keeps the session data for analytics but marks it as deleted.
     /// </summary>
     public void Delete()
