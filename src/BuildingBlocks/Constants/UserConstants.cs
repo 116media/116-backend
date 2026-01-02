@@ -31,11 +31,6 @@ public static class UserConstants
     public const bool DefaultIsActive = true;
 
     /// <summary>
-    /// Default login status for new users.
-    /// </summary>
-    public const bool DefaultIsLoggedIn = false;
-
-    /// <summary>
     /// Verification status for external authentication users (pre-verified).
     /// </summary>
     public const bool ExternalAuthIsVerified = true;
@@ -49,16 +44,6 @@ public static class UserConstants
     /// Active status when the user account is deactivated.
     /// </summary>
     public const bool DeactivatedStatus = false;
-
-    /// <summary>
-    /// Login status when the user is logged in.
-    /// </summary>
-    public const bool LoggedInStatus = true;
-
-    /// <summary>
-    /// Login status when the user is logged out.
-    /// </summary>
-    public const bool LoggedOutStatus = false;
 
     /// <summary>
     /// Verification status after email is updated (requires re-verification).
@@ -76,11 +61,6 @@ public static class UserConstants
     /// Maximum allowed length for country names.
     /// </summary>
     public const int MaxCountryNameLength = 100;
-
-    /// <summary>
-    /// Maximum allowed length for country flag URLs.
-    /// </summary>
-    public const int MaxCountryFlagUrlLength = 500;
 
     /// <summary>
     /// Maximum allowed length for country ISO codes.

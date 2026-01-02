@@ -1,5 +1,5 @@
-using _116.Shared.Application.Exceptions;
 using _116.Core.Application.Shared.Errors.Messages;
+using _116.Shared.Application.Exceptions;
 
 namespace _116.Core.Application.Shared.Errors;
 

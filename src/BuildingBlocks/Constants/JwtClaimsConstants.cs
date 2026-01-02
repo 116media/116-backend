@@ -2,7 +2,7 @@ namespace _116.BuildingBlocks.Constants;
 
 /// <summary>
 /// Provides JWT (JSON Web Token) related constants including default expiration times,
-/// custom claim types for roles, permissions, and user status flags used for authentication and authorization.
+/// custom claim types for roles, permissions, and user status used for authentication and authorization.
 /// </summary>
 public static class JwtClaimsConstants
 {

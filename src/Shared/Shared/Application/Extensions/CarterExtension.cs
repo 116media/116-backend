@@ -1,5 +1,7 @@
 using System.Reflection;
+
 using Carter;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace _116.Shared.Application.Extensions;

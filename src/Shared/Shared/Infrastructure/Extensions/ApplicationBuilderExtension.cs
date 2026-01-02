@@ -1,4 +1,5 @@
 using _116.Shared.Infrastructure.Seed;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

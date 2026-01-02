@@ -1,4 +1,5 @@
 using _116.Shared.Contracts.Application.CQRS;
+
 using FluentValidation;
 using FluentValidation.Results;
 

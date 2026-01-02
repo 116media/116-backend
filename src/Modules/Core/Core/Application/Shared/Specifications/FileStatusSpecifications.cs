@@ -1,6 +1,7 @@
-using _116.Shared.Application.Specifications;
-using _116.Core.Domain.Entities;
 using System.Linq.Expressions;
+
+using _116.Core.Domain.Entities;
+using _116.Shared.Application.Specifications;
 
 namespace _116.Core.Application.Shared.Specifications;
 

@@ -20,9 +20,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "src\Modules\Core\Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks", "src\BuildingBlocks\BuildingBlocks.csproj", "{95240BC0-93BA-4CA5-96E9-04E8E7361AD2}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Auth", "Auth", "{673BCA88-E684-466A-81F9-7A59E7ADC1BC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity", "Identity", "{673BCA88-E684-466A-81F9-7A59E7ADC1BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth", "src\Modules\Auth\Auth\Auth.csproj", "{21606E26-637F-4C00-AD4B-C3CFC3DD4562}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity", "src\Modules\Identity\Identity\Identity.csproj", "{21606E26-637F-4C00-AD4B-C3CFC3DD4562}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

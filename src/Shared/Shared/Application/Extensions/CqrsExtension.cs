@@ -1,8 +1,11 @@
 using System.Reflection;
+
 using _116.Shared.Application.Decorators;
 using _116.Shared.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
+
 using FluentValidation;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace _116.Shared.Application.Extensions;

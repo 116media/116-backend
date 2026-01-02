@@ -7,6 +7,9 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
+# ReSharper properties
+resharper_xmldoc_indent_text = ZeroIndent
+
 # Code files
 [*.{cs,csx,vb,vbx}]
 indent_style = space
@@ -49,6 +52,11 @@ end_of_line = crlf
 [*.cs]
 
 # .NET Code Style Rules
+
+# Organize usings
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = true
+csharp_using_directive_placement = outside_namespace:silent
 
 # this and Me preferences
 dotnet_style_qualification_for_field = false
@@ -107,7 +115,7 @@ csharp_style_throw_expression = true
 csharp_style_conditional_delegate_call = true
 
 # Modifier preferences
-csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async
+csharp_preferred_modifier_order = public, private, protected, internal, static, extern, new, virtual, abstract, sealed, override, readonly, unsafe, volatile, async
 
 # Expression-level preferences
 csharp_prefer_braces = true

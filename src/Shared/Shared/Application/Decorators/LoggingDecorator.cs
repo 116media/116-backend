@@ -1,5 +1,7 @@
 using System.Diagnostics;
+
 using _116.Shared.Contracts.Application.CQRS;
+
 using Microsoft.Extensions.Logging;
 
 namespace _116.Shared.Application.Decorators;
