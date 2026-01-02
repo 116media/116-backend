@@ -19,13 +19,13 @@ public static class UserMapper
     /// </summary>
     public static void Configure()
     {
-        // Configure UserEntity to UserResponseDto - leverage automatic mapping for matching properties
+        // Configure UserEntity to UserResponseDto
         TypeAdapterConfig<UserEntity, UserResponseDto>
             .NewConfig()
             .Map(dest => dest.Roles, _ => new List<RoleDto>())
             .Map(dest => dest.Permissions, _ => new List<PermissionDto>())
-            .Map(dest => dest.Avatar, _ => (FileDto?)null) // Null until core file implemented
-            .Map(dest => dest.AuthProvider, src => src.AuthProvider.ToString()) // Convert enum to string
+            .Map(dest => dest.Avatar, _ => (FileDto?)null)
+            .Map(dest => dest.AuthProvider, src => src.AuthProvider.ToString())
             .Compile(); // Compile for performance
     }
 
@@ -45,9 +45,7 @@ public static class UserMapper
         FileDto? avatar = null
     )
     {
-        // Use base mapping then override specific collections and avatar - avoids repetitive property mapping
         var dto = user.Adapt<UserResponseDto>();
-        // Only override the collections and avatar that can't be auto-mapped
         return dto with { Roles = roles, Permissions = permissions, Avatar = avatar };
     }
 
