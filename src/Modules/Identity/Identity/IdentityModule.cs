@@ -29,6 +29,8 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
+using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken;
+using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken.Contracts;
 using _116.Identity.Application.Shared.Authorizations.Extensions;
 using _116.Identity.Application.Shared.Exceptions.Handlers;
 using _116.Identity.Application.Shared.Mappers;
@@ -97,6 +99,7 @@ public static class IdentityModule
     {
         services.AddModuleDatabase(GetModuleOptions());
         UserMapper.Configure();
+        SessionMapper.Configure();
 
         services.AddScoped<IIdentityUnitOfWork, IdentityUnitOfWork>();
 
@@ -110,6 +113,8 @@ public static class IdentityModule
         services.AddScoped<IOtpRepository, OtpRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<ISessionMetadataService, SessionMetadataService>();
+        services.AddScoped<IDevicePlatformClassifier, DevicePlatformClassifier>();
+        services.AddScoped<ISessionExportService, SessionExportService>();
 
         // Register authentication factories
         services.AddScoped<IPublicLoginAuthFactory, PublicLoginAuthFactory>();
@@ -132,6 +137,7 @@ public static class IdentityModule
         services.AddScoped<IAdminResendOtpFactory, AdminResendOtpFactory>();
         services.AddScoped<IPublicSignOutSessionFactory, PublicSignOutSessionFactory>();
         services.AddScoped<IAdminSignOutSessionFactory, AdminSignOutSessionFactory>();
+        services.AddScoped<IPublicRefreshTokenFactory, PublicRefreshTokenFactory>();
 
         services.AddScoped<IDataSeeder, SuperAdminSeeder>();
         services.AddScoped<IDataSeeder, VisitorRoleSeeder>();
@@ -176,7 +182,7 @@ public static class IdentityModule
     /// Applies pending EF Core migrations and executes the data seeder for user management.
     /// </remarks>
     /// <example>
-    ///     <code>
+    /// <code>
     /// app.UseIdentityModule();
     /// </code>
     /// </example>
