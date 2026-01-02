@@ -30,15 +30,12 @@ public class ResourceNotFoundMiddleware
     {
         await _next(context);
 
-        // If no response has been written yet, check for error status codes
         if (!context.Response.HasStarted)
         {
             switch (context.Response.StatusCode)
             {
-                // If the response is 404, throw ResourceNotFoundException
                 case StatusCodes.Status404NotFound:
-                    throw new ResourceNotFoundException(context.Request.Path, context.Request.Method);
-                // If the response is 405, throw MethodNotAllowedException
+                    throw new ResourceNotFoundException(path: context.Request.Path, method: context.Request.Method);
                 case StatusCodes.Status405MethodNotAllowed:
                     throw new MethodNotAllowedException(context.Request.Path, context.Request.Method);
             }
