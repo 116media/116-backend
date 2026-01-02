@@ -12,9 +12,7 @@ namespace _116.Identity.Application.User.UseCases.Public.Queries.GetOwnProfile;
 /// Only authenticated users can access their own profile information.
 /// The user ID is extracted from the JWT token at the endpoint level.
 /// </remarks>
-public record PublicGetOwnProfileQuery(
-    Guid UserId
-) : IQuery<PublicGetOwnProfileResult>;
+public record PublicGetOwnProfileQuery(Guid UserId) : IQuery<PublicGetOwnProfileResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicGetOwnProfileQuery" /> containing complete user profile data.
