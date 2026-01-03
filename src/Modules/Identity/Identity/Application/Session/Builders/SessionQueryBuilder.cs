@@ -1,6 +1,6 @@
 using _116.Identity.Application.Session.Specifications;
-using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Specifications;
 
 namespace _116.Identity.Application.Session.Builders;
@@ -29,10 +29,15 @@ public class SessionQueryBuilder : ISessionQueryBuilder
             return this;
         }
 
-        Specification<SessionEntity> statusSpec = status.ToLower() switch
+        string normalizedStatus = status.ToLower();
+        Specification<SessionEntity> statusSpec = normalizedStatus switch
         {
-            SessionConstants.Status.Active => new SessionIsActiveSpecification(),
-            SessionConstants.Status.Expired => new SessionIsExpiredSpecification(),
+            _ when normalizedStatus.Equals(nameof(EnumSessionStatus.Active),
+                    comparisonType: StringComparison.InvariantCultureIgnoreCase) =>
+                new SessionIsActiveSpecification(),
+            _ when normalizedStatus.Equals(nameof(EnumSessionStatus.Expired),
+                    comparisonType: StringComparison.InvariantCultureIgnoreCase) =>
+                new SessionIsExpiredSpecification(),
             _ => null!
         };
 
