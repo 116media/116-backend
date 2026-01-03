@@ -82,7 +82,7 @@ public class PublicRefreshTokenFactory(
     /// </returns>
     private (string token, string hash, DateTime expiresAt) GenerateNewRefreshToken()
     {
-        var (_, _, _, refreshTokenExpirationMinutes) = AppEnvironment.Jwt();
+        var (_, _, _, _, refreshTokenExpirationMinutes) = AppEnvironment.Jwt();
 
         string newRefreshToken = refreshTokenService.GenerateRefreshToken();
         string newRefreshTokenHash = refreshTokenService.HashRefreshToken(refreshToken: newRefreshToken);
