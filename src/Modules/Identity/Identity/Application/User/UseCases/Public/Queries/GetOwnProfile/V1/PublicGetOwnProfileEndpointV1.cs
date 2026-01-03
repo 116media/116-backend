@@ -1,9 +1,9 @@
 using System.Security.Claims;
 
-using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Application.User.Constants;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -39,30 +39,30 @@ public class PublicGetOwnProfileEndpointV1 : ICarterModule
     {
         RouteGroupBuilder group = app
             .MapApiVersionGroup(1)
-            .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Profile}")
-            .WithTags($"{IdentityConstants.Public}::{AuthRouteConstants.Profile}");
-        group.MapGet("/", async (
+            .MapGroup($"{IdentityConstants.Public}/{UserRouteConstants.Endpoint}")
+            .WithTags($"{IdentityConstants.Public}::{UserRouteConstants.Endpoint}");
+
+        group.MapGet(pattern: UserRouteConstants.Profile, async (
                 ClaimsPrincipal user,
                 IAuthRepository authRepository,
                 IDispatcher dispatcher
             ) =>
             {
-                // Extract user ID from JWT token claims
                 Guid userId = authRepository.GetUserIdFromClaims(user: user);
-                // Send the query to get user profile
+
                 var query = new PublicGetOwnProfileQuery(UserId: userId);
                 PublicGetOwnProfileResult result = await dispatcher.Send(request: query);
-                // Adapt the result to the response type
+
                 var response = new PublicGetOwnProfileResponse(
                     User: result.User
                 );
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: PublicGetOwnProfileMetaField.GetOwnProfile.Name)
             .WithSummary(summary: PublicGetOwnProfileMetaField.GetOwnProfile.Summary)
             .WithDescription(description: PublicGetOwnProfileMetaField.GetOwnProfile.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .Produces<PublicGetOwnProfileResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
