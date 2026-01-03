@@ -1,4 +1,3 @@
-using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts;
 using _116.Identity.Application.Session.Repositories;
@@ -6,6 +5,7 @@ using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Results;
+using _116.Shared.Application.Configurations;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 
@@ -45,9 +45,11 @@ public class AdminLoginSessionFactory(
             authProvider: user.AuthProvider
         );
 
+        var (_, _, _, _, refreshTokenExpirationMinutes) = AppEnvironment.Jwt();
+
         string refreshToken = refreshTokenService.GenerateRefreshToken();
         string refreshTokenHash = refreshTokenService.HashRefreshToken(refreshToken: refreshToken);
-        DateTime refreshTokenExpiresAt = DateTime.UtcNow.AddDays(value: SessionConstants.RefreshTokenExpirationDays);
+        DateTime refreshTokenExpiresAt = DateTime.UtcNow.AddMinutes(int.Parse(refreshTokenExpirationMinutes!));
 
         string? ipAddress = sessionMetadataService.ExtractIpAddress();
         string? userAgent = sessionMetadataService.ExtractUserAgent();
