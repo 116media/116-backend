@@ -1,6 +1,5 @@
 using _116.Shared.Application.Services;
 using _116.Shared.Domain;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,10 +29,7 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
     /// <param name="eventData">Contextual information about the save operation.</param>
     /// <param name="result">The interception result.</param>
     /// <returns>The modified interception result.</returns>
-    public override InterceptionResult<int> SavingChanges(
-        DbContextEventData eventData,
-        InterceptionResult<int> result
-    )
+    public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
         DispatchDomainEvents(eventData.Context).GetAwaiter().GetResult();
         return base.SavingChanges(eventData, result);
@@ -72,19 +68,20 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
     /// </remarks>
     private async Task DispatchDomainEvents(DbContext? eventDataContext)
     {
-        if (eventDataContext == null) return;
+        if (eventDataContext == null)
+        {
+            return;
+        }
 
         // Step 1: Get aggregates with domain events
-        List<IAggregate> aggregates = eventDataContext.ChangeTracker
-            .Entries<IAggregate>()
+        List<IAggregate> aggregates = eventDataContext
+            .ChangeTracker.Entries<IAggregate>()
             .Where(entry => entry.Entity.DomainEvents.Any())
             .Select(entry => entry.Entity)
             .ToList();
 
         // Step 2: Extract and flatten domain events
-        List<IDomainEvent> domainEvents = aggregates
-            .SelectMany(aggregate => aggregate.DomainEvents)
-            .ToList();
+        List<IDomainEvent> domainEvents = aggregates.SelectMany(aggregate => aggregate.DomainEvents).ToList();
 
         // Step 3: Clear domain events from aggregates
         aggregates.ForEach(aggregate => aggregate.ClearDomainEvents());
