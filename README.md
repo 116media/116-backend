@@ -18,7 +18,7 @@ To get started with development, run the setup script:
 ```
 
 This script will:
-- 🔍 **Check for dotnet-format** and install it if needed
+- 🔍 **Check for csharpier** and install it if needed
 - 🔧 **Configure git hooks** for automatic code quality checks
 - ✅ **Set up your development environment** with all necessary tools
 
@@ -133,27 +133,27 @@ The project includes comprehensive formatting configuration that works automatic
 This project uses automated code quality checks to maintain consistent standards:
 
 #### 🎯 Pre-commit Hook
-- 🎨 **Automatic formatting** of staged C# files using `dotnet-format`
+- 🎨 **Automatic formatting** of staged C# files using `csharpier`
 - 📝 **Re-stages formatted files** automatically
 - ✅ **Ensures consistent code style** before commits
 
 #### 🔒 Pre-push Hook
 - 🛡️ **Branch name validation** enforcing naming conventions
 - 🚫 **Blocks direct pushes** to protected branches (`main`, `develop`, `master`)
-- 📏 **Code style verification** using `dotnet format --verify-no-changes`
-- 📐 **Whitespace formatting checks** to maintain clean code
+- 📏 **Code formatting verification** using `dotnet csharpier --check`
+- 📐 **Ensures code formatting consistency** across the codebase
 
-#### 🛠️ Manual dotnet-format Commands
+#### 🛠️ Manual csharpier Commands
 
 ```bash
 # Format all C# files in the project
-dotnet format
+dotnet csharpier .
 
 # Format specific file
-dotnet format --include path/to/file.cs
+dotnet csharpier path/to/file.cs
 
 # Check for formatting issues without fixing them
-dotnet format --verify-no-changes
+dotnet csharpier --check .
 
 # Format only staged files (used by pre-commit hook)
 ./scripts/formatting.sh --staged-only
