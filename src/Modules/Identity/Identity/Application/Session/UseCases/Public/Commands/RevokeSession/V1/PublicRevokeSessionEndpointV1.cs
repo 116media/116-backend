@@ -29,7 +29,7 @@ public class PublicRevokeSessionEndpointV1 : ICarterModule
 {
     /// <summary>
     /// Configures the revoke session route within the API pipeline.
-    /// Maps the <c>/api/v1/public/sessions/{id:guid}/revoke</c> endpoint to handle session revocation requests.
+    /// Maps the <c>/api/v1/public/sessions/revoke/{id: guid}</c> endpoint to handle session revocation requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -39,7 +39,7 @@ public class PublicRevokeSessionEndpointV1 : ICarterModule
             .MapGroup($"{IdentityConstants.Public}/{SessionRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
 
-        group.MapPost($"{SessionRouteConstants.Revoke}/{{id:guid}}", async (
+        group.MapPost($"{SessionRouteConstants.Revoke}/{{id}}", async (
                 string id,
                 ClaimsPrincipal user,
                 IAuthRepository authRepository,
@@ -58,7 +58,6 @@ public class PublicRevokeSessionEndpointV1 : ICarterModule
             .WithSummary(summary: PublicRevokeSessionMetaField.PublicRevokeSession.Summary)
             .WithDescription(description: PublicRevokeSessionMetaField.PublicRevokeSession.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .ProducesValidationProblem()
             .Produces<PublicRevokeSessionResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
