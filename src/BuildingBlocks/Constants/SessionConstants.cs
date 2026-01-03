@@ -6,12 +6,6 @@ namespace _116.BuildingBlocks.Constants;
 public static class SessionConstants
 {
     /// <summary>
-    /// How long a refresh token is valid (in days).
-    /// After this time, the user needs to log in again.
-    /// </summary>
-    public const int RefreshTokenExpirationDays = 30;
-
-    /// <summary>
     /// Maximum length for the hashed refresh token.
     /// </summary>
     public const int MaxRefreshTokenHashLength = 500;
