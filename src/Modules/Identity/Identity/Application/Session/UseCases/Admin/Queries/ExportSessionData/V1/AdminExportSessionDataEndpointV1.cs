@@ -37,7 +37,7 @@ public class AdminExportSessionDataEndpointV1 : ICarterModule
         RouteGroupBuilder group = app
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{SessionRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.SchemaName}");
+            .WithTags($"{IdentityConstants.Admin}::{SessionRouteConstants.Endpoint}");
 
         group.MapGet(pattern: SessionRouteConstants.Export, async (
                 IDispatcher dispatcher,
@@ -67,7 +67,6 @@ public class AdminExportSessionDataEndpointV1 : ICarterModule
             .WithSummary(summary: AdminExportSessionDataMetaField.AdminExportSessionData.Summary)
             .WithDescription(description: AdminExportSessionDataMetaField.AdminExportSessionData.Description)
             .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
-            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .ProducesValidationProblem()
             .Produces<AdminExportSessionDataResponse>()
             .Produces(statusCode: StatusCodes.Status200OK, contentType: SessionConstants.Export.CsvContentType)
