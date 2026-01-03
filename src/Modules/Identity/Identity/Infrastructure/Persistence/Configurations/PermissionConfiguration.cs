@@ -20,6 +20,7 @@ public class PermissionConfiguration : IEntityTypeConfiguration<PermissionEntity
     {
         // Primary key
         builder.HasKey(p => p.Id);
+
         // Properties configuration
         builder.Property(p => p.Resource)
             .HasMaxLength(maxLength: PermissionConstants.MaxPermissionResourceLength)
@@ -30,10 +31,12 @@ public class PermissionConfiguration : IEntityTypeConfiguration<PermissionEntity
         builder.Property(p => p.Description)
             .HasMaxLength(maxLength: PermissionConstants.MaxPermissionDescriptionLength)
             .IsRequired();
+
         // Indexes
         builder.HasIndex(p => new { p.Resource, p.Action })
             .IsUnique()
             .HasDatabaseName("IX_permissions_resource_action");
+
         // Relationships
         builder.HasMany(p => p.RolePermissions)
             .WithOne(rp => rp.Permission)
