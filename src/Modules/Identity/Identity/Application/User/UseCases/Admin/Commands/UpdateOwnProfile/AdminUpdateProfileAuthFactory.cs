@@ -92,9 +92,11 @@ public class AdminUpdateProfileAuthFactory(
     )
     {
         string fullPhone = $"{countryDialCode}{partialPhoneNumber}";
-        UserEntity? existing =
-            await authRepository.GetUserByPhoneNumberAsync(phoneNumber: fullPhone,
-                cancellationToken: cancellationToken);
+        UserEntity? existing = await authRepository.GetUserByPhoneNumberAsync(
+            phoneNumber: fullPhone,
+            cancellationToken: cancellationToken
+        );
+
         if (existing is not null && existing.Id != userId)
         {
             throw UserErrors.PhoneNumberAlreadyExists(phoneNumber: fullPhone);
