@@ -11,9 +11,11 @@ trim_trailing_whitespace = true
 resharper_xmldoc_indent_text = ZeroIndent
 
 # Code files
-[*.{cs,csx,vb,vbx}]
+[*.{cs,vb}]
 indent_style = space
 indent_size = 4
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = true
 
 # XML project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
@@ -48,13 +50,7 @@ indent_size = 4
 [*.{cmd,bat}]
 end_of_line = crlf
 
-# C# Code Style Rules
-[*.cs]
-
-# .NET Code Style Rules
-
 # Organize usings
-dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = true
 csharp_using_directive_placement = outside_namespace:silent
 
@@ -158,3 +154,5 @@ csharp_space_between_square_brackets = false
 # Wrapping preferences
 csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
+max_line_length = 120
+
