@@ -1,7 +1,5 @@
 using System.Linq.Expressions;
-
 using _116.Shared.Application.Exceptions;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
@@ -30,10 +28,10 @@ public static class DbSetExtension
         this DbSet<T> dbSet,
         object[] keyValues,
         CancellationToken cancellationToken = default
-    ) where T : class
+    )
+        where T : class
     {
         DbContext context = dbSet.GetService<ICurrentDbContext>().Context;
-
         T? entity = await context.Set<T>().FindAsync(keyValues, cancellationToken);
 
         if (entity is null)
@@ -76,20 +74,27 @@ public static class DbSetExtension
         string? keyName = null,
         object? keyValue = null,
         CancellationToken cancellationToken = default
-    ) where T : class
+    )
+        where T : class
     {
-        if (asNoTracking) query = query.AsNoTracking();
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
 
         T? entity = await query.SingleOrDefaultAsync(predicate, cancellationToken);
 
-        if (entity is not null) return entity;
+        if (entity is not null)
+        {
+            return entity;
+        }
         string entityName = typeof(T).Name;
 
         throw (keyName, keyValue) switch
         {
             (not null, not null) => new NotFoundException(entityName, keyName, keyValue),
             (null, not null) => new NotFoundException(entityName, keyValue),
-            _ => new NotFoundException($"Could Not find {entityName}.")
+            _ => new NotFoundException($"Could Not find {entityName}."),
         };
     }
 
@@ -123,20 +128,27 @@ public static class DbSetExtension
         string? keyName = null,
         object? keyValue = null,
         CancellationToken cancellationToken = default
-    ) where T : class
+    )
+        where T : class
     {
-        if (asNoTracking) query = query.AsNoTracking();
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
 
         T? entity = await query.SingleOrDefaultAsync(cancellationToken);
 
-        if (entity is not null) return entity;
+        if (entity is not null)
+        {
+            return entity;
+        }
         string entityName = typeof(T).Name;
 
         throw (keyName, keyValue) switch
         {
             (not null, not null) => new NotFoundException(entityName, keyName, keyValue),
             (null, not null) => new NotFoundException(entityName, keyValue),
-            _ => new NotFoundException($"Could Not find {entityName}.")
+            _ => new NotFoundException($"Could Not find {entityName}."),
         };
     }
 
@@ -170,13 +182,20 @@ public static class DbSetExtension
         string? keyName = null,
         object? keyValue = null,
         CancellationToken cancellationToken = default
-    ) where T : class
+    )
+        where T : class
     {
-        if (asNoTracking) query = query.AsNoTracking();
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
 
         T? entity = await query.FirstOrDefaultAsync(cancellationToken);
 
-        if (entity is not null) return entity;
+        if (entity is not null)
+        {
+            return entity;
+        }
 
         string entityName = typeof(T).Name;
 
@@ -184,7 +203,7 @@ public static class DbSetExtension
         {
             (not null, not null) => new NotFoundException(entityName, keyName, keyValue),
             (null, not null) => new NotFoundException(entityName, keyValue),
-            _ => new NotFoundException($"Could not find {entityName}.")
+            _ => new NotFoundException($"Could not find {entityName}."),
         };
     }
 }

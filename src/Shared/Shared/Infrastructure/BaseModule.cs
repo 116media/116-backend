@@ -1,7 +1,6 @@
 using _116.Shared.Application.Configurations;
 using _116.Shared.Infrastructure.Extensions;
 using _116.Shared.Infrastructure.interceptors;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -33,7 +32,8 @@ public static class BaseModule
     public static IServiceCollection AddModuleDatabase<TDbContext>(
         this IServiceCollection services,
         ModuleOptions<TDbContext> options
-    ) where TDbContext : DbContext
+    )
+        where TDbContext : DbContext
     {
         // Get connection string - use custom or default
         string? connectionString = options.ConnectionString ?? GetDefaultConnectionString();
@@ -44,27 +44,21 @@ public static class BaseModule
         // Register DbContext
         if (options.UseConnectionPooling)
         {
-            services.AddDbContextPool<TDbContext>((serviceProvider, dbOptions) =>
-            {
-                ConfigureDbContextOptions(
-                    serviceProvider,
-                    dbOptions,
-                    connectionString,
-                    options
-                );
-            });
+            services.AddDbContextPool<TDbContext>(
+                (serviceProvider, dbOptions) =>
+                {
+                    ConfigureDbContextOptions(serviceProvider, dbOptions, connectionString, options);
+                }
+            );
         }
         else
         {
-            services.AddDbContext<TDbContext>((serviceProvider, dbOptions) =>
-            {
-                ConfigureDbContextOptions(
-                    serviceProvider,
-                    dbOptions,
-                    connectionString,
-                    options
-                );
-            });
+            services.AddDbContext<TDbContext>(
+                (serviceProvider, dbOptions) =>
+                {
+                    ConfigureDbContextOptions(serviceProvider, dbOptions, connectionString, options);
+                }
+            );
         }
 
         return services;
@@ -86,11 +80,19 @@ public static class BaseModule
     /// </remarks>
     public static IApplicationBuilder UseModuleDatabase<TDbContext>(
         this IApplicationBuilder app,
-        ModuleOptions<TDbContext> options)
+        ModuleOptions<TDbContext> options
+    )
         where TDbContext : DbContext
     {
-        if (options.EnableMigrations) app.UseMigration<TDbContext>();
-        if (options.EnableSeeding) app.UseSeed();
+        if (options.EnableMigrations)
+        {
+            app.UseMigration<TDbContext>();
+        }
+
+        if (options.EnableSeeding)
+        {
+            app.UseSeed();
+        }
 
         return app;
     }
@@ -113,13 +115,13 @@ public static class BaseModule
     {
         // Check if interceptors are already registered to avoid duplicates
         bool auditInterceptorExists = services.Any(s =>
-            s.ServiceType == typeof(ISaveChangesInterceptor) &&
-            s.ImplementationType == typeof(AuditableEntityInterceptor)
+            s.ServiceType == typeof(ISaveChangesInterceptor)
+            && s.ImplementationType == typeof(AuditableEntityInterceptor)
         );
 
         bool domainEventsInterceptorExists = services.Any(s =>
-            s.ServiceType == typeof(ISaveChangesInterceptor) &&
-            s.ImplementationType == typeof(DispatchDomainEventsInterceptor)
+            s.ServiceType == typeof(ISaveChangesInterceptor)
+            && s.ImplementationType == typeof(DispatchDomainEventsInterceptor)
         );
 
         if (!auditInterceptorExists)
@@ -146,7 +148,8 @@ public static class BaseModule
         DbContextOptionsBuilder options,
         string connectionString,
         ModuleOptions<TDbContext> moduleOptions
-    ) where TDbContext : DbContext
+    )
+        where TDbContext : DbContext
     {
         // Add interceptors
         options.AddInterceptors(serviceProvider.GetServices<ISaveChangesInterceptor>());

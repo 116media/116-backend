@@ -5,7 +5,6 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Shared.Infrastructure.Extensions;
-
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Identity.Infrastructure.Repositories;
@@ -31,8 +30,8 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
     {
         // Use specification to find OTP with the provided code
         var specification = new OtpForValidationSpecification(userId: userId, code: code, purpose: purpose);
-        OtpEntity? matchingOtp = await context.Otps
-            .ApplySpecification(specification: specification)
+        OtpEntity? matchingOtp = await context
+            .Otps.ApplySpecification(specification: specification)
             .OrderByDescending(o => o.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
@@ -71,8 +70,11 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
         }
 
         // No matching OTP found — check the latest valid OTP for this purpose
-        OtpEntity? latestOtp =
-            await GetLatestValidOtpAsync(userId: userId, purpose: purpose, cancellationToken: cancellationToken);
+        OtpEntity? latestOtp = await GetLatestValidOtpAsync(
+            userId: userId,
+            purpose: purpose,
+            cancellationToken: cancellationToken
+        );
 
         if (latestOtp == null)
         {
@@ -112,8 +114,8 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
     {
         // Use specification to find used OTP with the provided code
         var specification = new OtpForUsedValidationSpecification(userId: userId, code: code, purpose: purpose);
-        OtpEntity? matchingOtp = await context.Otps
-            .ApplySpecification(specification: specification)
+        OtpEntity? matchingOtp = await context
+            .Otps.ApplySpecification(specification: specification)
             .OrderByDescending(o => o.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
@@ -140,8 +142,8 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
     )
     {
         var specification = new OtpForInvalidationSpecification(userId: userId, purpose: purpose);
-        List<OtpEntity> expiredOtpList = await context.Otps
-            .ApplySpecification(specification: specification)
+        List<OtpEntity> expiredOtpList = await context
+            .Otps.ApplySpecification(specification: specification)
             .ToListAsync(cancellationToken: cancellationToken);
 
         foreach (OtpEntity otp in expiredOtpList)
@@ -154,8 +156,8 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
     public async Task<int> CleanupExpiredOtpsAsync(CancellationToken cancellationToken = default)
     {
         var specification = new OtpIsExpiredSpecification();
-        List<OtpEntity> expiredOtpList = await context.Otps
-            .ApplySpecification(specification: specification)
+        List<OtpEntity> expiredOtpList = await context
+            .Otps.ApplySpecification(specification: specification)
             .ToListAsync(cancellationToken: cancellationToken);
 
         context.Otps.RemoveRange(entities: expiredOtpList);
@@ -179,8 +181,8 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
     )
     {
         var specification = new OtpIsValidForUserAndPurposeSpecification(userId: userId, purpose: purpose);
-        return await context.Otps
-            .ApplySpecification(specification: specification)
+        return await context
+            .Otps.ApplySpecification(specification: specification)
             .OrderByDescending(o => o.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
     }
