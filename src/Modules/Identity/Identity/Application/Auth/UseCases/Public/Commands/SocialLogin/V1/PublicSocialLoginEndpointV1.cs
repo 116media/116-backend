@@ -61,12 +61,12 @@ public class PublicSocialLoginEndpointV1 : ICarterModule
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
+
         group.MapPost(pattern: AuthRouteConstants.SocialLogin, async (
                 PublicSocialLoginRequest request,
                 IDispatcher dispatcher
             ) =>
             {
-                // Send the command for social authentication
                 var command = new PublicSocialLoginCommand(
                     Email: request.Email,
                     UserName: request.UserName,
@@ -74,7 +74,7 @@ public class PublicSocialLoginEndpointV1 : ICarterModule
                     Provider: request.Provider
                 );
                 PublicSocialLoginResult result = await dispatcher.Send(request: command);
-                // Create response
+
                 var response = new PublicSocialLoginResponse(
                     User: result.AuthenticationResult.User,
                     AccessToken: result.AuthenticationResult.AccessToken,
@@ -83,6 +83,7 @@ public class PublicSocialLoginEndpointV1 : ICarterModule
                     RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt,
                     TokenType: result.AuthenticationResult.TokenType
                 );
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: PublicSocialLoginMetaField.SocialLogin.Name)
