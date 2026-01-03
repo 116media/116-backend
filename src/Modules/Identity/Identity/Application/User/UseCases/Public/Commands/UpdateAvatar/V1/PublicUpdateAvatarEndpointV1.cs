@@ -1,9 +1,9 @@
 using System.Security.Claims;
 
-using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Application.User.Constants;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -32,29 +32,30 @@ public class PublicUpdateAvatarEndpointV1 : ICarterModule
 {
     /// <summary>
     /// Configures the update avatar route within the API pipeline.
-    /// Maps the <c>/api/v1/public/profile/avatar</c> endpoint to handle avatar update requests.
+    /// Maps the <c>/api/v1/public/user/avatar</c> endpoint to handle avatar update requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app
             .MapApiVersionGroup(1)
-            .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Profile}")
-            .WithTags($"{IdentityConstants.Public}::{AuthRouteConstants.Profile}");
-        group.MapPatch(pattern: AuthRouteConstants.Avatar, async (
+            .MapGroup($"{IdentityConstants.Public}/{UserRouteConstants.Endpoint}")
+            .WithTags($"{IdentityConstants.Public}::{UserRouteConstants.Endpoint}");
+
+        group.MapPatch(pattern: UserRouteConstants.Avatar, async (
                 IFormFile avatarFile,
                 ClaimsPrincipal user,
                 IAuthRepository authRepository,
                 IDispatcher dispatcher
             ) =>
             {
-                // Extract user ID from JWT token claims
                 Guid userId = authRepository.GetUserIdFromClaims(user: user);
 
                 var command = new PublicUpdateAvatarCommand(UserId: userId, AvatarFile: avatarFile);
                 PublicUpdateAvatarResult result = await dispatcher.Send(request: command);
 
                 var response = new PublicUpdateAvatarResponse(User: result.User);
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: PublicUpdateAvatarMetaField.UpdateAvatar.Name)
