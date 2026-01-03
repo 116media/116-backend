@@ -52,7 +52,6 @@ public class AdminUpdateAvatarAuthFactory(
     )
     {
         user.UpdateAvatar(avatarFileId: avatarFileId, avatarSource: Domain.Enums.EnumAvatarSource.Manual);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user.UserRoles);
