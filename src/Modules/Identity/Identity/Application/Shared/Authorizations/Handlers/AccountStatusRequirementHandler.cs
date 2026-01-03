@@ -79,7 +79,7 @@ public class AccountStatusRequirementHandler(IAuthRepository authRepository)
     /// otherwise, <c>false</c>.
     /// </returns>
     /// <remarks>
-    /// This method maps JWT claim types (IsVerified, IsActive, IsLoggedIn) to their corresponding
+    /// This method maps JWT claim types (IsVerified, IsActive) to their corresponding
     /// user entity properties and performs boolean comparison with the requirement's expected value.
     /// Returns <c>false</c> for unknown claim types or invalid requirement values.
     /// </remarks>
@@ -91,6 +91,7 @@ public class AccountStatusRequirementHandler(IAuthRepository authRepository)
             JwtClaimsConstants.IsActive => user.IsActive,
             _ => false
         };
+
         // Compare with expected requirement value
         if (bool.TryParse(value: requirement.ClaimValue, out bool expectedValue))
         {
