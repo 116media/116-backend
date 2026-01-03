@@ -46,11 +46,13 @@ public class AdminSignOutFromAllDevicesEndpointV1 : ICarterModule
                 IDispatcher dispatcher
             ) =>
             {
-                // Extract user ID from JWT token claims
                 Guid userId = authRepository.GetUserIdFromClaims(user: user);
+
                 var command = new AdminSignOutFromAllDevicesCommand(UserId: userId);
                 AdminSignOutFromAllDevicesResult result = await dispatcher.Send(request: command);
+
                 var response = new AdminSignOutFromAllDevicesResponse(IsSuccess: result.IsSuccess);
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: AdminSignOutFromAllDevicesMetaField.AdminSignOutFromAllDevices.Name)
