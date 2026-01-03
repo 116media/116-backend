@@ -44,6 +44,7 @@ public class AdminForgotPasswordEndpointV1 : ICarterModule
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.SchemaName}");
+
         group.MapPost(pattern: AuthRouteConstants.ForgotPassword, async (
                 AdminForgotPasswordRequest request,
                 IDispatcher dispatcher
@@ -51,7 +52,13 @@ public class AdminForgotPasswordEndpointV1 : ICarterModule
             {
                 var command = new AdminForgotPasswordCommand(Email: request.Email);
                 AdminForgotPasswordResult result = await dispatcher.Send(request: command);
-                var response = new AdminForgotPasswordResponse(IsSuccess: result.IsSuccess, Email: request.Email);
+
+                var response = new AdminForgotPasswordResponse(
+                    IsSuccess:
+                    result.IsSuccess,
+                    Email: request.Email
+                );
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: AdminForgotPasswordMetaField.ForgotPassword.Name)
