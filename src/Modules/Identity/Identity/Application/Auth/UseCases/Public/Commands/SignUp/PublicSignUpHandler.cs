@@ -46,8 +46,8 @@ public class PublicSignUpHandler(
         var authResult = new AuthenticationResult(
             User: userDto,
             AccessToken: sessionData.AccessToken,
-            AccessTokenExpiresAt: sessionData.AccessTokenExpiresAt,
             RefreshToken: sessionData.RefreshToken,
+            AccessTokenExpiresAt: sessionData.AccessTokenExpiresAt,
             RefreshTokenExpiresAt: sessionData.RefreshTokenExpiresAt
         );
 
