@@ -45,18 +45,19 @@ public class PublicSignOutFromAllDevicesEndpointV1 : ICarterModule
                 IDispatcher dispatcher
             ) =>
             {
-                // Extract user ID from JWT token claims
                 Guid userId = authRepository.GetUserIdFromClaims(user: user);
+
                 var command = new PublicSignOutFromAllDevicesCommand(UserId: userId);
                 PublicSignOutFromAllDevicesResult result = await dispatcher.Send(request: command);
+
                 var response = new PublicSignOutFromAllDevicesResponse(IsSuccess: result.IsSuccess);
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: PublicSignOutFromAllDevicesMetaField.SignOutFromAllDevices.Name)
             .WithSummary(summary: PublicSignOutFromAllDevicesMetaField.SignOutFromAllDevices.Summary)
             .WithDescription(description: PublicSignOutFromAllDevicesMetaField.SignOutFromAllDevices.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .Produces<PublicSignOutFromAllDevicesResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);
