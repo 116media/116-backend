@@ -101,6 +101,7 @@ public static class IdentityModule
         UserMapper.Configure();
         SessionMapper.Configure();
 
+        services.AddHttpContextAccessor();
         services.AddScoped<IIdentityUnitOfWork, IdentityUnitOfWork>();
 
         // Register user management services
@@ -142,7 +143,7 @@ public static class IdentityModule
         services.AddScoped<IDataSeeder, SuperAdminSeeder>();
         services.AddScoped<IDataSeeder, VisitorRoleSeeder>();
 
-        var (secret, issuer, audience, _) = AppEnvironment.Jwt();
+        var (secret, issuer, audience, _, _) = AppEnvironment.Jwt();
         services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
             options.TokenValidationParameters = new TokenValidationParameters
