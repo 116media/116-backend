@@ -35,10 +35,4 @@ public static class JwtClaimsConstants
     /// Claim type for user active status.
     /// </summary>
     public const string IsActive = "is_active";
-
-    /// <summary>
-    /// Claim type for user login status.
-    /// </summary>
-    public const string IsLoggedIn = "is_logged_in";
-
 }
