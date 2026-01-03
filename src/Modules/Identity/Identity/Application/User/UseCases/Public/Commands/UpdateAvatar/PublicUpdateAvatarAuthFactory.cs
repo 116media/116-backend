@@ -25,7 +25,7 @@ public class PublicUpdateAvatarAuthFactory(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user = await authRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
+        UserEntity? user = await authRepository.GetUserWithRolesPermissionsAndSessionsByIdOrThrow(
             userId: userId,
             cancellationToken: cancellationToken
         );
@@ -36,11 +36,7 @@ public class PublicUpdateAvatarAuthFactory(
 
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user!.UserRoles);
 
-        return new PublicUpdateAvatarAuthData(
-            User: user,
-            Roles: roles,
-            Permissions: permissions
-        );
+        return new PublicUpdateAvatarAuthData(User: user, Roles: roles, Permissions: permissions);
     }
 
     /// <summary>
@@ -58,10 +54,6 @@ public class PublicUpdateAvatarAuthFactory(
 
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user.UserRoles);
 
-        return new PublicUpdateAvatarAuthData(
-            User: user,
-            Roles: roles,
-            Permissions: permissions
-        );
+        return new PublicUpdateAvatarAuthData(User: user, Roles: roles, Permissions: permissions);
     }
 }
