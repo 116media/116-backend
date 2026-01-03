@@ -3,7 +3,7 @@ using _116.Shared.Contracts.Application.CQRS;
 namespace _116.Identity.Application.Session.UseCases.Admin.Commands.CleanupExpiredSessions;
 
 /// <summary>
-/// Command to cleanup (soft delete) all expired sessions.
+/// Command to clean up (soft delete) all expired sessions.
 /// </summary>
 public record AdminCleanupExpiredSessionsCommand : ICommand<AdminCleanupExpiredSessionsResult>;
 
