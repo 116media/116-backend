@@ -58,12 +58,12 @@ public class PublicLoginEndpointV1 : ICarterModule
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
+
         group.MapPost(pattern: AuthRouteConstants.Login, async (PublicLoginRequest request, IDispatcher dispatcher) =>
             {
-                // Send the command to log in the public user
                 var command = new PublicLoginCommand(Credentials: request.Credentials, Password: request.Password);
                 PublicLoginResult result = await dispatcher.Send(request: command);
-                // Adapt the result to the response type
+
                 var response = new PublicLoginResponse(
                     User: result.AuthenticationResult.User,
                     AccessToken: result.AuthenticationResult.AccessToken,
@@ -72,6 +72,7 @@ public class PublicLoginEndpointV1 : ICarterModule
                     RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt,
                     TokenType: result.AuthenticationResult.TokenType
                 );
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: PublicLoginMetaField.PublicLogin.Name)
