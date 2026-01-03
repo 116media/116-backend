@@ -34,11 +34,9 @@ public class AdminCleanupExpiredSessionsEndpointV1 : ICarterModule
         RouteGroupBuilder group = app
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{SessionRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.SchemaName}");
+            .WithTags($"{IdentityConstants.Admin}::{SessionRouteConstants.Endpoint}");
 
-        group.MapPost(SessionRouteConstants.Cleanup, async (
-                IDispatcher dispatcher
-            ) =>
+        group.MapPost(pattern: SessionRouteConstants.Cleanup, async (IDispatcher dispatcher) =>
             {
                 var command = new AdminCleanupExpiredSessionsCommand();
                 AdminCleanupExpiredSessionsResult result = await dispatcher.Send(request: command);
@@ -50,7 +48,6 @@ public class AdminCleanupExpiredSessionsEndpointV1 : ICarterModule
             .WithSummary(summary: AdminCleanupExpiredSessionsMetaField.AdminCleanupExpiredSessions.Summary)
             .WithDescription(description: AdminCleanupExpiredSessionsMetaField.AdminCleanupExpiredSessions.Description)
             .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
-            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .ProducesValidationProblem()
             .Produces<AdminCleanupExpiredSessionsResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
