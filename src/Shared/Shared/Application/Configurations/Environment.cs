@@ -63,23 +63,27 @@ public class AppEnvironment
     /// - JWT_SECRET: The secret key used to sign and verify JWT tokens
     /// - JWT_ISSUER: The issuer claim for JWT tokens
     /// - JWT_AUDIENCE: The audience claim for JWT tokens
-    /// - JWT_EXPIRATION: The token expiration time (e.g., "1h", "30m")
+    /// - JWT_ACCESS_TOKEN_EXPIRATION: The access token expiration time in minutes (e.g., "60" for 1 hour)
+    /// - JWT_REFRESH_TOKEN_EXPIRATION: The refresh token expiration time in minutes (e.g., "43200" for 30 days)
     /// </remarks>
     /// <returns>
     /// A tuple containing:
     /// - <c>secret</c>: The JWT secret key
     /// - <c>issuer</c>: The JWT issuer
     /// - <c>audience</c>: The JWT audience
-    /// - <c>expiration</c>: The JWT expiration duration
+    /// - <c>accessTokenExpiration</c>: The JWT access token expiration duration in minutes
+    /// - <c>refreshTokenExpiration</c>: The refresh token expiration duration in minutes
     /// </returns>
-    public static (string? secret, string? issuer, string? audience, string? expiration) Jwt()
+    public static (string? secret, string? issuer, string? audience, string? accessTokenExpiration, string?
+        refreshTokenExpiration) Jwt()
     {
         string? secret = Environment.GetEnvironmentVariable("JWT_SECRET");
         string? issuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
         string? audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
-        string? expiration = Environment.GetEnvironmentVariable("JWT_EXPIRATION");
+        string? accessTokenExpiration = Environment.GetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION");
+        string? refreshTokenExpiration = Environment.GetEnvironmentVariable("JWT_REFRESH_TOKEN_EXPIRATION");
 
-        return (secret, issuer, audience, expiration);
+        return (secret, issuer, audience, accessTokenExpiration, refreshTokenExpiration);
     }
 
     /// <summary>
