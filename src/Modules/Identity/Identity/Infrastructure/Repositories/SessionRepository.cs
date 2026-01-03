@@ -3,6 +3,8 @@ using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Session.Specifications;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.ValueObjects;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Shared.Application.Specifications;
 
@@ -170,7 +172,7 @@ public class SessionRepository(IdentityDbContext context, IDevicePlatformClassif
 
         return activeSessions
             .GroupBy(s => string.IsNullOrWhiteSpace(s.ClientPlatform)
-                ? Domain.Constants.SessionConstants.ClientPlatform.Unknown
+                ? new ClientPlatform(EnumClientPlatform.Unknown).ToString()
                 : s.ClientPlatform)
             .ToDictionary(g => g.Key, g => g.Count());
     }
