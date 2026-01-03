@@ -1,5 +1,3 @@
-using _116.Identity.Domain.Constants;
-
 namespace _116.Identity.Application.Auth.Constants;
 
 /// <summary>
@@ -9,18 +7,6 @@ namespace _116.Identity.Application.Auth.Constants;
 /// </summary>
 public static class AuthRouteConstants
 {
-    /// <summary>
-    /// Route segment for user-related endpoints.
-    /// Used in routes like /api/v1/public/auth/users.
-    /// </summary>
-    public const string Users = "users";
-
-    /// <summary>
-    /// Route segment for user profile endpoints.
-    /// Used in routes like /api/v1/public/auth/profile.
-    /// </summary>
-    public const string Profile = "profile";
-
     /// <summary>
     /// Route segment for password change endpoints.
     /// Used when authenticated users want to change their existing password.
@@ -99,16 +85,8 @@ public static class AuthRouteConstants
     public const string SocialLogin = "social-login";
 
     /// <summary>
-    /// Route segment for user avatar management endpoints.
-    /// Used for uploading and updating user profile images.
-    /// Example: /api/v1/public/auth/avatar.
-    /// </summary>
-    public const string Avatar = "avatar";
-
-    /// <summary>
     /// The base endpoint path for all authentication routes.
-    /// Dynamically generated from the Auth module name in lowercase (e.g., "auth").
     /// Combined with public/admin prefixes: /api/v1/public/auth or /api/v1/admin/auth.
     /// </summary>
-    public static readonly string Endpoint = IdentityConstants.ModuleName.ToLowerInvariant();
+    public const string Endpoint = "auth";
 }
