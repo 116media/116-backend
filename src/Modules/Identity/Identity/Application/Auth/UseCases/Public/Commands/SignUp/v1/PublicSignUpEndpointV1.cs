@@ -1,6 +1,7 @@
 using _116.BuildingBlocks.Utils;
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Shared.DTOs;
+using _116.Identity.Application.User.Constants;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -31,7 +32,7 @@ public record PublicSignUpRequest(
 /// <param name="User">The created user information.</param>
 /// <param name="AccessToken">The JWT access token.</param>
 /// <param name="AccessTokenExpiresAt">Date and time when the access token expires in UTC.</param>
-/// <param name="RefreshToken">Refresh token for obtaining new access tokens.</param>
+/// <param name="RefreshToken">Refresh token for getting new access tokens.</param>
 /// <param name="RefreshTokenExpiresAt">Date and time when the refresh token expires in UTC.</param>
 /// <param name="TokenType">Type of token (typically "Bearer").</param>
 /// <param name="VerificationRequired">Indicates whether the user must verify their email before full access.</param>
@@ -63,20 +64,21 @@ public class PublicSignUpEndpointV1 : ICarterModule
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
+
         group.MapPost(pattern: AuthRouteConstants.SignUp, async (
                 PublicSignUpRequest request,
                 IDispatcher dispatcher,
                 HttpContext httpContext
             ) =>
             {
-                // Send the command to register the public user
                 var command = new PublicSignUpCommand(
                     Email: request.Email,
                     UserName: request.UserName,
                     Password: request.Password
                 );
+
                 PublicSignUpResult result = await dispatcher.Send(request: command);
-                // Adapt the result to the response type
+
                 var response = new PublicSignUpResponse(
                     User: result.AuthenticationResult.User,
                     AccessToken: result.AuthenticationResult.AccessToken,
@@ -86,8 +88,10 @@ public class PublicSignUpEndpointV1 : ICarterModule
                     TokenType: result.AuthenticationResult.TokenType,
                     VerificationRequired: result.VerificationRequired
                 );
-                string userPath = $"{IdentityConstants.Public}/{AuthRouteConstants.Users}/{response.User.Id}";
+
+                string userPath = $"{IdentityConstants.Public}/{UserRouteConstants.Endpoint}/{response.User.Id}";
                 string locationUrl = ApiVersionUrl.Build(context: httpContext, path: userPath);
+
                 return Results.Created(uri: locationUrl, value: response);
             })
             .WithName(endpointName: PublicSignUpMetaField.PublicSignUp.Name)
