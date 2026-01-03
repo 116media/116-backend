@@ -90,7 +90,7 @@ public interface ISessionRepository
     /// Gets count of active sessions grouped by client platform (from Client-Platform header).
     /// </summary>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>Dictionary with client platform as key and count as value.</returns>
+    /// <returns>Dictionary with the client platform as key and count as value.</returns>
     Task<Dictionary<string, int>> GetActiveSessionCountByClientPlatformAsync(
         CancellationToken cancellationToken = default
     );
@@ -99,7 +99,7 @@ public interface ISessionRepository
     /// Gets count of active sessions grouped by device type (classified from user agent).
     /// </summary>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>Dictionary with device type as key and count as value.</returns>
+    /// <returns>Dictionary with the device type as the key and count as value.</returns>
     Task<Dictionary<string, int>> GetActiveSessionCountByDeviceTypeAsync(
         CancellationToken cancellationToken = default
     );
