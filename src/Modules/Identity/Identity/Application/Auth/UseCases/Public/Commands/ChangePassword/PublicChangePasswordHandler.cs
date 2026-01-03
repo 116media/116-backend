@@ -36,9 +36,11 @@ public class PublicChangePasswordHandler(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user =
-            await authRepository.FindUserByIdOrThrow(userId: command.UserId, cancellationToken: cancellationToken);
-        // Validate user account status - must be active and verified
+        UserEntity? user = await authRepository.GetUserWithSessionsByIdOrThrow(
+            userId: command.UserId,
+            cancellationToken: cancellationToken
+        );
+
         authRepository.IsUserAccountActive(user!);
         authRepository.IsUserAccountVerified(user!);
         authRepository.IsUserLoggedIn(user!);
@@ -61,13 +63,10 @@ public class PublicChangePasswordHandler(
             throw UserErrors.NewPasswordSameAsOld();
         }
 
-        // Hash the new password
         string hashedNewPassword = passwordService.Hash(password: command.NewPassword);
-        // Update user's password
         user.UpdatePassword(newPasswordHash: hashedNewPassword);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-        return new PublicChangePasswordResult(
-            true
-        );
+
+        return new PublicChangePasswordResult(true);
     }
 }
