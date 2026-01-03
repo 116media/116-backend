@@ -19,15 +19,18 @@ public class UserRoleConfiguration : IEntityTypeConfiguration<UserRoleEntity>
     {
         // Primary key
         builder.HasKey(ur => ur.Id);
+
         // Properties configuration
         builder.Property(ur => ur.UserId)
             .IsRequired();
         builder.Property(ur => ur.RoleId)
             .IsRequired();
+
         // Indexes
         builder.HasIndex(ur => new { ur.UserId, ur.RoleId })
             .IsUnique()
             .HasDatabaseName("IX_user_roles_user_id_role_id");
+
         // Relationships are configured in UserConfiguration and RoleConfiguration
         // to avoid circular dependencies
     }
