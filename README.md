@@ -140,20 +140,20 @@ This project uses automated code quality checks to maintain consistent standards
 #### 🔒 Pre-push Hook
 - 🛡️ **Branch name validation** enforcing naming conventions
 - 🚫 **Blocks direct pushes** to protected branches (`main`, `develop`, `master`)
-- 📏 **Code formatting verification** using `dotnet csharpier --check`
+- 📏 **Code formatting verification** using `dotnet csharpier format --check`
 - 📐 **Ensures code formatting consistency** across the codebase
 
 #### 🛠️ Manual csharpier Commands
 
 ```bash
 # Format all C# files in the project
-dotnet csharpier .
+dotnet csharpier format .
 
 # Format specific file
-dotnet csharpier path/to/file.cs
+dotnet csharpier format path/to/file.cs
 
 # Check for formatting issues without fixing them
-dotnet csharpier --check .
+dotnet csharpier format --check .
 
 # Format only staged files (used by pre-commit hook)
 ./scripts/formatting.sh --staged-only
