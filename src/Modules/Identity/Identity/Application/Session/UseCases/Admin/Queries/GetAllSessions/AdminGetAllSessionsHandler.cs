@@ -28,8 +28,10 @@ public class AdminGetAllSessionsHandler(ISessionRepository sessionRepository)
         int pageIndex = query.PaginatedRequest.PageIndex;
 
         Guid? userIdFilter = null;
-        if (!string.IsNullOrWhiteSpace(value: query.UserId) &&
-            Guid.TryParse(input: query.UserId, out Guid parsedUserId))
+        if (
+            !string.IsNullOrWhiteSpace(value: query.UserId) &&
+            Guid.TryParse(input: query.UserId, out Guid parsedUserId)
+        )
         {
             userIdFilter = parsedUserId;
         }
