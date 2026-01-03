@@ -38,8 +38,9 @@ public class PublicGetOwnSessionByIdEndpointV1 : ICarterModule
         RouteGroupBuilder group = app
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{SessionRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
-        group.MapGet(pattern: "{id:guid}", async (
+            .WithTags($"{IdentityConstants.Public}::{SessionRouteConstants.Endpoint}");
+
+        group.MapGet("{id}", async (
                 string id,
                 ClaimsPrincipal user,
                 IAuthRepository authRepository,
@@ -58,7 +59,6 @@ public class PublicGetOwnSessionByIdEndpointV1 : ICarterModule
             .WithSummary(summary: PublicGetOwnSessionByIdMetaField.PublicGetOwnSessionById.Summary)
             .WithDescription(description: PublicGetOwnSessionByIdMetaField.PublicGetOwnSessionById.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .ProducesValidationProblem()
             .Produces<PublicGetOwnSessionByIdResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
