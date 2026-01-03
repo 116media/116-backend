@@ -50,6 +50,7 @@ public class PublicChangePasswordEndpointV1 : ICarterModule
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
+
         group.MapPatch(pattern: AuthRouteConstants.ChangePassword, async (
                 PublicChangePasswordRequest request,
                 ClaimsPrincipal user,
@@ -57,19 +58,17 @@ public class PublicChangePasswordEndpointV1 : ICarterModule
                 IDispatcher dispatcher
             ) =>
             {
-                // Extract user ID from JWT token claims
                 Guid userId = authRepository.GetUserIdFromClaims(user: user);
-                // Send the command to change the password
+
                 var command = new PublicChangePasswordCommand(
                     UserId: userId,
                     OldPassword: request.OldPassword,
                     NewPassword: request.NewPassword
                 );
                 PublicChangePasswordResult result = await dispatcher.Send(request: command);
-                // Adapt the result to the response type
-                var response = new PublicChangePasswordResponse(
-                    IsSuccess: result.IsSuccess
-                );
+
+                var response = new PublicChangePasswordResponse(IsSuccess: result.IsSuccess);
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: PublicChangePasswordMetaField.ChangePassword.Name)
