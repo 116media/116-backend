@@ -1,4 +1,5 @@
 using System.Dynamic;
+using System.Reflection;
 
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
@@ -16,7 +17,7 @@ public class XlsxExportStrategy : IExportStrategy
     public byte[] Export(List<SessionExportDto> sessions, List<string>? columns)
     {
         using var workbook = new XLWorkbook();
-        var worksheet = workbook.Worksheets.Add("Sessions");
+        IXLWorksheet worksheet = workbook.Worksheets.Add("Sessions");
 
         if (columns is null || columns.Count == 0)
         {
@@ -26,12 +27,12 @@ public class XlsxExportStrategy : IExportStrategy
         else
         {
             // Project to filtered data and export
-            var filteredData = ProjectToFilteredData(sessions: sessions, columns: columns);
+            List<ExpandoObject> filteredData = ProjectToFilteredData(sessions: sessions, columns: columns);
             worksheet.Cell(row: 1, column: 1).InsertData(data: filteredData, transpose: false);
         }
 
         // Style headers
-        var headerRow = worksheet.Row(row: 1);
+        IXLRow headerRow = worksheet.Row(1);
         headerRow.Style.Font.Bold = true;
         headerRow.Style.Fill.BackgroundColor = XLColor.LightGray;
 
@@ -53,16 +54,16 @@ public class XlsxExportStrategy : IExportStrategy
     /// <returns>Projected data as dynamic objects.</returns>
     private static List<ExpandoObject> ProjectToFilteredData(List<SessionExportDto> sessions, List<string> columns)
     {
-        var properties = typeof(SessionExportDto)
+        PropertyInfo[] properties = typeof(SessionExportDto)
             .GetProperties()
             .Where(p => columns.Contains(value: p.Name, comparer: StringComparer.OrdinalIgnoreCase))
             .ToArray();
 
         return sessions.Select(session =>
         {
-            var expando = new ExpandoObject() as IDictionary<string, object?>;
+            IDictionary<string, object?> expando = new ExpandoObject();
 
-            foreach (var property in properties)
+            foreach (PropertyInfo property in properties)
             {
                 expando[property.Name] = property.GetValue(obj: session);
             }
