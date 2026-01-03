@@ -30,7 +30,7 @@ public class CsvExportStrategy : IExportStrategy
         else
         {
             // Project to filtered data and export
-            var filteredData = ProjectToFilteredData(sessions: sessions, columns: columns);
+            List<ExpandoObject> filteredData = ProjectToFilteredData(sessions: sessions, columns: columns);
             csvWriter.WriteRecords(records: filteredData);
         }
 
@@ -47,16 +47,16 @@ public class CsvExportStrategy : IExportStrategy
     /// <returns>Projected data as dynamic objects.</returns>
     private static List<ExpandoObject> ProjectToFilteredData(List<SessionExportDto> sessions, List<string> columns)
     {
-        var properties = typeof(SessionExportDto)
+        PropertyInfo[] properties = typeof(SessionExportDto)
             .GetProperties()
             .Where(p => columns.Contains(value: p.Name, comparer: StringComparer.OrdinalIgnoreCase))
             .ToArray();
 
         return sessions.Select(session =>
         {
-            var expando = new ExpandoObject() as IDictionary<string, object?>;
+            IDictionary<string, object?> expando = new ExpandoObject();
 
-            foreach (var property in properties)
+            foreach (PropertyInfo property in properties)
             {
                 expando[property.Name] = property.GetValue(obj: session);
             }
