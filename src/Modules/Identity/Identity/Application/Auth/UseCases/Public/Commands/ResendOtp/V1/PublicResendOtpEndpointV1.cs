@@ -44,6 +44,7 @@ public class PublicResendOtpEndpointV1 : ICarterModule
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
+
         group.MapPost(pattern: AuthRouteConstants.ResendOtp, async (
                 PublicResendOtpRequest request,
                 IDispatcher dispatcher
@@ -51,7 +52,9 @@ public class PublicResendOtpEndpointV1 : ICarterModule
             {
                 var command = new PublicResendOtpCommand(Email: request.Email, Purpose: request.Purpose);
                 PublicResendOtpResult result = await dispatcher.Send(request: command);
+
                 var response = new PublicResendOtpResponse(IsSuccess: result.IsSuccess);
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: PublicResendOtpMetaField.ResendOtp.Name)
