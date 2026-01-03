@@ -26,9 +26,4 @@ public static class AccountStatusPolicies
     /// such as posting or reacting to contents or accessing user features.
     /// </remarks>
     public const string RequireActiveUser = "RequireActiveUser";
-
-    /// <summary>
-    /// Policy that requires user to be logged in with valid authentication.
-    /// </summary>
-    public const string RequireLoggedInUser = "RequireLoggedInUser";
 }
