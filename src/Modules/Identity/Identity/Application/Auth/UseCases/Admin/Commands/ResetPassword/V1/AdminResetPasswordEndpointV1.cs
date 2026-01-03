@@ -48,22 +48,23 @@ public class AdminResetPasswordEndpointV1 : ICarterModule
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.SchemaName}");
+
         group.MapPost(pattern: AuthRouteConstants.ResetPassword, async (
                 AdminResetPasswordRequest request,
                 IDispatcher dispatcher
             ) =>
             {
-                // Send the command to reset the password
                 var command = new AdminResetPasswordCommand(
                     Email: request.Email,
                     Code: request.Code,
                     NewPassword: request.NewPassword
                 );
                 AdminResetPasswordResult result = await dispatcher.Send(request: command);
-                // Adapt the result to the response type
+
                 var response = new AdminResetPasswordResponse(
                     IsSuccess: result.IsSuccess
                 );
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: AdminResetPasswordMetaField.ResetPassword.Name)
