@@ -20,6 +20,7 @@ public class UserConfiguration : IEntityTypeConfiguration<UserEntity>
     {
         // Primary key
         builder.HasKey(u => u.Id);
+
         // Properties configuration
         builder.Property(u => u.Email)
             .HasMaxLength(maxLength: UserConstants.MaxEmailLength)
@@ -56,11 +57,13 @@ public class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         builder.Property(u => u.AvatarSource)
             .HasConversion<string>()
             .IsRequired();
+
         // Indexes
         builder.HasIndex(u => u.Email)
             .IsUnique();
         builder.HasIndex(u => u.UserName)
             .IsUnique();
+
         // Relationships
         builder.HasMany(u => u.UserRoles)
             .WithOne(ur => ur.User)
