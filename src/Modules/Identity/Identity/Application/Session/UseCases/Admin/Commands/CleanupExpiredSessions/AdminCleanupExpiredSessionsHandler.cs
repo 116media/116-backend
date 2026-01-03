@@ -17,7 +17,7 @@ public class AdminCleanupExpiredSessionsHandler(
     /// <summary>
     /// Handles the cleanup command by soft deleting all expired sessions.
     /// </summary>
-    /// <param name="command">The command to cleanup expired sessions.</param>
+    /// <param name="command">The command to clean up expired sessions.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>A <see cref="AdminCleanupExpiredSessionsResult" /> containing the number of deleted sessions.</returns>
     public async Task<AdminCleanupExpiredSessionsResult> Handle(
