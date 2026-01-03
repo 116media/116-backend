@@ -112,16 +112,20 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     public async Task<bool> ExistsByEmailAsync(Email email, CancellationToken cancellationToken = default)
     {
         var specification = new UserByEmailSpecification(email: email.Value);
-        return await context.Users.AnyBySpecificationAsync(specification: specification,
-            cancellationToken: cancellationToken);
+        return await context.Users.AnyBySpecificationAsync(
+            specification: specification,
+            cancellationToken: cancellationToken
+        );
     }
 
     /// <inheritdoc />
     public async Task<bool> ExistsByUserNameAsync(string userName, CancellationToken cancellationToken = default)
     {
         var specification = new UserByUserNameSpecification(userName: userName);
-        return await context.Users.AnyBySpecificationAsync(specification: specification,
-            cancellationToken: cancellationToken);
+        return await context.Users.AnyBySpecificationAsync(
+            specification: specification,
+            cancellationToken: cancellationToken
+        );
     }
 
     /// <inheritdoc />
@@ -131,8 +135,10 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     )
     {
         var specification = new UserByPhoneNumberSpecification(phoneNumber: phoneNumber);
-        return await context.Users.FirstOrDefaultBySpecificationAsync(specification: specification,
-            cancellationToken: cancellationToken);
+        return await context.Users.FirstOrDefaultBySpecificationAsync(
+            specification: specification,
+            cancellationToken: cancellationToken
+        );
     }
 
     /// <inheritdoc />
@@ -196,8 +202,10 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     {
         // Check for existing email first using specification
         var emailSpec = new UserByEmailSpecification(email: email.Value);
-        bool emailExists =
-            await context.Users.AnyBySpecificationAsync(specification: emailSpec, cancellationToken: cancellationToken);
+        bool emailExists = await context.Users.AnyBySpecificationAsync(
+            specification: emailSpec,
+            cancellationToken: cancellationToken
+        );
         if (emailExists)
         {
             throw UserErrors.EmailAlreadyExists(email: email.Value);
@@ -205,9 +213,10 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
 
         // Check for existing username second using specification
         var usernameSpec = new UserByUserNameSpecification(userName: userName);
-        bool usernameExists =
-            await context.Users.AnyBySpecificationAsync(specification: usernameSpec,
-                cancellationToken: cancellationToken);
+        bool usernameExists = await context.Users.AnyBySpecificationAsync(
+            specification: usernameSpec,
+            cancellationToken: cancellationToken
+        );
         if (usernameExists)
         {
             throw UserErrors.UsernameAlreadyExists(username: userName);
@@ -221,8 +230,10 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         UserEntity? user = await context.Users.FindAsync([userId], cancellationToken: cancellationToken);
         // Find the Visitor role using specification
         var roleSpec = new RoleByNameSpecification(nameof(EnumCoreUserRole.Visitor));
-        RoleEntity? visitorRole = await context.Roles
-            .FirstOrDefaultBySpecificationAsync(specification: roleSpec, cancellationToken: cancellationToken);
+        RoleEntity? visitorRole = await context.Roles.FirstOrDefaultBySpecificationAsync(
+            specification: roleSpec,
+            cancellationToken: cancellationToken
+        );
         if (visitorRole == null)
         {
             throw UserErrors.RoleNotFoundByName(nameof(EnumCoreUserRole.Visitor));
@@ -271,8 +282,10 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
             if (!string.IsNullOrWhiteSpace(value: userName) && user.UserName != userName)
             {
                 // Check if another user already takes the new username
-                bool usernameExists =
-                    await ExistsByUserNameAsync(userName: userName, cancellationToken: cancellationToken);
+                bool usernameExists = await ExistsByUserNameAsync(
+                    userName: userName,
+                    cancellationToken: cancellationToken
+                );
                 if (usernameExists)
                 {
                     throw UserErrors.UsernameAlreadyExists(username: userName);
