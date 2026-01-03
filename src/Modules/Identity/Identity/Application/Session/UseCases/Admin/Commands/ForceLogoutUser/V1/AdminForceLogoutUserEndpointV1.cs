@@ -34,9 +34,9 @@ public class AdminForceLogoutUserEndpointV1 : ICarterModule
         RouteGroupBuilder group = app
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{SessionRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.SchemaName}");
+            .WithTags($"{IdentityConstants.Admin}::/{SessionRouteConstants.Endpoint}");
 
-        group.MapPost($"{SessionRouteConstants.ForceLogout}/{{id:guid}}", async (
+        group.MapPost($"{SessionRouteConstants.ForceLogout}/{{id}}", async (
                 string id,
                 IDispatcher dispatcher
             ) =>
@@ -51,7 +51,6 @@ public class AdminForceLogoutUserEndpointV1 : ICarterModule
             .WithSummary(summary: AdminForceLogoutUserMetaField.AdminForceLogoutUser.Summary)
             .WithDescription(description: AdminForceLogoutUserMetaField.AdminForceLogoutUser.Description)
             .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
-            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .ProducesValidationProblem()
             .Produces<AdminForceLogoutUserResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
