@@ -28,6 +28,7 @@ public class UserRoleRequirementHandler : AuthorizationHandler<UserRoleRequireme
     {
         // Extract user's role from JWT token claims
         string? userRole = context.User.FindFirst(type: ClaimTypes.Role)?.Value;
+
         // Authorize if the user role matches any allowed role (case-insensitive)
         bool isUserRoleMatching =
             requirement.AllowedRoles.Contains(value: userRole, comparer: StringComparer.OrdinalIgnoreCase);
