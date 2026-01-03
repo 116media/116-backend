@@ -45,14 +45,20 @@ public class AdminResendOtpEndpointV1 : ICarterModule
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.SchemaName}");
+
         group.MapPost(pattern: AuthRouteConstants.ResendOtp, async (
                 AdminResendOtpRequest request,
                 IDispatcher dispatcher
             ) =>
             {
-                var command = new AdminResendOtpCommand(Email: request.Email, Purpose: request.Purpose);
+                var command = new AdminResendOtpCommand(
+                    Email: request.Email,
+                    Purpose: request.Purpose
+                );
                 AdminResendOtpResult result = await dispatcher.Send(request: command);
+
                 var response = new AdminResendOtpResponse(IsSuccess: result.IsSuccess);
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: AdminResendOtpMetaField.ResendOtp.Name)
