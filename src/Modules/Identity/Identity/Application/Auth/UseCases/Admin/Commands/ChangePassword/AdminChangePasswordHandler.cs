@@ -37,9 +37,11 @@ public class AdminChangePasswordHandler(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user =
-            await authRepository.GetUserWithSessionsByIdOrThrow(userId: command.UserId, cancellationToken: cancellationToken);
-        // Validate user account status - admin accounts must be active
+        UserEntity? user = await authRepository.GetUserWithSessionsByIdOrThrow(
+            userId: command.UserId,
+            cancellationToken: cancellationToken
+        );
+
         authRepository.IsUserAccountActive(user!);
         authRepository.IsUserLoggedIn(user!);
 
@@ -55,13 +57,10 @@ public class AdminChangePasswordHandler(
             throw UserErrors.NewPasswordSameAsOld();
         }
 
-        // Hash the new password
         string hashedNewPassword = passwordService.Hash(password: command.NewPassword);
-        // Update user's password
         user.UpdatePassword(newPasswordHash: hashedNewPassword);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-        return new AdminChangePasswordResult(
-            true
-        );
+
+        return new AdminChangePasswordResult(true);
     }
 }
