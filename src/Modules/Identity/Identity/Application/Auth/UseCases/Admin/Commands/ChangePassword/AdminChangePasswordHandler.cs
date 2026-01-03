@@ -38,7 +38,7 @@ public class AdminChangePasswordHandler(
     )
     {
         UserEntity? user =
-            await authRepository.FindUserByIdOrThrow(userId: command.UserId, cancellationToken: cancellationToken);
+            await authRepository.GetUserWithSessionsByIdOrThrow(userId: command.UserId, cancellationToken: cancellationToken);
         // Validate user account status - admin accounts must be active
         authRepository.IsUserAccountActive(user!);
         authRepository.IsUserLoggedIn(user!);
