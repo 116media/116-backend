@@ -33,7 +33,7 @@ public record AdminGetSessionMetricsResponse(
 public class AdminGetSessionMetricsEndpointV1 : ICarterModule
 {
     /// <summary>
-    /// Configures the admin get session metrics route within the API pipeline.
+    /// Configures the admin to get session metrics route within the API pipeline.
     /// Maps the <c>/api/v1/admin/sessions/metrics</c> endpoint to handle metrics retrieval requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
@@ -42,7 +42,7 @@ public class AdminGetSessionMetricsEndpointV1 : ICarterModule
         RouteGroupBuilder group = app
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{SessionRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.SchemaName}");
+            .WithTags($"{IdentityConstants.Admin}::{SessionRouteConstants.Endpoint}");
 
         group.MapGet(SessionRouteConstants.Metrics, async (IDispatcher dispatcher) =>
             {
@@ -50,10 +50,10 @@ public class AdminGetSessionMetricsEndpointV1 : ICarterModule
                 AdminGetSessionMetricsResult result = await dispatcher.Send(request: query);
 
                 var response = new AdminGetSessionMetricsResponse(
-                    ClientPlatforms: result.ClientPlatforms,
                     DeviceTypes: result.DeviceTypes,
-                    TotalActiveSessions: result.TotalActiveSessions,
-                    TotalActiveUsers: result.TotalActiveUsers
+                    ClientPlatforms: result.ClientPlatforms,
+                    TotalActiveUsers: result.TotalActiveUsers,
+                    TotalActiveSessions: result.TotalActiveSessions
                 );
                 return Results.Ok(value: response);
             })
@@ -61,7 +61,6 @@ public class AdminGetSessionMetricsEndpointV1 : ICarterModule
             .WithSummary(summary: AdminGetSessionMetricsMetaField.AdminGetSessionMetrics.Summary)
             .WithDescription(description: AdminGetSessionMetricsMetaField.AdminGetSessionMetrics.Description)
             .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
-            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .Produces<AdminGetSessionMetricsResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);
