@@ -20,6 +20,7 @@ public class SessionConfiguration : IEntityTypeConfiguration<SessionEntity>
     {
         // Primary key
         builder.HasKey(s => s.Id);
+
         // Properties configuration
         builder.Property(s => s.UserId)
             .IsRequired();
@@ -44,11 +45,13 @@ public class SessionConfiguration : IEntityTypeConfiguration<SessionEntity>
             .IsRequired();
         builder.Property(s => s.DeletedAt)
             .IsRequired(false);
+
         // Indexes
         builder.HasIndex(s => s.UserId);
         builder.HasIndex(s => s.RefreshTokenHash);
         builder.HasIndex(s => s.ExpiresAt);
         builder.HasIndex(s => s.IsDeleted);
+
         // Relationships configured in UserConfiguration
     }
 }
