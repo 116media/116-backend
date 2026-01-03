@@ -31,7 +31,7 @@ public class JwtService : IJwtService
         EnumAuthProvider authProvider
     )
     {
-        var (secret, issuer, audience, expiration) = AppEnvironment.Jwt();
+        var (secret, issuer, audience, accessTokenExpiration, _) = AppEnvironment.Jwt();
         if (string.IsNullOrWhiteSpace(value: secret))
         {
             throw new InvalidOperationException("JWT_SECRET env variable is missing or empty.");
@@ -57,10 +57,10 @@ public class JwtService : IJwtService
         claims.AddRange(BuildRoleClaims(userRoles: userRoles));
         claims.AddRange(BuildPermissionsClaims(permissions: userPermissions));
 
-        int expirationHours = int.TryParse(s: expiration, out int parsed)
+        int expirationMinutes = int.TryParse(s: accessTokenExpiration, out int parsed)
             ? parsed
             : JwtClaimsConstants.DefaultExpiration;
-        DateTime expiresAt = now.AddHours(hours: expirationHours).UtcDateTime;
+        DateTime expiresAt = now.AddMinutes(minutes: expirationMinutes).UtcDateTime;
 
         var descriptor = new SecurityTokenDescriptor
         {
