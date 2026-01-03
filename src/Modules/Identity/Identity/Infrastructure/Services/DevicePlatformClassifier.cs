@@ -1,5 +1,6 @@
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Domain.Constants;
+using _116.Identity.Domain.Enums;
 
 namespace _116.Identity.Infrastructure.Services;
 
@@ -14,26 +15,20 @@ public class DevicePlatformClassifier : IDevicePlatformClassifier
     {
         if (string.IsNullOrWhiteSpace(value: deviceName))
         {
-            return SessionConstants.Platform.Other;
+            return nameof(EnumDevicePlatform.Other).ToLowerInvariant();
         }
 
-        string lowerDeviceName = deviceName.ToLower();
+        string name = deviceName.ToLowerInvariant();
 
-        if (SessionConstants.DevicePatterns.Mobile.Any(pattern => lowerDeviceName.Contains(pattern)))
+        var mappings = new Dictionary<IEnumerable<string>, EnumDevicePlatform>
         {
-            return SessionConstants.Platform.Mobile;
-        }
+            [key: SessionConstants.DevicePatterns.Mobile] = EnumDevicePlatform.Mobile,
+            [key: SessionConstants.DevicePatterns.Tablet] = EnumDevicePlatform.Tablet,
+            [key: SessionConstants.DevicePatterns.Desktop] = EnumDevicePlatform.Desktop
+        };
 
-        if (SessionConstants.DevicePatterns.Tablet.Any(pattern => lowerDeviceName.Contains(pattern)))
-        {
-            return SessionConstants.Platform.Tablet;
-        }
+        EnumDevicePlatform platform = mappings.FirstOrDefault(m => m.Key.Any(predicate: name.Contains)).Value;
 
-        if (SessionConstants.DevicePatterns.Desktop.Any(pattern => lowerDeviceName.Contains(pattern)))
-        {
-            return SessionConstants.Platform.Desktop;
-        }
-
-        return SessionConstants.Platform.Other;
+        return (platform == default ? EnumDevicePlatform.Other : platform).ToString().ToLowerInvariant();
     }
 }
