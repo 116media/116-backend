@@ -20,6 +20,7 @@ public class OtpConfiguration : IEntityTypeConfiguration<OtpEntity>
     {
         // Primary key
         builder.HasKey(o => o.Id);
+
         // Properties configuration
         builder.Property(o => o.UserId)
             .IsRequired();
@@ -44,6 +45,7 @@ public class OtpConfiguration : IEntityTypeConfiguration<OtpEntity>
             .WithMany()
             .HasForeignKey(o => o.UserId)
             .OnDelete(deleteBehavior: DeleteBehavior.Cascade);
+
         // Indexes for performance
         builder.HasIndex(o => new { o.UserId, o.Purpose })
             .HasDatabaseName("IX_Otps_UserId_Purpose");
