@@ -1,5 +1,6 @@
 using _116.Identity.Application.Session.Repositories;
-using _116.Identity.Domain.Constants;
+using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Session.UseCases.Admin.Queries.GetSessionMetrics;
@@ -22,11 +23,11 @@ public class AdminGetSessionMetricsHandler(ISessionRepository sessionRepository)
         CancellationToken cancellationToken
     )
     {
-        var clientPlatformCounts = await sessionRepository.GetActiveSessionCountByClientPlatformAsync(
+        Dictionary<string, int> platformCounts = await sessionRepository.GetActiveSessionCountByClientPlatformAsync(
             cancellationToken: cancellationToken
         );
 
-        var deviceTypeCounts = await sessionRepository.GetActiveSessionCountByDeviceTypeAsync(
+        Dictionary<string, int> deviceTypeCounts = await sessionRepository.GetActiveSessionCountByDeviceTypeAsync(
             cancellationToken: cancellationToken
         );
 
@@ -39,25 +40,25 @@ public class AdminGetSessionMetricsHandler(ISessionRepository sessionRepository)
         );
 
         var clientPlatforms = new ClientPlatformMetrics(
-            IosMobile: clientPlatformCounts.GetValueOrDefault(SessionConstants.ClientPlatform.IosMobile, 0),
-            AndroidMobile: clientPlatformCounts.GetValueOrDefault(SessionConstants.ClientPlatform.AndroidMobile, 0),
-            BrowserWeb: clientPlatformCounts.GetValueOrDefault(SessionConstants.ClientPlatform.BrowserWeb, 0),
-            PwaBrowser: clientPlatformCounts.GetValueOrDefault(SessionConstants.ClientPlatform.PwaBrowser, 0),
-            Unknown: clientPlatformCounts.GetValueOrDefault(SessionConstants.ClientPlatform.Unknown, 0)
+            platformCounts.GetValueOrDefault(key: new ClientPlatform(EnumClientPlatform.IosMobile), 0),
+            platformCounts.GetValueOrDefault(key: new ClientPlatform(EnumClientPlatform.AndroidMobile), 0),
+            platformCounts.GetValueOrDefault(key: new ClientPlatform(EnumClientPlatform.BrowserWeb), 0),
+            platformCounts.GetValueOrDefault(key: new ClientPlatform(EnumClientPlatform.PwaBrowser), 0),
+            platformCounts.GetValueOrDefault(key: new ClientPlatform(EnumClientPlatform.Unknown), 0)
         );
 
         var deviceTypes = new DeviceTypeMetrics(
-            Mobile: deviceTypeCounts.GetValueOrDefault(SessionConstants.Platform.Mobile, 0),
-            Desktop: deviceTypeCounts.GetValueOrDefault(SessionConstants.Platform.Desktop, 0),
-            Tablet: deviceTypeCounts.GetValueOrDefault(SessionConstants.Platform.Tablet, 0),
-            Other: deviceTypeCounts.GetValueOrDefault(SessionConstants.Platform.Other, 0)
+            Mobile: deviceTypeCounts.GetValueOrDefault(new DevicePlatform(EnumDevicePlatform.Mobile), 0),
+            Desktop: deviceTypeCounts.GetValueOrDefault(new DevicePlatform(EnumDevicePlatform.Desktop), 0),
+            Tablet: deviceTypeCounts.GetValueOrDefault(new DevicePlatform(EnumDevicePlatform.Tablet), 0),
+            Other: deviceTypeCounts.GetValueOrDefault(new DevicePlatform(EnumDevicePlatform.Other), 0)
         );
 
         return new AdminGetSessionMetricsResult(
-            ClientPlatforms: clientPlatforms,
             DeviceTypes: deviceTypes,
-            TotalActiveSessions: totalActiveSessions,
-            TotalActiveUsers: totalActiveUsers
+            ClientPlatforms: clientPlatforms,
+            TotalActiveUsers: totalActiveUsers,
+            TotalActiveSessions: totalActiveSessions
         );
     }
 }
