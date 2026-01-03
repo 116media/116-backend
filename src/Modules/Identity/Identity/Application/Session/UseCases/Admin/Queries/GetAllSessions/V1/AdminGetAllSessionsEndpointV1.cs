@@ -21,13 +21,13 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Queries.GetAllSession
 public record AdminGetAllSessionsResponse(PaginatedResult<SessionDto> Sessions);
 
 /// <summary>
-/// Defines the admin get all sessions endpoint.
+/// Defines the admin get all the sessions' endpoint.
 /// Handles retrieval of all sessions with pagination and filtering.
 /// </summary>
 public class AdminGetAllSessionsEndpointV1 : ICarterModule
 {
     /// <summary>
-    /// Configures the admin get all sessions route within the API pipeline.
+    /// Configures the admin get all the sessions route within the API pipeline.
     /// Maps the <c>/api/v1/admin/sessions</c> endpoint to handle session retrieval requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
@@ -36,9 +36,9 @@ public class AdminGetAllSessionsEndpointV1 : ICarterModule
         RouteGroupBuilder group = app
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{SessionRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.SchemaName}");
+            .WithTags($"{IdentityConstants.Admin}::{SessionRouteConstants.Endpoint}");
 
-        group.MapGet("", async (
+        group.MapGet("/", async (
                 IDispatcher dispatcher,
                 int pageIndex,
                 int pageSize,
@@ -71,7 +71,6 @@ public class AdminGetAllSessionsEndpointV1 : ICarterModule
             .WithSummary(summary: AdminGetAllSessionsMetaField.AdminGetAllSessions.Summary)
             .WithDescription(description: AdminGetAllSessionsMetaField.AdminGetAllSessions.Description)
             .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
-            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .ProducesValidationProblem()
             .Produces<AdminGetAllSessionsResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
