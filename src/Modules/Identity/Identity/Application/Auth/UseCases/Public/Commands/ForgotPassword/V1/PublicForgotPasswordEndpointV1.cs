@@ -44,6 +44,7 @@ public class PublicForgotPasswordEndpointV1 : ICarterModule
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
+
         group.MapPost(pattern: AuthRouteConstants.ForgotPassword, async (
                 PublicForgotPasswordRequest request,
                 IDispatcher dispatcher
@@ -51,7 +52,12 @@ public class PublicForgotPasswordEndpointV1 : ICarterModule
             {
                 var command = new PublicForgotPasswordCommand(Email: request.Email);
                 PublicForgotPasswordResult result = await dispatcher.Send(request: command);
-                var response = new PublicForgotPasswordResponse(IsSuccess: result.IsSuccess, Email: request.Email);
+
+                var response = new PublicForgotPasswordResponse(
+                    IsSuccess: result.IsSuccess,
+                    Email: request.Email
+                );
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: PublicForgotPasswordMetaField.ForgotPassword.Name)
