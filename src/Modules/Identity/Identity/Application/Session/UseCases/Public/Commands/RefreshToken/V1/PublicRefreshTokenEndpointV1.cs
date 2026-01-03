@@ -53,20 +53,23 @@ public class PublicRefreshTokenEndpointV1 : ICarterModule
         RouteGroupBuilder group = app
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{SessionRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
-        group.MapPost(pattern: SessionRouteConstants.RefreshToken, async (PublicRefreshTokenRequest request, IDispatcher dispatcher) =>
+            .WithTags($"{IdentityConstants.Public}::{SessionRouteConstants.Endpoint}");
+
+        group.MapPost(pattern: SessionRouteConstants.RefreshToken, async (
+                PublicRefreshTokenRequest request,
+                IDispatcher dispatcher
+            ) =>
             {
-                // Send the command to refresh the token
                 var command = new PublicRefreshTokenCommand(RefreshToken: request.RefreshToken);
                 PublicRefreshTokenResult result = await dispatcher.Send(request: command);
 
                 var response = new PublicRefreshTokenResponse(
                     User: result.AuthenticationResult.User,
+                    TokenType: result.AuthenticationResult.TokenType,
                     AccessToken: result.AuthenticationResult.AccessToken,
-                    AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
                     RefreshToken: result.AuthenticationResult.RefreshToken,
-                    RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt,
-                    TokenType: result.AuthenticationResult.TokenType
+                    AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
+                    RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt
                 );
 
                 return Results.Ok(value: response);
