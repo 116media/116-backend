@@ -50,22 +50,21 @@ public class PublicResetPasswordEndpointV1 : ICarterModule
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
+
         group.MapPost(pattern: AuthRouteConstants.ResetPassword, async (
                 PublicResetPasswordRequest request,
                 IDispatcher dispatcher
             ) =>
             {
-                // Send the command to reset the password
                 var command = new PublicResetPasswordCommand(
                     Email: request.Email,
                     Code: request.Code,
                     NewPassword: request.NewPassword
                 );
                 PublicResetPasswordResult result = await dispatcher.Send(request: command);
-                // Adapt the result to the response type
-                var response = new PublicResetPasswordResponse(
-                    IsSuccess: result.IsSuccess
-                );
+
+                var response = new PublicResetPasswordResponse(IsSuccess: result.IsSuccess);
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: PublicResetPasswordMetaField.ResetPassword.Name)
