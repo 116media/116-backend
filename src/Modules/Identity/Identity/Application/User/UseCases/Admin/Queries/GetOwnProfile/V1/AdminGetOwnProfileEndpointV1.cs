@@ -1,9 +1,9 @@
 using System.Security.Claims;
 
-using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Application.User.Constants;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -32,37 +32,35 @@ public class AdminGetOwnProfileEndpointV1 : ICarterModule
 {
     /// <summary>
     /// Configures the admin user profile route within the API pipeline.
-    /// Maps the <c>/api/v1/admin/profile</c> endpoint to handle admin profile retrieval requests.
+    /// Maps the <c>/api/v1/admin/user/profile</c> endpoint to handle admin profile retrieval requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app
             .MapApiVersionGroup(1)
-            .MapGroup($"{IdentityConstants.Admin}/{AuthRouteConstants.Profile}")
-            .WithTags($"{IdentityConstants.Admin}::{AuthRouteConstants.Profile}");
-        group.MapGet("/", async (
+            .MapGroup($"{IdentityConstants.Admin}/{UserRouteConstants.Endpoint}")
+            .WithTags($"{IdentityConstants.Admin}::{UserRouteConstants.Endpoint}");
+
+        group.MapGet(pattern: UserRouteConstants.Profile, async (
                 ClaimsPrincipal user,
                 IAuthRepository authRepository,
                 IDispatcher dispatcher
             ) =>
             {
-                // Extract user ID from JWT token claims
                 Guid userId = authRepository.GetUserIdFromClaims(user: user);
-                // Send the query to get admin user profile
+
                 var query = new AdminGetOwnProfileQuery(UserId: userId);
                 AdminGetOwnProfileResult result = await dispatcher.Send(request: query);
-                // Adapt the result to the response type
-                var response = new AdminGetOwnProfileResponse(
-                    User: result.User
-                );
+
+                var response = new AdminGetOwnProfileResponse(User: result.User);
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: AdminGetOwnProfileMetaField.GetOwnProfile.Name)
             .WithSummary(summary: AdminGetOwnProfileMetaField.GetOwnProfile.Summary)
             .WithDescription(description: AdminGetOwnProfileMetaField.GetOwnProfile.Description)
             .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
-            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .Produces<AdminGetOwnProfileResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
