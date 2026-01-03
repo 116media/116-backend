@@ -58,12 +58,15 @@ public class AdminLoginEndpointV1 : ICarterModule
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.SchemaName}");
+
         group.MapPost(pattern: AuthRouteConstants.Login, async (AdminLoginRequest request, IDispatcher dispatcher) =>
             {
-                // Send the command to log in the admin
-                var command = new AdminLoginCommand(Email: request.Email, Password: request.Password);
+                var command = new AdminLoginCommand(
+                    Email: request.Email,
+                    Password: request.Password
+                );
                 AdminLoginResult result = await dispatcher.Send(request: command);
-                // Adapt the result to the response type
+
                 var response = new AdminLoginResponse(
                     User: result.AuthenticationResult.User,
                     AccessToken: result.AuthenticationResult.AccessToken,
@@ -72,6 +75,7 @@ public class AdminLoginEndpointV1 : ICarterModule
                     RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt,
                     TokenType: result.AuthenticationResult.TokenType
                 );
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: AdminLoginMetaField.AdminLogin.Name)
