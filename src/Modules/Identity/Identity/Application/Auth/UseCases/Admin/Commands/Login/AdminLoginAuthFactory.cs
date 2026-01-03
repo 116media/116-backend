@@ -50,9 +50,9 @@ public class AdminLoginAuthFactory(
 
         return new AdminLoginAuthData(
             User: user,
-            UserPermissions: userPermissions,
             Roles: roles,
-            Permissions: permissions
+            Permissions: permissions,
+            UserPermissions: userPermissions
         );
     }
 }
