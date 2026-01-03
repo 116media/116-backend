@@ -47,6 +47,7 @@ public class AdminSignOutEndpointV1 : ICarterModule
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.SchemaName}");
+
         group.MapPost(pattern: AuthRouteConstants.SignOut, async (
                 AdminSignOutRequest request,
                 ClaimsPrincipal user,
@@ -54,11 +55,16 @@ public class AdminSignOutEndpointV1 : ICarterModule
                 IDispatcher dispatcher
             ) =>
             {
-                // Extract user ID from JWT token claims
                 Guid userId = authRepository.GetUserIdFromClaims(user: user);
-                var command = new AdminSignOutCommand(UserId: userId, RefreshToken: request.RefreshToken);
+
+                var command = new AdminSignOutCommand(
+                    UserId: userId,
+                    RefreshToken: request.RefreshToken
+                );
                 AdminSignOutResult result = await dispatcher.Send(request: command);
+
                 var response = new AdminSignOutResponse(IsSuccess: result.IsSuccess);
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: AdminSignOutMetaField.AdminSignOut.Name)
