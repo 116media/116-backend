@@ -20,6 +20,7 @@ public class RoleConfiguration : IEntityTypeConfiguration<RoleEntity>
     {
         // Primary key
         builder.HasKey(r => r.Id);
+
         // Properties configuration
         builder.Property(r => r.Name)
             .HasMaxLength(maxLength: RoleConstants.MaxRoleNameLength)
@@ -27,9 +28,11 @@ public class RoleConfiguration : IEntityTypeConfiguration<RoleEntity>
         builder.Property(r => r.Description)
             .HasMaxLength(maxLength: RoleConstants.MaxRoleDescriptionLength)
             .IsRequired();
+
         // Indexes
         builder.HasIndex(r => r.Name)
             .IsUnique();
+
         // Relationships
         builder.HasMany(r => r.UserRoles)
             .WithOne(ur => ur.Role)
