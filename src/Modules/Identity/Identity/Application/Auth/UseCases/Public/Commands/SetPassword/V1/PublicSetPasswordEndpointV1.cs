@@ -44,6 +44,7 @@ public class PublicSetPasswordEndpointV1 : ICarterModule
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
+
         group.MapPost(pattern: AuthRouteConstants.SetPassword, async (
                 PublicSetPasswordRequest request,
                 ClaimsPrincipal user,
@@ -51,13 +52,16 @@ public class PublicSetPasswordEndpointV1 : ICarterModule
                 IDispatcher dispatcher
             ) =>
             {
-                // Extract user ID from JWT token claims
                 Guid userId = authRepository.GetUserIdFromClaims(user: user);
-                // Send the command to set the password
-                var command = new PublicSetPasswordCommand(UserId: userId, Password: request.Password);
+
+                var command = new PublicSetPasswordCommand(
+                    UserId: userId,
+                    Password: request.Password
+                );
                 PublicSetPasswordResult result = await dispatcher.Send(request: command);
-                // Adapt the result to the response type
+
                 var response = new PublicSetPasswordResponse(IsSuccess: result.IsSuccess);
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: PublicSetPasswordMetaField.SetPassword.Name)
