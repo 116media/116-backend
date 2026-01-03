@@ -38,7 +38,8 @@ public class PublicGetOwnSessionsEndpointV1 : ICarterModule
         RouteGroupBuilder group = app
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{SessionRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
+            .WithTags($"{IdentityConstants.Public}::{SessionRouteConstants.Endpoint}");
+
         group.MapGet("/", async (
                 ClaimsPrincipal user,
                 IAuthRepository authRepository,
@@ -61,7 +62,6 @@ public class PublicGetOwnSessionsEndpointV1 : ICarterModule
             .WithSummary(summary: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Summary)
             .WithDescription(description: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .Produces<PublicGetOwnSessionsResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);
