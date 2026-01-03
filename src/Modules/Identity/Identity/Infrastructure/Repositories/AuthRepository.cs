@@ -1,5 +1,4 @@
 using System.Security.Claims;
-
 using _116.Identity.Application.Auth.Specifications;
 using _116.Identity.Application.Roles.Specifications;
 using _116.Identity.Application.Shared.Errors;
@@ -10,7 +9,6 @@ using _116.Identity.Domain.ValueObjects;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Infrastructure.Extensions;
-
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Identity.Infrastructure.Repositories;
@@ -33,10 +31,10 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     )
     {
         var specification = new UserByEmailSpecification(email: email.Value);
-        return await context.Users
-            .ApplySpecification(specification: specification)
+        return await context
+            .Users.ApplySpecification(specification: specification)
             .Include(u => u.UserRoles)
-            .ThenInclude(ur => ur.Role)
+                .ThenInclude(ur => ur.Role)
             .FirstDefaultOrThrowAsync(
                 keyName: "credentials",
                 keyValue: email.Value,
@@ -51,17 +49,45 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     )
     {
         var specification = new UserByIdSpecification(userId: userId);
-        return await context.Users
-            .ApplySpecification(specification: specification)
+        return await context
+            .Users.ApplySpecification(specification: specification)
             .Include(u => u.UserRoles)
-            .ThenInclude(ur => ur.Role)
-            .ThenInclude(r => r.RolePermissions)
-            .ThenInclude(rp => rp.Permission)
+                .ThenInclude(ur => ur.Role)
+                    .ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
             .AsSplitQuery()
-            .FirstDefaultOrThrowAsync(
-                keyValue: userId,
-                cancellationToken: cancellationToken
-            );
+            .FirstDefaultOrThrowAsync(keyValue: userId, cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<UserEntity?> GetUserWithSessionsByIdOrThrow(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new UserByIdSpecification(userId: userId);
+        return await context
+            .Users.ApplySpecification(specification: specification)
+            .Include(u => u.Sessions)
+            .FirstDefaultOrThrowAsync(keyValue: userId, cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<UserEntity?> GetUserWithRolesPermissionsAndSessionsByIdOrThrow(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new UserByIdSpecification(userId: userId);
+        return await context
+            .Users.ApplySpecification(specification: specification)
+            .Include(u => u.Sessions)
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                    .ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
+            .AsSplitQuery()
+            .FirstDefaultOrThrowAsync(keyValue: userId, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -71,18 +97,14 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     )
     {
         var specification = new UserByEmailSpecification(email: email.Value);
-        return await context.Users
-            .ApplySpecification(specification: specification)
+        return await context
+            .Users.ApplySpecification(specification: specification)
             .Include(u => u.UserRoles)
-            .ThenInclude(ur => ur.Role)
-            .ThenInclude(r => r.RolePermissions)
-            .ThenInclude(rp => rp.Permission)
+                .ThenInclude(ur => ur.Role)
+                    .ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
             .AsSplitQuery()
-            .FirstDefaultOrThrowAsync(
-                keyName: "email",
-                keyValue: email.Value,
-                cancellationToken: cancellationToken
-            );
+            .FirstDefaultOrThrowAsync(keyName: "email", keyValue: email.Value, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -94,12 +116,12 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         // Use specification to determine if credentials is an email or username
         var specification = new UserByCredentialsSpecification(credentials: credentials);
         // Get the user by email or username without any status checks
-        return await context.Users
-            .ApplySpecification(specification: specification)
+        return await context
+            .Users.ApplySpecification(specification: specification)
             .Include(u => u.UserRoles)
-            .ThenInclude(ur => ur.Role)
-            .ThenInclude(r => r.RolePermissions)
-            .ThenInclude(rp => rp.Permission)
+                .ThenInclude(ur => ur.Role)
+                    .ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
             .AsSplitQuery()
             .FirstDefaultOrThrowAsync(
                 keyName: "credentials",
@@ -112,6 +134,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     public async Task<bool> ExistsByEmailAsync(Email email, CancellationToken cancellationToken = default)
     {
         var specification = new UserByEmailSpecification(email: email.Value);
+
         return await context.Users.AnyBySpecificationAsync(
             specification: specification,
             cancellationToken: cancellationToken
@@ -122,6 +145,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     public async Task<bool> ExistsByUserNameAsync(string userName, CancellationToken cancellationToken = default)
     {
         var specification = new UserByUserNameSpecification(userName: userName);
+
         return await context.Users.AnyBySpecificationAsync(
             specification: specification,
             cancellationToken: cancellationToken
@@ -135,6 +159,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     )
     {
         var specification = new UserByPhoneNumberSpecification(phoneNumber: phoneNumber);
+
         return await context.Users.FirstOrDefaultBySpecificationAsync(
             specification: specification,
             cancellationToken: cancellationToken
@@ -206,6 +231,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
             specification: emailSpec,
             cancellationToken: cancellationToken
         );
+
         if (emailExists)
         {
             throw UserErrors.EmailAlreadyExists(email: email.Value);
@@ -217,6 +243,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
             specification: usernameSpec,
             cancellationToken: cancellationToken
         );
+
         if (usernameExists)
         {
             throw UserErrors.UsernameAlreadyExists(username: userName);
@@ -234,6 +261,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
             specification: roleSpec,
             cancellationToken: cancellationToken
         );
+
         if (visitorRole == null)
         {
             throw UserErrors.RoleNotFoundByName(nameof(EnumCoreUserRole.Visitor));
@@ -270,7 +298,8 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         {
             // Try to load existing user including roles and permissions
             user = await GetUserWithRolesAndPermissionsByCredentialsOrThrow(
-                credentials: email, cancellationToken: cancellationToken
+                credentials: email,
+                cancellationToken: cancellationToken
             );
             // Prevent social login if a local account exists
             if (user!.AuthProvider == EnumAuthProvider.Local)
@@ -297,19 +326,16 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         catch (NotFoundException)
         {
             // User doesn't exist, create a new one
-            user = UserEntity.CreateExternal(
-                Guid.NewGuid(),
-                userName!,
-                authProvider: authProvider.Value,
-                email: email
-            );
+            user = UserEntity.CreateExternal(Guid.NewGuid(), userName!, authProvider: authProvider.Value, email: email);
+
             await AddAsync(user: user, cancellationToken: cancellationToken);
             await AssignVisitorRoleAsync(userId: user.Id, cancellationToken: cancellationToken);
             await context.SaveChangesAsync(cancellationToken: cancellationToken);
 
             // Reload user with roles and permissions after creation
             user = await GetUserWithRolesAndPermissionsByCredentialsOrThrow(
-                credentials: email, cancellationToken: cancellationToken
+                credentials: email,
+                cancellationToken: cancellationToken
             );
         }
 
