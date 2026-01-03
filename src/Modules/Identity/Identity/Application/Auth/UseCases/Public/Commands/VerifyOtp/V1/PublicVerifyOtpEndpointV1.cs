@@ -48,19 +48,23 @@ public class PublicVerifyOtpEndpointV1 : ICarterModule
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
+
         group.MapPost(pattern: AuthRouteConstants.VerifyOtp, async (
                 PublicVerifyOtpRequest request,
                 IDispatcher dispatcher
             ) =>
             {
-                // Send the command to verify the OTP
-                var command =
-                    new PublicVerifyOtpCommand(Email: request.Email, Code: request.Code, Purpose: request.Purpose);
+                var command = new PublicVerifyOtpCommand(
+                    Email: request.Email,
+                    Code: request.Code,
+                    Purpose: request.Purpose
+                );
                 PublicVerifyOtpResult result = await dispatcher.Send(request: command);
-                // Adapt the result to the response type
+
                 var response = new PublicVerifyOtpResponse(
                     IsSuccess: result.IsSuccess
                 );
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: PublicVerifyOtpMetaField.VerifyOtp.Name)
