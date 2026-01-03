@@ -46,6 +46,7 @@ public class PublicSignOutEndpointV1 : ICarterModule
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
+
         group.MapPost(pattern: AuthRouteConstants.SignOut, async (
                 PublicSignOutRequest request,
                 ClaimsPrincipal user,
@@ -53,18 +54,22 @@ public class PublicSignOutEndpointV1 : ICarterModule
                 IDispatcher dispatcher
             ) =>
             {
-                // Extract user ID from JWT token claims
                 Guid userId = authRepository.GetUserIdFromClaims(user: user);
-                var command = new PublicSignOutCommand(UserId: userId, RefreshToken: request.RefreshToken);
+
+                var command = new PublicSignOutCommand(
+                    UserId: userId,
+                    RefreshToken: request.RefreshToken
+                );
                 PublicSignOutResult result = await dispatcher.Send(request: command);
+
                 var response = new PublicSignOutResponse(IsSuccess: result.IsSuccess);
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: PublicSignOutMetaField.SignOut.Name)
             .WithSummary(summary: PublicSignOutMetaField.SignOut.Summary)
             .WithDescription(description: PublicSignOutMetaField.SignOut.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .Produces<PublicSignOutResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);
