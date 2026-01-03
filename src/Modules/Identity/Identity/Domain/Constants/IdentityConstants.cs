@@ -11,7 +11,7 @@ public static class IdentityConstants
     /// Database schema name for identity-related tables.
     /// Used in Entity Framework configurations to organize identity tables under the "authentication" schema.
     /// </summary>
-    public const string SchemaName = "authentication";
+    public const string SchemaName = "identity";
 
     /// <summary>
     /// Identifies the Identity module within the application.
