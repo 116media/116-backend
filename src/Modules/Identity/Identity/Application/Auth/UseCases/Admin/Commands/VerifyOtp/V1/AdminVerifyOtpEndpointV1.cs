@@ -48,19 +48,23 @@ public class AdminVerifyOtpEndpointV1 : ICarterModule
             .MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.SchemaName}");
+
         group.MapPost(pattern: AuthRouteConstants.VerifyOtp, async (
                 AdminVerifyOtpRequest request,
                 IDispatcher dispatcher
             ) =>
             {
-                // Send the command to verify the OTP
-                var command =
-                    new AdminVerifyOtpCommand(Email: request.Email, Code: request.Code, Purpose: request.Purpose);
+                var command = new AdminVerifyOtpCommand(
+                    Email: request.Email,
+                    Code: request.Code,
+                    Purpose: request.Purpose
+                );
                 AdminVerifyOtpResult result = await dispatcher.Send(request: command);
-                // Adapt the result to the response type
+
                 var response = new AdminVerifyOtpResponse(
                     IsSuccess: result.IsSuccess
                 );
+
                 return Results.Ok(value: response);
             })
             .WithName(endpointName: AdminVerifyOtpMetaField.VerifyOtp.Name)
