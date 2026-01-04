@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Domain;
 
 namespace _116.Identity.Domain.Entities;
@@ -40,17 +40,25 @@ public class SessionEntity : Aggregate<Guid>
     public string? UserAgent { get; private set; }
 
     /// <summary>
-    /// Friendly device name parsed from user agent (e.g., "Chrome on Windows", "Safari on iPhone").
+    /// Browser type detected from the user agent (e.g., Chrome, Firefox, Safari).
     /// </summary>
-    [MaxLength(length: SessionConstants.MaxDeviceNameLength)]
-    public string? DeviceName { get; private set; }
+    public EnumBrowser Browser { get; private set; }
 
     /// <summary>
-    /// Client platform identifier sent from the application via Client-Platform header.
-    /// Allowed values: "ios-mobile", "android-mobile", "browser-web", "pwa-browser"
+    /// Device type detected from the user agent (e.g., Desktop, Mobile, Tablet).
     /// </summary>
-    [MaxLength(length: SessionConstants.MaxClientPlatformLength)]
-    public string? ClientPlatform { get; private set; }
+    public EnumDevice Device { get; private set; }
+
+    /// <summary>
+    /// Platform/OS detected from the user agent (e.g., Windows, iOS, Android).
+    /// </summary>
+    public EnumPlatform Platform { get; private set; }
+
+    /// <summary>
+    /// Client application type that initiated the session (e.g., MobileApp, WebApp, Dashboard).
+    /// Sent from the application via Client-App header.
+    /// </summary>
+    public EnumClient Client { get; private set; }
 
     /// <summary>
     /// Whether this session has been deleted (logged out/revoked).
@@ -76,10 +84,12 @@ public class SessionEntity : Aggregate<Guid>
         Guid userId,
         string refreshTokenHash,
         DateTime expiresAt,
+        EnumBrowser browser,
+        EnumDevice device,
+        EnumPlatform platform,
+        EnumClient client,
         string? ipAddress = null,
-        string? userAgent = null,
-        string? deviceName = null,
-        string? clientPlatform = null
+        string? userAgent = null
     )
     {
         return new SessionEntity
@@ -88,10 +98,12 @@ public class SessionEntity : Aggregate<Guid>
             UserId = userId,
             RefreshTokenHash = refreshTokenHash,
             ExpiresAt = expiresAt,
+            Browser = browser,
+            Device = device,
+            Platform = platform,
+            Client = client,
             IpAddress = ipAddress,
             UserAgent = userAgent,
-            DeviceName = deviceName,
-            ClientPlatform = clientPlatform
         };
     }
 
