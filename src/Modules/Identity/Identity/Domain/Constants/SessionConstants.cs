@@ -2,52 +2,10 @@ namespace _116.Identity.Domain.Constants;
 
 /// <summary>
 /// Contains constant values for session management.
-/// Provides centralized constants for device patterns and export configuration.
+/// Provides centralized constants for export configuration.
 /// </summary>
 public static class SessionConstants
 {
-    /// <summary>
-    /// Device name patterns for platform classification.
-    /// Used to determine the device platform from device name strings.
-    /// </summary>
-    public static class DevicePatterns
-    {
-        /// <summary>
-        /// Mobile device name patterns.
-        /// </summary>
-        public static readonly string[] Mobile =
-        [
-            "iphone",
-            "android",
-            "mobile",
-            "phone"
-        ];
-
-        /// <summary>
-        /// Tablet device name patterns.
-        /// </summary>
-        public static readonly string[] Tablet =
-        [
-            "ipad",
-            "tablet"
-        ];
-
-        /// <summary>
-        /// Desktop/laptop device name patterns.
-        /// </summary>
-        public static readonly string[] Desktop =
-        [
-            "windows",
-            "mac",
-            "linux",
-            "chrome",
-            "firefox",
-            "safari",
-            "edge",
-            "opera"
-        ];
-    }
-
     /// <summary>
     /// Export-related constants.
     /// </summary>
