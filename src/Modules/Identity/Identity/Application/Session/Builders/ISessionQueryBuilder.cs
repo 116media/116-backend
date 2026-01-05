@@ -25,11 +25,6 @@ public interface ISessionQueryBuilder
     ISessionQueryBuilder WithIpAddress(string? ipAddress);
 
     /// <summary>
-    /// Adds device name filter to the query (partial match).
-    /// </summary>
-    ISessionQueryBuilder WithDeviceName(string? deviceName);
-
-    /// <summary>
     /// Adds from date filter to the query.
     /// </summary>
     ISessionQueryBuilder WithFromDate(DateTime? fromDate);
