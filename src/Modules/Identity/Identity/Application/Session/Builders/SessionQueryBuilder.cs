@@ -32,13 +32,15 @@ public class SessionQueryBuilder : ISessionQueryBuilder
         string normalizedStatus = status.ToLower();
         Specification<SessionEntity> statusSpec = normalizedStatus switch
         {
-            _ when normalizedStatus.Equals(nameof(EnumSessionStatus.Active),
-                    comparisonType: StringComparison.InvariantCultureIgnoreCase) =>
-                new SessionIsActiveSpecification(),
-            _ when normalizedStatus.Equals(nameof(EnumSessionStatus.Expired),
-                    comparisonType: StringComparison.InvariantCultureIgnoreCase) =>
-                new SessionIsExpiredSpecification(),
-            _ => null!
+            _ when normalizedStatus.Equals(
+                    nameof(EnumSessionStatus.Active),
+                    comparisonType: StringComparison.InvariantCultureIgnoreCase
+                ) => new SessionIsActiveSpecification(),
+            _ when normalizedStatus.Equals(
+                    nameof(EnumSessionStatus.Expired),
+                    comparisonType: StringComparison.InvariantCultureIgnoreCase
+                ) => new SessionIsExpiredSpecification(),
+            _ => null!,
         };
 
         CombineSpecification(spec: statusSpec);
@@ -56,19 +58,6 @@ public class SessionQueryBuilder : ISessionQueryBuilder
 
         var ipSpec = new SessionByIpAddressSpecification(ipAddress: ipAddress);
         CombineSpecification(spec: ipSpec);
-        return this;
-    }
-
-    /// <inheritdoc />
-    public ISessionQueryBuilder WithDeviceName(string? deviceName)
-    {
-        if (string.IsNullOrWhiteSpace(value: deviceName))
-        {
-            return this;
-        }
-
-        var deviceSpec = new SessionByDeviceNameSpecification(deviceName: deviceName);
-        CombineSpecification(spec: deviceSpec);
         return this;
     }
 
@@ -122,8 +111,6 @@ public class SessionQueryBuilder : ISessionQueryBuilder
 
     private void CombineSpecification(Specification<SessionEntity> spec)
     {
-        _specification = _specification is null
-            ? spec
-            : _specification.And(other: spec);
+        _specification = _specification is null ? spec : _specification.And(other: spec);
     }
 }
