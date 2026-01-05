@@ -1,16 +1,19 @@
+using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Application.Session.Services;
-
-using DeviceDetectorNET;
-
+using _116.Identity.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 
 namespace _116.Identity.Infrastructure.Services;
 
 /// <summary>
-/// Service for extracting session metadata from HTTP context using DeviceDetector.NET.
+/// Service for extracting session metadata from HTTP context.
 /// </summary>
 /// <param name="httpContextAccessor">Accessor for the current HTTP context.</param>
-public class SessionMetadataService(IHttpContextAccessor httpContextAccessor) : ISessionMetadataService
+/// <param name="clientOriginDetectionAdapter">Adapter for detecting client origin information.</param>
+public class SessionMetadataService(
+    IHttpContextAccessor httpContextAccessor,
+    IClientOriginDetectionAdapter clientOriginDetectionAdapter
+) : ISessionMetadataService
 {
     /// <summary>
     /// Extracts the client's IP address from the HTTP context.
@@ -29,28 +32,31 @@ public class SessionMetadataService(IHttpContextAccessor httpContextAccessor) : 
     }
 
     /// <summary>
-    /// Parses a device name from the User-Agent string using DeviceDetector.NET.
-    /// Returns a formatted string like "Chrome on Windows" or "Safari on iOS".
+    /// Gets client origin information (browser, device, platform) from the current HTTP request.
     /// </summary>
-    public string? ParseDeviceName(string? userAgent)
+    public ClientOriginInfo GetClientOriginInfo()
     {
-        if (string.IsNullOrWhiteSpace(value: userAgent))
+        return clientOriginDetectionAdapter.GetInfo();
+    }
+
+    /// <summary>
+    /// Extracts the client application type from the Client-App header.
+    /// </summary>
+    public EnumClient ExtractClientApp()
+    {
+        string? clientAppHeader = httpContextAccessor.HttpContext?.Request.Headers["Client-App"].FirstOrDefault();
+
+        if (string.IsNullOrWhiteSpace(value: clientAppHeader))
         {
-            return null;
+            return EnumClient.Unknown;
         }
 
-        var deviceDetector = new DeviceDetector(userAgent: userAgent);
-        deviceDetector.Parse();
-
-        string? client = deviceDetector.GetClient().Match?.Name;
-        string? os = deviceDetector.GetOs().Match?.Name;
-
-        return (client, os) switch
+        return clientAppHeader.ToLower() switch
         {
-            (not null, not null) => $"{client} - {os}",
-            (not null, _) => client,
-            (_, not null) => os,
-            _ => "unknown"
+            "mobile-app" => EnumClient.MobileApp,
+            "web-app" => EnumClient.WebApp,
+            "dashboard" => EnumClient.Dashboard,
+            _ => EnumClient.Unknown,
         };
     }
 }
