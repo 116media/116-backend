@@ -1,3 +1,4 @@
+using _116.Identity.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
@@ -9,7 +10,7 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSession
 /// <param name="FromDate">Optional filter for sessions created after this date.</param>
 /// <param name="ToDate">Optional filter for sessions created before this date.</param>
 /// <param name="Format">Export file format: csv, xlsx, etc. If null, returns JSON response.</param>
-/// <param name="Columns">Comma-separated list of columns to export. If null/empty, exports all columns. Valid columns: Id, UserId, IpAddress, DeviceName, UserAgent, ClientPlatform, CreatedAt, ExpiresAt, IsActive, DeletedAt.</param>
+/// <param name="Columns">Comma-separated list of columns to export. If null/empty, exports all columns. Valid columns: Id, UserId, IpAddress, UserAgent, Browser, Device, Platform, Client, CreatedAt, ExpiresAt, IsActive, DeletedAt.</param>
 public record AdminExportSessionDataQuery(
     string? Status = null,
     DateTime? FromDate = null,
@@ -30,9 +31,11 @@ public record AdminExportSessionDataResult(List<SessionExportDto> SessionData);
 /// <param name="Id">Session unique identifier.</param>
 /// <param name="UserId">User unique identifier.</param>
 /// <param name="IpAddress">IP address of the session.</param>
-/// <param name="DeviceName">Device name extracted from user agent.</param>
 /// <param name="UserAgent">Full user agent string.</param>
-/// <param name="ClientPlatform">Client platform identifier.</param>
+/// <param name="Browser">Browser type detected from the user agent.</param>
+/// <param name="Device">Device type detected from the user agent.</param>
+/// <param name="Platform">Platform/OS detected from the user agent.</param>
+/// <param name="Client">Client application type that initiated the session.</param>
 /// <param name="CreatedAt">Session creation timestamp.</param>
 /// <param name="ExpiresAt">Session expiration timestamp.</param>
 /// <param name="IsActive">Whether the session is currently active.</param>
@@ -41,9 +44,11 @@ public record SessionExportDto(
     Guid Id,
     Guid UserId,
     string? IpAddress,
-    string? DeviceName,
     string? UserAgent,
-    string? ClientPlatform,
+    EnumBrowser Browser,
+    EnumDevice Device,
+    EnumPlatform Platform,
+    EnumClient Client,
     DateTime CreatedAt,
     DateTime ExpiresAt,
     bool IsActive,
