@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Specifications;
 
@@ -143,18 +142,6 @@ public class SessionByIpAddressSpecification(string ipAddress) : Specification<S
     public override Expression<Func<SessionEntity, bool>> ToExpression()
     {
         return session => session.IpAddress!.Contains(ipAddress);
-    }
-}
-
-/// <summary>
-/// Specification that matches sessions by device name (partial match).
-/// Used for filtering sessions based on device name patterns.
-/// </summary>
-public class SessionByDeviceNameSpecification(string deviceName) : Specification<SessionEntity>
-{
-    public override Expression<Func<SessionEntity, bool>> ToExpression()
-    {
-        return session => session.DeviceName!.Contains(deviceName, StringComparison.CurrentCultureIgnoreCase);
     }
 }
 
