@@ -9,22 +9,6 @@ namespace _116.Identity.Application.Session.Services;
 public interface ISessionExportService
 {
     /// <summary>
-    /// Exports session data to CSV format.
-    /// </summary>
-    /// <param name="sessions">The session data to export.</param>
-    /// <param name="columns">Optional list of column names to export. If null, export all columns.</param>
-    /// <returns>CSV file content as a byte array.</returns>
-    byte[] ExportToCsv(List<SessionExportDto> sessions, List<string>? columns = null);
-
-    /// <summary>
-    /// Exports session data to XLSX (Excel) format.
-    /// </summary>
-    /// <param name="sessions">The session data to export.</param>
-    /// <param name="columns">Optional list of column names to export. If null, export all columns.</param>
-    /// <returns>XLSX file content as byte array.</returns>
-    byte[] ExportToXlsx(List<SessionExportDto> sessions, List<string>? columns = null);
-
-    /// <summary>
     /// Exports session data to the specified format.
     /// </summary>
     /// <param name="sessions">The session data to export.</param>
