@@ -1,9 +1,11 @@
+using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Results;
 using _116.Shared.Application.Configurations;
 
@@ -53,16 +55,20 @@ public class PublicSignUpSessionFactory(
 
         string? ipAddress = sessionMetadataService.ExtractIpAddress();
         string? userAgent = sessionMetadataService.ExtractUserAgent();
-        string? deviceName = sessionMetadataService.ParseDeviceName(userAgent: userAgent);
+        ClientOriginInfo clientOrigin = sessionMetadataService.GetClientOriginInfo();
+        EnumClient clientApp = sessionMetadataService.ExtractClientApp();
 
         var session = SessionEntity.Create(
-            Guid.NewGuid(),
+            id: Guid.NewGuid(),
             userId: user.Id,
-            ipAddress: ipAddress,
-            userAgent: userAgent,
-            deviceName: deviceName,
+            refreshTokenHash: refreshTokenHash,
             expiresAt: refreshTokenExpiresAt,
-            refreshTokenHash: refreshTokenHash
+            browser: clientOrigin.Browser,
+            device: clientOrigin.Device,
+            platform: clientOrigin.Platform,
+            client: clientApp,
+            ipAddress: ipAddress,
+            userAgent: userAgent
         );
 
         // Persist session
