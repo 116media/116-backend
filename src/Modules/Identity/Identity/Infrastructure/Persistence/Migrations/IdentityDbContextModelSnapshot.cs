@@ -246,10 +246,13 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ClientPlatform")
-                        .HasMaxLength(25)
-                        .HasColumnType("character varying(25)")
-                        .HasColumnName("client_platform");
+                    b.Property<int>("Browser")
+                        .HasColumnType("integer")
+                        .HasColumnName("browser");
+
+                    b.Property<int>("Client")
+                        .HasColumnType("integer")
+                        .HasColumnName("client");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -263,10 +266,9 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
-                    b.Property<string>("DeviceName")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("device_name");
+                    b.Property<int>("Device")
+                        .HasColumnType("integer")
+                        .HasColumnName("device");
 
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")
@@ -282,6 +284,10 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("is_deleted");
+
+                    b.Property<int>("Platform")
+                        .HasColumnType("integer")
+                        .HasColumnName("platform");
 
                     b.Property<string>("RefreshTokenHash")
                         .IsRequired()
