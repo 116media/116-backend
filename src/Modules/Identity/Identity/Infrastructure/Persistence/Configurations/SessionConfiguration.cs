@@ -1,6 +1,5 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Domain.Entities;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,29 +21,27 @@ public class SessionConfiguration : IEntityTypeConfiguration<SessionEntity>
         builder.HasKey(s => s.Id);
 
         // Properties configuration
-        builder.Property(s => s.UserId)
-            .IsRequired();
-        builder.Property(s => s.RefreshTokenHash)
+        builder.Property(s => s.UserId).IsRequired();
+        builder
+            .Property(s => s.RefreshTokenHash)
             .HasMaxLength(maxLength: SessionConstants.MaxRefreshTokenHashLength)
             .IsRequired();
-        builder.Property(s => s.CreatedAt)
-            .IsRequired();
-        builder.Property(s => s.ExpiresAt)
-            .IsRequired();
-        builder.Property(s => s.IpAddress)
+        builder.Property(s => s.CreatedAt).IsRequired();
+        builder.Property(s => s.ExpiresAt).IsRequired();
+        builder
+            .Property(s => s.IpAddress)
             .HasMaxLength(maxLength: SessionConstants.MaxIpAddressLength)
             .IsRequired(false);
-        builder.Property(s => s.UserAgent)
+        builder
+            .Property(s => s.UserAgent)
             .HasMaxLength(maxLength: SessionConstants.MaxUserAgentLength)
             .IsRequired(false);
-        builder.Property(s => s.DeviceName)
-            .HasMaxLength(maxLength: SessionConstants.MaxDeviceNameLength)
-            .IsRequired(false);
-        builder.Property(s => s.IsDeleted)
-            .HasDefaultValue(false)
-            .IsRequired();
-        builder.Property(s => s.DeletedAt)
-            .IsRequired(false);
+        builder.Property(s => s.Browser).IsRequired();
+        builder.Property(s => s.Device).IsRequired();
+        builder.Property(s => s.Platform).IsRequired();
+        builder.Property(s => s.Client).IsRequired();
+        builder.Property(s => s.IsDeleted).HasDefaultValue(false).IsRequired();
+        builder.Property(s => s.DeletedAt).IsRequired(false);
 
         // Indexes
         builder.HasIndex(s => s.UserId);
