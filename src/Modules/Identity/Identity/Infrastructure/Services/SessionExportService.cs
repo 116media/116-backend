@@ -2,7 +2,7 @@ using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Enums;
-using _116.Identity.Infrastructure.Services.ExportStrategies;
+using _116.Identity.Infrastructure.Services.SessionExport.Strategies;
 
 namespace _116.Identity.Infrastructure.Services;
 
@@ -14,20 +14,8 @@ public class SessionExportService : ISessionExportService
     private readonly Dictionary<SessionExportFormat, IExportStrategy> _strategies = new()
     {
         [key: SessionExportFormat.Csv] = new CsvExportStrategy(),
-        [key: SessionExportFormat.Xlsx] = new XlsxExportStrategy()
+        [key: SessionExportFormat.Xlsx] = new XlsxExportStrategy(),
     };
-
-    /// <inheritdoc />
-    public byte[] ExportToCsv(List<SessionExportDto> sessions, List<string>? columns = null)
-    {
-        return _strategies[key: SessionExportFormat.Csv].Export(sessions: sessions, columns: columns);
-    }
-
-    /// <inheritdoc />
-    public byte[] ExportToXlsx(List<SessionExportDto> sessions, List<string>? columns = null)
-    {
-        return _strategies[key: SessionExportFormat.Xlsx].Export(sessions: sessions, columns: columns);
-    }
 
     /// <inheritdoc />
     public byte[] Export(List<SessionExportDto> sessions, SessionExportFormat format, List<string>? columns = null)
@@ -47,7 +35,7 @@ public class SessionExportService : ISessionExportService
         {
             SessionExportFormat.Csv => "text/csv",
             SessionExportFormat.Xlsx => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            _ => throw new ArgumentException($"Unsupported export format: {format}", nameof(format))
+            _ => throw new ArgumentException($"Unsupported export format: {format}", nameof(format)),
         };
     }
 
@@ -60,7 +48,7 @@ public class SessionExportService : ISessionExportService
         {
             SessionExportFormat.Csv => "csv",
             SessionExportFormat.Xlsx => "xlsx",
-            _ => throw new ArgumentException($"Unsupported export format: {format}", nameof(format))
+            _ => throw new ArgumentException($"Unsupported export format: {format}", nameof(format)),
         };
 
         return $"{fileName}-{DateTime.UtcNow:yyyyMMddHHmmss}.{fileExtension}";
