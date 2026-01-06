@@ -5,9 +5,7 @@ using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -33,40 +31,41 @@ public class AdminGetAllSessionsEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{SessionRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Admin}::{SessionRouteConstants.Endpoint}");
 
-        group.MapGet("/", async (
-                IDispatcher dispatcher,
-                int pageIndex,
-                int pageSize,
-                string? status = null,
-                string? userId = null,
-                string? ipAddress = null,
-                string? deviceName = null,
-                DateTime? fromDate = null,
-                DateTime? toDate = null
-            ) =>
-            {
-                var paginatedRequest = new PaginatedRequest(pageIndex, pageSize);
+        group
+            .MapGet(
+                "/",
+                async (
+                    IDispatcher dispatcher,
+                    int pageIndex,
+                    int pageSize,
+                    string? status = null,
+                    string? userId = null,
+                    string? ipAddress = null,
+                    DateTime? fromDate = null,
+                    DateTime? toDate = null
+                ) =>
+                {
+                    var paginatedRequest = new PaginatedRequest(pageIndex, pageSize);
 
-                var query = new AdminGetAllSessionsQuery(
-                    PaginatedRequest: paginatedRequest,
-                    Status: status,
-                    UserId: userId,
-                    IpAddress: ipAddress,
-                    DeviceName: deviceName,
-                    FromDate: fromDate,
-                    ToDate: toDate
-                );
+                    var query = new AdminGetAllSessionsQuery(
+                        PaginatedRequest: paginatedRequest,
+                        Status: status,
+                        UserId: userId,
+                        IpAddress: ipAddress,
+                        FromDate: fromDate,
+                        ToDate: toDate
+                    );
 
-                AdminGetAllSessionsResult result = await dispatcher.Send(request: query);
+                    AdminGetAllSessionsResult result = await dispatcher.Send(request: query);
 
-                var response = new AdminGetAllSessionsResponse(Sessions: result.Sessions);
-                return Results.Ok(value: response);
-            })
+                    var response = new AdminGetAllSessionsResponse(Sessions: result.Sessions);
+                    return Results.Ok(value: response);
+                }
+            )
             .WithName(endpointName: AdminGetAllSessionsMetaField.AdminGetAllSessions.Name)
             .WithSummary(summary: AdminGetAllSessionsMetaField.AdminGetAllSessions.Summary)
             .WithDescription(description: AdminGetAllSessionsMetaField.AdminGetAllSessions.Description)
