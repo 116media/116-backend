@@ -13,5 +13,5 @@ public enum EnumSessionStatus
     /// <summary>
     /// Represents an expired session (past expiration date).
     /// </summary>
-    Expired
+    Expired,
 }

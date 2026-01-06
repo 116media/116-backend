@@ -12,11 +12,8 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword;
 /// This command resets an admin user's password after validating the OTP sent during the forgot password process.
 /// The OTP must be valid, not expired, and match the admin user's email address.
 /// </remarks>
-public record AdminResetPasswordCommand(
-    string Email,
-    string Code,
-    string NewPassword
-) : ICommand<AdminResetPasswordResult>;
+public record AdminResetPasswordCommand(string Email, string Code, string NewPassword)
+    : ICommand<AdminResetPasswordResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminResetPasswordCommand" /> containing reset status.
@@ -26,6 +23,4 @@ public record AdminResetPasswordCommand(
 /// Simple result indicating successful password reset operation.
 /// Upon success, the admin user can log in with their new password.
 /// </remarks>
-public record AdminResetPasswordResult(
-    bool IsSuccess
-);
+public record AdminResetPasswordResult(bool IsSuccess);

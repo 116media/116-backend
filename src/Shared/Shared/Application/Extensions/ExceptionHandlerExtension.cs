@@ -1,9 +1,7 @@
 using System.Reflection;
-
 using _116.Shared.Application.Exceptions.Handlers;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -51,7 +49,9 @@ public static class ExceptionHandlerExtension
         var assembly = Assembly.GetExecutingAssembly();
         List<Type> strategyTypes = assembly
             .GetTypes()
-            .Where(type => type is { IsClass: true, IsAbstract: false } && typeof(IExceptionStrategy).IsAssignableFrom(type))
+            .Where(type =>
+                type is { IsClass: true, IsAbstract: false } && typeof(IExceptionStrategy).IsAssignableFrom(type)
+            )
             .ToList();
 
         foreach (Type strategyType in strategyTypes)

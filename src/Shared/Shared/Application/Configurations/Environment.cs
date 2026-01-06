@@ -74,8 +74,13 @@ public class AppEnvironment
     /// - <c>accessTokenExpiration</c>: The JWT access token expiration duration in minutes
     /// - <c>refreshTokenExpiration</c>: The refresh token expiration duration in minutes
     /// </returns>
-    public static (string? secret, string? issuer, string? audience, string? accessTokenExpiration, string?
-        refreshTokenExpiration) Jwt()
+    public static (
+        string? secret,
+        string? issuer,
+        string? audience,
+        string? accessTokenExpiration,
+        string? refreshTokenExpiration
+    ) Jwt()
     {
         string? secret = Environment.GetEnvironmentVariable("JWT_SECRET");
         string? issuer = Environment.GetEnvironmentVariable("JWT_ISSUER");

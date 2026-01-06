@@ -2,14 +2,12 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Results;
 using _116.Shared.Application.Configurations;
-
 using Microsoft.IdentityModel.Tokens;
 
 namespace _116.Identity.Infrastructure.Services;
@@ -48,9 +46,8 @@ public class JwtService : IJwtService
             new(type: ClaimTypes.Email, value: email),
             new(type: JwtRegisteredClaimNames.Sub, $"{userId}"),
             new(type: JwtRegisteredClaimNames.Jti, $"{Guid.NewGuid()}"),
-            new(type: JwtRegisteredClaimNames.Iat, $"{now.ToUnixTimeSeconds()}",
-                valueType: ClaimValueTypes.Integer64),
-            new(type: JwtClaimsConstants.AuthProvider, $"{authProvider}")
+            new(type: JwtRegisteredClaimNames.Iat, $"{now.ToUnixTimeSeconds()}", valueType: ClaimValueTypes.Integer64),
+            new(type: JwtClaimsConstants.AuthProvider, $"{authProvider}"),
         };
 
         claims.AddRange(BuildAccountStatusClaims(isVerified: isVerified, isActive: isActive));
@@ -68,7 +65,7 @@ public class JwtService : IJwtService
             Expires = expiresAt,
             SigningCredentials = credentials,
             Issuer = issuer,
-            Audience = audience
+            Audience = audience,
         };
 
         var handler = new JwtSecurityTokenHandler();
@@ -85,10 +82,10 @@ public class JwtService : IJwtService
         return new Dictionary<string, bool>
         {
             [key: JwtClaimsConstants.IsVerified] = isVerified,
-            [key: JwtClaimsConstants.IsActive] = isActive
-        }.Select(kvp =>
-            new Claim(type: kvp.Key, kvp.Value ? "true" : "false", valueType: ClaimValueTypes.Boolean))
-        .ToList();
+            [key: JwtClaimsConstants.IsActive] = isActive,
+        }
+            .Select(kvp => new Claim(type: kvp.Key, kvp.Value ? "true" : "false", valueType: ClaimValueTypes.Boolean))
+            .ToList();
     }
 
     /// <summary>

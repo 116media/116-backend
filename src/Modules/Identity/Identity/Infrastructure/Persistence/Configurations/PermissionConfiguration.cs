@@ -1,6 +1,5 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Domain.Entities;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,23 +21,28 @@ public class PermissionConfiguration : IEntityTypeConfiguration<PermissionEntity
         builder.HasKey(p => p.Id);
 
         // Properties configuration
-        builder.Property(p => p.Resource)
+        builder
+            .Property(p => p.Resource)
             .HasMaxLength(maxLength: PermissionConstants.MaxPermissionResourceLength)
             .IsRequired();
-        builder.Property(p => p.Action)
+        builder
+            .Property(p => p.Action)
             .HasMaxLength(maxLength: PermissionConstants.MaxPermissionActionLength)
             .IsRequired();
-        builder.Property(p => p.Description)
+        builder
+            .Property(p => p.Description)
             .HasMaxLength(maxLength: PermissionConstants.MaxPermissionDescriptionLength)
             .IsRequired();
 
         // Indexes
-        builder.HasIndex(p => new { p.Resource, p.Action })
+        builder
+            .HasIndex(p => new { p.Resource, p.Action })
             .IsUnique()
             .HasDatabaseName("IX_permissions_resource_action");
 
         // Relationships
-        builder.HasMany(p => p.RolePermissions)
+        builder
+            .HasMany(p => p.RolePermissions)
             .WithOne(rp => rp.Permission)
             .HasForeignKey(rp => rp.PermissionId)
             .OnDelete(deleteBehavior: DeleteBehavior.Cascade);

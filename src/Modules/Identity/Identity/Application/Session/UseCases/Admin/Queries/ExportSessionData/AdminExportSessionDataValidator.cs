@@ -1,5 +1,4 @@
 using _116.Identity.Domain.Enums;
-
 using FluentValidation;
 
 namespace _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
@@ -19,35 +18,47 @@ public class AdminExportSessionDataValidator : AbstractValidator<AdminExportSess
     /// </summary>
     public AdminExportSessionDataValidator()
     {
-        When(x => !string.IsNullOrWhiteSpace(value: x.Format), () =>
-        {
-            RuleFor(x => x.Format)
-                .Must(predicate: BeValidExportFormat)
-                .WithMessage("Format must be one of: Csv, Xlsx.");
-        });
+        When(
+            x => !string.IsNullOrWhiteSpace(value: x.Format),
+            () =>
+            {
+                RuleFor(x => x.Format)
+                    .Must(predicate: BeValidExportFormat)
+                    .WithMessage("Format must be one of: Csv, Xlsx.");
+            }
+        );
 
-        When(x => !string.IsNullOrWhiteSpace(value: x.Columns), () =>
-        {
-            RuleFor(x => x.Columns)
-                .Must(predicate: BeValidColumns)
-                .WithMessage(
-                    $"Invalid column name(s). Valid columns are: {string.Join<string>(", ", values: ValidColumns)}."
-                );
-        });
+        When(
+            x => !string.IsNullOrWhiteSpace(value: x.Columns),
+            () =>
+            {
+                RuleFor(x => x.Columns)
+                    .Must(predicate: BeValidColumns)
+                    .WithMessage(
+                        $"Invalid column name(s). Valid columns are: {string.Join<string>(", ", values: ValidColumns)}."
+                    );
+            }
+        );
 
-        When(x => !string.IsNullOrWhiteSpace(value: x.Status), () =>
-        {
-            RuleFor(x => x.Status)
-                .Must(predicate: BeValidSessionStatus)
-                .WithMessage("Status must be either 'active' or 'expired'.");
-        });
+        When(
+            x => !string.IsNullOrWhiteSpace(value: x.Status),
+            () =>
+            {
+                RuleFor(x => x.Status)
+                    .Must(predicate: BeValidSessionStatus)
+                    .WithMessage("Status must be either 'active' or 'expired'.");
+            }
+        );
 
-        When(x => x.FromDate.HasValue && x.ToDate.HasValue, () =>
-        {
-            RuleFor(x => x.ToDate)
-                .GreaterThanOrEqualTo(x => x.FromDate)
-                .WithMessage("ToDate must be greater than or equal to FromDate.");
-        });
+        When(
+            x => x.FromDate.HasValue && x.ToDate.HasValue,
+            () =>
+            {
+                RuleFor(x => x.ToDate)
+                    .GreaterThanOrEqualTo(x => x.FromDate)
+                    .WithMessage("ToDate must be greater than or equal to FromDate.");
+            }
+        );
     }
 
     /// <summary>
@@ -57,8 +68,8 @@ public class AdminExportSessionDataValidator : AbstractValidator<AdminExportSess
     /// <returns>True if the format is valid, otherwise false.</returns>
     private static bool BeValidExportFormat(string? format)
     {
-        return !string.IsNullOrWhiteSpace(value: format) &&
-               Enum.TryParse<SessionExportFormat>(value: format, true, result: out _);
+        return !string.IsNullOrWhiteSpace(value: format)
+            && Enum.TryParse<SessionExportFormat>(value: format, true, result: out _);
     }
 
     /// <summary>
@@ -68,8 +79,8 @@ public class AdminExportSessionDataValidator : AbstractValidator<AdminExportSess
     /// <returns>True if the status is valid, otherwise false.</returns>
     private static bool BeValidSessionStatus(string? status)
     {
-        return !string.IsNullOrWhiteSpace(value: status) &&
-               Enum.TryParse<EnumSessionStatus>(value: status, true, result: out _);
+        return !string.IsNullOrWhiteSpace(value: status)
+            && Enum.TryParse<EnumSessionStatus>(value: status, true, result: out _);
     }
 
     /// <summary>
@@ -84,8 +95,10 @@ public class AdminExportSessionDataValidator : AbstractValidator<AdminExportSess
             return true;
         }
 
-        string[] columnList =
-            columns.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        string[] columnList = columns.Split(
+            ',',
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+        );
 
         return columnList.All(column =>
             ValidColumns.Contains(value: column, comparer: StringComparer.OrdinalIgnoreCase)

@@ -28,8 +28,7 @@ public static class AuthorizationErrorMessage
     /// </returns>
     public static string AccountNotVerified(string email)
     {
-        return
-            $"The account associated with '{email}' is not verified. Please complete the verification process to continue.";
+        return $"The account associated with '{email}' is not verified. Please complete the verification process to continue.";
     }
 
     /// <summary>

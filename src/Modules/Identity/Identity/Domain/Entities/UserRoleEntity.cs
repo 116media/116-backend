@@ -36,6 +36,11 @@ public class UserRoleEntity : Aggregate<Guid>
     /// <returns>A new <see cref="UserRoleEntity" /> instance.</returns>
     public static UserRoleEntity Create(Guid id, Guid userId, Guid roleId)
     {
-        return new UserRoleEntity { Id = id, UserId = userId, RoleId = roleId };
+        return new UserRoleEntity
+        {
+            Id = id,
+            UserId = userId,
+            RoleId = roleId,
+        };
     }
 }

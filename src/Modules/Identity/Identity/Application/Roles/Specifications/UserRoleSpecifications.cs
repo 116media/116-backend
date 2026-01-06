@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-
 using _116.Identity.Application.Shared.Specifications;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
@@ -15,9 +14,10 @@ public class UserHasAdminRoleSpecification : Specification<UserEntity>
 {
     public override Expression<Func<UserEntity, bool>> ToExpression()
     {
-        return user => user.UserRoles.Any(ur =>
-            ur.Role.Name == nameof(EnumCoreUserRole.Admin) ||
-            ur.Role.Name == nameof(EnumCoreUserRole.SuperAdmin));
+        return user =>
+            user.UserRoles.Any(ur =>
+                ur.Role.Name == nameof(EnumCoreUserRole.Admin) || ur.Role.Name == nameof(EnumCoreUserRole.SuperAdmin)
+            );
     }
 }
 

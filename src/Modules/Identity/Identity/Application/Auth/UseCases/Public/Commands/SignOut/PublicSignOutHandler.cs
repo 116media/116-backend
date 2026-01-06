@@ -10,10 +10,8 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignOut;
 /// </summary>
 /// <param name="sessionFactory">Factory for handling user sign-out session management.</param>
 /// <param name="authRepository">Repository for user data access operations.</param>
-public class PublicSignOutHandler(
-    IPublicSignOutSessionFactory sessionFactory,
-    IAuthRepository authRepository
-) : ICommandHandler<PublicSignOutCommand, PublicSignOutResult>
+public class PublicSignOutHandler(IPublicSignOutSessionFactory sessionFactory, IAuthRepository authRepository)
+    : ICommandHandler<PublicSignOutCommand, PublicSignOutResult>
 {
     /// <summary>
     /// Handles the sign-out command by invalidating the specific session.
@@ -21,15 +19,14 @@ public class PublicSignOutHandler(
     /// </summary>
     public async Task<PublicSignOutResult> Handle(PublicSignOutCommand command, CancellationToken cancellationToken)
     {
-        UserEntity? user =
-            await authRepository.FindUserByIdOrThrow(userId: command.UserId, cancellationToken: cancellationToken);
+        UserEntity? user = await authRepository.FindUserByIdOrThrow(
+            userId: command.UserId,
+            cancellationToken: cancellationToken
+        );
 
         authRepository.IsUserAccountActive(user!);
 
-        await sessionFactory.SignOutAsync(
-            refreshToken: command.RefreshToken,
-            cancellationToken: cancellationToken
-        );
+        await sessionFactory.SignOutAsync(refreshToken: command.RefreshToken, cancellationToken: cancellationToken);
 
         return new PublicSignOutResult(true);
     }

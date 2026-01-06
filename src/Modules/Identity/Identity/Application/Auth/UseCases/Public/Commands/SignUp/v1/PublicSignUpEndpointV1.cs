@@ -5,9 +5,7 @@ using _116.Identity.Application.User.Constants;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -20,11 +18,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.v1;
 /// <param name="Email">The user’s email address for account verification.</param>
 /// <param name="UserName">The desired username (alphanumeric with spaces and hyphens allowed).</param>
 /// <param name="Password">The user’s password in plain text format (will be hashed).</param>
-public record PublicSignUpRequest(
-    string Email,
-    string UserName,
-    string Password
-);
+public record PublicSignUpRequest(string Email, string UserName, string Password);
 
 /// <summary>
 /// Response model for successful public user signup.
@@ -60,40 +54,39 @@ public class PublicSignUpEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
 
-        group.MapPost(pattern: AuthRouteConstants.SignUp, async (
-                PublicSignUpRequest request,
-                IDispatcher dispatcher,
-                HttpContext httpContext
-            ) =>
-            {
-                var command = new PublicSignUpCommand(
-                    Email: request.Email,
-                    UserName: request.UserName,
-                    Password: request.Password
-                );
+        group
+            .MapPost(
+                pattern: AuthRouteConstants.SignUp,
+                async (PublicSignUpRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                {
+                    var command = new PublicSignUpCommand(
+                        Email: request.Email,
+                        UserName: request.UserName,
+                        Password: request.Password
+                    );
 
-                PublicSignUpResult result = await dispatcher.Send(request: command);
+                    PublicSignUpResult result = await dispatcher.Send(request: command);
 
-                var response = new PublicSignUpResponse(
-                    User: result.AuthenticationResult.User,
-                    AccessToken: result.AuthenticationResult.AccessToken,
-                    AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
-                    RefreshToken: result.AuthenticationResult.RefreshToken,
-                    RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt,
-                    TokenType: result.AuthenticationResult.TokenType,
-                    VerificationRequired: result.VerificationRequired
-                );
+                    var response = new PublicSignUpResponse(
+                        User: result.AuthenticationResult.User,
+                        AccessToken: result.AuthenticationResult.AccessToken,
+                        AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
+                        RefreshToken: result.AuthenticationResult.RefreshToken,
+                        RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt,
+                        TokenType: result.AuthenticationResult.TokenType,
+                        VerificationRequired: result.VerificationRequired
+                    );
 
-                string userPath = $"{IdentityConstants.Public}/{UserRouteConstants.Endpoint}/{response.User.Id}";
-                string locationUrl = ApiVersionUrl.Build(context: httpContext, path: userPath);
+                    string userPath = $"{IdentityConstants.Public}/{UserRouteConstants.Endpoint}/{response.User.Id}";
+                    string locationUrl = ApiVersionUrl.Build(context: httpContext, path: userPath);
 
-                return Results.Created(uri: locationUrl, value: response);
-            })
+                    return Results.Created(uri: locationUrl, value: response);
+                }
+            )
             .WithName(endpointName: PublicSignUpMetaField.PublicSignUp.Name)
             .WithSummary(summary: PublicSignUpMetaField.PublicSignUp.Summary)
             .WithDescription(description: PublicSignUpMetaField.PublicSignUp.Description)

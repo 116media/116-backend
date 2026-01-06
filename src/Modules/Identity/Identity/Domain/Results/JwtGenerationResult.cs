@@ -5,7 +5,4 @@ namespace _116.Identity.Domain.Results;
 /// </summary>
 /// <param name="Token">The generated JWT token string</param>
 /// <param name="ExpiresAt">The UTC date and time when the token expires</param>
-public record JwtGenerationResult(
-    string Token,
-    DateTime ExpiresAt
-);
+public record JwtGenerationResult(string Token, DateTime ExpiresAt);

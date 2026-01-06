@@ -1,5 +1,4 @@
 using _116.Identity.Application.Auth.Validators;
-
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
@@ -18,7 +17,6 @@ public class AdminLoginValidator : AbstractValidator<AdminLoginCommand>
     public AdminLoginValidator()
     {
         RuleFor(x => x.Email).ValidEmail();
-        RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("Password cannot be empty.");
+        RuleFor(x => x.Password).NotEmpty().WithMessage("Password cannot be empty.");
     }
 }

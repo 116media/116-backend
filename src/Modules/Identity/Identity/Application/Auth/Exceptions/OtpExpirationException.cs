@@ -10,7 +10,8 @@ public class OtpExpirationException : Exception
     /// with a custom message describing the error.
     /// </summary>
     /// <param name="message">The error message explaining the OTP expiration.</param>
-    public OtpExpirationException(string message) : base(message: message) { }
+    public OtpExpirationException(string message)
+        : base(message: message) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OtpExpirationException" /> class
@@ -18,7 +19,8 @@ public class OtpExpirationException : Exception
     /// </summary>
     /// <param name="message">The error message explaining the OTP expiration.</param>
     /// <param name="details">Additional context or information about the OTP expiration.</param>
-    public OtpExpirationException(string message, string details) : base(message: message)
+    public OtpExpirationException(string message, string details)
+        : base(message: message)
     {
         Details = details;
     }

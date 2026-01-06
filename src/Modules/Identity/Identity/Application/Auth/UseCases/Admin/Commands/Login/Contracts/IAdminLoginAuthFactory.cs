@@ -25,9 +25,5 @@ public interface IAdminLoginAuthFactory
     /// <param name="password">The admin user's password.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>Authentication data containing user, permissions, roles, and permission names.</returns>
-    Task<AdminLoginAuthData> AuthenticateAsync(
-        string email,
-        string password,
-        CancellationToken cancellationToken
-    );
+    Task<AdminLoginAuthData> AuthenticateAsync(string email, string password, CancellationToken cancellationToken);
 }

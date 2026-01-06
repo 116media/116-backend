@@ -1,7 +1,6 @@
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
-
 using Mapster;
 
 namespace _116.Identity.Infrastructure.Repositories;
@@ -14,9 +13,7 @@ public class RoleRepository : IRoleRepository
     /// <inheritdoc />
     public IReadOnlyCollection<RoleDto> GetUserRoles(ICollection<UserRoleEntity> userRoles)
     {
-        return userRoles
-            .Select(ur => ur.Role.Adapt<RoleDto>())
-            .ToList();
+        return userRoles.Select(ur => ur.Role.Adapt<RoleDto>()).ToList();
     }
 
     /// <inheritdoc />
@@ -30,8 +27,10 @@ public class RoleRepository : IRoleRepository
     }
 
     /// <inheritdoc />
-    public (IReadOnlyCollection<RoleDto> Roles, IReadOnlyCollection<PermissionDto> Permissions)
-        GetUserRolesAndPermissions(ICollection<UserRoleEntity> userRoles)
+    public (
+        IReadOnlyCollection<RoleDto> Roles,
+        IReadOnlyCollection<PermissionDto> Permissions
+    ) GetUserRolesAndPermissions(ICollection<UserRoleEntity> userRoles)
     {
         IReadOnlyCollection<RoleDto> roles = GetUserRoles(userRoles: userRoles);
         IReadOnlyCollection<PermissionDto> permissions = GetUserPermissions(userRoles: userRoles);

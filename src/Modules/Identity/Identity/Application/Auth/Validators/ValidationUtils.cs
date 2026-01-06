@@ -19,8 +19,8 @@ public static class ValidationUtils
             return true;
         }
 
-        return Uri.TryCreate(uriString: url, uriKind: UriKind.Absolute, out Uri? result) &&
-               (result.Scheme == Uri.UriSchemeHttp || result.Scheme == Uri.UriSchemeHttps);
+        return Uri.TryCreate(uriString: url, uriKind: UriKind.Absolute, out Uri? result)
+            && (result.Scheme == Uri.UriSchemeHttp || result.Scheme == Uri.UriSchemeHttps);
     }
 
     /// <summary>

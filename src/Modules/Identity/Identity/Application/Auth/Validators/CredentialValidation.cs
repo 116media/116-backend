@@ -1,7 +1,5 @@
 using System.Text.RegularExpressions;
-
 using _116.BuildingBlocks.Constants;
-
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.Validators;
@@ -27,20 +25,21 @@ public static partial class CredentialValidation
         if (isRequired)
         {
             builder = ruleBuilder
-                .NotEmpty().WithMessage("Email is required")
+                .NotEmpty()
+                .WithMessage("Email is required")
                 .MaximumLength(maximumLength: UserConstants.MaxEmailLength)
                 .WithMessage($"Email cannot exceed {UserConstants.MaxEmailLength} characters")
-                .EmailAddress().WithMessage("Invalid email format");
+                .EmailAddress()
+                .WithMessage("Invalid email format");
         }
         else
         {
             builder = ruleBuilder
                 .MaximumLength(maximumLength: UserConstants.MaxEmailLength)
                 .WithMessage($"Email cannot exceed {UserConstants.MaxEmailLength} characters")
-                .EmailAddress().WithMessage("Invalid email format")
-                .When(x => !string.IsNullOrWhiteSpace(
-                    ValidationUtils.GetPropertyValue(instance: x, "Email"))
-                );
+                .EmailAddress()
+                .WithMessage("Invalid email format")
+                .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Email")));
         }
 
         return builder;
@@ -60,12 +59,14 @@ public static partial class CredentialValidation
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
-            .NotEmpty().WithMessage($"{fieldName} is required")
+            .NotEmpty()
+            .WithMessage($"{fieldName} is required")
             .MinimumLength(minimumLength: UserConstants.MinPasswordLength)
             .WithMessage($"{fieldName} must be at least {UserConstants.MinPasswordLength} characters long")
             .Matches(PasswordRegex())
             .WithMessage(
-                $"{fieldName} must contain at least one lowercase letter, one uppercase letter, and one number");
+                $"{fieldName} must contain at least one lowercase letter, one uppercase letter, and one number"
+            );
     }
 
     /// <summary>
@@ -85,7 +86,8 @@ public static partial class CredentialValidation
         {
             builder = ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
-                .NotEmpty().WithMessage("Username is required")
+                .NotEmpty()
+                .WithMessage("Username is required")
                 .MinimumLength(minimumLength: UserConstants.MinUserNameLength)
                 .WithMessage($"Username must be at least {UserConstants.MinUserNameLength} characters long")
                 .MaximumLength(maximumLength: UserConstants.MaxUserNameLength)
@@ -121,8 +123,7 @@ public static partial class CredentialValidation
         string fieldName = "Current password"
     )
     {
-        return ruleBuilder
-            .NotEmpty().WithMessage($"{fieldName} is required");
+        return ruleBuilder.NotEmpty().WithMessage($"{fieldName} is required");
     }
 
     /// <summary>

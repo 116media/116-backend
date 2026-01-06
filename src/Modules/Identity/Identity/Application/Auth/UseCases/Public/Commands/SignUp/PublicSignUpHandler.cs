@@ -10,10 +10,8 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 /// </summary>
 /// <param name="authFactory">Factory for handling user registration logic.</param>
 /// <param name="sessionFactory">Factory for creating authentication sessions.</param>
-public class PublicSignUpHandler(
-    IPublicSignUpAuthFactory authFactory,
-    IPublicSignUpSessionFactory sessionFactory
-) : ICommandHandler<PublicSignUpCommand, PublicSignUpResult>
+public class PublicSignUpHandler(IPublicSignUpAuthFactory authFactory, IPublicSignUpSessionFactory sessionFactory)
+    : ICommandHandler<PublicSignUpCommand, PublicSignUpResult>
 {
     /// <summary>
     /// Handles the public sign-up command by creating a new user account.
@@ -38,10 +36,7 @@ public class PublicSignUpHandler(
             cancellationToken: cancellationToken
         );
 
-        var userDto = authData.User.ToUserResponseDto(
-            roles: authData.Roles,
-            permissions: authData.Permissions
-        );
+        var userDto = authData.User.ToUserResponseDto(roles: authData.Roles, permissions: authData.Permissions);
 
         var authResult = new AuthenticationResult(
             User: userDto,

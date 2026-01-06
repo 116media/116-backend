@@ -9,10 +9,8 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Commands.CleanupExpir
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="unitOfWork">Unit of work for transaction management.</param>
-public class AdminCleanupExpiredSessionsHandler(
-    ISessionRepository sessionRepository,
-    IIdentityUnitOfWork unitOfWork
-) : ICommandHandler<AdminCleanupExpiredSessionsCommand, AdminCleanupExpiredSessionsResult>
+public class AdminCleanupExpiredSessionsHandler(ISessionRepository sessionRepository, IIdentityUnitOfWork unitOfWork)
+    : ICommandHandler<AdminCleanupExpiredSessionsCommand, AdminCleanupExpiredSessionsResult>
 {
     /// <summary>
     /// Handles the cleanup command by soft deleting all expired sessions.
@@ -25,9 +23,7 @@ public class AdminCleanupExpiredSessionsHandler(
         CancellationToken cancellationToken
     )
     {
-        int deletedCount = await sessionRepository.DeleteExpiredSessionsAsync(
-            cancellationToken: cancellationToken
-        );
+        int deletedCount = await sessionRepository.DeleteExpiredSessionsAsync(cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminCleanupExpiredSessionsResult(DeletedCount: deletedCount);

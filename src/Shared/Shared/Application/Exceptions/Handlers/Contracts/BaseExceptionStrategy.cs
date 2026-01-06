@@ -7,8 +7,8 @@ namespace _116.Shared.Application.Exceptions.Handlers.Contracts;
 /// Abstract base class for exception strategies providing common functionality.
 /// </summary>
 /// <typeparam name="TException">The specific exception type this strategy handles.</typeparam>
-public abstract class BaseExceptionStrategy<TException>
-    : IExceptionStrategy<TException>, IExceptionStrategy where TException : Exception
+public abstract class BaseExceptionStrategy<TException> : IExceptionStrategy<TException>, IExceptionStrategy
+    where TException : Exception
 {
     /// <inheritdoc />
     public Type ExceptionType => typeof(TException);
@@ -43,11 +43,7 @@ public abstract class BaseExceptionStrategy<TException>
             Detail = detail,
             Status = statusCode,
             Instance = context.Request.Path,
-            Extensions =
-            {
-                ["traceId"] = context.TraceIdentifier,
-                ["timestamp"] = DateTime.UtcNow
-            }
+            Extensions = { ["traceId"] = context.TraceIdentifier, ["timestamp"] = DateTime.UtcNow },
         };
 
         return problemDetails;

@@ -1,5 +1,4 @@
 using System.Security.Claims;
-
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
@@ -7,9 +6,7 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -35,29 +32,30 @@ public class PublicGetOwnSessionsEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{SessionRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{SessionRouteConstants.Endpoint}");
 
-        group.MapGet("/", async (
-                ClaimsPrincipal user,
-                IAuthRepository authRepository,
-                IDispatcher dispatcher,
-                bool? isActive = null
-            ) =>
-            {
-                Guid userId = authRepository.GetUserIdFromClaims(user: user);
+        group
+            .MapGet(
+                "/",
+                async (
+                    ClaimsPrincipal user,
+                    IAuthRepository authRepository,
+                    IDispatcher dispatcher,
+                    bool? isActive = null
+                ) =>
+                {
+                    Guid userId = authRepository.GetUserIdFromClaims(user: user);
 
-                var query = new PublicGetOwnSessionsQuery(UserId: userId, IsActive: isActive);
-                PublicGetOwnSessionsResult result = await dispatcher.Send(request: query);
+                    var query = new PublicGetOwnSessionsQuery(UserId: userId, IsActive: isActive);
+                    PublicGetOwnSessionsResult result = await dispatcher.Send(request: query);
 
-                var response = new PublicGetOwnSessionsResponse(
-                    Sessions: result.Sessions
-                );
+                    var response = new PublicGetOwnSessionsResponse(Sessions: result.Sessions);
 
-                return Results.Ok(value: response);
-            })
+                    return Results.Ok(value: response);
+                }
+            )
             .WithName(endpointName: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Name)
             .WithSummary(summary: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Summary)
             .WithDescription(description: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Description)

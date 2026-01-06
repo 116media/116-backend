@@ -1,5 +1,4 @@
 using System.Security.Claims;
-
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
@@ -7,9 +6,7 @@ using _116.Identity.Application.User.Constants;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -20,9 +17,7 @@ namespace _116.Identity.Application.User.UseCases.Admin.Queries.GetOwnProfile.V1
 /// Response model for admin user profile.
 /// </summary>
 /// <param name="User">The complete admin user profile information including roles and permissions.</param>
-public record AdminGetOwnProfileResponse(
-    UserResponseDto User
-);
+public record AdminGetOwnProfileResponse(UserResponseDto User);
 
 /// <summary>
 /// Defines the admin user profile endpoint for authenticated admin users.
@@ -37,26 +32,25 @@ public class AdminGetOwnProfileEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{UserRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Admin}::{UserRouteConstants.Endpoint}");
 
-        group.MapGet(pattern: UserRouteConstants.Profile, async (
-                ClaimsPrincipal user,
-                IAuthRepository authRepository,
-                IDispatcher dispatcher
-            ) =>
-            {
-                Guid userId = authRepository.GetUserIdFromClaims(user: user);
+        group
+            .MapGet(
+                pattern: UserRouteConstants.Profile,
+                async (ClaimsPrincipal user, IAuthRepository authRepository, IDispatcher dispatcher) =>
+                {
+                    Guid userId = authRepository.GetUserIdFromClaims(user: user);
 
-                var query = new AdminGetOwnProfileQuery(UserId: userId);
-                AdminGetOwnProfileResult result = await dispatcher.Send(request: query);
+                    var query = new AdminGetOwnProfileQuery(UserId: userId);
+                    AdminGetOwnProfileResult result = await dispatcher.Send(request: query);
 
-                var response = new AdminGetOwnProfileResponse(User: result.User);
+                    var response = new AdminGetOwnProfileResponse(User: result.User);
 
-                return Results.Ok(value: response);
-            })
+                    return Results.Ok(value: response);
+                }
+            )
             .WithName(endpointName: AdminGetOwnProfileMetaField.GetOwnProfile.Name)
             .WithSummary(summary: AdminGetOwnProfileMetaField.GetOwnProfile.Summary)
             .WithDescription(description: AdminGetOwnProfileMetaField.GetOwnProfile.Description)

@@ -1,7 +1,5 @@
 using System.Reflection;
-
 using Carter;
-
 using Microsoft.Extensions.DependencyInjection;
 
 namespace _116.Shared.Application.Extensions;
@@ -35,8 +33,7 @@ public static class CarterExtension
         {
             // For all given assemblies, find all types that implement ICarterModule
             Type[] modules = assemblies
-                .SelectMany(assembly => assembly.GetTypes()
-                    .Where(t => t.IsAssignableTo(typeof(ICarterModule))))
+                .SelectMany(assembly => assembly.GetTypes().Where(t => t.IsAssignableTo(typeof(ICarterModule))))
                 .ToArray();
 
             config.WithModules(modules);

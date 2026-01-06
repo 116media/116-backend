@@ -3,9 +3,7 @@ using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -50,30 +48,30 @@ public class PublicRefreshTokenEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{SessionRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{SessionRouteConstants.Endpoint}");
 
-        group.MapPost(pattern: SessionRouteConstants.RefreshToken, async (
-                PublicRefreshTokenRequest request,
-                IDispatcher dispatcher
-            ) =>
-            {
-                var command = new PublicRefreshTokenCommand(RefreshToken: request.RefreshToken);
-                PublicRefreshTokenResult result = await dispatcher.Send(request: command);
+        group
+            .MapPost(
+                pattern: SessionRouteConstants.RefreshToken,
+                async (PublicRefreshTokenRequest request, IDispatcher dispatcher) =>
+                {
+                    var command = new PublicRefreshTokenCommand(RefreshToken: request.RefreshToken);
+                    PublicRefreshTokenResult result = await dispatcher.Send(request: command);
 
-                var response = new PublicRefreshTokenResponse(
-                    User: result.AuthenticationResult.User,
-                    TokenType: result.AuthenticationResult.TokenType,
-                    AccessToken: result.AuthenticationResult.AccessToken,
-                    RefreshToken: result.AuthenticationResult.RefreshToken,
-                    AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
-                    RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt
-                );
+                    var response = new PublicRefreshTokenResponse(
+                        User: result.AuthenticationResult.User,
+                        TokenType: result.AuthenticationResult.TokenType,
+                        AccessToken: result.AuthenticationResult.AccessToken,
+                        RefreshToken: result.AuthenticationResult.RefreshToken,
+                        AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
+                        RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt
+                    );
 
-                return Results.Ok(value: response);
-            })
+                    return Results.Ok(value: response);
+                }
+            )
             .WithName(endpointName: PublicRefreshTokenMetaField.PublicRefreshToken.Name)
             .WithSummary(summary: PublicRefreshTokenMetaField.PublicRefreshToken.Summary)
             .WithDescription(description: PublicRefreshTokenMetaField.PublicRefreshToken.Description)

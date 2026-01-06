@@ -1,6 +1,5 @@
 using _116.Identity.Application.Auth.Services;
 using _116.Shared.Infrastructure.Seed;
-
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
@@ -28,8 +27,11 @@ public class SuperAdminSeeder : IDataSeeder
         _logger = logger;
         _repositoryManager = new SuperAdminRepositoryManager(context: context, logger: repositoryLogger);
         var entityFactory = new SuperAdminEntityFactory(passwordService: passwordService);
-        _seedingStrategy = new SuperAdminSeedingStrategy(entityFactory: entityFactory,
-            repositoryManager: _repositoryManager, logger: strategyLogger);
+        _seedingStrategy = new SuperAdminSeedingStrategy(
+            entityFactory: entityFactory,
+            repositoryManager: _repositoryManager,
+            logger: strategyLogger
+        );
     }
 
     /// <inheritdoc />

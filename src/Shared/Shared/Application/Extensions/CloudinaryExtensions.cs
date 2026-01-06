@@ -1,5 +1,4 @@
 using _116.Shared.Application.Configurations;
-
 using Microsoft.Extensions.DependencyInjection;
 
 namespace _116.Shared.Application.Extensions;
@@ -22,7 +21,7 @@ public static class CloudinaryExtensions
         {
             ApiKey = apiKey ?? "",
             CloudName = cloudName ?? "",
-            ApiSecret = apiSecret ?? ""
+            ApiSecret = apiSecret ?? "",
         };
 
         services.AddSingleton(config);

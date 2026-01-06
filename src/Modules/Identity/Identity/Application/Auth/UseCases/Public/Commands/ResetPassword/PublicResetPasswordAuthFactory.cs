@@ -29,8 +29,10 @@ public class PublicResetPasswordAuthFactory(
     )
     {
         var emailValue = new Email(value: email);
-        UserEntity? user =
-            await authRepository.GetUserWithRolesByEmailOrThrow(email: emailValue, cancellationToken: cancellationToken);
+        UserEntity? user = await authRepository.GetUserWithRolesByEmailOrThrow(
+            email: emailValue,
+            cancellationToken: cancellationToken
+        );
 
         authRepository.IsUserAccountActive(user!);
         authRepository.IsUserAccountVerified(user!);

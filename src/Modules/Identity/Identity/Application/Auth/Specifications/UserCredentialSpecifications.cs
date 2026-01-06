@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Specifications;
 
@@ -63,8 +62,6 @@ public class UserByCredentialsSpecification(string credentials) : Specification<
     public override Expression<Func<UserEntity, bool>> ToExpression()
     {
         bool isEmail = credentials.Contains('@') && credentials.Contains('.');
-        return isEmail
-            ? user => user.Email == credentials
-            : user => user.UserName == credentials;
+        return isEmail ? user => user.Email == credentials : user => user.UserName == credentials;
     }
 }

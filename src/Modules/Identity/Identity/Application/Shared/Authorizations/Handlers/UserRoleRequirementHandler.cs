@@ -1,7 +1,5 @@
 using System.Security.Claims;
-
 using _116.Identity.Application.Shared.Authorizations.Requirements;
-
 using Microsoft.AspNetCore.Authorization;
 
 namespace _116.Identity.Application.Shared.Authorizations.Handlers;
@@ -21,17 +19,16 @@ public class UserRoleRequirementHandler : AuthorizationHandler<UserRoleRequireme
     /// <param name="context">The authorization context containing user claims</param>
     /// <param name="requirement">The role requirement specifying allowed roles</param>
     /// <returns>A completed task representing the authorization evaluation</returns>
-    protected override Task HandleRequirementAsync(
-        AuthorizationHandlerContext context,
-        UserRoleRequirement requirement
-    )
+    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, UserRoleRequirement requirement)
     {
         // Extract user's role from JWT token claims
         string? userRole = context.User.FindFirst(type: ClaimTypes.Role)?.Value;
 
         // Authorize if the user role matches any allowed role (case-insensitive)
-        bool isUserRoleMatching =
-            requirement.AllowedRoles.Contains(value: userRole, comparer: StringComparer.OrdinalIgnoreCase);
+        bool isUserRoleMatching = requirement.AllowedRoles.Contains(
+            value: userRole,
+            comparer: StringComparer.OrdinalIgnoreCase
+        );
         if (!string.IsNullOrEmpty(value: userRole) && isUserRoleMatching)
         {
             context.Succeed(requirement: requirement);

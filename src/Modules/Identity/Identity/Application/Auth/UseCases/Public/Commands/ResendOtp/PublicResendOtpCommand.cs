@@ -12,10 +12,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
 /// Used for email verification, password reset, and other verification scenarios where the user didn't receive the
 /// initial OTP.
 /// </remarks>
-public record PublicResendOtpCommand(
-    string Email,
-    string Purpose
-) : ICommand<PublicResendOtpResult>;
+public record PublicResendOtpCommand(string Email, string Purpose) : ICommand<PublicResendOtpResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicResendOtpCommand" /> containing OTP resend status.
@@ -25,6 +22,4 @@ public record PublicResendOtpCommand(
 /// Returns success when a new OTP has been generated and the previous ones invalidated.
 /// The actual OTP is only generated and sent if a valid, active user account exists.
 /// </remarks>
-public record PublicResendOtpResult(
-    bool IsSuccess
-);
+public record PublicResendOtpResult(bool IsSuccess);

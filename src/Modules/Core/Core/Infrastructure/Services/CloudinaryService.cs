@@ -3,10 +3,8 @@ using _116.Core.Application.Shared.Errors;
 using _116.Core.Application.Shared.Services;
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions;
-
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -25,11 +23,7 @@ public class CloudinaryService : ICloudinaryService
         _logger = logger;
 
         // Initialize Cloudinary Account
-        var account = new Account(
-            config.CloudName,
-            config.ApiKey,
-            config.ApiSecret
-        );
+        var account = new Account(config.CloudName, config.ApiKey, config.ApiSecret);
 
         _cloudinary = new Cloudinary(account) { Api = { Secure = true } };
     }
@@ -50,15 +44,12 @@ public class CloudinaryService : ICloudinaryService
             // Prepare upload parameters
             var uploadParams = new ImageUploadParams
             {
-                File = new FileDescription(
-                    file.FileName,
-                    file.OpenReadStream()
-                ),
+                File = new FileDescription(file.FileName, file.OpenReadStream()),
                 PublicId = publicId,
                 Folder = folder,
                 Overwrite = true,
                 UniqueFilename = false,
-                UseFilename = false
+                UseFilename = false,
             };
 
             // Perform signed upload
@@ -115,20 +106,18 @@ public class CloudinaryService : ICloudinaryService
         string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (!FileConstants.AllowedAvatarExtensions.Contains(extension))
         {
-            throw CoreErrors.InvalidFileExtension(
-                extension,
-                string.Join(", ", FileConstants.AllowedAvatarExtensions)
-            );
+            throw CoreErrors.InvalidFileExtension(extension, string.Join(", ", FileConstants.AllowedAvatarExtensions));
         }
 
         // Extract content type without parameters (e.g., "image/jpeg" from "image/jpeg; boundary=...")
         string contentType = (file.ContentType?.Split(';')[0] ?? string.Empty).Trim().ToLowerInvariant();
 
         // Allow if content type is in allowed list OR if it's a generic type (mobile uploads)
-        bool isValidContentType = FileConstants.AllowedAvatarMimeTypes.Contains(contentType) ||
-                                   string.IsNullOrEmpty(contentType) ||
-                                   contentType == "application/octet-stream" ||
-                                   contentType == "multipart/form-data";
+        bool isValidContentType =
+            FileConstants.AllowedAvatarMimeTypes.Contains(contentType)
+            || string.IsNullOrEmpty(contentType)
+            || contentType == "application/octet-stream"
+            || contentType == "multipart/form-data";
 
         if (!isValidContentType)
         {

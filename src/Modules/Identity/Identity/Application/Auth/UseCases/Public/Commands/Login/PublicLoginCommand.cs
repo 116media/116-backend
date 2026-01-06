@@ -14,10 +14,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
 /// This command is tailored for public user login scenarios.
 /// The system validates the provided credentials and returns an authentication result if successful.
 /// </remarks>
-public record PublicLoginCommand(
-    string Credentials,
-    string Password
-) : ICommand<PublicLoginResult>;
+public record PublicLoginCommand(string Credentials, string Password) : ICommand<PublicLoginResult>;
 
 /// <summary>
 /// The result of executing a <see cref="PublicLoginCommand" />.

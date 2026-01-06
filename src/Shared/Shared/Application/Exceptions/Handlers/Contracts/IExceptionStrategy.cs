@@ -7,7 +7,8 @@ namespace _116.Shared.Application.Exceptions.Handlers.Contracts;
 /// Defines the contract for handling specific exception types and converting them to ProblemDetails.
 /// </summary>
 /// <typeparam name="TException">The specific exception type this strategy handles.</typeparam>
-public interface IExceptionStrategy<in TException> where TException : Exception
+public interface IExceptionStrategy<in TException>
+    where TException : Exception
 {
     /// <summary>
     /// Creates a ProblemDetails response for the given exception.

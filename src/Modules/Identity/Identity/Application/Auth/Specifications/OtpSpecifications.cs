@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Specifications;
@@ -103,11 +102,7 @@ public class OtpIsValidForUserAndPurposeSpecification(Guid userId, EnumOtpPurpos
         var purposeSpec = new OtpByPurposeSpecification(purpose: purpose);
         var notUsedSpec = new OtpIsNotUsedSpecification();
         var notExpiredSpec = new OtpIsNotExpiredSpecification();
-        return userSpec
-            .And(other: purposeSpec)
-            .And(other: notUsedSpec)
-            .And(other: notExpiredSpec)
-            .ToExpression();
+        return userSpec.And(other: purposeSpec).And(other: notUsedSpec).And(other: notExpiredSpec).ToExpression();
     }
 }
 
@@ -124,11 +119,7 @@ public class OtpForValidationSpecification(Guid userId, string code, EnumOtpPurp
         var codeSpec = new OtpByCodeSpecification(code: code);
         var purposeSpec = new OtpByPurposeSpecification(purpose: purpose);
         var notUsedSpec = new OtpIsNotUsedSpecification();
-        return userSpec
-            .And(other: codeSpec)
-            .And(other: purposeSpec)
-            .And(other: notUsedSpec)
-            .ToExpression();
+        return userSpec.And(other: codeSpec).And(other: purposeSpec).And(other: notUsedSpec).ToExpression();
     }
 }
 
@@ -144,10 +135,7 @@ public class OtpForInvalidationSpecification(Guid userId, EnumOtpPurpose purpose
         var userSpec = new OtpByUserIdSpecification(userId: userId);
         var purposeSpec = new OtpByPurposeSpecification(purpose: purpose);
         var notUsedSpec = new OtpIsNotUsedSpecification();
-        return userSpec
-            .And(other: purposeSpec)
-            .And(other: notUsedSpec)
-            .ToExpression();
+        return userSpec.And(other: purposeSpec).And(other: notUsedSpec).ToExpression();
     }
 }
 
@@ -165,10 +153,6 @@ public class OtpForUsedValidationSpecification(Guid userId, string code, EnumOtp
         var codeSpec = new OtpByCodeSpecification(code: code);
         var purposeSpec = new OtpByPurposeSpecification(purpose: purpose);
         var usedSpec = new OtpIsUsedSpecification();
-        return userSpec
-            .And(other: codeSpec)
-            .And(other: purposeSpec)
-            .And(other: usedSpec)
-            .ToExpression();
+        return userSpec.And(other: codeSpec).And(other: purposeSpec).And(other: usedSpec).ToExpression();
     }
 }

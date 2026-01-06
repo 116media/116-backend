@@ -87,5 +87,5 @@ public enum EnumCoreUserRole
     ///     <item>own_shares.read</item>
     /// </list>
     /// </remarks>
-    Visitor
+    Visitor,
 }

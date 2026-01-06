@@ -1,5 +1,4 @@
 using _116.Identity.Application.Auth.Validators;
-
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;

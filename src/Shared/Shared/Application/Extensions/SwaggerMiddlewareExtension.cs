@@ -1,5 +1,4 @@
 using _116.Shared.Application.Middleware;
-
 using Microsoft.AspNetCore.Builder;
 
 namespace _116.Shared.Application.Extensions;

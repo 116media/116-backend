@@ -23,10 +23,7 @@ public interface IAdminUpdateAvatarAuthFactory
     /// <param name="userId">The ID of the admin user.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>Admin user data for avatar update.</returns>
-    Task<AdminUpdateAvatarAuthData> GetUserForAvatarUpdateAsync(
-        Guid userId,
-        CancellationToken cancellationToken
-    );
+    Task<AdminUpdateAvatarAuthData> GetUserForAvatarUpdateAsync(Guid userId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Updates an admin user's avatar with a new image file.

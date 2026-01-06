@@ -37,6 +37,4 @@ public record PublicUpdateOwnProfileCommand(
 /// Contains the complete updated user profile with all user details, roles, permissions, and avatar information.
 /// This information reflects the changes made during the update operation.
 /// </remarks>
-public record PublicUpdateOwnProfileResult(
-    UserResponseDto User
-);
+public record PublicUpdateOwnProfileResult(UserResponseDto User);

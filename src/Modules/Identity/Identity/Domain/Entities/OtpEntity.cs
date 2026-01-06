@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Domain.Enums;
 using _116.Shared.Domain;
@@ -69,7 +68,7 @@ public class OtpEntity : Aggregate<Guid>
             UserId = userId,
             Code = code,
             Purpose = purpose,
-            ExpiresAt = expiresAt
+            ExpiresAt = expiresAt,
         };
     }
 
@@ -96,9 +95,7 @@ public class OtpEntity : Aggregate<Guid>
     /// <returns>True if the OTP is valid, otherwise false.</returns>
     public bool IsValid()
     {
-        return !IsUsed
-               && DateTime.UtcNow <= ExpiresAt
-               && AttemptCount < UserConstants.MaxOtpAttempts;
+        return !IsUsed && DateTime.UtcNow <= ExpiresAt && AttemptCount < UserConstants.MaxOtpAttempts;
     }
 
     /// <summary>

@@ -1,5 +1,4 @@
 using _116.Shared.Application.Specifications;
-
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Shared.Infrastructure.Extensions;
@@ -46,9 +45,7 @@ public static class SpecificationExtensions
         CancellationToken cancellationToken = default
     )
     {
-        return await query
-            .ApplySpecification(specification)
-            .FirstAsync(cancellationToken);
+        return await query.ApplySpecification(specification).FirstAsync(cancellationToken);
     }
 
     /// <summary>
@@ -66,9 +63,7 @@ public static class SpecificationExtensions
         CancellationToken cancellationToken = default
     )
     {
-        return await query
-            .ApplySpecification(specification)
-            .FirstOrDefaultAsync(cancellationToken);
+        return await query.ApplySpecification(specification).FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <summary>
@@ -86,8 +81,6 @@ public static class SpecificationExtensions
         CancellationToken cancellationToken = default
     )
     {
-        return await query
-            .ApplySpecification(specification)
-            .AnyAsync(cancellationToken);
+        return await query.ApplySpecification(specification).AnyAsync(cancellationToken);
     }
 }

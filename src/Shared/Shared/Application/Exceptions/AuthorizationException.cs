@@ -14,14 +14,16 @@ public class AuthorizationException : Exception
     /// Initializes a new instance of the <see cref="AuthorizationException"/> class with a custom message.
     /// </summary>
     /// <param name="message">The error message that describes the authorization failure.</param>
-    public AuthorizationException(string message) : base(message) { }
+    public AuthorizationException(string message)
+        : base(message) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AuthorizationException"/> class with a custom message and additional details.
     /// </summary>
     /// <param name="message">The error message that describes the authorization failure.</param>
     /// <param name="details">Additional context or information about the authorization failure.</param>
-    public AuthorizationException(string message, string details) : base(message)
+    public AuthorizationException(string message, string details)
+        : base(message)
     {
         Details = details;
     }

@@ -1,7 +1,6 @@
 using _116.Core.Application.Shared.Errors;
 using _116.Core.Application.Shared.Services;
 using _116.Shared.Application.Exceptions;
-
 using Microsoft.AspNetCore.Http;
 
 namespace _116.Core.Infrastructure.Services;
@@ -44,7 +43,10 @@ public class FileService(HttpClient httpClient, ICloudinaryService cloudinarySer
     }
 
     /// <inheritdoc />
-    public async Task<FileDownloadResult> DownloadFileAsync(string fileUrl, CancellationToken cancellationToken = default)
+    public async Task<FileDownloadResult> DownloadFileAsync(
+        string fileUrl,
+        CancellationToken cancellationToken = default
+    )
     {
         ValidateFileUrl(fileUrl, out Uri? uri);
 
@@ -112,9 +114,10 @@ public class FileService(HttpClient httpClient, ICloudinaryService cloudinarySer
 
         if (contentLength == 0)
         {
-            contentLength = await TryGetContentLengthWithRangeAsync(uri, cancellationToken)
-                         ?? await TryGetContentLengthFallbackAsync(uri, cancellationToken)
-                         ?? 0;
+            contentLength =
+                await TryGetContentLengthWithRangeAsync(uri, cancellationToken)
+                ?? await TryGetContentLengthFallbackAsync(uri, cancellationToken)
+                ?? 0;
         }
 
         return (contentType, contentLength);
@@ -166,24 +169,26 @@ public class FileService(HttpClient httpClient, ICloudinaryService cloudinarySer
     /// <summary>
     /// Gets the file extension from the specified content type.
     /// </summary>
-    private static string GetExtensionFromContentType(string? contentType) => contentType switch
-    {
-        "image/jpeg" => ".jpg",
-        "image/png" => ".png",
-        "image/gif" => ".gif",
-        "image/webp" => ".webp",
-        _ => ".bin"
-    };
+    private static string GetExtensionFromContentType(string? contentType) =>
+        contentType switch
+        {
+            "image/jpeg" => ".jpg",
+            "image/png" => ".png",
+            "image/gif" => ".gif",
+            "image/webp" => ".webp",
+            _ => ".bin",
+        };
 
     /// <summary>
     /// Gets the MIME content type from the specified file extension.
     /// </summary>
-    private static string GetContentTypeFromExtension(string? extension) => extension switch
-    {
-        ".jpg" or ".jpeg" => "image/jpeg",
-        ".png" => "image/png",
-        ".gif" => "image/gif",
-        ".webp" => "image/webp",
-        _ => "application/octet-stream"
-    };
+    private static string GetContentTypeFromExtension(string? extension) =>
+        extension switch
+        {
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".gif" => "image/gif",
+            ".webp" => "image/webp",
+            _ => "application/octet-stream",
+        };
 }

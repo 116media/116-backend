@@ -3,9 +3,7 @@ using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -19,12 +17,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.V1
 /// <param name="UserName">The user's display name from the social provider.</param>
 /// <param name="AvatarUrl">Optional avatar URL from the social provider.</param>
 /// <param name="Provider">The social authentication provider (Google or Facebook).</param>
-public record PublicSocialLoginRequest(
-    string Email,
-    string UserName,
-    string? AvatarUrl,
-    string Provider
-);
+public record PublicSocialLoginRequest(string Email, string UserName, string? AvatarUrl, string Provider);
 
 /// <summary>
 /// Response model for successful social login.
@@ -57,35 +50,35 @@ public class PublicSocialLoginEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
 
-        group.MapPost(pattern: AuthRouteConstants.SocialLogin, async (
-                PublicSocialLoginRequest request,
-                IDispatcher dispatcher
-            ) =>
-            {
-                var command = new PublicSocialLoginCommand(
-                    Email: request.Email,
-                    UserName: request.UserName,
-                    AvatarUrl: request.AvatarUrl,
-                    Provider: request.Provider
-                );
-                PublicSocialLoginResult result = await dispatcher.Send(request: command);
+        group
+            .MapPost(
+                pattern: AuthRouteConstants.SocialLogin,
+                async (PublicSocialLoginRequest request, IDispatcher dispatcher) =>
+                {
+                    var command = new PublicSocialLoginCommand(
+                        Email: request.Email,
+                        UserName: request.UserName,
+                        AvatarUrl: request.AvatarUrl,
+                        Provider: request.Provider
+                    );
+                    PublicSocialLoginResult result = await dispatcher.Send(request: command);
 
-                var response = new PublicSocialLoginResponse(
-                    User: result.AuthenticationResult.User,
-                    AccessToken: result.AuthenticationResult.AccessToken,
-                    AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
-                    RefreshToken: result.AuthenticationResult.RefreshToken,
-                    RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt,
-                    TokenType: result.AuthenticationResult.TokenType
-                );
+                    var response = new PublicSocialLoginResponse(
+                        User: result.AuthenticationResult.User,
+                        AccessToken: result.AuthenticationResult.AccessToken,
+                        AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
+                        RefreshToken: result.AuthenticationResult.RefreshToken,
+                        RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt,
+                        TokenType: result.AuthenticationResult.TokenType
+                    );
 
-                return Results.Ok(value: response);
-            })
+                    return Results.Ok(value: response);
+                }
+            )
             .WithName(endpointName: PublicSocialLoginMetaField.SocialLogin.Name)
             .WithSummary(summary: PublicSocialLoginMetaField.SocialLogin.Summary)
             .WithDescription(description: PublicSocialLoginMetaField.SocialLogin.Description)

@@ -1,5 +1,4 @@
 using System.Security.Claims;
-
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
@@ -7,9 +6,7 @@ using _116.Identity.Application.User.Constants;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -39,9 +36,7 @@ public record PublicUpdateOwnProfileRequest(
 /// Response model for updating own profile.
 /// </summary>
 /// <param name="User">The updated user profile information.</param>
-public record PublicUpdateOwnProfileResponse(
-    UserResponseDto User
-);
+public record PublicUpdateOwnProfileResponse(UserResponseDto User);
 
 /// <summary>
 /// Defines the update own profile endpoint for authenticated public users.
@@ -56,37 +51,38 @@ public class PublicUpdateOwnProfileEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{UserRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{UserRouteConstants.Endpoint}");
 
-        group.MapPatch(pattern: UserRouteConstants.Profile, async (
-                PublicUpdateOwnProfileRequest request,
-                ClaimsPrincipal user,
-                IAuthRepository authRepository,
-                IDispatcher dispatcher
-            ) =>
-            {
-                Guid userId = authRepository.GetUserIdFromClaims(user: user);
+        group
+            .MapPatch(
+                pattern: UserRouteConstants.Profile,
+                async (
+                    PublicUpdateOwnProfileRequest request,
+                    ClaimsPrincipal user,
+                    IAuthRepository authRepository,
+                    IDispatcher dispatcher
+                ) =>
+                {
+                    Guid userId = authRepository.GetUserIdFromClaims(user: user);
 
-                var command = new PublicUpdateOwnProfileCommand(
-                    UserId: userId,
-                    Email: request.Email,
-                    UserName: request.UserName,
-                    CountryName: request.CountryName,
-                    CountryIsoCode: request.CountryIsoCode,
-                    CountryDialCode: request.CountryDialCode,
-                    PartialPhoneNumber: request.PartialPhoneNumber
-                );
-                PublicUpdateOwnProfileResult result = await dispatcher.Send(request: command);
+                    var command = new PublicUpdateOwnProfileCommand(
+                        UserId: userId,
+                        Email: request.Email,
+                        UserName: request.UserName,
+                        CountryName: request.CountryName,
+                        CountryIsoCode: request.CountryIsoCode,
+                        CountryDialCode: request.CountryDialCode,
+                        PartialPhoneNumber: request.PartialPhoneNumber
+                    );
+                    PublicUpdateOwnProfileResult result = await dispatcher.Send(request: command);
 
-                var response = new PublicUpdateOwnProfileResponse(
-                    User: result.User
-                );
+                    var response = new PublicUpdateOwnProfileResponse(User: result.User);
 
-                return Results.Ok(value: response);
-            })
+                    return Results.Ok(value: response);
+                }
+            )
             .WithName(endpointName: PublicUpdateOwnProfileMetaField.UpdateOwnProfile.Name)
             .WithSummary(summary: PublicUpdateOwnProfileMetaField.UpdateOwnProfile.Summary)
             .WithDescription(description: PublicUpdateOwnProfileMetaField.UpdateOwnProfile.Description)

@@ -74,20 +74,12 @@ public class FileEntity : Aggregate<Guid>
         long sizeInBytes
     )
     {
-        BadRequestException? error = (
-            fileName,
-            originalFileName,
-            mimeType,
-            storageUrl,
-            sizeInBytes
-        ) switch
+        BadRequestException? error = (fileName, originalFileName, mimeType, storageUrl, sizeInBytes) switch
         {
             var (f, _, _, _, _) when string.IsNullOrWhiteSpace(f) => CoreErrors.FileNameRequired(),
-            var (_, o, _, _, _) when string.IsNullOrWhiteSpace(o) =>
-                CoreErrors.OriginalFileNameRequired(),
+            var (_, o, _, _, _) when string.IsNullOrWhiteSpace(o) => CoreErrors.OriginalFileNameRequired(),
             var (_, _, m, _, _) when string.IsNullOrWhiteSpace(m) => CoreErrors.MimeTypeRequired(),
-            var (_, _, _, s, _) when string.IsNullOrWhiteSpace(s) =>
-                CoreErrors.StorageUrlRequired(),
+            var (_, _, _, s, _) when string.IsNullOrWhiteSpace(s) => CoreErrors.StorageUrlRequired(),
             (_, _, _, _, <= 0) => CoreErrors.FileSizeMustBeGreaterThanZero(),
             _ => null,
         };

@@ -9,10 +9,8 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Commands.ForceLogoutU
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="unitOfWork">Unit of work for transaction management.</param>
-public class AdminForceLogoutUserHandler(
-    ISessionRepository sessionRepository,
-    IIdentityUnitOfWork unitOfWork
-) : ICommandHandler<AdminForceLogoutUserCommand, AdminForceLogoutUserResult>
+public class AdminForceLogoutUserHandler(ISessionRepository sessionRepository, IIdentityUnitOfWork unitOfWork)
+    : ICommandHandler<AdminForceLogoutUserCommand, AdminForceLogoutUserResult>
 {
     /// <summary>
     /// Handles the force logout command by deleting all sessions for the target user.
@@ -27,10 +25,7 @@ public class AdminForceLogoutUserHandler(
     {
         Guid targetUserId = Guid.Parse(input: command.UserId);
 
-        await sessionRepository.DeleteAllByUserIdAsync(
-            userId: targetUserId,
-            cancellationToken: cancellationToken
-        );
+        await sessionRepository.DeleteAllByUserIdAsync(userId: targetUserId, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminForceLogoutUserResult(true);

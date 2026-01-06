@@ -1,5 +1,4 @@
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,7 +21,7 @@ public sealed class DefaultExceptionHandler : IExceptionStrategy
             Title = exception.GetType().Name,
             Detail = exception.Message,
             Status = StatusCodes.Status500InternalServerError,
-            Instance = context.Request.Path
+            Instance = context.Request.Path,
         };
     }
 }

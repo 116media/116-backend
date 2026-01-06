@@ -55,10 +55,7 @@ public class PublicSignUpAuthFactory(
         await authRepository.AddAsync(user: newUser, cancellationToken: cancellationToken);
         await authRepository.AssignVisitorRoleAsync(userId: newUser.Id, cancellationToken: cancellationToken);
 
-        OtpEntity verificationOtp = otpService.CreateOtp(
-            userId: newUser.Id,
-            purpose: EnumOtpPurpose.EmailVerification
-        );
+        OtpEntity verificationOtp = otpService.CreateOtp(userId: newUser.Id, purpose: EnumOtpPurpose.EmailVerification);
 
         await otpRepository.AddAsync(otp: verificationOtp, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
@@ -69,8 +66,8 @@ public class PublicSignUpAuthFactory(
             cancellationToken: cancellationToken
         );
 
-        List<RolePermissionEntity> userPermissions = userWithRoles!.UserRoles
-            .SelectMany(ur => ur.Role.RolePermissions)
+        List<RolePermissionEntity> userPermissions = userWithRoles!
+            .UserRoles.SelectMany(ur => ur.Role.RolePermissions)
             .ToList();
 
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: userWithRoles.UserRoles);

@@ -1,5 +1,4 @@
 using System.Security.Claims;
-
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
@@ -7,9 +6,7 @@ using _116.Identity.Application.User.Constants;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -37,9 +34,7 @@ public record AdminUpdateOwnProfileRequest(
 /// Response model for updating admin own profile.
 /// </summary>
 /// <param name="User">The updated admin user profile information.</param>
-public record AdminUpdateOwnProfileResponse(
-    UserResponseDto User
-);
+public record AdminUpdateOwnProfileResponse(UserResponseDto User);
 
 /// <summary>
 /// Defines the update own profile endpoint for authenticated admin users (V1).
@@ -54,36 +49,37 @@ public class AdminUpdateOwnProfileEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{UserRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Admin}::{UserRouteConstants.Endpoint}");
 
-        group.MapPatch(pattern: UserRouteConstants.Profile, async (
-                AdminUpdateOwnProfileRequest request,
-                ClaimsPrincipal user,
-                IAuthRepository authRepository,
-                IDispatcher dispatcher
-            ) =>
-            {
-                Guid userId = authRepository.GetUserIdFromClaims(user: user);
+        group
+            .MapPatch(
+                pattern: UserRouteConstants.Profile,
+                async (
+                    AdminUpdateOwnProfileRequest request,
+                    ClaimsPrincipal user,
+                    IAuthRepository authRepository,
+                    IDispatcher dispatcher
+                ) =>
+                {
+                    Guid userId = authRepository.GetUserIdFromClaims(user: user);
 
-                var command = new AdminUpdateOwnProfileCommand(
-                    UserId: userId,
-                    UserName: request.UserName,
-                    CountryName: request.CountryName,
-                    CountryIsoCode: request.CountryIsoCode,
-                    CountryDialCode: request.CountryDialCode,
-                    PartialPhoneNumber: request.PartialPhoneNumber
-                );
-                AdminUpdateOwnProfileResult result = await dispatcher.Send(request: command);
+                    var command = new AdminUpdateOwnProfileCommand(
+                        UserId: userId,
+                        UserName: request.UserName,
+                        CountryName: request.CountryName,
+                        CountryIsoCode: request.CountryIsoCode,
+                        CountryDialCode: request.CountryDialCode,
+                        PartialPhoneNumber: request.PartialPhoneNumber
+                    );
+                    AdminUpdateOwnProfileResult result = await dispatcher.Send(request: command);
 
-                var response = new AdminUpdateOwnProfileResponse(
-                    User: result.User
-                );
+                    var response = new AdminUpdateOwnProfileResponse(User: result.User);
 
-                return Results.Ok(value: response);
-            })
+                    return Results.Ok(value: response);
+                }
+            )
             .WithName(endpointName: AdminUpdateOwnProfileMetaField.UpdateOwnProfile.Name)
             .WithSummary(summary: AdminUpdateOwnProfileMetaField.UpdateOwnProfile.Summary)
             .WithDescription(description: AdminUpdateOwnProfileMetaField.UpdateOwnProfile.Description)

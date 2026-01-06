@@ -3,9 +3,7 @@ using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -17,10 +15,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
 /// </summary>
 /// <param name="Credentials">The user’s email or username.</param>
 /// <param name="Password">The user’s password.</param>
-public record PublicLoginRequest(
-    string Credentials,
-    string Password
-);
+public record PublicLoginRequest(string Credentials, string Password);
 
 /// <summary>
 /// Response model for successful public user authentication.
@@ -54,27 +49,30 @@ public class PublicLoginEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
 
-        group.MapPost(pattern: AuthRouteConstants.Login, async (PublicLoginRequest request, IDispatcher dispatcher) =>
-            {
-                var command = new PublicLoginCommand(Credentials: request.Credentials, Password: request.Password);
-                PublicLoginResult result = await dispatcher.Send(request: command);
+        group
+            .MapPost(
+                pattern: AuthRouteConstants.Login,
+                async (PublicLoginRequest request, IDispatcher dispatcher) =>
+                {
+                    var command = new PublicLoginCommand(Credentials: request.Credentials, Password: request.Password);
+                    PublicLoginResult result = await dispatcher.Send(request: command);
 
-                var response = new PublicLoginResponse(
-                    User: result.AuthenticationResult.User,
-                    AccessToken: result.AuthenticationResult.AccessToken,
-                    AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
-                    RefreshToken: result.AuthenticationResult.RefreshToken,
-                    RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt,
-                    TokenType: result.AuthenticationResult.TokenType
-                );
+                    var response = new PublicLoginResponse(
+                        User: result.AuthenticationResult.User,
+                        AccessToken: result.AuthenticationResult.AccessToken,
+                        AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
+                        RefreshToken: result.AuthenticationResult.RefreshToken,
+                        RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt,
+                        TokenType: result.AuthenticationResult.TokenType
+                    );
 
-                return Results.Ok(value: response);
-            })
+                    return Results.Ok(value: response);
+                }
+            )
             .WithName(endpointName: PublicLoginMetaField.PublicLogin.Name)
             .WithSummary(summary: PublicLoginMetaField.PublicLogin.Summary)
             .WithDescription(description: PublicLoginMetaField.PublicLogin.Description)

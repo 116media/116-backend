@@ -13,11 +13,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 /// This command is for local user registration where users provide their own credentials.
 /// The system will hash the password and create an unverified account that requires email confirmation.
 /// </remarks>
-public record PublicSignUpCommand(
-    string Email,
-    string UserName,
-    string Password
-) : ICommand<PublicSignUpResult>;
+public record PublicSignUpCommand(string Email, string UserName, string Password) : ICommand<PublicSignUpResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicSignUpCommand" /> containing registration details.
@@ -28,7 +24,4 @@ public record PublicSignUpCommand(
 /// Contains registration information and indicates next steps for the user.
 /// If verification is required, the user should check their email for a verification link.
 /// </remarks>
-public record PublicSignUpResult(
-    AuthenticationResult AuthenticationResult,
-    bool VerificationRequired
-);
+public record PublicSignUpResult(AuthenticationResult AuthenticationResult, bool VerificationRequired);

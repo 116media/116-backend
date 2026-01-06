@@ -1,5 +1,4 @@
 using _116.Shared.Application.Extensions;
-
 using FluentValidation;
 
 namespace _116.Identity.Application.Session.UseCases.Admin.Queries.GetAllSessions;

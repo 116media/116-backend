@@ -11,7 +11,8 @@ public class AccountNotVerifiedException : Exception
     /// with a custom message describing the error.
     /// </summary>
     /// <param name="message">The error message that explains the verification issue.</param>
-    public AccountNotVerifiedException(string message) : base(message: message) { }
+    public AccountNotVerifiedException(string message)
+        : base(message: message) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AccountNotVerifiedException" /> class
@@ -19,7 +20,8 @@ public class AccountNotVerifiedException : Exception
     /// </summary>
     /// <param name="message">The error message that explains the verification issue.</param>
     /// <param name="details">Additional context or information about the account’s unverified status.</param>
-    public AccountNotVerifiedException(string message, string details) : base(message: message)
+    public AccountNotVerifiedException(string message, string details)
+        : base(message: message)
     {
         Details = details;
     }

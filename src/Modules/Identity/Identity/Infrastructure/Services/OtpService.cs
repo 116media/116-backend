@@ -27,13 +27,7 @@ public class OtpService : IOtpService
     {
         string code = GenerateOtpCode();
         DateTime expiresAt = CalculateExpirationTime();
-        return OtpEntity.Create(
-            Guid.NewGuid(),
-            userId: userId,
-            code: code,
-            purpose: purpose,
-            expiresAt: expiresAt
-        );
+        return OtpEntity.Create(Guid.NewGuid(), userId: userId, code: code, purpose: purpose, expiresAt: expiresAt);
     }
 
     /// <inheritdoc />

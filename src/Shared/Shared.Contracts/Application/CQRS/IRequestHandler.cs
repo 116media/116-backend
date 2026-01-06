@@ -4,7 +4,8 @@ namespace _116.Shared.Contracts.Application.CQRS;
 /// Base interface for request handlers that do not return a response.
 /// </summary>
 /// <typeparam name="TRequest">The type of request to handle.</typeparam>
-public interface IRequestHandler<in TRequest> where TRequest : IRequest
+public interface IRequestHandler<in TRequest>
+    where TRequest : IRequest
 {
     /// <summary>
     /// Handles the request asynchronously.
@@ -20,7 +21,8 @@ public interface IRequestHandler<in TRequest> where TRequest : IRequest
 /// </summary>
 /// <typeparam name="TRequest">The type of request to handle.</typeparam>
 /// <typeparam name="TResponse">The type of response to return.</typeparam>
-public interface IRequestHandler<in TRequest, TResponse> where TRequest : IRequest<TResponse>
+public interface IRequestHandler<in TRequest, TResponse>
+    where TRequest : IRequest<TResponse>
 {
     /// <summary>
     /// Handles the request asynchronously and returns a response.
@@ -30,4 +32,3 @@ public interface IRequestHandler<in TRequest, TResponse> where TRequest : IReque
     /// <returns>A task containing the response.</returns>
     Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken = default);
 }
-

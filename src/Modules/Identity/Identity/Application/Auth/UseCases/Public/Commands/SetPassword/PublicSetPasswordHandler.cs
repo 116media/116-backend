@@ -34,8 +34,10 @@ public class PublicSetPasswordHandler(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user =
-            await authRepository.FindUserByIdOrThrow(userId: command.UserId, cancellationToken: cancellationToken);
+        UserEntity? user = await authRepository.FindUserByIdOrThrow(
+            userId: command.UserId,
+            cancellationToken: cancellationToken
+        );
         // Validate user account status - accounts must be active
         authRepository.IsUserAccountActive(user!);
         // Hash the new password

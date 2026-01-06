@@ -1,5 +1,4 @@
 using System.Security.Claims;
-
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
@@ -7,9 +6,7 @@ using _116.Identity.Application.User.Constants;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -20,9 +17,7 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.V1
 /// Response model for updating admin user avatar.
 /// </summary>
 /// <param name="User">The updated admin user information with the new avatar.</param>
-public record AdminUpdateAvatarResponse(
-    UserResponseDto User
-);
+public record AdminUpdateAvatarResponse(UserResponseDto User);
 
 /// <summary>
 /// Defines the update avatar endpoint for authenticated admin users.
@@ -37,29 +32,29 @@ public class AdminUpdateAvatarEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{UserRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Admin}::{UserRouteConstants.Endpoint}");
 
-        group.MapPatch(pattern: UserRouteConstants.Avatar, async (
-                IFormFile avatarFile,
-                ClaimsPrincipal user,
-                IAuthRepository authRepository,
-                IDispatcher dispatcher
-            ) =>
-            {
-                Guid userId = authRepository.GetUserIdFromClaims(user: user);
+        group
+            .MapPatch(
+                pattern: UserRouteConstants.Avatar,
+                async (
+                    IFormFile avatarFile,
+                    ClaimsPrincipal user,
+                    IAuthRepository authRepository,
+                    IDispatcher dispatcher
+                ) =>
+                {
+                    Guid userId = authRepository.GetUserIdFromClaims(user: user);
 
-                var command = new AdminUpdateAvatarCommand(
-                    UserId: userId,
-                    AvatarFile: avatarFile
-                );
-                AdminUpdateAvatarResult result = await dispatcher.Send(request: command);
+                    var command = new AdminUpdateAvatarCommand(UserId: userId, AvatarFile: avatarFile);
+                    AdminUpdateAvatarResult result = await dispatcher.Send(request: command);
 
-                var response = new AdminUpdateAvatarResponse(User: result.User);
-                return Results.Ok(value: response);
-            })
+                    var response = new AdminUpdateAvatarResponse(User: result.User);
+                    return Results.Ok(value: response);
+                }
+            )
             .WithName(endpointName: AdminUpdateAvatarMetaField.UpdateAvatar.Name)
             .WithSummary(summary: AdminUpdateAvatarMetaField.UpdateAvatar.Summary)
             .WithDescription(description: AdminUpdateAvatarMetaField.UpdateAvatar.Description)

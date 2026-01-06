@@ -11,7 +11,8 @@ public class UserNotLoggedInException : Exception
     /// with a custom message describing the error.
     /// </summary>
     /// <param name="message">The error message explaining the login requirement.</param>
-    public UserNotLoggedInException(string message) : base(message: message) { }
+    public UserNotLoggedInException(string message)
+        : base(message: message) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserNotLoggedInException" /> class
@@ -19,7 +20,8 @@ public class UserNotLoggedInException : Exception
     /// </summary>
     /// <param name="message">The error message explaining the login requirement.</param>
     /// <param name="details">Additional context or information about the login state.</param>
-    public UserNotLoggedInException(string message, string details) : base(message: message)
+    public UserNotLoggedInException(string message, string details)
+        : base(message: message)
     {
         Details = details;
     }

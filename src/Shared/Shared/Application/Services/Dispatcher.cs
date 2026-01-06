@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Reflection;
-
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Shared.Application.Services;
@@ -91,11 +90,15 @@ public class Dispatcher(IServiceProvider serviceProvider) : IDispatcher
     /// </summary>
     private static Type GetHandlerType(Type requestType, Type responseType)
     {
-        return HandlerTypeCache.GetOrAdd(requestType, static (key, responseType) =>
-        {
-            Type handlerType = typeof(IRequestHandler<,>).MakeGenericType(key, responseType);
-            return handlerType;
-        }, responseType);
+        return HandlerTypeCache.GetOrAdd(
+            requestType,
+            static (key, responseType) =>
+            {
+                Type handlerType = typeof(IRequestHandler<,>).MakeGenericType(key, responseType);
+                return handlerType;
+            },
+            responseType
+        );
     }
 
     /// <summary>
@@ -103,10 +106,13 @@ public class Dispatcher(IServiceProvider serviceProvider) : IDispatcher
     /// </summary>
     private static Type GetHandlerType(Type requestType)
     {
-        return HandlerTypeCache.GetOrAdd(requestType, static key =>
-        {
-            Type handlerType = typeof(IRequestHandler<>).MakeGenericType(key);
-            return handlerType;
-        });
+        return HandlerTypeCache.GetOrAdd(
+            requestType,
+            static key =>
+            {
+                Type handlerType = typeof(IRequestHandler<>).MakeGenericType(key);
+                return handlerType;
+            }
+        );
     }
 }

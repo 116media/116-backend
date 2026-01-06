@@ -44,18 +44,11 @@ public static class FileConstants
         "image/jpg",
         "image/png",
         "image/gif",
-        "image/webp"
+        "image/webp",
     ];
 
     /// <summary>
     /// Allowed file extensions for avatar uploads.
     /// </summary>
-    public static readonly string[] AllowedAvatarExtensions =
-    [
-        ".jpg",
-        ".jpeg",
-        ".png",
-        ".gif",
-        ".webp"
-    ];
+    public static readonly string[] AllowedAvatarExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
 }

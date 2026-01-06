@@ -11,10 +11,8 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
 /// </summary>
 /// <param name="authFactory">Factory for handling user avatar update logic.</param>
 /// <param name="fileRepository">Repository for file data access operations.</param>
-public class PublicUpdateAvatarHandler(
-    IPublicUpdateAvatarAuthFactory authFactory,
-    IFileRepository fileRepository
-) : ICommandHandler<PublicUpdateAvatarCommand, PublicUpdateAvatarResult>
+public class PublicUpdateAvatarHandler(IPublicUpdateAvatarAuthFactory authFactory, IFileRepository fileRepository)
+    : ICommandHandler<PublicUpdateAvatarCommand, PublicUpdateAvatarResult>
 {
     /// <summary>
     /// Handles the avatar update command by updating the user's avatar URL.
@@ -47,9 +45,10 @@ public class PublicUpdateAvatarHandler(
             cancellationToken: cancellationToken
         );
 
-        FileEntity? avatarFile =
-            await fileRepository.GetAvatarFileAsync(avatarFileId: authData.User.AvatarFileId,
-                cancellationToken: cancellationToken);
+        FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(
+            avatarFileId: authData.User.AvatarFileId,
+            cancellationToken: cancellationToken
+        );
 
         var avatarDto = avatarFile?.ToFileDto();
         var userDto = authData.User.ToUserResponseDto(

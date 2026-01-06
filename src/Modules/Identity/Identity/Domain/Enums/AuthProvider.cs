@@ -22,5 +22,5 @@ public enum EnumAuthProvider
     /// <summary>
     /// Authentication via Facebook.
     /// </summary>
-    Facebook
+    Facebook,
 }

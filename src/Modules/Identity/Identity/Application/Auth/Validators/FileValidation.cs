@@ -1,9 +1,6 @@
 using System.Reflection;
-
 using _116.BuildingBlocks.Constants;
-
 using FluentValidation;
-
 using Microsoft.AspNetCore.Http;
 
 namespace _116.Identity.Application.Auth.Validators;
@@ -29,15 +26,18 @@ public static class FileValidation
         if (isRequired)
         {
             builder = ruleBuilder
-                .NotNull().WithMessage("Avatar file is required")
+                .NotNull()
+                .WithMessage("Avatar file is required")
                 .Must(predicate: BeValidFileSize)
                 .WithMessage($"File size must not exceed {FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)}MB")
                 .Must(predicate: BeValidImageType)
                 .WithMessage(
-                    $"Only image files are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarMimeTypes)}")
+                    $"Only image files are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarMimeTypes)}"
+                )
                 .Must(predicate: BeValidFileExtension)
                 .WithMessage(
-                    $"Only these extensions are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarExtensions)}");
+                    $"Only these extensions are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarExtensions)}"
+                );
         }
         else
         {
@@ -46,10 +46,12 @@ public static class FileValidation
                 .WithMessage($"File size must not exceed {FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)}MB")
                 .Must(predicate: BeValidImageType)
                 .WithMessage(
-                    $"Only image files are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarMimeTypes)}")
+                    $"Only image files are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarMimeTypes)}"
+                )
                 .Must(predicate: BeValidFileExtension)
                 .WithMessage(
-                    $"Only these extensions are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarExtensions)}")
+                    $"Only these extensions are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarExtensions)}"
+                )
                 .When(x => GetAvatarFileValue(instance: x) != null);
         }
 
@@ -87,9 +89,10 @@ public static class FileValidation
         }
 
         // For generic/missing content types (common with mobile uploads), validate by extension
-        bool isGenericContentType = string.IsNullOrEmpty(value: contentType) ||
-                                    contentType == "application/octet-stream" ||
-                                    contentType == "multipart/form-data";
+        bool isGenericContentType =
+            string.IsNullOrEmpty(value: contentType)
+            || contentType == "application/octet-stream"
+            || contentType == "multipart/form-data";
         return isGenericContentType && BeValidFileExtension(file: file);
     }
 

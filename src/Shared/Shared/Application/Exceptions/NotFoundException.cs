@@ -19,14 +19,16 @@ public class NotFoundException : Exception
     /// throw new NotFoundException("Custom not found message");
     /// </code>
     /// </example>
-    public NotFoundException(string message) : base(message) { }
+    public NotFoundException(string message)
+        : base(message) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NotFoundException"/> class with a custom message and additional details.
     /// </summary>
     /// <param name="message">The error message that describes the not found error.</param>
     /// <param name="details">Additional context or information about the not found error.</param>
-    public NotFoundException(string message, string details) : base(message)
+    public NotFoundException(string message, string details)
+        : base(message)
     {
         Details = details;
     }
@@ -44,9 +46,7 @@ public class NotFoundException : Exception
     /// </code>
     /// </example>
     public NotFoundException(string entityName, object? key)
-        : base($"Could not find {CleanEntityName(entityName)} with id: {key}")
-    {
-    }
+        : base($"Could not find {CleanEntityName(entityName)} with id: {key}") { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NotFoundException"/>
@@ -63,9 +63,7 @@ public class NotFoundException : Exception
     /// </code>
     /// </example>
     public NotFoundException(string entityName, string keyName, object keyValue)
-        : base($"Could not find {CleanEntityName(entityName)} with {keyName}: {keyValue}")
-    {
-    }
+        : base($"Could not find {CleanEntityName(entityName)} with {keyName}: {keyValue}") { }
 
     /// <summary>
     /// Removes the word "Entity" (case-insensitive) from the entity name, if present.

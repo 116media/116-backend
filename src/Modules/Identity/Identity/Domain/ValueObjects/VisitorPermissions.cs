@@ -16,12 +16,24 @@ public static class VisitorPermissions
     /// </summary>
     public static readonly PermissionEntity[] Content =
     [
-        PermissionEntity.Create(Guid.NewGuid(), "articles", "read",
-            "Allows visitors to view and read published articles"),
-        PermissionEntity.Create(Guid.NewGuid(), "videos", "read",
-            "Grants access to watch published video content streaming"),
-        PermissionEntity.Create(Guid.NewGuid(), "contents", "read",
-            "Provides broad access to view all published content")
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "articles",
+            "read",
+            "Allows visitors to view and read published articles"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "videos",
+            "read",
+            "Grants access to watch published video content streaming"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "contents",
+            "read",
+            "Provides broad access to view all published content"
+        ),
     ];
 
     /// <summary>
@@ -29,10 +41,18 @@ public static class VisitorPermissions
     /// </summary>
     public static readonly PermissionEntity[] Profile =
     [
-        PermissionEntity.Create(Guid.NewGuid(), "own_profile", "read",
-            "Enables visitors to view and read their own profile information"),
-        PermissionEntity.Create(Guid.NewGuid(), "own_profile", "update",
-            "Allows visitors to modify their own profile information")
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "own_profile",
+            "read",
+            "Enables visitors to view and read their own profile information"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "own_profile",
+            "update",
+            "Allows visitors to modify their own profile information"
+        ),
     ];
 
     /// <summary>
@@ -40,12 +60,24 @@ public static class VisitorPermissions
     /// </summary>
     public static readonly PermissionEntity[] Likes =
     [
-        PermissionEntity.Create(Guid.NewGuid(), "likes", "create",
-            "Grants ability to express appreciation by creating likes"),
-        PermissionEntity.Create(Guid.NewGuid(), "own_likes", "delete",
-            "Allows visitors to remove their previously created likes"),
-        PermissionEntity.Create(Guid.NewGuid(), "likes", "read",
-            "Enables viewing like counts and engagement metrics content")
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "likes",
+            "create",
+            "Grants ability to express appreciation by creating likes"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "own_likes",
+            "delete",
+            "Allows visitors to remove their previously created likes"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "likes",
+            "read",
+            "Enables viewing like counts and engagement metrics content"
+        ),
     ];
 
     /// <summary>
@@ -53,14 +85,30 @@ public static class VisitorPermissions
     /// </summary>
     public static readonly PermissionEntity[] Comments =
     [
-        PermissionEntity.Create(Guid.NewGuid(), "comments", "read",
-            "Provides access to view comments and community discussions"),
-        PermissionEntity.Create(Guid.NewGuid(), "comments", "create",
-            "Enables visitors to participate by posting new comments"),
-        PermissionEntity.Create(Guid.NewGuid(), "own_comments", "update",
-            "Allows visitors to edit their own posted comments"),
-        PermissionEntity.Create(Guid.NewGuid(), "own_comments", "delete",
-            "Grants ability to remove their own posted comments")
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "comments",
+            "read",
+            "Provides access to view comments and community discussions"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "comments",
+            "create",
+            "Enables visitors to participate by posting new comments"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "own_comments",
+            "update",
+            "Allows visitors to edit their own posted comments"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "own_comments",
+            "delete",
+            "Grants ability to remove their own posted comments"
+        ),
     ];
 
     /// <summary>
@@ -68,14 +116,30 @@ public static class VisitorPermissions
     /// </summary>
     public static readonly PermissionEntity[] Bookmarks =
     [
-        PermissionEntity.Create(Guid.NewGuid(), "bookmarks", "create",
-            "Enables saving interesting content for later reference access"),
-        PermissionEntity.Create(Guid.NewGuid(), "own_bookmarks", "delete",
-            "Allows removing items from personal bookmark collection management"),
-        PermissionEntity.Create(Guid.NewGuid(), "own_bookmarks", "read",
-            "Grants access to view personal saved bookmark collections"),
-        PermissionEntity.Create(Guid.NewGuid(), "bookmarks", "read",
-            "Provides access to view public community bookmark collections")
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "bookmarks",
+            "create",
+            "Enables saving interesting content for later reference access"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "own_bookmarks",
+            "delete",
+            "Allows removing items from personal bookmark collection management"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "own_bookmarks",
+            "read",
+            "Grants access to view personal saved bookmark collections"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "bookmarks",
+            "read",
+            "Provides access to view public community bookmark collections"
+        ),
     ];
 
     /// <summary>
@@ -83,10 +147,18 @@ public static class VisitorPermissions
     /// </summary>
     public static readonly PermissionEntity[] Navigation =
     [
-        PermissionEntity.Create(Guid.NewGuid(), "tags", "read",
-            "Enables browsing content tags for topic based navigation"),
-        PermissionEntity.Create(Guid.NewGuid(), "categories", "read",
-            "Provides access to browse organized content category structures")
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "tags",
+            "read",
+            "Enables browsing content tags for topic based navigation"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "categories",
+            "read",
+            "Provides access to browse organized content category structures"
+        ),
     ];
 
     /// <summary>
@@ -94,14 +166,30 @@ public static class VisitorPermissions
     /// </summary>
     public static readonly PermissionEntity[] Playlists =
     [
-        PermissionEntity.Create(Guid.NewGuid(), "playlists", "create",
-            "Grants ability to create custom personalized content playlists"),
-        PermissionEntity.Create(Guid.NewGuid(), "own_playlists", "update",
-            "Allows modifying personal playlists including adding removing content"),
-        PermissionEntity.Create(Guid.NewGuid(), "own_playlists", "delete",
-            "Enables removing personal playlists when no longer needed"),
-        PermissionEntity.Create(Guid.NewGuid(), "own_playlists", "read",
-            "Provides access to view personal created playlist collections")
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "playlists",
+            "create",
+            "Grants ability to create custom personalized content playlists"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "own_playlists",
+            "update",
+            "Allows modifying personal playlists including adding removing content"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "own_playlists",
+            "delete",
+            "Enables removing personal playlists when no longer needed"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "own_playlists",
+            "read",
+            "Provides access to view personal created playlist collections"
+        ),
     ];
 
     /// <summary>
@@ -109,10 +197,18 @@ public static class VisitorPermissions
     /// </summary>
     public static readonly PermissionEntity[] Ads =
     [
-        PermissionEntity.Create(Guid.NewGuid(), "ads_banners", "read",
-            "Allows viewing banner advertisements throughout the entire platform"),
-        PermissionEntity.Create(Guid.NewGuid(), "ads_stories", "read",
-            "Enables viewing story format advertisements in content feeds")
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "ads_banners",
+            "read",
+            "Allows viewing banner advertisements throughout the entire platform"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "ads_stories",
+            "read",
+            "Enables viewing story format advertisements in content feeds"
+        ),
     ];
 
     /// <summary>
@@ -120,10 +216,18 @@ public static class VisitorPermissions
     /// </summary>
     public static readonly PermissionEntity[] Rates =
     [
-        PermissionEntity.Create(Guid.NewGuid(), "rates", "create",
-            "Grants ability to rate content using evaluation mechanisms"),
-        PermissionEntity.Create(Guid.NewGuid(), "rates", "read",
-            "Provides access to view ratings and community assessment")
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "rates",
+            "create",
+            "Grants ability to rate content using evaluation mechanisms"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "rates",
+            "read",
+            "Provides access to view ratings and community assessment"
+        ),
     ];
 
     /// <summary>
@@ -131,12 +235,24 @@ public static class VisitorPermissions
     /// </summary>
     public static readonly PermissionEntity[] Shares =
     [
-        PermissionEntity.Create(Guid.NewGuid(), "shares", "create",
-            "Enables sharing content through various social media mechanisms"),
-        PermissionEntity.Create(Guid.NewGuid(), "shares", "read",
-            "Provides access to view sharing statistics and metadata"),
-        PermissionEntity.Create(Guid.NewGuid(), "own_shares", "read",
-            "Grants access to view personal sharing history statistics")
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "shares",
+            "create",
+            "Enables sharing content through various social media mechanisms"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "shares",
+            "read",
+            "Provides access to view sharing statistics and metadata"
+        ),
+        PermissionEntity.Create(
+            Guid.NewGuid(),
+            "own_shares",
+            "read",
+            "Grants access to view personal sharing history statistics"
+        ),
     ];
 
     /// <summary>

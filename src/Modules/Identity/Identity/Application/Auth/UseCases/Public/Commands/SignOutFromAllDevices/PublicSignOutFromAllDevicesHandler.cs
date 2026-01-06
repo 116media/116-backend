@@ -23,8 +23,10 @@ public class PublicSignOutFromAllDevicesHandler(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user =
-            await authRepository.FindUserByIdOrThrow(userId: command.UserId, cancellationToken: cancellationToken);
+        UserEntity? user = await authRepository.FindUserByIdOrThrow(
+            userId: command.UserId,
+            cancellationToken: cancellationToken
+        );
         // Validate user account status
         authRepository.IsUserAccountActive(user!);
 

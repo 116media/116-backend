@@ -1,7 +1,5 @@
 using System.Diagnostics;
-
 using _116.Shared.Contracts.Application.CQRS;
-
 using Microsoft.Extensions.Logging;
 
 namespace _116.Shared.Application.Decorators;
@@ -43,11 +41,7 @@ public class LoggingDecorator<TRequest, TResponse>(
     /// </summary>
     private void LogStart(TRequest request)
     {
-        logger.LogInformation(
-            "[START] Handling {Request} - RequestData={RequestData}",
-            typeof(TRequest).Name,
-            request
-        );
+        logger.LogInformation("[START] Handling {Request} - RequestData={RequestData}", typeof(TRequest).Name, request);
     }
 
     /// <summary>

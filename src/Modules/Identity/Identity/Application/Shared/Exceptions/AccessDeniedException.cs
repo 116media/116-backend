@@ -9,7 +9,8 @@ public class AccessDeniedException : Exception
     /// Initializes a new instance of the <see cref="AccessDeniedException" /> class with a custom message.
     /// </summary>
     /// <param name="message">The error message that describes the access denied error.</param>
-    public AccessDeniedException(string message) : base(message: message) { }
+    public AccessDeniedException(string message)
+        : base(message: message) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AccessDeniedException" /> class with a custom message and additional
@@ -17,7 +18,8 @@ public class AccessDeniedException : Exception
     /// </summary>
     /// <param name="message">The error message that describes the access denied error.</param>
     /// <param name="details">Additional context or information about the access denied error.</param>
-    public AccessDeniedException(string message, string details) : base(message: message)
+    public AccessDeniedException(string message, string details)
+        : base(message: message)
     {
         Details = details;
     }
