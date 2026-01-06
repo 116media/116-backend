@@ -29,8 +29,7 @@ public class AdminGetAllSessionsHandler(ISessionRepository sessionRepository)
 
         Guid? userIdFilter = null;
         if (
-            !string.IsNullOrWhiteSpace(value: query.UserId) &&
-            Guid.TryParse(input: query.UserId, out Guid parsedUserId)
+            !string.IsNullOrWhiteSpace(value: query.UserId) && Guid.TryParse(input: query.UserId, out Guid parsedUserId)
         )
         {
             userIdFilter = parsedUserId;
@@ -42,7 +41,6 @@ public class AdminGetAllSessionsHandler(ISessionRepository sessionRepository)
             status: query.Status,
             userId: userIdFilter,
             ipAddress: query.IpAddress,
-            deviceName: query.DeviceName,
             fromDate: query.FromDate,
             toDate: query.ToDate,
             cancellationToken: cancellationToken
