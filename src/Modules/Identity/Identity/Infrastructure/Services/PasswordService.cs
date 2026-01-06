@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-
 using _116.Identity.Application.Auth.Services;
 
 namespace _116.Identity.Infrastructure.Services;
@@ -23,7 +22,7 @@ public class PasswordService : IPasswordService
     /// <summary>
     /// Number of iterations for PBKDF2 algorithm to ensure computational cost.
     /// </summary>
-    private const int Iterations = 100000;
+    private const int Iterations = 25000;
 
     /// <inheritdoc />
     public string Hash(string password)
@@ -31,8 +30,12 @@ public class PasswordService : IPasswordService
         using var rng = RandomNumberGenerator.Create();
         byte[] salt = new byte[SaltSize];
         rng.GetBytes(data: salt);
-        using var pbkdf2 = new Rfc2898DeriveBytes(password: password, salt: salt, iterations: Iterations,
-            hashAlgorithm: HashAlgorithmName.SHA256);
+        using var pbkdf2 = new Rfc2898DeriveBytes(
+            password: password,
+            salt: salt,
+            iterations: Iterations,
+            hashAlgorithm: HashAlgorithmName.SHA256
+        );
         byte[] hash = pbkdf2.GetBytes(cb: HashSize);
         byte[] hashBytes = new byte[SaltSize + HashSize];
         Array.Copy(sourceArray: salt, 0, destinationArray: hashBytes, 0, length: SaltSize);
@@ -59,10 +62,19 @@ public class PasswordService : IPasswordService
             byte[] salt = new byte[SaltSize];
             byte[] storedHash = new byte[HashSize];
             Array.Copy(sourceArray: hashBytes, 0, destinationArray: salt, 0, length: SaltSize);
-            Array.Copy(sourceArray: hashBytes, sourceIndex: SaltSize, destinationArray: storedHash, 0,
-                length: HashSize);
-            using var pbkdf2 = new Rfc2898DeriveBytes(password: password, salt: salt, iterations: Iterations,
-                hashAlgorithm: HashAlgorithmName.SHA256);
+            Array.Copy(
+                sourceArray: hashBytes,
+                sourceIndex: SaltSize,
+                destinationArray: storedHash,
+                0,
+                length: HashSize
+            );
+            using var pbkdf2 = new Rfc2898DeriveBytes(
+                password: password,
+                salt: salt,
+                iterations: Iterations,
+                hashAlgorithm: HashAlgorithmName.SHA256
+            );
             byte[] computedHash = pbkdf2.GetBytes(cb: HashSize);
             return CryptographicOperations.FixedTimeEquals(left: storedHash, right: computedHash);
         }

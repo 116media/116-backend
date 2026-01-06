@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-
 using _116.Identity.Application.Auth.Services;
 
 namespace _116.Identity.Infrastructure.Services;
@@ -28,7 +27,7 @@ public class RefreshTokenService : IRefreshTokenService
     /// <summary>
     /// Number of iterations for PBKDF2 algorithm to ensure computational cost.
     /// </summary>
-    private const int Iterations = 100000;
+    private const int Iterations = 25000;
 
     /// <inheritdoc />
     public string GenerateRefreshToken()
@@ -47,8 +46,8 @@ public class RefreshTokenService : IRefreshTokenService
         rng.GetBytes(data: salt);
 
         using var pbkdf2 = new Rfc2898DeriveBytes(
-            password: refreshToken,
             salt: salt,
+            password: refreshToken,
             iterations: Iterations,
             hashAlgorithm: HashAlgorithmName.SHA256
         );
@@ -74,8 +73,8 @@ public class RefreshTokenService : IRefreshTokenService
         Array.Copy(sourceArray: hashBytes, 0, destinationArray: salt, 0, length: SaltSize);
 
         using var pbkdf2 = new Rfc2898DeriveBytes(
-            password: refreshToken,
             salt: salt,
+            password: refreshToken,
             iterations: Iterations,
             hashAlgorithm: HashAlgorithmName.SHA256
         );
