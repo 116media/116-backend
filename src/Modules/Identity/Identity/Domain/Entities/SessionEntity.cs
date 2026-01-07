@@ -13,9 +13,17 @@ namespace _116.Identity.Domain.Entities;
 public class SessionEntity : Aggregate<Guid>
 {
     /// <summary>
-    /// Identifier of the user this session belongs to.
+    /// A unique identifier of the user this session belongs to.
     /// </summary>
     public Guid UserId { get; private set; }
+
+    /// <summary>
+    /// Unique identifier of the device or browser instance.
+    /// Generated once per installation and used to prevent multiple sessions per device.
+    /// Supports GUID, UUID, or NanoID formats.
+    /// </summary>
+    [MaxLength(SessionConstants.MaxDeviceIdLength)]
+    public string DeviceId { get; private set; } = null!;
 
     /// <summary>
     /// Hashed refresh token associated with this session.
@@ -87,6 +95,7 @@ public class SessionEntity : Aggregate<Guid>
     public static SessionEntity Create(
         Guid id,
         Guid userId,
+        string deviceId,
         string refreshTokenHash,
         DateTime expiresAt,
         EnumBrowser browser,
@@ -101,6 +110,7 @@ public class SessionEntity : Aggregate<Guid>
         {
             Id = id,
             UserId = userId,
+            DeviceId = deviceId,
             RefreshTokenHash = refreshTokenHash,
             ExpiresAt = expiresAt,
             Browser = browser,
