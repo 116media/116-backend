@@ -15,7 +15,7 @@ public class PublicSignOutHandler(IPublicSignOutSessionFactory sessionFactory, I
 {
     /// <summary>
     /// Handles the sign-out command by invalidating the specific session.
-    /// This operation is idempotent - if the session doesn't exist, user is already logged out.
+    /// If the session doesn't exist, user is already logged out.
     /// </summary>
     public async Task<PublicSignOutResult> Handle(PublicSignOutCommand command, CancellationToken cancellationToken)
     {
