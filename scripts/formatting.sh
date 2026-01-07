@@ -53,7 +53,7 @@ else
     echo -e "${BLUE}🔍 Validating code formatting...${NC}"
 
     echo -e "${BLUE}📏 Checking code formatting...${NC}"
-    dotnet csharpier format --check .
+    dotnet csharpier check .
     check_res=$?
     if [ $check_res -ne 0 ]; then
         echo -e "${RED}❌ Code formatting violations detected!${NC}"

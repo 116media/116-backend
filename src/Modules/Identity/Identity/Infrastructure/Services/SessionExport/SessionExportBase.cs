@@ -4,7 +4,7 @@ using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData
 
 namespace _116.Identity.Infrastructure.Services.SessionExport;
 
-public class Exporter
+public class SessionExportBase
 {
     /// <summary>
     /// Projects session data to include only specified columns using dynamic objects.
