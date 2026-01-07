@@ -8,7 +8,7 @@ namespace _116.Identity.Infrastructure.Services.SessionExport.Strategies;
 /// <summary>
 /// Strategy for exporting session data to XLSX (Excel) format.
 /// </summary>
-public class XlsxExportStrategy : Exporter, IExportStrategy
+public class XlsxExportStrategy : SessionExportBase, IExportStrategy
 {
     /// <inheritdoc />
     public byte[] Export(List<SessionExportDto> sessions, List<string>? columns)

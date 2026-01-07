@@ -1,6 +1,5 @@
 using System.Dynamic;
 using System.Globalization;
-using System.Reflection;
 using System.Text;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
@@ -11,7 +10,7 @@ namespace _116.Identity.Infrastructure.Services.SessionExport.Strategies;
 /// <summary>
 /// Strategy for exporting session data to CSV format.
 /// </summary>
-public class CsvExportStrategy : Exporter, IExportStrategy
+public class CsvExportStrategy : SessionExportBase, IExportStrategy
 {
     /// <inheritdoc />
     public byte[] Export(List<SessionExportDto> sessions, List<string>? columns)
