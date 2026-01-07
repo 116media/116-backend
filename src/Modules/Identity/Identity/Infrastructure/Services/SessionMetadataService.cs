@@ -59,4 +59,12 @@ public class SessionMetadataService(
             _ => EnumClient.Unknown,
         };
     }
+
+    /// <summary>
+    /// Extracts the device identifier from the X-Device-Id header.
+    /// </summary>
+    public string? ExtractDeviceId()
+    {
+        return httpContextAccessor.HttpContext?.Request.Headers["X-Device-Id"].FirstOrDefault();
+    }
 }
