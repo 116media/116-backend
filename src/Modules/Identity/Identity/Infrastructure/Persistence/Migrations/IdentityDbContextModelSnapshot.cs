@@ -264,14 +264,16 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_at");
-
                     b.Property<string>("Device")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("device");
+
+                    b.Property<string>("DeviceId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("device_id");
 
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")
@@ -282,11 +284,11 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(45)")
                         .HasColumnName("ip_address");
 
-                    b.Property<bool>("IsDeleted")
+                    b.Property<bool>("IsRevoked")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
-                        .HasColumnName("is_deleted");
+                        .HasColumnName("is_revoked");
 
                     b.Property<string>("Platform")
                         .IsRequired()
@@ -298,6 +300,10 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
                         .HasColumnName("refresh_token_hash");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -319,17 +325,25 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_sessions");
 
+                    b.HasIndex("DeviceId")
+                        .HasDatabaseName("ix_sessions_device_id");
+
                     b.HasIndex("ExpiresAt")
                         .HasDatabaseName("ix_sessions_expires_at");
 
-                    b.HasIndex("IsDeleted")
-                        .HasDatabaseName("ix_sessions_is_deleted");
+                    b.HasIndex("IsRevoked")
+                        .HasDatabaseName("ix_sessions_is_revoked");
 
                     b.HasIndex("RefreshTokenHash")
                         .HasDatabaseName("ix_sessions_refresh_token_hash");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_sessions_user_id");
+
+                    b.HasIndex("UserId", "DeviceId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_sessions_user_id_device_id")
+                        .HasFilter("[is_revoked] = false");
 
                     b.ToTable("sessions", "identity");
                 });
