@@ -38,17 +38,17 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     }
 
     /// <inheritdoc />
-    public async Task DeleteAsync(Guid sessionId, CancellationToken cancellationToken = default)
+    public async Task RevokeAsync(Guid sessionId, CancellationToken cancellationToken = default)
     {
         var idSpec = new SessionByIdSpecification(sessionId: sessionId);
-        var notDeletedSpec = new SessionIsNotDeletedSpecification();
-        Specification<SessionEntity> spec = idSpec.And(other: notDeletedSpec);
+        var notRevokedSpec = new SessionIsNotRevokedSpecification();
+        Specification<SessionEntity> spec = idSpec.And(other: notRevokedSpec);
 
         SessionEntity? session = await context
             .Sessions.Where(spec.ToExpression())
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        session?.Delete();
+        session?.Revoke();
     }
 
     /// <inheritdoc />
@@ -61,7 +61,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
 
         foreach (SessionEntity session in sessions)
         {
-            session.Delete();
+            session.Revoke();
         }
     }
 
@@ -69,8 +69,8 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     public async Task<int> DeleteExpiredSessionsAsync(CancellationToken cancellationToken = default)
     {
         var expiredSpec = new SessionIsExpiredSpecification();
-        var notDeletedSpec = new SessionIsNotDeletedSpecification();
-        Specification<SessionEntity> spec = expiredSpec.And(other: notDeletedSpec);
+        var notRevokedSpec = new SessionIsNotRevokedSpecification();
+        Specification<SessionEntity> spec = expiredSpec.And(other: notRevokedSpec);
 
         List<SessionEntity> expiredSessions = await context
             .Sessions.Where(spec.ToExpression())
@@ -78,7 +78,7 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
 
         foreach (SessionEntity session in expiredSessions)
         {
-            session.Delete();
+            session.Revoke();
         }
 
         return expiredSessions.Count;
@@ -88,8 +88,8 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     public async Task<SessionEntity?> GetByIdAsync(Guid sessionId, CancellationToken cancellationToken = default)
     {
         var idSpec = new SessionByIdSpecification(sessionId: sessionId);
-        var notDeletedSpec = new SessionIsNotDeletedSpecification();
-        Specification<SessionEntity> spec = idSpec.And(other: notDeletedSpec);
+        var notRevokedSpec = new SessionIsNotRevokedSpecification();
+        Specification<SessionEntity> spec = idSpec.And(other: notRevokedSpec);
 
         return await context
             .Sessions.Where(spec.ToExpression())

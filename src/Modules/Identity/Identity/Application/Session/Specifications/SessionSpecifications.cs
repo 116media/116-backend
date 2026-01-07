@@ -41,26 +41,26 @@ public class SessionByIdSpecification(Guid sessionId) : Specification<SessionEnt
 }
 
 /// <summary>
-/// Specification that matches non-deleted sessions.
-/// Used for filtering sessions that are still active and not marked as deleted.
+/// Specification that matches sessions that are not revoked.
+/// Used for filtering sessions that are still active and have not been revoked.
 /// </summary>
-public class SessionIsNotDeletedSpecification : Specification<SessionEntity>
+public class SessionIsNotRevokedSpecification : Specification<SessionEntity>
 {
     public override Expression<Func<SessionEntity, bool>> ToExpression()
     {
-        return session => session.IsDeleted == false;
+        return session => session.IsRevoked == false;
     }
 }
 
 /// <summary>
-/// Specification that matches deleted sessions.
-/// Used for filtering sessions that have been revoked or logged out.
+/// Specification that matches sessions that have been revoked.
+/// Used for filtering sessions that have been logged out or explicitly revoked.
 /// </summary>
-public class SessionIsDeletedSpecification : Specification<SessionEntity>
+public class SessionIsRevokedSpecification : Specification<SessionEntity>
 {
     public override Expression<Func<SessionEntity, bool>> ToExpression()
     {
-        return session => session.IsDeleted == true;
+        return session => session.IsRevoked == true;
     }
 }
 
@@ -97,7 +97,7 @@ public class SessionIsActiveSpecification : Specification<SessionEntity>
 {
     public override Expression<Func<SessionEntity, bool>> ToExpression()
     {
-        var notDeletedSpec = new SessionIsNotDeletedSpecification();
+        var notDeletedSpec = new SessionIsNotRevokedSpecification();
         var notExpiredSpec = new SessionIsNotExpiredSpecification();
         return notDeletedSpec.And(other: notExpiredSpec).ToExpression();
     }

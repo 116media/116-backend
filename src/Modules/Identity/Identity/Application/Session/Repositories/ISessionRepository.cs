@@ -28,11 +28,11 @@ public interface ISessionRepository
     );
 
     /// <summary>
-    /// Deletes a specific session (for logout).
+    /// Revokes a specific session (for logout).
     /// </summary>
     /// <param name="sessionId">The ID of the session to delete.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    Task DeleteAsync(Guid sessionId, CancellationToken cancellationToken = default);
+    Task RevokeAsync(Guid sessionId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes all sessions for a user (for logout from all devices).

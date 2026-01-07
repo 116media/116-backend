@@ -6,78 +6,83 @@ using _116.Shared.Domain;
 namespace _116.Identity.Domain.Entities;
 
 /// <summary>
-/// Represents an active login session for a user.
-/// Sessions track when and where users are logged in - each device/browser gets its own session.
+/// Represents a login session for a user.
+/// A session corresponds to a single authenticated device or browser instance.
+/// Sessions can expire naturally or be explicitly revoked (e.i. logout, security action).
 /// </summary>
 public class SessionEntity : Aggregate<Guid>
 {
     /// <summary>
-    /// Which user this session belongs to.
+    /// Identifier of the user this session belongs to.
     /// </summary>
     public Guid UserId { get; private set; }
 
     /// <summary>
-    /// Hashed refresh token. Never store the raw token - hash it first!
+    /// Hashed refresh token associated with this session.
+    /// The raw refresh token must never be stored.
     /// </summary>
-    [MaxLength(length: SessionConstants.MaxRefreshTokenHashLength)]
+    [MaxLength(SessionConstants.MaxRefreshTokenHashLength)]
     public string RefreshTokenHash { get; private set; } = null!;
 
     /// <summary>
-    /// When this session expires. After this time, the user needs to log in again.
+    /// UTC timestamp indicating when this session expires.
+    /// After expiration, the session is no longer considered valid.
     /// </summary>
     public DateTime ExpiresAt { get; private set; }
 
     /// <summary>
-    /// IP address where the login happened. Useful for security monitoring.
+    /// IP address from which the session was created.
+    /// Useful for security auditing and anomaly detection.
     /// </summary>
-    [MaxLength(length: SessionConstants.MaxIpAddressLength)]
+    [MaxLength(SessionConstants.MaxIpAddressLength)]
     public string? IpAddress { get; private set; }
 
     /// <summary>
-    /// Raw user agent string from the browser/device.
+    /// Raw user-agent string reported by the client.
     /// </summary>
-    [MaxLength(length: SessionConstants.MaxUserAgentLength)]
+    [MaxLength(SessionConstants.MaxUserAgentLength)]
     public string? UserAgent { get; private set; }
 
     /// <summary>
-    /// Browser type detected from the user agent (e.g., Chrome, Firefox, Safari).
+    /// Browser detected from the user agent (e.g., Chrome, Firefox, Safari).
     /// </summary>
     public EnumBrowser Browser { get; private set; }
 
     /// <summary>
-    /// Device type detected from the user agent (e.g., Desktop, Mobile, Tablet).
+    /// Device category associated with this session (e.g., Desktop, Mobile, Tablet).
     /// </summary>
     public EnumDevice Device { get; private set; }
 
     /// <summary>
-    /// Platform/OS detected from the user agent (e.g., Windows, iOS, Android).
+    /// Operating system or platform detected for this session (e.g., Windows, iOS, Android).
     /// </summary>
     public EnumPlatform Platform { get; private set; }
 
     /// <summary>
-    /// Client application type that initiated the session (e.g., MobileApp, WebApp, Dashboard).
-    /// Sent from the application via Client-App header.
+    /// Client application that initiated the session
+    /// (e.g., MobileApp, WebApp, Dashboard).
     /// </summary>
     public EnumClient Client { get; private set; }
 
     /// <summary>
-    /// Whether this session has been deleted (logged out/revoked).
-    /// Sessions are soft-deleted to keep historical data for analytics.
+    /// Indicates whether this session has been explicitly revoked.
+    /// A revoked session is no longer valid even if it has not expired.
     /// </summary>
-    public bool IsDeleted { get; private set; }
+    public bool IsRevoked { get; private set; }
 
     /// <summary>
-    /// When this session was deleted (for logout/revocation). Null if not deleted.
+    /// UTC timestamp indicating when the session was revoked.
+    /// Null if the session has not been revoked.
     /// </summary>
-    public DateTime? DeletedAt { get; private set; }
+    public DateTime? RevokedAt { get; private set; }
 
     /// <summary>
-    /// Navigation property back to the user.
+    /// Navigation property to the owning user.
     /// </summary>
     public UserEntity User { get; private set; } = null!;
 
     /// <summary>
-    /// Creates a new session when a user logs in.
+    /// Creates a new session when a user successfully logs in.
     /// </summary>
     public static SessionEntity Create(
         Guid id,
@@ -108,15 +113,17 @@ public class SessionEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Checks if this session is still valid (not expired and not deleted).
+    /// Determines whether the session is currently active.
+    /// A session is active if it has not expired and has not been revoked.
     /// </summary>
     public bool IsActive()
     {
-        return ExpiresAt > DateTime.UtcNow && !IsDeleted;
+        return ExpiresAt > DateTime.UtcNow && !IsRevoked;
     }
 
     /// <summary>
-    /// Updates the refresh token (for token rotation).
+    /// Rotates the refresh token and updates the session expiration.
+    /// Typically called during token refresh.
     /// </summary>
     public void UpdateRefreshToken(string newRefreshTokenHash, DateTime newExpiresAt)
     {
@@ -125,12 +132,13 @@ public class SessionEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Softly deletes this session (for logout).
-    /// Keeps the session data for analytics but marks it as deleted.
+    /// Revokes this session.
+    /// Used when a user logs out, a device is invalidated,
+    /// or a security event requires terminating the session.
     /// </summary>
-    public void Delete()
+    public void Revoke()
     {
-        IsDeleted = true;
-        DeletedAt = DateTime.UtcNow;
+        IsRevoked = true;
+        RevokedAt = DateTime.UtcNow;
     }
 }

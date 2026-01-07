@@ -31,7 +31,7 @@ public class PublicSignOutSessionFactory(
 
         if (session != null)
         {
-            await sessionRepository.DeleteAsync(sessionId: session.Id, cancellationToken: cancellationToken);
+            await sessionRepository.RevokeAsync(sessionId: session.Id, cancellationToken: cancellationToken);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
     }

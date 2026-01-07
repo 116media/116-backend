@@ -41,7 +41,7 @@ public class PublicRevokeSessionHandler(ISessionRepository sessionRepository, II
             throw SessionErrors.SessionNotFound(sessionId: sessionId);
         }
 
-        await sessionRepository.DeleteAsync(sessionId: sessionId, cancellationToken: cancellationToken);
+        await sessionRepository.RevokeAsync(sessionId: sessionId, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new PublicRevokeSessionResult(IsSuccess: true);
