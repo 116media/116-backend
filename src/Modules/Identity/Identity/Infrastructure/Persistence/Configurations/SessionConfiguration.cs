@@ -22,6 +22,7 @@ public class SessionConfiguration : IEntityTypeConfiguration<SessionEntity>
 
         // Properties configuration
         builder.Property(s => s.UserId).IsRequired();
+        builder.Property(s => s.DeviceId).HasMaxLength(maxLength: SessionConstants.MaxDeviceIdLength).IsRequired();
         builder
             .Property(s => s.RefreshTokenHash)
             .HasMaxLength(maxLength: SessionConstants.MaxRefreshTokenHashLength)
@@ -45,9 +46,13 @@ public class SessionConfiguration : IEntityTypeConfiguration<SessionEntity>
 
         // Indexes
         builder.HasIndex(s => s.UserId);
+        builder.HasIndex(s => s.DeviceId);
         builder.HasIndex(s => s.RefreshTokenHash);
         builder.HasIndex(s => s.ExpiresAt);
         builder.HasIndex(s => s.IsRevoked);
+
+        // Unique constraint: One active session per device per user
+        builder.HasIndex(s => new { s.UserId, s.DeviceId }).IsUnique().HasFilter("[is_revoked] = false");
 
         // Relationships configured in UserConfiguration
     }
