@@ -36,18 +36,18 @@ public class SessionConfiguration : IEntityTypeConfiguration<SessionEntity>
             .Property(s => s.UserAgent)
             .HasMaxLength(maxLength: SessionConstants.MaxUserAgentLength)
             .IsRequired(false);
-        builder.Property(s => s.Browser).IsRequired();
-        builder.Property(s => s.Device).IsRequired();
-        builder.Property(s => s.Platform).IsRequired();
-        builder.Property(s => s.Client).IsRequired();
-        builder.Property(s => s.IsDeleted).HasDefaultValue(false).IsRequired();
-        builder.Property(s => s.DeletedAt).IsRequired(false);
+        builder.Property(s => s.Browser).HasConversion<string>().IsRequired();
+        builder.Property(s => s.Device).HasConversion<string>().IsRequired();
+        builder.Property(s => s.Platform).HasConversion<string>().IsRequired();
+        builder.Property(s => s.Client).HasConversion<string>().IsRequired();
+        builder.Property(s => s.IsRevoked).HasDefaultValue(false).IsRequired();
+        builder.Property(s => s.RevokedAt).IsRequired(false);
 
         // Indexes
         builder.HasIndex(s => s.UserId);
         builder.HasIndex(s => s.RefreshTokenHash);
         builder.HasIndex(s => s.ExpiresAt);
-        builder.HasIndex(s => s.IsDeleted);
+        builder.HasIndex(s => s.IsRevoked);
 
         // Relationships configured in UserConfiguration
     }
