@@ -27,6 +27,7 @@ public class PublicSignOutFromAllDevicesHandler(
             userId: command.UserId,
             cancellationToken: cancellationToken
         );
+
         // Validate user account status
         authRepository.IsUserAccountActive(user!);
 
