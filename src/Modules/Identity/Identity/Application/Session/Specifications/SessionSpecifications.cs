@@ -41,6 +41,36 @@ public class SessionByIdSpecification(Guid sessionId) : Specification<SessionEnt
 }
 
 /// <summary>
+/// Specification that matches sessions by device ID.
+/// Used for filtering sessions belonging to a specific device.
+/// </summary>
+public class SessionByDeviceIdSpecification(string deviceId) : Specification<SessionEntity>
+{
+    public override Expression<Func<SessionEntity, bool>> ToExpression()
+    {
+        return session => session.DeviceId == deviceId;
+    }
+}
+
+/// <summary>
+/// Composite specification that matches active sessions by user ID and device ID.
+/// Combines user ID, device ID, not revoked, and not expired specifications.
+/// Used for finding existing active session for a specific user on a specific device.
+/// This is critical for preventing duplicate active sessions on the same device.
+/// </summary>
+public class SessionByUserIdAndDeviceIdSpecification(Guid userId, string deviceId) : Specification<SessionEntity>
+{
+    public override Expression<Func<SessionEntity, bool>> ToExpression()
+    {
+        var userIdSpec = new SessionByUserIdSpecification(userId);
+        var deviceIdSpec = new SessionByDeviceIdSpecification(deviceId);
+        var activeSpec = new SessionIsActiveSpecification();
+
+        return userIdSpec.And(deviceIdSpec).And(activeSpec).ToExpression();
+    }
+}
+
+/// <summary>
 /// Specification that matches sessions that are not revoked.
 /// Used for filtering sessions that are still active and have not been revoked.
 /// </summary>
