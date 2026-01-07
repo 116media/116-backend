@@ -50,6 +50,21 @@ public interface ISessionRepository
     Task<SessionEntity?> GetByIdAsync(Guid sessionId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets an active session for a specific user and device.
+    /// Active means: NOT expired AND NOT revoked.
+    /// Used to prevent duplicate active sessions on the same device.
+    /// </summary>
+    /// <param name="userId">The user identifier.</param>
+    /// <param name="deviceId">The device identifier.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <returns>The active session if found, null otherwise.</returns>
+    Task<SessionEntity?> GetActiveSessionByUserIdAndDeviceIdAsync(
+        Guid userId,
+        string deviceId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Gets all sessions for a user with optional filtering by active status.
     /// </summary>
     /// <param name="userId">The user's ID.</param>
