@@ -32,4 +32,12 @@ public interface ISessionMetadataService
     /// </summary>
     /// <returns>The client application type enum. Returns Unknown if header is missing or invalid.</returns>
     EnumClient ExtractClientApp();
+
+    /// <summary>
+    /// Extracts the device identifier from the X-Device-Id header.
+    /// This is a client-generated unique identifier (GUID/UUID/NanoID) that persists across app restarts.
+    /// Used to prevent duplicate active sessions on the same device.
+    /// </summary>
+    /// <returns>The device identifier string, or null if the header is missing.</returns>
+    string? ExtractDeviceId();
 }
