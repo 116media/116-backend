@@ -12,8 +12,8 @@ using _116.Identity.Infrastructure.Persistence;
 namespace _116.Identity.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20260107214707_InitIdenttySchema")]
-    partial class InitIdenttySchema
+    [Migration("20260107233707_InitIdentitySchema")]
+    partial class InitIdentitySchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -249,12 +249,14 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<int>("Browser")
-                        .HasColumnType("integer")
+                    b.Property<string>("Browser")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("browser");
 
-                    b.Property<int>("Client")
-                        .HasColumnType("integer")
+                    b.Property<string>("Client")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("client");
 
                     b.Property<DateTime>("CreatedAt")
@@ -269,8 +271,9 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
-                    b.Property<int>("Device")
-                        .HasColumnType("integer")
+                    b.Property<string>("Device")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("device");
 
                     b.Property<DateTime>("ExpiresAt")
@@ -288,8 +291,9 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("is_deleted");
 
-                    b.Property<int>("Platform")
-                        .HasColumnType("integer")
+                    b.Property<string>("Platform")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("platform");
 
                     b.Property<string>("RefreshTokenHash")

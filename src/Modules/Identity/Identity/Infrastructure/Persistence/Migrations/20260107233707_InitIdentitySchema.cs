@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace _116.Identity.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitIdenttySchema : Migration
+    public partial class InitIdentitySchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -176,10 +176,10 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                     expires_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ip_address = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true),
                     user_agent = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    browser = table.Column<int>(type: "integer", nullable: false),
-                    device = table.Column<int>(type: "integer", nullable: false),
-                    platform = table.Column<int>(type: "integer", nullable: false),
-                    client = table.Column<int>(type: "integer", nullable: false),
+                    browser = table.Column<string>(type: "text", nullable: false),
+                    device = table.Column<string>(type: "text", nullable: false),
+                    platform = table.Column<string>(type: "text", nullable: false),
+                    client = table.Column<string>(type: "text", nullable: false),
                     is_deleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     deleted_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
