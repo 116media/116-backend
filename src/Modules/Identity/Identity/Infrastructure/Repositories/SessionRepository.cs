@@ -97,6 +97,20 @@ public class SessionRepository(IdentityDbContext context) : ISessionRepository
     }
 
     /// <inheritdoc />
+    public async Task<SessionEntity?> GetActiveSessionByUserIdAndDeviceIdAsync(
+        Guid userId,
+        string deviceId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var spec = new SessionByUserIdAndDeviceIdSpecification(userId, deviceId);
+
+        return await context
+            .Sessions.Where(spec.ToExpression())
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<List<SessionEntity>> GetUserSessionsAsync(
         Guid userId,
         bool? isActive = null,
