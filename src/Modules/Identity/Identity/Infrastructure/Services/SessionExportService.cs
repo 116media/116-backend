@@ -1,6 +1,6 @@
+using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
-using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Services.SessionExport.Strategies;
 
@@ -42,7 +42,7 @@ public class SessionExportService : ISessionExportService
     /// <inheritdoc />
     public string GenerateFileName(SessionExportFormat format, string? baseFileName = null)
     {
-        string fileName = baseFileName ?? SessionConstants.Export.DefaultBaseFileName;
+        string fileName = baseFileName ?? SessionExportConstants.DefaultBaseFileName;
 
         string fileExtension = format switch
         {
