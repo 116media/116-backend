@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
@@ -70,10 +71,12 @@ public class AdminGetAllSessionsEndpointV1 : ICarterModule
             .WithSummary(summary: AdminGetAllSessionsMetaField.AdminGetAllSessions.Summary)
             .WithDescription(description: AdminGetAllSessionsMetaField.AdminGetAllSessions.Description)
             .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
             .Produces<AdminGetAllSessionsResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
-            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }
