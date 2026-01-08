@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -55,10 +56,12 @@ public class AdminResendOtpEndpointV1 : ICarterModule
             .WithSummary(summary: AdminResendOtpMetaField.ResendOtp.Summary)
             .WithDescription(description: AdminResendOtpMetaField.ResendOtp.Description)
             .AllowAnonymous()
+            .RequireRateLimiting(policyName: RateLimitPolicies.Otp)
             .ProducesValidationProblem()
             .Produces<AdminResendOtpResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
-            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }
