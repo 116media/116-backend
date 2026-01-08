@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
@@ -54,11 +55,13 @@ public class PublicGetOwnSessionByIdEndpointV1 : ICarterModule
             .WithSummary(summary: PublicGetOwnSessionByIdMetaField.PublicGetOwnSessionById.Summary)
             .WithDescription(description: PublicGetOwnSessionByIdMetaField.PublicGetOwnSessionById.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
             .Produces<PublicGetOwnSessionByIdResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
-            .ProducesProblem(statusCode: StatusCodes.Status404NotFound);
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }
