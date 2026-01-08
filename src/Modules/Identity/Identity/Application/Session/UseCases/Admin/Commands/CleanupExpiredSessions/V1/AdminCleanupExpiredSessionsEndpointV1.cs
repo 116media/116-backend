@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Domain.Constants;
@@ -49,9 +50,11 @@ public class AdminCleanupExpiredSessionsEndpointV1 : ICarterModule
             .WithSummary(summary: AdminCleanupExpiredSessionsMetaField.AdminCleanupExpiredSessions.Summary)
             .WithDescription(description: AdminCleanupExpiredSessionsMetaField.AdminCleanupExpiredSessions.Description)
             .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
             .Produces<AdminCleanupExpiredSessionsResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
-            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }
