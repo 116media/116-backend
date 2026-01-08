@@ -47,5 +47,6 @@
 
     <ItemGroup>
         <ProjectReference Include="../Shared.Contracts/Shared.Contracts.csproj" />
+        <ProjectReference Include="../../BuildingBlocks/BuildingBlocks.csproj" />
     </ItemGroup>
 </Project>
