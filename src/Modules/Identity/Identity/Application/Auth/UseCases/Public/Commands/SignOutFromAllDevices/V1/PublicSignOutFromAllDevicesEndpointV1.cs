@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.Repositories;
@@ -24,7 +25,7 @@ public record PublicSignOutFromAllDevicesResponse(bool IsSuccess);
 public class PublicSignOutFromAllDevicesEndpointV1 : ICarterModule
 {
     /// <summary>
-    /// Configures the sign-out from all devices route within the API pipeline.
+    /// Configures the sign-out from all devices routes within the API pipeline.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -52,8 +53,10 @@ public class PublicSignOutFromAllDevicesEndpointV1 : ICarterModule
             .WithSummary(summary: PublicSignOutFromAllDevicesMetaField.SignOutFromAllDevices.Summary)
             .WithDescription(description: PublicSignOutFromAllDevicesMetaField.SignOutFromAllDevices.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .Produces<PublicSignOutFromAllDevicesResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
-            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }
