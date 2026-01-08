@@ -1,3 +1,5 @@
+using _116.BuildingBlocks.Constants;
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Domain.Constants;
@@ -49,10 +51,12 @@ public class AdminForceLogoutUserEndpointV1 : ICarterModule
             .WithSummary(summary: AdminForceLogoutUserMetaField.AdminForceLogoutUser.Summary)
             .WithDescription(description: AdminForceLogoutUserMetaField.AdminForceLogoutUser.Description)
             .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
             .Produces<AdminForceLogoutUserResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
-            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }
