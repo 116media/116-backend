@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
@@ -76,9 +77,11 @@ public class PublicRefreshTokenEndpointV1 : ICarterModule
             .WithSummary(summary: PublicRefreshTokenMetaField.PublicRefreshToken.Summary)
             .WithDescription(description: PublicRefreshTokenMetaField.PublicRefreshToken.Description)
             .AllowAnonymous()
+            .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
             .Produces<PublicRefreshTokenResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
-            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }
