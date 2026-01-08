@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
@@ -55,9 +56,11 @@ public class PublicGetOwnProfileEndpointV1 : ICarterModule
             .WithSummary(summary: PublicGetOwnProfileMetaField.GetOwnProfile.Summary)
             .WithDescription(description: PublicGetOwnProfileMetaField.GetOwnProfile.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .RequireRateLimiting(policyName: RateLimitPolicies.UserProfile)
             .Produces<PublicGetOwnProfileResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
-            .ProducesProblem(statusCode: StatusCodes.Status404NotFound);
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }
