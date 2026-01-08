@@ -21,12 +21,6 @@ public static class SessionConstants
     public const int MaxUserAgentLength = 500;
 
     /// <summary>
-    /// Maximum length for client platform identifier.
-    /// Allowed values: "ios-mobile", "android-mobile", "browser-web", "pwa-browser"
-    /// </summary>
-    public const int MaxClientPlatformLength = 25;
-
-    /// <summary>
     /// Maximum length for device identifier.
     /// Used to store client-generated unique device ID (GUID/UUID/NanoID).
     /// </summary>
