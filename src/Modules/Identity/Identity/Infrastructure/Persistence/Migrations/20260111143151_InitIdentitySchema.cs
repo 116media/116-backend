@@ -296,7 +296,7 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                 table: "sessions",
                 columns: new[] { "user_id", "device_id" },
                 unique: true,
-                filter: "[is_revoked] = false");
+                filter: "is_revoked = false");
 
             migrationBuilder.CreateIndex(
                 name: "ix_user_roles_role_id",

@@ -12,7 +12,7 @@ using _116.Identity.Infrastructure.Persistence;
 namespace _116.Identity.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20260111141544_InitIdentitySchema")]
+    [Migration("20260111143151_InitIdentitySchema")]
     partial class InitIdentitySchema
     {
         /// <inheritdoc />
@@ -346,7 +346,7 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId", "DeviceId")
                         .IsUnique()
                         .HasDatabaseName("ix_sessions_user_id_device_id")
-                        .HasFilter("[is_revoked] = false");
+                        .HasFilter("is_revoked = false");
 
                     b.ToTable("sessions", "identity");
                 });
