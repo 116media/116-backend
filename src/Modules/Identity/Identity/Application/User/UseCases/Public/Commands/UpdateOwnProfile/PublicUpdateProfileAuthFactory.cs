@@ -33,7 +33,7 @@ public class PublicUpdateProfileAuthFactory(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user = await authRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
+        UserEntity? user = await authRepository.GetUserWithRolesPermissionsAndSessionsByIdOrThrow(
             userId: userId,
             cancellationToken: cancellationToken
         );
@@ -44,8 +44,7 @@ public class PublicUpdateProfileAuthFactory(
 
         bool isPhoneUpdated = !string.IsNullOrEmpty(value: partialPhoneNumber);
         bool isUsernameUpdated = !string.IsNullOrEmpty(value: userName) && user!.UserName != userName;
-        bool isEmailUpdated = !string.IsNullOrEmpty(value: email) &&
-                              user!.Email != email?.ToLowerInvariant();
+        bool isEmailUpdated = !string.IsNullOrEmpty(value: email) && user!.Email != email?.ToLowerInvariant();
 
         if (isEmailUpdated)
         {
@@ -80,11 +79,7 @@ public class PublicUpdateProfileAuthFactory(
 
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user!.UserRoles);
 
-        return new PublicUpdateProfileAuthData(
-            User: user,
-            Roles: roles,
-            Permissions: permissions
-        );
+        return new PublicUpdateProfileAuthData(User: user, Roles: roles, Permissions: permissions);
     }
 
     private async Task EnsureEmailUnique(string email, CancellationToken cancellationToken)
@@ -111,9 +106,11 @@ public class PublicUpdateProfileAuthFactory(
     )
     {
         string fullPhone = $"{countryDialCode}{partialPhoneNumber}";
-        UserEntity? existing =
-            await authRepository.GetUserByPhoneNumberAsync(phoneNumber: fullPhone,
-                cancellationToken: cancellationToken);
+        UserEntity? existing = await authRepository.GetUserByPhoneNumberAsync(
+            phoneNumber: fullPhone,
+            cancellationToken: cancellationToken
+        );
+
         if (existing is not null && existing.Id != userId)
         {
             throw UserErrors.PhoneNumberAlreadyExists(phoneNumber: fullPhone);

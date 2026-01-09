@@ -1,11 +1,8 @@
 using System.Reflection;
-
 using _116.Shared.Application.Decorators;
 using _116.Shared.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
-
 using FluentValidation;
-
 using Microsoft.Extensions.DependencyInjection;
 
 namespace _116.Shared.Application.Extensions;
@@ -34,20 +31,21 @@ public static class CqrsExtension
         services.AddScoped<IDomainEventPublisher, DomainEventPublisher>();
 
         // Register all handlers (command handlers, query handlers, etc.)
-        services.Scan(scan => scan
-            .FromAssemblies(assemblies)
-            .AddClasses(
-                classes => classes.AssignableToAny(
-                    typeof(IRequestHandler<>),
-                    typeof(IRequestHandler<,>),
-                    typeof(ICommandHandler<>),
-                    typeof(ICommandHandler<,>),
-                    typeof(IQueryHandler<,>)
-                ),
-                publicOnly: true
-            )
-            .AsImplementedInterfaces()
-            .WithScopedLifetime()
+        services.Scan(scan =>
+            scan.FromAssemblies(assemblies)
+                .AddClasses(
+                    classes =>
+                        classes.AssignableToAny(
+                            typeof(IRequestHandler<>),
+                            typeof(IRequestHandler<,>),
+                            typeof(ICommandHandler<>),
+                            typeof(ICommandHandler<,>),
+                            typeof(IQueryHandler<,>)
+                        ),
+                    publicOnly: true
+                )
+                .AsImplementedInterfaces()
+                .WithScopedLifetime()
         );
 
         // Register decorators using Scrutor - validation first, then logging
@@ -56,11 +54,12 @@ public static class CqrsExtension
         services.Decorate(typeof(IRequestHandler<,>), typeof(LoggingDecorator<,>));
 
         // Register domain event handlers
-        services.Scan(scan => scan
-            .FromAssemblies(assemblies)
-            .AddClasses(classes => classes.AssignableToAny(typeof(IDomainEventHandler<>)))
-            .AsImplementedInterfaces()
-            .WithScopedLifetime());
+        services.Scan(scan =>
+            scan.FromAssemblies(assemblies)
+                .AddClasses(classes => classes.AssignableToAny(typeof(IDomainEventHandler<>)))
+                .AsImplementedInterfaces()
+                .WithScopedLifetime()
+        );
 
         // Register FluentValidation validators
         services.AddValidatorsFromAssemblies(assemblies, includeInternalTypes: true);

@@ -15,9 +15,5 @@ public interface IAdminResendOtpFactory
     /// <param name="purpose">The purpose of the OTP.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>The newly created OTP entity.</returns>
-    Task<OtpEntity> ResendOtpAsync(
-        Guid userId,
-        OtpPurpose purpose,
-        CancellationToken cancellationToken
-    );
+    Task<OtpEntity> ResendOtpAsync(Guid userId, OtpPurpose purpose, CancellationToken cancellationToken);
 }

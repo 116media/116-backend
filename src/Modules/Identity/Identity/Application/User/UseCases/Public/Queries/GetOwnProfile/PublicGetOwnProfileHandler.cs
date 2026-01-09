@@ -37,19 +37,21 @@ public class PublicGetOwnProfileHandler(
             userId: query.UserId,
             cancellationToken: cancellationToken
         );
-        // Validate user account status - must be active and verified
+
         authRepository.IsUserAccountActive(user!);
         authRepository.IsUserAccountVerified(user!);
 
-        // Extract roles and permissions using repository
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user!.UserRoles);
+
         // Fetch the avatar file if the user has one
-        FileEntity? avatarFile =
-            await fileRepository.GetAvatarFileAsync(avatarFileId: user.AvatarFileId,
-                cancellationToken: cancellationToken);
-        // Map to userDTO with avatar
+        FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(
+            avatarFileId: user.AvatarFileId,
+            cancellationToken: cancellationToken
+        );
+
         var avatarDto = avatarFile?.ToFileDto();
         var userDto = user.ToUserResponseDto(roles: roles, permissions: permissions, avatar: avatarDto);
+
         return new PublicGetOwnProfileResult(User: userDto);
     }
 }

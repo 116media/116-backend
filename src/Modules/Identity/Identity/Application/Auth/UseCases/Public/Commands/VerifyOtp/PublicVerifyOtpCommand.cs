@@ -12,11 +12,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.VerifyOtp;
 /// This command is used to verify the OTP code sent to the user's email for various purposes.
 /// Upon successful verification, the user's account will be marked as verified for email verification purpose.
 /// </remarks>
-public record PublicVerifyOtpCommand(
-    string Email,
-    string Code,
-    string Purpose
-) : ICommand<PublicVerifyOtpResult>;
+public record PublicVerifyOtpCommand(string Email, string Code, string Purpose) : ICommand<PublicVerifyOtpResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicVerifyOtpCommand" /> containing verification status.
@@ -25,6 +21,4 @@ public record PublicVerifyOtpCommand(
 /// <remarks>
 /// Contains the verification result and a user-friendly message explaining the outcome.
 /// </remarks>
-public record PublicVerifyOtpResult(
-    bool IsSuccess
-);
+public record PublicVerifyOtpResult(bool IsSuccess);

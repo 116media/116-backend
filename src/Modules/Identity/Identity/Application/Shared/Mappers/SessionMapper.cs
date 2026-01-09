@@ -1,6 +1,5 @@
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
-
 using Mapster;
 
 namespace _116.Identity.Application.Shared.Mappers;
@@ -17,7 +16,7 @@ public static class SessionMapper
     {
         TypeAdapterConfig<SessionEntity, SessionDto>
             .NewConfig()
-            .Map(dest => dest.IsActive, src => !src.IsDeleted && src.ExpiresAt > DateTime.UtcNow)
+            .Map(dest => dest.IsActive, src => !src.IsRevoked && src.ExpiresAt > DateTime.UtcNow)
             .Compile();
     }
 

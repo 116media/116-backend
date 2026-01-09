@@ -11,8 +11,5 @@ public interface IPublicSignOutSessionFactory
     /// <param name="refreshToken">The refresh token to invalidate.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    Task SignOutAsync(
-        string refreshToken,
-        CancellationToken cancellationToken
-    );
+    Task SignOutAsync(string refreshToken, CancellationToken cancellationToken);
 }

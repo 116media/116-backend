@@ -1,8 +1,6 @@
 using System.Text.RegularExpressions;
-
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Domain.Enums;
-
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.Validators;
@@ -18,13 +16,12 @@ public static partial class OtpValidation
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the OTP code property.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, string> ValidOtpCode<T>(
-        this IRuleBuilderInitial<T, string> ruleBuilder
-    )
+    public static IRuleBuilderOptions<T, string> ValidOtpCode<T>(this IRuleBuilderInitial<T, string> ruleBuilder)
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
-            .NotEmpty().WithMessage("Verification code is required")
+            .NotEmpty()
+            .WithMessage("Verification code is required")
             .Length(exactLength: UserConstants.OtpCodeLength)
             .WithMessage($"Verification code must be exactly {UserConstants.OtpCodeLength} characters long")
             .Matches(OtpCodeRegex())
@@ -37,13 +34,12 @@ public static partial class OtpValidation
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the OTP purpose property.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, string> ValidOtpPurpose<T>(
-        this IRuleBuilderInitial<T, string> ruleBuilder
-    )
+    public static IRuleBuilderOptions<T, string> ValidOtpPurpose<T>(this IRuleBuilderInitial<T, string> ruleBuilder)
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
-            .NotEmpty().WithMessage("OTP purpose is required.")
+            .NotEmpty()
+            .WithMessage("OTP purpose is required.")
             .Must(purpose => purpose != null && Enum.IsDefined(typeof(EnumOtpPurpose), value: purpose))
             .WithMessage("Invalid OTP purpose specified.");
     }

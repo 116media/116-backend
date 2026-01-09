@@ -6,6 +6,4 @@ namespace _116.Core.Application.Shared.Persistence;
 /// Unit of Work interface specific to the Core module.
 /// Coordinates saving changes across all repositories that share the CoreDbContext.
 /// </summary>
-public interface ICoreUnitOfWork : IUnitOfWork
-{
-}
+public interface ICoreUnitOfWork : IUnitOfWork { }

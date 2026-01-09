@@ -12,9 +12,7 @@ namespace _116.Identity.Application.User.UseCases.Admin.Queries.GetOwnProfile;
 /// Only authenticated admin users can access their own profile information.
 /// The user ID is extracted from the JWT token at the endpoint level.
 /// </remarks>
-public record AdminGetOwnProfileQuery(
-    Guid UserId
-) : IQuery<AdminGetOwnProfileResult>;
+public record AdminGetOwnProfileQuery(Guid UserId) : IQuery<AdminGetOwnProfileResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminGetOwnProfileQuery" /> containing complete admin user profile data.
@@ -24,6 +22,4 @@ public record AdminGetOwnProfileQuery(
 /// Contains the full UserResponseDto with all admin user details, roles, permissions, and avatar information.
 /// This information is used by the admin application to display user profile and manage permissions.
 /// </remarks>
-public record AdminGetOwnProfileResult(
-    UserResponseDto User
-);
+public record AdminGetOwnProfileResult(UserResponseDto User);

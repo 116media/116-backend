@@ -1,12 +1,9 @@
 using System.Security.Claims;
-
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Shared.Authorizations.Requirements;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
-
 using Microsoft.AspNetCore.Authorization;
-
 using Npgsql;
 
 namespace _116.Identity.Application.Shared.Authorizations.Handlers;
@@ -60,8 +57,8 @@ public class AccountStatusRequirementHandler(IAuthRepository authRepository)
             // Fallback to JWT claims for database connectivity errors
             string? claimValue = context.User.FindFirst(type: requirement.ClaimType)?.Value;
             if (
-                !string.IsNullOrEmpty(value: claimValue) &&
-                claimValue.Equals(value: requirement.ClaimValue, comparisonType: StringComparison.OrdinalIgnoreCase)
+                !string.IsNullOrEmpty(value: claimValue)
+                && claimValue.Equals(value: requirement.ClaimValue, comparisonType: StringComparison.OrdinalIgnoreCase)
             )
             {
                 context.Succeed(requirement: requirement);
@@ -79,7 +76,7 @@ public class AccountStatusRequirementHandler(IAuthRepository authRepository)
     /// otherwise, <c>false</c>.
     /// </returns>
     /// <remarks>
-    /// This method maps JWT claim types (IsVerified, IsActive, IsLoggedIn) to their corresponding
+    /// This method maps JWT claim types (IsVerified, IsActive) to their corresponding
     /// user entity properties and performs boolean comparison with the requirement's expected value.
     /// Returns <c>false</c> for unknown claim types or invalid requirement values.
     /// </remarks>
@@ -89,8 +86,9 @@ public class AccountStatusRequirementHandler(IAuthRepository authRepository)
         {
             JwtClaimsConstants.IsVerified => user.IsVerified,
             JwtClaimsConstants.IsActive => user.IsActive,
-            _ => false
+            _ => false,
         };
+
         // Compare with expected requirement value
         if (bool.TryParse(value: requirement.ClaimValue, out bool expectedValue))
         {
@@ -125,9 +123,9 @@ public class AccountStatusRequirementHandler(IAuthRepository authRepository)
                 "57P01" => true, // admin_shutdown
                 "57P02" => true, // crash_shutdown
                 "57P03" => true, // cannot_connect_now
-                _ => false
+                _ => false,
             },
-            _ => false
+            _ => false,
         };
     }
 }

@@ -12,10 +12,8 @@ namespace _116.Identity.Application.Session.UseCases.Public.Commands.RevokeSessi
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="unitOfWork">Unit of work for transaction management.</param>
-public class PublicRevokeSessionHandler(
-    ISessionRepository sessionRepository,
-    IIdentityUnitOfWork unitOfWork
-) : ICommandHandler<PublicRevokeSessionCommand, PublicRevokeSessionResult>
+public class PublicRevokeSessionHandler(ISessionRepository sessionRepository, IIdentityUnitOfWork unitOfWork)
+    : ICommandHandler<PublicRevokeSessionCommand, PublicRevokeSessionResult>
 {
     /// <summary>
     /// Handles the revoke session command by soft deleting the specified session.
@@ -43,7 +41,7 @@ public class PublicRevokeSessionHandler(
             throw SessionErrors.SessionNotFound(sessionId: sessionId);
         }
 
-        await sessionRepository.DeleteAsync(sessionId: sessionId, cancellationToken: cancellationToken);
+        await sessionRepository.RevokeAsync(sessionId: sessionId, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new PublicRevokeSessionResult(IsSuccess: true);

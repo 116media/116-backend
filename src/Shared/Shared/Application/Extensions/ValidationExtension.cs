@@ -33,7 +33,8 @@ public static class ValidationExtension
         if (isRequired)
         {
             builder = ruleBuilder
-                .NotEmpty().WithMessage($"{fieldDisplayName} is required.")
+                .NotEmpty()
+                .WithMessage($"{fieldDisplayName} is required.")
                 .Must(id => Guid.TryParse(input: id, result: out _))
                 .WithMessage($"{fieldDisplayName} is invalid.");
         }

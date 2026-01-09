@@ -36,11 +36,13 @@ public class PublicVerifyOtpHandler(
     /// <exception cref="AuthorizationException">Thrown when max attempts are reached.</exception>
     public async Task<PublicVerifyOtpResult> Handle(PublicVerifyOtpCommand command, CancellationToken cancellationToken)
     {
-        // Normalize email and purpose using value objects
         var email = new Email(value: command.Email);
         var purpose = new OtpPurpose(value: command.Purpose);
-        UserEntity? user =
-            await authRepository.GetUserWithRolesByEmailOrThrow(email: email, cancellationToken: cancellationToken);
+        UserEntity? user = await authRepository.GetUserWithRolesByEmailOrThrow(
+            email: email,
+            cancellationToken: cancellationToken
+        );
+
         // Check if user is already verified (only for email verification purpose)
         if (user!.IsVerified && purpose.Value == EnumOtpPurpose.EmailVerification)
         {
@@ -54,9 +56,11 @@ public class PublicVerifyOtpHandler(
             purpose: purpose,
             cancellationToken: cancellationToken
         );
+
         // Mark OTP as used and user as verified
         otp.MarkAsUsed();
         user.MarkAsVerified();
+
         // Invalidate any remaining OTPs for this purpose
         await otpRepository.InvalidateExistingOtpsAsync(
             userId: user.Id,
@@ -64,8 +68,7 @@ public class PublicVerifyOtpHandler(
             cancellationToken: cancellationToken
         );
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-        return new PublicVerifyOtpResult(
-            true
-        );
+
+        return new PublicVerifyOtpResult(true);
     }
 }

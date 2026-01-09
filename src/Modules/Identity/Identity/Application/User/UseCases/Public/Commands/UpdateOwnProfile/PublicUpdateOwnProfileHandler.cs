@@ -2,6 +2,7 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
@@ -12,10 +13,8 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfi
 /// </summary>
 /// <param name="authFactory">Factory for handling user profile update logic.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
-public class PublicUpdateOwnProfileHandler(
-    IPublicUpdateProfileAuthFactory authFactory,
-    IFileRepository fileRepository
-) : ICommandHandler<PublicUpdateOwnProfileCommand, PublicUpdateOwnProfileResult>
+public class PublicUpdateOwnProfileHandler(IPublicUpdateProfileAuthFactory authFactory, IFileRepository fileRepository)
+    : ICommandHandler<PublicUpdateOwnProfileCommand, PublicUpdateOwnProfileResult>
 {
     /// <summary>
     /// Handles the profile update command by validating uniqueness and updating user information.
@@ -42,15 +41,16 @@ public class PublicUpdateOwnProfileHandler(
             cancellationToken: cancellationToken
         );
 
-        FileEntity? avatarFile =
-            await fileRepository.GetAvatarFileAsync(avatarFileId: authData.User.AvatarFileId,
-                cancellationToken: cancellationToken);
+        FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(
+            avatarFileId: authData.User.AvatarFileId,
+            cancellationToken: cancellationToken
+        );
 
         var avatarDto = avatarFile?.ToFileDto();
         var userDto = authData.User.ToUserResponseDto(
+            avatar: avatarDto,
             roles: authData.Roles,
-            permissions: authData.Permissions,
-            avatar: avatarDto
+            permissions: authData.Permissions
         );
         return new PublicUpdateOwnProfileResult(User: userDto);
     }

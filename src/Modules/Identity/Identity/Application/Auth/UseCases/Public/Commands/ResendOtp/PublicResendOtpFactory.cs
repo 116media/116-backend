@@ -22,14 +22,13 @@ public class PublicResendOtpFactory(
     /// <summary>
     /// Invalidates existing OTPs and creates a new OTP for the specified purpose.
     /// </summary>
-    public async Task<OtpEntity> ResendOtpAsync(
-        Guid userId,
-        OtpPurpose purpose,
-        CancellationToken cancellationToken
-    )
+    public async Task<OtpEntity> ResendOtpAsync(Guid userId, OtpPurpose purpose, CancellationToken cancellationToken)
     {
-        await otpRepository.InvalidateExistingOtpsAsync(userId: userId, purpose: purpose,
-            cancellationToken: cancellationToken);
+        await otpRepository.InvalidateExistingOtpsAsync(
+            userId: userId,
+            purpose: purpose,
+            cancellationToken: cancellationToken
+        );
 
         OtpEntity newOtp = otpService.CreateOtp(userId: userId, purpose: purpose);
 

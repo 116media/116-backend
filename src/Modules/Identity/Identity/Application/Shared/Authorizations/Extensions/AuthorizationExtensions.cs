@@ -1,12 +1,10 @@
 using System.Text.Json;
-
 using _116.Identity.Application.Shared.Authorizations.Configuration;
 using _116.Identity.Application.Shared.Authorizations.Handlers;
 using _116.Identity.Application.Shared.Authorizations.Requirements;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -30,7 +28,7 @@ public static class AuthorizationExtensions
     /// </summary>
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
     /// <summary>
@@ -85,8 +83,10 @@ public static class AuthorizationExtensions
     {
         foreach (var (policyName, (claimType, claimValue)) in policies)
         {
-            authBuilder.AddPolicy(name: policyName, policy =>
-                policy.Requirements.Add(new AccountStatusRequirement(claimType: claimType, claimValue: claimValue))
+            authBuilder.AddPolicy(
+                name: policyName,
+                policy =>
+                    policy.Requirements.Add(new AccountStatusRequirement(claimType: claimType, claimValue: claimValue))
             );
         }
 
@@ -106,8 +106,9 @@ public static class AuthorizationExtensions
     {
         foreach (var (policyName, roles) in policies)
         {
-            authBuilder.AddPolicy(name: policyName, policy =>
-                policy.Requirements.Add(new UserRoleRequirement(allowedRoles: roles))
+            authBuilder.AddPolicy(
+                name: policyName,
+                policy => policy.Requirements.Add(new UserRoleRequirement(allowedRoles: roles))
             );
         }
 
@@ -133,25 +134,31 @@ public static class AuthorizationExtensions
                 // Create an AuthenticationException and use the existing handler
                 var authHandler = new AuthenticationExceptionHandler();
                 var authException = new AuthenticationException(AuthenticationErrorMessage.JwtTokenRequired());
-                ProblemDetails problemDetails =
-                    authHandler.CreateProblemDetails(exception: authException, context: context.HttpContext);
+                ProblemDetails problemDetails = authHandler.CreateProblemDetails(
+                    exception: authException,
+                    context: context.HttpContext
+                );
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 context.Response.ContentType = "application/problem+json";
-                await context.Response.WriteAsync(JsonSerializer.Serialize(value: problemDetails,
-                    options: JsonOptions));
+                await context.Response.WriteAsync(
+                    JsonSerializer.Serialize(value: problemDetails, options: JsonOptions)
+                );
             },
             OnForbidden = async context =>
             {
                 // Create an AuthorizationException and use the existing handler
                 var authHandler = new AuthorizationExceptionHandler();
                 var authException = new AuthorizationException(AuthorizationErrorMessage.AccessDenied());
-                ProblemDetails problemDetails =
-                    authHandler.CreateProblemDetails(exception: authException, context: context.HttpContext);
+                ProblemDetails problemDetails = authHandler.CreateProblemDetails(
+                    exception: authException,
+                    context: context.HttpContext
+                );
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 context.Response.ContentType = "application/problem+json";
-                await context.Response.WriteAsync(JsonSerializer.Serialize(value: problemDetails,
-                    options: JsonOptions));
-            }
+                await context.Response.WriteAsync(
+                    JsonSerializer.Serialize(value: problemDetails, options: JsonOptions)
+                );
+            },
         };
     }
 }

@@ -21,10 +21,7 @@ public class AdminSignOutSessionFactory(
     /// <summary>
     /// Signs out an admin user by invalidating their session associated with the refresh token.
     /// </summary>
-    public async Task SignOutAsync(
-        string refreshToken,
-        CancellationToken cancellationToken
-    )
+    public async Task SignOutAsync(string refreshToken, CancellationToken cancellationToken)
     {
         string refreshTokenHash = refreshTokenService.HashRefreshToken(refreshToken: refreshToken);
         SessionEntity? session = await sessionRepository.GetByRefreshTokenHashAsync(
@@ -34,7 +31,7 @@ public class AdminSignOutSessionFactory(
 
         if (session != null)
         {
-            await sessionRepository.DeleteAsync(sessionId: session.Id, cancellationToken: cancellationToken);
+            await sessionRepository.RevokeAsync(sessionId: session.Id, cancellationToken: cancellationToken);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
     }

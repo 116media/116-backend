@@ -12,10 +12,7 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 /// This command is specifically for administrative users requiring elevated privileges.
 /// The authentication process validates admin role requirements.
 /// </remarks>
-public record AdminLoginCommand(
-    string Email,
-    string Password
-) : ICommand<AdminLoginResult>;
+public record AdminLoginCommand(string Email, string Password) : ICommand<AdminLoginResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminLoginCommand" /> containing admin authentication details.

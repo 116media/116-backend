@@ -29,7 +29,7 @@ public static class AuthorizationPolicyConfiguration
         return new AuthorizationConfiguration
         {
             AccountStatusPolicies = GetAccountStatusPolicies(),
-            UserRolePolicies = GetUserRolePolicies()
+            UserRolePolicies = GetUserRolePolicies(),
         };
     }
 
@@ -46,7 +46,7 @@ public static class AuthorizationPolicyConfiguration
         return new Dictionary<string, (string ClaimType, string ClaimValue)>
         {
             { AccountStatusPolicies.RequireVerifiedUser, (JwtClaimsConstants.IsVerified, "true") },
-            { AccountStatusPolicies.RequireActiveUser, (JwtClaimsConstants.IsActive, "true") }
+            { AccountStatusPolicies.RequireActiveUser, (JwtClaimsConstants.IsActive, "true") },
         };
     }
 
@@ -67,11 +67,9 @@ public static class AuthorizationPolicyConfiguration
             { UserRolePolicies.RequireSuperAdminOnly, [nameof(EnumCoreUserRole.SuperAdmin)] },
             { UserRolePolicies.RequireVisitorOnly, [nameof(EnumCoreUserRole.Visitor)] },
             {
-                UserRolePolicies.RequireAdminOrSuperAdmin, [
-                    nameof(EnumCoreUserRole.Admin),
-                    nameof(EnumCoreUserRole.SuperAdmin)
-                ]
-            }
+                UserRolePolicies.RequireAdminOrSuperAdmin,
+                [nameof(EnumCoreUserRole.Admin), nameof(EnumCoreUserRole.SuperAdmin)]
+            },
         };
     }
 }

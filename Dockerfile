@@ -9,7 +9,7 @@ COPY src/Shared/Shared/*.csproj ./src/Shared/Shared/
 COPY src/Shared/Shared.Contracts/*.csproj ./src/Shared/Shared.Contracts/
 COPY src/BuildingBlocks/*.csproj ./src/BuildingBlocks/
 COPY src/Modules/Core/Core/*.csproj ./src/Modules/Core/Core/
-COPY src/Modules/Auth/Auth/*.csproj ./src/Modules/Auth/Auth/
+COPY src/Modules/Identity/Identity/*.csproj ./src/Modules/Identity/Identity/
 
 # Restore dependencies (cached layer - only rebuilds if dependencies change)
 # Use BuildKit cache mount for faster restores

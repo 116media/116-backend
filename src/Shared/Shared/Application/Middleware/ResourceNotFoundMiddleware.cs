@@ -1,5 +1,4 @@
 using _116.Shared.Application.Exceptions;
-
 using Microsoft.AspNetCore.Http;
 
 namespace _116.Shared.Application.Middleware;

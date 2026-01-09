@@ -52,7 +52,6 @@ public class PublicSocialLoginHandler(
             cancellationToken: cancellationToken
         );
 
-
         var avatarDto = avatarFile?.ToFileDto();
         var userDto = authData.User.ToUserResponseDto(
             roles: authData.Roles,

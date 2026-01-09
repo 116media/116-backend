@@ -4,7 +4,8 @@ namespace _116.Shared.Contracts.Application.CQRS;
 /// Handles commands that do not return a response.
 /// </summary>
 /// <typeparam name="TCommand">The type of command to handle, which returns no result.</typeparam>
-public interface ICommandHandler<in TCommand> : IRequestHandler<TCommand> where TCommand : ICommand;
+public interface ICommandHandler<in TCommand> : IRequestHandler<TCommand>
+    where TCommand : ICommand;
 
 /// <summary>
 /// Handles commands that return a response of type <typeparamref name="TResponse"/>.

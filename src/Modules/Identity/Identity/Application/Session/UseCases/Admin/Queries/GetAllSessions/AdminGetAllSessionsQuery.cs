@@ -12,7 +12,6 @@ public record AdminGetAllSessionsQuery(
     string? Status = null,
     string? UserId = null,
     string? IpAddress = null,
-    string? DeviceName = null,
     DateTime? FromDate = null,
     DateTime? ToDate = null
 ) : IQuery<AdminGetAllSessionsResult>;

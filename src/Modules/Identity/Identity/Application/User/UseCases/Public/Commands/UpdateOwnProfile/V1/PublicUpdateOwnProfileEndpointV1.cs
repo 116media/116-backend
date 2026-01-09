@@ -1,15 +1,12 @@
 using System.Security.Claims;
-
-using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Application.User.Constants;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -39,9 +36,7 @@ public record PublicUpdateOwnProfileRequest(
 /// Response model for updating own profile.
 /// </summary>
 /// <param name="User">The updated user profile information.</param>
-public record PublicUpdateOwnProfileResponse(
-    UserResponseDto User
-);
+public record PublicUpdateOwnProfileResponse(UserResponseDto User);
 
 /// <summary>
 /// Defines the update own profile endpoint for authenticated public users.
@@ -51,41 +46,43 @@ public class PublicUpdateOwnProfileEndpointV1 : ICarterModule
 {
     /// <summary>
     /// Configures the update own profile route within the API pipeline.
-    /// Maps the <c>/api/v1/public/profile</c> endpoint to handle profile update requests.
+    /// Maps the <c>/api/v1/public/user/profile</c> endpoint to handle profile update requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
-            .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Profile}")
-            .WithTags($"{IdentityConstants.Public}::{AuthRouteConstants.Profile}");
-        group.MapPatch("/", async (
-                PublicUpdateOwnProfileRequest request,
-                ClaimsPrincipal user,
-                IAuthRepository authRepository,
-                IDispatcher dispatcher
-            ) =>
-            {
-                // Extract user ID from JWT token claims
-                Guid userId = authRepository.GetUserIdFromClaims(user: user);
-                // Send the command to update the profile
-                var command = new PublicUpdateOwnProfileCommand(
-                    UserId: userId,
-                    Email: request.Email,
-                    UserName: request.UserName,
-                    CountryName: request.CountryName,
-                    PartialPhoneNumber: request.PartialPhoneNumber,
-                    CountryIsoCode: request.CountryIsoCode,
-                    CountryDialCode: request.CountryDialCode
-                );
-                PublicUpdateOwnProfileResult result = await dispatcher.Send(request: command);
-                // Adapt the result to the response type
-                var response = new PublicUpdateOwnProfileResponse(
-                    User: result.User
-                );
-                return Results.Ok(value: response);
-            })
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
+            .MapGroup($"{IdentityConstants.Public}/{UserRouteConstants.Endpoint}")
+            .WithTags($"{IdentityConstants.Public}::{UserRouteConstants.Endpoint}");
+
+        group
+            .MapPatch(
+                pattern: UserRouteConstants.Profile,
+                async (
+                    PublicUpdateOwnProfileRequest request,
+                    ClaimsPrincipal user,
+                    IAuthRepository authRepository,
+                    IDispatcher dispatcher
+                ) =>
+                {
+                    Guid userId = authRepository.GetUserIdFromClaims(user: user);
+
+                    var command = new PublicUpdateOwnProfileCommand(
+                        UserId: userId,
+                        Email: request.Email,
+                        UserName: request.UserName,
+                        CountryName: request.CountryName,
+                        CountryIsoCode: request.CountryIsoCode,
+                        CountryDialCode: request.CountryDialCode,
+                        PartialPhoneNumber: request.PartialPhoneNumber
+                    );
+                    PublicUpdateOwnProfileResult result = await dispatcher.Send(request: command);
+
+                    var response = new PublicUpdateOwnProfileResponse(User: result.User);
+
+                    return Results.Ok(value: response);
+                }
+            )
             .WithName(endpointName: PublicUpdateOwnProfileMetaField.UpdateOwnProfile.Name)
             .WithSummary(summary: PublicUpdateOwnProfileMetaField.UpdateOwnProfile.Summary)
             .WithDescription(description: PublicUpdateOwnProfileMetaField.UpdateOwnProfile.Description)

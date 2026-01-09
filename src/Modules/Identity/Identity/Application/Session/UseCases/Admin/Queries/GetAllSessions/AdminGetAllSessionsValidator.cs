@@ -1,5 +1,4 @@
 using _116.Shared.Application.Extensions;
-
 using FluentValidation;
 
 namespace _116.Identity.Application.Session.UseCases.Admin.Queries.GetAllSessions;
@@ -24,7 +23,6 @@ public class AdminGetAllSessionsValidator : AbstractValidator<AdminGetAllSession
             .LessThanOrEqualTo(100)
             .WithMessage("Page size must not exceed 100.");
 
-        RuleFor(x => x.UserId)
-            .IsValidGuid("User ID", isRequired: false);
+        RuleFor(x => x.UserId).IsValidGuid("User ID", false);
     }
 }

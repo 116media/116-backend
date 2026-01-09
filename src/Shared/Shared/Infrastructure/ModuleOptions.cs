@@ -5,7 +5,8 @@ namespace _116.Shared.Infrastructure;
 /// <summary>
 /// Configuration options for module registration and setup.
 /// </summary>
-public class ModuleOptions<TDbContext> where TDbContext : DbContext
+public class ModuleOptions<TDbContext>
+    where TDbContext : DbContext
 {
     /// <summary>
     /// The name of the module (e.g., "User", "Basket").

@@ -22,10 +22,7 @@ public class PublicForgotPasswordOtpFactory(
     /// <summary>
     /// Creates and persists an OTP for password reset.
     /// </summary>
-    public async Task<OtpEntity> CreatePasswordResetOtpAsync(
-        Guid userId,
-        CancellationToken cancellationToken
-    )
+    public async Task<OtpEntity> CreatePasswordResetOtpAsync(Guid userId, CancellationToken cancellationToken)
     {
         OtpEntity passwordResetOtp = otpService.CreateOtp(userId: userId, purpose: EnumOtpPurpose.PasswordReset);
         await otpRepository.AddAsync(otp: passwordResetOtp, cancellationToken: cancellationToken);

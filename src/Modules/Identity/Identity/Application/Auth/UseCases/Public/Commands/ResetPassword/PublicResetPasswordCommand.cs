@@ -12,11 +12,8 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword;
 /// This command resets a user's password after validating the OTP sent during the forgot password process.
 /// The OTP must be valid, not expired, and match the user's email address.
 /// </remarks>
-public record PublicResetPasswordCommand(
-    string Email,
-    string Code,
-    string NewPassword
-) : ICommand<PublicResetPasswordResult>;
+public record PublicResetPasswordCommand(string Email, string Code, string NewPassword)
+    : ICommand<PublicResetPasswordResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicResetPasswordCommand" /> containing reset status.

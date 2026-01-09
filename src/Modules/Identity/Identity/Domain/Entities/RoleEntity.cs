@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Shared.Errors;
 using _116.Shared.Domain;
@@ -55,6 +54,11 @@ public class RoleEntity : Aggregate<Guid>
             throw UserErrors.RoleDescriptionRequired();
         }
 
-        return new RoleEntity { Id = id, Name = name, Description = description };
+        return new RoleEntity
+        {
+            Id = id,
+            Name = name,
+            Description = description,
+        };
     }
 }

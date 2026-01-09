@@ -42,9 +42,10 @@ public class AdminGetOwnProfileHandler(
         // Extract roles and permissions using repository
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user!.UserRoles);
         // Fetch the avatar file if the user has one
-        FileEntity? avatarFile =
-            await fileRepository.GetAvatarFileAsync(avatarFileId: user.AvatarFileId,
-                cancellationToken: cancellationToken);
+        FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(
+            avatarFileId: user.AvatarFileId,
+            cancellationToken: cancellationToken
+        );
         // Map to userDTO with avatar
         var avatarDto = avatarFile?.ToFileDto();
         var userDto = user.ToUserResponseDto(roles: roles, permissions: permissions, avatar: avatarDto);

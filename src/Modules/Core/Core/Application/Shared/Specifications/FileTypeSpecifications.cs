@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Specifications;
 
@@ -14,12 +13,14 @@ public class FileIsImageSpecification : Specification<FileEntity>
     public override Expression<Func<FileEntity, bool>> ToExpression()
     {
         return file =>
-            file.MimeType.StartsWith("image/") &&
-            (file.MimeType == "image/jpeg" ||
-             file.MimeType == "image/png" ||
-             file.MimeType == "image/gif" ||
-             file.MimeType == "image/bmp" ||
-             file.MimeType == "image/webp");
+            file.MimeType.StartsWith("image/")
+            && (
+                file.MimeType == "image/jpeg"
+                || file.MimeType == "image/png"
+                || file.MimeType == "image/gif"
+                || file.MimeType == "image/bmp"
+                || file.MimeType == "image/webp"
+            );
     }
 }
 

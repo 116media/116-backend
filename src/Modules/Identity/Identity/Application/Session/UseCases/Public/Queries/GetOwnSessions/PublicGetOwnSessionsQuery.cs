@@ -8,8 +8,7 @@ namespace _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessio
 /// </summary>
 /// <param name="UserId">The ID of the user requesting their sessions.</param>
 /// <param name="IsActive">Optional filter: true for active only, false for inactive only, null for all.</param>
-public record PublicGetOwnSessionsQuery(Guid UserId, bool? IsActive = null)
-    : IQuery<PublicGetOwnSessionsResult>;
+public record PublicGetOwnSessionsQuery(Guid UserId, bool? IsActive = null) : IQuery<PublicGetOwnSessionsResult>;
 
 /// <summary>
 /// The result of executing a <see cref="PublicGetOwnSessionsQuery" />.

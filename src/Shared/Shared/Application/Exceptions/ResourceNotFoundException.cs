@@ -18,9 +18,7 @@ public class ResourceNotFoundException : NotFoundException
     /// </code>
     /// </example>
     public ResourceNotFoundException(string path, string method)
-        : base($"The requested resource '{method} {path}' was not found.")
-    {
-    }
+        : base($"The requested resource '{method} {path}' was not found.") { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ResourceNotFoundException"/> class with a custom message.
@@ -31,5 +29,6 @@ public class ResourceNotFoundException : NotFoundException
     /// throw new ResourceNotFoundException("Custom resource not found message");
     /// </code>
     /// </example>
-    public ResourceNotFoundException(string message) : base(message) { }
+    public ResourceNotFoundException(string message)
+        : base(message) { }
 }

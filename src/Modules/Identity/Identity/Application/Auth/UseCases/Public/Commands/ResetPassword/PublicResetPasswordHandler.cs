@@ -11,10 +11,8 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword;
 /// </summary>
 /// <param name="authFactory">Factory for handling user password reset logic.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
-public class PublicResetPasswordHandler(
-    IPublicResetPasswordAuthFactory authFactory,
-    IOtpRepository otpRepository
-) : ICommandHandler<PublicResetPasswordCommand, PublicResetPasswordResult>
+public class PublicResetPasswordHandler(IPublicResetPasswordAuthFactory authFactory, IOtpRepository otpRepository)
+    : ICommandHandler<PublicResetPasswordCommand, PublicResetPasswordResult>
 {
     /// <summary>
     /// Handles the password reset command by validating OTP and updating the user's password.

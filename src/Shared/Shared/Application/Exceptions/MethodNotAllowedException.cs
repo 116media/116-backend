@@ -18,9 +18,7 @@ public class MethodNotAllowedException : Exception
     /// </code>
     /// </example>
     public MethodNotAllowedException(string path, string method)
-        : base($"The HTTP method '{method}' is not allowed for '{path}'")
-    {
-    }
+        : base($"The HTTP method '{method}' is not allowed for '{path}'") { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MethodNotAllowedException"/> class with a custom message.
@@ -31,5 +29,6 @@ public class MethodNotAllowedException : Exception
     /// throw new MethodNotAllowedException("Custom method not allowed message");
     /// </code>
     /// </example>
-    public MethodNotAllowedException(string message) : base(message) { }
+    public MethodNotAllowedException(string message)
+        : base(message) { }
 }

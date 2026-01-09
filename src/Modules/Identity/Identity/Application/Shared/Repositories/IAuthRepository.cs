@@ -1,5 +1,4 @@
 using System.Security.Claims;
-
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Application.Exceptions;
@@ -53,6 +52,39 @@ public interface IAuthRepository : IRepository<UserEntity>
     /// Use this method when you need user information along with their roles and detailed permissions.
     /// </remarks>
     Task<UserEntity?> GetUserWithRolesAndPermissionsByIdOrThrow(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Retrieves a user with their active sessions by unique identifier.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The user entity with active sessions loaded.</returns>
+    /// <exception cref="NotFoundException">Thrown when no user is found with the specified ID.</exception>
+    /// <remarks>
+    /// This method only loads sessions that are currently active (not expired and not deleted).
+    /// Optimized to avoid loading unnecessary session data by filtering at the database level.
+    /// Use this method when you need to validate if a user has any active login sessions.
+    /// </remarks>
+    Task<UserEntity?> GetUserWithSessionsByIdOrThrow(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a user with their sessions, roles, and permissions by unique identifier.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The user entity with sessions, roles, and permissions loaded.</returns>
+    /// <exception cref="NotFoundException">Thrown when no user is found with the specified ID.</exception>
+    /// <remarks>
+    /// This method loads the complete entity graph in a single optimized query:
+    /// - User sessions (all sessions for session validation)
+    /// - User roles with their permissions
+    /// Uses AsSplitQuery for optimal performance when loading multiple collections.
+    /// Use this method when you need to validate user login status AND check roles/permissions.
+    /// </remarks>
+    Task<UserEntity?> GetUserWithRolesPermissionsAndSessionsByIdOrThrow(
         Guid userId,
         CancellationToken cancellationToken = default
     );

@@ -1,6 +1,5 @@
 using _116.Identity.Application.Shared.DTOs;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Microsoft.AspNetCore.Http;
 
 namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
@@ -15,10 +14,7 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
 /// The file is uploaded to Cloudinary, and the previous avatar is automatically deleted.
 /// Only active accounts can update their avatar.
 /// </remarks>
-public record AdminUpdateAvatarCommand(
-    Guid UserId,
-    IFormFile AvatarFile
-) : ICommand<AdminUpdateAvatarResult>;
+public record AdminUpdateAvatarCommand(Guid UserId, IFormFile AvatarFile) : ICommand<AdminUpdateAvatarResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminUpdateAvatarCommand" /> containing the updated admin user information.
@@ -27,6 +23,4 @@ public record AdminUpdateAvatarCommand(
 /// <remarks>
 /// Contains the complete admin user information including the new avatar details.
 /// </remarks>
-public record AdminUpdateAvatarResult(
-    UserResponseDto User
-);
+public record AdminUpdateAvatarResult(UserResponseDto User);

@@ -12,11 +12,7 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.VerifyOtp;
 /// This command is used to verify the OTP code sent to the admin user's email for various purposes.
 /// Upon successful verification, the admin user's account will be marked as verified for email verification purpose.
 /// </remarks>
-public record AdminVerifyOtpCommand(
-    string Email,
-    string Code,
-    string Purpose
-) : ICommand<AdminVerifyOtpResult>;
+public record AdminVerifyOtpCommand(string Email, string Code, string Purpose) : ICommand<AdminVerifyOtpResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminVerifyOtpCommand" /> containing verification status.
@@ -25,6 +21,4 @@ public record AdminVerifyOtpCommand(
 /// <remarks>
 /// Contains the verification result and a user-friendly message explaining the outcome.
 /// </remarks>
-public record AdminVerifyOtpResult(
-    bool IsSuccess
-);
+public record AdminVerifyOtpResult(bool IsSuccess);

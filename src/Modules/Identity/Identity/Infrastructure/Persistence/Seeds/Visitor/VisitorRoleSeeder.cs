@@ -2,7 +2,6 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Infrastructure.Seed;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -24,8 +23,7 @@ public class VisitorRoleSeeder(IdentityDbContext context, ILogger<VisitorRoleSee
         {
             logger.LogInformation("Starting Visitor role seeding process...");
             // Check if the visitor role already exists
-            bool visitorRoleExists = await context.Roles
-                .AnyAsync(r => r.Name == nameof(EnumCoreUserRole.Visitor));
+            bool visitorRoleExists = await context.Roles.AnyAsync(r => r.Name == nameof(EnumCoreUserRole.Visitor));
             if (visitorRoleExists)
             {
                 logger.LogInformation("Visitor role already exists. Skipping seeding.");

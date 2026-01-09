@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-
 using _116.BuildingBlocks.Constants;
 using _116.Core.Application.Shared.Errors;
 using _116.Shared.Application.Exceptions;
@@ -82,10 +81,13 @@ public class FileEntity : Aggregate<Guid>
             var (_, _, m, _, _) when string.IsNullOrWhiteSpace(m) => CoreErrors.MimeTypeRequired(),
             var (_, _, _, s, _) when string.IsNullOrWhiteSpace(s) => CoreErrors.StorageUrlRequired(),
             (_, _, _, _, <= 0) => CoreErrors.FileSizeMustBeGreaterThanZero(),
-            _ => null
+            _ => null,
         };
 
-        if (error is not null) throw error;
+        if (error is not null)
+        {
+            throw error;
+        }
 
         return new FileEntity
         {
@@ -121,7 +123,10 @@ public class FileEntity : Aggregate<Guid>
     /// </remarks>
     public bool Delete()
     {
-        if (IsDeleted) return false;
+        if (IsDeleted)
+        {
+            return false;
+        }
 
         IsDeleted = true;
         DeletedAt = DateTime.UtcNow;

@@ -10,10 +10,8 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
 /// </summary>
 /// <param name="sessionFactory">Factory for handling admin user sign-out session management.</param>
 /// <param name="authRepository">Repository for user data access operations.</param>
-public class AdminSignOutHandler(
-    IAdminSignOutSessionFactory sessionFactory,
-    IAuthRepository authRepository
-) : ICommandHandler<AdminSignOutCommand, AdminSignOutResult>
+public class AdminSignOutHandler(IAdminSignOutSessionFactory sessionFactory, IAuthRepository authRepository)
+    : ICommandHandler<AdminSignOutCommand, AdminSignOutResult>
 {
     /// <summary>
     /// Handles the admin sign-out command by invalidating the specific session.
@@ -21,15 +19,14 @@ public class AdminSignOutHandler(
     /// </summary>
     public async Task<AdminSignOutResult> Handle(AdminSignOutCommand command, CancellationToken cancellationToken)
     {
-        UserEntity? user =
-            await authRepository.FindUserByIdOrThrow(userId: command.UserId, cancellationToken: cancellationToken);
+        UserEntity? user = await authRepository.FindUserByIdOrThrow(
+            userId: command.UserId,
+            cancellationToken: cancellationToken
+        );
 
         authRepository.IsUserAccountActive(user!);
 
-        await sessionFactory.SignOutAsync(
-            refreshToken: command.RefreshToken,
-            cancellationToken: cancellationToken
-        );
+        await sessionFactory.SignOutAsync(refreshToken: command.RefreshToken, cancellationToken: cancellationToken);
 
         return new AdminSignOutResult(true);
     }

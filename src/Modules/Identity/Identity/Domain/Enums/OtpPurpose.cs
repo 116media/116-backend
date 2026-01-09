@@ -23,5 +23,5 @@ public enum EnumOtpPurpose
     /// <summary>
     /// OTP used for account recovery.
     /// </summary>
-    AccountRecovery
+    AccountRecovery,
 }

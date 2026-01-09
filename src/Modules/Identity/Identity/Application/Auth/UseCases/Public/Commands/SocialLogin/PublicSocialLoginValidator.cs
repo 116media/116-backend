@@ -1,6 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Domain.Enums;
-
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
@@ -29,7 +28,8 @@ public class PublicSocialLoginValidator : AbstractValidator<PublicSocialLoginCom
             .WithMessage("Avatar must be a valid URL when provided");
         RuleFor(x => x.Provider)
             .Cascade(cascadeMode: CascadeMode.Stop)
-            .NotEmpty().WithMessage("Auth provider is required.")
+            .NotEmpty()
+            .WithMessage("Auth provider is required.")
             .Must(provider => provider != null && Enum.IsDefined(typeof(EnumAuthProvider), value: provider))
             .WithMessage("Auth provider must be Facebook or Google");
     }

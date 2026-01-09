@@ -39,9 +39,7 @@ public class PublicLoginAuthFactory(
 
         user.ValidateCanLogin();
 
-        List<RolePermissionEntity> userPermissions = user.UserRoles
-            .SelectMany(ur => ur.Role.RolePermissions)
-            .ToList();
+        List<RolePermissionEntity> userPermissions = user.UserRoles.SelectMany(ur => ur.Role.RolePermissions).ToList();
 
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user.UserRoles);
 

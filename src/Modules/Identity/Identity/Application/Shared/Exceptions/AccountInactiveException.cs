@@ -11,7 +11,8 @@ public class AccountInactiveException : Exception
     /// with a custom message describing the error.
     /// </summary>
     /// <param name="message">The error message explaining the account inactivity.</param>
-    public AccountInactiveException(string message) : base(message: message) { }
+    public AccountInactiveException(string message)
+        : base(message: message) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AccountInactiveException" /> class
@@ -19,7 +20,8 @@ public class AccountInactiveException : Exception
     /// </summary>
     /// <param name="message">The error message explaining the account inactivity.</param>
     /// <param name="details">Additional context or information about why the account is inactive.</param>
-    public AccountInactiveException(string message, string details) : base(message: message)
+    public AccountInactiveException(string message, string details)
+        : base(message: message)
     {
         Details = details;
     }

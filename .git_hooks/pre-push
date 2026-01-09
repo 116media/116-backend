@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Pre-push hook to enforce branch protection and naming conventions
 # This hook prevents direct pushes to protected branches and validates branch naming
@@ -15,22 +15,22 @@ YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
-echo "${GREEN}🔍 Validating branch protection rules...${NC}"
+echo -e "${GREEN}🔍 Validating branch protection rules...${NC}"
 
 # Check if trying to push to a protected branch
 for protected in $protected_branches; do
     if [ "$current_branch" = "$protected" ]; then
-        echo "${RED}❌ ERROR: Direct push to '$protected' branch is not allowed!${NC}"
-        echo "${YELLOW}📋 Please create a feature branch following this pattern:${NC}"
+        echo -e "${RED}❌ ERROR: Direct push to '$protected' branch is not allowed!${NC}"
+        echo -e "${YELLOW}📋 Please create a feature branch following this pattern:${NC}"
         echo "   $branch_pattern"
         echo ""
-        echo "${YELLOW}📝 Example branch names:${NC}"
+        echo -e "${YELLOW}📝 Example branch names:${NC}"
         echo "   • feat-user-authentication"
         echo "   • fix-api-response-validation"
         echo "   • chore-update-dependencies"
         echo "   • docs-git-workflow"
         echo ""
-        echo "${YELLOW}💡 To create and switch to a new branch:${NC}"
+        echo -e "${YELLOW}💡 To create and switch to a new branch:${NC}"
         echo "   git checkout -b feat-your-feature-name"
         echo ""
         exit 1
@@ -41,13 +41,13 @@ done
 if ! echo "$current_branch" | grep -qE "$branch_pattern"; then
     # Allow temporary branches like PR merge branches
     if echo "$current_branch" | grep -qE "^(HEAD|refs/)"; then
-        echo "${GREEN}✅ Temporary branch detected, skipping naming validation${NC}"
+        echo -e "${GREEN}✅ Temporary branch detected, skipping naming validation${NC}"
     else
-        echo "${RED}❌ ERROR: Branch name '$current_branch' does not follow the required pattern!${NC}"
-        echo "${YELLOW}📋 Required pattern:${NC}"
+        echo -e "${RED}❌ ERROR: Branch name '$current_branch' does not follow the required pattern!${NC}"
+        echo -e "${YELLOW}📋 Required pattern:${NC}"
         echo "   $branch_pattern"
         echo ""
-        echo "${YELLOW}📝 Valid branch types:${NC}"
+        echo -e "${YELLOW}📝 Valid branch types:${NC}"
         echo "   • feat-    : New features or functionality"
         echo "   • chore-   : Maintenance tasks, dependency updates"
         echo "   • bug-     : Bug fixes and issue resolution"
@@ -61,12 +61,12 @@ if ! echo "$current_branch" | grep -qE "$branch_pattern"; then
         echo "   • ci-      : Continuous integration configuration"
         echo "   • revert-  : Reverting previous changes"
         echo ""
-        echo "${YELLOW}💡 To rename your current branch:${NC}"
+        echo -e "${YELLOW}💡 To rename your current branch:${NC}"
         echo "   git branch -m new-branch-name"
         echo ""
         exit 1
     fi
 fi
 
-echo "${GREEN}✅ Branch validation passed! Proceeding with push...${NC}"
+echo -e "${GREEN}✅ Branch validation passed! Proceeding with push...${NC}"
 exit 0

@@ -26,10 +26,8 @@ namespace _116.Shared.Application.Exceptions.Handlers;
 /// app.UseGlobalExceptionHandler();
 /// </code>
 /// </remarks>
-public sealed class ExceptionHandler(
-    ILogger<ExceptionHandler> logger,
-    ExceptionStrategyRegistry strategyRegistry
-) : IExceptionHandler
+public sealed class ExceptionHandler(ILogger<ExceptionHandler> logger, ExceptionStrategyRegistry strategyRegistry)
+    : IExceptionHandler
 {
     /// <summary>
     /// Attempts to handle an unhandled exception using the appropriate strategy.
@@ -72,8 +70,8 @@ public sealed class ExceptionHandler(
         logger.Log(
             logLevel,
             exception,
-            "Exception {ExceptionType} occurred on {RequestMethod} {RequestPath} at {Timestamp}. " +
-            "TraceId: {TraceId}, User: {UserId}",
+            "Exception {ExceptionType} occurred on {RequestMethod} {RequestPath} at {Timestamp}. "
+                + "TraceId: {TraceId}, User: {UserId}",
             exception.GetType().Name,
             context.Request.Method,
             context.Request.Path,
@@ -97,7 +95,7 @@ public sealed class ExceptionHandler(
             ConflictException => LogLevel.Warning,
             AuthenticationException => LogLevel.Warning,
             AuthorizationException => LogLevel.Warning,
-            _ => LogLevel.Error
+            _ => LogLevel.Error,
         };
     }
 

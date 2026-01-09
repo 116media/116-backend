@@ -36,14 +36,12 @@ public static class CoreErrors
     /// <summary>
     /// Throws when a file is not found.
     /// </summary>
-    public static NotFoundException FileNotFound(int fileId) =>
-        new("File", fileId);
+    public static NotFoundException FileNotFound(int fileId) => new("File", fileId);
 
     /// <summary>
     /// Throws when a file is not found using name.
     /// </summary>
-    public static NotFoundException FileNotFoundByName(string fileName) =>
-        new("File", "name", fileName);
+    public static NotFoundException FileNotFoundByName(string fileName) => new("File", "name", fileName);
 
     /// <summary>
     /// Throws when configuration is invalid.
@@ -66,8 +64,7 @@ public static class CoreErrors
     /// <summary>
     /// Throws when file name is required.
     /// </summary>
-    public static BadRequestException FileNameRequired() =>
-        new(ValidationErrorMessage.FileNameRequired());
+    public static BadRequestException FileNameRequired() => new(ValidationErrorMessage.FileNameRequired());
 
     /// <summary>
     /// Throws when original file name is required.
@@ -78,14 +75,12 @@ public static class CoreErrors
     /// <summary>
     /// Throws when MIME type is required.
     /// </summary>
-    public static BadRequestException MimeTypeRequired() =>
-        new(ValidationErrorMessage.MimeTypeRequired());
+    public static BadRequestException MimeTypeRequired() => new(ValidationErrorMessage.MimeTypeRequired());
 
     /// <summary>
     /// Throws when storage URL is required.
     /// </summary>
-    public static BadRequestException StorageUrlRequired() =>
-        new(ValidationErrorMessage.StorageUrlRequired());
+    public static BadRequestException StorageUrlRequired() => new(ValidationErrorMessage.StorageUrlRequired());
 
     /// <summary>
     /// Throws when file size must be greater than zero.
@@ -114,20 +109,17 @@ public static class CoreErrors
     /// <summary>
     /// Throws when file URL is required.
     /// </summary>
-    public static BadRequestException FileUrlRequired() =>
-        new(ValidationErrorMessage.FileUrlRequired());
+    public static BadRequestException FileUrlRequired() => new(ValidationErrorMessage.FileUrlRequired());
 
     /// <summary>
     /// Throws a generic bad request exception with the custom message.
     /// </summary>
-    public static BadRequestException BadRequest(string message) =>
-        new(message);
+    public static BadRequestException BadRequest(string message) => new(message);
 
     /// <summary>
     /// Error for when no file is provided in the upload request.
     /// </summary>
-    public static BadRequestException FileRequired() =>
-        new("File.Required", "No file was provided for upload");
+    public static BadRequestException FileRequired() => new("File.Required", "No file was provided for upload");
 
     /// <summary>
     /// Error for when the uploaded file exceeds size limits (overload with detailed info).
@@ -142,10 +134,7 @@ public static class CoreErrors
     /// Error for Invalid filetype.
     /// </summary>
     public static BadRequestException InvalidFileType(string providedType, string allowedTypes) =>
-        new(
-            "File.InvalidType",
-            $"File type '{providedType}' is not allowed. Allowed types: {allowedTypes}"
-        );
+        new("File.InvalidType", $"File type '{providedType}' is not allowed. Allowed types: {allowedTypes}");
 
     /// <summary>
     /// Error for invalid file extension.
@@ -160,8 +149,5 @@ public static class CoreErrors
     /// Error for file upload failures (overload with just reason).
     /// </summary>
     public static BadGatewayException FileUploadFailed(string reason) =>
-        new(
-            "File.UploadFailed",
-            $"File upload failed: {reason}"
-        );
+        new("File.UploadFailed", $"File upload failed: {reason}");
 }

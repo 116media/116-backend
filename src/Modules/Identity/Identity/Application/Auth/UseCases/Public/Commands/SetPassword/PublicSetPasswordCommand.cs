@@ -10,10 +10,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SetPassword;
 /// <remarks>
 /// This command allows authenticated users who signed up via external providers to set a password.
 /// </remarks>
-public record PublicSetPasswordCommand(
-    Guid UserId,
-    string Password
-) : ICommand<PublicSetPasswordResult>;
+public record PublicSetPasswordCommand(Guid UserId, string Password) : ICommand<PublicSetPasswordResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicSetPasswordCommand" /> containing set status.

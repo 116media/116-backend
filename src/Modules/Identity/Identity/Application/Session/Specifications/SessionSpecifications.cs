@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Specifications;
 
@@ -42,26 +41,56 @@ public class SessionByIdSpecification(Guid sessionId) : Specification<SessionEnt
 }
 
 /// <summary>
-/// Specification that matches non-deleted sessions.
-/// Used for filtering sessions that are still active and not marked as deleted.
+/// Specification that matches sessions by device ID.
+/// Used for filtering sessions belonging to a specific device.
 /// </summary>
-public class SessionIsNotDeletedSpecification : Specification<SessionEntity>
+public class SessionByDeviceIdSpecification(string deviceId) : Specification<SessionEntity>
 {
     public override Expression<Func<SessionEntity, bool>> ToExpression()
     {
-        return session => session.IsDeleted == false;
+        return session => session.DeviceId == deviceId;
     }
 }
 
 /// <summary>
-/// Specification that matches deleted sessions.
-/// Used for filtering sessions that have been revoked or logged out.
+/// Composite specification that matches active sessions by user ID and device ID.
+/// Combines user ID, device ID, not revoked, and not expired specifications.
+/// Used for finding existing active session for a specific user on a specific device.
+/// This is critical for preventing duplicate active sessions on the same device.
 /// </summary>
-public class SessionIsDeletedSpecification : Specification<SessionEntity>
+public class SessionByUserIdAndDeviceIdSpecification(Guid userId, string deviceId) : Specification<SessionEntity>
 {
     public override Expression<Func<SessionEntity, bool>> ToExpression()
     {
-        return session => session.IsDeleted == true;
+        var userIdSpec = new SessionByUserIdSpecification(userId);
+        var deviceIdSpec = new SessionByDeviceIdSpecification(deviceId);
+        var activeSpec = new SessionIsActiveSpecification();
+
+        return userIdSpec.And(deviceIdSpec).And(activeSpec).ToExpression();
+    }
+}
+
+/// <summary>
+/// Specification that matches sessions that are not revoked.
+/// Used for filtering sessions that are still active and have not been revoked.
+/// </summary>
+public class SessionIsNotRevokedSpecification : Specification<SessionEntity>
+{
+    public override Expression<Func<SessionEntity, bool>> ToExpression()
+    {
+        return session => session.IsRevoked == false;
+    }
+}
+
+/// <summary>
+/// Specification that matches sessions that have been revoked.
+/// Used for filtering sessions that have been logged out or explicitly revoked.
+/// </summary>
+public class SessionIsRevokedSpecification : Specification<SessionEntity>
+{
+    public override Expression<Func<SessionEntity, bool>> ToExpression()
+    {
+        return session => session.IsRevoked == true;
     }
 }
 
@@ -98,7 +127,7 @@ public class SessionIsActiveSpecification : Specification<SessionEntity>
 {
     public override Expression<Func<SessionEntity, bool>> ToExpression()
     {
-        var notDeletedSpec = new SessionIsNotDeletedSpecification();
+        var notDeletedSpec = new SessionIsNotRevokedSpecification();
         var notExpiredSpec = new SessionIsNotExpiredSpecification();
         return notDeletedSpec.And(other: notExpiredSpec).ToExpression();
     }
@@ -143,18 +172,6 @@ public class SessionByIpAddressSpecification(string ipAddress) : Specification<S
     public override Expression<Func<SessionEntity, bool>> ToExpression()
     {
         return session => session.IpAddress!.Contains(ipAddress);
-    }
-}
-
-/// <summary>
-/// Specification that matches sessions by device name (partial match).
-/// Used for filtering sessions based on device name patterns.
-/// </summary>
-public class SessionByDeviceNameSpecification(string deviceName) : Specification<SessionEntity>
-{
-    public override Expression<Func<SessionEntity, bool>> ToExpression()
-    {
-        return session => session.DeviceName!.Contains(deviceName, StringComparison.CurrentCultureIgnoreCase);
     }
 }
 

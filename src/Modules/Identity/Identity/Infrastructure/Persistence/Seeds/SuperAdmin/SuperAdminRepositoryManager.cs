@@ -1,5 +1,4 @@
 using _116.Identity.Domain.Entities;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
@@ -18,9 +17,9 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
     /// <returns>True if Super Admin exists, false otherwise.</returns>
     public async Task<bool> SuperAdminExistsAsync()
     {
-        UserEntity? existingSuperAdmin = await context.Users
-            .Include(u => u.UserRoles)
-            .ThenInclude(ur => ur.Role)
+        UserEntity? existingSuperAdmin = await context
+            .Users.Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
             .FirstOrDefaultAsync(u => u.Email == SuperAdminConfiguration.Email);
         return existingSuperAdmin != null;
     }
@@ -33,8 +32,7 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
     /// <returns>The existing permission or null if not found.</returns>
     public async Task<PermissionEntity?> FindPermissionAsync(string resource, string action)
     {
-        return await context.Permissions
-            .FirstOrDefaultAsync(p => p.Resource == resource && p.Action == action);
+        return await context.Permissions.FirstOrDefaultAsync(p => p.Resource == resource && p.Action == action);
     }
 
     /// <summary>
@@ -44,8 +42,7 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
     /// <returns>The existing role or null if not found.</returns>
     public async Task<RoleEntity?> FindRoleAsync(string roleName)
     {
-        return await context.Roles
-            .FirstOrDefaultAsync(r => r.Name == roleName);
+        return await context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
     }
 
     /// <summary>
@@ -56,8 +53,7 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
     /// <returns>True if association exists, false otherwise.</returns>
     public async Task<bool> RolePermissionExistsAsync(Guid roleId, Guid permissionId)
     {
-        return await context.RolePermissions
-            .AnyAsync(rp => rp.RoleId == roleId && rp.PermissionId == permissionId);
+        return await context.RolePermissions.AnyAsync(rp => rp.RoleId == roleId && rp.PermissionId == permissionId);
     }
 
     /// <summary>
@@ -68,8 +64,7 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
     /// <returns>True if association exists, false otherwise.</returns>
     public async Task<bool> UserRoleExistsAsync(Guid userId, Guid roleId)
     {
-        return await context.UserRoles
-            .AnyAsync(ur => ur.UserId == userId && ur.RoleId == roleId);
+        return await context.UserRoles.AnyAsync(ur => ur.UserId == userId && ur.RoleId == roleId);
     }
 
     /// <summary>
@@ -111,7 +106,8 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
         context.RolePermissions.Add(entity: rolePermission);
         logger.LogDebug(
             "Added role-permission association: RoleId={RoleId}, PermissionId={PermissionId}",
-            rolePermission.RoleId, rolePermission.PermissionId
+            rolePermission.RoleId,
+            rolePermission.PermissionId
         );
     }
 
@@ -124,7 +120,8 @@ public class SuperAdminRepositoryManager(IdentityDbContext context, ILogger<Supe
         context.UserRoles.Add(entity: userRole);
         logger.LogDebug(
             "Added user-role association: UserId={UserId}, RoleId={RoleId}",
-            userRole.UserId, userRole.RoleId
+            userRole.UserId,
+            userRole.RoleId
         );
     }
 

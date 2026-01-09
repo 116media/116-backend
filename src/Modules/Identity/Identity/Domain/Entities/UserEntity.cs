@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Enums;
@@ -107,10 +106,10 @@ public class UserEntity : Aggregate<Guid>
         Exception? error = (email, userName, passwordHash) switch
         {
             var (e, _, _) when string.IsNullOrWhiteSpace(value: e) => UserErrors.InvalidEmailFormat(email: e),
-            var (_, u, _) when string.IsNullOrWhiteSpace(value: u) || u.Length > UserConstants.MaxUserNameLength
-                => UserErrors.InvalidUsernameFormat(username: u),
+            var (_, u, _) when string.IsNullOrWhiteSpace(value: u) || u.Length > UserConstants.MaxUserNameLength =>
+                UserErrors.InvalidUsernameFormat(username: u),
             var (_, _, p) when string.IsNullOrWhiteSpace(value: p) => UserErrors.InvalidPasswordFormat(),
-            _ => null
+            _ => null,
         };
         if (error is not null)
         {
@@ -123,7 +122,7 @@ public class UserEntity : Aggregate<Guid>
             Email = email.ToLowerInvariant(),
             UserName = userName,
             PasswordHash = passwordHash,
-            AuthProvider = EnumAuthProvider.Local
+            AuthProvider = EnumAuthProvider.Local,
         };
     }
 
@@ -149,7 +148,7 @@ public class UserEntity : Aggregate<Guid>
             Email = email?.ToLowerInvariant(),
             UserName = userName,
             AuthProvider = authProvider,
-            IsVerified = UserConstants.ExternalAuthIsVerified
+            IsVerified = UserConstants.ExternalAuthIsVerified,
         };
     }
 

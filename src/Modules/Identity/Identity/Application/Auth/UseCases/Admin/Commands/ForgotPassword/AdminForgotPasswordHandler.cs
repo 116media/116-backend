@@ -11,10 +11,8 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
 /// </summary>
 /// <param name="otpFactory">Factory for handling admin forgot password OTP creation.</param>
 /// <param name="authRepository">Repository for user data access operations.</param>
-public class AdminForgotPasswordHandler(
-    IAdminForgotPasswordOtpFactory otpFactory,
-    IAuthRepository authRepository
-) : ICommandHandler<AdminForgotPasswordCommand, AdminForgotPasswordResult>
+public class AdminForgotPasswordHandler(IAdminForgotPasswordOtpFactory otpFactory, IAuthRepository authRepository)
+    : ICommandHandler<AdminForgotPasswordCommand, AdminForgotPasswordResult>
 {
     /// <summary>
     /// Handles the forgot password command by generating an OTP for password reset.
@@ -31,16 +29,15 @@ public class AdminForgotPasswordHandler(
             return new AdminForgotPasswordResult(true, Email: command.Email);
         }
 
-        UserEntity? user =
-            await authRepository.GetUserWithRolesByEmailOrThrow(email: email, cancellationToken: cancellationToken);
+        UserEntity? user = await authRepository.GetUserWithRolesByEmailOrThrow(
+            email: email,
+            cancellationToken: cancellationToken
+        );
 
         authRepository.IsUserAdmin(user!);
         authRepository.IsUserAccountActive(user!);
 
-        await otpFactory.CreatePasswordResetOtpAsync(
-            userId: user!.Id,
-            cancellationToken: cancellationToken
-        );
+        await otpFactory.CreatePasswordResetOtpAsync(userId: user!.Id, cancellationToken: cancellationToken);
 
         return new AdminForgotPasswordResult(true, Email: command.Email);
     }

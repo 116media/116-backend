@@ -1,5 +1,4 @@
 using _116.Shared.Contracts.Application.CQRS;
-
 using FluentValidation;
 using FluentValidation.Results;
 
@@ -14,7 +13,8 @@ namespace _116.Shared.Application.Decorators;
 public class ValidationDecorator<TRequest, TResponse>(
     IRequestHandler<TRequest, TResponse> handler,
     IEnumerable<IValidator<TRequest>> validators
-) : IRequestHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>
+) : IRequestHandler<TRequest, TResponse>
+    where TRequest : IRequest<TResponse>
 {
     public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken = default)
     {

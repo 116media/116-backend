@@ -1,7 +1,5 @@
 using System.Reflection;
-
 using _116.Shared.Domain;
-
 using Microsoft.Extensions.DependencyInjection;
 
 namespace _116.Shared.Application.Services;
@@ -24,7 +22,8 @@ public interface IDomainEventPublisher
 /// Interface for handling domain events.
 /// </summary>
 /// <typeparam name="TDomainEvent">The type of domain event to handle.</typeparam>
-public interface IDomainEventHandler<in TDomainEvent> where TDomainEvent : IDomainEvent
+public interface IDomainEventHandler<in TDomainEvent>
+    where TDomainEvent : IDomainEvent
 {
     /// <summary>
     /// Handles the domain event.
@@ -57,7 +56,10 @@ public class DomainEventPublisher(IServiceProvider serviceProvider) : IDomainEve
             if (handleMethod != null)
             {
                 object? result = handleMethod.Invoke(handler, [domainEvent, cancellationToken]);
-                if (result is Task task) await task;
+                if (result is Task task)
+                {
+                    await task;
+                }
             }
         });
 

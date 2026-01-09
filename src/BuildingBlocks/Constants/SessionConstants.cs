@@ -6,12 +6,6 @@ namespace _116.BuildingBlocks.Constants;
 public static class SessionConstants
 {
     /// <summary>
-    /// How long a refresh token is valid (in days).
-    /// After this time, the user needs to log in again.
-    /// </summary>
-    public const int RefreshTokenExpirationDays = 30;
-
-    /// <summary>
     /// Maximum length for the hashed refresh token.
     /// </summary>
     public const int MaxRefreshTokenHashLength = 500;
@@ -27,13 +21,14 @@ public static class SessionConstants
     public const int MaxUserAgentLength = 500;
 
     /// <summary>
-    /// Maximum length for parsed device name.
-    /// </summary>
-    public const int MaxDeviceNameLength = 100;
-
-    /// <summary>
     /// Maximum length for client platform identifier.
     /// Allowed values: "ios-mobile", "android-mobile", "browser-web", "pwa-browser"
     /// </summary>
     public const int MaxClientPlatformLength = 25;
+
+    /// <summary>
+    /// Maximum length for device identifier.
+    /// Used to store client-generated unique device ID (GUID/UUID/NanoID).
+    /// </summary>
+    public const int MaxDeviceIdLength = 64;
 }

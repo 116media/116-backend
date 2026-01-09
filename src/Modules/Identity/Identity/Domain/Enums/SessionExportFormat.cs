@@ -13,5 +13,5 @@ public enum SessionExportFormat
     /// <summary>
     /// XLSX (Microsoft Excel) format.
     /// </summary>
-    Xlsx
+    Xlsx,
 }

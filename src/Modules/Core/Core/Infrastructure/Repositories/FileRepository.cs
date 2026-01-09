@@ -4,7 +4,6 @@ using _116.Core.Application.Shared.Specifications;
 using _116.Core.Domain.Entities;
 using _116.Core.Infrastructure.Persistence;
 using _116.Shared.Infrastructure.Extensions;
-
 using Microsoft.AspNetCore.Http;
 
 namespace _116.Core.Infrastructure.Repositories;
@@ -19,8 +18,7 @@ public class FileRepository(CoreDbContext context, IFileService fileService) : I
     {
         var specification = new FileByIdNotDeletedSpecification(fileId);
 
-        return await context.Files
-            .FirstOrDefaultBySpecificationAsync(specification, cancellationToken);
+        return await context.Files.FirstOrDefaultBySpecificationAsync(specification, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -43,14 +41,9 @@ public class FileRepository(CoreDbContext context, IFileService fileService) : I
     }
 
     /// <inheritdoc />
-    public async Task<FileEntity?> GetAvatarFileAsync(
-        Guid? avatarFileId,
-        CancellationToken cancellationToken = default
-    )
+    public async Task<FileEntity?> GetAvatarFileAsync(Guid? avatarFileId, CancellationToken cancellationToken = default)
     {
-        return avatarFileId.HasValue
-            ? await GetByIdAsync(avatarFileId.Value, cancellationToken)
-            : null;
+        return avatarFileId.HasValue ? await GetByIdAsync(avatarFileId.Value, cancellationToken) : null;
     }
 
     /// <inheritdoc />
@@ -133,7 +126,10 @@ public class FileRepository(CoreDbContext context, IFileService fileService) : I
         if (currentAvatarFileId.HasValue)
         {
             FileEntity? existingFile = await GetByIdAsync(currentAvatarFileId.Value, cancellationToken);
-            if (existingFile != null && string.Equals(existingFile.StorageUrl, newAvatarUrl, StringComparison.OrdinalIgnoreCase))
+            if (
+                existingFile != null
+                && string.Equals(existingFile.StorageUrl, newAvatarUrl, StringComparison.OrdinalIgnoreCase)
+            )
             {
                 shouldUpdateAvatar = false;
             }
@@ -209,7 +205,10 @@ public class FileRepository(CoreDbContext context, IFileService fileService) : I
     {
         bool canUpdateAvatar = !string.IsNullOrWhiteSpace(avatarUrl) && !isAvatarSourceManual;
 
-        if (!canUpdateAvatar) return null;
+        if (!canUpdateAvatar)
+        {
+            return null;
+        }
 
         return await UpdateAvatarFromUrlAsync(currentAvatarFileId, avatarUrl!, userId, cancellationToken);
     }

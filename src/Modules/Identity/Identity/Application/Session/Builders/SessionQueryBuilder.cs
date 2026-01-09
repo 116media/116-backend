@@ -1,6 +1,6 @@
 using _116.Identity.Application.Session.Specifications;
-using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Specifications;
 
 namespace _116.Identity.Application.Session.Builders;
@@ -29,11 +29,18 @@ public class SessionQueryBuilder : ISessionQueryBuilder
             return this;
         }
 
-        Specification<SessionEntity> statusSpec = status.ToLower() switch
+        string normalizedStatus = status.ToLower();
+        Specification<SessionEntity> statusSpec = normalizedStatus switch
         {
-            SessionConstants.Status.Active => new SessionIsActiveSpecification(),
-            SessionConstants.Status.Expired => new SessionIsExpiredSpecification(),
-            _ => null!
+            _ when normalizedStatus.Equals(
+                    nameof(EnumSessionStatus.Active),
+                    comparisonType: StringComparison.InvariantCultureIgnoreCase
+                ) => new SessionIsActiveSpecification(),
+            _ when normalizedStatus.Equals(
+                    nameof(EnumSessionStatus.Expired),
+                    comparisonType: StringComparison.InvariantCultureIgnoreCase
+                ) => new SessionIsExpiredSpecification(),
+            _ => null!,
         };
 
         CombineSpecification(spec: statusSpec);
@@ -51,19 +58,6 @@ public class SessionQueryBuilder : ISessionQueryBuilder
 
         var ipSpec = new SessionByIpAddressSpecification(ipAddress: ipAddress);
         CombineSpecification(spec: ipSpec);
-        return this;
-    }
-
-    /// <inheritdoc />
-    public ISessionQueryBuilder WithDeviceName(string? deviceName)
-    {
-        if (string.IsNullOrWhiteSpace(value: deviceName))
-        {
-            return this;
-        }
-
-        var deviceSpec = new SessionByDeviceNameSpecification(deviceName: deviceName);
-        CombineSpecification(spec: deviceSpec);
         return this;
     }
 
@@ -117,8 +111,6 @@ public class SessionQueryBuilder : ISessionQueryBuilder
 
     private void CombineSpecification(Specification<SessionEntity> spec)
     {
-        _specification = _specification is null
-            ? spec
-            : _specification.And(other: spec);
+        _specification = _specification is null ? spec : _specification.And(other: spec);
     }
 }

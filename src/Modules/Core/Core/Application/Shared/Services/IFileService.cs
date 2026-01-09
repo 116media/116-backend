@@ -1,5 +1,4 @@
 using _116.Shared.Application.Exceptions;
-
 using Microsoft.AspNetCore.Http;
 
 namespace _116.Core.Application.Shared.Services;
@@ -13,14 +12,7 @@ namespace _116.Core.Application.Shared.Services;
 /// <param name="Width">The image width in pixels.</param>
 /// <param name="Height">The image height in pixels.</param>
 /// <param name="Bytes">The file size in bytes.</param>
-public record FileUploadResult(
-    Guid FileId,
-    string SecureUrl,
-    string Format,
-    int Width,
-    int Height,
-    long Bytes
-);
+public record FileUploadResult(Guid FileId, string SecureUrl, string Format, int Width, int Height, long Bytes);
 
 /// <summary>
 /// Result of a file download operation containing metadata about the downloaded file.

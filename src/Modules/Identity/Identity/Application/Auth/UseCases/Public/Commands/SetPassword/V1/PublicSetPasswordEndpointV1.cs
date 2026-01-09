@@ -1,14 +1,11 @@
 using System.Security.Claims;
-
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -40,26 +37,30 @@ public class PublicSetPasswordEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
-        group.MapPost(pattern: AuthRouteConstants.SetPassword, async (
-                PublicSetPasswordRequest request,
-                ClaimsPrincipal user,
-                IAuthRepository authRepository,
-                IDispatcher dispatcher
-            ) =>
-            {
-                // Extract user ID from JWT token claims
-                Guid userId = authRepository.GetUserIdFromClaims(user: user);
-                // Send the command to set the password
-                var command = new PublicSetPasswordCommand(UserId: userId, Password: request.Password);
-                PublicSetPasswordResult result = await dispatcher.Send(request: command);
-                // Adapt the result to the response type
-                var response = new PublicSetPasswordResponse(IsSuccess: result.IsSuccess);
-                return Results.Ok(value: response);
-            })
+
+        group
+            .MapPost(
+                pattern: AuthRouteConstants.SetPassword,
+                async (
+                    PublicSetPasswordRequest request,
+                    ClaimsPrincipal user,
+                    IAuthRepository authRepository,
+                    IDispatcher dispatcher
+                ) =>
+                {
+                    Guid userId = authRepository.GetUserIdFromClaims(user: user);
+
+                    var command = new PublicSetPasswordCommand(UserId: userId, Password: request.Password);
+                    PublicSetPasswordResult result = await dispatcher.Send(request: command);
+
+                    var response = new PublicSetPasswordResponse(IsSuccess: result.IsSuccess);
+
+                    return Results.Ok(value: response);
+                }
+            )
             .WithName(endpointName: PublicSetPasswordMetaField.SetPassword.Name)
             .WithSummary(summary: PublicSetPasswordMetaField.SetPassword.Summary)
             .WithDescription(description: PublicSetPasswordMetaField.SetPassword.Description)

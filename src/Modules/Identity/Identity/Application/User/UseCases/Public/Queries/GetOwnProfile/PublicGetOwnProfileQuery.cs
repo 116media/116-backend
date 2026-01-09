@@ -22,6 +22,4 @@ public record PublicGetOwnProfileQuery(Guid UserId) : IQuery<PublicGetOwnProfile
 /// Contains the full UserResponseDto with all user details, roles, permissions, and avatar information.
 /// This information is used by the client application to display user profile and manage permissions.
 /// </remarks>
-public record PublicGetOwnProfileResult(
-    UserResponseDto User
-);
+public record PublicGetOwnProfileResult(UserResponseDto User);

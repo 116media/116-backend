@@ -5,9 +5,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword.
 /// <summary>
 /// Contains user data for password reset operations.
 /// </summary>
-public record PublicResetPasswordAuthData(
-    UserEntity User
-);
+public record PublicResetPasswordAuthData(UserEntity User);
 
 /// <summary>
 /// Factory for handling user password reset logic.
@@ -20,10 +18,7 @@ public interface IPublicResetPasswordAuthFactory
     /// <param name="email">The user's email address.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>User data for password reset.</returns>
-    Task<PublicResetPasswordAuthData> GetUserForResetAsync(
-        string email,
-        CancellationToken cancellationToken
-    );
+    Task<PublicResetPasswordAuthData> GetUserForResetAsync(string email, CancellationToken cancellationToken);
 
     /// <summary>
     /// Resets a user's password with a new password.
@@ -32,9 +27,5 @@ public interface IPublicResetPasswordAuthFactory
     /// <param name="newPassword">The new password to set.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>The updated user entity.</returns>
-    Task<UserEntity> ResetPasswordAsync(
-        UserEntity user,
-        string newPassword,
-        CancellationToken cancellationToken
-    );
+    Task<UserEntity> ResetPasswordAsync(UserEntity user, string newPassword, CancellationToken cancellationToken);
 }

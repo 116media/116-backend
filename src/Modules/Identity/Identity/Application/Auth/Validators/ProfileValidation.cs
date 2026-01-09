@@ -1,5 +1,4 @@
 using _116.BuildingBlocks.Constants;
-
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.Validators;
@@ -15,9 +14,7 @@ public static class ProfileValidation
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the country name property.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, string?> ValidCountryName<T>(
-        this IRuleBuilder<T, string?> ruleBuilder
-    )
+    public static IRuleBuilderOptions<T, string?> ValidCountryName<T>(this IRuleBuilder<T, string?> ruleBuilder)
     {
         return ruleBuilder
             .MaximumLength(maximumLength: UserConstants.MaxCountryNameLength)
@@ -60,7 +57,8 @@ public static class ProfileValidation
             .WithMessage($"Country dial code cannot exceed {UserConstants.MaxCountryDialCodeLength} characters")
             .Matches(@"^\+\d{1,4}$")
             .WithMessage(
-                $"Country dial code must start with + followed by 1-{UserConstants.MaxCountryDialCodeLength} digits")
+                $"Country dial code must start with + followed by 1-{UserConstants.MaxCountryDialCodeLength} digits"
+            )
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "CountryDialCode")));
     }
 
@@ -70,9 +68,7 @@ public static class ProfileValidation
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the partial phone number property.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, string?> ValidPartialPhoneNumber<T>(
-        this IRuleBuilder<T, string?> ruleBuilder
-    )
+    public static IRuleBuilderOptions<T, string?> ValidPartialPhoneNumber<T>(this IRuleBuilder<T, string?> ruleBuilder)
     {
         return ruleBuilder
             .MaximumLength(maximumLength: UserConstants.MaxPartialPhoneNumberLength)

@@ -20,5 +20,5 @@ public enum EnumAvatarSource
     /// This is the default when the user has not uploaded an avatar
     /// and no provider image is available.
     /// </summary>
-    None
+    None,
 }

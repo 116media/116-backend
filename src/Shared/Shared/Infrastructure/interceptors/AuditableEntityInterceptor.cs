@@ -1,6 +1,5 @@
 using _116.Shared.Domain;
 using _116.Shared.Infrastructure.Extensions;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -21,10 +20,7 @@ public class AuditableEntityInterceptor : SaveChangesInterceptor
     /// <param name="eventData">The event data providing context about the <see cref="DbContext"/>.</param>
     /// <param name="result">The current interception result.</param>
     /// <returns>The interception result.</returns>
-    public override InterceptionResult<int> SavingChanges(
-        DbContextEventData eventData,
-        InterceptionResult<int> result
-    )
+    public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
         UpdateEntities(eventData.Context);
         return base.SavingChanges(eventData, result);
@@ -67,7 +63,10 @@ public class AuditableEntityInterceptor : SaveChangesInterceptor
     /// </remarks>
     private static void UpdateEntities(DbContext? eventDataContext)
     {
-        if (eventDataContext == null) return;
+        if (eventDataContext == null)
+        {
+            return;
+        }
 
         foreach (EntityEntry<IEntity> entry in eventDataContext.ChangeTracker.Entries<IEntity>())
         {
@@ -80,7 +79,10 @@ public class AuditableEntityInterceptor : SaveChangesInterceptor
 
             // The case of edit/update
             bool isNewOrUpdated = entry.State is EntityState.Added or EntityState.Modified;
-            if (!isNewOrUpdated && !entry.HasChangedOwnedEntities()) continue;
+            if (!isNewOrUpdated && !entry.HasChangedOwnedEntities())
+            {
+                continue;
+            }
 
             entry.Entity.UpdatedBy = "system";
             entry.Entity.UpdatedAt = DateTime.UtcNow;

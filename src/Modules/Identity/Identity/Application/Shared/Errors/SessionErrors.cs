@@ -24,4 +24,12 @@ public static class SessionErrors
     {
         return new NotFoundException("Session", key: sessionId);
     }
+
+    /// <summary>
+    /// Throws when device ID is missing from the request.
+    /// </summary>
+    public static BadRequestException DeviceIdRequired()
+    {
+        return new BadRequestException(AuthenticationErrorMessage.DeviceIdRequired());
+    }
 }

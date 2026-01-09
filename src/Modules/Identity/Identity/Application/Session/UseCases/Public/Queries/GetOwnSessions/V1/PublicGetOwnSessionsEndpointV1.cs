@@ -1,5 +1,4 @@
 using System.Security.Claims;
-
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
@@ -7,9 +6,7 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -35,33 +32,34 @@ public class PublicGetOwnSessionsEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{SessionRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
-        group.MapGet("/", async (
-                ClaimsPrincipal user,
-                IAuthRepository authRepository,
-                IDispatcher dispatcher,
-                bool? isActive = null
-            ) =>
-            {
-                Guid userId = authRepository.GetUserIdFromClaims(user: user);
+            .WithTags($"{IdentityConstants.Public}::{SessionRouteConstants.Endpoint}");
 
-                var query = new PublicGetOwnSessionsQuery(UserId: userId, IsActive: isActive);
-                PublicGetOwnSessionsResult result = await dispatcher.Send(request: query);
+        group
+            .MapGet(
+                "/",
+                async (
+                    ClaimsPrincipal user,
+                    IAuthRepository authRepository,
+                    IDispatcher dispatcher,
+                    bool? isActive = null
+                ) =>
+                {
+                    Guid userId = authRepository.GetUserIdFromClaims(user: user);
 
-                var response = new PublicGetOwnSessionsResponse(
-                    Sessions: result.Sessions
-                );
+                    var query = new PublicGetOwnSessionsQuery(UserId: userId, IsActive: isActive);
+                    PublicGetOwnSessionsResult result = await dispatcher.Send(request: query);
 
-                return Results.Ok(value: response);
-            })
+                    var response = new PublicGetOwnSessionsResponse(Sessions: result.Sessions);
+
+                    return Results.Ok(value: response);
+                }
+            )
             .WithName(endpointName: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Name)
             .WithSummary(summary: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Summary)
             .WithDescription(description: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
-            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .Produces<PublicGetOwnSessionsResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);

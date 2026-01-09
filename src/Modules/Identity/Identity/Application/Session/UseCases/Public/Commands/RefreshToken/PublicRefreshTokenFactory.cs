@@ -33,11 +33,10 @@ public class PublicRefreshTokenFactory(
     {
         string refreshTokenHash = refreshTokenService.HashRefreshToken(refreshToken: refreshToken);
 
-        SessionEntity? session =
-            await sessionRepository.GetByRefreshTokenHashAsync(
-                refreshTokenHash: refreshTokenHash,
-                cancellationToken: cancellationToken
-            );
+        SessionEntity? session = await sessionRepository.GetByRefreshTokenHashAsync(
+            refreshTokenHash: refreshTokenHash,
+            cancellationToken: cancellationToken
+        );
 
         if (session is null)
         {
@@ -55,10 +54,7 @@ public class PublicRefreshTokenFactory(
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        session.UpdateRefreshToken(
-            newRefreshTokenHash: newRefreshTokenHash,
-            newExpiresAt: newRefreshTokenExpiresAt
-        );
+        session.UpdateRefreshToken(newRefreshTokenHash: newRefreshTokenHash, newExpiresAt: newRefreshTokenExpiresAt);
 
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: session.User.UserRoles);
 
@@ -82,7 +78,7 @@ public class PublicRefreshTokenFactory(
     /// </returns>
     private (string token, string hash, DateTime expiresAt) GenerateNewRefreshToken()
     {
-        var (_, _, _, refreshTokenExpirationMinutes) = AppEnvironment.Jwt();
+        var (_, _, _, _, refreshTokenExpirationMinutes) = AppEnvironment.Jwt();
 
         string newRefreshToken = refreshTokenService.GenerateRefreshToken();
         string newRefreshTokenHash = refreshTokenService.HashRefreshToken(refreshToken: newRefreshToken);

@@ -15,12 +15,8 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 /// Users authenticated via social login are automatically verified and marked as active.
 /// If an avatar URL is provided, it will be downloaded and stored locally.
 /// </remarks>
-public record PublicSocialLoginCommand(
-    string Email,
-    string UserName,
-    string? AvatarUrl,
-    string Provider
-) : ICommand<PublicSocialLoginResult>;
+public record PublicSocialLoginCommand(string Email, string UserName, string? AvatarUrl, string Provider)
+    : ICommand<PublicSocialLoginResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicSocialLoginCommand" /> containing authentication details.

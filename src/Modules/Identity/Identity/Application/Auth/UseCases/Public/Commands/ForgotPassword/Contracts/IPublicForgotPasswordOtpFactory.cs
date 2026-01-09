@@ -13,8 +13,5 @@ public interface IPublicForgotPasswordOtpFactory
     /// <param name="userId">The user ID to create OTP for.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>The created OTP entity.</returns>
-    Task<OtpEntity> CreatePasswordResetOtpAsync(
-        Guid userId,
-        CancellationToken cancellationToken
-    );
+    Task<OtpEntity> CreatePasswordResetOtpAsync(Guid userId, CancellationToken cancellationToken);
 }

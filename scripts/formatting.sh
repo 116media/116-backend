@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
 # C# Code Formatting Script
-# Formats code using dotnet format with support for staged files and verification
+# Formats code using csharpier with support for staged files and verification
 
 # Colors for output
 RED='\033[0;31m'
@@ -23,52 +23,43 @@ while true; do
 done
 
 if $staged_only; then
-    echo "${BLUE}🔍 Checking for dotnet-format availability...${NC}"
-    
-    which dotnet-format > /dev/null 2>&1;
+    echo -e "${BLUE}🔍 Checking for csharpier availability...${NC}"
+
+    dotnet csharpier --version > /dev/null 2>&1;
     format_res=$?
     if [ $format_res -ne 0 ]; then
-        echo "${RED}❌ ERROR: dotnet-format is not installed!${NC}"
-        echo "${YELLOW}📋 Code formatting is required for maintaining code quality${NC}"
-        echo "${YELLOW}💡 To install dotnet-format, run the setup.sh script${NC}"
+        echo -e "${RED}❌ ERROR: csharpier is not installed!${NC}"
+        echo -e "${YELLOW}📋 Code formatting is required for maintaining code quality${NC}"
+        echo -e "${YELLOW}💡 To install csharpier, run the setup.sh script${NC}"
         exit 1;
     fi
 
-    echo "${BLUE}🔎 Scanning for staged C# files...${NC}"
+    echo -e "${BLUE}🔎 Scanning for staged C# files...${NC}"
     FILES=$(git diff --staged --name-only --diff-filter=ACM "*.cs")
-    
+
     if [ -z "$FILES" ]; then
-        echo "${GREEN}✅ No staged C# files to format${NC}"
+        echo -e "${GREEN}✅ No staged C# files to format${NC}"
         exit 0
     fi
 
-    echo "${GREEN}🎨 Formatting staged C# files...${NC}"
-    dotnet format --include "$FILES"
+    echo -e "${GREEN}🎨 Formatting staged C# files...${NC}"
+    echo "$FILES" | xargs dotnet csharpier format
 
-    echo "${BLUE}📝 Re-staging formatted files...${NC}"
+    echo -e "${BLUE}📝 Re-staging formatted files...${NC}"
     echo "$FILES" | xargs git add
 
-    echo "${GREEN}✅ Code formatting complete! All staged files are now properly formatted${NC}"
+    echo -e "${GREEN}✅ Code formatting complete! All staged files are now properly formatted${NC}"
 else
-    echo "${BLUE}🔍 Validating code formatting and style rules...${NC}"
-    
-    echo "${BLUE}📏 Checking style rules...${NC}"
-    dotnet format --verify-no-changes --no-restore --severity error style
+    echo -e "${BLUE}🔍 Validating code formatting...${NC}"
+
+    echo -e "${BLUE}📏 Checking code formatting...${NC}"
+    dotnet csharpier check .
     check_res=$?
     if [ $check_res -ne 0 ]; then
-        echo "${RED}❌ Code style rules violations detected!${NC}"
-        echo "${YELLOW}💡 Run 'dotnet format' to fix style issues${NC}"
-        exit 1;
-    fi
-    
-    echo "${BLUE}📐 Checking whitespace formatting...${NC}"
-    dotnet format --verify-no-changes --no-restore --severity error whitespace
-    check_res=$?
-    if [ $check_res -ne 0 ]; then
-        echo "${RED}❌ Whitespace formatting violations detected!${NC}"
-        echo "${YELLOW}💡 Run 'dotnet format' to fix whitespace issues${NC}"
+        echo -e "${RED}❌ Code formatting violations detected!${NC}"
+        echo -e "${YELLOW}💡 Run 'dotnet csharpier format .' to fix formatting issues${NC}"
         exit 1;
     fi
 
-    echo "${GREEN}✅ All formatting and style rules are properly followed!${NC}"
+    echo -e "${GREEN}✅ All code is properly formatted!${NC}"
 fi

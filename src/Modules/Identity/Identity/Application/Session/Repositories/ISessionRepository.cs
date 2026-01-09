@@ -1,4 +1,5 @@
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 
 namespace _116.Identity.Application.Session.Repositories;
 
@@ -27,11 +28,11 @@ public interface ISessionRepository
     );
 
     /// <summary>
-    /// Deletes a specific session (for logout).
+    /// Revokes a specific session (for logout).
     /// </summary>
     /// <param name="sessionId">The ID of the session to delete.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    Task DeleteAsync(Guid sessionId, CancellationToken cancellationToken = default);
+    Task RevokeAsync(Guid sessionId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes all sessions for a user (for logout from all devices).
@@ -47,6 +48,21 @@ public interface ISessionRepository
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>The session entity if found, null otherwise.</returns>
     Task<SessionEntity?> GetByIdAsync(Guid sessionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets an active session for a specific user and device.
+    /// Active means: NOT expired AND NOT revoked.
+    /// Used to prevent duplicate active sessions on the same device.
+    /// </summary>
+    /// <param name="userId">The user identifier.</param>
+    /// <param name="deviceId">The device identifier.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <returns>The active session if found, null otherwise.</returns>
+    Task<SessionEntity?> GetActiveSessionByUserIdAndDeviceIdAsync(
+        Guid userId,
+        string deviceId,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Gets all sessions for a user with optional filtering by active status.
@@ -69,7 +85,6 @@ public interface ISessionRepository
     /// <param name="status">Filter by status: "active", "expired", or null for all.</param>
     /// <param name="userId">Optional filter by user ID.</param>
     /// <param name="ipAddress">Optional filter by IP address (partial match).</param>
-    /// <param name="deviceName">Optional filter by device name (partial match).</param>
     /// <param name="fromDate">Optional filter for sessions created after this date.</param>
     /// <param name="toDate">Optional filter for sessions created before this date.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
@@ -80,29 +95,42 @@ public interface ISessionRepository
         string? status = null,
         Guid? userId = null,
         string? ipAddress = null,
-        string? deviceName = null,
         DateTime? fromDate = null,
         DateTime? toDate = null,
         CancellationToken cancellationToken = default
     );
 
     /// <summary>
-    /// Gets count of active sessions grouped by client platform (from Client-Platform header).
+    /// Gets count of active sessions grouped by browser type.
     /// </summary>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>Dictionary with client platform as key and count as value.</returns>
-    Task<Dictionary<string, int>> GetActiveSessionCountByClientPlatformAsync(
+    /// <returns>Dictionary with the browser type as key and count as value.</returns>
+    Task<Dictionary<EnumBrowser, int>> GetActiveSessionCountByBrowserAsync(
         CancellationToken cancellationToken = default
     );
 
     /// <summary>
-    /// Gets count of active sessions grouped by device type (classified from user agent).
+    /// Gets count of active sessions grouped by device type.
     /// </summary>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>Dictionary with device type as key and count as value.</returns>
-    Task<Dictionary<string, int>> GetActiveSessionCountByDeviceTypeAsync(
+    /// <returns>Dictionary with the device type as key and count as value.</returns>
+    Task<Dictionary<EnumDevice, int>> GetActiveSessionCountByDeviceAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets count of active sessions grouped by platform/OS.
+    /// </summary>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <returns>Dictionary with the platform as key and count as value.</returns>
+    Task<Dictionary<EnumPlatform, int>> GetActiveSessionCountByPlatformAsync(
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Gets count of active sessions grouped by client application type.
+    /// </summary>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <returns>Dictionary with the client type as key and count as value.</returns>
+    Task<Dictionary<EnumClient, int>> GetActiveSessionCountByClientAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets total count of active sessions.

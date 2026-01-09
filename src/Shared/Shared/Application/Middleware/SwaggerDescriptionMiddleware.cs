@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.RegularExpressions;
-
 using Microsoft.AspNetCore.Http;
 
 namespace _116.Shared.Application.Middleware;
@@ -15,8 +14,8 @@ public partial class SwaggerDescriptionMiddleware(RequestDelegate next)
     {
         // Only process Swagger JSON endpoint requests
         if (
-            !context.Request.Path.StartsWithSegments("/swagger") ||
-            !context.Request.Path.Value!.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+            !context.Request.Path.StartsWithSegments("/swagger")
+            || !context.Request.Path.Value!.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
         )
         {
             await next(context);
@@ -36,11 +35,15 @@ public partial class SwaggerDescriptionMiddleware(RequestDelegate next)
 
         // Replace \\n (4 chars: backslash-backslash-n) with \n (2 chars: backslash-n)
         // This converts escaped newlines in C# strings to proper JSON newline escapes
-        string processed = DescriptionRegex().Replace(json, match =>
-        {
-            string fullMatch = match.Value;
-            return fullMatch.Replace(@"\\n", "\\n");
-        });
+        string processed = DescriptionRegex()
+            .Replace(
+                json,
+                match =>
+                {
+                    string fullMatch = match.Value;
+                    return fullMatch.Replace(@"\\n", "\\n");
+                }
+            );
 
         context.Response.Body = originalBody;
 

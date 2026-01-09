@@ -16,12 +16,8 @@ namespace _116.Shared.Application.Pagination;
 /// ]]>
 /// </code>
 /// </example>
-public class PaginatedResult<TEntity>(
-    int pageIndex,
-    int pageSize,
-    long count,
-    IEnumerable<TEntity> items
-) where TEntity : class
+public class PaginatedResult<TEntity>(int pageIndex, int pageSize, long count, IEnumerable<TEntity> items)
+    where TEntity : class
 {
     /// <summary>
     /// Gets the current page index (zero-based).

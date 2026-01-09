@@ -3,9 +3,7 @@ using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -31,27 +29,26 @@ public class AdminForceLogoutUserEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{SessionRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.SchemaName}");
+            .WithTags($"{IdentityConstants.Admin}::/{SessionRouteConstants.Endpoint}");
 
-        group.MapPost($"{SessionRouteConstants.ForceLogout}/{{id:guid}}", async (
-                string id,
-                IDispatcher dispatcher
-            ) =>
-            {
-                var command = new AdminForceLogoutUserCommand(UserId: id);
-                AdminForceLogoutUserResult result = await dispatcher.Send(request: command);
+        group
+            .MapPost(
+                $"{SessionRouteConstants.ForceLogout}/{{id}}",
+                async (string id, IDispatcher dispatcher) =>
+                {
+                    var command = new AdminForceLogoutUserCommand(UserId: id);
+                    AdminForceLogoutUserResult result = await dispatcher.Send(request: command);
 
-                var response = new AdminForceLogoutUserResponse(IsSuccess: result.IsSuccess);
-                return Results.Ok(value: response);
-            })
+                    var response = new AdminForceLogoutUserResponse(IsSuccess: result.IsSuccess);
+                    return Results.Ok(value: response);
+                }
+            )
             .WithName(endpointName: AdminForceLogoutUserMetaField.AdminForceLogoutUser.Name)
             .WithSummary(summary: AdminForceLogoutUserMetaField.AdminForceLogoutUser.Summary)
             .WithDescription(description: AdminForceLogoutUserMetaField.AdminForceLogoutUser.Description)
             .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
-            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .ProducesValidationProblem()
             .Produces<AdminForceLogoutUserResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)

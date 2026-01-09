@@ -1,6 +1,5 @@
 using _116.BuildingBlocks.Constants;
 using _116.Core.Domain.Entities;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,26 +21,17 @@ public class FileConfiguration : IEntityTypeConfiguration<FileEntity>
         builder.HasKey(f => f.Id);
 
         // Properties configuration
-        builder.Property(f => f.FileName)
-            .HasMaxLength(FileConstants.MaxFileNameLength)
-            .IsRequired();
+        builder.Property(f => f.FileName).HasMaxLength(FileConstants.MaxFileNameLength).IsRequired();
 
-        builder.Property(f => f.OriginalFileName)
-            .HasMaxLength(FileConstants.MaxOriginalFileNameLength)
-            .IsRequired();
+        builder.Property(f => f.OriginalFileName).HasMaxLength(FileConstants.MaxOriginalFileNameLength).IsRequired();
 
-        builder.Property(f => f.MimeType)
-            .HasMaxLength(FileConstants.MaxMimeTypeLength)
-            .IsRequired();
+        builder.Property(f => f.MimeType).HasMaxLength(FileConstants.MaxMimeTypeLength).IsRequired();
 
-        builder.Property(f => f.StorageUrl)
-            .HasMaxLength(FileConstants.MaxStorageUrlLength)
-            .IsRequired();
+        builder.Property(f => f.StorageUrl).HasMaxLength(FileConstants.MaxStorageUrlLength).IsRequired();
 
         builder.Property(f => f.SizeInBytes).IsRequired();
 
-        builder.Property(f => f.IsDeleted)
-            .HasDefaultValue(FileConstants.DefaultIsDeleted);
+        builder.Property(f => f.IsDeleted).HasDefaultValue(FileConstants.DefaultIsDeleted);
 
         builder.Property(f => f.DeletedAt).IsRequired(false);
 

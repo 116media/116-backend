@@ -34,14 +34,17 @@ public class PublicSetPasswordHandler(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user =
-            await authRepository.FindUserByIdOrThrow(userId: command.UserId, cancellationToken: cancellationToken);
-        // Validate user account status - accounts must be active
+        UserEntity? user = await authRepository.FindUserByIdOrThrow(
+            userId: command.UserId,
+            cancellationToken: cancellationToken
+        );
         authRepository.IsUserAccountActive(user!);
+
         // Hash the new password
         string hashedPassword = passwordService.Hash(password: command.Password);
         authRepository.SetPasswordForExternalUser(user!, hashedPassword: hashedPassword);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
         return new PublicSetPasswordResult(true);
     }
 }

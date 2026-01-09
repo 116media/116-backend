@@ -1,5 +1,4 @@
 using _116.Identity.Domain.Entities;
-
 using Microsoft.Extensions.Logging;
 
 namespace _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
@@ -23,8 +22,11 @@ public class SuperAdminSeedingStrategy(
         logger.LogInformation("Executing Super Admin seeding strategy...");
         // Step 1: Create or get the system-wide permission
         PermissionEntity systemPermission = await CreateOrGetSystemPermissionAsync();
-        logger.LogInformation("System permission ready: {Resource}.{Action}",
-            systemPermission.Resource, systemPermission.Action);
+        logger.LogInformation(
+            "System permission ready: {Resource}.{Action}",
+            systemPermission.Resource,
+            systemPermission.Action
+        );
         // Step 2: Create or get the Super Admin role
         RoleEntity superAdminRole = await CreateOrGetSuperAdminRoleAsync();
         logger.LogInformation("Super Admin role ready: {RoleName}", superAdminRole.Name);
@@ -96,8 +98,10 @@ public class SuperAdminSeedingStrategy(
         bool exists = await repositoryManager.RolePermissionExistsAsync(roleId: roleId, permissionId: permissionId);
         if (!exists)
         {
-            RolePermissionEntity association =
-                SuperAdminEntityFactory.CreateRolePermissionAssociation(roleId: roleId, permissionId: permissionId);
+            RolePermissionEntity association = SuperAdminEntityFactory.CreateRolePermissionAssociation(
+                roleId: roleId,
+                permissionId: permissionId
+            );
             repositoryManager.AddRolePermission(rolePermission: association);
             logger.LogDebug("Created role-permission association");
         }
@@ -115,8 +119,10 @@ public class SuperAdminSeedingStrategy(
         bool exists = await repositoryManager.UserRoleExistsAsync(userId: userId, roleId: roleId);
         if (!exists)
         {
-            UserRoleEntity association =
-                SuperAdminEntityFactory.CreateUserRoleAssociation(userId: userId, roleId: roleId);
+            UserRoleEntity association = SuperAdminEntityFactory.CreateUserRoleAssociation(
+                userId: userId,
+                roleId: roleId
+            );
             repositoryManager.AddUserRole(userRole: association);
             logger.LogDebug("Created user-role association");
         }

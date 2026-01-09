@@ -11,10 +11,7 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
 /// This command invalidates the specific session associated with the refresh token.
 /// User ID is extracted from JWT token at the endpoint level.
 /// </remarks>
-public record AdminSignOutCommand(
-    Guid UserId,
-    string RefreshToken
-) : ICommand<AdminSignOutResult>;
+public record AdminSignOutCommand(Guid UserId, string RefreshToken) : ICommand<AdminSignOutResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminSignOutCommand" /> containing sign-out status.
@@ -23,6 +20,4 @@ public record AdminSignOutCommand(
 /// <remarks>
 /// Simple result indicating successful logout operation.
 /// </remarks>
-public record AdminSignOutResult(
-    bool IsSuccess
-);
+public record AdminSignOutResult(bool IsSuccess);

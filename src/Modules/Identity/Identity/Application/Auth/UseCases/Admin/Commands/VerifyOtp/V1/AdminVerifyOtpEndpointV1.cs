@@ -2,9 +2,7 @@ using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -17,19 +15,13 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.VerifyOtp.V1;
 /// <param name="Email">The admin user's email address.</param>
 /// <param name="Code">The OTP code to verify.</param>
 /// <param name="Purpose">The purpose for which the OTP is being verified (EmailVerification or AccountRecovery).</param>
-public record AdminVerifyOtpRequest(
-    string Email,
-    string Code,
-    string Purpose
-);
+public record AdminVerifyOtpRequest(string Email, string Code, string Purpose);
 
 /// <summary>
 /// Response model for successful admin OTP verification.
 /// </summary>
 /// <param name="IsSuccess">Indicates whether the verification was successful.</param>
-public record AdminVerifyOtpResponse(
-    bool IsSuccess
-);
+public record AdminVerifyOtpResponse(bool IsSuccess);
 
 /// <summary>
 /// Defines the admin OTP verification endpoint for admin account verification (V1).
@@ -44,25 +36,27 @@ public class AdminVerifyOtpEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.SchemaName}");
-        group.MapPost(pattern: AuthRouteConstants.VerifyOtp, async (
-                AdminVerifyOtpRequest request,
-                IDispatcher dispatcher
-            ) =>
-            {
-                // Send the command to verify the OTP
-                var command =
-                    new AdminVerifyOtpCommand(Email: request.Email, Code: request.Code, Purpose: request.Purpose);
-                AdminVerifyOtpResult result = await dispatcher.Send(request: command);
-                // Adapt the result to the response type
-                var response = new AdminVerifyOtpResponse(
-                    IsSuccess: result.IsSuccess
-                );
-                return Results.Ok(value: response);
-            })
+
+        group
+            .MapPost(
+                pattern: AuthRouteConstants.VerifyOtp,
+                async (AdminVerifyOtpRequest request, IDispatcher dispatcher) =>
+                {
+                    var command = new AdminVerifyOtpCommand(
+                        Email: request.Email,
+                        Code: request.Code,
+                        Purpose: request.Purpose
+                    );
+                    AdminVerifyOtpResult result = await dispatcher.Send(request: command);
+
+                    var response = new AdminVerifyOtpResponse(IsSuccess: result.IsSuccess);
+
+                    return Results.Ok(value: response);
+                }
+            )
             .WithName(endpointName: AdminVerifyOtpMetaField.VerifyOtp.Name)
             .WithSummary(summary: AdminVerifyOtpMetaField.VerifyOtp.Summary)
             .WithDescription(description: AdminVerifyOtpMetaField.VerifyOtp.Description)

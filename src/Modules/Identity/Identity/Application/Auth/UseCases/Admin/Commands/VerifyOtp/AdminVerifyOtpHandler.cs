@@ -37,8 +37,10 @@ public class AdminVerifyOtpHandler(
         // Normalize email and purpose using value objects
         var email = new Email(value: command.Email);
         var purpose = new OtpPurpose(value: command.Purpose);
-        UserEntity? user =
-            await authRepository.GetUserWithRolesByEmailOrThrow(email: email, cancellationToken: cancellationToken);
+        UserEntity? user = await authRepository.GetUserWithRolesByEmailOrThrow(
+            email: email,
+            cancellationToken: cancellationToken
+        );
         // Validate admin account status
         authRepository.IsUserAdmin(user!);
         authRepository.IsUserAccountActive(user!);
@@ -59,8 +61,6 @@ public class AdminVerifyOtpHandler(
             cancellationToken: cancellationToken
         );
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-        return new AdminVerifyOtpResult(
-            true
-        );
+        return new AdminVerifyOtpResult(true);
     }
 }

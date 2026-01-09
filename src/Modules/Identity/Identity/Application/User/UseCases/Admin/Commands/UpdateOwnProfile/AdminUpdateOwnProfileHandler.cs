@@ -2,6 +2,7 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile.Contracts;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile;
@@ -12,10 +13,8 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfil
 /// </summary>
 /// <param name="authFactory">Factory for handling admin user profile update logic.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
-public class AdminUpdateOwnProfileHandler(
-    IAdminUpdateProfileAuthFactory authFactory,
-    IFileRepository fileRepository
-) : ICommandHandler<AdminUpdateOwnProfileCommand, AdminUpdateOwnProfileResult>
+public class AdminUpdateOwnProfileHandler(IAdminUpdateProfileAuthFactory authFactory, IFileRepository fileRepository)
+    : ICommandHandler<AdminUpdateOwnProfileCommand, AdminUpdateOwnProfileResult>
 {
     /// <summary>
     /// Handles the profile update command by validating uniqueness and updating admin user information.
@@ -41,9 +40,10 @@ public class AdminUpdateOwnProfileHandler(
             cancellationToken: cancellationToken
         );
 
-        FileEntity? avatarFile =
-            await fileRepository.GetAvatarFileAsync(avatarFileId: authData.User.AvatarFileId,
-                cancellationToken: cancellationToken);
+        FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(
+            avatarFileId: authData.User.AvatarFileId,
+            cancellationToken: cancellationToken
+        );
 
         var avatarDto = avatarFile?.ToFileDto();
         var userDto = authData.User.ToUserResponseDto(

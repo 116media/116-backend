@@ -11,9 +11,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignOutFromAll
 /// Commonly used after password changes or when user suspects account compromise.
 /// User ID is extracted from JWT token at the endpoint level.
 /// </remarks>
-public record PublicSignOutFromAllDevicesCommand(
-    Guid UserId
-) : ICommand<PublicSignOutFromAllDevicesResult>;
+public record PublicSignOutFromAllDevicesCommand(Guid UserId) : ICommand<PublicSignOutFromAllDevicesResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicSignOutFromAllDevicesCommand" /> containing sign-out status.

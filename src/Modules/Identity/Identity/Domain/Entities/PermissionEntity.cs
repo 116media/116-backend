@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Shared.Errors;
 using _116.Shared.Application.Exceptions;
@@ -55,13 +54,20 @@ public class PermissionEntity : Aggregate<Guid>
             var (r, _, _) when string.IsNullOrWhiteSpace(value: r) => UserErrors.PermissionResourceRequired(),
             var (_, a, _) when string.IsNullOrWhiteSpace(value: a) => UserErrors.PermissionActionRequired(),
             var (_, _, d) when string.IsNullOrWhiteSpace(value: d) => UserErrors.PermissionDescriptionRequired(),
-            _ => null
+            _ => null,
         };
+
         if (error is not null)
         {
             throw error;
         }
 
-        return new PermissionEntity { Id = id, Resource = resource, Action = action, Description = description };
+        return new PermissionEntity
+        {
+            Id = id,
+            Resource = resource,
+            Action = action,
+            Description = description,
+        };
     }
 }

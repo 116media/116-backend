@@ -1,6 +1,5 @@
 using Asp.Versioning;
 using Asp.Versioning.Builder;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 
@@ -28,9 +27,7 @@ public static class ApiVersioningExtensions
             .ReportApiVersions()
             .Build();
 
-        _rootVersionedGroup = app
-            .MapGroup("api/v{version:apiVersion}")
-            .WithApiVersionSet(versionSet);
+        _rootVersionedGroup = app.MapGroup("api/v{version:apiVersion}").WithApiVersionSet(versionSet);
     }
 
     /// <summary>
@@ -38,7 +35,8 @@ public static class ApiVersioningExtensions
     /// Throws if versioning has not been initialized.
     /// </summary>
     private static RouteGroupBuilder RootVersionedGroup(this IEndpointRouteBuilder app) =>
-        _rootVersionedGroup ?? throw new InvalidOperationException(
+        _rootVersionedGroup
+        ?? throw new InvalidOperationException(
             "API versioning has not been initialized. Call app.UseApiVersioning() in Program.cs."
         );
 
@@ -56,12 +54,8 @@ public static class ApiVersioningExtensions
         bool isDeprecated = false
     )
     {
-        RouteGroupBuilder versionGroup = app.RootVersionedGroup()
-            .MapGroup(string.Empty)
-            .HasApiVersion(version);
+        RouteGroupBuilder versionGroup = app.RootVersionedGroup().MapGroup(string.Empty).HasApiVersion(version);
 
-        return isDeprecated
-            ? versionGroup.HasDeprecatedApiVersion(version)
-            : versionGroup;
+        return isDeprecated ? versionGroup.HasDeprecatedApiVersion(version) : versionGroup;
     }
 }

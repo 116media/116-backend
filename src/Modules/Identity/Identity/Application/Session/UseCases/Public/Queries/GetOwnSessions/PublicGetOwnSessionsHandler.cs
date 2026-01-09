@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
@@ -32,10 +31,7 @@ public class PublicGetOwnSessionsHandler(ISessionRepository sessionRepository)
             cancellationToken: cancellationToken
         );
 
-        ReadOnlyCollection<SessionDto> sessionDtos = sessions
-            .Select(s => s.ToSessionDto())
-            .ToList()
-            .AsReadOnly();
+        ReadOnlyCollection<SessionDto> sessionDtos = sessions.Select(s => s.ToSessionDto()).ToList().AsReadOnly();
 
         return new PublicGetOwnSessionsResult(Sessions: sessionDtos);
     }

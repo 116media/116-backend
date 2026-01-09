@@ -3,9 +3,7 @@ using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -17,10 +15,7 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.V1;
 /// </summary>
 /// <param name="Email">The admin's email address.</param>
 /// <param name="Password">The admin's password.</param>
-public record AdminLoginRequest(
-    string Email,
-    string Password
-);
+public record AdminLoginRequest(string Email, string Password);
 
 /// <summary>
 /// Response model for successful admin authentication.
@@ -54,26 +49,30 @@ public class AdminLoginEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{AuthRouteConstants.Endpoint}")
             .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.SchemaName}");
-        group.MapPost(pattern: AuthRouteConstants.Login, async (AdminLoginRequest request, IDispatcher dispatcher) =>
-            {
-                // Send the command to log in the admin
-                var command = new AdminLoginCommand(Email: request.Email, Password: request.Password);
-                AdminLoginResult result = await dispatcher.Send(request: command);
-                // Adapt the result to the response type
-                var response = new AdminLoginResponse(
-                    User: result.AuthenticationResult.User,
-                    AccessToken: result.AuthenticationResult.AccessToken,
-                    AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
-                    RefreshToken: result.AuthenticationResult.RefreshToken,
-                    RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt,
-                    TokenType: result.AuthenticationResult.TokenType
-                );
-                return Results.Ok(value: response);
-            })
+
+        group
+            .MapPost(
+                pattern: AuthRouteConstants.Login,
+                async (AdminLoginRequest request, IDispatcher dispatcher) =>
+                {
+                    var command = new AdminLoginCommand(Email: request.Email, Password: request.Password);
+                    AdminLoginResult result = await dispatcher.Send(request: command);
+
+                    var response = new AdminLoginResponse(
+                        User: result.AuthenticationResult.User,
+                        AccessToken: result.AuthenticationResult.AccessToken,
+                        AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
+                        RefreshToken: result.AuthenticationResult.RefreshToken,
+                        RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt,
+                        TokenType: result.AuthenticationResult.TokenType
+                    );
+
+                    return Results.Ok(value: response);
+                }
+            )
             .WithName(endpointName: AdminLoginMetaField.AdminLogin.Name)
             .WithSummary(summary: AdminLoginMetaField.AdminLogin.Summary)
             .WithDescription(description: AdminLoginMetaField.AdminLogin.Description)

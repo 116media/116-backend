@@ -1,5 +1,5 @@
 using System.Text;
-
+using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Application.Auth.Exceptions.Handlers;
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Auth.Services;
@@ -45,6 +45,7 @@ using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar.Contr
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
 using _116.Identity.Domain.Constants;
+using _116.Identity.Infrastructure.Adapters.Wangkanai.Detection;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
@@ -54,7 +55,6 @@ using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Infrastructure;
 using _116.Shared.Infrastructure.Seed;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -77,7 +77,7 @@ public static class IdentityModule
             ModuleName = IdentityConstants.ModuleName,
             SchemaName = IdentityConstants.SchemaName,
             EnableMigrations = true,
-            EnableSeeding = true
+            EnableSeeding = true,
         };
     }
 
@@ -91,7 +91,7 @@ public static class IdentityModule
     /// and authorization policies for user management.
     /// </remarks>
     /// <example>
-    ///     <code>
+    /// <code>
     /// builder.Services.AddIdentityModule(builder.Configuration);
     /// </code>
     /// </example>
@@ -101,7 +101,12 @@ public static class IdentityModule
         UserMapper.Configure();
         SessionMapper.Configure();
 
+        services.AddHttpContextAccessor();
+        services.AddDetection();
         services.AddScoped<IIdentityUnitOfWork, IdentityUnitOfWork>();
+
+        // Register adapters
+        services.AddScoped<IClientOriginDetectionAdapter, WangkanaiClientOriginDetectionAdapter>();
 
         // Register user management services
         services.AddScoped<IJwtService, JwtService>();
@@ -113,7 +118,6 @@ public static class IdentityModule
         services.AddScoped<IOtpRepository, OtpRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<ISessionMetadataService, SessionMetadataService>();
-        services.AddScoped<IDevicePlatformClassifier, DevicePlatformClassifier>();
         services.AddScoped<ISessionExportService, SessionExportService>();
 
         // Register authentication factories
@@ -142,23 +146,25 @@ public static class IdentityModule
         services.AddScoped<IDataSeeder, SuperAdminSeeder>();
         services.AddScoped<IDataSeeder, VisitorRoleSeeder>();
 
-        var (secret, issuer, audience, _) = AppEnvironment.Jwt();
-        services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
-        {
-            options.TokenValidationParameters = new TokenValidationParameters
+        var (secret, issuer, audience, _, _) = AppEnvironment.Jwt();
+        services
+            .AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
             {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = issuer,
-                ValidAudience = audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!)),
-                ClockSkew = TimeSpan.Zero
-            };
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = issuer,
+                    ValidAudience = audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!)),
+                    ClockSkew = TimeSpan.Zero,
+                };
 
-            options.ConfigureJwtBearerEvents();
-        });
+                options.ConfigureJwtBearerEvents();
+            });
 
         services.AddIdentityModuleAuthorization();
 

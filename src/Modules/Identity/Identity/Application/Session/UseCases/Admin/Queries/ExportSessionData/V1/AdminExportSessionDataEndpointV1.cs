@@ -6,9 +6,7 @@ using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
-
 using Carter;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -34,40 +32,42 @@ public class AdminExportSessionDataEndpointV1 : ICarterModule
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app
-            .MapApiVersionGroup(1)
+        RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{SessionRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.SchemaName}");
+            .WithTags($"{IdentityConstants.Admin}::{SessionRouteConstants.Endpoint}");
 
-        group.MapGet(pattern: SessionRouteConstants.Export, async (
-                IDispatcher dispatcher,
-                ISessionExportService exportService,
-                string? status = null,
-                DateTime? fromDate = null,
-                DateTime? toDate = null,
-                string? format = null,
-                string? columns = null
-            ) =>
-            {
-                var query = new AdminExportSessionDataQuery(
-                    Status: status,
-                    FromDate: fromDate,
-                    ToDate: toDate,
-                    Format: format,
-                    Columns: columns
-                );
+        group
+            .MapGet(
+                pattern: SessionRouteConstants.Export,
+                async (
+                    IDispatcher dispatcher,
+                    ISessionExportService exportService,
+                    string? status = null,
+                    DateTime? fromDate = null,
+                    DateTime? toDate = null,
+                    string? format = null,
+                    string? columns = null
+                ) =>
+                {
+                    var query = new AdminExportSessionDataQuery(
+                        Status: status,
+                        FromDate: fromDate,
+                        ToDate: toDate,
+                        Format: format,
+                        Columns: columns
+                    );
 
-                AdminExportSessionDataResult result = await dispatcher.Send(request: query);
+                    AdminExportSessionDataResult result = await dispatcher.Send(request: query);
 
-                return string.IsNullOrWhiteSpace(value: format)
-                    ? Results.Ok(new AdminExportSessionDataResponse(SessionData: result.SessionData))
-                    : ExportFile(exportService: exportService, result: result, format: format, columns: columns);
-            })
+                    return string.IsNullOrWhiteSpace(value: format)
+                        ? Results.Ok(new AdminExportSessionDataResponse(SessionData: result.SessionData))
+                        : ExportFile(exportService: exportService, result: result, format: format, columns: columns);
+                }
+            )
             .WithName(endpointName: AdminExportSessionDataMetaField.AdminExportSessionData.Name)
             .WithSummary(summary: AdminExportSessionDataMetaField.AdminExportSessionData.Summary)
             .WithDescription(description: AdminExportSessionDataMetaField.AdminExportSessionData.Description)
             .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
-            .RequireAuthorization(AccountStatusPolicies.RequireLoggedInUser)
             .ProducesValidationProblem()
             .Produces<AdminExportSessionDataResponse>()
             .Produces(statusCode: StatusCodes.Status200OK, contentType: SessionConstants.Export.CsvContentType)
@@ -94,8 +94,8 @@ public class AdminExportSessionDataEndpointV1 : ICarterModule
     {
         SessionExportFormat exportFormat = new ExportFormat(value: format).Value;
 
-        List<string>? columnList = columns?
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        List<string>? columnList = columns
+            ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .ToList();
 
         byte[] bytes = exportService.Export(sessions: result.SessionData, format: exportFormat, columns: columnList);

@@ -25,7 +25,7 @@ public class AdminUpdateAvatarAuthFactory(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user = await authRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
+        UserEntity? user = await authRepository.GetUserWithRolesPermissionsAndSessionsByIdOrThrow(
             userId: userId,
             cancellationToken: cancellationToken
         );
@@ -35,11 +35,7 @@ public class AdminUpdateAvatarAuthFactory(
 
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user!.UserRoles);
 
-        return new AdminUpdateAvatarAuthData(
-            User: user,
-            Roles: roles,
-            Permissions: permissions
-        );
+        return new AdminUpdateAvatarAuthData(User: user, Roles: roles, Permissions: permissions);
     }
 
     /// <summary>
@@ -52,15 +48,10 @@ public class AdminUpdateAvatarAuthFactory(
     )
     {
         user.UpdateAvatar(avatarFileId: avatarFileId, avatarSource: Domain.Enums.EnumAvatarSource.Manual);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user.UserRoles);
 
-        return new AdminUpdateAvatarAuthData(
-            User: user,
-            Roles: roles,
-            Permissions: permissions
-        );
+        return new AdminUpdateAvatarAuthData(User: user, Roles: roles, Permissions: permissions);
     }
 }

@@ -43,9 +43,7 @@ public abstract class Specification<T> : ISpecification<T>
             throw new ArgumentException("At least one specification is required.");
         }
 
-        return specifications.Aggregate(
-            (current, next) => new AndSpecification<T>(current, next)
-        );
+        return specifications.Aggregate((current, next) => new AndSpecification<T>(current, next));
     }
 
     /// <summary>
@@ -58,8 +56,6 @@ public abstract class Specification<T> : ISpecification<T>
             throw new ArgumentException("At least one specification is required.");
         }
 
-        return specifications.Aggregate(
-            (current, next) => new OrSpecification<T>(current, next)
-        );
+        return specifications.Aggregate((current, next) => new OrSpecification<T>(current, next));
     }
 }

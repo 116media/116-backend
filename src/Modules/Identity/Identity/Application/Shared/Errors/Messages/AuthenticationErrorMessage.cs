@@ -48,4 +48,12 @@ public static class AuthenticationErrorMessage
     {
         return "Invalid or expired refresh token. Please log in again";
     }
+
+    /// <summary>
+    /// Error message indicating that the device identifier is missing from the request.
+    /// </summary>
+    public static string DeviceIdRequired()
+    {
+        return "Device ID is required. Please provide X-Device-Id header";
+    }
 }

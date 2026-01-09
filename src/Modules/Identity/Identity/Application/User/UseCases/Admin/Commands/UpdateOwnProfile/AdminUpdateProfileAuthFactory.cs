@@ -31,7 +31,7 @@ public class AdminUpdateProfileAuthFactory(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user = await authRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
+        UserEntity? user = await authRepository.GetUserWithRolesPermissionsAndSessionsByIdOrThrow(
             userId: userId,
             cancellationToken: cancellationToken
         );
@@ -69,11 +69,7 @@ public class AdminUpdateProfileAuthFactory(
 
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user!.UserRoles);
 
-        return new AdminUpdateProfileAuthData(
-            User: user,
-            Roles: roles,
-            Permissions: permissions
-        );
+        return new AdminUpdateProfileAuthData(User: user, Roles: roles, Permissions: permissions);
     }
 
     private async Task EnsureUsernameUnique(string username, CancellationToken cancellationToken)
@@ -92,9 +88,11 @@ public class AdminUpdateProfileAuthFactory(
     )
     {
         string fullPhone = $"{countryDialCode}{partialPhoneNumber}";
-        UserEntity? existing =
-            await authRepository.GetUserByPhoneNumberAsync(phoneNumber: fullPhone,
-                cancellationToken: cancellationToken);
+        UserEntity? existing = await authRepository.GetUserByPhoneNumberAsync(
+            phoneNumber: fullPhone,
+            cancellationToken: cancellationToken
+        );
+
         if (existing is not null && existing.Id != userId)
         {
             throw UserErrors.PhoneNumberAlreadyExists(phoneNumber: fullPhone);
