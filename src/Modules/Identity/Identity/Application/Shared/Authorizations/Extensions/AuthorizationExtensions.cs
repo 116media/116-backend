@@ -3,6 +3,8 @@ using _116.Identity.Application.Shared.Authorizations.Configuration;
 using _116.Identity.Application.Shared.Authorizations.Handlers;
 using _116.Identity.Application.Shared.Authorizations.Requirements;
 using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Exceptions;
+using _116.Identity.Application.Shared.Exceptions.Handlers;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -131,9 +133,10 @@ public static class AuthorizationExtensions
             {
                 // Prevent default challenge response
                 context.HandleResponse();
+
                 // Create an AuthenticationException and use the existing handler
-                var authHandler = new AuthenticationExceptionHandler();
-                var authException = new AuthenticationException(AuthenticationErrorMessage.JwtTokenRequired());
+                var authHandler = new AccessTokenExpiryExceptionHandler();
+                var authException = new AccessTokenExpiryException(AuthenticationErrorMessage.JwtTokenRequired());
                 ProblemDetails problemDetails = authHandler.CreateProblemDetails(
                     exception: authException,
                     context: context.HttpContext
