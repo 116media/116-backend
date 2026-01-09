@@ -1,4 +1,5 @@
 using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Exceptions;
 using _116.Shared.Application.Exceptions;
 
 namespace _116.Identity.Application.Shared.Errors;
@@ -12,9 +13,9 @@ public static class SessionErrors
     /// <summary>
     /// Throws when a refresh token is invalid or expired.
     /// </summary>
-    public static AuthorizationException InvalidRefreshToken()
+    public static RefreshTokenExpiryException InvalidRefreshToken()
     {
-        return new AuthorizationException(AuthenticationErrorMessage.InvalidRefreshToken());
+        return new RefreshTokenExpiryException(AuthenticationErrorMessage.InvalidRefreshToken());
     }
 
     /// <summary>
