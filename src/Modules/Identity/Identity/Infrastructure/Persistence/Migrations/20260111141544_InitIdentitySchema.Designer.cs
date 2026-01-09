@@ -12,8 +12,8 @@ using _116.Identity.Infrastructure.Persistence;
 namespace _116.Identity.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20260108150722_AddDeviceIdColumnToSessions")]
-    partial class AddDeviceIdColumnToSessions
+    [Migration("20260111141544_InitIdentitySchema")]
+    partial class InitIdentitySchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
