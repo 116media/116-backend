@@ -33,7 +33,7 @@ public class AdminForceLogoutUserEndpointV1 : ICarterModule
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Admin}/{SessionRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Admin}::/{SessionRouteConstants.Endpoint}");
+            .WithTags($"{IdentityConstants.Admin}::{SessionRouteConstants.Endpoint}");
 
         group
             .MapPost(
