@@ -52,7 +52,7 @@ public class SessionConfiguration : IEntityTypeConfiguration<SessionEntity>
         builder.HasIndex(s => s.IsRevoked);
 
         // Unique constraint: One active session per device per user
-        builder.HasIndex(s => new { s.UserId, s.DeviceId }).IsUnique().HasFilter("[is_revoked] = false");
+        builder.HasIndex(s => new { s.UserId, s.DeviceId }).IsUnique().HasFilter("is_revoked = false");
 
         // Relationships configured in UserConfiguration
     }
