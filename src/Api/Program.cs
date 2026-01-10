@@ -40,6 +40,8 @@ builder
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddRateLimiting();
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -66,6 +68,7 @@ app.UseSwaggerUI();
 app.UseSerilogRequestLogging();
 app.UseAppExceptionHandler();
 app.UseCors();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 

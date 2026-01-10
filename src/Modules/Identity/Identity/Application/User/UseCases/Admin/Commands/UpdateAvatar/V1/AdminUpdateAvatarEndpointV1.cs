@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
@@ -59,12 +60,14 @@ public class AdminUpdateAvatarEndpointV1 : ICarterModule
             .WithSummary(summary: AdminUpdateAvatarMetaField.UpdateAvatar.Summary)
             .WithDescription(description: AdminUpdateAvatarMetaField.UpdateAvatar.Description)
             .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .RequireRateLimiting(policyName: RateLimitPolicies.FileUpload)
             .DisableAntiforgery()
             .ProducesValidationProblem()
             .Produces<AdminUpdateAvatarResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
-            .ProducesProblem(statusCode: StatusCodes.Status404NotFound);
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }

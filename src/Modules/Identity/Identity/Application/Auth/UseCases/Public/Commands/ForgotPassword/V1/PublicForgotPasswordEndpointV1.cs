@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -54,8 +55,10 @@ public class PublicForgotPasswordEndpointV1 : ICarterModule
             .WithSummary(summary: PublicForgotPasswordMetaField.ForgotPassword.Summary)
             .WithDescription(description: PublicForgotPasswordMetaField.ForgotPassword.Description)
             .AllowAnonymous()
+            .RequireRateLimiting(policyName: RateLimitPolicies.PasswordManagement)
             .ProducesValidationProblem()
             .Produces<PublicForgotPasswordResponse>()
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest);
     }
 }

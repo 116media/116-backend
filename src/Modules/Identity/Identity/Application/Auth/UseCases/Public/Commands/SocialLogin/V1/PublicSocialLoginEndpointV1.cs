@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
@@ -83,9 +84,11 @@ public class PublicSocialLoginEndpointV1 : ICarterModule
             .WithSummary(summary: PublicSocialLoginMetaField.SocialLogin.Summary)
             .WithDescription(description: PublicSocialLoginMetaField.SocialLogin.Description)
             .AllowAnonymous()
+            .RequireRateLimiting(policyName: RateLimitPolicies.Authentication)
             .ProducesValidationProblem()
             .Produces<PublicSocialLoginResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
-            .ProducesProblem(statusCode: StatusCodes.Status409Conflict);
+            .ProducesProblem(statusCode: StatusCodes.Status409Conflict)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }

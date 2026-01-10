@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Authorizations.Policies;
@@ -68,13 +69,15 @@ public class AdminExportSessionDataEndpointV1 : ICarterModule
             .WithSummary(summary: AdminExportSessionDataMetaField.AdminExportSessionData.Summary)
             .WithDescription(description: AdminExportSessionDataMetaField.AdminExportSessionData.Description)
             .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .RequireRateLimiting(policyName: RateLimitPolicies.DataExport)
             .ProducesValidationProblem()
             .Produces<AdminExportSessionDataResponse>()
-            .Produces(statusCode: StatusCodes.Status200OK, contentType: SessionConstants.Export.CsvContentType)
-            .Produces(statusCode: StatusCodes.Status200OK, contentType: SessionConstants.Export.XlsxContentType)
+            .Produces(statusCode: StatusCodes.Status200OK, contentType: SessionExportConstants.CsvContentType)
+            .Produces(statusCode: StatusCodes.Status200OK, contentType: SessionExportConstants.XlsxContentType)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
-            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 
     /// <summary>

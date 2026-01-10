@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
@@ -77,11 +78,13 @@ public class AdminLoginEndpointV1 : ICarterModule
             .WithSummary(summary: AdminLoginMetaField.AdminLogin.Summary)
             .WithDescription(description: AdminLoginMetaField.AdminLogin.Description)
             .AllowAnonymous()
+            .RequireRateLimiting(policyName: RateLimitPolicies.Authentication)
             .ProducesValidationProblem()
             .Produces<AdminLoginResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests)
             .Produces(statusCode: StatusCodes.Status404NotFound);
     }
 }

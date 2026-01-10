@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -61,12 +62,14 @@ public class AdminVerifyOtpEndpointV1 : ICarterModule
             .WithSummary(summary: AdminVerifyOtpMetaField.VerifyOtp.Summary)
             .WithDescription(description: AdminVerifyOtpMetaField.VerifyOtp.Description)
             .AllowAnonymous()
+            .RequireRateLimiting(policyName: RateLimitPolicies.Otp)
             .ProducesValidationProblem()
             .Produces<AdminVerifyOtpResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
             .ProducesProblem(statusCode: StatusCodes.Status409Conflict)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
-            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }

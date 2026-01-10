@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.Repositories;
@@ -53,8 +54,10 @@ public class AdminSignOutFromAllDevicesEndpointV1 : ICarterModule
             .WithSummary(summary: AdminSignOutFromAllDevicesMetaField.AdminSignOutFromAllDevices.Summary)
             .WithDescription(description: AdminSignOutFromAllDevicesMetaField.AdminSignOutFromAllDevices.Description)
             .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .Produces<AdminSignOutFromAllDevicesResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
-            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }

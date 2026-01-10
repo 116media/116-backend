@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.Repositories;
@@ -63,8 +64,10 @@ public class PublicSignOutEndpointV1 : ICarterModule
             .WithSummary(summary: PublicSignOutMetaField.SignOut.Summary)
             .WithDescription(description: PublicSignOutMetaField.SignOut.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .Produces<PublicSignOutResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
-            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }

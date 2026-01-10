@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Domain.Constants;
@@ -68,8 +69,10 @@ public class AdminGetSessionMetricsEndpointV1 : ICarterModule
             .WithSummary(summary: AdminGetSessionMetricsMetaField.AdminGetSessionMetrics.Summary)
             .WithDescription(description: AdminGetSessionMetricsMetaField.AdminGetSessionMetrics.Description)
             .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .RequireRateLimiting(policyName: RateLimitPolicies.AdminMetrics)
             .Produces<AdminGetSessionMetricsResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
-            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);
+            .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }

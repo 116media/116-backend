@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -63,11 +64,13 @@ public class PublicResetPasswordEndpointV1 : ICarterModule
             .WithSummary(summary: PublicResetPasswordMetaField.ResetPassword.Summary)
             .WithDescription(description: PublicResetPasswordMetaField.ResetPassword.Description)
             .AllowAnonymous()
+            .RequireRateLimiting(policyName: RateLimitPolicies.PasswordManagement)
             .ProducesValidationProblem()
             .Produces<PublicResetPasswordResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden);
     }
 }

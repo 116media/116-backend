@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
@@ -87,12 +88,14 @@ public class PublicUpdateOwnProfileEndpointV1 : ICarterModule
             .WithSummary(summary: PublicUpdateOwnProfileMetaField.UpdateOwnProfile.Summary)
             .WithDescription(description: PublicUpdateOwnProfileMetaField.UpdateOwnProfile.Description)
             .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .RequireRateLimiting(policyName: RateLimitPolicies.UserProfile)
             .ProducesValidationProblem()
             .Produces<PublicUpdateOwnProfileResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
-            .ProducesProblem(statusCode: StatusCodes.Status409Conflict);
+            .ProducesProblem(statusCode: StatusCodes.Status409Conflict)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }

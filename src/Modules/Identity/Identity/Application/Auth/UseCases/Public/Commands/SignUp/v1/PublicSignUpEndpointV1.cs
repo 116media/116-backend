@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.RateLimit;
 using _116.BuildingBlocks.Utils;
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Shared.DTOs;
@@ -15,9 +16,9 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.v1;
 /// <summary>
 /// Request model for public user signup.
 /// </summary>
-/// <param name="Email">The user’s email address for account verification.</param>
+/// <param name="Email">The user's email address for account verification.</param>
 /// <param name="UserName">The desired username (alphanumeric with spaces and hyphens allowed).</param>
-/// <param name="Password">The user’s password in plain text format (will be hashed).</param>
+/// <param name="Password">The user's password in plain text format (will be hashed).</param>
 public record PublicSignUpRequest(string Email, string UserName, string Password);
 
 /// <summary>
@@ -91,9 +92,11 @@ public class PublicSignUpEndpointV1 : ICarterModule
             .WithSummary(summary: PublicSignUpMetaField.PublicSignUp.Summary)
             .WithDescription(description: PublicSignUpMetaField.PublicSignUp.Description)
             .AllowAnonymous()
+            .RequireRateLimiting(policyName: RateLimitPolicies.Authentication)
             .ProducesValidationProblem()
             .Produces<PublicSignUpResponse>(statusCode: StatusCodes.Status201Created)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
-            .ProducesProblem(statusCode: StatusCodes.Status409Conflict);
+            .ProducesProblem(statusCode: StatusCodes.Status409Conflict)
+            .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }
