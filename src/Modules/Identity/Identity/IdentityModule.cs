@@ -175,6 +175,8 @@ public static class IdentityModule
         services.AddSingleton<IExceptionStrategy, OtpAttemptsLimitExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, OtpExpirationExceptionHandler>();
         services.AddSingleton<IExceptionStrategy, AccessDeniedExceptionHandler>();
+        services.AddSingleton<IExceptionStrategy, AccessTokenExpiryExceptionHandler>();
+        services.AddSingleton<IExceptionStrategy, RefreshTokenExpiryExceptionHandler>();
 
         return services;
     }

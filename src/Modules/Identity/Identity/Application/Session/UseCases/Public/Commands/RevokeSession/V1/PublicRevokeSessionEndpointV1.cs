@@ -34,7 +34,7 @@ public class PublicRevokeSessionEndpointV1 : ICarterModule
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)
             .MapGroup($"{IdentityConstants.Public}/{SessionRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Public}::{IdentityConstants.SchemaName}");
+            .WithTags($"{IdentityConstants.Public}::{SessionRouteConstants.Endpoint}");
 
         group
             .MapPost(

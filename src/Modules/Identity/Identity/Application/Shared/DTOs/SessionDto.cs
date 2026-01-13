@@ -1,5 +1,3 @@
-using _116.Identity.Domain.Enums;
-
 namespace _116.Identity.Application.Shared.DTOs;
 
 /// <summary>
@@ -19,10 +17,10 @@ public record SessionDto(
     Guid Id,
     string? IpAddress,
     string? UserAgent,
-    EnumBrowser Browser,
-    EnumDevice Device,
-    EnumPlatform Platform,
-    EnumClient Client,
+    string Browser,
+    string Device,
+    string Platform,
+    string Client,
     DateTime CreatedAt,
     DateTime ExpiresAt,
     bool IsActive

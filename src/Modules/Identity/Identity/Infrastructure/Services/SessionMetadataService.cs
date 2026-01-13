@@ -1,6 +1,7 @@
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.ValueObjects;
 using Microsoft.AspNetCore.Http;
 
 namespace _116.Identity.Infrastructure.Services;
@@ -46,18 +47,17 @@ public class SessionMetadataService(
     {
         string? clientAppHeader = httpContextAccessor.HttpContext?.Request.Headers["Client-App"].FirstOrDefault();
 
-        if (string.IsNullOrWhiteSpace(value: clientAppHeader))
+        bool hasValue = !string.IsNullOrWhiteSpace(value: clientAppHeader);
+        bool isValidClient =
+            Enum.TryParse(value: clientAppHeader, ignoreCase: true, result: out EnumClient parsed)
+            && Enum.IsDefined(value: parsed);
+
+        if (hasValue && isValidClient)
         {
-            return EnumClient.Unknown;
+            return parsed;
         }
 
-        return clientAppHeader.ToLower() switch
-        {
-            "mobile-app" => EnumClient.MobileApp,
-            "web-app" => EnumClient.WebApp,
-            "dashboard" => EnumClient.Dashboard,
-            _ => EnumClient.Unknown,
-        };
+        return EnumClient.Unknown;
     }
 
     /// <summary>

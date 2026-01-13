@@ -17,6 +17,10 @@ public static class SessionMapper
         TypeAdapterConfig<SessionEntity, SessionDto>
             .NewConfig()
             .Map(dest => dest.IsActive, src => !src.IsRevoked && src.ExpiresAt > DateTime.UtcNow)
+            .Map(dest => dest.Browser, src => src.Browser.ToString())
+            .Map(dest => dest.Device, src => src.Device.ToString())
+            .Map(dest => dest.Platform, src => src.Platform.ToString())
+            .Map(dest => dest.Client, src => src.Client.ToString())
             .Compile();
     }
 

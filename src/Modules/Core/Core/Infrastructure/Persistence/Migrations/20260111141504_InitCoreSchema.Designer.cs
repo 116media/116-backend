@@ -12,7 +12,7 @@ using _116.Core.Infrastructure.Persistence;
 namespace _116.Core.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(CoreDbContext))]
-    [Migration("20250830000225_InitCoreSchema")]
+    [Migration("20260111141504_InitCoreSchema")]
     partial class InitCoreSchema
     {
         /// <inheritdoc />

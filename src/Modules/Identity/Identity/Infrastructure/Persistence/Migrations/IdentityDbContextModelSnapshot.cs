@@ -343,7 +343,7 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId", "DeviceId")
                         .IsUnique()
                         .HasDatabaseName("ix_sessions_user_id_device_id")
-                        .HasFilter("[is_revoked] = false");
+                        .HasFilter("is_revoked = false");
 
                     b.ToTable("sessions", "identity");
                 });
