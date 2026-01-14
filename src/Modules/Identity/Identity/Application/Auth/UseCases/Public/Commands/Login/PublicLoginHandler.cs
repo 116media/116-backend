@@ -1,6 +1,7 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.Contracts;
+using _116.Identity.Application.Session.Factories;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Results;
 using _116.Shared.Application.Exceptions;
@@ -16,7 +17,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
 public class PublicLoginHandler(
     IPublicLoginAuthFactory authFactory,
-    IPublicLoginSessionFactory sessionFactory,
+    ISessionFactory sessionFactory,
     IFileRepository fileRepository
 ) : ICommandHandler<PublicLoginCommand, PublicLoginResult>
 {
@@ -41,7 +42,7 @@ public class PublicLoginHandler(
         );
 
         // Create authentication session with tokens
-        PublicLoginSessionData sessionData = await sessionFactory.CreateSessionAsync(
+        SessionResult sessionData = await sessionFactory.CreateSessionAsync(
             user: authData.User,
             userPermissions: authData.UserPermissions,
             cancellationToken: cancellationToken
