@@ -14,7 +14,8 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
 /// The file is uploaded to Cloudinary, and the previous avatar is automatically deleted.
 /// Only active accounts can update their avatar.
 /// </remarks>
-public record AdminUpdateAvatarCommand(Guid UserId, IFormFile AvatarFile) : ICommand<AdminUpdateAvatarResult>;
+public record AdminUpdateAvatarCommand(Guid UserId, Guid SessionId, IFormFile AvatarFile)
+    : ICommand<AdminUpdateAvatarResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminUpdateAvatarCommand" /> containing the updated admin user information.
