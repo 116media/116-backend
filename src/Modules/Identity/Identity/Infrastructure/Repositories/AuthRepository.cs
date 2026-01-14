@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Specifications;
 using _116.Identity.Application.Roles.Specifications;
 using _116.Identity.Application.Shared.Errors;
@@ -69,24 +70,6 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         return await context
             .Users.ApplySpecification(specification: specification)
             .Include(u => u.Sessions)
-            .FirstDefaultOrThrowAsync(keyValue: userId, cancellationToken: cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<UserEntity?> GetUserWithRolesPermissionsAndSessionsByIdOrThrow(
-        Guid userId,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var specification = new UserByIdSpecification(userId: userId);
-        return await context
-            .Users.ApplySpecification(specification: specification)
-            .Include(u => u.Sessions)
-            .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
-                    .ThenInclude(r => r.RolePermissions)
-                        .ThenInclude(rp => rp.Permission)
-            .AsSplitQuery()
             .FirstDefaultOrThrowAsync(keyValue: userId, cancellationToken: cancellationToken);
     }
 
@@ -195,15 +178,30 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     }
 
     /// <inheritdoc />
-    public bool IsUserLoggedIn(UserEntity user)
+    public async Task<bool> IsSessionValidAsync(Guid sessionId, CancellationToken cancellationToken = default)
     {
-        bool hasActiveSessions = user.Sessions.Any(s => s.IsActive());
-        if (!hasActiveSessions)
+        SessionEntity? session = await context
+            .Sessions.AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == sessionId, cancellationToken);
+
+        if (session is null || !session.IsActive())
         {
-            throw UserErrors.UserNotLoggedIn(user.Email!);
+            throw SessionErrors.InvalidRefreshToken();
         }
 
         return true;
+    }
+
+    /// <inheritdoc />
+    public Guid GetSessionIdFromClaims(ClaimsPrincipal user)
+    {
+        string? sessionIdClaim = user.FindFirst(type: JwtClaimsConstants.SessionId)?.Value;
+        if (string.IsNullOrEmpty(value: sessionIdClaim) || !Guid.TryParse(input: sessionIdClaim, out Guid sessionId))
+        {
+            throw UserErrors.InvalidUserAuthentication();
+        }
+
+        return sessionId;
     }
 
     /// <inheritdoc />
