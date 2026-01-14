@@ -51,10 +51,11 @@ public class AdminLoginSessionFactory(
         );
 
         // Generate refresh token
+        DateTimeOffset now = DateTimeOffset.UtcNow;
         var (_, _, _, _, refreshTokenExpirationMinutes) = AppEnvironment.Jwt();
         string refreshToken = refreshTokenService.GenerateRefreshToken();
         string refreshTokenHash = refreshTokenService.HashRefreshToken(refreshToken: refreshToken);
-        DateTime refreshTokenExpiresAt = DateTime.UtcNow.AddMinutes(int.Parse(refreshTokenExpirationMinutes!));
+        DateTime refreshTokenExpiresAt = now.AddMinutes(minutes: int.Parse(refreshTokenExpirationMinutes!)).UtcDateTime;
 
         // Extract metadata
         string? deviceId = sessionMetadataService.ExtractDeviceId();

@@ -7,9 +7,9 @@ namespace _116.BuildingBlocks.Constants;
 public static class JwtClaimsConstants
 {
     /// <summary>
-    /// JWT default expiration time (in hours).
+    /// JWT default expiration time (in minutes).
     /// </summary>
-    public const int DefaultExpiration = 24;
+    public const int DefaultExpiration = 60;
 
     /// <summary>
     /// Claim type for the authentication provider.

@@ -18,12 +18,4 @@ public interface IRefreshTokenService
     /// <param name="refreshToken">The plain refresh token to hash</param>
     /// <returns>The hashed refresh token string</returns>
     string HashRefreshToken(string refreshToken);
-
-    /// <summary>
-    /// Verifies a plain refresh token against a hashed token.
-    /// </summary>
-    /// <param name="refreshToken">The plain refresh token to verify</param>
-    /// <param name="hash">The hashed token to verify against</param>
-    /// <returns>True if the token matches the hash; otherwise, false</returns>
-    bool VerifyRefreshToken(string refreshToken, string hash);
 }
