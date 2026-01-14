@@ -38,18 +38,6 @@ public class PublicSignUpSessionFactory(
         CancellationToken cancellationToken
     )
     {
-        // Generate access token
-        JwtGenerationResult accessToken = jwtService.GenerateToken(
-            userId: user.Id,
-            user.Email!,
-            userName: user.UserName,
-            userRoles: user.UserRoles,
-            userPermissions: userPermissions,
-            isActive: user.IsActive,
-            isVerified: user.IsVerified,
-            authProvider: user.AuthProvider
-        );
-
         // Generate refresh token
         DateTimeOffset now = DateTimeOffset.UtcNow;
         var (_, _, _, _, refreshTokenExpirationMinutes) = AppEnvironment.Jwt();
@@ -71,21 +59,22 @@ public class PublicSignUpSessionFactory(
             cancellationToken: cancellationToken
         );
 
+        Guid sessionId;
         if (existingActiveSession != null)
         {
-            // Reuse existing session with token rotation
+            sessionId = existingActiveSession.Id;
             existingActiveSession.UpdateRefreshToken(refreshTokenHash, refreshTokenExpiresAt);
         }
         else
         {
-            // Create a new session
+            sessionId = Guid.NewGuid();
             string? ipAddress = sessionMetadataService.ExtractIpAddress();
             string? userAgent = sessionMetadataService.ExtractUserAgent();
             ClientOriginInfo clientOrigin = sessionMetadataService.GetClientOriginInfo();
             EnumClient clientApp = sessionMetadataService.ExtractClientApp();
 
             var session = SessionEntity.Create(
-                id: Guid.NewGuid(),
+                id: sessionId,
                 userId: user.Id,
                 deviceId: deviceId,
                 refreshTokenHash: refreshTokenHash,
@@ -102,6 +91,18 @@ public class PublicSignUpSessionFactory(
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        JwtGenerationResult accessToken = jwtService.GenerateToken(
+            userId: user.Id,
+            sessionId: sessionId,
+            email: user.Email!,
+            userName: user.UserName,
+            userRoles: user.UserRoles,
+            userPermissions: userPermissions,
+            isVerified: user.IsVerified,
+            isActive: user.IsActive,
+            authProvider: user.AuthProvider
+        );
 
         return new PublicSignUpSessionData(
             RefreshToken: refreshToken,
