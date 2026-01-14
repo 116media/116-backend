@@ -31,6 +31,7 @@ public interface IPublicUpdateProfileAuthFactory
     /// <returns>Update data containing user, roles, and permissions.</returns>
     Task<PublicUpdateProfileAuthData> UpdateProfileAsync(
         Guid userId,
+        Guid sessionId,
         string? email,
         string? userName,
         string? countryName,
