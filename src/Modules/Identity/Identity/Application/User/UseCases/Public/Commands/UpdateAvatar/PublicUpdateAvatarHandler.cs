@@ -27,6 +27,7 @@ public class PublicUpdateAvatarHandler(IPublicUpdateAvatarAuthFactory authFactor
     {
         PublicUpdateAvatarAuthData userData = await authFactory.GetUserForAvatarUpdateAsync(
             userId: command.UserId,
+            sessionId: command.SessionId,
             cancellationToken: cancellationToken
         );
 
