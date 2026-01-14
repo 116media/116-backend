@@ -14,7 +14,7 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword;
 /// The new password must be different from the old password.
 /// Admin users must be authenticated and active to change their password.
 /// </remarks>
-public record AdminChangePasswordCommand(Guid UserId, string OldPassword, string NewPassword)
+public record AdminChangePasswordCommand(Guid UserId, Guid SessionId, string OldPassword, string NewPassword)
     : ICommand<AdminChangePasswordResult>;
 
 /// <summary>
