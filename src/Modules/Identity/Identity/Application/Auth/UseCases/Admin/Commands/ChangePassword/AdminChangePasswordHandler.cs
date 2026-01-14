@@ -37,13 +37,13 @@ public class AdminChangePasswordHandler(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user = await authRepository.GetUserWithSessionsByIdOrThrow(
+        UserEntity? user = await authRepository.FindUserByIdOrThrow(
             userId: command.UserId,
             cancellationToken: cancellationToken
         );
 
         authRepository.IsUserAccountActive(user!);
-        authRepository.IsUserLoggedIn(user!);
+        await authRepository.IsSessionValidAsync(command.SessionId, cancellationToken);
 
         // Verify old password
         if (!passwordService.Verify(password: command.OldPassword, hash: user!.PasswordHash))
