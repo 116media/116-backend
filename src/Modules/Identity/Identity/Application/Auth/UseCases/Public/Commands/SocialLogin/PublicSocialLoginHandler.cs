@@ -1,6 +1,7 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
+using _116.Identity.Application.Session.Factories;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Results;
 using _116.Shared.Contracts.Application.CQRS;
@@ -15,7 +16,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
 public class PublicSocialLoginHandler(
     IPublicSocialLoginAuthFactory authFactory,
-    IPublicSocialLoginSessionFactory sessionFactory,
+    ISessionFactory sessionFactory,
     IFileRepository fileRepository
 ) : ICommandHandler<PublicSocialLoginCommand, PublicSocialLoginResult>
 {
@@ -40,7 +41,7 @@ public class PublicSocialLoginHandler(
         );
 
         // Create authentication session with tokens
-        PublicSocialLoginSessionData sessionData = await sessionFactory.CreateSessionAsync(
+        SessionResult sessionData = await sessionFactory.CreateSessionAsync(
             user: authData.User,
             userPermissions: authData.UserPermissions,
             cancellationToken: cancellationToken
