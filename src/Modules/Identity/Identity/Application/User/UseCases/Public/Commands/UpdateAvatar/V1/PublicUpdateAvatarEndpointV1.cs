@@ -48,8 +48,13 @@ public class PublicUpdateAvatarEndpointV1 : ICarterModule
                 ) =>
                 {
                     Guid userId = authRepository.GetUserIdFromClaims(user: user);
+                    Guid sessionId = authRepository.GetSessionIdFromClaims(user: user);
 
-                    var command = new PublicUpdateAvatarCommand(UserId: userId, AvatarFile: avatarFile);
+                    var command = new PublicUpdateAvatarCommand(
+                        UserId: userId,
+                        SessionId: sessionId,
+                        AvatarFile: avatarFile
+                    );
                     PublicUpdateAvatarResult result = await dispatcher.Send(request: command);
 
                     var response = new PublicUpdateAvatarResponse(User: result.User);
