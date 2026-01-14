@@ -71,25 +71,6 @@ public interface IAuthRepository : IRepository<UserEntity>
     Task<UserEntity?> GetUserWithSessionsByIdOrThrow(Guid userId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves a user with their sessions, roles, and permissions by unique identifier.
-    /// </summary>
-    /// <param name="userId">The unique identifier of the user.</param>
-    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>The user entity with sessions, roles, and permissions loaded.</returns>
-    /// <exception cref="NotFoundException">Thrown when no user is found with the specified ID.</exception>
-    /// <remarks>
-    /// This method loads the complete entity graph in a single optimized query:
-    /// - User sessions (all sessions for session validation)
-    /// - User roles with their permissions
-    /// Uses AsSplitQuery for optimal performance when loading multiple collections.
-    /// Use this method when you need to validate user login status AND check roles/permissions.
-    /// </remarks>
-    Task<UserEntity?> GetUserWithRolesPermissionsAndSessionsByIdOrThrow(
-        Guid userId,
-        CancellationToken cancellationToken = default
-    );
-
-    /// <summary>
     /// Retrieves a user with their associated roles and permissions by email address.
     /// </summary>
     /// <param name="email">The email address to search for.</param>
@@ -226,18 +207,33 @@ public interface IAuthRepository : IRepository<UserEntity>
     bool IsUserAccountVerified(UserEntity user);
 
     /// <summary>
-    /// Validates that a user is currently logged in.
+    /// Validates that the specified session is currently active.
     /// </summary>
-    /// <param name="user">The user entity to validate.</param>
-    /// <returns>True, if the user is logged in, otherwise throws an exception.</returns>
+    /// <param name="sessionId">The unique identifier of the session to validate.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>True, if the session is active, otherwise throws an exception.</returns>
     /// <exception cref="AuthorizationException">
-    /// Thrown when the user is not logged in (HTTP 403 Forbidden).
+    /// Thrown when the session is not active (HTTP 403 Forbidden).
     /// </exception>
     /// <remarks>
-    /// This method should be called to ensure the user's session is still valid,
-    /// and they haven't been logged out.
+    /// This method validates a specific session by ID rather than checking if the user has any active session.
+    /// Use this method with the session ID extracted from JWT claims for precise session validation.
     /// </remarks>
-    bool IsUserLoggedIn(UserEntity user);
+    Task<bool> IsSessionValidAsync(Guid sessionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Extracts the session ID from JWT claims and validates it exists.
+    /// </summary>
+    /// <param name="user">The claims principal from the authenticated user.</param>
+    /// <returns>The extracted session ID as a Guid.</returns>
+    /// <exception cref="AuthenticationException">
+    /// Thrown when session ID claim is missing or invalid.
+    /// </exception>
+    /// <remarks>
+    /// This method centralizes the logic for extracting session IDs from JWT tokens
+    /// and provides consistent error handling across all endpoints.
+    /// </remarks>
+    Guid GetSessionIdFromClaims(ClaimsPrincipal user);
 
     /// <summary>
     /// Validates that a user has administrative privileges (Admin or SuperAdmin role).
