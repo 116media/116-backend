@@ -35,4 +35,10 @@ public static class JwtClaimsConstants
     /// Claim type for user active status.
     /// </summary>
     public const string IsActive = "is_active";
+
+    /// <summary>
+    /// Claim type for the session identifier.
+    /// Uses an obfuscated name for security purposes.
+    /// </summary>
+    public const string SessionId = "ref";
 }
