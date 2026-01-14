@@ -54,9 +54,11 @@ public class PublicChangePasswordEndpointV1 : ICarterModule
                 ) =>
                 {
                     Guid userId = authRepository.GetUserIdFromClaims(user: user);
+                    Guid sessionId = authRepository.GetSessionIdFromClaims(user: user);
 
                     var command = new PublicChangePasswordCommand(
                         UserId: userId,
+                        SessionId: sessionId,
                         OldPassword: request.OldPassword,
                         NewPassword: request.NewPassword
                     );
