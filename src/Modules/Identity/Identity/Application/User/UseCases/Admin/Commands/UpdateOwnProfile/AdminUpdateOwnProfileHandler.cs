@@ -32,6 +32,7 @@ public class AdminUpdateOwnProfileHandler(IAdminUpdateProfileAuthFactory authFac
     {
         AdminUpdateProfileAuthData authData = await authFactory.UpdateProfileAsync(
             userId: command.UserId,
+            sessionId: command.SessionId,
             userName: command.UserName,
             countryName: command.CountryName,
             countryIsoCode: command.CountryIsoCode,
