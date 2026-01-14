@@ -27,6 +27,7 @@ public class AdminUpdateAvatarHandler(IAdminUpdateAvatarAuthFactory authFactory,
     {
         AdminUpdateAvatarAuthData userData = await authFactory.GetUserForAvatarUpdateAsync(
             userId: command.UserId,
+            sessionId: command.SessionId,
             cancellationToken: cancellationToken
         );
 
