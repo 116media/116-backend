@@ -22,17 +22,18 @@ public class PublicUpdateAvatarAuthFactory(
     /// </summary>
     public async Task<PublicUpdateAvatarAuthData> GetUserForAvatarUpdateAsync(
         Guid userId,
+        Guid sessionId,
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user = await authRepository.GetUserWithRolesPermissionsAndSessionsByIdOrThrow(
+        UserEntity? user = await authRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
             userId: userId,
             cancellationToken: cancellationToken
         );
 
         authRepository.IsUserAccountActive(user!);
         authRepository.IsUserAccountVerified(user!);
-        authRepository.IsUserLoggedIn(user!);
+        await authRepository.IsSessionValidAsync(sessionId, cancellationToken);
 
         var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user!.UserRoles);
 

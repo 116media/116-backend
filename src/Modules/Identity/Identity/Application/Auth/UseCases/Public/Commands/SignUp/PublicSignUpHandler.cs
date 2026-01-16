@@ -1,4 +1,5 @@
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contracts;
+using _116.Identity.Application.Session.Factories;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Results;
 using _116.Shared.Contracts.Application.CQRS;
@@ -10,7 +11,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 /// </summary>
 /// <param name="authFactory">Factory for handling user registration logic.</param>
 /// <param name="sessionFactory">Factory for creating authentication sessions.</param>
-public class PublicSignUpHandler(IPublicSignUpAuthFactory authFactory, IPublicSignUpSessionFactory sessionFactory)
+public class PublicSignUpHandler(IPublicSignUpAuthFactory authFactory, ISessionFactory sessionFactory)
     : ICommandHandler<PublicSignUpCommand, PublicSignUpResult>
 {
     /// <summary>
@@ -30,7 +31,7 @@ public class PublicSignUpHandler(IPublicSignUpAuthFactory authFactory, IPublicSi
         );
 
         // Create authentication session with tokens
-        PublicSignUpSessionData sessionData = await sessionFactory.CreateSessionAsync(
+        SessionResult sessionData = await sessionFactory.CreateSessionAsync(
             user: authData.User,
             userPermissions: authData.UserPermissions,
             cancellationToken: cancellationToken

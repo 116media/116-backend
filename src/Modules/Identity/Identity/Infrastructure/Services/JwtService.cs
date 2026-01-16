@@ -20,6 +20,7 @@ public class JwtService : IJwtService
     /// <inheritdoc />
     public JwtGenerationResult GenerateToken(
         Guid userId,
+        Guid sessionId,
         string email,
         string userName,
         ICollection<UserRoleEntity> userRoles,
@@ -48,6 +49,7 @@ public class JwtService : IJwtService
             new(type: JwtRegisteredClaimNames.Jti, $"{Guid.NewGuid()}"),
             new(type: JwtRegisteredClaimNames.Iat, $"{now.ToUnixTimeSeconds()}", valueType: ClaimValueTypes.Integer64),
             new(type: JwtClaimsConstants.AuthProvider, $"{authProvider}"),
+            new(type: JwtClaimsConstants.SessionId, $"{sessionId}"),
         };
 
         claims.AddRange(BuildAccountStatusClaims(isVerified: isVerified, isActive: isActive));

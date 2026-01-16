@@ -15,6 +15,7 @@ public interface IJwtService
     /// roles, permissions, and status information.
     /// </summary>
     /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="sessionId">The unique identifier of the session.</param>
     /// <param name="email">The user's email address.</param>
     /// <param name="userName">The user's unique username.</param>
     /// <param name="userRoles">Collection of roles assigned to the user for authorization.</param>
@@ -28,6 +29,7 @@ public interface IJwtService
     /// </remarks>
     JwtGenerationResult GenerateToken(
         Guid userId,
+        Guid sessionId,
         string email,
         string userName,
         ICollection<UserRoleEntity> userRoles,

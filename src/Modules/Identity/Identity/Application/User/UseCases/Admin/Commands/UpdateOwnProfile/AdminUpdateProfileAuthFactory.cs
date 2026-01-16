@@ -23,6 +23,7 @@ public class AdminUpdateProfileAuthFactory(
     /// </summary>
     public async Task<AdminUpdateProfileAuthData> UpdateProfileAsync(
         Guid userId,
+        Guid sessionId,
         string? userName,
         string? countryName,
         string? countryIsoCode,
@@ -31,13 +32,13 @@ public class AdminUpdateProfileAuthFactory(
         CancellationToken cancellationToken
     )
     {
-        UserEntity? user = await authRepository.GetUserWithRolesPermissionsAndSessionsByIdOrThrow(
+        UserEntity? user = await authRepository.GetUserWithRolesAndPermissionsByIdOrThrow(
             userId: userId,
             cancellationToken: cancellationToken
         );
 
         authRepository.IsUserAccountActive(user!);
-        authRepository.IsUserLoggedIn(user!);
+        await authRepository.IsSessionValidAsync(sessionId, cancellationToken);
 
         bool isPhoneUpdated = !string.IsNullOrEmpty(value: partialPhoneNumber);
         bool isUsernameUpdated = !string.IsNullOrEmpty(value: userName) && user!.UserName != userName;

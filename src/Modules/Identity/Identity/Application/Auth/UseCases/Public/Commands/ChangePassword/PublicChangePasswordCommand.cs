@@ -14,7 +14,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ChangePassword
 /// The new password must be different from the old password.
 /// Users must be authenticated, active, and verified to change their password.
 /// </remarks>
-public record PublicChangePasswordCommand(Guid UserId, string OldPassword, string NewPassword)
+public record PublicChangePasswordCommand(Guid UserId, Guid SessionId, string OldPassword, string NewPassword)
     : ICommand<PublicChangePasswordResult>;
 
 /// <summary>

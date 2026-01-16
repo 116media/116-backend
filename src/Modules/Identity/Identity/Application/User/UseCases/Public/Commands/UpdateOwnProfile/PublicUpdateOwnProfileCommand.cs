@@ -21,6 +21,7 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfi
 /// </remarks>
 public record PublicUpdateOwnProfileCommand(
     Guid UserId,
+    Guid SessionId,
     string? Email,
     string? UserName,
     string? CountryName,

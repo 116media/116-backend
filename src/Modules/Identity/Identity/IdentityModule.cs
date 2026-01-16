@@ -15,8 +15,6 @@ using _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut.Contracts;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.Contracts;
-using _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
-using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.Contracts;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp.Contracts;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword;
@@ -27,6 +25,7 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contracts;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
+using _116.Identity.Application.Session.Factories;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken;
@@ -121,14 +120,10 @@ public static class IdentityModule
         services.AddScoped<ISessionExportService, SessionExportService>();
 
         // Register authentication factories
-        services.AddScoped<IPublicLoginAuthFactory, PublicLoginAuthFactory>();
-        services.AddScoped<IPublicLoginSessionFactory, PublicLoginSessionFactory>();
+        services.AddScoped<ISessionFactory, SessionFactory>();
         services.AddScoped<IPublicSignUpAuthFactory, PublicSignUpAuthFactory>();
-        services.AddScoped<IPublicSignUpSessionFactory, PublicSignUpSessionFactory>();
         services.AddScoped<IAdminLoginAuthFactory, AdminLoginAuthFactory>();
-        services.AddScoped<IAdminLoginSessionFactory, AdminLoginSessionFactory>();
         services.AddScoped<IPublicSocialLoginAuthFactory, PublicSocialLoginAuthFactory>();
-        services.AddScoped<IPublicSocialLoginSessionFactory, PublicSocialLoginSessionFactory>();
         services.AddScoped<IPublicUpdateProfileAuthFactory, PublicUpdateProfileAuthFactory>();
         services.AddScoped<IAdminUpdateProfileAuthFactory, AdminUpdateProfileAuthFactory>();
         services.AddScoped<IPublicUpdateAvatarAuthFactory, PublicUpdateAvatarAuthFactory>();

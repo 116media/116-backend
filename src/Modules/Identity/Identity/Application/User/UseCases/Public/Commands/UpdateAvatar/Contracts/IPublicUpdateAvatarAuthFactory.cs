@@ -21,9 +21,14 @@ public interface IPublicUpdateAvatarAuthFactory
     /// Gets and validates user for avatar update.
     /// </summary>
     /// <param name="userId">The ID of the user.</param>
+    /// <param name="sessionId">The user session ID</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>User data for avatar update.</returns>
-    Task<PublicUpdateAvatarAuthData> GetUserForAvatarUpdateAsync(Guid userId, CancellationToken cancellationToken);
+    Task<PublicUpdateAvatarAuthData> GetUserForAvatarUpdateAsync(
+        Guid userId,
+        Guid sessionId,
+        CancellationToken cancellationToken
+    );
 
     /// <summary>
     /// Updates a user's avatar with a new image file.

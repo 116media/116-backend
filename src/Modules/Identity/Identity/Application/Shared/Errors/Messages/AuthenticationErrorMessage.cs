@@ -38,7 +38,7 @@ public static class AuthenticationErrorMessage
     /// </summary>
     public static string JwtTokenRequired()
     {
-        return "Authentication required. Please provide a valid JWT Bearer token";
+        return "Authentication required. Please provide a valid web token";
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public static class AuthenticationErrorMessage
     /// </summary>
     public static string InvalidRefreshToken()
     {
-        return "Invalid or expired refresh token. Please log in again";
+        return "Invalid or expired session. Please log in again";
     }
 
     /// <summary>

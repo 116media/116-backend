@@ -1,6 +1,7 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts;
+using _116.Identity.Application.Session.Factories;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Results;
 using _116.Shared.Contracts.Application.CQRS;
@@ -15,7 +16,7 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
 public class AdminLoginHandler(
     IAdminLoginAuthFactory authFactory,
-    IAdminLoginSessionFactory sessionFactory,
+    ISessionFactory sessionFactory,
     IFileRepository fileRepository
 ) : ICommandHandler<AdminLoginCommand, AdminLoginResult>
 {
@@ -32,7 +33,7 @@ public class AdminLoginHandler(
         );
 
         // Create authentication session with tokens
-        AdminLoginSessionData sessionData = await sessionFactory.CreateSessionAsync(
+        SessionResult sessionData = await sessionFactory.CreateSessionAsync(
             user: authData.User,
             userPermissions: authData.UserPermissions,
             cancellationToken: cancellationToken

@@ -21,6 +21,7 @@ public interface IAdminUpdateProfileAuthFactory
     /// Updates an admin user's profile with new information.
     /// </summary>
     /// <param name="userId">The ID of the admin user to update.</param>
+    /// <param name="sessionId">The ID of the current session.</param>
     /// <param name="userName">The new username (optional).</param>
     /// <param name="countryName">The country name for phone number (optional).</param>
     /// <param name="countryIsoCode">The country ISO code for phone number (optional).</param>
@@ -30,6 +31,7 @@ public interface IAdminUpdateProfileAuthFactory
     /// <returns>Update data containing user, roles, and permissions.</returns>
     Task<AdminUpdateProfileAuthData> UpdateProfileAsync(
         Guid userId,
+        Guid sessionId,
         string? userName,
         string? countryName,
         string? countryIsoCode,

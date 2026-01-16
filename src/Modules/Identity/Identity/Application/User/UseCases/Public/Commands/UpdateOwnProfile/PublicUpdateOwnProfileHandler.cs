@@ -32,6 +32,7 @@ public class PublicUpdateOwnProfileHandler(IPublicUpdateProfileAuthFactory authF
     {
         PublicUpdateProfileAuthData authData = await authFactory.UpdateProfileAsync(
             userId: command.UserId,
+            sessionId: command.SessionId,
             email: command.Email,
             userName: command.UserName,
             countryName: command.CountryName,

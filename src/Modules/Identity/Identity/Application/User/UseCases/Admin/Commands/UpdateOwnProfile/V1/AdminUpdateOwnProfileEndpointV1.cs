@@ -65,9 +65,11 @@ public class AdminUpdateOwnProfileEndpointV1 : ICarterModule
                 ) =>
                 {
                     Guid userId = authRepository.GetUserIdFromClaims(user: user);
+                    Guid sessionId = authRepository.GetSessionIdFromClaims(user: user);
 
                     var command = new AdminUpdateOwnProfileCommand(
                         UserId: userId,
+                        SessionId: sessionId,
                         UserName: request.UserName,
                         CountryName: request.CountryName,
                         CountryIsoCode: request.CountryIsoCode,

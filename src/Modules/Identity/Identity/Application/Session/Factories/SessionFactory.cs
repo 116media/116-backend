@@ -1,6 +1,5 @@
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Application.Auth.Services;
-using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Errors;
@@ -10,7 +9,7 @@ using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Results;
 using _116.Shared.Application.Configurations;
 
-namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
+namespace _116.Identity.Application.Session.Factories;
 
 /// <summary>
 /// Factory implementation for creating authentication sessions with tokens and metadata.
@@ -20,36 +19,24 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 /// <param name="sessionRepository">Repository for managing user sessions.</param>
 /// <param name="sessionMetadataService">Service for extracting session metadata from HTTP context.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminLoginSessionFactory(
+public class SessionFactory(
     IJwtService jwtService,
     IRefreshTokenService refreshTokenService,
     ISessionRepository sessionRepository,
     ISessionMetadataService sessionMetadataService,
     IIdentityUnitOfWork unitOfWork
-) : IAdminLoginSessionFactory
+) : ISessionFactory
 {
     /// <summary>
-    /// Creates a new authentication session for an admin user or reuses an existing active session.
+    /// Creates a new authentication session for a user or reuses an existing active session.
     /// If an active session already exists for the same device, it will be reused with rotated tokens.
     /// </summary>
-    public async Task<AdminLoginSessionData> CreateSessionAsync(
+    public async Task<SessionResult> CreateSessionAsync(
         UserEntity user,
         List<RolePermissionEntity> userPermissions,
         CancellationToken cancellationToken
     )
     {
-        // Generate access token
-        JwtGenerationResult accessToken = jwtService.GenerateToken(
-            userId: user.Id,
-            user.Email!,
-            userName: user.UserName,
-            userRoles: user.UserRoles,
-            userPermissions: userPermissions,
-            isVerified: user.IsVerified,
-            isActive: user.IsActive,
-            authProvider: user.AuthProvider
-        );
-
         // Generate refresh token
         DateTimeOffset now = DateTimeOffset.UtcNow;
         var (_, _, _, _, refreshTokenExpirationMinutes) = AppEnvironment.Jwt();
@@ -71,21 +58,22 @@ public class AdminLoginSessionFactory(
             cancellationToken: cancellationToken
         );
 
+        Guid sessionId;
         if (existingActiveSession != null)
         {
-            // Reuse existing session with token rotation
+            sessionId = existingActiveSession.Id;
             existingActiveSession.UpdateRefreshToken(refreshTokenHash, refreshTokenExpiresAt);
         }
         else
         {
-            // Create new session
+            sessionId = Guid.NewGuid();
             string? ipAddress = sessionMetadataService.ExtractIpAddress();
             string? userAgent = sessionMetadataService.ExtractUserAgent();
             ClientOriginInfo clientOrigin = sessionMetadataService.GetClientOriginInfo();
             EnumClient clientApp = sessionMetadataService.ExtractClientApp();
 
             var session = SessionEntity.Create(
-                id: Guid.NewGuid(),
+                id: sessionId,
                 userId: user.Id,
                 deviceId: deviceId,
                 refreshTokenHash: refreshTokenHash,
@@ -103,7 +91,19 @@ public class AdminLoginSessionFactory(
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        return new AdminLoginSessionData(
+        JwtGenerationResult accessToken = jwtService.GenerateToken(
+            userId: user.Id,
+            sessionId: sessionId,
+            email: user.Email!,
+            userName: user.UserName,
+            userRoles: user.UserRoles,
+            userPermissions: userPermissions,
+            isVerified: user.IsVerified,
+            isActive: user.IsActive,
+            authProvider: user.AuthProvider
+        );
+
+        return new SessionResult(
             RefreshToken: refreshToken,
             AccessToken: accessToken.Token,
             AccessTokenExpiresAt: accessToken.ExpiresAt,

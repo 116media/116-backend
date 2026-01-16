@@ -67,9 +67,11 @@ public class PublicUpdateOwnProfileEndpointV1 : ICarterModule
                 ) =>
                 {
                     Guid userId = authRepository.GetUserIdFromClaims(user: user);
+                    Guid sessionId = authRepository.GetSessionIdFromClaims(user: user);
 
                     var command = new PublicUpdateOwnProfileCommand(
                         UserId: userId,
+                        SessionId: sessionId,
                         Email: request.Email,
                         UserName: request.UserName,
                         CountryName: request.CountryName,

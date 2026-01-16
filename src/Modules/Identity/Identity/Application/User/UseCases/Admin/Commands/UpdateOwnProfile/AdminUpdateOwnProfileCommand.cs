@@ -20,6 +20,7 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfil
 /// </remarks>
 public record AdminUpdateOwnProfileCommand(
     Guid UserId,
+    Guid SessionId,
     string? UserName,
     string? CountryName,
     string? PartialPhoneNumber,
