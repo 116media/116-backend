@@ -93,14 +93,6 @@ public static class UserErrors
     }
 
     /// <summary>
-    /// Throws when the user is not logged in.
-    /// </summary>
-    public static UserNotLoggedInException UserNotLoggedIn(string email)
-    {
-        return new UserNotLoggedInException(AuthorizationErrorMessage.UserNotLoggedIn(email: email));
-    }
-
-    /// <summary>
     /// Throws when password is invalid.
     /// </summary>
     public static AuthenticationException InvalidCredentials()
