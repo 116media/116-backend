@@ -15,6 +15,8 @@ using _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut.Contracts;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.Contracts;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.Contracts;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp.Contracts;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword;
@@ -123,6 +125,7 @@ public static class IdentityModule
         services.AddScoped<ISessionFactory, SessionFactory>();
         services.AddScoped<IPublicSignUpAuthFactory, PublicSignUpAuthFactory>();
         services.AddScoped<IAdminLoginAuthFactory, AdminLoginAuthFactory>();
+        services.AddScoped<IPublicLoginAuthFactory, PublicLoginAuthFactory>();
         services.AddScoped<IPublicSocialLoginAuthFactory, PublicSocialLoginAuthFactory>();
         services.AddScoped<IPublicUpdateProfileAuthFactory, PublicUpdateProfileAuthFactory>();
         services.AddScoped<IAdminUpdateProfileAuthFactory, AdminUpdateProfileAuthFactory>();
