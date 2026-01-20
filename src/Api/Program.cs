@@ -2,6 +2,7 @@ using System.Reflection;
 using _116.Shared.Application.Extensions;
 using Asp.Versioning;
 using Carter;
+using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -61,6 +62,14 @@ builder.Services.AddAppExceptionHandler();
 
 WebApplication app = builder.Build();
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+app.UseForwardedHeaders();
 app.UseSwaggerFormatting();
 app.UseSwagger();
 app.UseSwaggerUI();
