@@ -60,14 +60,14 @@ builder
 
 builder.Services.AddAppExceptionHandler();
 
-WebApplication app = builder.Build();
-
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
 });
+
+WebApplication app = builder.Build();
 
 app.UseForwardedHeaders();
 app.UseSwaggerFormatting();
