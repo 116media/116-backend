@@ -27,3 +27,48 @@ public class RoleByIdSpecification(Guid roleId) : Specification<RoleEntity>
         return role => role.Id == roleId;
     }
 }
+
+/// <summary>
+/// Specification that matches active roles.
+/// </summary>
+public class RoleIsActiveSpecification : Specification<RoleEntity>
+{
+    public override Expression<Func<RoleEntity, bool>> ToExpression()
+    {
+        return role => role.IsActive;
+    }
+}
+
+/// <summary>
+/// Specification that matches soft-deleted roles.
+/// </summary>
+public class RoleIsDeletedSpecification : Specification<RoleEntity>
+{
+    public override Expression<Func<RoleEntity, bool>> ToExpression()
+    {
+        return role => role.IsDeleted;
+    }
+}
+
+/// <summary>
+/// Specification that matches non-deleted roles.
+/// </summary>
+public class RoleNotDeletedSpecification : Specification<RoleEntity>
+{
+    public override Expression<Func<RoleEntity, bool>> ToExpression()
+    {
+        return role => !role.IsDeleted;
+    }
+}
+
+/// <summary>
+/// Specification that matches active and non-deleted roles.
+/// Used for listing available roles.
+/// </summary>
+public class ActiveRoleSpecification : Specification<RoleEntity>
+{
+    public override Expression<Func<RoleEntity, bool>> ToExpression()
+    {
+        return role => role.IsActive && !role.IsDeleted;
+    }
+}
