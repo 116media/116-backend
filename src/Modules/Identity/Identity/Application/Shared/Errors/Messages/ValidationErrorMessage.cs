@@ -180,4 +180,76 @@ public static class ValidationErrorMessage
     {
         return "Setting password is only allowed for Google or Facebook users.";
     }
+
+    /// <summary>
+    /// Gets an error message for when a core role cannot be modified.
+    /// </summary>
+    /// <param name="roleName">The name of the core role.</param>
+    /// <returns>
+    /// A formatted error message indicating that the core role cannot be modified.
+    /// </returns>
+    public static string CoreRoleCannotBeModified(string roleName)
+    {
+        return $"Core role '{roleName}' cannot be modified";
+    }
+
+    /// <summary>
+    /// Gets an error message for when a core role cannot be deleted.
+    /// </summary>
+    /// <param name="roleName">The name of the core role.</param>
+    /// <returns>
+    /// A formatted error message indicating that the core role cannot be deleted.
+    /// </returns>
+    public static string CoreRoleCannotBeDeleted(string roleName)
+    {
+        return $"Core role '{roleName}' cannot be deleted";
+    }
+
+    /// <summary>
+    /// Error message indicating that a role is inactive and cannot be assigned.
+    /// </summary>
+    public static string RoleIsInactive()
+    {
+        return "Cannot assign an inactive role to a user";
+    }
+
+    /// <summary>
+    /// Error message indicating that a role is deleted and cannot be used.
+    /// </summary>
+    public static string RoleIsDeleted()
+    {
+        return "Cannot use a deleted role";
+    }
+
+    /// <summary>
+    /// Error message indicating that a permission is inactive.
+    /// </summary>
+    public static string PermissionIsInactive()
+    {
+        return "Cannot assign an inactive permission to a role";
+    }
+
+    /// <summary>
+    /// Error message indicating that a permission is deleted.
+    /// </summary>
+    public static string PermissionIsDeleted()
+    {
+        return "Cannot use a deleted permission";
+    }
+
+    /// <summary>
+    /// Error message indicating that a permission is not assigned to the role.
+    /// </summary>
+    public static string PermissionNotAssignedToRole()
+    {
+        return "Permission is not assigned to this role";
+    }
+
+    /// <summary>
+    /// Error message indicating that a role is not assigned to the user.
+    /// </summary>
+    public static string RoleNotAssignedToUser()
+    {
+        return "Role is not assigned to this user";
+    }
 }
