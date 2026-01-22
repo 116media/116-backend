@@ -26,9 +26,14 @@ public class RoleConfiguration : IEntityTypeConfiguration<RoleEntity>
             .Property(r => r.Description)
             .HasMaxLength(maxLength: RoleConstants.MaxRoleDescriptionLength)
             .IsRequired();
+        builder.Property(r => r.IsActive).HasDefaultValue(RoleConstants.DefaultIsActive).IsRequired();
+        builder.Property(r => r.IsDeleted).HasDefaultValue(RoleConstants.DefaultIsDeleted).IsRequired();
+        builder.Property(r => r.DeletedAt).IsRequired(false);
 
         // Indexes
         builder.HasIndex(r => r.Name).IsUnique();
+        builder.HasIndex(r => r.IsActive).HasDatabaseName("IX_roles_is_active");
+        builder.HasIndex(r => r.IsDeleted).HasDatabaseName("IX_roles_is_deleted");
 
         // Relationships
         builder
