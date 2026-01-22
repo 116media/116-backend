@@ -53,27 +53,11 @@ public static class UserErrors
     }
 
     /// <summary>
-    /// Throws when a role is not found.
-    /// </summary>
-    public static NotFoundException RoleNotFound(Guid roleId)
-    {
-        return new NotFoundException("Role", key: roleId);
-    }
-
-    /// <summary>
     /// Throws when a role is not found using the name.
     /// </summary>
     public static NotFoundException RoleNotFoundByName(string roleName)
     {
         return new NotFoundException("Role", "name", keyValue: roleName);
-    }
-
-    /// <summary>
-    /// Throws when a permission is not found.
-    /// </summary>
-    public static NotFoundException PermissionNotFound(Guid permissionId)
-    {
-        return new NotFoundException("Permission", key: permissionId);
     }
 
     /// <summary>
@@ -378,14 +362,6 @@ public static class UserErrors
     public static AccessDeniedException InsufficientPermissions()
     {
         return new AccessDeniedException(AuthenticationErrorMessage.InsufficientPermissions());
-    }
-
-    /// <summary>
-    /// Throws when a user is not found.
-    /// </summary>
-    public static NotFoundException UserNotFound()
-    {
-        return new NotFoundException("User");
     }
 
     /// <summary>
