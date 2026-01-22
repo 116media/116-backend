@@ -52,6 +52,25 @@ public interface IRoleRepository : IRepository<RoleEntity>
     Task AddAsync(RoleEntity role, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets all roles with pagination and optional filtering.
+    /// </summary>
+    /// <param name="page">Page number (1-based).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="search">Optional search term for fuzzy matching on Name and Description.</param>
+    /// <param name="isActive">Optional filter by active status.</param>
+    /// <param name="isDeleted">Optional filter by deleted status.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>Tuple of roles list and total count.</returns>
+    Task<(List<RoleEntity> Roles, int TotalCount)> GetAllWithPaginationAsync(
+        int page,
+        int pageSize,
+        string? search = null,
+        bool? isActive = null,
+        bool? isDeleted = null,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Extracts and maps all roles assigned to a user.
     /// </summary>
     /// <param name="userRoles">Collection of user roles to process.</param>
@@ -85,4 +104,10 @@ public interface IRoleRepository : IRepository<RoleEntity>
     (IReadOnlyCollection<RoleDto> Roles, IReadOnlyCollection<PermissionDto> Permissions) GetUserRolesAndPermissions(
         ICollection<UserRoleEntity> userRoles
     );
+
+    /// <summary>
+    /// Permanently deletes a role entity from the repository.
+    /// </summary>
+    /// <param name="entity">The role entity to delete.</param>
+    void Delete(RoleEntity entity);
 }
