@@ -56,3 +56,38 @@ public class UserIsActiveAdminSpecification : Specification<UserEntity>
         return activeSpec.And(other: adminSpec).ToExpression();
     }
 }
+
+/// <summary>
+/// Specification that matches user-role associations by user ID.
+/// </summary>
+public class UserRoleByUserIdSpecification(Guid userId) : Specification<UserRoleEntity>
+{
+    public override Expression<Func<UserRoleEntity, bool>> ToExpression()
+    {
+        return userRole => userRole.UserId == userId;
+    }
+}
+
+/// <summary>
+/// Specification that matches user-role associations by role ID.
+/// </summary>
+public class UserRoleByRoleIdSpecification(Guid roleId) : Specification<UserRoleEntity>
+{
+    public override Expression<Func<UserRoleEntity, bool>> ToExpression()
+    {
+        return userRole => userRole.RoleId == roleId;
+    }
+}
+
+/// <summary>
+/// Specification that matches a specific user-role association.
+/// </summary>
+public class UserRoleByUserAndRoleSpecification(Guid userId, Guid roleId) : Specification<UserRoleEntity>
+{
+    public override Expression<Func<UserRoleEntity, bool>> ToExpression()
+    {
+        var userSpec = new UserRoleByUserIdSpecification(userId: userId);
+        var roleSpec = new UserRoleByRoleIdSpecification(roleId: roleId);
+        return userSpec.And(other: roleSpec).ToExpression();
+    }
+}
