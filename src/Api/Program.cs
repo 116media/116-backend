@@ -19,7 +19,6 @@ Assembly coreAssembly = typeof(CoreModule).Assembly;
 Assembly identityAssembly = typeof(IdentityModule).Assembly;
 
 builder.Services.AddCarterWithAssemblies(identityAssembly, coreAssembly);
-
 builder.Services.AddCqrsWithAssemblies(identityAssembly, coreAssembly);
 
 builder

@@ -11,6 +11,47 @@ namespace _116.Identity.Application.Shared.Repositories;
 public interface IRoleRepository : IRepository<RoleEntity>
 {
     /// <summary>
+    /// Retrieves a role by its unique identifier with its associated permissions.
+    /// </summary>
+    /// <param name="roleId">The unique identifier of the role.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The role entity with permissions loaded.</returns>
+    /// <exception cref="Shared.Application.Exceptions.NotFoundException">
+    /// Thrown when no role is found with the specified ID.
+    /// </exception>
+    Task<RoleEntity?> GetRoleByIdWithPermissionsOrThrowAsync(
+        Guid roleId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Retrieves a role by its unique identifier.
+    /// </summary>
+    /// <param name="roleId">The unique identifier of the role.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The role entity if found.</returns>
+    /// <exception cref="Shared.Application.Exceptions.NotFoundException">
+    /// Thrown when no role is found with the specified ID.
+    /// </exception>
+    Task<RoleEntity?> GetRoleByIdOrThrowAsync(Guid roleId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks if a role with the specified name already exists.
+    /// </summary>
+    /// <param name="name">The role name to check.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>True if a role with the name exists, otherwise false.</returns>
+    Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a new role entity to the repository.
+    /// </summary>
+    /// <param name="role">The role entity to add.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task AddAsync(RoleEntity role, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Extracts and maps all roles assigned to a user.
     /// </summary>
     /// <param name="userRoles">Collection of user roles to process.</param>
