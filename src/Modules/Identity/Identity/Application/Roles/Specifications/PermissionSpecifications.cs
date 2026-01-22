@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Specifications;
+using Microsoft.EntityFrameworkCore;
 
 namespace _116.Identity.Application.Roles.Specifications;
 
@@ -70,5 +71,32 @@ public class ActivePermissionSpecification : Specification<PermissionEntity>
     public override Expression<Func<PermissionEntity, bool>> ToExpression()
     {
         return permission => permission.IsActive && !permission.IsDeleted;
+    }
+}
+
+/// <summary>
+/// Specification that matches inactive permissions.
+/// </summary>
+public class PermissionIsNotActiveSpecification : Specification<PermissionEntity>
+{
+    public override Expression<Func<PermissionEntity, bool>> ToExpression()
+    {
+        return permission => !permission.IsActive;
+    }
+}
+
+/// <summary>
+/// Specification for fuzzy search across permission Resource, Action, and Description.
+/// Uses case-insensitive matching (ILIKE in PostgreSQL).
+/// </summary>
+public class PermissionSearchSpecification(string search) : Specification<PermissionEntity>
+{
+    public override Expression<Func<PermissionEntity, bool>> ToExpression()
+    {
+        string pattern = $"%{search}%";
+        return permission =>
+            EF.Functions.ILike(permission.Resource, pattern)
+            || EF.Functions.ILike(permission.Action, pattern)
+            || EF.Functions.ILike(permission.Description, pattern);
     }
 }
