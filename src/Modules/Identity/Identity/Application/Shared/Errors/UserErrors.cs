@@ -55,7 +55,7 @@ public static class UserErrors
     /// <summary>
     /// Throws when a role is not found.
     /// </summary>
-    public static NotFoundException RoleNotFound(int roleId)
+    public static NotFoundException RoleNotFound(Guid roleId)
     {
         return new NotFoundException("Role", key: roleId);
     }
@@ -71,9 +71,153 @@ public static class UserErrors
     /// <summary>
     /// Throws when a permission is not found.
     /// </summary>
-    public static NotFoundException PermissionNotFound(int permissionId)
+    public static NotFoundException PermissionNotFound(Guid permissionId)
     {
         return new NotFoundException("Permission", key: permissionId);
+    }
+
+    /// <summary>
+    /// Throws when a permission already exists.
+    /// </summary>
+    public static ConflictException PermissionAlreadyExists(string resource, string action)
+    {
+        return new ConflictException(ConflictErrorMessage.PermissionAlreadyExists(resource, action));
+    }
+
+    /// <summary>
+    /// Throws when a permission is already assigned to a role.
+    /// </summary>
+    public static ConflictException PermissionAlreadyAssignedToRole()
+    {
+        return new ConflictException(ConflictErrorMessage.PermissionAlreadyAssignedToRole());
+    }
+
+    /// <summary>
+    /// Throws when a role is already active.
+    /// </summary>
+    public static ConflictException RoleAlreadyActive()
+    {
+        return new ConflictException(ConflictErrorMessage.RoleAlreadyActive());
+    }
+
+    /// <summary>
+    /// Throws when a role is already inactive.
+    /// </summary>
+    public static ConflictException RoleAlreadyInactive()
+    {
+        return new ConflictException(ConflictErrorMessage.RoleAlreadyInactive());
+    }
+
+    /// <summary>
+    /// Throws when a role is already deleted.
+    /// </summary>
+    public static ConflictException RoleAlreadyDeleted()
+    {
+        return new ConflictException(ConflictErrorMessage.RoleAlreadyDeleted());
+    }
+
+    /// <summary>
+    /// Throws when a role is not deleted and cannot be restored.
+    /// </summary>
+    public static ConflictException RoleNotDeleted()
+    {
+        return new ConflictException(ConflictErrorMessage.RoleNotDeleted());
+    }
+
+    /// <summary>
+    /// Throws when a permission is already active.
+    /// </summary>
+    public static ConflictException PermissionAlreadyActive()
+    {
+        return new ConflictException(ConflictErrorMessage.PermissionAlreadyActive());
+    }
+
+    /// <summary>
+    /// Throws when a permission is already inactive.
+    /// </summary>
+    public static ConflictException PermissionAlreadyInactive()
+    {
+        return new ConflictException(ConflictErrorMessage.PermissionAlreadyInactive());
+    }
+
+    /// <summary>
+    /// Throws when a permission is already deleted.
+    /// </summary>
+    public static ConflictException PermissionAlreadyDeleted()
+    {
+        return new ConflictException(ConflictErrorMessage.PermissionAlreadyDeleted());
+    }
+
+    /// <summary>
+    /// Throws when a permission is not deleted and cannot be restored.
+    /// </summary>
+    public static ConflictException PermissionNotDeleted()
+    {
+        return new ConflictException(ConflictErrorMessage.PermissionNotDeleted());
+    }
+
+    /// <summary>
+    /// Throws when a core role cannot be modified.
+    /// </summary>
+    public static BadRequestException CoreRoleCannotBeModified(string roleName)
+    {
+        return new BadRequestException(ValidationErrorMessage.CoreRoleCannotBeModified(roleName));
+    }
+
+    /// <summary>
+    /// Throws when a core role cannot be deleted.
+    /// </summary>
+    public static BadRequestException CoreRoleCannotBeDeleted(string roleName)
+    {
+        return new BadRequestException(ValidationErrorMessage.CoreRoleCannotBeDeleted(roleName));
+    }
+
+    /// <summary>
+    /// Throws when a role is inactive and cannot be assigned.
+    /// </summary>
+    public static BadRequestException RoleIsInactive()
+    {
+        return new BadRequestException(ValidationErrorMessage.RoleIsInactive());
+    }
+
+    /// <summary>
+    /// Throws when a role is deleted and cannot be used.
+    /// </summary>
+    public static BadRequestException RoleIsDeleted()
+    {
+        return new BadRequestException(ValidationErrorMessage.RoleIsDeleted());
+    }
+
+    /// <summary>
+    /// Throws when a permission is inactive.
+    /// </summary>
+    public static BadRequestException PermissionIsInactive()
+    {
+        return new BadRequestException(ValidationErrorMessage.PermissionIsInactive());
+    }
+
+    /// <summary>
+    /// Throws when a permission is deleted.
+    /// </summary>
+    public static BadRequestException PermissionIsDeleted()
+    {
+        return new BadRequestException(ValidationErrorMessage.PermissionIsDeleted());
+    }
+
+    /// <summary>
+    /// Throws when a permission is not assigned to the role.
+    /// </summary>
+    public static BadRequestException PermissionNotAssignedToRole()
+    {
+        return new BadRequestException(ValidationErrorMessage.PermissionNotAssignedToRole());
+    }
+
+    /// <summary>
+    /// Throws when a role is not assigned to the user.
+    /// </summary>
+    public static BadRequestException RoleNotAssignedToUser()
+    {
+        return new BadRequestException(ValidationErrorMessage.RoleNotAssignedToUser());
     }
 
     /// <summary>
