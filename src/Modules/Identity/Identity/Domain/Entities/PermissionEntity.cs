@@ -33,6 +33,21 @@ public class PermissionEntity : Aggregate<Guid>
     public string Description { get; private set; } = null!;
 
     /// <summary>
+    /// Indicates whether the permission is active and can be used.
+    /// </summary>
+    public bool IsActive { get; private set; } = PermissionConstants.DefaultIsActive;
+
+    /// <summary>
+    /// Indicates whether the permission has been soft-deleted.
+    /// </summary>
+    public bool IsDeleted { get; private set; } = PermissionConstants.DefaultIsDeleted;
+
+    /// <summary>
+    /// Date and time when the permission was soft-deleted, in UTC.
+    /// </summary>
+    public DateTime? DeletedAt { get; private set; }
+
+    /// <summary>
     /// Navigation property:
     /// Collection of role-permission associations linked to this permission.
     /// </summary>
@@ -69,5 +84,94 @@ public class PermissionEntity : Aggregate<Guid>
             Action = action,
             Description = description,
         };
+    }
+
+    /// <summary>
+    /// Updates the permission's resource, action, and description.
+    /// </summary>
+    /// <param name="resource">The new resource name.</param>
+    /// <param name="action">The new action name.</param>
+    /// <param name="description">The new description.</param>
+    public void Update(string resource, string action, string description)
+    {
+        BadRequestException? error = (resource, action, description) switch
+        {
+            var (r, _, _) when string.IsNullOrWhiteSpace(value: r) => UserErrors.PermissionResourceRequired(),
+            var (_, a, _) when string.IsNullOrWhiteSpace(value: a) => UserErrors.PermissionActionRequired(),
+            var (_, _, d) when string.IsNullOrWhiteSpace(value: d) => UserErrors.PermissionDescriptionRequired(),
+            _ => null,
+        };
+
+        if (error is not null)
+        {
+            throw error;
+        }
+
+        Resource = resource;
+        Action = action;
+        Description = description;
+    }
+
+    /// <summary>
+    /// Activates the permission, allowing it to be used.
+    /// </summary>
+    /// <returns>True if the permission was activated, false if already active.</returns>
+    public bool Activate()
+    {
+        if (IsActive)
+        {
+            return false;
+        }
+
+        IsActive = true;
+        return true;
+    }
+
+    /// <summary>
+    /// Deactivates the permission, preventing it from being used.
+    /// </summary>
+    /// <returns>True if the permission was deactivated, false if already inactive.</returns>
+    public bool Deactivate()
+    {
+        if (!IsActive)
+        {
+            return false;
+        }
+
+        IsActive = false;
+        return true;
+    }
+
+    /// <summary>
+    /// Marks the permission as deleted (soft delete).
+    /// </summary>
+    /// <returns>True if the permission was soft-deleted, false if already deleted.</returns>
+    public bool SoftDelete()
+    {
+        if (IsDeleted)
+        {
+            return false;
+        }
+
+        IsDeleted = true;
+        IsActive = false;
+        DeletedAt = DateTime.UtcNow;
+        return true;
+    }
+
+    /// <summary>
+    /// Restores a soft-deleted permission.
+    /// </summary>
+    /// <returns>True if the permission was restored, false if not deleted.</returns>
+    public bool Restore()
+    {
+        if (!IsDeleted)
+        {
+            return false;
+        }
+
+        IsDeleted = false;
+        DeletedAt = null;
+        return true;
     }
 }
