@@ -88,4 +88,103 @@ public static class ConflictErrorMessage
     {
         return "Role is already assigned to this user";
     }
+
+    /// <summary>
+    /// Gets an error message for when a permission is already assigned to a role.
+    /// </summary>
+    /// <returns>
+    /// A formatted error message indicating that the permission is already assigned to the role.
+    /// </returns>
+    public static string PermissionAlreadyAssignedToRole()
+    {
+        return "Permission is already assigned to this role";
+    }
+
+    /// <summary>
+    /// Gets an error message for when a role is already active.
+    /// </summary>
+    /// <returns>
+    /// A formatted error message indicating that the role is already active.
+    /// </returns>
+    public static string RoleAlreadyActive()
+    {
+        return "Role is already active";
+    }
+
+    /// <summary>
+    /// Gets an error message for when a role is already inactive.
+    /// </summary>
+    /// <returns>
+    /// A formatted error message indicating that the role is already inactive.
+    /// </returns>
+    public static string RoleAlreadyInactive()
+    {
+        return "Role is already inactive";
+    }
+
+    /// <summary>
+    /// Gets an error message for when a role is already deleted.
+    /// </summary>
+    /// <returns>
+    /// A formatted error message indicating that the role is already deleted.
+    /// </returns>
+    public static string RoleAlreadyDeleted()
+    {
+        return "Role is already deleted";
+    }
+
+    /// <summary>
+    /// Gets an error message for when a role is not deleted and cannot be restored.
+    /// </summary>
+    /// <returns>
+    /// A formatted error message indicating that the role is not deleted.
+    /// </returns>
+    public static string RoleNotDeleted()
+    {
+        return "Role is not deleted and cannot be restored";
+    }
+
+    /// <summary>
+    /// Gets an error message for when a permission is already active.
+    /// </summary>
+    /// <returns>
+    /// A formatted error message indicating that the permission is already active.
+    /// </returns>
+    public static string PermissionAlreadyActive()
+    {
+        return "Permission is already active";
+    }
+
+    /// <summary>
+    /// Gets an error message for when a permission is already inactive.
+    /// </summary>
+    /// <returns>
+    /// A formatted error message indicating that the permission is already inactive.
+    /// </returns>
+    public static string PermissionAlreadyInactive()
+    {
+        return "Permission is already inactive";
+    }
+
+    /// <summary>
+    /// Gets an error message for when a permission is already deleted.
+    /// </summary>
+    /// <returns>
+    /// A formatted error message indicating that the permission is already deleted.
+    /// </returns>
+    public static string PermissionAlreadyDeleted()
+    {
+        return "Permission is already deleted";
+    }
+
+    /// <summary>
+    /// Gets an error message for when a permission is not deleted and cannot be restored.
+    /// </summary>
+    /// <returns>
+    /// A formatted error message indicating that the permission is not deleted.
+    /// </returns>
+    public static string PermissionNotDeleted()
+    {
+        return "Permission is not deleted and cannot be restored";
+    }
 }
