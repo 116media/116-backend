@@ -131,7 +131,7 @@ public class RoleEntity : Aggregate<Guid>
     /// <summary>
     /// Marks the role as deleted (soft delete).
     /// </summary>
-    /// <returns>True if the role was soft deleted, false if already deleted.</returns>
+    /// <returns>True if the role was soft-deleted, false if already deleted.</returns>
     public bool SoftDelete()
     {
         if (IsDeleted)
