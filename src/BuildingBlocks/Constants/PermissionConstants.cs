@@ -19,4 +19,14 @@ public static class PermissionConstants
     /// Maximum allowed length for permission descriptions.
     /// </summary>
     public const int MaxPermissionDescriptionLength = 300;
+
+    /// <summary>
+    /// Default value for permission active status.
+    /// </summary>
+    public const bool DefaultIsActive = true;
+
+    /// <summary>
+    /// Default value for permission soft-delete status.
+    /// </summary>
+    public const bool DefaultIsDeleted = false;
 }
