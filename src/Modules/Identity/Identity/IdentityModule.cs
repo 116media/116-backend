@@ -101,6 +101,7 @@ public static class IdentityModule
         services.AddModuleDatabase(GetModuleOptions());
         UserMapper.Configure();
         SessionMapper.Configure();
+        RoleMapper.Configure();
 
         services.AddHttpContextAccessor();
         services.AddDetection();
@@ -115,6 +116,9 @@ public static class IdentityModule
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
         services.AddScoped<IAuthRepository, AuthRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IPermissionRepository, PermissionRepository>();
+        services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+        services.AddScoped<IUserRoleRepository, UserRoleRepository>();
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IOtpRepository, OtpRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();

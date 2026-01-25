@@ -14,4 +14,14 @@ public static class RoleConstants
     /// Maximum allowed length for role descriptions.
     /// </summary>
     public const int MaxRoleDescriptionLength = 300;
+
+    /// <summary>
+    /// Default value for role active status.
+    /// </summary>
+    public const bool DefaultIsActive = true;
+
+    /// <summary>
+    /// Default value for role soft-delete status.
+    /// </summary>
+    public const bool DefaultIsDeleted = false;
 }

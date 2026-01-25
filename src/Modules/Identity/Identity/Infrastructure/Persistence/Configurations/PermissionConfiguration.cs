@@ -33,12 +33,17 @@ public class PermissionConfiguration : IEntityTypeConfiguration<PermissionEntity
             .Property(p => p.Description)
             .HasMaxLength(maxLength: PermissionConstants.MaxPermissionDescriptionLength)
             .IsRequired();
+        builder.Property(p => p.IsActive).HasDefaultValue(PermissionConstants.DefaultIsActive).IsRequired();
+        builder.Property(p => p.IsDeleted).HasDefaultValue(PermissionConstants.DefaultIsDeleted).IsRequired();
+        builder.Property(p => p.DeletedAt).IsRequired(false);
 
         // Indexes
         builder
             .HasIndex(p => new { p.Resource, p.Action })
             .IsUnique()
             .HasDatabaseName("IX_permissions_resource_action");
+        builder.HasIndex(p => p.IsActive).HasDatabaseName("IX_permissions_is_active");
+        builder.HasIndex(p => p.IsDeleted).HasDatabaseName("IX_permissions_is_deleted");
 
         // Relationships
         builder

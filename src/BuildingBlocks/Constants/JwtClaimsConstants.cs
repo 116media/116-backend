@@ -17,11 +17,6 @@ public static class JwtClaimsConstants
     public const string AuthProvider = "auth_provider";
 
     /// <summary>
-    /// Claim type for user roles.
-    /// </summary>
-    public const string Roles = "roles";
-
-    /// <summary>
     /// Claim type for user permissions.
     /// </summary>
     public const string Permissions = "permissions";

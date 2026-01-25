@@ -23,6 +23,21 @@ public class RoleEntity : Aggregate<Guid>
     public string Description { get; private set; } = null!;
 
     /// <summary>
+    /// Indicates whether the role is active and can be assigned to users.
+    /// </summary>
+    public bool IsActive { get; private set; } = RoleConstants.DefaultIsActive;
+
+    /// <summary>
+    /// Indicates whether the role has been soft-deleted.
+    /// </summary>
+    public bool IsDeleted { get; private set; } = RoleConstants.DefaultIsDeleted;
+
+    /// <summary>
+    /// Date and time when the role was soft-deleted, in UTC.
+    /// </summary>
+    public DateTime? DeletedAt { get; private set; }
+
+    /// <summary>
     /// Navigation property:
     /// Collection of user-role associations linking users to this role.
     /// </summary>
@@ -60,5 +75,89 @@ public class RoleEntity : Aggregate<Guid>
             Name = name,
             Description = description,
         };
+    }
+
+    /// <summary>
+    /// Updates the role's name and description.
+    /// </summary>
+    /// <param name="name">The new name for the role.</param>
+    /// <param name="description">The new description for the role.</param>
+    public void Update(string name, string description)
+    {
+        if (string.IsNullOrWhiteSpace(value: name))
+        {
+            throw UserErrors.RoleNameRequired();
+        }
+
+        if (string.IsNullOrWhiteSpace(value: description))
+        {
+            throw UserErrors.RoleDescriptionRequired();
+        }
+
+        Name = name;
+        Description = description;
+    }
+
+    /// <summary>
+    /// Activates the role, allowing it to be assigned to users.
+    /// </summary>
+    /// <returns>True if the role was activated, false if already active.</returns>
+    public bool Activate()
+    {
+        if (IsActive)
+        {
+            return false;
+        }
+
+        IsActive = true;
+        return true;
+    }
+
+    /// <summary>
+    /// Deactivates the role, preventing it from being assigned to users.
+    /// </summary>
+    /// <returns>True if the role was deactivated, false if already inactive.</returns>
+    public bool Deactivate()
+    {
+        if (!IsActive)
+        {
+            return false;
+        }
+
+        IsActive = false;
+        return true;
+    }
+
+    /// <summary>
+    /// Marks the role as deleted (soft delete).
+    /// </summary>
+    /// <returns>True if the role was soft-deleted, false if already deleted.</returns>
+    public bool SoftDelete()
+    {
+        if (IsDeleted)
+        {
+            return false;
+        }
+
+        IsDeleted = true;
+        IsActive = false;
+        DeletedAt = DateTime.UtcNow;
+        return true;
+    }
+
+    /// <summary>
+    /// Restores a soft-deleted role.
+    /// </summary>
+    /// <returns>True if the role was restored, false if not deleted.</returns>
+    public bool Restore()
+    {
+        if (!IsDeleted)
+        {
+            return false;
+        }
+
+        IsDeleted = false;
+        DeletedAt = null;
+        return true;
     }
 }
