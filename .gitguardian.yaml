@@ -1,0 +1,7 @@
+# GitGuardian configuration
+# Exclude test files from secret scanning
+
+paths-ignore:
+  - tests/**
+  - "**/obj/**"
+  - "**/bin/**"
