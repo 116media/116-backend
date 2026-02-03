@@ -24,7 +24,7 @@ public class SessionStatusTests
 
         // Assert
         status.Should().NotBeNull();
-        Assert.Equal(EnumSessionStatus.Active, status.Value);
+        status.Value.Should().Be(EnumSessionStatus.Active);
     }
 
     [Theory]
@@ -37,7 +37,7 @@ public class SessionStatusTests
 
         // Assert
         status.Should().NotBeNull();
-        Assert.Equal(statusEnum, status.Value);
+        status.Value.Should().Be(statusEnum);
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class SessionStatusTests
 
         // Assert
         status.Should().NotBeNull();
-        Assert.Equal(EnumSessionStatus.Active, status.Value);
+        status.Value.Should().Be(EnumSessionStatus.Active);
     }
 
     [Theory]
@@ -79,7 +79,7 @@ public class SessionStatusTests
         SessionStatus status = new(input);
 
         // Assert
-        Assert.Equal(expected, status.Value);
+        status.Value.Should().Be(expected);
     }
 
     [Theory]
@@ -92,7 +92,7 @@ public class SessionStatusTests
         SessionStatus status = new(input);
 
         // Assert
-        Assert.Equal(EnumSessionStatus.Active, status.Value);
+        status.Value.Should().Be(EnumSessionStatus.Active);
     }
 
     [Fact]
@@ -136,7 +136,7 @@ public class SessionStatusTests
         EnumSessionStatus result = status;
 
         // Assert
-        Assert.Equal(EnumSessionStatus.Expired, result);
+        result.Should().Be(EnumSessionStatus.Expired);
     }
 
     [Fact]
@@ -163,7 +163,7 @@ public class SessionStatusTests
 
         // Assert
         status.Should().NotBeNull();
-        Assert.Equal(EnumSessionStatus.Active, status.Value);
+        status.Value.Should().Be(EnumSessionStatus.Active);
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public class SessionStatusTests
 
         // Assert
         status.Should().NotBeNull();
-        Assert.Equal(EnumSessionStatus.Expired, status.Value);
+        status.Value.Should().Be(EnumSessionStatus.Expired);
     }
 
     [Fact]
@@ -206,7 +206,7 @@ public class SessionStatusTests
         SessionStatus status2 = new(EnumSessionStatus.Active);
 
         // Act & Assert
-        Assert.Equal(status1, status2);
+        status1.Should().Be(status2);
     }
 
     [Fact]
@@ -217,7 +217,7 @@ public class SessionStatusTests
         SessionStatus status2 = new(EnumSessionStatus.Expired);
 
         // Act & Assert
-        Assert.NotEqual(status1, status2);
+        status1.Should().NotBe(status2);
     }
 
     [Fact]
@@ -232,7 +232,7 @@ public class SessionStatusTests
         int hash2 = status2.GetHashCode();
 
         // Assert
-        Assert.Equal(hash1, hash2);
+        hash1.Should().Be(hash2);
     }
 
     #endregion
