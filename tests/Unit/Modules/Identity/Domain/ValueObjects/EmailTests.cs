@@ -165,7 +165,7 @@ public class EmailTests
         Email email2 = new("test@example.com");
 
         // Act & Assert
-        Assert.Equal(email1, email2);
+        email1.Should().Be(email2);
     }
 
     [Fact]
@@ -176,7 +176,7 @@ public class EmailTests
         Email email2 = new("test@example.com");
 
         // Act & Assert
-        Assert.Equal(email1, email2);
+        email1.Should().Be(email2);
     }
 
     [Fact]
@@ -187,7 +187,7 @@ public class EmailTests
         Email email2 = new("test2@example.com");
 
         // Act & Assert
-        Assert.NotEqual(email1, email2);
+        email1.Should().NotBe(email2);
     }
 
     [Fact]
@@ -202,7 +202,7 @@ public class EmailTests
         int hash2 = email2.GetHashCode();
 
         // Assert
-        Assert.Equal(hash1, hash2);
+        hash1.Should().Be(hash2);
     }
 
     #endregion
