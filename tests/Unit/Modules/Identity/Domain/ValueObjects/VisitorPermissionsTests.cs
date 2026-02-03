@@ -20,7 +20,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        Assert.Equal(3, permissions.Length);
+        permissions.Length.Should().Be(3);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        Assert.Equal(2, permissions.Length);
+        permissions.Length.Should().Be(2);
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        Assert.Equal(3, permissions.Length);
+        permissions.Length.Should().Be(3);
     }
 
     #endregion
@@ -115,7 +115,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        Assert.Equal(4, permissions.Length);
+        permissions.Length.Should().Be(4);
     }
 
     #endregion
@@ -130,7 +130,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        Assert.Equal(4, permissions.Length);
+        permissions.Length.Should().Be(4);
     }
 
     #endregion
@@ -145,7 +145,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        Assert.Equal(2, permissions.Length);
+        permissions.Length.Should().Be(2);
     }
 
     [Fact]
@@ -180,7 +180,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        Assert.Equal(4, permissions.Length);
+        permissions.Length.Should().Be(4);
     }
 
     #endregion
@@ -195,7 +195,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        Assert.Equal(2, permissions.Length);
+        permissions.Length.Should().Be(2);
     }
 
     #endregion
@@ -210,7 +210,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        Assert.Equal(2, permissions.Length);
+        permissions.Length.Should().Be(2);
     }
 
     #endregion
@@ -225,7 +225,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        Assert.Equal(3, permissions.Length);
+        permissions.Length.Should().Be(3);
     }
 
     #endregion
@@ -240,7 +240,7 @@ public class VisitorPermissionsTests
 
         // Assert
         allPermissions.Should().NotBeNull();
-        Assert.Equal(29, allPermissions.Length);
+        allPermissions.Length.Should().Be(29);
     }
 
     [Fact]
@@ -270,7 +270,7 @@ public class VisitorPermissionsTests
 
         // Assert - check unique count matches total count
         int uniqueCount = allPermissions.Distinct().Count();
-        Assert.Equal(allPermissions.Length, uniqueCount);
+        uniqueCount.Should().Be(allPermissions.Length);
     }
 
     [Fact]
@@ -280,16 +280,15 @@ public class VisitorPermissionsTests
         PermissionEntity[] allPermissions = VisitorPermissions.GetAllPermissions();
 
         // Assert
-        Assert.All(
-            allPermissions,
-            permission =>
+        allPermissions
+            .Should()
+            .AllSatisfy(permission =>
             {
                 permission.Resource.Should().NotBeNull();
-                Assert.NotEmpty(permission.Resource);
+                permission.Resource.Should().NotBeEmpty();
                 permission.Action.Should().NotBeNull();
-                Assert.NotEmpty(permission.Action);
-            }
-        );
+                permission.Action.Should().NotBeEmpty();
+            });
     }
 
     [Fact]
@@ -299,14 +298,13 @@ public class VisitorPermissionsTests
         PermissionEntity[] allPermissions = VisitorPermissions.GetAllPermissions();
 
         // Assert
-        Assert.All(
-            allPermissions,
-            permission =>
+        allPermissions
+            .Should()
+            .AllSatisfy(permission =>
             {
                 permission.Description.Should().NotBeNull();
-                Assert.NotEmpty(permission.Description);
-            }
-        );
+                permission.Description.Should().NotBeEmpty();
+            });
     }
 
     #endregion
