@@ -1,0 +1,261 @@
+using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
+using AwesomeAssertions;
+using FluentValidation.TestHelper;
+using Microsoft.AspNetCore.Http;
+using Moq;
+using Xunit;
+
+namespace _116.Unit.Tests.Modules.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
+
+/// <summary>
+/// Unit tests for <see cref="AdminUpdateAvatarValidator"/>.
+/// </summary>
+public class AdminUpdateAvatarValidatorTests
+{
+    private readonly AdminUpdateAvatarValidator _validator = new();
+
+    #region Valid Command Tests
+
+    [Fact]
+    public async Task Validate_WithValidCommand_ShouldNotHaveErrors()
+    {
+        // Arrange
+        IFormFile validFile = CreateMockFormFile("avatar.jpg", "image/jpeg", 500_000);
+        AdminUpdateAvatarCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            AvatarFile: validFile
+        );
+
+        // Act
+        var result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Validate_WithValidPngFile_ShouldNotHaveErrors()
+    {
+        // Arrange
+        IFormFile validFile = CreateMockFormFile("avatar.png", "image/png", 500_000);
+        AdminUpdateAvatarCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            AvatarFile: validFile
+        );
+
+        // Act
+        var result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.Errors.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region AvatarFile Null Tests
+
+    [Fact]
+    public async Task Validate_WithNullAvatarFile_ShouldHaveError()
+    {
+        // Arrange
+        AdminUpdateAvatarCommand command = new(UserId: Guid.NewGuid(), SessionId: Guid.NewGuid(), AvatarFile: null!);
+
+        // Act
+        var result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.AvatarFile).WithErrorMessage("Avatar file is required");
+    }
+
+    #endregion
+
+    #region File Size Validation Tests
+
+    [Fact]
+    public async Task Validate_WithFileSizeTooLarge_ShouldHaveError()
+    {
+        // Arrange
+        IFormFile largeFile = CreateMockFormFile("avatar.jpg", "image/jpeg", FileConstants.MaxAvatarFileSizeBytes + 1);
+        AdminUpdateAvatarCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            AvatarFile: largeFile
+        );
+
+        // Act
+        var result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .ShouldHaveValidationErrorFor(x => x.AvatarFile)
+            .WithErrorMessage($"File size must not exceed {FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)}MB");
+    }
+
+    [Fact]
+    public async Task Validate_WithZeroFileSize_ShouldHaveError()
+    {
+        // Arrange
+        IFormFile emptyFile = CreateMockFormFile("avatar.jpg", "image/jpeg", 0);
+        AdminUpdateAvatarCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            AvatarFile: emptyFile
+        );
+
+        // Act
+        var result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.AvatarFile);
+    }
+
+    #endregion
+
+    #region File Type Validation Tests
+
+    [Fact]
+    public async Task Validate_WithInvalidMimeType_ShouldHaveError()
+    {
+        // Arrange
+        IFormFile invalidFile = CreateMockFormFile("document.pdf", "application/pdf", 500_000);
+        AdminUpdateAvatarCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            AvatarFile: invalidFile
+        );
+
+        // Act
+        var result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .ShouldHaveValidationErrorFor(x => x.AvatarFile)
+            .WithErrorMessage(
+                $"Only image files are allowed: {string.Join(", ", FileConstants.AllowedAvatarMimeTypes)}"
+            );
+    }
+
+    [Theory]
+    [InlineData("image/jpeg")]
+    [InlineData("image/png")]
+    [InlineData("image/gif")]
+    [InlineData("image/webp")]
+    public async Task Validate_WithValidImageMimeTypes_ShouldNotHaveError(string mimeType)
+    {
+        // Arrange
+        string fileName = $"avatar.{mimeType.Split('/')[1]}";
+        IFormFile validFile = CreateMockFormFile(fileName, mimeType, 500_000);
+        AdminUpdateAvatarCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            AvatarFile: validFile
+        );
+
+        // Act
+        var result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region File Extension Validation Tests
+
+    [Fact]
+    public async Task Validate_WithInvalidExtension_ShouldHaveError()
+    {
+        // Arrange
+        IFormFile invalidFile = CreateMockFormFile("avatar.bmp", "image/bmp", 500_000);
+        AdminUpdateAvatarCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            AvatarFile: invalidFile
+        );
+
+        // Act
+        var result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .ShouldHaveValidationErrorFor(x => x.AvatarFile)
+            .WithErrorMessage(
+                $"Only these extensions are allowed: {string.Join(", ", FileConstants.AllowedAvatarExtensions)}"
+            );
+    }
+
+    [Theory]
+    [InlineData(".jpg")]
+    [InlineData(".jpeg")]
+    [InlineData(".png")]
+    [InlineData(".gif")]
+    [InlineData(".webp")]
+    public async Task Validate_WithValidExtensions_ShouldNotHaveError(string extension)
+    {
+        // Arrange
+        IFormFile validFile = CreateMockFormFile($"avatar{extension}", "image/jpeg", 500_000);
+        AdminUpdateAvatarCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            AvatarFile: validFile
+        );
+
+        // Act
+        var result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Multiple Validation Errors Tests
+
+    [Fact]
+    public async Task Validate_WithAllInvalidValues_ShouldHaveMultipleErrors()
+    {
+        // Arrange
+        IFormFile invalidFile = CreateMockFormFile(
+            "document.pdf",
+            "application/pdf",
+            FileConstants.MaxAvatarFileSizeBytes + 1
+        );
+        AdminUpdateAvatarCommand command = new(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            AvatarFile: invalidFile
+        );
+
+        // Act
+        var result = await _validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Count.Should().BeGreaterThanOrEqualTo(2);
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    private static IFormFile CreateMockFormFile(string fileName, string contentType, long length)
+    {
+        Mock<IFormFile> mockFile = new();
+        mockFile.Setup(f => f.FileName).Returns(fileName);
+        mockFile.Setup(f => f.ContentType).Returns(contentType);
+        mockFile.Setup(f => f.Length).Returns(length);
+        return mockFile.Object;
+    }
+
+    #endregion
+}
