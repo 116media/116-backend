@@ -24,7 +24,7 @@ public class AuthProviderTests
 
         // Assert
         provider.Should().NotBeNull();
-        Assert.Equal(EnumAuthProvider.Local, provider.Value);
+        provider.Value.Should().Be(EnumAuthProvider.Local);
     }
 
     [Theory]
@@ -38,7 +38,7 @@ public class AuthProviderTests
 
         // Assert
         provider.Should().NotBeNull();
-        Assert.Equal(providerEnum, provider.Value);
+        provider.Value.Should().Be(providerEnum);
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public class AuthProviderTests
 
         // Assert
         provider.Should().NotBeNull();
-        Assert.Equal(EnumAuthProvider.Local, provider.Value);
+        provider.Value.Should().Be(EnumAuthProvider.Local);
     }
 
     [Theory]
@@ -81,7 +81,7 @@ public class AuthProviderTests
         AuthProvider provider = new(input);
 
         // Assert
-        Assert.Equal(expected, provider.Value);
+        provider.Value.Should().Be(expected);
     }
 
     [Theory]
@@ -94,7 +94,7 @@ public class AuthProviderTests
         AuthProvider provider = new(input);
 
         // Assert
-        Assert.Equal(EnumAuthProvider.Local, provider.Value);
+        provider.Value.Should().Be(EnumAuthProvider.Local);
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class AuthProviderTests
         EnumAuthProvider result = provider;
 
         // Assert
-        Assert.Equal(EnumAuthProvider.Google, result);
+        result.Should().Be(EnumAuthProvider.Google);
     }
 
     [Fact]
@@ -165,7 +165,7 @@ public class AuthProviderTests
 
         // Assert
         provider.Should().NotBeNull();
-        Assert.Equal(EnumAuthProvider.Facebook, provider.Value);
+        provider.Value.Should().Be(EnumAuthProvider.Facebook);
     }
 
     [Fact]
@@ -179,7 +179,7 @@ public class AuthProviderTests
 
         // Assert
         provider.Should().NotBeNull();
-        Assert.Equal(EnumAuthProvider.Google, provider.Value);
+        provider.Value.Should().Be(EnumAuthProvider.Google);
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public class AuthProviderTests
         AuthProvider provider2 = new(EnumAuthProvider.Local);
 
         // Act & Assert
-        Assert.Equal(provider1, provider2);
+        provider1.Should().Be(provider2);
     }
 
     [Fact]
@@ -219,7 +219,7 @@ public class AuthProviderTests
         AuthProvider provider2 = new(EnumAuthProvider.Google);
 
         // Act & Assert
-        Assert.NotEqual(provider1, provider2);
+        provider1.Should().NotBe(provider2);
     }
 
     [Fact]
@@ -234,7 +234,7 @@ public class AuthProviderTests
         int hash2 = provider2.GetHashCode();
 
         // Assert
-        Assert.Equal(hash1, hash2);
+        hash1.Should().Be(hash2);
     }
 
     #endregion
