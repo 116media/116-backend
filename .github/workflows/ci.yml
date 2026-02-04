@@ -74,6 +74,9 @@ jobs:
     name: Code Coverage Report
     runs-on: ubuntu-latest
     needs: [unit-tests]
+    permissions:
+      pull-requests: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -135,8 +138,8 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Install CSharpier
-        run: dotnet tool install -g csharpier
+      - name: Restore dotnet tools
+        run: dotnet tool restore
 
       - name: Check Formatting
         run: dotnet csharpier check .
