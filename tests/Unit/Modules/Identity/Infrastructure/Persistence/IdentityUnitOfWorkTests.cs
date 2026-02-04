@@ -30,7 +30,7 @@ public class IdentityUnitOfWorkTests
         int result = await unitOfWork.CommitAsync();
 
         // Assert
-        Assert.Equal(0, result);
+        result.Should().Be(0);
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class IdentityUnitOfWorkTests
         int result = await unitOfWork.CommitAsync(cancellationToken);
 
         // Assert
-        Assert.Equal(0, result);
+        result.Should().Be(0);
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public class IdentityUnitOfWorkTests
         int result = await unitOfWork.CommitAsync();
 
         // Assert
-        Assert.Equal(0, result);
+        result.Should().Be(0);
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class IdentityUnitOfWorkTests
         int result2 = await unitOfWork.CommitAsync();
 
         // Assert
-        Assert.Equal(0, result1);
-        Assert.Equal(0, result2);
+        result1.Should().Be(0);
+        result2.Should().Be(0);
     }
 }
