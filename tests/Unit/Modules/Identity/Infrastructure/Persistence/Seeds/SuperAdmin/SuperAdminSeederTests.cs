@@ -188,7 +188,7 @@ public class SuperAdminSeederTests
 
         // Assert
         int userCount = await context.Users.CountAsync();
-        Assert.Equal(1, userCount); // Should still be just the pre-seeded user
+        userCount.Should().Be(1); // Should still be just the pre-seeded user
     }
 
     [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
