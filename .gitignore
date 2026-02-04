@@ -69,3 +69,4 @@ nunit-*.xml
 
 # Claude Configurations
 CLAUDE.md
+coverage/
