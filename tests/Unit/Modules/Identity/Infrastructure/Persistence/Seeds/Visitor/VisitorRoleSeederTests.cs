@@ -90,7 +90,7 @@ public class VisitorRoleSeederTests
 
         // Assert
         int permissionCount = await context.Permissions.CountAsync();
-        Assert.Equal(29, permissionCount);
+        permissionCount.Should().Be(29);
     }
 
     [Fact(
@@ -111,8 +111,8 @@ public class VisitorRoleSeederTests
         int rolePermissionCount = await context.RolePermissions.CountAsync();
 
         // Both should be 29 since we create 29 permissions and 29 role-permission mappings
-        Assert.Equal(29, permissionCount);
-        Assert.Equal(29, rolePermissionCount);
+        permissionCount.Should().Be(29);
+        rolePermissionCount.Should().Be(29);
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public class VisitorRoleSeederTests
 
         // Assert
         int roleCount = await context.Roles.CountAsync();
-        Assert.Equal(1, roleCount); // Should still be just the original role
+        roleCount.Should().Be(1); // Should still be just the original role
     }
 
     [Fact]
@@ -156,7 +156,7 @@ public class VisitorRoleSeederTests
 
         // Assert
         int permissionCount = await context.Permissions.CountAsync();
-        Assert.Equal(0, permissionCount); // No permissions should be added
+        permissionCount.Should().Be(0); // No permissions should be added
     }
 
     [Fact]
