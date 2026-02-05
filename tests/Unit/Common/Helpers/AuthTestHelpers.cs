@@ -103,4 +103,13 @@ public static class AuthTestHelpers
     /// <returns>AdminLoginAuthData with the specified user.</returns>
     public static AdminLoginAuthData CreateAdminLoginAuthData(UserEntity user) =>
         new AuthDataBuilder(user).BuildAdminLoginAuthData();
+
+    /// <summary>
+    /// Creates AdminLoginAuthData with a specific user and roles.
+    /// </summary>
+    /// <param name="user">The user entity to use.</param>
+    /// <param name="roles">The list of role DTOs.</param>
+    /// <returns>AdminLoginAuthData with the specified user and roles.</returns>
+    public static AdminLoginAuthData CreateAdminLoginAuthData(UserEntity user, List<RoleDto> roles) =>
+        new AuthDataBuilder(user).WithRoles(roles).BuildAdminLoginAuthData();
 }
