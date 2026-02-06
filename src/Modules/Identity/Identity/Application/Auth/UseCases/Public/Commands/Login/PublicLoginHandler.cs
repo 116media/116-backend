@@ -6,6 +6,7 @@ using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Results;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
 
@@ -15,10 +16,12 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
 /// <param name="authFactory">Factory for handling user authentication logic.</param>
 /// <param name="sessionFactory">Factory for creating authentication sessions.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicLoginHandler(
     IPublicLoginAuthFactory authFactory,
     ISessionFactory sessionFactory,
-    IFileRepository fileRepository
+    IFileRepository fileRepository,
+    IMapper mapper
 ) : ICommandHandler<PublicLoginCommand, PublicLoginResult>
 {
     /// <summary>
@@ -54,8 +57,9 @@ public class PublicLoginHandler(
             cancellationToken: cancellationToken
         );
 
-        var avatarDto = avatarFile?.ToFileDto();
+        var avatarDto = avatarFile?.ToFileDto(mapper);
         var userDto = authData.User.ToUserResponseDto(
+            mapper: mapper,
             roles: authData.Roles,
             permissions: authData.Permissions,
             avatar: avatarDto
