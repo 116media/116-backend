@@ -3,48 +3,50 @@ using _116.Core.Domain.Entities;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using Mapster;
+using MapsterMapper;
 
 namespace _116.Identity.Application.Shared.Mappers;
 
 /// <summary>
 /// Mapster configuration for User entity mappings.
-/// Leverages automatic mapping with minimal manual configuration.
+/// Uses dependency injection instead of global static state.
 /// </summary>
 public static class UserMapper
 {
     /// <summary>
-    /// Configures Mapster mappings once at application startup.
-    /// Uses automatic property mapping with selective overrides.
+    /// Registers User entity mappings into the provided TypeAdapterConfig.
+    /// This method does NOT mutate global state.
     /// </summary>
-    public static void Configure()
+    /// <param name="config">The TypeAdapterConfig to register mappings into.</param>
+    public static void Register(TypeAdapterConfig config)
     {
         // Configure UserEntity to UserResponseDto
-        TypeAdapterConfig<UserEntity, UserResponseDto>
-            .NewConfig()
+        config
+            .NewConfig<UserEntity, UserResponseDto>()
             .Map(dest => dest.Roles, _ => new List<RoleDto>())
             .Map(dest => dest.Permissions, _ => new List<PermissionDto>())
             .Map(dest => dest.Avatar, _ => (FileDto?)null)
-            .Map(dest => dest.AuthProvider, src => src.AuthProvider.ToString())
-            .Compile(); // Compile for performance
+            .Map(dest => dest.AuthProvider, src => src.AuthProvider.ToString());
     }
 
     /// <summary>
     /// High-performance extension method to map UserEntity to UserResponseDto with roles, permissions, and avatar.
-    /// Leverage Mapster's compiled mappings with selective property override.
     /// </summary>
     /// <param name="user">User entity to map</param>
+    /// <param name="mapper">Injected IMapper instance</param>
     /// <param name="roles">User roles collection</param>
     /// <param name="permissions">User permissions collection</param>
     /// <param name="avatar">User avatar file information</param>
     /// <returns>Fully populated UserResponseDto</returns>
     public static UserResponseDto ToUserResponseDto(
         this UserEntity user,
+        IMapper mapper,
         IReadOnlyCollection<RoleDto> roles,
         IReadOnlyCollection<PermissionDto> permissions,
         FileDto? avatar = null
     )
     {
-        var dto = user.Adapt<UserResponseDto>();
+        var dto = mapper.Map<UserResponseDto>(user);
         return dto with { Roles = roles, Permissions = permissions, Avatar = avatar };
     }
 
@@ -52,9 +54,10 @@ public static class UserMapper
     /// Maps FileEntity to FileDto.
     /// </summary>
     /// <param name="fileEntity">The file entity to map</param>
+    /// <param name="mapper">Injected IMapper instance</param>
     /// <returns>Mapped FileDto or null if input is null</returns>
-    public static FileDto? ToFileDto(this FileEntity? fileEntity)
+    public static FileDto? ToFileDto(this FileEntity? fileEntity, IMapper mapper)
     {
-        return fileEntity?.Adapt<FileDto>();
+        return fileEntity == null ? null : mapper.Map<FileDto>(fileEntity);
     }
 }
