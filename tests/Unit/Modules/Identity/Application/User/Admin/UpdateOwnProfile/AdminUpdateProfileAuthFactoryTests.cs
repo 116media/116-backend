@@ -90,9 +90,9 @@ public class AdminUpdateProfileAuthFactoryTests
 
         // Assert
         result.Should().NotBeNull();
-        Assert.Equal(user, result.User);
-        Assert.Equal(roles, result.Roles);
-        Assert.Equal(permissions, result.Permissions);
+        result.User.Should().Be(user);
+        result.Roles.Should().BeSameAs(roles);
+        result.Permissions.Should().BeSameAs(permissions);
     }
 
     [Fact]
