@@ -154,10 +154,7 @@ public class RouteMetadataFieldsTests
     public void MetaField_ShouldHaveValidRouteMetadata(Type metaFieldType, string fieldName, string expectedName)
     {
         // Arrange & Act
-        FieldInfo? field = metaFieldType.GetField(
-            fieldName,
-            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
-        );
+        FieldInfo? field = metaFieldType.GetField(fieldName, BindingFlags.Public | BindingFlags.Static);
 
         // Assert
         field.Should().NotBeNull();
@@ -182,15 +179,12 @@ public class RouteMetadataFieldsTests
     public void MetaField_Summary_ShouldNotBeEmpty(Type metaFieldType, string fieldName)
     {
         // Arrange & Act
-        FieldInfo? field = metaFieldType.GetField(
-            fieldName,
-            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
-        );
+        FieldInfo? field = metaFieldType.GetField(fieldName, BindingFlags.Public | BindingFlags.Static);
         var metadata = field!.GetValue(null) as RouteMetadata?;
 
         // Assert
         metadata.Should().NotBeNull();
-        Assert.NotEmpty(metadata.Value.Summary);
+        metadata.Value.Summary.Should().NotBeEmpty();
         (metadata.Value.Summary.Length > 10).Should().BeTrue("Summary should be descriptive");
     }
 
@@ -202,15 +196,12 @@ public class RouteMetadataFieldsTests
     public void MetaField_Description_ShouldContainUsefulInformation(Type metaFieldType, string fieldName)
     {
         // Arrange & Act
-        FieldInfo? field = metaFieldType.GetField(
-            fieldName,
-            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
-        );
+        FieldInfo? field = metaFieldType.GetField(fieldName, BindingFlags.Public | BindingFlags.Static);
         var metadata = field!.GetValue(null) as RouteMetadata?;
 
         // Assert
         metadata.Should().NotBeNull();
-        Assert.NotEmpty(metadata.Value.Description);
+        metadata.Value.Description.Should().NotBeEmpty();
         (metadata.Value.Description.Length > 50).Should().BeTrue("Description should be detailed");
     }
 
@@ -218,8 +209,8 @@ public class RouteMetadataFieldsTests
     public void AllMetaFieldClasses_ShouldBeStatic()
     {
         // Arrange
-        Type[] metaFieldTypes = new[]
-        {
+        Type[] metaFieldTypes =
+        [
             typeof(AdminLoginMetaField),
             typeof(PublicLoginMetaField),
             typeof(AdminCreateRoleMetaField),
@@ -228,7 +219,7 @@ public class RouteMetadataFieldsTests
             typeof(PublicSocialLoginMetaField),
             typeof(AdminGetAllSessionsMetaField),
             typeof(PublicGetOwnSessionsMetaField),
-        };
+        ];
 
         // Act & Assert
         foreach (Type type in metaFieldTypes)
@@ -241,21 +232,18 @@ public class RouteMetadataFieldsTests
     public void AllMetaFieldFields_ShouldBePublicStaticReadonly()
     {
         // Arrange
-        (Type, string)[] testCases = new[]
-        {
+        (Type, string)[] testCases =
+        [
             (typeof(AdminLoginMetaField), "AdminLogin"),
             (typeof(PublicLoginMetaField), "PublicLogin"),
             (typeof(AdminCreateRoleMetaField), "AdminCreateRole"),
             (typeof(PublicSignUpMetaField), "PublicSignUp"),
-        };
+        ];
 
         // Act & Assert
         foreach (var (type, fieldName) in testCases)
         {
-            FieldInfo? field = type.GetField(
-                fieldName,
-                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
-            );
+            FieldInfo? field = type.GetField(fieldName, BindingFlags.Public | BindingFlags.Static);
 
             field.Should().NotBeNull();
             field.IsPublic.Should().BeTrue($"{type.Name}.{fieldName} should be public");
