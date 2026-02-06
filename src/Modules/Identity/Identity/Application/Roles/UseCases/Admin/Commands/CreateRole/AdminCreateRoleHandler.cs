@@ -5,6 +5,7 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.CreateRole;
 
@@ -13,7 +14,8 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.CreateRole;
 /// </summary>
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminCreateRoleHandler(IRoleRepository roleRepository, IIdentityUnitOfWork unitOfWork)
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class AdminCreateRoleHandler(IRoleRepository roleRepository, IIdentityUnitOfWork unitOfWork, IMapper mapper)
     : ICommandHandler<AdminCreateRoleCommand, AdminCreateRoleResult>
 {
     /// <summary>
@@ -39,7 +41,7 @@ public class AdminCreateRoleHandler(IRoleRepository roleRepository, IIdentityUni
         await roleRepository.AddAsync(role: role, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        var roleDto = role.ToRoleDto();
+        var roleDto = role.ToRoleDto(mapper);
 
         return new AdminCreateRoleResult(Role: roleDto);
     }
