@@ -3,6 +3,7 @@ using _116.Identity.Application.Session.Factories;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Results;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 
@@ -11,7 +12,8 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 /// </summary>
 /// <param name="authFactory">Factory for handling user registration logic.</param>
 /// <param name="sessionFactory">Factory for creating authentication sessions.</param>
-public class PublicSignUpHandler(IPublicSignUpAuthFactory authFactory, ISessionFactory sessionFactory)
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class PublicSignUpHandler(IPublicSignUpAuthFactory authFactory, ISessionFactory sessionFactory, IMapper mapper)
     : ICommandHandler<PublicSignUpCommand, PublicSignUpResult>
 {
     /// <summary>
@@ -37,7 +39,11 @@ public class PublicSignUpHandler(IPublicSignUpAuthFactory authFactory, ISessionF
             cancellationToken: cancellationToken
         );
 
-        var userDto = authData.User.ToUserResponseDto(roles: authData.Roles, permissions: authData.Permissions);
+        var userDto = authData.User.ToUserResponseDto(
+            mapper: mapper,
+            roles: authData.Roles,
+            permissions: authData.Permissions
+        );
 
         var authResult = new AuthenticationResult(
             User: userDto,
