@@ -57,7 +57,7 @@ public class AdminResetPasswordAuthFactoryTests
 
         // Assert
         result.Should().NotBeNull();
-        Assert.Equal(user, result.User);
+        result.User.Should().Be(user);
     }
 
     [Fact]
@@ -180,7 +180,7 @@ public class AdminResetPasswordAuthFactoryTests
 
         // Assert
         result.Should().NotBeNull();
-        Assert.Equal(user, result);
+        result.Should().Be(user);
     }
 
     [Fact]
