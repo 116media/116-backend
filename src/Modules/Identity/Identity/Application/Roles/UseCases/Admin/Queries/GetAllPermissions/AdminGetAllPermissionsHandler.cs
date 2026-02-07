@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.Roles.UseCases.Admin.Queries.GetAllPermissions;
 
@@ -11,7 +12,8 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Queries.GetAllPermissio
 /// Handles the <see cref="AdminGetAllPermissionsQuery" /> to retrieve all permissions with pagination and filtering.
 /// </summary>
 /// <param name="permissionRepository">Repository for permission data access operations.</param>
-public class AdminGetAllPermissionsHandler(IPermissionRepository permissionRepository)
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class AdminGetAllPermissionsHandler(IPermissionRepository permissionRepository, IMapper mapper)
     : IQueryHandler<AdminGetAllPermissionsQuery, AdminGetAllPermissionsResult>
 {
     /// <summary>
@@ -37,7 +39,7 @@ public class AdminGetAllPermissionsHandler(IPermissionRepository permissionRepos
             cancellationToken: cancellationToken
         );
 
-        List<PermissionDto> permissionDtos = permissions.Select(p => p.ToPermissionDto()).ToList();
+        List<PermissionDto> permissionDtos = permissions.Select(p => p.ToPermissionDto(mapper)).ToList();
 
         var paginatedResult = new PaginatedResult<PermissionDto>(
             pageIndex: pageIndex,
