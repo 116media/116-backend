@@ -3,6 +3,7 @@ using _116.Core.Domain.Entities;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.Contracts;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
 
@@ -11,8 +12,12 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
 /// </summary>
 /// <param name="authFactory">Factory for handling admin user avatar update logic.</param>
 /// <param name="fileRepository">Repository for file data access operations.</param>
-public class AdminUpdateAvatarHandler(IAdminUpdateAvatarAuthFactory authFactory, IFileRepository fileRepository)
-    : ICommandHandler<AdminUpdateAvatarCommand, AdminUpdateAvatarResult>
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class AdminUpdateAvatarHandler(
+    IAdminUpdateAvatarAuthFactory authFactory,
+    IFileRepository fileRepository,
+    IMapper mapper
+) : ICommandHandler<AdminUpdateAvatarCommand, AdminUpdateAvatarResult>
 {
     /// <summary>
     /// Handles the avatar update command by updating the admin user's avatar URL.
@@ -51,8 +56,9 @@ public class AdminUpdateAvatarHandler(IAdminUpdateAvatarAuthFactory authFactory,
             cancellationToken: cancellationToken
         );
 
-        var avatarDto = avatarFile?.ToFileDto();
+        var avatarDto = avatarFile?.ToFileDto(mapper);
         var userDto = authData.User.ToUserResponseDto(
+            mapper: mapper,
             roles: authData.Roles,
             permissions: authData.Permissions,
             avatar: avatarDto
