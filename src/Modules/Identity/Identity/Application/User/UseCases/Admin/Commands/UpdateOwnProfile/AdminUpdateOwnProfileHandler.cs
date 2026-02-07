@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile.Contracts;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile;
 
@@ -13,8 +14,12 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfil
 /// </summary>
 /// <param name="authFactory">Factory for handling admin user profile update logic.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
-public class AdminUpdateOwnProfileHandler(IAdminUpdateProfileAuthFactory authFactory, IFileRepository fileRepository)
-    : ICommandHandler<AdminUpdateOwnProfileCommand, AdminUpdateOwnProfileResult>
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class AdminUpdateOwnProfileHandler(
+    IAdminUpdateProfileAuthFactory authFactory,
+    IFileRepository fileRepository,
+    IMapper mapper
+) : ICommandHandler<AdminUpdateOwnProfileCommand, AdminUpdateOwnProfileResult>
 {
     /// <summary>
     /// Handles the profile update command by validating uniqueness and updating admin user information.
@@ -46,8 +51,9 @@ public class AdminUpdateOwnProfileHandler(IAdminUpdateProfileAuthFactory authFac
             cancellationToken: cancellationToken
         );
 
-        var avatarDto = avatarFile?.ToFileDto();
+        var avatarDto = avatarFile?.ToFileDto(mapper);
         var userDto = authData.User.ToUserResponseDto(
+            mapper: mapper,
             roles: authData.Roles,
             permissions: authData.Permissions,
             avatar: avatarDto
