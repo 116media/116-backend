@@ -58,7 +58,7 @@ public class RouteMetadataTests
         // Assert
         metadata.Name.Should().Be(name);
         metadata.Summary.Should().Be(summary);
-        Assert.Equal(5000, metadata.Description.Length);
+        metadata.Description.Length.Should().Be(5000);
     }
 
     [Fact]
@@ -127,7 +127,7 @@ public class RouteMetadataTests
         var metadata2 = new RouteMetadata("Route", "Summary", "Description");
 
         // Act & Assert
-        Assert.Equal(metadata1, metadata2);
+        metadata1.Should().Be(metadata2);
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class RouteMetadataTests
         var metadata2 = new RouteMetadata("Route2", "Summary", "Description");
 
         // Act & Assert
-        Assert.NotEqual(metadata1, metadata2);
+        metadata1.Should().NotBe(metadata2);
     }
 
     [Fact]
