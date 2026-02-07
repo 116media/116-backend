@@ -191,7 +191,7 @@ public class RateLimitingExtensionTests
 
         Func<Task> act = async () =>
         {
-            var task = (ValueTask)method.Invoke(null, new object[] { context, CancellationToken.None })!;
+            var task = (ValueTask)method.Invoke(null, [context, CancellationToken.None])!;
             await task;
         };
 
@@ -220,7 +220,7 @@ public class RateLimitingExtensionTests
 
         Func<Task> act = async () =>
         {
-            var task = (ValueTask)method.Invoke(null, new object[] { context, CancellationToken.None })!;
+            var task = (ValueTask)method.Invoke(null, [context, CancellationToken.None])!;
             await task;
         };
 
@@ -251,7 +251,7 @@ public class RateLimitingExtensionTests
 
         Func<Task> act = async () =>
         {
-            var task = (ValueTask)method.Invoke(null, new object[] { context, CancellationToken.None })!;
+            var task = (ValueTask)method.Invoke(null, [context, CancellationToken.None])!;
             await task;
         };
 
