@@ -40,7 +40,7 @@ public class XlsxExportStrategyTests
         var sessions = new List<SessionExportDto> { CreateSessionDto() };
 
         // Act
-        byte[] result = _sut.Export(sessions, new List<string>());
+        byte[] result = _sut.Export(sessions, []);
 
         // Assert
         result.Should().NotBeNull();
