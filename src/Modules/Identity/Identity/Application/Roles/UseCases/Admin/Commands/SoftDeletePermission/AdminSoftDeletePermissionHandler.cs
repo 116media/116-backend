@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeletePermission;
 
@@ -12,9 +13,11 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeletePerm
 /// </summary>
 /// <param name="permissionRepository">Repository for permission data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminSoftDeletePermissionHandler(
     IPermissionRepository permissionRepository,
-    IIdentityUnitOfWork unitOfWork
+    IIdentityUnitOfWork unitOfWork,
+    IMapper mapper
 ) : ICommandHandler<AdminSoftDeletePermissionCommand, AdminSoftDeletePermissionResult>
 {
     /// <summary>
@@ -42,7 +45,7 @@ public class AdminSoftDeletePermissionHandler(
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        var permissionDto = permission.ToPermissionDto();
+        var permissionDto = permission.ToPermissionDto(mapper);
         return new AdminSoftDeletePermissionResult(Permission: permissionDto);
     }
 }
