@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.Roles.UseCases.Admin.Queries.GetAllRoles;
 
@@ -11,7 +12,8 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Queries.GetAllRoles;
 /// Handles the <see cref="AdminGetAllRolesQuery" /> to retrieve all roles with pagination and filtering.
 /// </summary>
 /// <param name="roleRepository">Repository for role data access operations.</param>
-public class AdminGetAllRolesHandler(IRoleRepository roleRepository)
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class AdminGetAllRolesHandler(IRoleRepository roleRepository, IMapper mapper)
     : IQueryHandler<AdminGetAllRolesQuery, AdminGetAllRolesResult>
 {
     /// <summary>
@@ -34,7 +36,7 @@ public class AdminGetAllRolesHandler(IRoleRepository roleRepository)
             cancellationToken: cancellationToken
         );
 
-        List<RoleDto> roleDtos = roles.Select(r => r.ToRoleDto()).ToList();
+        List<RoleDto> roleDtos = roles.Select(r => r.ToRoleDto(mapper)).ToList();
 
         var paginatedResult = new PaginatedResult<RoleDto>(
             pageIndex: pageIndex,
