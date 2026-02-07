@@ -5,6 +5,7 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.User.UseCases.Admin.Commands.RemoveRoleFromUser;
 
@@ -13,8 +14,12 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.RemoveRoleFromU
 /// </summary>
 /// <param name="userRoleRepository">Repository for user-role data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminRemoveRoleFromUserHandler(IUserRoleRepository userRoleRepository, IIdentityUnitOfWork unitOfWork)
-    : ICommandHandler<AdminRemoveRoleFromUserCommand, AdminRemoveRoleFromUserResult>
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class AdminRemoveRoleFromUserHandler(
+    IUserRoleRepository userRoleRepository,
+    IIdentityUnitOfWork unitOfWork,
+    IMapper mapper
+) : ICommandHandler<AdminRemoveRoleFromUserCommand, AdminRemoveRoleFromUserResult>
 {
     /// <summary>
     /// Handles the remove role from user command.
@@ -49,7 +54,7 @@ public class AdminRemoveRoleFromUserHandler(IUserRoleRepository userRoleReposito
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyCollection<RoleDto> roles = userRoles.Select(ur => ur.Role.ToRoleDto()).ToList();
+        IReadOnlyCollection<RoleDto> roles = userRoles.Select(ur => ur.Role.ToRoleDto(mapper)).ToList();
         return new AdminRemoveRoleFromUserResult(Roles: roles);
     }
 }
