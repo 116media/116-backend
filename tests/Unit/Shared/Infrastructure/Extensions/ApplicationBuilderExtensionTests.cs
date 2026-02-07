@@ -96,7 +96,7 @@ public class ApplicationBuilderExtensionTests
         app.UseSeed();
 
         // Assert
-        executionOrder.Should().Equal(new[] { 1, 2 }, "seeders should execute in registration order");
+        executionOrder.Should().Equal([1, 2], "seeders should execute in registration order");
     }
 
     [Fact]
