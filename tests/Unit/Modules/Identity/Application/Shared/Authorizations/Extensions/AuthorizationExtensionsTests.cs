@@ -25,7 +25,7 @@ public class AuthorizationExtensionsTests
     public void AddIdentityModuleAuthorization_ShouldRegisterRequirementHandlers()
     {
         // Arrange
-        ServiceCollection services = new();
+        ServiceCollection services = [];
         services.AddLogging(); // Required for handlers
         services.AddAuthorization(); // Required for IAuthorizationHandler registration
         services.AddScoped(_ => Mock.Of<_116.Identity.Application.Shared.Repositories.IAuthRepository>()); // Required for AccountStatusRequirementHandler
@@ -45,7 +45,7 @@ public class AuthorizationExtensionsTests
     public void AddIdentityModuleAuthorization_ShouldReturnServiceCollection()
     {
         // Arrange
-        ServiceCollection services = new();
+        ServiceCollection services = [];
 
         // Act
         IServiceCollection result = services.AddIdentityModuleAuthorization();
@@ -60,7 +60,7 @@ public class AuthorizationExtensionsTests
     public void AddIdentityModuleAuthorization_ShouldConfigureAuthorizationPolicies()
     {
         // Arrange
-        ServiceCollection services = new();
+        ServiceCollection services = [];
         services.AddLogging();
         services.AddAuthorization();
         services.AddScoped(_ => Mock.Of<_116.Identity.Application.Shared.Repositories.IAuthRepository>());
@@ -78,7 +78,7 @@ public class AuthorizationExtensionsTests
     public void AddIdentityModuleAuthorization_ShouldRegisterHandlersAsScoped()
     {
         // Arrange
-        ServiceCollection services = new();
+        ServiceCollection services = [];
         services.AddLogging();
         services.AddAuthorization();
         services.AddIdentityModuleAuthorization();
@@ -105,7 +105,7 @@ public class AuthorizationExtensionsTests
     public async Task AddIdentityModuleAuthorization_ShouldRegisterSuperAdminPolicy()
     {
         // Arrange
-        ServiceCollection services = new();
+        ServiceCollection services = [];
         services.AddLogging();
         services.AddAuthorization();
         services.AddScoped(_ => Mock.Of<_116.Identity.Application.Shared.Repositories.IAuthRepository>());
@@ -125,7 +125,7 @@ public class AuthorizationExtensionsTests
     public async Task AddIdentityModuleAuthorization_ShouldRegisterAdminPolicy()
     {
         // Arrange
-        ServiceCollection services = new();
+        ServiceCollection services = [];
         services.AddLogging();
         services.AddAuthorization();
         services.AddScoped(_ => Mock.Of<_116.Identity.Application.Shared.Repositories.IAuthRepository>());
@@ -145,7 +145,7 @@ public class AuthorizationExtensionsTests
     public async Task AddIdentityModuleAuthorization_ShouldRegisterVisitorPolicy()
     {
         // Arrange
-        ServiceCollection services = new();
+        ServiceCollection services = [];
         services.AddLogging();
         services.AddAuthorization();
         services.AddScoped(_ => Mock.Of<_116.Identity.Application.Shared.Repositories.IAuthRepository>());
@@ -165,7 +165,7 @@ public class AuthorizationExtensionsTests
     public async Task AddIdentityModuleAuthorization_ShouldRegisterAdminOrSuperAdminPolicy()
     {
         // Arrange
-        ServiceCollection services = new();
+        ServiceCollection services = [];
         services.AddLogging();
         services.AddAuthorization();
         services.AddScoped(_ => Mock.Of<_116.Identity.Application.Shared.Repositories.IAuthRepository>());
@@ -185,7 +185,7 @@ public class AuthorizationExtensionsTests
     public async Task AddIdentityModuleAuthorization_ShouldRegisterAccountStatusPolicies()
     {
         // Arrange
-        ServiceCollection services = new();
+        ServiceCollection services = [];
         services.AddLogging();
         services.AddAuthorization();
         services.AddScoped(_ => Mock.Of<_116.Identity.Application.Shared.Repositories.IAuthRepository>());
