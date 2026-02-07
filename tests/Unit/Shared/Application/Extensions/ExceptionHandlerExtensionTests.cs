@@ -38,7 +38,7 @@ public class ExceptionHandlerExtensionTests
         services.AddAppExceptionHandler();
 
         // Assert - Problem details services should be registered
-        Assert.NotEmpty(services);
+        services.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public class ExceptionHandlerExtensionTests
         // Assert
         ServiceDescriptor? descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(DefaultExceptionHandler));
         descriptor.Should().NotBeNull();
-        Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
+        descriptor.Lifetime.Should().Be(ServiceLifetime.Singleton);
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public class ExceptionHandlerExtensionTests
             s.ServiceType == typeof(ExceptionStrategyRegistry)
         );
         descriptor.Should().NotBeNull();
-        Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
+        descriptor.Lifetime.Should().Be(ServiceLifetime.Singleton);
     }
 
     [Fact]
@@ -97,7 +97,7 @@ public class ExceptionHandlerExtensionTests
 
         // Assert - Should have multiple IExceptionStrategy implementations
         List<ServiceDescriptor> strategies = services.Where(s => s.ServiceType == typeof(IExceptionStrategy)).ToList();
-        Assert.NotEmpty(strategies);
+        strategies.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public class ExceptionHandlerExtensionTests
 
         // Assert
         List<ServiceDescriptor> strategies = services.Where(s => s.ServiceType == typeof(IExceptionStrategy)).ToList();
-        Assert.All(strategies, descriptor => Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime));
+        strategies.Should().AllSatisfy(descriptor => descriptor.Lifetime.Should().Be(ServiceLifetime.Singleton));
     }
 
     [Fact]
@@ -157,7 +157,7 @@ public class ExceptionHandlerExtensionTests
         IEnumerable<IExceptionStrategy> strategies = provider.GetServices<IExceptionStrategy>();
 
         // Assert
-        Assert.NotEmpty(strategies);
+        strategies.Should().NotBeEmpty();
     }
 
     [Fact]
