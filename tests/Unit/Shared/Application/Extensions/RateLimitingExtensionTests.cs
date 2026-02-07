@@ -3,6 +3,7 @@ using System.Threading.RateLimiting;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Extensions;
 using AwesomeAssertions;
+using AwesomeAssertions.Specialized;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +28,7 @@ public class RateLimitingExtensionTests
         services.AddRateLimiting();
 
         // Assert - RateLimiter services should be registered
-        Assert.NotEmpty(services);
+        services.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -56,7 +57,7 @@ public class RateLimitingExtensionTests
 
         // Assert
         options.Should().NotBeNull();
-        Assert.Equal(StatusCodes.Status429TooManyRequests, options.Value.RejectionStatusCode);
+        options.Value.RejectionStatusCode.Should().Be(StatusCodes.Status429TooManyRequests);
     }
 
     [Fact]
@@ -101,7 +102,7 @@ public class RateLimitingExtensionTests
         services.AddRateLimiting();
 
         // Assert - RateLimiter services should be registered
-        Assert.NotEmpty(services);
+        services.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -183,26 +184,26 @@ public class RateLimitingExtensionTests
         var lease = new TestRateLimitLease(hasRetryAfter: true, retryAfter);
         var context = new OnRejectedContext { Lease = lease, HttpContext = new DefaultHttpContext() };
 
-        // Get the private method via reflection
-        MethodInfo? method = typeof(RateLimitingExtension).GetMethod(
+        MethodInfo method = typeof(RateLimitingExtension).GetMethod(
             "OnRateLimitRejected",
             BindingFlags.NonPublic | BindingFlags.Static
-        );
+        )!;
 
-        // Act & Assert
-        try
+        Func<Task> act = async () =>
         {
-            var task = (ValueTask)method!.Invoke(null, new object[] { context, CancellationToken.None })!;
+            var task = (ValueTask)method.Invoke(null, new object[] { context, CancellationToken.None })!;
             await task;
-            Assert.Fail("Expected RateLimitExceededException to be thrown");
-        }
-        catch (TargetInvocationException ex)
-        {
-            // Reflection wraps the exception in TargetInvocationException, unwrap it
-            ex.InnerException.Should().BeOfType<RateLimitExceededException>();
-            var rateLimitEx = (RateLimitExceededException)ex.InnerException!;
-            rateLimitEx.RetryAfter.Should().Be(retryAfter);
-        }
+        };
+
+        // Assert
+        ExceptionAssertions<TargetInvocationException>? exception = await act.Should()
+            .ThrowAsync<TargetInvocationException>();
+
+        exception
+            .Which.InnerException.Should()
+            .BeOfType<RateLimitExceededException>()
+            .Which.RetryAfter.Should()
+            .Be(retryAfter);
     }
 
     [Fact]
@@ -212,25 +213,26 @@ public class RateLimitingExtensionTests
         var lease = new TestRateLimitLease(hasRetryAfter: false, TimeSpan.Zero);
         var context = new OnRejectedContext { Lease = lease, HttpContext = new DefaultHttpContext() };
 
-        // Get the private method via reflection
-        MethodInfo? method = typeof(RateLimitingExtension).GetMethod(
+        MethodInfo method = typeof(RateLimitingExtension).GetMethod(
             "OnRateLimitRejected",
             BindingFlags.NonPublic | BindingFlags.Static
-        );
+        )!;
 
-        // Act & Assert
-        try
+        Func<Task> act = async () =>
         {
-            var task = (ValueTask)method!.Invoke(null, new object[] { context, CancellationToken.None })!;
+            var task = (ValueTask)method.Invoke(null, new object[] { context, CancellationToken.None })!;
             await task;
-            Assert.Fail("Expected RateLimitExceededException to be thrown");
-        }
-        catch (TargetInvocationException ex)
-        {
-            ex.InnerException.Should().BeOfType<RateLimitExceededException>();
-            var rateLimitEx = (RateLimitExceededException)ex.InnerException!;
-            rateLimitEx.RetryAfter.Should().Be(TimeSpan.Zero);
-        }
+        };
+
+        // Assert
+        ExceptionAssertions<TargetInvocationException>? exception = await act.Should()
+            .ThrowAsync<TargetInvocationException>();
+
+        exception
+            .Which.InnerException.Should()
+            .BeOfType<RateLimitExceededException>()
+            .Which.RetryAfter.Should()
+            .Be(TimeSpan.Zero);
     }
 
     [Fact]
@@ -238,32 +240,33 @@ public class RateLimitingExtensionTests
     {
         // Arrange
         TimeSpan exactRetryAfter = TimeSpan.FromMinutes(5).Add(TimeSpan.FromSeconds(37));
+
         var lease = new TestRateLimitLease(hasRetryAfter: true, exactRetryAfter);
         var context = new OnRejectedContext { Lease = lease, HttpContext = new DefaultHttpContext() };
 
-        // Get the private method via reflection
-        MethodInfo? method = typeof(RateLimitingExtension).GetMethod(
+        MethodInfo method = typeof(RateLimitingExtension).GetMethod(
             "OnRateLimitRejected",
             BindingFlags.NonPublic | BindingFlags.Static
-        );
+        )!;
 
-        // Act & Assert
-        try
+        Func<Task> act = async () =>
         {
-            var task = (ValueTask)method!.Invoke(null, new object[] { context, CancellationToken.None })!;
+            var task = (ValueTask)method.Invoke(null, new object[] { context, CancellationToken.None })!;
             await task;
-            Assert.Fail("Expected RateLimitExceededException to be thrown");
-        }
-        catch (TargetInvocationException ex)
-        {
-            ex.InnerException.Should().BeOfType<RateLimitExceededException>();
-            var rateLimitEx = (RateLimitExceededException)ex.InnerException!;
-            rateLimitEx.RetryAfter.Should().Be(exactRetryAfter);
-            rateLimitEx.RetryAfter.TotalSeconds.Should().Be(337); // 5*60 + 37
-        }
+        };
+
+        // Assert
+        ExceptionAssertions<TargetInvocationException>? exception = await act.Should()
+            .ThrowAsync<TargetInvocationException>();
+        RateLimitExceededException? rateLimitEx = exception
+            .Which.InnerException.Should()
+            .BeOfType<RateLimitExceededException>()
+            .Which;
+
+        rateLimitEx.RetryAfter.Should().Be(exactRetryAfter);
+        rateLimitEx.RetryAfter.TotalSeconds.Should().Be(337);
     }
 
-    // Test implementation of RateLimitLease
     private class TestRateLimitLease : RateLimitLease
     {
         private readonly bool _hasRetryAfter;
