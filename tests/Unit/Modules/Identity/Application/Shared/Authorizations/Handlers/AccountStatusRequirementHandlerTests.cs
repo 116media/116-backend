@@ -35,7 +35,7 @@ public class AccountStatusRequirementHandlerTests
         };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         UserEntity userEntity = UserFactory.CreateWithId(userId);
         typeof(UserEntity).GetProperty(nameof(UserEntity.IsActive))!.SetValue(userEntity, true);
@@ -62,7 +62,7 @@ public class AccountStatusRequirementHandlerTests
         };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsVerified, "true");
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         UserEntity userEntity = UserFactory.CreateWithId(userId);
         typeof(UserEntity).GetProperty(nameof(UserEntity.IsVerified))!.SetValue(userEntity, true);
@@ -89,7 +89,7 @@ public class AccountStatusRequirementHandlerTests
         };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         UserEntity userEntity = UserFactory.CreateWithId(userId);
         typeof(UserEntity).GetProperty(nameof(UserEntity.IsActive))!.SetValue(userEntity, false);
@@ -110,7 +110,7 @@ public class AccountStatusRequirementHandlerTests
         // Arrange
         var user = new ClaimsPrincipal(new ClaimsIdentity());
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         // Act
         await _handler.HandleAsync(context);
@@ -130,7 +130,7 @@ public class AccountStatusRequirementHandlerTests
         var claims = new[] { new Claim(ClaimTypes.NameIdentifier, "invalid-guid") };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         // Act
         await _handler.HandleAsync(context);
@@ -155,7 +155,7 @@ public class AccountStatusRequirementHandlerTests
         };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         _authRepositoryMock
             .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
@@ -180,7 +180,7 @@ public class AccountStatusRequirementHandlerTests
         };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         _authRepositoryMock
             .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
@@ -205,7 +205,7 @@ public class AccountStatusRequirementHandlerTests
         };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsVerified, "true");
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         _authRepositoryMock
             .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
@@ -230,7 +230,7 @@ public class AccountStatusRequirementHandlerTests
         };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         _authRepositoryMock
             .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
@@ -258,7 +258,7 @@ public class AccountStatusRequirementHandlerTests
         };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         _authRepositoryMock
             .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
@@ -281,7 +281,7 @@ public class AccountStatusRequirementHandlerTests
         };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         _authRepositoryMock
             .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
@@ -306,7 +306,7 @@ public class AccountStatusRequirementHandlerTests
         };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new AccountStatusRequirement("CustomClaim", "true");
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         UserEntity userEntity = UserFactory.CreateWithId(userId);
         _authRepositoryMock
@@ -332,7 +332,7 @@ public class AccountStatusRequirementHandlerTests
         };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "invalid-boolean");
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         UserEntity userEntity = UserFactory.CreateWithId(userId);
         typeof(UserEntity).GetProperty(nameof(UserEntity.IsActive))!.SetValue(userEntity, true);
@@ -359,7 +359,7 @@ public class AccountStatusRequirementHandlerTests
         };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         _authRepositoryMock
             .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
@@ -384,7 +384,7 @@ public class AccountStatusRequirementHandlerTests
         };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         _authRepositoryMock
             .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
@@ -409,7 +409,7 @@ public class AccountStatusRequirementHandlerTests
         };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true"); // Lowercase
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         _authRepositoryMock
             .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
@@ -429,7 +429,7 @@ public class AccountStatusRequirementHandlerTests
         var claims = new[] { new Claim(ClaimTypes.NameIdentifier, string.Empty) };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         // Act
         await _handler.HandleAsync(context);
