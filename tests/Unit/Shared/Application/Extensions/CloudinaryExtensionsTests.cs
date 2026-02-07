@@ -23,7 +23,7 @@ public class CloudinaryExtensionsTests
         // Assert
         ServiceDescriptor? descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(CloudinarySettings));
         descriptor.Should().NotBeNull();
-        Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
+        descriptor.Lifetime.Should().Be(ServiceLifetime.Singleton);
     }
 
     [Fact]
