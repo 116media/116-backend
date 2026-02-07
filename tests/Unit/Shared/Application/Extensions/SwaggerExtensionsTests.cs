@@ -35,7 +35,7 @@ public class SwaggerExtensionsTests
         options.AddSwaggerOptions();
 
         // Assert
-        Assert.NotEmpty(options.SwaggerGeneratorOptions.SecuritySchemes);
+        options.SwaggerGeneratorOptions.SecuritySchemes.Should().NotBeEmpty();
         options.SwaggerGeneratorOptions.SecuritySchemes.Should().ContainKey("Bearer");
     }
 
@@ -52,7 +52,7 @@ public class SwaggerExtensionsTests
         OpenApiSecurityScheme? scheme = options.SwaggerGeneratorOptions.SecuritySchemes["Bearer"];
         scheme.Should().NotBeNull();
         scheme.Scheme.Should().Be("Bearer");
-        Assert.Equal(SecuritySchemeType.ApiKey, scheme.Type);
+        scheme.Type.Should().Be(SecuritySchemeType.ApiKey);
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class SwaggerExtensionsTests
         // Assert
         OpenApiSecurityScheme? scheme = options.SwaggerGeneratorOptions.SecuritySchemes["Bearer"];
         scheme.Should().NotBeNull();
-        Assert.Equal(ParameterLocation.Header, scheme.In);
+        scheme.In.Should().Be(ParameterLocation.Header);
         scheme.Name.Should().Be("Authorization");
     }
 
@@ -98,7 +98,7 @@ public class SwaggerExtensionsTests
         options.AddSwaggerOptions();
 
         // Assert
-        Assert.NotEmpty(options.SwaggerGeneratorOptions.SecurityRequirements);
+        options.SwaggerGeneratorOptions.SecurityRequirements.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -112,10 +112,10 @@ public class SwaggerExtensionsTests
 
         // Assert
         OpenApiSecurityRequirement requirement = options.SwaggerGeneratorOptions.SecurityRequirements.First();
-        Assert.NotEmpty(requirement);
+        requirement.Should().NotBeEmpty();
         OpenApiSecurityScheme scheme = requirement.Keys.First();
         scheme.Reference.Id.Should().Be("Bearer");
-        Assert.Equal(ReferenceType.SecurityScheme, scheme.Reference.Type);
+        scheme.Reference.Type.Should().Be(ReferenceType.SecurityScheme);
     }
 
     [Fact]
