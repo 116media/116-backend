@@ -452,7 +452,7 @@ public class AdminExportSessionDataValidatorTests
         );
 
         // Act
-        bool result = (bool)method!.Invoke(null, new object?[] { format })!;
+        bool result = (bool)method!.Invoke(null, [format])!;
 
         // Assert
         result.Should().BeFalse();
@@ -473,7 +473,7 @@ public class AdminExportSessionDataValidatorTests
         );
 
         // Act
-        bool result = (bool)method!.Invoke(null, new object[] { format })!;
+        bool result = (bool)method!.Invoke(null, [format])!;
 
         // Assert
         result.Should().BeTrue();
@@ -492,7 +492,7 @@ public class AdminExportSessionDataValidatorTests
         );
 
         // Act
-        bool result = (bool)method!.Invoke(null, new object[] { format })!;
+        bool result = (bool)method!.Invoke(null, [format])!;
 
         // Assert
         result.Should().BeFalse();
@@ -511,7 +511,7 @@ public class AdminExportSessionDataValidatorTests
         );
 
         // Act
-        bool result = (bool)method!.Invoke(null, new object?[] { status })!;
+        bool result = (bool)method!.Invoke(null, [status])!;
 
         // Assert
         result.Should().BeFalse();
@@ -533,7 +533,7 @@ public class AdminExportSessionDataValidatorTests
         );
 
         // Act
-        bool result = (bool)method!.Invoke(null, new object[] { status })!;
+        bool result = (bool)method!.Invoke(null, [status])!;
 
         // Assert
         result.Should().BeTrue();
@@ -552,7 +552,7 @@ public class AdminExportSessionDataValidatorTests
         );
 
         // Act
-        bool result = (bool)method!.Invoke(null, new object[] { status })!;
+        bool result = (bool)method!.Invoke(null, [status])!;
 
         // Assert
         result.Should().BeFalse();
@@ -571,7 +571,7 @@ public class AdminExportSessionDataValidatorTests
         );
 
         // Act
-        bool result = (bool)method!.Invoke(null, new object?[] { columns })!;
+        bool result = (bool)method!.Invoke(null, [columns])!;
 
         // Assert
         result.Should().BeTrue("null or whitespace columns should be considered valid");
@@ -592,7 +592,7 @@ public class AdminExportSessionDataValidatorTests
         );
 
         // Act
-        bool result = (bool)method!.Invoke(null, new object[] { columns })!;
+        bool result = (bool)method!.Invoke(null, [columns])!;
 
         // Assert
         result.Should().BeTrue();
@@ -611,7 +611,7 @@ public class AdminExportSessionDataValidatorTests
         );
 
         // Act
-        bool result = (bool)method!.Invoke(null, new object[] { columns })!;
+        bool result = (bool)method!.Invoke(null, [columns])!;
 
         // Assert
         result.Should().BeFalse();
@@ -627,7 +627,7 @@ public class AdminExportSessionDataValidatorTests
         );
 
         // Act
-        bool result = (bool)method!.Invoke(null, new object[] { "Id, UserId, IpAddress" })!;
+        bool result = (bool)method!.Invoke(null, ["Id, UserId, IpAddress"])!;
 
         // Assert
         result.Should().BeTrue("spaces should be trimmed from column names");
