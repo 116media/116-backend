@@ -2,6 +2,7 @@ using _116.Identity.Application.Roles.UseCases.Admin.Queries.GetAllRoles;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Pagination;
+using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Constants;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -14,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Roles.Admin.Queries.GetAl
 /// <summary>
 /// Unit tests for <see cref="AdminGetAllRolesHandler"/>.
 /// </summary>
-public class AdminGetAllRolesHandlerTests
+public class AdminGetAllRolesHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly AdminGetAllRolesHandler _handler;
@@ -22,7 +23,8 @@ public class AdminGetAllRolesHandlerTests
     public AdminGetAllRolesHandlerTests()
     {
         _roleRepositoryMock = MockRoleRepository.Create();
-        _handler = new AdminGetAllRolesHandler(_roleRepositoryMock.Object);
+
+        _handler = new AdminGetAllRolesHandler(_roleRepositoryMock.Object, Mapper);
     }
 
     #region Success Cases - Basic Retrieval
