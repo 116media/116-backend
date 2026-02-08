@@ -1,4 +1,5 @@
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Xunit;
@@ -33,7 +34,7 @@ public class DefaultExceptionHandlerTests
     {
         // Arrange
         Exception exception = new("Test error");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -48,7 +49,7 @@ public class DefaultExceptionHandlerTests
         // Arrange
         string errorMessage = "Test error message";
         Exception exception = new(errorMessage);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -62,7 +63,7 @@ public class DefaultExceptionHandlerTests
     {
         // Arrange
         Exception exception = new("Test error");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -76,7 +77,7 @@ public class DefaultExceptionHandlerTests
     {
         // Arrange
         Exception exception = new("Test error");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         string requestPath = "/api/test";
         context.Request.Path = requestPath;
 
@@ -92,7 +93,7 @@ public class DefaultExceptionHandlerTests
     {
         // Arrange
         InvalidOperationException exception = new("Invalid operation");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -106,7 +107,7 @@ public class DefaultExceptionHandlerTests
     {
         // Arrange
         Exception exception = new(string.Empty);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -114,18 +115,6 @@ public class DefaultExceptionHandlerTests
         // Assert
         problemDetails.Detail.Should().Be(string.Empty);
         problemDetails.Status.Should().Be(StatusCodes.Status500InternalServerError);
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private static DefaultHttpContext CreateHttpContext()
-    {
-        DefaultHttpContext context = new();
-        context.Request.Path = "/api/test";
-        context.TraceIdentifier = "test-trace-id";
-        return context;
     }
 
     #endregion
