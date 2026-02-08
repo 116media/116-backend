@@ -2,6 +2,7 @@ using System.Text.Json;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -54,7 +55,7 @@ public class ExceptionHandlerTests
     public async Task TryHandleAsync_ShouldReturnTrue()
     {
         // Arrange
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         Exception exception = new("Test error");
 
         // Act
@@ -68,7 +69,7 @@ public class ExceptionHandlerTests
     public async Task TryHandleAsync_ShouldSetCorrectStatusCode()
     {
         // Arrange
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         BadRequestException exception = new("Bad request", "TEST_001");
 
         // Act
@@ -82,7 +83,7 @@ public class ExceptionHandlerTests
     public async Task TryHandleAsync_ShouldUseDefaultStatusWhenNull()
     {
         // Arrange
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         Exception exception = new("Test error");
         ProblemDetails problemDetails = new()
         {
@@ -102,7 +103,7 @@ public class ExceptionHandlerTests
     public async Task TryHandleAsync_ShouldEnrichProblemDetailsWithTraceId()
     {
         // Arrange
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         string traceId = "test-trace-123";
         context.TraceIdentifier = traceId;
 
@@ -126,7 +127,7 @@ public class ExceptionHandlerTests
     public async Task TryHandleAsync_ShouldEnrichProblemDetailsWithTimestamp()
     {
         // Arrange
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         Exception exception = new("Test error");
 
         // Act
@@ -152,7 +153,7 @@ public class ExceptionHandlerTests
     public async Task TryHandleAsync_ShouldWriteJsonResponse()
     {
         // Arrange
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         Exception exception = new("Test error");
         ProblemDetails problemDetails = new()
         {
@@ -179,7 +180,7 @@ public class ExceptionHandlerTests
     public async Task TryHandleAsync_ShouldCallStrategyRegistry()
     {
         // Arrange
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         Exception exception = new("Test error");
         ProblemDetails problemDetails = new()
         {
@@ -199,7 +200,7 @@ public class ExceptionHandlerTests
     public async Task TryHandleAsync_ShouldLogException()
     {
         // Arrange
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         Exception exception = new("Test error");
         ProblemDetails problemDetails = new()
         {
@@ -229,7 +230,7 @@ public class ExceptionHandlerTests
     public async Task TryHandleAsync_WithBadRequestException_ShouldLogWarning()
     {
         // Arrange
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         BadRequestException exception = new("Bad request", "TEST_001");
         ProblemDetails problemDetails = new()
         {
@@ -259,7 +260,7 @@ public class ExceptionHandlerTests
     public async Task TryHandleAsync_WithNotFoundException_ShouldLogWarning()
     {
         // Arrange
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         NotFoundException exception = new("Not found", "TEST_002");
         ProblemDetails problemDetails = new()
         {
@@ -289,7 +290,7 @@ public class ExceptionHandlerTests
     public async Task TryHandleAsync_WithConflictException_ShouldLogWarning()
     {
         // Arrange
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         ConflictException exception = new("Conflict", "TEST_003");
         ProblemDetails problemDetails = new()
         {
@@ -319,7 +320,7 @@ public class ExceptionHandlerTests
     public async Task TryHandleAsync_WithAuthenticationException_ShouldLogWarning()
     {
         // Arrange
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         AuthenticationException exception = new("Authentication failed", "TEST_004");
         ProblemDetails problemDetails = new()
         {
@@ -349,7 +350,7 @@ public class ExceptionHandlerTests
     public async Task TryHandleAsync_WithAuthorizationException_ShouldLogWarning()
     {
         // Arrange
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         AuthorizationException exception = new("Authorization failed", "TEST_005");
         ProblemDetails problemDetails = new()
         {
@@ -379,7 +380,7 @@ public class ExceptionHandlerTests
     public async Task TryHandleAsync_WithUnknownException_ShouldLogError()
     {
         // Arrange
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         InvalidOperationException exception = new("Invalid operation");
         ProblemDetails problemDetails = new()
         {
@@ -409,7 +410,7 @@ public class ExceptionHandlerTests
     public async Task TryHandleAsync_ShouldRespectCancellationToken()
     {
         // Arrange
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         Exception exception = new("Test error");
         ProblemDetails problemDetails = new()
         {
@@ -432,7 +433,7 @@ public class ExceptionHandlerTests
     public async Task TryHandleAsync_WithAuthenticatedUser_ShouldLogUsername()
     {
         // Arrange
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         context.User = new System.Security.Claims.ClaimsPrincipal(
             new System.Security.Claims.ClaimsIdentity(
                 [new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, "testuser")],
@@ -463,20 +464,6 @@ public class ExceptionHandlerTests
                 ),
             Times.Once
         );
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private static DefaultHttpContext CreateHttpContext()
-    {
-        DefaultHttpContext context = new();
-        context.Request.Path = "/api/test";
-        context.Request.Method = "GET";
-        context.TraceIdentifier = "test-trace-id";
-        context.Response.Body = new MemoryStream();
-        return context;
     }
 
     #endregion
