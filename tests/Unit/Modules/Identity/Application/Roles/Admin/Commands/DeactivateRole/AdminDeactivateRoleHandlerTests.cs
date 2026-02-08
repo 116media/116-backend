@@ -3,6 +3,7 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
+using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Constants;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -16,7 +17,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Roles.Admin.Commands.Deac
 /// <summary>
 /// Unit tests for <see cref="AdminDeactivateRoleHandler"/>.
 /// </summary>
-public class AdminDeactivateRoleHandlerTests
+public class AdminDeactivateRoleHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
@@ -26,7 +27,8 @@ public class AdminDeactivateRoleHandlerTests
     {
         _roleRepositoryMock = MockRoleRepository.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
-        _handler = new AdminDeactivateRoleHandler(_roleRepositoryMock.Object, _unitOfWorkMock.Object);
+
+        _handler = new AdminDeactivateRoleHandler(_roleRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
     }
 
     #region Success Cases
