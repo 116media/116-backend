@@ -216,7 +216,7 @@ public class CloudinaryServiceTests
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("avatar.jpg");
-        fileMock.Setup(f => f.ContentType).Returns((string?)null);
+        fileMock.Setup(f => f.ContentType).Returns((Func<string>)null!);
         fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
 
         // Act & Assert - Should allow null content type (common in mobile uploads)
