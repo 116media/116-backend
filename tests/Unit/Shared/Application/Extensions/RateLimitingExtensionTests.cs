@@ -176,7 +176,7 @@ public class RateLimitingExtensionTests
     }
 
     [Fact]
-    public void OnRateLimitRejected_WithRetryAfterMetadata_ShouldThrowExceptionWithRetryAfter()
+    public async Task OnRateLimitRejected_WithRetryAfterMetadata_ShouldThrowExceptionWithRetryAfter()
     {
         // Arrange
         var retryAfter = TimeSpan.FromSeconds(30);
@@ -193,7 +193,7 @@ public class RateLimitingExtensionTests
         try
         {
             var task = (ValueTask)method!.Invoke(null, new object[] { context, CancellationToken.None })!;
-            task.GetAwaiter().GetResult();
+            await task;
             Assert.Fail("Expected RateLimitExceededException to be thrown");
         }
         catch (TargetInvocationException ex)
@@ -206,7 +206,7 @@ public class RateLimitingExtensionTests
     }
 
     [Fact]
-    public void OnRateLimitRejected_WithoutRetryAfterMetadata_ShouldThrowExceptionWithZeroRetryAfter()
+    public async Task OnRateLimitRejected_WithoutRetryAfterMetadata_ShouldThrowExceptionWithZeroRetryAfter()
     {
         // Arrange
         var lease = new TestRateLimitLease(hasRetryAfter: false, TimeSpan.Zero);
@@ -222,7 +222,7 @@ public class RateLimitingExtensionTests
         try
         {
             var task = (ValueTask)method!.Invoke(null, new object[] { context, CancellationToken.None })!;
-            task.GetAwaiter().GetResult();
+            await task;
             Assert.Fail("Expected RateLimitExceededException to be thrown");
         }
         catch (TargetInvocationException ex)
@@ -234,7 +234,7 @@ public class RateLimitingExtensionTests
     }
 
     [Fact]
-    public void OnRateLimitRejected_WithSpecificRetryTime_ShouldPreserveExactValue()
+    public async Task OnRateLimitRejected_WithSpecificRetryTime_ShouldPreserveExactValue()
     {
         // Arrange
         var exactRetryAfter = TimeSpan.FromMinutes(5).Add(TimeSpan.FromSeconds(37));
@@ -251,7 +251,7 @@ public class RateLimitingExtensionTests
         try
         {
             var task = (ValueTask)method!.Invoke(null, new object[] { context, CancellationToken.None })!;
-            task.GetAwaiter().GetResult();
+            await task;
             Assert.Fail("Expected RateLimitExceededException to be thrown");
         }
         catch (TargetInvocationException ex)
