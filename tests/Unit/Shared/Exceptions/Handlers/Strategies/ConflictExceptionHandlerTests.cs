@@ -1,5 +1,6 @@
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Xunit;
@@ -34,7 +35,7 @@ public class ConflictExceptionHandlerTests
     {
         // Arrange
         ConflictException exception = new("Resource already exists");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -49,7 +50,7 @@ public class ConflictExceptionHandlerTests
         // Arrange
         string errorMessage = "User with this email already exists";
         ConflictException exception = new(errorMessage);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -63,7 +64,7 @@ public class ConflictExceptionHandlerTests
     {
         // Arrange
         ConflictException exception = new("Conflict detected");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -77,7 +78,7 @@ public class ConflictExceptionHandlerTests
     {
         // Arrange
         ConflictException exception = new("Conflict detected");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         string requestPath = "/api/v1/public/auth/signup";
         context.Request.Path = requestPath;
 
@@ -93,7 +94,7 @@ public class ConflictExceptionHandlerTests
     {
         // Arrange
         ConflictException exception = new("Conflict detected");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         string traceId = "conflict-trace-456";
         context.TraceIdentifier = traceId;
 
@@ -110,7 +111,7 @@ public class ConflictExceptionHandlerTests
     {
         // Arrange
         ConflictException exception = new("Conflict detected");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -119,18 +120,6 @@ public class ConflictExceptionHandlerTests
         problemDetails.Extensions.Should().ContainKey("timestamp");
         var timestamp = (DateTime)problemDetails.Extensions["timestamp"]!;
         timestamp.Should().NotBe(default(DateTime));
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private static DefaultHttpContext CreateHttpContext()
-    {
-        DefaultHttpContext context = new();
-        context.Request.Path = "/api/test";
-        context.TraceIdentifier = "test-trace-id";
-        return context;
     }
 
     #endregion
