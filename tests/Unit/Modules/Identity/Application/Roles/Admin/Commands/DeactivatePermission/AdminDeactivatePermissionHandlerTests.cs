@@ -3,6 +3,7 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
+using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Builders.Entities;
 using AwesomeAssertions;
 using Moq;
@@ -13,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Roles.Admin.Commands.Deac
 /// <summary>
 /// Unit tests for <see cref="AdminDeactivatePermissionHandler"/>.
 /// </summary>
-public class AdminDeactivatePermissionHandlerTests
+public class AdminDeactivatePermissionHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IPermissionRepository> _permissionRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
@@ -23,7 +24,12 @@ public class AdminDeactivatePermissionHandlerTests
     {
         _permissionRepositoryMock = new Mock<IPermissionRepository>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
-        _handler = new AdminDeactivatePermissionHandler(_permissionRepositoryMock.Object, _unitOfWorkMock.Object);
+
+        _handler = new AdminDeactivatePermissionHandler(
+            _permissionRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            Mapper
+        );
     }
 
     [Fact]
