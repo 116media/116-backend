@@ -4,7 +4,9 @@ using _116.Identity.Application.Session.Factories;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
+using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Factories;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -14,7 +16,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.Public.SignUp;
 /// <summary>
 /// Unit tests for <see cref="PublicSignUpHandler"/>.
 /// </summary>
-public class PublicSignUpHandlerTests
+public class PublicSignUpHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IPublicSignUpAuthFactory> _authFactoryMock;
     private readonly Mock<ISessionFactory> _sessionFactoryMock;
@@ -24,8 +26,7 @@ public class PublicSignUpHandlerTests
     {
         _authFactoryMock = new Mock<IPublicSignUpAuthFactory>();
         _sessionFactoryMock = new Mock<ISessionFactory>();
-
-        _handler = new PublicSignUpHandler(_authFactoryMock.Object, _sessionFactoryMock.Object);
+        _handler = new PublicSignUpHandler(_authFactoryMock.Object, _sessionFactoryMock.Object, Mapper);
     }
 
     #region Success Cases
@@ -44,7 +45,7 @@ public class PublicSignUpHandlerTests
 
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
         PublicSignUpAuthData authData = new(user, permissions, roles, permissionDtos);
-        SessionResult sessionResult = CreateSessionResult();
+        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
@@ -76,7 +77,7 @@ public class PublicSignUpHandlerTests
 
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
         PublicSignUpAuthData authData = new(user, permissions, roles, permissionDtos);
-        SessionResult sessionResult = CreateSessionResult();
+        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
@@ -109,7 +110,7 @@ public class PublicSignUpHandlerTests
 
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
         PublicSignUpAuthData authData = new(user, permissions, roles, permissionDtos);
-        SessionResult sessionResult = CreateSessionResult();
+        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
@@ -226,7 +227,7 @@ public class PublicSignUpHandlerTests
 
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
         PublicSignUpAuthData authData = new(user, permissions, roles, permissionDtos);
-        SessionResult sessionResult = CreateSessionResult();
+        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
@@ -257,7 +258,7 @@ public class PublicSignUpHandlerTests
 
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
         PublicSignUpAuthData authData = new(user, permissions, roles, permissionDtos);
-        SessionResult sessionResult = CreateSessionResult();
+        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
             .Setup(x => x.RegisterAsync(email, userName, password, It.IsAny<CancellationToken>()))
@@ -271,20 +272,6 @@ public class PublicSignUpHandlerTests
 
         // Assert
         _sessionFactoryMock.Verify(x => x.CreateSessionAsync(user, permissions, cts.Token), Times.Once);
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private static SessionResult CreateSessionResult()
-    {
-        return new SessionResult(
-            RefreshToken: "refresh-token",
-            AccessToken: "access-token",
-            AccessTokenExpiresAt: DateTime.UtcNow.AddHours(1),
-            RefreshTokenExpiresAt: DateTime.UtcNow.AddDays(7)
-        );
     }
 
     #endregion
