@@ -2,6 +2,7 @@ using _116.Identity.Application.Roles.UseCases.Admin.Commands.CreateRole;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
+using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Constants;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -14,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Roles.Admin.Commands.Crea
 /// <summary>
 /// Unit tests for <see cref="AdminCreateRoleHandler"/>.
 /// </summary>
-public class AdminCreateRoleHandlerTests
+public class AdminCreateRoleHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
@@ -24,7 +25,8 @@ public class AdminCreateRoleHandlerTests
     {
         _roleRepositoryMock = MockRoleRepository.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
-        _handler = new AdminCreateRoleHandler(_roleRepositoryMock.Object, _unitOfWorkMock.Object);
+
+        _handler = new AdminCreateRoleHandler(_roleRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
     }
 
     #region Success Cases
