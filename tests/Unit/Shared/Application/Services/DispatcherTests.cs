@@ -158,7 +158,7 @@ public class DispatcherTests
         Mock<IServiceProvider> serviceProviderMock = new();
         serviceProviderMock
             .Setup(sp => sp.GetService(typeof(IRequestHandler<TestQuery, TestQueryResponse>)))
-            .Returns(null);
+            .Returns(null!);
 
         Dispatcher dispatcher = new(serviceProviderMock.Object);
         TestQuery query = new("test");
@@ -175,7 +175,7 @@ public class DispatcherTests
     {
         // Arrange
         Mock<IServiceProvider> serviceProviderMock = new();
-        serviceProviderMock.Setup(sp => sp.GetService(It.IsAny<Type>())).Returns(null);
+        serviceProviderMock.Setup(sp => sp.GetService(It.IsAny<Type>())).Returns(null!);
 
         Dispatcher dispatcher = new(serviceProviderMock.Object);
         TestQuery query = new("test");
@@ -257,7 +257,7 @@ public class DispatcherTests
     {
         // Arrange
         Mock<IServiceProvider> serviceProviderMock = new();
-        serviceProviderMock.Setup(sp => sp.GetService(typeof(IRequestHandler<TestCommand>))).Returns(null);
+        serviceProviderMock.Setup(sp => sp.GetService(typeof(IRequestHandler<TestCommand>))).Returns(null!);
 
         Dispatcher dispatcher = new(serviceProviderMock.Object);
         TestCommand command = new("test");
@@ -274,7 +274,7 @@ public class DispatcherTests
     {
         // Arrange
         Mock<IServiceProvider> serviceProviderMock = new();
-        serviceProviderMock.Setup(sp => sp.GetService(It.IsAny<Type>())).Returns(null);
+        serviceProviderMock.Setup(sp => sp.GetService(It.IsAny<Type>())).Returns(null!);
 
         Dispatcher dispatcher = new(serviceProviderMock.Object);
         TestCommand command = new("test");
