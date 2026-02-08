@@ -2,8 +2,6 @@ using _116.Core.Infrastructure.Services;
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions;
 using AwesomeAssertions;
-using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -16,19 +14,13 @@ namespace _116.Unit.Tests.Modules.Core.Infrastructure.Services;
 /// </summary>
 public class CloudinaryServiceTests
 {
-    private readonly Mock<ILogger<CloudinaryService>> _loggerMock;
-    private readonly CloudinarySettings _settings;
-
-    public CloudinaryServiceTests()
+    private readonly Mock<ILogger<CloudinaryService>> _loggerMock = new();
+    private readonly CloudinarySettings _settings = new()
     {
-        _loggerMock = new Mock<ILogger<CloudinaryService>>();
-        _settings = new CloudinarySettings
-        {
-            CloudName = "test-cloud",
-            ApiKey = "test-key",
-            ApiSecret = "test-secret",
-        };
-    }
+        CloudName = "test-cloud",
+        ApiKey = "test-key",
+        ApiSecret = "test-secret",
+    };
 
     #region Constructor Tests
 
@@ -68,8 +60,8 @@ public class CloudinaryServiceTests
         fileMock.Setup(f => f.Length).Returns(0);
         fileMock.Setup(f => f.FileName).Returns("test.jpg");
 
-        // Act & Assert
-        await Assert.ThrowsAsync<BadRequestException>(() => service.UploadImageAsync(fileMock.Object, "test-id"));
+        Func<Task> act = () => service.UploadImageAsync(fileMock.Object, "test-id");
+        await act.Should().ThrowAsync<BadRequestException>();
     }
 
     [Fact]
