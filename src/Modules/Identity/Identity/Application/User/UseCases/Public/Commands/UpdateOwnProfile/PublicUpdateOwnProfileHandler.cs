@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
 
@@ -13,8 +14,12 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfi
 /// </summary>
 /// <param name="authFactory">Factory for handling user profile update logic.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
-public class PublicUpdateOwnProfileHandler(IPublicUpdateProfileAuthFactory authFactory, IFileRepository fileRepository)
-    : ICommandHandler<PublicUpdateOwnProfileCommand, PublicUpdateOwnProfileResult>
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class PublicUpdateOwnProfileHandler(
+    IPublicUpdateProfileAuthFactory authFactory,
+    IFileRepository fileRepository,
+    IMapper mapper
+) : ICommandHandler<PublicUpdateOwnProfileCommand, PublicUpdateOwnProfileResult>
 {
     /// <summary>
     /// Handles the profile update command by validating uniqueness and updating user information.
@@ -47,8 +52,9 @@ public class PublicUpdateOwnProfileHandler(IPublicUpdateProfileAuthFactory authF
             cancellationToken: cancellationToken
         );
 
-        var avatarDto = avatarFile?.ToFileDto();
+        var avatarDto = avatarFile?.ToFileDto(mapper);
         var userDto = authData.User.ToUserResponseDto(
+            mapper: mapper,
             avatar: avatarDto,
             roles: authData.Roles,
             permissions: authData.Permissions
