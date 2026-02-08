@@ -6,6 +6,8 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Unit.Tests.Common.Builders.Entities;
 using AwesomeAssertions;
+using Mapster;
+using MapsterMapper;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Application.Shared.Mappers;
@@ -15,16 +17,23 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Shared.Mappers;
 /// </summary>
 public class UserMapperTests
 {
+    private readonly IMapper _mapper;
+
     public UserMapperTests()
     {
-        UserMapper.Configure();
+        // Create isolated mapper configuration for tests (no global state mutation)
+        TypeAdapterConfig config = MappingRegistration.CreateConfiguration();
+        _mapper = new Mapper(config);
     }
 
     [Fact]
-    public void Configure_ShouldNotThrowException()
+    public void Register_ShouldNotThrowException()
     {
+        // Arrange
+        var config = new TypeAdapterConfig();
+
         // Act & Assert
-        var act = () => UserMapper.Configure();
+        Action act = () => UserMapper.Register(config);
         act.Should().NotThrow();
     }
 
@@ -62,7 +71,7 @@ public class UserMapperTests
         );
 
         // Act
-        UserResponseDto result = user.ToUserResponseDto(roles, permissions, avatar);
+        UserResponseDto result = user.ToUserResponseDto(_mapper, roles, permissions, avatar);
 
         // Assert
         result.Id.Should().Be(user.Id);
@@ -87,7 +96,7 @@ public class UserMapperTests
         var permissions = new List<PermissionDto>();
 
         // Act
-        UserResponseDto result = user.ToUserResponseDto(roles, permissions, null);
+        var result = user.ToUserResponseDto(_mapper, roles, permissions);
 
         // Assert
         result.Id.Should().Be(user.Id);
@@ -108,7 +117,7 @@ public class UserMapperTests
         var permissions = new List<PermissionDto>();
 
         // Act
-        UserResponseDto result = user.ToUserResponseDto(roles, permissions);
+        UserResponseDto result = user.ToUserResponseDto(_mapper, roles, permissions);
 
         // Assert
         result.Roles.Should().BeEmpty();
@@ -126,7 +135,7 @@ public class UserMapperTests
         var permissions = new List<PermissionDto>();
 
         // Act
-        UserResponseDto result = user.ToUserResponseDto(roles, permissions);
+        var result = user.ToUserResponseDto(_mapper, roles, permissions);
 
         // Assert
         result.AuthProvider.Should().Be("Google");
@@ -142,7 +151,7 @@ public class UserMapperTests
         var permissions = new List<PermissionDto>();
 
         // Act
-        UserResponseDto result = activeUser.ToUserResponseDto(roles, permissions);
+        var result = activeUser.ToUserResponseDto(_mapper, roles, permissions);
 
         // Assert
         result.IsActive.Should().BeTrue();
@@ -160,7 +169,7 @@ public class UserMapperTests
         var permissions = new List<PermissionDto>();
 
         // Act
-        UserResponseDto result = user.ToUserResponseDto(roles, permissions);
+        var result = user.ToUserResponseDto(_mapper, roles, permissions);
 
         // Assert
         result.FullPhoneNumber.Should().Be("+1234567890");
@@ -183,7 +192,7 @@ public class UserMapperTests
             .Build();
 
         // Act
-        FileDto? result = fileEntity.ToFileDto();
+        var result = fileEntity.ToFileDto(_mapper);
 
         // Assert
         result.Should().NotBeNull();
@@ -202,7 +211,7 @@ public class UserMapperTests
         FileEntity? fileEntity = null;
 
         // Act
-        FileDto? result = fileEntity.ToFileDto();
+        var result = fileEntity.ToFileDto(_mapper);
 
         // Assert
         result.Should().BeNull();
@@ -225,7 +234,7 @@ public class UserMapperTests
         var permissions = new List<PermissionDto>();
 
         // Act
-        UserResponseDto result = user.ToUserResponseDto(roles, permissions);
+        var result = user.ToUserResponseDto(_mapper, roles, permissions);
 
         // Assert
         result.CreatedAt.Should().Be(createdAt);
