@@ -4,7 +4,6 @@ using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Microsoft.AspNetCore.Http;
-using Moq;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
