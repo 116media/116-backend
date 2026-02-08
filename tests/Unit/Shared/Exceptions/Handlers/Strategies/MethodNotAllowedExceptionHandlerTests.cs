@@ -1,5 +1,6 @@
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Xunit;
@@ -34,7 +35,7 @@ public class MethodNotAllowedExceptionHandlerTests
     {
         // Arrange
         MethodNotAllowedException exception = new("Method not allowed");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -49,7 +50,7 @@ public class MethodNotAllowedExceptionHandlerTests
         // Arrange
         string errorMessage = "PUT method is not allowed for this endpoint";
         MethodNotAllowedException exception = new(errorMessage);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -63,7 +64,7 @@ public class MethodNotAllowedExceptionHandlerTests
     {
         // Arrange
         MethodNotAllowedException exception = new("Method not allowed");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -77,7 +78,7 @@ public class MethodNotAllowedExceptionHandlerTests
     {
         // Arrange
         MethodNotAllowedException exception = new("Method not allowed");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         string requestPath = "/api/v1/admin/roles";
         context.Request.Path = requestPath;
 
@@ -93,7 +94,7 @@ public class MethodNotAllowedExceptionHandlerTests
     {
         // Arrange
         MethodNotAllowedException exception = new("Method not allowed");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         string traceId = "method-trace-101";
         context.TraceIdentifier = traceId;
 
@@ -110,7 +111,7 @@ public class MethodNotAllowedExceptionHandlerTests
     {
         // Arrange
         MethodNotAllowedException exception = new("Method not allowed");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -119,18 +120,6 @@ public class MethodNotAllowedExceptionHandlerTests
         problemDetails.Extensions.Should().ContainKey("timestamp");
         var timestamp = (DateTime)problemDetails.Extensions["timestamp"]!;
         timestamp.Should().NotBe(default(DateTime));
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private static DefaultHttpContext CreateHttpContext()
-    {
-        DefaultHttpContext context = new();
-        context.Request.Path = "/api/test";
-        context.TraceIdentifier = "test-trace-id";
-        return context;
     }
 
     #endregion
