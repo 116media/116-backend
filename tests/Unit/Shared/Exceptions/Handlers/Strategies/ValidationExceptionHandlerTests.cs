@@ -1,4 +1,5 @@
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using FluentValidation;
 using FluentValidation.Results;
@@ -36,7 +37,7 @@ public class ValidationExceptionHandlerTests
         // Arrange
         List<ValidationFailure> failures = [new("Email", "Email is required")];
         ValidationException exception = new(failures);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -51,7 +52,7 @@ public class ValidationExceptionHandlerTests
         // Arrange
         List<ValidationFailure> failures = [new("Email", "Email is required")];
         ValidationException exception = new(failures);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -66,7 +67,7 @@ public class ValidationExceptionHandlerTests
         // Arrange
         List<ValidationFailure> failures = [new("Email", "Email is required")];
         ValidationException exception = new(failures);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -81,7 +82,7 @@ public class ValidationExceptionHandlerTests
         // Arrange
         List<ValidationFailure> failures = [new("Email", "Email is required")];
         ValidationException exception = new(failures);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         string requestPath = "/api/v1/public/auth/login";
         context.Request.Path = requestPath;
 
@@ -98,7 +99,7 @@ public class ValidationExceptionHandlerTests
         // Arrange
         List<ValidationFailure> failures = [new("Email", "Email is required")];
         ValidationException exception = new(failures);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         string traceId = "validation-trace-404";
         context.TraceIdentifier = traceId;
 
@@ -116,7 +117,7 @@ public class ValidationExceptionHandlerTests
         // Arrange
         List<ValidationFailure> failures = [new("Email", "Email is required")];
         ValidationException exception = new(failures);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -137,7 +138,7 @@ public class ValidationExceptionHandlerTests
             new("Password", "Password must be at least 8 characters"),
         ];
         ValidationException exception = new(failures);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -153,7 +154,7 @@ public class ValidationExceptionHandlerTests
         // Arrange
         List<ValidationFailure> failures = [];
         ValidationException exception = new(failures);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -167,7 +168,7 @@ public class ValidationExceptionHandlerTests
     {
         // Arrange
         ValidationException exception = new("Validation failed");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -188,7 +189,7 @@ public class ValidationExceptionHandlerTests
             new("Name", "Name must not exceed 50 characters"),
         ];
         ValidationException exception = new(failures);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         var problemDetails = _handler.CreateProblemDetails(exception, context);
@@ -197,18 +198,6 @@ public class ValidationExceptionHandlerTests
         problemDetails.Extensions.Should().ContainKey("errors");
         var errors = problemDetails.Extensions["errors"] as IEnumerable<ValidationFailure>;
         errors.Should().HaveCount(4);
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private static DefaultHttpContext CreateHttpContext()
-    {
-        DefaultHttpContext context = new();
-        context.Request.Path = "/api/test";
-        context.TraceIdentifier = "test-trace-id";
-        return context;
     }
 
     #endregion
