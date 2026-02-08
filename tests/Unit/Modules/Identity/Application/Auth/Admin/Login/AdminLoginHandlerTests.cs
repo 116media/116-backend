@@ -1,12 +1,13 @@
 using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts;
 using _116.Identity.Application.Session.Factories;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
+using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Factories;
+using _116.Unit.Tests.Common.Helpers;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
 using Moq;
@@ -17,7 +18,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.Admin.Login;
 /// <summary>
 /// Unit tests for <see cref="AdminLoginHandler"/>.
 /// </summary>
-public class AdminLoginHandlerTests
+public class AdminLoginHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IAdminLoginAuthFactory> _authFactoryMock;
     private readonly Mock<ISessionFactory> _sessionFactoryMock;
@@ -33,7 +34,8 @@ public class AdminLoginHandlerTests
         _handler = new AdminLoginHandler(
             _authFactoryMock.Object,
             _sessionFactoryMock.Object,
-            _fileRepositoryMock.Object
+            _fileRepositoryMock.Object,
+            Mapper
         );
     }
 
@@ -95,7 +97,7 @@ public class AdminLoginHandlerTests
 
         AdminLoginCommand command = new(Email: email, Password: password);
         AdminLoginAuthData authData = new(user, permissions, roles, permissionDtos);
-        SessionResult sessionResult = CreateSessionResult();
+        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
@@ -125,7 +127,7 @@ public class AdminLoginHandlerTests
 
         AdminLoginCommand command = new(Email: email, Password: password);
         AdminLoginAuthData authData = new(user, permissions, roles, permissionDtos);
-        SessionResult sessionResult = CreateSessionResult();
+        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
@@ -158,7 +160,7 @@ public class AdminLoginHandlerTests
 
         AdminLoginCommand command = new(Email: email, Password: password);
         AdminLoginAuthData authData = new(user, permissions, roles, permissionDtos);
-        SessionResult sessionResult = CreateSessionResult();
+        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
@@ -310,7 +312,7 @@ public class AdminLoginHandlerTests
 
         AdminLoginCommand command = new(Email: email, Password: password);
         AdminLoginAuthData authData = new(user, permissions, roles, permissionDtos);
-        SessionResult sessionResult = CreateSessionResult();
+        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
@@ -341,7 +343,7 @@ public class AdminLoginHandlerTests
 
         AdminLoginCommand command = new(Email: email, Password: password);
         AdminLoginAuthData authData = new(user, permissions, roles, permissionDtos);
-        SessionResult sessionResult = CreateSessionResult();
+        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
@@ -372,7 +374,7 @@ public class AdminLoginHandlerTests
 
         AdminLoginCommand command = new(Email: email, Password: password);
         AdminLoginAuthData authData = new(user, permissions, roles, permissionDtos);
-        SessionResult sessionResult = CreateSessionResult();
+        SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
             .Setup(x => x.AuthenticateAsync(email, password, It.IsAny<CancellationToken>()))
@@ -387,20 +389,6 @@ public class AdminLoginHandlerTests
 
         // Assert
         _fileRepositoryMock.Verify(x => x.GetAvatarFileAsync(user.AvatarFileId, cts.Token), Times.Once);
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private static SessionResult CreateSessionResult()
-    {
-        return new SessionResult(
-            RefreshToken: "refresh-token",
-            AccessToken: "access-token",
-            AccessTokenExpiresAt: DateTime.UtcNow.AddHours(1),
-            RefreshTokenExpiresAt: DateTime.UtcNow.AddDays(7)
-        );
     }
 
     #endregion
