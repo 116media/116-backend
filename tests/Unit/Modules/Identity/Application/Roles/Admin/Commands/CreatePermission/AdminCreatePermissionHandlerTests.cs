@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
+using _116.Unit.Tests.Common;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -13,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Roles.Admin.Commands.Crea
 /// <summary>
 /// Unit tests for <see cref="AdminCreatePermissionHandler"/>.
 /// </summary>
-public class AdminCreatePermissionHandlerTests
+public class AdminCreatePermissionHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IPermissionRepository> _permissionRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
@@ -23,7 +24,8 @@ public class AdminCreatePermissionHandlerTests
     {
         _permissionRepositoryMock = new Mock<IPermissionRepository>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
-        _handler = new AdminCreatePermissionHandler(_permissionRepositoryMock.Object, _unitOfWorkMock.Object);
+
+        _handler = new AdminCreatePermissionHandler(_permissionRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
     }
 
     #region Handle Tests
