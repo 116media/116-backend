@@ -6,8 +6,9 @@ namespace _116.Unit.Tests.Common.Builders.Entities;
 
 /// <summary>
 /// Fluent builder for creating <see cref="PermissionEntity"/> instances in tests.
+/// For test code, prefer using PermissionFactory instead of direct Builder usage.
 /// </summary>
-public class PermissionBuilder
+internal class PermissionBuilder
 {
     private readonly Faker _faker = new();
 
@@ -26,7 +27,7 @@ public class PermissionBuilder
         _id = Guid.NewGuid();
         string word = _faker.Lorem.Word();
         _resource = word[..Math.Min(TestConstants.Permission.ResourceMaxLength, word.Length)];
-        _action = _faker.PickRandom(new[] { "read", "create", "update", "delete", "approve" });
+        _action = _faker.PickRandom("read", "create", "update", "delete", "approve");
         _description = _faker.Lorem.Sentence(wordCount: 5);
     }
 
@@ -124,7 +125,7 @@ public class PermissionBuilder
     /// <returns>A configured PermissionEntity instance.</returns>
     public PermissionEntity Build()
     {
-        PermissionEntity permission = PermissionEntity.Create(_id, _resource, _action, _description);
+        var permission = PermissionEntity.Create(_id, _resource, _action, _description);
 
         if (!_isActive)
         {
