@@ -20,10 +20,9 @@ public class CreatePermissionCommandBuilder
     /// </summary>
     public CreatePermissionCommandBuilder()
     {
-        _resource = _faker.Lorem.Word()[
-            ..Math.Min(TestConstants.Permission.ResourceMaxLength, _faker.Lorem.Word().Length)
-        ];
-        _action = _faker.PickRandom(new[] { "read", "create", "update", "delete" });
+        string resourceWord = _faker.Lorem.Word();
+        _resource = resourceWord[..Math.Min(TestConstants.Permission.ResourceMaxLength, resourceWord.Length)];
+        _action = _faker.PickRandom("read", "create", "update", "delete");
         _description = _faker.Lorem.Sentence(wordCount: 5);
     }
 
