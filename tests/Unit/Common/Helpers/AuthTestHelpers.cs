@@ -80,13 +80,12 @@ public static class AuthTestHelpers
             DeletedAt: isDeleted ? DateTime.UtcNow : null
         );
     }
-    
+
     /// <summary>
     /// Creates PublicLoginAuthData with random user data (via UserFactory).
     /// </summary>
     /// <returns>PublicLoginAuthData with random verified active user.</returns>
-    public static PublicLoginAuthData CreatePublicLoginAuthData() =>
-        new AuthDataBuilder().BuildPublicLoginAuthData();
+    public static PublicLoginAuthData CreatePublicLoginAuthData() => new AuthDataBuilder().BuildPublicLoginAuthData();
 
     /// <summary>
     /// Creates PublicLoginAuthData with a specific user (predictable scenario).
@@ -115,8 +114,7 @@ public static class AuthTestHelpers
     /// Creates AdminLoginAuthData with random user data.
     /// </summary>
     /// <returns>AdminLoginAuthData with random verified active user.</returns>
-    public static AdminLoginAuthData CreateAdminLoginAuthData() =>
-        new AuthDataBuilder().BuildAdminLoginAuthData();
+    public static AdminLoginAuthData CreateAdminLoginAuthData() => new AuthDataBuilder().BuildAdminLoginAuthData();
 
     /// <summary>
     /// Creates AdminLoginAuthData with a specific user (e.g., UserFactory.CreateSuperAdmin()).
