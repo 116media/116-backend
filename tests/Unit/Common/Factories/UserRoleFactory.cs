@@ -47,4 +47,28 @@ public static class UserRoleFactory
     /// <returns>A list of UserRoleEntity instances.</returns>
     public static List<UserRoleEntity> CreateMany(int count) =>
         Enumerable.Range(0, count).Select(_ => Create()).ToList();
+
+    /// <summary>
+    /// Creates a user-role association with a specific user ID.
+    /// </summary>
+    /// <param name="userId">The user identifier.</param>
+    /// <returns>A new UserRoleEntity with the specified user ID.</returns>
+    public static UserRoleEntity CreateWithUserId(Guid userId) => new UserRoleBuilder().WithUserId(userId).Build();
+
+    /// <summary>
+    /// Creates a user-role association with a specific role ID.
+    /// </summary>
+    /// <param name="roleId">The role identifier.</param>
+    /// <returns>A new UserRoleEntity with the specified role ID.</returns>
+    public static UserRoleEntity CreateWithRoleId(Guid roleId) => new UserRoleBuilder().WithRoleId(roleId).Build();
+
+    /// <summary>
+    /// Creates a user-role association with a specific ID, user ID, and role ID.
+    /// </summary>
+    /// <param name="id">The association identifier.</param>
+    /// <param name="userId">The user identifier.</param>
+    /// <param name="roleId">The role identifier.</param>
+    /// <returns>A new UserRoleEntity with the specified values.</returns>
+    public static UserRoleEntity CreateWithId(Guid id, Guid userId, Guid roleId) =>
+        new UserRoleBuilder().WithId(id).WithUserId(userId).WithRoleId(roleId).Build();
 }
