@@ -1,13 +1,15 @@
 using _116.Identity.Domain.Entities;
 using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using Bogus;
 
 namespace _116.Unit.Tests.Common.Builders.Entities;
 
 /// <summary>
 /// Fluent builder for creating <see cref="RoleEntity"/> instances in tests.
+/// For test code, prefer using RoleFactory instead of direct Builder usage.
 /// </summary>
-public class RoleBuilder
+internal class RoleBuilder
 {
     private readonly Faker _faker = new();
     private readonly List<PermissionEntity> _permissions = [];
@@ -121,7 +123,7 @@ public class RoleBuilder
     /// <returns>A configured RoleEntity instance.</returns>
     public RoleEntity Build()
     {
-        RoleEntity role = RoleEntity.Create(_id, _name, _description);
+        var role = RoleEntity.Create(_id, _name, _description);
 
         if (!_isActive)
         {
@@ -133,12 +135,12 @@ public class RoleBuilder
             role.SoftDelete();
         }
 
-        foreach (PermissionEntity permission in _permissions)
+        foreach (
+            RolePermissionEntity rolePermission in _permissions.Select(permission =>
+                RolePermissionFactory.CreateWithPermission(_id, permission)
+            )
+        )
         {
-            RolePermissionEntity rolePermission = new RolePermissionBuilder()
-                .WithRoleId(_id)
-                .WithPermission(permission)
-                .Build();
             role.RolePermissions.Add(rolePermission);
         }
 
