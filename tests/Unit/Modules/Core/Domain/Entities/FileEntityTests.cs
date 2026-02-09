@@ -1,7 +1,7 @@
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
-using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -167,7 +167,7 @@ public class FileEntityTests
     public void UpdateStorageUrl_WithValidUrl_ShouldUpdateStorageUrl()
     {
         // Arrange
-        FileEntity file = new FileBuilder().Build();
+        FileEntity file = FileFactory.Create();
         string newStorageUrl = "https://newcloud.example.com/files/new-file.jpg";
 
         // Act
@@ -184,7 +184,7 @@ public class FileEntityTests
     public void UpdateStorageUrl_WithInvalidUrl_ShouldThrowBadRequestException(string? invalidUrl)
     {
         // Arrange
-        FileEntity file = new FileBuilder().Build();
+        FileEntity file = FileFactory.Create();
 
         // Act
         Action act = () => file.UpdateStorageUrl(invalidUrl!);
@@ -201,7 +201,7 @@ public class FileEntityTests
     public void Delete_WhenNotDeleted_ShouldMarkAsDeletedAndReturnTrue()
     {
         // Arrange
-        FileEntity file = new FileBuilder().Build();
+        FileEntity file = FileFactory.Create();
 
         // Act
         bool result = file.Delete();
@@ -217,7 +217,7 @@ public class FileEntityTests
     public void Delete_WhenAlreadyDeleted_ShouldReturnFalse()
     {
         // Arrange
-        FileEntity file = new FileBuilder().AsDeleted().Build();
+        FileEntity file = FileFactory.CreateDeleted();
 
         // Act
         bool result = file.Delete();
@@ -231,7 +231,7 @@ public class FileEntityTests
     public void Delete_WhenAlreadyDeleted_ShouldNotUpdateDeletedAt()
     {
         // Arrange
-        FileEntity file = new FileBuilder().AsDeleted().Build();
+        FileEntity file = FileFactory.CreateDeleted();
         DateTime? originalDeletedAt = file.DeletedAt;
 
         // Act
@@ -246,40 +246,28 @@ public class FileEntityTests
     #region Builder Tests
 
     [Fact]
-    public void Builder_ShouldCreateFileWithSpecifiedValues()
+    public void Factory_CreateWithId_ShouldCreateFileWithSpecifiedId()
     {
         // Arrange
         Guid id = Guid.NewGuid();
-        string fileName = "custom-file.png";
-        string originalFileName = "original-custom-file.png";
-        string mimeType = "image/png";
-        string storageUrl = "https://custom.storage.com/file.png";
-        long sizeInBytes = 5000;
 
         // Act
-        FileEntity file = new FileBuilder()
-            .WithId(id)
-            .WithFileName(fileName)
-            .WithOriginalFileName(originalFileName)
-            .WithMimeType(mimeType)
-            .WithStorageUrl(storageUrl)
-            .WithSizeInBytes(sizeInBytes)
-            .Build();
+        FileEntity file = FileFactory.CreateWithId(id);
 
         // Assert
         file.Id.Should().Be(id);
-        file.FileName.Should().Be(fileName);
-        file.OriginalFileName.Should().Be(originalFileName);
-        file.MimeType.Should().Be(mimeType);
-        file.StorageUrl.Should().Be(storageUrl);
-        file.SizeInBytes.Should().Be(sizeInBytes);
+        file.FileName.Should().NotBeNullOrEmpty();
+        file.OriginalFileName.Should().NotBeNullOrEmpty();
+        file.MimeType.Should().NotBeNullOrEmpty();
+        file.StorageUrl.Should().NotBeNullOrEmpty();
+        file.SizeInBytes.Should().BePositive();
     }
 
     [Fact]
-    public void Builder_WithDefaultValues_ShouldCreateValidFile()
+    public void Factory_Create_ShouldCreateValidFile()
     {
         // Arrange & Act
-        FileEntity file = new FileBuilder().Build();
+        FileEntity file = FileFactory.Create();
 
         // Assert
         file.Id.Should().NotBeEmpty();
@@ -287,7 +275,7 @@ public class FileEntityTests
         file.OriginalFileName.Should().NotBeNullOrEmpty();
         file.MimeType.Should().NotBeNullOrEmpty();
         file.StorageUrl.Should().NotBeNullOrEmpty();
-        file.SizeInBytes.Should().BeGreaterThan(0);
+        file.SizeInBytes.Should().BePositive();
         file.IsDeleted.Should().BeFalse();
     }
 
