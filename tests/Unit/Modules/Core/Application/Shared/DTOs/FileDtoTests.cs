@@ -14,10 +14,10 @@ public class FileDtoTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var fileName = "abc123.jpg";
-        var originalFileName = "avatar.jpg";
-        var mimeType = "image/jpeg";
-        var storageUrl = "https://cloudinary.com/image.jpg";
+        string fileName = "abc123.jpg";
+        string originalFileName = "avatar.jpg";
+        string mimeType = "image/jpeg";
+        string storageUrl = "https://cloudinary.com/image.jpg";
         long sizeInBytes = 1024;
         bool isDeleted = false;
 
