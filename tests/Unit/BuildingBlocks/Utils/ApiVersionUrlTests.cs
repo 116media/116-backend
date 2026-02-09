@@ -21,7 +21,7 @@ public class ApiVersionUrlTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
 
         // Act
-        var result = ApiVersionUrl.Build(httpContext, "public/users/123");
+        string result = ApiVersionUrl.Build(httpContext, "public/users/123");
 
         // Assert
         result.Should().Be("/api/v1/public/users/123");
@@ -37,7 +37,7 @@ public class ApiVersionUrlTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
 
         // Act
-        var result = ApiVersionUrl.Build(httpContext, "admin/sessions");
+        string result = ApiVersionUrl.Build(httpContext, "admin/sessions");
 
         // Assert
         result.Should().Be("/api/v2/admin/sessions");
@@ -53,7 +53,7 @@ public class ApiVersionUrlTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
 
         // Act
-        var result = ApiVersionUrl.Build(httpContext, "/public/users/123");
+        string result = ApiVersionUrl.Build(httpContext, "/public/users/123");
 
         // Assert
         result.Should().Be("/api/v1/public/users/123");
@@ -69,7 +69,7 @@ public class ApiVersionUrlTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
 
         // Act
-        var result = ApiVersionUrl.Build(httpContext, "admin/roles");
+        string result = ApiVersionUrl.Build(httpContext, "admin/roles");
 
         // Assert
         result.Should().Be("/api/v1/admin/roles");
@@ -85,7 +85,7 @@ public class ApiVersionUrlTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
 
         // Act
-        var result = ApiVersionUrl.Build(httpContext, "public/auth/login");
+        string result = ApiVersionUrl.Build(httpContext, "public/auth/login");
 
         // Assert
         result.Should().Be("/api/v1/public/auth/login");
@@ -99,7 +99,7 @@ public class ApiVersionUrlTests
         // No routing feature set - GetRouteData will return null
 
         // Act
-        var result = ApiVersionUrl.Build(httpContext, "public/users");
+        string result = ApiVersionUrl.Build(httpContext, "public/users");
 
         // Assert
         result.Should().Be("/api/v1/public/users");
@@ -115,7 +115,7 @@ public class ApiVersionUrlTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
 
         // Act
-        var result = ApiVersionUrl.Build(httpContext, "admin/permissions");
+        string result = ApiVersionUrl.Build(httpContext, "admin/permissions");
 
         // Assert
         result.Should().Be("/api/v1/admin/permissions");
@@ -131,7 +131,7 @@ public class ApiVersionUrlTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
 
         // Act
-        var result = ApiVersionUrl.Build(httpContext, "public/sessions");
+        string result = ApiVersionUrl.Build(httpContext, "public/sessions");
 
         // Assert
         result.Should().Be("/api/v1/public/sessions");
@@ -147,7 +147,7 @@ public class ApiVersionUrlTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
 
         // Act
-        var result = ApiVersionUrl.Build(httpContext, "admin/metrics");
+        string result = ApiVersionUrl.Build(httpContext, "admin/metrics");
 
         // Assert
         result.Should().Be("/api/v3/admin/metrics");
@@ -163,7 +163,7 @@ public class ApiVersionUrlTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
 
         // Act
-        var result = ApiVersionUrl.Build(httpContext, "");
+        string result = ApiVersionUrl.Build(httpContext, "");
 
         // Assert
         result.Should().Be("/api/v1/");
@@ -179,7 +179,7 @@ public class ApiVersionUrlTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
 
         // Act
-        var result = ApiVersionUrl.Build(httpContext, "admin/users/123/roles/456");
+        string result = ApiVersionUrl.Build(httpContext, "admin/users/123/roles/456");
 
         // Assert
         result.Should().Be("/api/v2/admin/users/123/roles/456");
@@ -195,7 +195,7 @@ public class ApiVersionUrlTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
 
         // Act
-        var result = ApiVersionUrl.Build(httpContext, "public/profile");
+        string result = ApiVersionUrl.Build(httpContext, "public/profile");
 
         // Assert
         result.Should().Be("/api/v2/public/profile");
@@ -211,7 +211,7 @@ public class ApiVersionUrlTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
 
         // Act
-        var result = ApiVersionUrl.Build(httpContext, "test/endpoint");
+        string result = ApiVersionUrl.Build(httpContext, "test/endpoint");
 
         // Assert
         result.Should().Be("/api/v0/test/endpoint");
@@ -227,7 +227,7 @@ public class ApiVersionUrlTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
 
         // Act
-        var result = ApiVersionUrl.Build(httpContext, "test/endpoint");
+        string result = ApiVersionUrl.Build(httpContext, "test/endpoint");
 
         // Assert
         result.Should().Be("/api/v-1/test/endpoint");
@@ -243,7 +243,7 @@ public class ApiVersionUrlTests
         httpContext.Features.Set<IRoutingFeature>(new RoutingFeature { RouteData = routeData });
 
         // Act
-        var result = ApiVersionUrl.Build(httpContext, "///public/users");
+        string result = ApiVersionUrl.Build(httpContext, "///public/users");
 
         // Assert
         result.Should().Be("/api/v1/public/users");
