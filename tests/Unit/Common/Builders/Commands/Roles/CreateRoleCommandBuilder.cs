@@ -19,7 +19,8 @@ public class CreateRoleCommandBuilder
     /// </summary>
     public CreateRoleCommandBuilder()
     {
-        _name = _faker.Lorem.Word()[..Math.Min(TestConstants.Role.NameMaxLength, _faker.Lorem.Word().Length)];
+        string nameWord = _faker.Lorem.Word();
+        _name = nameWord[..Math.Min(TestConstants.Role.NameMaxLength, nameWord.Length)];
         _description = _faker.Lorem.Sentence(wordCount: 5);
     }
 
