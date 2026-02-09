@@ -53,10 +53,24 @@ public static class RoleFactory
     public static RoleEntity CreateInactive() => new RoleBuilder().AsInactive().Build();
 
     /// <summary>
+    /// Creates an inactive role with a specific name.
+    /// </summary>
+    /// <param name="name">The role name.</param>
+    /// <returns>A new inactive RoleEntity with the specified name.</returns>
+    public static RoleEntity CreateInactive(string name) => new RoleBuilder().WithName(name).AsInactive().Build();
+
+    /// <summary>
     /// Creates a soft-deleted role.
     /// </summary>
     /// <returns>A new soft-deleted RoleEntity.</returns>
     public static RoleEntity CreateDeleted() => new RoleBuilder().AsDeleted().Build();
+
+    /// <summary>
+    /// Creates a soft-deleted role with a specific name.
+    /// </summary>
+    /// <param name="name">The role name.</param>
+    /// <returns>A new soft-deleted RoleEntity with the specified name.</returns>
+    public static RoleEntity CreateDeleted(string name) => new RoleBuilder().WithName(name).AsDeleted().Build();
 
     /// <summary>
     /// Creates a list of roles with the specified count.
