@@ -7,8 +7,9 @@ namespace _116.Unit.Tests.Common.Builders.Entities;
 
 /// <summary>
 /// Fluent builder for creating <see cref="SessionEntity"/> instances in tests.
+/// For test code, prefer using SessionFactory instead of direct Builder usage.
 /// </summary>
-public class SessionBuilder
+internal class SessionBuilder
 {
     private readonly Faker _faker = new();
 
@@ -212,7 +213,7 @@ public class SessionBuilder
     /// <returns>A configured SessionEntity instance.</returns>
     public SessionEntity Build()
     {
-        SessionEntity session = SessionEntity.Create(
+        var session = SessionEntity.Create(
             _id,
             _userId,
             _deviceId,
