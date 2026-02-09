@@ -7,8 +7,9 @@ namespace _116.Unit.Tests.Common.Builders.Entities;
 
 /// <summary>
 /// Fluent builder for creating <see cref="UserEntity"/> instances in tests.
+/// For test code, prefer using UserFactory instead of direct Builder usage.
 /// </summary>
-public class UserBuilder
+internal class UserBuilder
 {
     private readonly Faker _faker = new();
 
@@ -28,6 +29,7 @@ public class UserBuilder
     {
         _id = Guid.NewGuid();
         _email = _faker.Internet.Email().ToLowerInvariant();
+
         // Generate a username that fits within the max length (20 chars)
         string generatedName = $"{_faker.Name.FirstName()}{_faker.Random.Number(100, 999)}";
         _userName =
@@ -149,16 +151,10 @@ public class UserBuilder
     /// <returns>A configured UserEntity instance.</returns>
     public UserEntity Build()
     {
-        UserEntity user;
-
-        if (_authProvider == EnumAuthProvider.Local)
-        {
-            user = UserEntity.Create(_id, _email, _userName, _passwordHash);
-        }
-        else
-        {
-            user = UserEntity.CreateExternal(_id, _userName, _authProvider, _email);
-        }
+        UserEntity user =
+            _authProvider == EnumAuthProvider.Local
+                ? UserEntity.Create(_id, _email, _userName, _passwordHash)
+                : UserEntity.CreateExternal(_id, _userName, _authProvider, _email);
 
         if (_isVerified)
         {
@@ -176,8 +172,8 @@ public class UserBuilder
 
         foreach (RoleEntity role in _roles)
         {
-            UserRoleEntity userRole = UserRoleEntity.Create(Guid.NewGuid(), _id, role.Id);
-            // Set the Role navigation property via reflection for testing
+            var userRole = UserRoleEntity.Create(Guid.NewGuid(), _id, role.Id);
+
             typeof(UserRoleEntity).GetProperty(nameof(UserRoleEntity.Role))!.SetValue(userRole, role);
             user.AssignRole(userRole);
         }
