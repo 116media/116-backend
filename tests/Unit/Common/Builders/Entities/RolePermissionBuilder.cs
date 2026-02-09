@@ -5,8 +5,9 @@ namespace _116.Unit.Tests.Common.Builders.Entities;
 
 /// <summary>
 /// Fluent builder for creating <see cref="RolePermissionEntity"/> instances in tests.
+/// For complex junction table scenarios.
 /// </summary>
-public class RolePermissionBuilder
+internal class RolePermissionBuilder
 {
     private Guid _id;
     private Guid _roleId;
@@ -87,7 +88,7 @@ public class RolePermissionBuilder
     /// <returns>A configured RolePermissionEntity instance.</returns>
     public RolePermissionEntity Build()
     {
-        RolePermissionEntity rolePermission = RolePermissionEntity.Create(_id, _roleId, _permissionId);
+        var rolePermission = RolePermissionEntity.Create(_id, _roleId, _permissionId);
 
         if (_permission is not null)
         {
