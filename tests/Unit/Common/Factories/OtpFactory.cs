@@ -109,4 +109,60 @@ public static class OtpFactory
     /// <param name="count">The number of OTPs to create.</param>
     /// <returns>A list of OtpEntity instances.</returns>
     public static List<OtpEntity> CreateMany(int count) => Enumerable.Range(0, count).Select(_ => Create()).ToList();
+
+    /// <summary>
+    /// Creates an OTP with a specific purpose.
+    /// </summary>
+    /// <param name="purpose">The OTP purpose.</param>
+    /// <returns>A new OtpEntity with the specified purpose.</returns>
+    public static OtpEntity CreateWithPurpose(EnumOtpPurpose purpose) => new OtpBuilder().WithPurpose(purpose).Build();
+
+    /// <summary>
+    /// Creates an OTP for a specific user and purpose.
+    /// </summary>
+    /// <param name="userId">The user identifier.</param>
+    /// <param name="purpose">The OTP purpose.</param>
+    /// <returns>A new OtpEntity with the specified values.</returns>
+    public static OtpEntity Create(Guid userId, EnumOtpPurpose purpose) =>
+        new OtpBuilder().WithUserId(userId).WithPurpose(purpose).Build();
+
+    /// <summary>
+    /// Creates an OTP with a specific user, code, and purpose.
+    /// </summary>
+    /// <param name="userId">The user identifier.</param>
+    /// <param name="code">The OTP code.</param>
+    /// <param name="purpose">The OTP purpose.</param>
+    /// <returns>A new OtpEntity with the specified values.</returns>
+    public static OtpEntity Create(Guid userId, string code, EnumOtpPurpose purpose) =>
+        new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).Build();
+
+    /// <summary>
+    /// Creates an OTP with a specific code.
+    /// </summary>
+    /// <param name="code">The OTP code.</param>
+    /// <returns>A new OtpEntity with the specified code.</returns>
+    public static OtpEntity CreateWithCode(string code) => new OtpBuilder().WithCode(code).Build();
+
+    /// <summary>
+    /// Creates an OTP with a specific expiration date.
+    /// </summary>
+    /// <param name="expiresAt">The expiration date.</param>
+    /// <returns>A new OtpEntity with the specified expiration date.</returns>
+    public static OtpEntity CreateWithExpiresAt(DateTime expiresAt) =>
+        new OtpBuilder().WithExpiresAt(expiresAt).Build();
+
+    /// <summary>
+    /// Creates an OTP with a specific attempt count.
+    /// </summary>
+    /// <param name="userId">The user identifier.</param>
+    /// <param name="code">The OTP code.</param>
+    /// <param name="purpose">The OTP purpose.</param>
+    /// <param name="attemptCount">The attempt count.</param>
+    /// <returns>A new OtpEntity with the specified values.</returns>
+    public static OtpEntity CreateWithAttemptCount(
+        Guid userId,
+        string code,
+        EnumOtpPurpose purpose,
+        int attemptCount
+    ) => new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).WithAttemptCount(attemptCount).Build();
 }
