@@ -28,7 +28,7 @@ public class AdminVerifyOtpValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -50,7 +50,7 @@ public class AdminVerifyOtpValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -68,7 +68,7 @@ public class AdminVerifyOtpValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -90,7 +90,7 @@ public class AdminVerifyOtpValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -108,7 +108,7 @@ public class AdminVerifyOtpValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -128,7 +128,7 @@ public class AdminVerifyOtpValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -150,7 +150,7 @@ public class AdminVerifyOtpValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -168,7 +168,7 @@ public class AdminVerifyOtpValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -186,11 +186,11 @@ public class AdminVerifyOtpValidatorTests
         AdminVerifyOtpCommand command = new(Email: "invalid", Code: "abc", Purpose: "invalid");
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Count.Should().BeGreaterThanOrEqualTo(3);
+        result.Errors.Should().HaveCountGreaterThanOrEqualTo(3);
     }
 
     #endregion
