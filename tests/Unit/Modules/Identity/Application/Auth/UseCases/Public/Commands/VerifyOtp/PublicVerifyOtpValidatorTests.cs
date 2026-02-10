@@ -28,7 +28,7 @@ public class PublicVerifyOtpValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -50,7 +50,7 @@ public class PublicVerifyOtpValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -72,7 +72,7 @@ public class PublicVerifyOtpValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -90,7 +90,7 @@ public class PublicVerifyOtpValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -112,7 +112,7 @@ public class PublicVerifyOtpValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -130,7 +130,7 @@ public class PublicVerifyOtpValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -148,11 +148,11 @@ public class PublicVerifyOtpValidatorTests
         PublicVerifyOtpCommand command = new(Email: "invalid", Code: "abc", Purpose: "invalid");
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicVerifyOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Count.Should().BeGreaterThanOrEqualTo(3);
+        result.Errors.Should().HaveCountGreaterThanOrEqualTo(3);
     }
 
     #endregion
