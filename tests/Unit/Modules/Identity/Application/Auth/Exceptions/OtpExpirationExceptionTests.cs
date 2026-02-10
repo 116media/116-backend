@@ -13,7 +13,7 @@ public class OtpExpirationExceptionTests
     public void Constructor_WithMessage_ShouldSetMessage()
     {
         // Arrange
-        var message = "OTP has expired";
+        string message = "OTP has expired";
 
         // Act
         var exception = new OtpExpirationException(message);
@@ -28,8 +28,8 @@ public class OtpExpirationExceptionTests
     public void Constructor_WithMessageAndDetails_ShouldSetBothProperties()
     {
         // Arrange
-        var message = "OTP has expired";
-        var details = "The OTP code expired 5 minutes ago";
+        string message = "OTP has expired";
+        string details = "The OTP code expired 5 minutes ago";
 
         // Act
         var exception = new OtpExpirationException(message, details);
