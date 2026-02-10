@@ -26,7 +26,7 @@ public class PublicResendOtpValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicResendOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -44,7 +44,7 @@ public class PublicResendOtpValidatorTests
         PublicResendOtpCommand command = new(Email: null!, Purpose: nameof(EnumOtpPurpose.EmailVerification));
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicResendOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -58,7 +58,7 @@ public class PublicResendOtpValidatorTests
         PublicResendOtpCommand command = new(Email: "notanemail", Purpose: nameof(EnumOtpPurpose.EmailVerification));
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicResendOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -76,7 +76,7 @@ public class PublicResendOtpValidatorTests
         PublicResendOtpCommand command = new(Email: TestConstants.User.ValidEmail, Purpose: null!);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicResendOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -90,7 +90,7 @@ public class PublicResendOtpValidatorTests
         PublicResendOtpCommand command = new(Email: TestConstants.User.ValidEmail, Purpose: "InvalidPurpose");
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicResendOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -108,11 +108,11 @@ public class PublicResendOtpValidatorTests
         PublicResendOtpCommand command = new(Email: "invalid", Purpose: "invalid");
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicResendOtpCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Count.Should().BeGreaterThanOrEqualTo(2);
+        result.Errors.Should().HaveCountGreaterThanOrEqualTo(2);
     }
 
     #endregion
