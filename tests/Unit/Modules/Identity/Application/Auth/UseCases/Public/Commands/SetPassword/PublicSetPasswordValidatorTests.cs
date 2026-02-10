@@ -23,7 +23,7 @@ public class PublicSetPasswordValidatorTests
         PublicSetPasswordCommand command = new(UserId: Guid.NewGuid(), Password: TestConstants.User.ValidPassword);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicSetPasswordCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -41,7 +41,7 @@ public class PublicSetPasswordValidatorTests
         PublicSetPasswordCommand command = new(UserId: Guid.NewGuid(), Password: null!);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicSetPasswordCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -55,7 +55,7 @@ public class PublicSetPasswordValidatorTests
         PublicSetPasswordCommand command = new(UserId: Guid.NewGuid(), Password: string.Empty);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicSetPasswordCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -69,7 +69,7 @@ public class PublicSetPasswordValidatorTests
         PublicSetPasswordCommand command = new(UserId: Guid.NewGuid(), Password: "Pass1");
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicSetPasswordCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -85,7 +85,7 @@ public class PublicSetPasswordValidatorTests
         PublicSetPasswordCommand command = new(UserId: Guid.NewGuid(), Password: "PASSWORD123");
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicSetPasswordCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -99,7 +99,7 @@ public class PublicSetPasswordValidatorTests
         PublicSetPasswordCommand command = new(UserId: Guid.NewGuid(), Password: "password123");
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicSetPasswordCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -113,7 +113,7 @@ public class PublicSetPasswordValidatorTests
         PublicSetPasswordCommand command = new(UserId: Guid.NewGuid(), Password: "PasswordOnly");
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicSetPasswordCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
