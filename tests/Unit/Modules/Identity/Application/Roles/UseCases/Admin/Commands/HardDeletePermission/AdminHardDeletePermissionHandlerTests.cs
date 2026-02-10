@@ -3,8 +3,8 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
-using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -35,9 +35,10 @@ public class AdminHardDeletePermissionHandlerTests
     public async Task Handle_WithValidPermission_ShouldHardDeleteAndReturnSuccess()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder()
-            .WithResourceAction(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction)
-            .Build();
+        PermissionEntity permission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
 
         AdminHardDeletePermissionCommand command = new(PermissionId: permission.Id);
 
@@ -57,10 +58,11 @@ public class AdminHardDeletePermissionHandlerTests
     public async Task Handle_WithSoftDeletedPermission_ShouldHardDelete()
     {
         // Arrange
-        PermissionEntity deletedPermission = new PermissionBuilder()
-            .WithResourceAction(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction)
-            .AsDeleted()
-            .Build();
+        PermissionEntity deletedPermission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
+        deletedPermission.SoftDelete();
 
         AdminHardDeletePermissionCommand command = new(PermissionId: deletedPermission.Id);
 
@@ -78,10 +80,11 @@ public class AdminHardDeletePermissionHandlerTests
     public async Task Handle_WithInactivePermission_ShouldHardDelete()
     {
         // Arrange
-        PermissionEntity inactivePermission = new PermissionBuilder()
-            .WithResourceAction(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction)
-            .AsInactive()
-            .Build();
+        PermissionEntity inactivePermission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
+        inactivePermission.Deactivate();
 
         AdminHardDeletePermissionCommand command = new(PermissionId: inactivePermission.Id);
 
@@ -146,9 +149,10 @@ public class AdminHardDeletePermissionHandlerTests
     public async Task Handle_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder()
-            .WithResourceAction(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction)
-            .Build();
+        PermissionEntity permission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
 
         AdminHardDeletePermissionCommand command = new(PermissionId: permission.Id);
 
