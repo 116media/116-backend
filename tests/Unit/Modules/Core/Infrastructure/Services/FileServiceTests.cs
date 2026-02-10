@@ -3,6 +3,7 @@ using _116.Core.Application.Shared.Services;
 using _116.Core.Infrastructure.Services;
 using _116.Shared.Application.Exceptions;
 using AwesomeAssertions;
+using AwesomeAssertions.Specialized;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using Moq.Protected;
@@ -15,17 +16,16 @@ namespace _116.Unit.Tests.Modules.Core.Infrastructure.Services;
 /// </summary>
 public class FileServiceTests
 {
-    private readonly Mock<HttpMessageHandler> _httpMessageHandlerMock;
-    private readonly HttpClient _httpClient;
-    private readonly Mock<ICloudinaryService> _cloudinaryServiceMock;
     private readonly FileService _service;
+    private readonly Mock<ICloudinaryService> _cloudinaryServiceMock;
+    private readonly Mock<HttpMessageHandler> _httpMessageHandlerMock;
 
     public FileServiceTests()
     {
         _httpMessageHandlerMock = new Mock<HttpMessageHandler>();
-        _httpClient = new HttpClient(_httpMessageHandlerMock.Object);
+        var httpClient = new HttpClient(_httpMessageHandlerMock.Object);
         _cloudinaryServiceMock = new Mock<ICloudinaryService>();
-        _service = new FileService(_httpClient, _cloudinaryServiceMock.Object);
+        _service = new FileService(httpClient, _cloudinaryServiceMock.Object);
     }
 
     #region UploadFileAsync Tests
@@ -61,7 +61,7 @@ public class FileServiceTests
             .ReturnsAsync(uploadResult);
 
         // Act
-        var result = await _service.UploadFileAsync(fileMock.Object, "test-public-id");
+        FileUploadResult result = await _service.UploadFileAsync(fileMock.Object, "test-public-id");
 
         // Assert
         result.Should().NotBeNull();
@@ -123,7 +123,7 @@ public class FileServiceTests
     public async Task DownloadFileAsync_WithValidUrl_ShouldReturnFileDownloadResult()
     {
         // Arrange
-        string fileUrl = "https://example.com/test.jpg";
+        const string fileUrl = "https://example.com/test.jpg";
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent("test content"),
@@ -143,7 +143,7 @@ public class FileServiceTests
             .ReturnsAsync(responseMessage);
 
         // Act
-        var result = await _service.DownloadFileAsync(fileUrl);
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
 
         // Assert
         result.Should().NotBeNull();
@@ -156,28 +156,31 @@ public class FileServiceTests
     public async Task DownloadFileAsync_WithNullUrl_ShouldThrowBadRequestException()
     {
         // Act & Assert
-        await Assert.ThrowsAsync<BadRequestException>(() => _service.DownloadFileAsync(null!));
+        Func<Task> act = async () => await _service.DownloadFileAsync(null!);
+        await act.Should().ThrowExactlyAsync<BadRequestException>();
     }
 
     [Fact]
     public async Task DownloadFileAsync_WithEmptyUrl_ShouldThrowBadRequestException()
     {
         // Act & Assert
-        await Assert.ThrowsAsync<BadRequestException>(() => _service.DownloadFileAsync(""));
+        Func<Task> act = async () => await _service.DownloadFileAsync("");
+        await act.Should().ThrowExactlyAsync<BadRequestException>();
     }
 
     [Fact]
     public async Task DownloadFileAsync_WithInvalidUrl_ShouldThrowBadRequestException()
     {
         // Act & Assert
-        await Assert.ThrowsAsync<BadRequestException>(() => _service.DownloadFileAsync("not-a-valid-url"));
+        Func<Task> act = async () => await _service.DownloadFileAsync("not-a-valid-url");
+        await act.Should().ThrowExactlyAsync<BadRequestException>();
     }
 
     [Fact]
     public async Task DownloadFileAsync_WithHttpRequestException_ShouldThrowInternalServerException()
     {
         // Arrange
-        string fileUrl = "https://example.com/test.jpg";
+        const string fileUrl = "https://example.com/test.jpg";
 
         _httpMessageHandlerMock
             .Protected()
@@ -189,14 +192,15 @@ public class FileServiceTests
             .ThrowsAsync(new HttpRequestException("Network error"));
 
         // Act & Assert
-        await Assert.ThrowsAsync<InternalServerException>(() => _service.DownloadFileAsync(fileUrl));
+        Func<Task> act = async () => await _service.DownloadFileAsync(fileUrl);
+        await act.Should().ThrowExactlyAsync<InternalServerException>();
     }
 
     [Fact]
     public async Task DownloadFileAsync_WithGenericException_ShouldThrowInternalServerException()
     {
         // Arrange
-        string fileUrl = "https://example.com/test.jpg";
+        const string fileUrl = "https://example.com/test.jpg";
 
         _httpMessageHandlerMock
             .Protected()
@@ -208,16 +212,18 @@ public class FileServiceTests
             .ThrowsAsync(new InvalidOperationException("Unexpected error"));
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InternalServerException>(() => _service.DownloadFileAsync(fileUrl));
+        Func<Task> act = async () => await _service.DownloadFileAsync(fileUrl);
+        ExceptionAssertions<InternalServerException>? exception = await act.Should()
+            .ThrowExactlyAsync<InternalServerException>();
 
-        exception.Message.Should().Contain("Unexpected error");
+        exception.Which.Message.Should().Contain("Unexpected error");
     }
 
     [Fact]
     public async Task DownloadFileAsync_WhenContentLengthIsZero_ShouldUseFallbackWithRangeRequest()
     {
         // Arrange
-        string fileUrl = "https://example.com/test.jpg";
+        const string fileUrl = "https://example.com/test.jpg";
 
         // HEAD request returns 0 content length
         var headResponse = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("") };
@@ -239,7 +245,7 @@ public class FileServiceTests
             .ReturnsAsync(rangeResponse);
 
         // Act
-        var result = await _service.DownloadFileAsync(fileUrl);
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
 
         // Assert
         result.Should().NotBeNull();
@@ -250,7 +256,7 @@ public class FileServiceTests
     public async Task DownloadFileAsync_WhenRangeRequestFails_ShouldUseFallbackGetRequest()
     {
         // Arrange
-        string fileUrl = "https://example.com/test.jpg";
+        const string fileUrl = "https://example.com/test.jpg";
 
         // HEAD request returns 0 content length
         var headResponse = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("") };
@@ -276,7 +282,7 @@ public class FileServiceTests
             .ReturnsAsync(getResponse);
 
         // Act
-        var result = await _service.DownloadFileAsync(fileUrl);
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
 
         // Assert
         result.Should().NotBeNull();
@@ -312,7 +318,7 @@ public class FileServiceTests
             .ReturnsAsync(getResponse);
 
         // Act
-        var result = await _service.DownloadFileAsync(fileUrl);
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
 
         // Assert
         result.Should().NotBeNull();
@@ -340,7 +346,7 @@ public class FileServiceTests
             .ReturnsAsync(responseMessage);
 
         // Act
-        var result = await _service.DownloadFileAsync(fileUrl);
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
 
         // Assert
         result.Should().NotBeNull();
@@ -371,7 +377,7 @@ public class FileServiceTests
             .ReturnsAsync(responseMessage);
 
         // Act
-        var result = await _service.DownloadFileAsync(fileUrl);
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
 
         // Assert
         result.Should().NotBeNull();
@@ -401,7 +407,7 @@ public class FileServiceTests
             .ReturnsAsync(responseMessage);
 
         // Act
-        var result = await _service.DownloadFileAsync(fileUrl);
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
 
         // Assert
         result.Should().NotBeNull();
@@ -431,7 +437,7 @@ public class FileServiceTests
             .ReturnsAsync(responseMessage);
 
         // Act
-        var result = await _service.DownloadFileAsync(fileUrl);
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
 
         // Assert
         result.Should().NotBeNull();
@@ -460,7 +466,7 @@ public class FileServiceTests
             .ReturnsAsync(responseMessage);
 
         // Act
-        var result = await _service.DownloadFileAsync(fileUrl);
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
 
         // Assert
         result.Should().NotBeNull();
@@ -489,7 +495,7 @@ public class FileServiceTests
             .ReturnsAsync(responseMessage);
 
         // Act
-        var result = await _service.DownloadFileAsync(fileUrl);
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
 
         // Assert
         result.Should().NotBeNull();
@@ -519,7 +525,7 @@ public class FileServiceTests
             .ReturnsAsync(responseMessage);
 
         // Act
-        var result = await _service.DownloadFileAsync(fileUrl);
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
 
         // Assert
         result.Should().NotBeNull();
@@ -549,7 +555,7 @@ public class FileServiceTests
             .ReturnsAsync(responseMessage);
 
         // Act
-        var result = await _service.DownloadFileAsync(fileUrl);
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
 
         // Assert
         result.Should().NotBeNull();
@@ -587,7 +593,7 @@ public class FileServiceTests
             .ReturnsAsync(getResponse);
 
         // Act
-        var result = await _service.DownloadFileAsync(fileUrl);
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
 
         // Assert
         result.Should().NotBeNull();
@@ -615,7 +621,7 @@ public class FileServiceTests
             .ReturnsAsync(responseMessage);
 
         // Act
-        var result = await _service.DownloadFileAsync(fileUrl);
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
 
         // Assert
         result.Should().NotBeNull();
@@ -664,7 +670,7 @@ public class FileServiceTests
             .ReturnsAsync(uploadResult);
 
         // Act
-        var result = await _service.UploadFileAsync(fileMock.Object, "test-id", "folder");
+        FileUploadResult result = await _service.UploadFileAsync(fileMock.Object, "test-id", "folder");
 
         // Assert
         result.Should().NotBeNull();
@@ -697,7 +703,7 @@ public class FileServiceTests
             .ReturnsAsync(responseMessage);
 
         // Act
-        var result = await _service.DownloadFileAsync(fileUrl);
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
 
         // Assert
         result.Should().NotBeNull();
@@ -727,7 +733,7 @@ public class FileServiceTests
             .ReturnsAsync(responseMessage);
 
         // Act
-        var result = await _service.DownloadFileAsync(fileUrl);
+        FileDownloadResult result = await _service.DownloadFileAsync(fileUrl);
 
         // Assert
         result.Should().NotBeNull();
