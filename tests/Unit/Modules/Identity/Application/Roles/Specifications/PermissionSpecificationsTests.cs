@@ -1,6 +1,8 @@
+using System.Linq.Expressions;
 using _116.Identity.Application.Roles.Specifications;
 using _116.Identity.Domain.Entities;
 using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -18,7 +20,7 @@ public class PermissionSpecificationsTests
     {
         // Arrange
         Guid permissionId = Guid.NewGuid();
-        PermissionEntity permission = new PermissionBuilder().WithId(permissionId).Build();
+        PermissionEntity permission = PermissionFactory.CreateWithId(permissionId);
         PermissionByIdSpecification spec = new(permissionId);
 
         // Act
@@ -32,7 +34,7 @@ public class PermissionSpecificationsTests
     public void PermissionByIdSpecification_WithDifferentId_ShouldReturnFalse()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().WithId(Guid.NewGuid()).Build();
+        PermissionEntity permission = PermissionFactory.Create();
         PermissionByIdSpecification spec = new(Guid.NewGuid());
 
         // Act
@@ -50,7 +52,7 @@ public class PermissionSpecificationsTests
     public void PermissionByResourceAndActionSpecification_WithMatchingResourceAndAction_ShouldReturnTrue()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().WithResource("articles").WithAction("read").Build();
+        PermissionEntity permission = PermissionFactory.Create("articles", "read");
         PermissionByResourceAndActionSpecification spec = new("articles", "read");
 
         // Act
@@ -64,7 +66,7 @@ public class PermissionSpecificationsTests
     public void PermissionByResourceAndActionSpecification_WithDifferentResource_ShouldReturnFalse()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().WithResource("articles").WithAction("read").Build();
+        PermissionEntity permission = PermissionFactory.Create("articles", "read");
         PermissionByResourceAndActionSpecification spec = new("users", "read");
 
         // Act
@@ -78,7 +80,7 @@ public class PermissionSpecificationsTests
     public void PermissionByResourceAndActionSpecification_WithDifferentAction_ShouldReturnFalse()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().WithResource("articles").WithAction("read").Build();
+        PermissionEntity permission = PermissionFactory.Create("articles", "read");
         PermissionByResourceAndActionSpecification spec = new("articles", "write");
 
         // Act
@@ -96,7 +98,7 @@ public class PermissionSpecificationsTests
     public void PermissionIsActiveSpecification_WithActivePermission_ShouldReturnTrue()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
         permission.Activate();
         PermissionIsActiveSpecification spec = new();
 
@@ -111,7 +113,7 @@ public class PermissionSpecificationsTests
     public void PermissionIsActiveSpecification_WithInactivePermission_ShouldReturnFalse()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
         permission.Deactivate();
         PermissionIsActiveSpecification spec = new();
 
@@ -130,7 +132,7 @@ public class PermissionSpecificationsTests
     public void PermissionIsDeletedSpecification_WithDeletedPermission_ShouldReturnTrue()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
         permission.SoftDelete();
         PermissionIsDeletedSpecification spec = new();
 
@@ -145,7 +147,7 @@ public class PermissionSpecificationsTests
     public void PermissionIsDeletedSpecification_WithNonDeletedPermission_ShouldReturnFalse()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
         PermissionIsDeletedSpecification spec = new();
 
         // Act
@@ -163,7 +165,7 @@ public class PermissionSpecificationsTests
     public void PermissionNotDeletedSpecification_WithNonDeletedPermission_ShouldReturnTrue()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
         PermissionNotDeletedSpecification spec = new();
 
         // Act
@@ -177,7 +179,7 @@ public class PermissionSpecificationsTests
     public void PermissionNotDeletedSpecification_WithDeletedPermission_ShouldReturnFalse()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
         permission.SoftDelete();
         PermissionNotDeletedSpecification spec = new();
 
@@ -196,7 +198,7 @@ public class PermissionSpecificationsTests
     public void ActivePermissionSpecification_WithActiveAndNonDeletedPermission_ShouldReturnTrue()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
         permission.Activate();
         ActivePermissionSpecification spec = new();
 
@@ -211,7 +213,7 @@ public class PermissionSpecificationsTests
     public void ActivePermissionSpecification_WithInactivePermission_ShouldReturnFalse()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
         permission.Deactivate();
         ActivePermissionSpecification spec = new();
 
@@ -226,7 +228,7 @@ public class PermissionSpecificationsTests
     public void ActivePermissionSpecification_WithDeletedPermission_ShouldReturnFalse()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
         permission.Activate();
         permission.SoftDelete();
         ActivePermissionSpecification spec = new();
@@ -246,7 +248,7 @@ public class PermissionSpecificationsTests
     public void PermissionIsNotActiveSpecification_WithInactivePermission_ShouldReturnTrue()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
         permission.Deactivate();
         PermissionIsNotActiveSpecification spec = new();
 
@@ -261,7 +263,7 @@ public class PermissionSpecificationsTests
     public void PermissionIsNotActiveSpecification_WithActivePermission_ShouldReturnFalse()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
         permission.Activate();
         PermissionIsNotActiveSpecification spec = new();
 
@@ -283,7 +285,7 @@ public class PermissionSpecificationsTests
         PermissionSearchSpecification spec = new("articles");
 
         // Act
-        var expression = spec.ToExpression();
+        Expression<Func<PermissionEntity, bool>> expression = spec.ToExpression();
 
         // Assert
         expression.Should().NotBeNull();
@@ -300,9 +302,9 @@ public class PermissionSpecificationsTests
         // Arrange
         List<PermissionEntity> permissions =
         [
-            new PermissionBuilder().WithResource("articles").WithAction("read").Build(),
-            new PermissionBuilder().WithResource("articles").WithAction("write").Build(),
-            new PermissionBuilder().WithResource("users").WithAction("read").Build(),
+            PermissionFactory.Create("articles", "read"),
+            PermissionFactory.Create("articles", "write"),
+            PermissionFactory.Create("users", "read"),
         ];
 
         PermissionByResourceAndActionSpecification spec = new("articles", "read");
@@ -311,7 +313,7 @@ public class PermissionSpecificationsTests
         List<PermissionEntity> filtered = permissions.Where(spec.ToExpression().Compile()).ToList();
 
         // Assert
-        filtered.Should().HaveCount(1);
+        filtered.Should().ContainSingle();
         filtered[0].Resource.Should().Be("articles");
         filtered[0].Action.Should().Be("read");
     }
@@ -320,16 +322,13 @@ public class PermissionSpecificationsTests
     public void ActivePermissionSpecification_WithLinq_ShouldFilterCorrectly()
     {
         // Arrange
-        PermissionEntity activePermission = new PermissionBuilder().WithResource("articles").WithAction("read").Build();
+        PermissionEntity activePermission = PermissionFactory.Create("articles", "read");
         activePermission.Activate();
 
-        PermissionEntity inactivePermission = new PermissionBuilder().WithResource("users").WithAction("write").Build();
+        PermissionEntity inactivePermission = PermissionFactory.Create("users", "write");
         inactivePermission.Deactivate();
 
-        PermissionEntity deletedPermission = new PermissionBuilder()
-            .WithResource("comments")
-            .WithAction("delete")
-            .Build();
+        PermissionEntity deletedPermission = PermissionFactory.Create("comments", "delete");
         deletedPermission.SoftDelete();
 
         List<PermissionEntity> permissions = [activePermission, inactivePermission, deletedPermission];
@@ -339,7 +338,7 @@ public class PermissionSpecificationsTests
         List<PermissionEntity> filtered = permissions.Where(spec.ToExpression().Compile()).ToList();
 
         // Assert
-        filtered.Should().HaveCount(1);
+        filtered.Should().ContainSingle();
         filtered[0].Resource.Should().Be("articles");
     }
 
