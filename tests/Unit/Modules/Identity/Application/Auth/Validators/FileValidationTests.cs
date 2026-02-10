@@ -47,7 +47,7 @@ public class FileValidationTests
         };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.AvatarFile);
@@ -61,7 +61,7 @@ public class FileValidationTests
         var command = new TestCommand { AvatarFile = null };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.AvatarFile);
@@ -75,7 +75,7 @@ public class FileValidationTests
         var command = new TestCommand { AvatarFile = null };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.AvatarFile).WithErrorMessage("Avatar file is required");
@@ -92,7 +92,7 @@ public class FileValidationTests
         };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result
@@ -108,7 +108,7 @@ public class FileValidationTests
         var command = new TestCommand { AvatarFile = CreateMockFile("avatar.jpg", "image/jpeg", 0) };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.AvatarFile);
@@ -122,7 +122,7 @@ public class FileValidationTests
         var command = new TestCommand { AvatarFile = CreateMockFile("avatar.exe", "application/exe", 1024) };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result
@@ -140,7 +140,7 @@ public class FileValidationTests
         var command = new TestCommand { AvatarFile = CreateMockFile("avatar.exe", "image/jpeg", 1024) };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result
@@ -158,7 +158,7 @@ public class FileValidationTests
         var command = new TestCommand { AvatarFile = CreateMockFile("avatar.png", "image/png", 1024 * 500) };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.AvatarFile);
@@ -172,7 +172,7 @@ public class FileValidationTests
         var command = new TestCommand { AvatarFile = CreateMockFile("avatar.gif", "image/gif", 1024 * 500) };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.AvatarFile);
@@ -186,7 +186,7 @@ public class FileValidationTests
         var command = new TestCommand { AvatarFile = CreateMockFile("avatar.webp", "image/webp", 1024 * 500) };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.AvatarFile);
@@ -203,7 +203,7 @@ public class FileValidationTests
         };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.AvatarFile);
@@ -220,7 +220,7 @@ public class FileValidationTests
         };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.AvatarFile);
@@ -234,7 +234,7 @@ public class FileValidationTests
         var command = new TestCommand { AvatarFile = CreateMockFile("avatar.png", "multipart/form-data", 1024 * 500) };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.AvatarFile);
@@ -248,7 +248,7 @@ public class FileValidationTests
         var command = new TestCommand { AvatarFile = CreateMockFile("avatar.jpg", "", 1024 * 500) };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.AvatarFile);
@@ -262,7 +262,7 @@ public class FileValidationTests
         var command = new TestCommand { AvatarFile = CreateMockFile("avatar.jpg", null!, 1024 * 500) };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.AvatarFile);
@@ -279,7 +279,7 @@ public class FileValidationTests
         };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.AvatarFile);
@@ -293,7 +293,7 @@ public class FileValidationTests
         var command = new TestCommand { AvatarFile = CreateMockFile("avatar.JPG", "image/jpeg", 1024 * 500) };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.AvatarFile);
@@ -307,7 +307,7 @@ public class FileValidationTests
         var command = new TestCommand { AvatarFile = CreateMockFile("avatar.jpg", "IMAGE/JPEG", 1024 * 500) };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.AvatarFile);
@@ -324,7 +324,7 @@ public class FileValidationTests
         };
 
         // Act
-        var result = validator.TestValidate(command);
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.AvatarFile);
