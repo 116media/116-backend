@@ -13,7 +13,7 @@ public class OtpAttemptsLimitExceptionTests
     public void Constructor_WithMessage_ShouldSetMessage()
     {
         // Arrange
-        var message = "Too many OTP attempts";
+        string message = "Too many OTP attempts";
 
         // Act
         var exception = new OtpAttemptsLimitException(message);
@@ -28,8 +28,8 @@ public class OtpAttemptsLimitExceptionTests
     public void Constructor_WithMessageAndDetails_ShouldSetBothProperties()
     {
         // Arrange
-        var message = "Too many OTP attempts";
-        var details = "User has exceeded the maximum of 5 attempts";
+        string message = "Too many OTP attempts";
+        string details = "User has exceeded the maximum of 5 attempts";
 
         // Act
         var exception = new OtpAttemptsLimitException(message, details);
