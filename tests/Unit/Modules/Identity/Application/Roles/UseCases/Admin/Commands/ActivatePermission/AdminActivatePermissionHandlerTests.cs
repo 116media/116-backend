@@ -4,8 +4,8 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common;
-using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -36,10 +36,11 @@ public class AdminActivatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithInactivePermission_ShouldActivateAndReturnResult()
     {
         // Arrange
-        PermissionEntity inactivePermission = new PermissionBuilder()
-            .WithResourceAction(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction)
-            .AsInactive()
-            .Build();
+        PermissionEntity inactivePermission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
+        inactivePermission.Deactivate();
 
         AdminActivatePermissionCommand command = new(PermissionId: inactivePermission.Id);
 
@@ -59,10 +60,11 @@ public class AdminActivatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithInactivePermission_ShouldSetIsActiveToTrue()
     {
         // Arrange
-        PermissionEntity inactivePermission = new PermissionBuilder()
-            .WithResourceAction(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction)
-            .AsInactive()
-            .Build();
+        PermissionEntity inactivePermission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
+        inactivePermission.Deactivate();
 
         AdminActivatePermissionCommand command = new(PermissionId: inactivePermission.Id);
 
@@ -99,10 +101,10 @@ public class AdminActivatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionAlreadyActive_ShouldThrowConflictException()
     {
         // Arrange
-        PermissionEntity activePermission = new PermissionBuilder()
-            .WithResourceAction(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction)
-            .AsActive()
-            .Build();
+        PermissionEntity activePermission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
 
         AdminActivatePermissionCommand command = new(PermissionId: activePermission.Id);
 
@@ -119,10 +121,10 @@ public class AdminActivatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionAlreadyActive_ShouldNotCommit()
     {
         // Arrange
-        PermissionEntity activePermission = new PermissionBuilder()
-            .WithResourceAction(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction)
-            .AsActive()
-            .Build();
+        PermissionEntity activePermission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
 
         AdminActivatePermissionCommand command = new(PermissionId: activePermission.Id);
 
@@ -150,10 +152,11 @@ public class AdminActivatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        PermissionEntity inactivePermission = new PermissionBuilder()
-            .WithResourceAction(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction)
-            .AsInactive()
-            .Build();
+        PermissionEntity inactivePermission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
+        inactivePermission.Deactivate();
 
         AdminActivatePermissionCommand command = new(PermissionId: inactivePermission.Id);
 
