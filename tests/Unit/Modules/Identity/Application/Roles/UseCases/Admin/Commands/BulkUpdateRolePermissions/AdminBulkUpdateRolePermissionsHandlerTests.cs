@@ -4,8 +4,8 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common;
-using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -44,11 +44,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithValidCommand_ShouldUpdatePermissionsAndReturnResult()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder()
-            .WithName(TestConstants.Role.ValidName)
-            .WithDescription(TestConstants.Role.ValidDescription)
-            .AsActive()
-            .Build();
+        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
         List<Guid> newPermissionIds = [Guid.NewGuid(), Guid.NewGuid()];
         List<Guid> currentPermissionIds = [];
@@ -72,11 +68,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithNewPermissions_ShouldAddNewPermissions()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder()
-            .WithName(TestConstants.Role.ValidName)
-            .WithDescription(TestConstants.Role.ValidDescription)
-            .AsActive()
-            .Build();
+        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
         Guid newPermissionId = Guid.NewGuid();
         List<Guid> newPermissionIds = [newPermissionId];
@@ -98,19 +90,13 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithRemovedPermissions_ShouldRemoveOldPermissions()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder()
-            .WithName(TestConstants.Role.ValidName)
-            .WithDescription(TestConstants.Role.ValidDescription)
-            .AsActive()
-            .Build();
+        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
         Guid existingPermissionId = Guid.NewGuid();
         List<Guid> newPermissionIds = [];
         List<Guid> currentPermissionIds = [existingPermissionId];
 
-        RolePermissionEntity rolePermission = new RolePermissionBuilder()
-            .ForRoleAndPermission(role.Id, existingPermissionId)
-            .Build();
+        RolePermissionEntity rolePermission = RolePermissionFactory.Create(role.Id, existingPermissionId);
 
         AdminBulkUpdateRolePermissionsCommand command = new(RoleId: role.Id, PermissionIds: newPermissionIds);
 
@@ -129,11 +115,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithMixedPermissions_ShouldAddAndRemoveCorrectly()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder()
-            .WithName(TestConstants.Role.ValidName)
-            .WithDescription(TestConstants.Role.ValidDescription)
-            .AsActive()
-            .Build();
+        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
         Guid keepPermissionId = Guid.NewGuid();
         Guid removePermissionId = Guid.NewGuid();
@@ -142,9 +124,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
         List<Guid> newPermissionIds = [keepPermissionId, addPermissionId];
         List<Guid> currentPermissionIds = [keepPermissionId, removePermissionId];
 
-        RolePermissionEntity rolePermissionToRemove = new RolePermissionBuilder()
-            .ForRoleAndPermission(role.Id, removePermissionId)
-            .Build();
+        RolePermissionEntity rolePermissionToRemove = RolePermissionFactory.Create(role.Id, removePermissionId);
 
         AdminBulkUpdateRolePermissionsCommand command = new(RoleId: role.Id, PermissionIds: newPermissionIds);
 
@@ -164,11 +144,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithNoChanges_ShouldStillCommit()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder()
-            .WithName(TestConstants.Role.ValidName)
-            .WithDescription(TestConstants.Role.ValidDescription)
-            .AsActive()
-            .Build();
+        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
         Guid permissionId = Guid.NewGuid();
         List<Guid> permissionIds = [permissionId];
@@ -189,19 +165,13 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithEmptyPermissionList_ShouldRemoveAllPermissions()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder()
-            .WithName(TestConstants.Role.ValidName)
-            .WithDescription(TestConstants.Role.ValidDescription)
-            .AsActive()
-            .Build();
+        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
         Guid existingPermissionId = Guid.NewGuid();
         List<Guid> currentPermissionIds = [existingPermissionId];
         List<Guid> newPermissionIds = [];
 
-        RolePermissionEntity rolePermission = new RolePermissionBuilder()
-            .ForRoleAndPermission(role.Id, existingPermissionId)
-            .Build();
+        RolePermissionEntity rolePermission = RolePermissionFactory.Create(role.Id, existingPermissionId);
 
         AdminBulkUpdateRolePermissionsCommand command = new(RoleId: role.Id, PermissionIds: newPermissionIds);
 
@@ -269,11 +239,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepositories()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder()
-            .WithName(TestConstants.Role.ValidName)
-            .WithDescription(TestConstants.Role.ValidDescription)
-            .AsActive()
-            .Build();
+        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
         List<Guid> permissionIds = [Guid.NewGuid()];
         List<Guid> currentPermissionIds = [];
@@ -298,11 +264,7 @@ public class AdminBulkUpdateRolePermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldReloadRoleWithPermissionsAfterUpdate()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder()
-            .WithName(TestConstants.Role.ValidName)
-            .WithDescription(TestConstants.Role.ValidDescription)
-            .AsActive()
-            .Build();
+        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
         List<Guid> permissionIds = [Guid.NewGuid()];
         List<Guid> currentPermissionIds = [];
