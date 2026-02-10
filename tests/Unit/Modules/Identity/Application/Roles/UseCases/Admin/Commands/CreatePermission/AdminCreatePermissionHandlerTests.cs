@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -35,11 +36,7 @@ public class AdminCreatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithValidCommand_ShouldCreatePermissionAndReturnResult()
     {
         // Arrange
-        AdminCreatePermissionCommand command = new(
-            Resource: TestConstants.Permission.ValidResource,
-            Action: TestConstants.Permission.ValidAction,
-            Description: TestConstants.Permission.ValidDescription
-        );
+        AdminCreatePermissionCommand command = CommandFactory.Permission.CreateValidCommand();
 
         _permissionRepositoryMock.SetupExistsByResourceAndAction(
             TestConstants.Permission.ValidResource,
@@ -65,11 +62,7 @@ public class AdminCreatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithValidCommand_ShouldGenerateNewPermissionId()
     {
         // Arrange
-        AdminCreatePermissionCommand command = new(
-            Resource: TestConstants.Permission.ValidResource,
-            Action: TestConstants.Permission.ValidAction,
-            Description: TestConstants.Permission.ValidDescription
-        );
+        AdminCreatePermissionCommand command = CommandFactory.Permission.CreateValidCommand();
 
         _permissionRepositoryMock.SetupExistsByResourceAndActionReturnsFalse();
 
@@ -88,11 +81,7 @@ public class AdminCreatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionAlreadyExists_ShouldThrowConflictException()
     {
         // Arrange
-        AdminCreatePermissionCommand command = new(
-            Resource: TestConstants.Permission.ValidResource,
-            Action: TestConstants.Permission.ValidAction,
-            Description: TestConstants.Permission.ValidDescription
-        );
+        AdminCreatePermissionCommand command = CommandFactory.Permission.CreateValidCommand();
 
         _permissionRepositoryMock.SetupExistsByResourceAndAction(
             TestConstants.Permission.ValidResource,
@@ -111,11 +100,7 @@ public class AdminCreatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionAlreadyExists_ShouldNotAddPermission()
     {
         // Arrange
-        AdminCreatePermissionCommand command = new(
-            Resource: TestConstants.Permission.ValidResource,
-            Action: TestConstants.Permission.ValidAction,
-            Description: TestConstants.Permission.ValidDescription
-        );
+        AdminCreatePermissionCommand command = CommandFactory.Permission.CreateValidCommand();
 
         _permissionRepositoryMock.SetupExistsByResourceAndAction(
             TestConstants.Permission.ValidResource,
@@ -144,11 +129,7 @@ public class AdminCreatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionAlreadyExists_ShouldNotCommit()
     {
         // Arrange
-        AdminCreatePermissionCommand command = new(
-            Resource: TestConstants.Permission.ValidResource,
-            Action: TestConstants.Permission.ValidAction,
-            Description: TestConstants.Permission.ValidDescription
-        );
+        AdminCreatePermissionCommand command = CommandFactory.Permission.CreateValidCommand();
 
         _permissionRepositoryMock.SetupExistsByResourceAndAction(
             TestConstants.Permission.ValidResource,
@@ -178,11 +159,7 @@ public class AdminCreatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        AdminCreatePermissionCommand command = new(
-            Resource: TestConstants.Permission.ValidResource,
-            Action: TestConstants.Permission.ValidAction,
-            Description: TestConstants.Permission.ValidDescription
-        );
+        AdminCreatePermissionCommand command = CommandFactory.Permission.CreateValidCommand();
 
         using CancellationTokenSource cts = new();
         _permissionRepositoryMock.SetupExistsByResourceAndActionReturnsFalse();
