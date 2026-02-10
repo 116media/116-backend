@@ -1,6 +1,7 @@
 using _116.Identity.Application.Auth.Specifications;
 using _116.Identity.Domain.Entities;
-using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -18,7 +19,7 @@ public class UserCredentialSpecificationsTests
     {
         // Arrange
         string email = "test@example.com";
-        UserEntity user = new UserBuilder().WithEmail(email).Build();
+        UserEntity user = UserFactory.Create(email);
         UserByEmailSpecification spec = new(email);
 
         // Act
@@ -32,7 +33,7 @@ public class UserCredentialSpecificationsTests
     public void UserByEmailSpecification_WithDifferentEmail_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = new UserBuilder().WithEmail("test@example.com").Build();
+        UserEntity user = UserFactory.Create("test@example.com");
         UserByEmailSpecification spec = new("other@example.com");
 
         // Act
@@ -51,7 +52,7 @@ public class UserCredentialSpecificationsTests
     {
         // Arrange
         string userName = "testuser";
-        UserEntity user = new UserBuilder().WithUserName(userName).Build();
+        UserEntity user = UserFactory.Create(TestConstants.User.ValidEmail, userName);
         UserByUserNameSpecification spec = new(userName);
 
         // Act
@@ -65,7 +66,7 @@ public class UserCredentialSpecificationsTests
     public void UserByUserNameSpecification_WithDifferentUserName_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = new UserBuilder().WithUserName("testuser").Build();
+        UserEntity user = UserFactory.Create(TestConstants.User.ValidEmail, "testuser");
         UserByUserNameSpecification spec = new("otheruser");
 
         // Act
@@ -84,7 +85,7 @@ public class UserCredentialSpecificationsTests
     {
         // Arrange
         string phoneNumber = "+1234567890";
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         user.GetType().GetProperty("FullPhoneNumber")!.SetValue(user, phoneNumber);
         UserByPhoneNumberSpecification spec = new(phoneNumber);
 
@@ -99,7 +100,7 @@ public class UserCredentialSpecificationsTests
     public void UserByPhoneNumberSpecification_WithDifferentPhoneNumber_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         user.GetType().GetProperty("FullPhoneNumber")!.SetValue(user, "+1234567890");
         UserByPhoneNumberSpecification spec = new("+9876543210");
 
@@ -114,7 +115,7 @@ public class UserCredentialSpecificationsTests
     public void UserByPhoneNumberSpecification_WithNullPhoneNumber_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         user.GetType().GetProperty("FullPhoneNumber")!.SetValue(user, null);
         UserByPhoneNumberSpecification spec = new("+1234567890");
 
@@ -134,7 +135,7 @@ public class UserCredentialSpecificationsTests
     {
         // Arrange
         Guid userId = Guid.NewGuid();
-        UserEntity user = new UserBuilder().WithId(userId).Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
         UserByIdSpecification spec = new(userId);
 
         // Act
@@ -148,7 +149,7 @@ public class UserCredentialSpecificationsTests
     public void UserByIdSpecification_WithDifferentId_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = new UserBuilder().WithId(Guid.NewGuid()).Build();
+        UserEntity user = UserFactory.CreateWithId(Guid.NewGuid());
         UserByIdSpecification spec = new(Guid.NewGuid());
 
         // Act
@@ -167,7 +168,7 @@ public class UserCredentialSpecificationsTests
     {
         // Arrange
         string email = "test@example.com";
-        UserEntity user = new UserBuilder().WithEmail(email).Build();
+        UserEntity user = UserFactory.Create(email);
         UserByCredentialsSpecification spec = new(email);
 
         // Act
@@ -182,7 +183,7 @@ public class UserCredentialSpecificationsTests
     {
         // Arrange
         string userName = "testuser";
-        UserEntity user = new UserBuilder().WithUserName(userName).Build();
+        UserEntity user = UserFactory.Create(TestConstants.User.ValidEmail, userName);
         UserByCredentialsSpecification spec = new(userName);
 
         // Act
@@ -196,7 +197,7 @@ public class UserCredentialSpecificationsTests
     public void UserByCredentialsSpecification_WithWrongEmail_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = new UserBuilder().WithEmail("test@example.com").Build();
+        UserEntity user = UserFactory.Create("test@example.com");
         UserByCredentialsSpecification spec = new("other@example.com");
 
         // Act
@@ -210,7 +211,7 @@ public class UserCredentialSpecificationsTests
     public void UserByCredentialsSpecification_WithWrongUserName_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = new UserBuilder().WithUserName("testuser").Build();
+        UserEntity user = UserFactory.Create(TestConstants.User.ValidEmail, "testuser");
         UserByCredentialsSpecification spec = new("otheruser");
 
         // Act
@@ -231,9 +232,9 @@ public class UserCredentialSpecificationsTests
         string email = "test@example.com";
         List<UserEntity> users =
         [
-            new UserBuilder().WithEmail(email).Build(),
-            new UserBuilder().WithEmail("other@example.com").Build(),
-            new UserBuilder().WithEmail("third@example.com").Build(),
+            UserFactory.Create(email),
+            UserFactory.Create("other@example.com"),
+            UserFactory.Create("third@example.com"),
         ];
 
         UserByEmailSpecification spec = new(email);
@@ -242,7 +243,7 @@ public class UserCredentialSpecificationsTests
         List<UserEntity> filtered = users.Where(spec.ToExpression().Compile()).ToList();
 
         // Assert
-        filtered.Should().HaveCount(1);
+        filtered.Should().ContainSingle();
         filtered[0].Email.Should().Be(email);
     }
 
@@ -253,9 +254,9 @@ public class UserCredentialSpecificationsTests
         string userName = "testuser";
         List<UserEntity> users =
         [
-            new UserBuilder().WithUserName(userName).Build(),
-            new UserBuilder().WithUserName(userName).Build(),
-            new UserBuilder().WithUserName("otheruser").Build(),
+            UserFactory.Create(TestConstants.User.ValidEmail, userName),
+            UserFactory.Create("second@example.com", userName),
+            UserFactory.Create("third@example.com", "otheruser"),
         ];
 
         UserByUserNameSpecification spec = new(userName);
@@ -265,7 +266,7 @@ public class UserCredentialSpecificationsTests
 
         // Assert
         filtered.Should().HaveCount(2);
-        filtered.All(u => u.UserName == userName).Should().BeTrue();
+        filtered.Should().OnlyContain(u => u.UserName == userName);
     }
 
     [Fact]
@@ -273,11 +274,7 @@ public class UserCredentialSpecificationsTests
     {
         // Arrange
         string email = "test@example.com";
-        List<UserEntity> users =
-        [
-            new UserBuilder().WithEmail(email).Build(),
-            new UserBuilder().WithEmail("other@example.com").Build(),
-        ];
+        List<UserEntity> users = [UserFactory.Create(email), UserFactory.Create("other@example.com")];
 
         UserByCredentialsSpecification spec = new(email);
 
@@ -285,7 +282,7 @@ public class UserCredentialSpecificationsTests
         List<UserEntity> filtered = users.Where(spec.ToExpression().Compile()).ToList();
 
         // Assert
-        filtered.Should().HaveCount(1);
+        filtered.Should().ContainSingle();
         filtered[0].Email.Should().Be(email);
     }
 
@@ -296,8 +293,8 @@ public class UserCredentialSpecificationsTests
         string userName = "testuser";
         List<UserEntity> users =
         [
-            new UserBuilder().WithUserName(userName).Build(),
-            new UserBuilder().WithUserName("otheruser").Build(),
+            UserFactory.Create(TestConstants.User.ValidEmail, userName),
+            UserFactory.Create("other@example.com", "otheruser"),
         ];
 
         UserByCredentialsSpecification spec = new(userName);
@@ -306,7 +303,7 @@ public class UserCredentialSpecificationsTests
         List<UserEntity> filtered = users.Where(spec.ToExpression().Compile()).ToList();
 
         // Assert
-        filtered.Should().HaveCount(1);
+        filtered.Should().ContainSingle();
         filtered[0].UserName.Should().Be(userName);
     }
 
