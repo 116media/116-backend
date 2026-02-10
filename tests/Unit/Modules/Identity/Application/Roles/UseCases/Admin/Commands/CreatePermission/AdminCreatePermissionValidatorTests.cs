@@ -1,5 +1,7 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.CreatePermission;
+using _116.Unit.Tests.Common.Builders.Commands.Roles;
 using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -19,11 +21,7 @@ public class AdminCreatePermissionValidatorTests
     public async Task Validate_WithValidCommand_ShouldNotHaveErrors()
     {
         // Arrange
-        AdminCreatePermissionCommand command = new(
-            Resource: TestConstants.Permission.ValidResource,
-            Action: TestConstants.Permission.ValidAction,
-            Description: TestConstants.Permission.ValidDescription
-        );
+        AdminCreatePermissionCommand command = CommandFactory.Permission.CreateValidCommand();
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -94,11 +92,7 @@ public class AdminCreatePermissionValidatorTests
     public async Task Validate_WithEmptyResource_ShouldHaveError()
     {
         // Arrange
-        AdminCreatePermissionCommand command = new(
-            Resource: string.Empty,
-            Action: TestConstants.Permission.ValidAction,
-            Description: TestConstants.Permission.ValidDescription
-        );
+        AdminCreatePermissionCommand command = new CreatePermissionCommandBuilder().WithEmptyResource().Build();
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -140,11 +134,9 @@ public class AdminCreatePermissionValidatorTests
     public async Task Validate_WithResourceExceedingMaxLength_ShouldHaveError()
     {
         // Arrange
-        AdminCreatePermissionCommand command = new(
-            Resource: new string('R', TestConstants.Permission.ResourceMaxLength + 1),
-            Action: TestConstants.Permission.ValidAction,
-            Description: TestConstants.Permission.ValidDescription
-        );
+        AdminCreatePermissionCommand command = new CreatePermissionCommandBuilder()
+            .WithResourceExceedingMaxLength()
+            .Build();
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -190,11 +182,7 @@ public class AdminCreatePermissionValidatorTests
     public async Task Validate_WithEmptyAction_ShouldHaveError()
     {
         // Arrange
-        AdminCreatePermissionCommand command = new(
-            Resource: TestConstants.Permission.ValidResource,
-            Action: string.Empty,
-            Description: TestConstants.Permission.ValidDescription
-        );
+        AdminCreatePermissionCommand command = new CreatePermissionCommandBuilder().WithEmptyAction().Build();
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -236,11 +224,9 @@ public class AdminCreatePermissionValidatorTests
     public async Task Validate_WithActionExceedingMaxLength_ShouldHaveError()
     {
         // Arrange
-        AdminCreatePermissionCommand command = new(
-            Resource: TestConstants.Permission.ValidResource,
-            Action: new string('A', TestConstants.Permission.ActionMaxLength + 1),
-            Description: TestConstants.Permission.ValidDescription
-        );
+        AdminCreatePermissionCommand command = new CreatePermissionCommandBuilder()
+            .WithActionExceedingMaxLength()
+            .Build();
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -286,11 +272,7 @@ public class AdminCreatePermissionValidatorTests
     public async Task Validate_WithEmptyDescription_ShouldHaveError()
     {
         // Arrange
-        AdminCreatePermissionCommand command = new(
-            Resource: TestConstants.Permission.ValidResource,
-            Action: TestConstants.Permission.ValidAction,
-            Description: string.Empty
-        );
+        AdminCreatePermissionCommand command = new CreatePermissionCommandBuilder().WithEmptyDescription().Build();
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
