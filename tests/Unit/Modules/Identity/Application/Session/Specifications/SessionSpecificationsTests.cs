@@ -1,6 +1,7 @@
 using _116.Identity.Application.Session.Specifications;
 using _116.Identity.Domain.Entities;
 using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -18,7 +19,7 @@ public class SessionSpecificationsTests
     {
         // Arrange
         Guid userId = Guid.NewGuid();
-        SessionEntity session = new SessionBuilder().WithUserId(userId).Build();
+        SessionEntity session = SessionFactory.Create(userId);
         SessionByUserIdSpecification spec = new(userId);
 
         // Act
@@ -32,7 +33,7 @@ public class SessionSpecificationsTests
     public void SessionByUserIdSpecification_WithDifferentUserId_ShouldReturnFalse()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().WithUserId(Guid.NewGuid()).Build();
+        SessionEntity session = SessionFactory.Create(Guid.NewGuid());
         SessionByUserIdSpecification spec = new(Guid.NewGuid());
 
         // Act
@@ -51,7 +52,7 @@ public class SessionSpecificationsTests
     {
         // Arrange
         string refreshTokenHash = "token-hash-123";
-        SessionEntity session = new SessionBuilder().WithRefreshTokenHash(refreshTokenHash).Build();
+        SessionEntity session = SessionFactory.CreateWithRefreshTokenHash(refreshTokenHash);
         SessionByRefreshTokenHashSpecification spec = new(refreshTokenHash);
 
         // Act
@@ -65,7 +66,7 @@ public class SessionSpecificationsTests
     public void SessionByRefreshTokenHashSpecification_WithDifferentHash_ShouldReturnFalse()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().WithRefreshTokenHash("token-hash-123").Build();
+        SessionEntity session = SessionFactory.CreateWithRefreshTokenHash("token-hash-123");
         SessionByRefreshTokenHashSpecification spec = new("different-hash");
 
         // Act
@@ -84,7 +85,7 @@ public class SessionSpecificationsTests
     {
         // Arrange
         Guid sessionId = Guid.NewGuid();
-        SessionEntity session = new SessionBuilder().WithId(sessionId).Build();
+        SessionEntity session = SessionFactory.CreateWithId(sessionId);
         SessionByIdSpecification spec = new(sessionId);
 
         // Act
@@ -98,7 +99,7 @@ public class SessionSpecificationsTests
     public void SessionByIdSpecification_WithDifferentId_ShouldReturnFalse()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().WithId(Guid.NewGuid()).Build();
+        SessionEntity session = SessionFactory.CreateWithId(Guid.NewGuid());
         SessionByIdSpecification spec = new(Guid.NewGuid());
 
         // Act
@@ -117,7 +118,7 @@ public class SessionSpecificationsTests
     {
         // Arrange
         string deviceId = "device-123";
-        SessionEntity session = new SessionBuilder().WithDeviceId(deviceId).Build();
+        SessionEntity session = SessionFactory.Create(Guid.NewGuid(), deviceId);
         SessionByDeviceIdSpecification spec = new(deviceId);
 
         // Act
@@ -131,7 +132,7 @@ public class SessionSpecificationsTests
     public void SessionByDeviceIdSpecification_WithDifferentDeviceId_ShouldReturnFalse()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().WithDeviceId("device-123").Build();
+        SessionEntity session = SessionFactory.Create(Guid.NewGuid(), "device-123");
         SessionByDeviceIdSpecification spec = new("device-456");
 
         // Act
@@ -196,7 +197,7 @@ public class SessionSpecificationsTests
     public void SessionIsRevokedSpecification_WithRevokedSession_ShouldReturnTrue()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().Build();
+        SessionEntity session = SessionFactory.Create();
         session.GetType().GetProperty("IsRevoked")!.SetValue(session, true);
         SessionIsRevokedSpecification spec = new();
 
@@ -211,7 +212,7 @@ public class SessionSpecificationsTests
     public void SessionIsRevokedSpecification_WithNonRevokedSession_ShouldReturnFalse()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().Build();
+        SessionEntity session = SessionFactory.Create();
         session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
         SessionIsRevokedSpecification spec = new();
 
@@ -230,7 +231,7 @@ public class SessionSpecificationsTests
     public void SessionIsNotRevokedSpecification_WithNonRevokedSession_ShouldReturnTrue()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().Build();
+        SessionEntity session = SessionFactory.Create();
         session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
         SessionIsNotRevokedSpecification spec = new();
 
@@ -245,7 +246,7 @@ public class SessionSpecificationsTests
     public void SessionIsNotRevokedSpecification_WithRevokedSession_ShouldReturnFalse()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().Build();
+        SessionEntity session = SessionFactory.Create();
         session.GetType().GetProperty("IsRevoked")!.SetValue(session, true);
         SessionIsNotRevokedSpecification spec = new();
 
@@ -264,7 +265,7 @@ public class SessionSpecificationsTests
     public void SessionIsExpiredSpecification_WithExpiredSession_ShouldReturnTrue()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().WithExpiresAt(DateTime.UtcNow.AddDays(-1)).Build();
+        SessionEntity session = SessionFactory.CreateWithExpiresAt(DateTime.UtcNow.AddDays(-1));
         SessionIsExpiredSpecification spec = new();
 
         // Act
@@ -278,7 +279,7 @@ public class SessionSpecificationsTests
     public void SessionIsExpiredSpecification_WithNonExpiredSession_ShouldReturnFalse()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().WithExpiresAt(DateTime.UtcNow.AddDays(1)).Build();
+        SessionEntity session = SessionFactory.CreateWithExpiresAt(DateTime.UtcNow.AddDays(1));
         SessionIsExpiredSpecification spec = new();
 
         // Act
@@ -296,7 +297,7 @@ public class SessionSpecificationsTests
     public void SessionIsNotExpiredSpecification_WithNonExpiredSession_ShouldReturnTrue()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().WithExpiresAt(DateTime.UtcNow.AddDays(1)).Build();
+        SessionEntity session = SessionFactory.CreateWithExpiresAt(DateTime.UtcNow.AddDays(1));
         SessionIsNotExpiredSpecification spec = new();
 
         // Act
@@ -310,7 +311,7 @@ public class SessionSpecificationsTests
     public void SessionIsNotExpiredSpecification_WithExpiredSession_ShouldReturnFalse()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().WithExpiresAt(DateTime.UtcNow.AddDays(-1)).Build();
+        SessionEntity session = SessionFactory.CreateWithExpiresAt(DateTime.UtcNow.AddDays(-1));
         SessionIsNotExpiredSpecification spec = new();
 
         // Act
@@ -328,7 +329,7 @@ public class SessionSpecificationsTests
     public void SessionIsActiveSpecification_WithActiveSession_ShouldReturnTrue()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().WithExpiresAt(DateTime.UtcNow.AddDays(1)).Build();
+        SessionEntity session = SessionFactory.CreateWithExpiresAt(DateTime.UtcNow.AddDays(1));
         session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
         SessionIsActiveSpecification spec = new();
 
@@ -343,7 +344,7 @@ public class SessionSpecificationsTests
     public void SessionIsActiveSpecification_WithExpiredSession_ShouldReturnFalse()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().WithExpiresAt(DateTime.UtcNow.AddDays(-1)).Build();
+        SessionEntity session = SessionFactory.CreateWithExpiresAt(DateTime.UtcNow.AddDays(-1));
         session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
         SessionIsActiveSpecification spec = new();
 
@@ -358,7 +359,7 @@ public class SessionSpecificationsTests
     public void SessionIsActiveSpecification_WithRevokedSession_ShouldReturnFalse()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().WithExpiresAt(DateTime.UtcNow.AddDays(1)).Build();
+        SessionEntity session = SessionFactory.CreateWithExpiresAt(DateTime.UtcNow.AddDays(1));
         session.GetType().GetProperty("IsRevoked")!.SetValue(session, true);
         SessionIsActiveSpecification spec = new();
 
@@ -457,7 +458,7 @@ public class SessionSpecificationsTests
     {
         // Arrange
         DateTime cutoffDate = DateTime.UtcNow.AddDays(-5);
-        SessionEntity session = new SessionBuilder().Build();
+        SessionEntity session = SessionFactory.Create();
         session.GetType().GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow.AddDays(-3));
         SessionCreatedAfterSpecification spec = new(cutoffDate);
 
@@ -473,7 +474,7 @@ public class SessionSpecificationsTests
     {
         // Arrange
         DateTime cutoffDate = DateTime.UtcNow.AddDays(-5);
-        SessionEntity session = new SessionBuilder().Build();
+        SessionEntity session = SessionFactory.Create();
         session.GetType().GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow.AddDays(-10));
         SessionCreatedAfterSpecification spec = new(cutoffDate);
 
@@ -493,7 +494,7 @@ public class SessionSpecificationsTests
     {
         // Arrange
         DateTime cutoffDate = DateTime.UtcNow.AddDays(-5);
-        SessionEntity session = new SessionBuilder().Build();
+        SessionEntity session = SessionFactory.Create();
         session.GetType().GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow.AddDays(-10));
         SessionCreatedBeforeSpecification spec = new(cutoffDate);
 
@@ -509,7 +510,7 @@ public class SessionSpecificationsTests
     {
         // Arrange
         DateTime cutoffDate = DateTime.UtcNow.AddDays(-5);
-        SessionEntity session = new SessionBuilder().Build();
+        SessionEntity session = SessionFactory.Create();
         session.GetType().GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow.AddDays(-3));
         SessionCreatedBeforeSpecification spec = new(cutoffDate);
 
@@ -529,7 +530,7 @@ public class SessionSpecificationsTests
     {
         // Arrange
         string ipAddress = "192.168.1.100";
-        SessionEntity session = new SessionBuilder().WithIpAddress(ipAddress).Build();
+        SessionEntity session = SessionFactory.CreateWithIpAddress(ipAddress);
         SessionByIpAddressSpecification spec = new(ipAddress);
 
         // Act
@@ -543,7 +544,7 @@ public class SessionSpecificationsTests
     public void SessionByIpAddressSpecification_WithPartialMatch_ShouldReturnTrue()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().WithIpAddress("192.168.1.100").Build();
+        SessionEntity session = SessionFactory.CreateWithIpAddress("192.168.1.100");
         SessionByIpAddressSpecification spec = new("192.168");
 
         // Act
@@ -557,7 +558,7 @@ public class SessionSpecificationsTests
     public void SessionByIpAddressSpecification_WithDifferentIpAddress_ShouldReturnFalse()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().WithIpAddress("192.168.1.100").Build();
+        SessionEntity session = SessionFactory.CreateWithIpAddress("192.168.1.100");
         SessionByIpAddressSpecification spec = new("10.0.0.1");
 
         // Act
@@ -657,9 +658,9 @@ public class SessionSpecificationsTests
         Guid targetUserId = Guid.NewGuid();
         List<SessionEntity> sessions =
         [
-            new SessionBuilder().WithUserId(targetUserId).Build(),
-            new SessionBuilder().WithUserId(targetUserId).Build(),
-            new SessionBuilder().WithUserId(Guid.NewGuid()).Build(),
+            SessionFactory.Create(targetUserId),
+            SessionFactory.Create(targetUserId),
+            SessionFactory.Create(Guid.NewGuid()),
         ];
 
         SessionByUserIdSpecification spec = new(targetUserId);
@@ -669,20 +670,20 @@ public class SessionSpecificationsTests
 
         // Assert
         filtered.Should().HaveCount(2);
-        filtered.All(s => s.UserId == targetUserId).Should().BeTrue();
+        filtered.Should().OnlyContain(s => s.UserId == targetUserId);
     }
 
     [Fact]
     public void SessionIsActiveSpecification_WithLinq_ShouldFilterCorrectly()
     {
         // Arrange
-        SessionEntity activeSession = new SessionBuilder().WithExpiresAt(DateTime.UtcNow.AddDays(1)).Build();
+        SessionEntity activeSession = SessionFactory.CreateWithExpiresAt(DateTime.UtcNow.AddDays(1));
         activeSession.GetType().GetProperty("IsRevoked")!.SetValue(activeSession, false);
 
-        SessionEntity expiredSession = new SessionBuilder().WithExpiresAt(DateTime.UtcNow.AddDays(-1)).Build();
+        SessionEntity expiredSession = SessionFactory.CreateWithExpiresAt(DateTime.UtcNow.AddDays(-1));
         expiredSession.GetType().GetProperty("IsRevoked")!.SetValue(expiredSession, false);
 
-        SessionEntity revokedSession = new SessionBuilder().WithExpiresAt(DateTime.UtcNow.AddDays(1)).Build();
+        SessionEntity revokedSession = SessionFactory.CreateWithExpiresAt(DateTime.UtcNow.AddDays(1));
         revokedSession.GetType().GetProperty("IsRevoked")!.SetValue(revokedSession, true);
 
         List<SessionEntity> sessions = [activeSession, expiredSession, revokedSession];
@@ -692,7 +693,7 @@ public class SessionSpecificationsTests
         List<SessionEntity> filtered = sessions.Where(spec.ToExpression().Compile()).ToList();
 
         // Assert
-        filtered.Should().HaveCount(1);
+        filtered.Should().ContainSingle();
     }
 
     [Fact]
@@ -726,7 +727,7 @@ public class SessionSpecificationsTests
         List<SessionEntity> filtered = sessions.Where(spec.ToExpression().Compile()).ToList();
 
         // Assert
-        filtered.Should().HaveCount(1);
+        filtered.Should().ContainSingle();
         filtered[0].UserId.Should().Be(userId);
     }
 
