@@ -7,6 +7,8 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
+using AwesomeAssertions;
 using Moq;
 using Xunit;
 
@@ -49,8 +51,8 @@ public class PublicRefreshTokenFactoryTests
         string refreshTokenHash = "hashed_refresh_token";
         string newRefreshToken = "new_refresh_token_456";
         string newRefreshTokenHash = "new_hashed_refresh_token";
-        UserEntity user = new UserBuilder().Build();
-        SessionEntity session = new SessionBuilder().WithUserId(user.Id).Build();
+        UserEntity user = UserFactory.Create();
+        SessionEntity session = SessionFactory.Create(user.Id);
         typeof(SessionEntity).GetProperty("User")!.SetValue(session, user);
         var roles = new List<RoleDto> { new(Guid.NewGuid(), "Visitor", "Visitor role", true, false, null) };
         var permissions = new List<PermissionDto>
@@ -89,10 +91,10 @@ public class PublicRefreshTokenFactoryTests
         PublicRefreshTokenData result = await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
         Assert.Equal(user, result.User);
         Assert.Equal(session, result.Session);
-        Assert.Equal(newRefreshToken, result.NewRefreshToken);
+        result.NewRefreshToken.Should().Be(newRefreshToken);
         Assert.Equal(roles, result.Roles);
         Assert.Equal(permissions, result.Permissions);
     }
@@ -111,9 +113,8 @@ public class PublicRefreshTokenFactoryTests
             .ReturnsAsync((SessionEntity?)null);
 
         // Act & Assert
-        await Assert.ThrowsAsync<_116.Identity.Application.Shared.Exceptions.RefreshTokenExpiryException>(() =>
-            _factory.RefreshTokenAsync(refreshToken, CancellationToken.None)
-        );
+        Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        await act.Should().ThrowExactlyAsync<_116.Identity.Application.Shared.Exceptions.RefreshTokenExpiryException>();
     }
 
     [Fact]
@@ -130,9 +131,8 @@ public class PublicRefreshTokenFactoryTests
             .ReturnsAsync((SessionEntity?)null);
 
         // Act & Assert
-        await Assert.ThrowsAsync<_116.Identity.Application.Shared.Exceptions.RefreshTokenExpiryException>(() =>
-            _factory.RefreshTokenAsync(refreshToken, CancellationToken.None)
-        );
+        Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        await act.Should().ThrowExactlyAsync<_116.Identity.Application.Shared.Exceptions.RefreshTokenExpiryException>();
 
         _refreshTokenServiceMock.Verify(x => x.HashRefreshToken(refreshToken), Times.Once);
     }
@@ -151,9 +151,8 @@ public class PublicRefreshTokenFactoryTests
             .ReturnsAsync((SessionEntity?)null);
 
         // Act & Assert
-        await Assert.ThrowsAsync<_116.Identity.Application.Shared.Exceptions.RefreshTokenExpiryException>(() =>
-            _factory.RefreshTokenAsync(refreshToken, CancellationToken.None)
-        );
+        Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        await act.Should().ThrowExactlyAsync<_116.Identity.Application.Shared.Exceptions.RefreshTokenExpiryException>();
 
         _sessionRepositoryMock.Verify(
             x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()),
@@ -169,8 +168,8 @@ public class PublicRefreshTokenFactoryTests
         string refreshTokenHash = "hashed_refresh_token";
         string newRefreshToken = "new_refresh_token_456";
         string newRefreshTokenHash = "new_hashed_refresh_token";
-        UserEntity user = new UserBuilder().Build();
-        SessionEntity session = new SessionBuilder().WithUserId(user.Id).Build();
+        UserEntity user = UserFactory.Create();
+        SessionEntity session = SessionFactory.Create(user.Id);
         typeof(SessionEntity).GetProperty("User")!.SetValue(session, user);
 
         _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
@@ -216,8 +215,8 @@ public class PublicRefreshTokenFactoryTests
         string refreshTokenHash = "hashed_refresh_token";
         string newRefreshToken = "new_refresh_token_456";
         string newRefreshTokenHash = "new_hashed_refresh_token";
-        UserEntity user = new UserBuilder().Build();
-        SessionEntity session = new SessionBuilder().WithUserId(user.Id).Build();
+        UserEntity user = UserFactory.Create();
+        SessionEntity session = SessionFactory.Create(user.Id);
         typeof(SessionEntity).GetProperty("User")!.SetValue(session, user);
 
         _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
@@ -271,8 +270,8 @@ public class PublicRefreshTokenFactoryTests
         string refreshTokenHash = "hashed_refresh_token";
         string newRefreshToken = "new_refresh_token_456";
         string newRefreshTokenHash = "new_hashed_refresh_token";
-        UserEntity user = new UserBuilder().Build();
-        SessionEntity session = new SessionBuilder().WithUserId(user.Id).Build();
+        UserEntity user = UserFactory.Create();
+        SessionEntity session = SessionFactory.Create(user.Id);
         typeof(SessionEntity).GetProperty("User")!.SetValue(session, user);
 
         _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
@@ -317,8 +316,8 @@ public class PublicRefreshTokenFactoryTests
         string refreshTokenHash = "hashed_refresh_token";
         string newRefreshToken = "new_refresh_token_456";
         string newRefreshTokenHash = "new_hashed_refresh_token";
-        UserEntity user = new UserBuilder().Build();
-        SessionEntity session = new SessionBuilder().WithUserId(user.Id).Build();
+        UserEntity user = UserFactory.Create();
+        SessionEntity session = SessionFactory.Create(user.Id);
         typeof(SessionEntity).GetProperty("User")!.SetValue(session, user);
 
         _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
@@ -363,8 +362,8 @@ public class PublicRefreshTokenFactoryTests
         string refreshTokenHash = "hashed_refresh_token";
         string newRefreshToken = "new_refresh_token_456";
         string newRefreshTokenHash = "new_hashed_refresh_token";
-        UserEntity user = new UserBuilder().Build();
-        SessionEntity session = new SessionBuilder().WithUserId(user.Id).Build();
+        UserEntity user = UserFactory.Create();
+        SessionEntity session = SessionFactory.Create(user.Id);
         typeof(SessionEntity).GetProperty("User")!.SetValue(session, user);
         CancellationToken cancellationToken = new();
 
