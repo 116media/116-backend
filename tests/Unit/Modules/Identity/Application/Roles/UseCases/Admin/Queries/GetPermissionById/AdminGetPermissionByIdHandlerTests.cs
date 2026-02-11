@@ -3,8 +3,8 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common;
-using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
 using Moq;
@@ -33,11 +33,11 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
     public async Task Handle_WithValidPermissionId_ShouldReturnPermission()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder()
-            .WithResource(TestConstants.Permission.ValidResource)
-            .WithAction(TestConstants.Permission.ValidAction)
-            .WithDescription(TestConstants.Permission.ValidDescription)
-            .Build();
+        PermissionEntity permission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction,
+            TestConstants.Permission.ValidDescription
+        );
 
         AdminGetPermissionByIdQuery query = new(PermissionId: permission.Id.ToString());
 
@@ -83,10 +83,10 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
     public async Task Handle_WithActivePermission_ShouldMapIsActiveCorrectly()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder()
-            .WithResourceAction(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction)
-            .AsActive()
-            .Build();
+        PermissionEntity permission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
 
         AdminGetPermissionByIdQuery query = new(PermissionId: permission.Id.ToString());
 
@@ -103,10 +103,11 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
     public async Task Handle_WithInactivePermission_ShouldMapIsActiveCorrectly()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder()
-            .WithResourceAction(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction)
-            .AsInactive()
-            .Build();
+        PermissionEntity permission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
+        permission.Deactivate();
 
         AdminGetPermissionByIdQuery query = new(PermissionId: permission.Id.ToString());
 
@@ -123,10 +124,11 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
     public async Task Handle_WithDeletedPermission_ShouldMapIsDeletedCorrectly()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder()
-            .WithResourceAction(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction)
-            .AsDeleted()
-            .Build();
+        PermissionEntity permission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
+        permission.SoftDelete();
 
         AdminGetPermissionByIdQuery query = new(PermissionId: permission.Id.ToString());
 
@@ -148,9 +150,10 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder()
-            .WithResourceAction(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction)
-            .Build();
+        PermissionEntity permission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
 
         AdminGetPermissionByIdQuery query = new(PermissionId: permission.Id.ToString());
 
@@ -169,10 +172,11 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
     {
         // Arrange
         Guid permissionId = Guid.NewGuid();
-        PermissionEntity permission = new PermissionBuilder()
-            .WithId(permissionId)
-            .WithResourceAction(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction)
-            .Build();
+        PermissionEntity permission = PermissionFactory.CreateWithId(
+            permissionId,
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
 
         AdminGetPermissionByIdQuery query = new(PermissionId: permissionId.ToString().ToLowerInvariant());
 
@@ -190,10 +194,11 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
     {
         // Arrange
         Guid permissionId = Guid.NewGuid();
-        PermissionEntity permission = new PermissionBuilder()
-            .WithId(permissionId)
-            .WithResourceAction(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction)
-            .Build();
+        PermissionEntity permission = PermissionFactory.CreateWithId(
+            permissionId,
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction
+        );
 
         AdminGetPermissionByIdQuery query = new(PermissionId: permissionId.ToString().ToUpperInvariant());
 
