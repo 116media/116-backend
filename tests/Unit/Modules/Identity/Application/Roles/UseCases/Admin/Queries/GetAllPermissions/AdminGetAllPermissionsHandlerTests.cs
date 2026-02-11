@@ -1,10 +1,11 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Queries.GetAllPermissions;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Pagination;
 using _116.Unit.Tests.Common;
-using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
 using Moq;
@@ -35,9 +36,9 @@ public class AdminGetAllPermissionsHandlerTests : BaseHandlerTest
         // Arrange
         List<PermissionEntity> permissions =
         [
-            new PermissionBuilder().WithResourceAction("users", "read").Build(),
-            new PermissionBuilder().WithResourceAction("users", "write").Build(),
-            new PermissionBuilder().WithResourceAction("articles", "read").Build(),
+            PermissionFactory.Create("users", "read"),
+            PermissionFactory.Create("users", "write"),
+            PermissionFactory.Create("articles", "read"),
         ];
 
         PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
@@ -114,7 +115,7 @@ public class AdminGetAllPermissionsHandlerTests : BaseHandlerTest
     {
         // Arrange
         int totalCount = 100;
-        List<PermissionEntity> permissions = [new PermissionBuilder().WithResourceAction("users", "read").Build()];
+        List<PermissionEntity> permissions = [PermissionFactory.Create("users", "read")];
 
         PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
         AdminGetAllPermissionsQuery query = new(PaginatedRequest: paginatedRequest);
@@ -126,7 +127,7 @@ public class AdminGetAllPermissionsHandlerTests : BaseHandlerTest
 
         // Assert
         result.Permissions.Count.Should().Be(totalCount);
-        result.Permissions.Items.Should().HaveCount(1);
+        result.Permissions.Items.Should().ContainSingle();
     }
 
     #endregion
@@ -235,11 +236,11 @@ public class AdminGetAllPermissionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithPermissions_ShouldMapToPermissionDtos()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder()
-            .WithResource(TestConstants.Permission.ValidResource)
-            .WithAction(TestConstants.Permission.ValidAction)
-            .WithDescription(TestConstants.Permission.ValidDescription)
-            .Build();
+        PermissionEntity permission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction,
+            TestConstants.Permission.ValidDescription
+        );
 
         List<PermissionEntity> permissions = [permission];
 
@@ -252,7 +253,7 @@ public class AdminGetAllPermissionsHandlerTests : BaseHandlerTest
         AdminGetAllPermissionsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        var permissionDto = result.Permissions.Items.First();
+        PermissionDto permissionDto = result.Permissions.Items.First();
         permissionDto.Id.Should().Be(permission.Id);
         permissionDto.Resource.Should().Be(TestConstants.Permission.ValidResource);
         permissionDto.Action.Should().Be(TestConstants.Permission.ValidAction);
