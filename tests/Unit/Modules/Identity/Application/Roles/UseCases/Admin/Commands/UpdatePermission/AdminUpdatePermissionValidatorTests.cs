@@ -1,5 +1,6 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdatePermission;
 using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -20,12 +21,7 @@ public class AdminUpdatePermissionValidatorTests
     public async Task Validate_WithAllValidValues_ShouldNotHaveErrors()
     {
         // Arrange
-        AdminUpdatePermissionCommand command = new(
-            PermissionId: _validPermissionId,
-            Resource: TestConstants.Permission.ValidResource,
-            Action: TestConstants.Permission.ValidAction,
-            Description: TestConstants.Permission.ValidDescription
-        );
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateValidCommand(_validPermissionId);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -39,11 +35,11 @@ public class AdminUpdatePermissionValidatorTests
     public async Task Validate_WithOnlyResource_ShouldNotHaveErrors()
     {
         // Arrange
-        AdminUpdatePermissionCommand command = new(
-            PermissionId: _validPermissionId,
-            Resource: TestConstants.Permission.ValidResource,
-            Action: null,
-            Description: null
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateCommand(
+            _validPermissionId,
+            TestConstants.Permission.ValidResource,
+            null,
+            null
         );
 
         // Act
@@ -57,11 +53,11 @@ public class AdminUpdatePermissionValidatorTests
     public async Task Validate_WithOnlyAction_ShouldNotHaveErrors()
     {
         // Arrange
-        AdminUpdatePermissionCommand command = new(
-            PermissionId: _validPermissionId,
-            Resource: null,
-            Action: TestConstants.Permission.ValidAction,
-            Description: null
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateCommand(
+            _validPermissionId,
+            null,
+            TestConstants.Permission.ValidAction,
+            null
         );
 
         // Act
@@ -75,11 +71,11 @@ public class AdminUpdatePermissionValidatorTests
     public async Task Validate_WithOnlyDescription_ShouldNotHaveErrors()
     {
         // Arrange
-        AdminUpdatePermissionCommand command = new(
-            PermissionId: _validPermissionId,
-            Resource: null,
-            Action: null,
-            Description: TestConstants.Permission.ValidDescription
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateCommand(
+            _validPermissionId,
+            null,
+            null,
+            TestConstants.Permission.ValidDescription
         );
 
         // Act
@@ -93,11 +89,11 @@ public class AdminUpdatePermissionValidatorTests
     public async Task Validate_WithAllNullValues_ShouldNotHaveErrors()
     {
         // Arrange
-        AdminUpdatePermissionCommand command = new(
-            PermissionId: _validPermissionId,
-            Resource: null,
-            Action: null,
-            Description: null
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateCommand(
+            _validPermissionId,
+            null,
+            null,
+            null
         );
 
         // Act
