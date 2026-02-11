@@ -6,6 +6,7 @@ using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -37,20 +38,17 @@ public class AdminUpdatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithAllFieldsUpdated_ShouldUpdatePermissionAndReturnResult()
     {
         // Arrange
-        PermissionEntity existingPermission = new PermissionBuilder()
-            .WithResourceAction("oldResource", "oldAction")
-            .WithDescription("Old description")
-            .Build();
+        PermissionEntity existingPermission = PermissionFactory.Create("oldResource", "oldAction", "Old description");
 
         string newResource = "newResource";
         string newAction = "newAction";
         string newDescription = "New description";
 
-        AdminUpdatePermissionCommand command = new(
-            PermissionId: existingPermission.Id,
-            Resource: newResource,
-            Action: newAction,
-            Description: newDescription
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateCommand(
+            existingPermission.Id,
+            newResource,
+            newAction,
+            newDescription
         );
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(existingPermission);
@@ -73,18 +71,19 @@ public class AdminUpdatePermissionHandlerTests : BaseHandlerTest
         // Arrange
         string originalAction = "read";
         string originalDescription = "Original description";
-        PermissionEntity existingPermission = new PermissionBuilder()
-            .WithResourceAction("oldResource", originalAction)
-            .WithDescription(originalDescription)
-            .Build();
+        PermissionEntity existingPermission = PermissionFactory.Create(
+            "oldResource",
+            originalAction,
+            originalDescription
+        );
 
         string newResource = "newResource";
 
-        AdminUpdatePermissionCommand command = new(
-            PermissionId: existingPermission.Id,
-            Resource: newResource,
-            Action: null,
-            Description: null
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateCommand(
+            existingPermission.Id,
+            newResource,
+            null,
+            null
         );
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(existingPermission);
@@ -104,18 +103,15 @@ public class AdminUpdatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithOnlyDescriptionUpdated_ShouldUpdateOnlyDescription()
     {
         // Arrange
-        PermissionEntity existingPermission = new PermissionBuilder()
-            .WithResourceAction("users", "read")
-            .WithDescription("Old description")
-            .Build();
+        PermissionEntity existingPermission = PermissionFactory.Create("users", "read", "Old description");
 
         string newDescription = "New description";
 
-        AdminUpdatePermissionCommand command = new(
-            PermissionId: existingPermission.Id,
-            Resource: null,
-            Action: null,
-            Description: newDescription
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateCommand(
+            existingPermission.Id,
+            null,
+            null,
+            newDescription
         );
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(existingPermission);
@@ -138,16 +134,17 @@ public class AdminUpdatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithNoChanges_ShouldNotCommit()
     {
         // Arrange
-        PermissionEntity existingPermission = new PermissionBuilder()
-            .WithResourceAction(TestConstants.Permission.ValidResource, TestConstants.Permission.ValidAction)
-            .WithDescription(TestConstants.Permission.ValidDescription)
-            .Build();
+        PermissionEntity existingPermission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction,
+            TestConstants.Permission.ValidDescription
+        );
 
-        AdminUpdatePermissionCommand command = new(
-            PermissionId: existingPermission.Id,
-            Resource: null,
-            Action: null,
-            Description: null
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateCommand(
+            existingPermission.Id,
+            null,
+            null,
+            null
         );
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(existingPermission);
@@ -168,12 +165,7 @@ public class AdminUpdatePermissionHandlerTests : BaseHandlerTest
     {
         // Arrange
         Guid nonExistentPermissionId = Guid.NewGuid();
-        AdminUpdatePermissionCommand command = new(
-            PermissionId: nonExistentPermissionId,
-            Resource: TestConstants.Permission.ValidResource,
-            Action: TestConstants.Permission.ValidAction,
-            Description: TestConstants.Permission.ValidDescription
-        );
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateValidCommand(nonExistentPermissionId);
 
         _permissionRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPermissionId);
 
@@ -188,18 +180,16 @@ public class AdminUpdatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WhenNewResourceActionAlreadyExists_ShouldThrowConflictException()
     {
         // Arrange
-        PermissionEntity existingPermission = new PermissionBuilder()
-            .WithResourceAction("oldResource", "oldAction")
-            .Build();
+        PermissionEntity existingPermission = PermissionFactory.Create("oldResource", "oldAction");
 
         string duplicateResource = "existingResource";
         string duplicateAction = "existingAction";
 
-        AdminUpdatePermissionCommand command = new(
-            PermissionId: existingPermission.Id,
-            Resource: duplicateResource,
-            Action: duplicateAction,
-            Description: null
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateCommand(
+            existingPermission.Id,
+            duplicateResource,
+            duplicateAction,
+            null
         );
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(existingPermission);
@@ -220,13 +210,13 @@ public class AdminUpdatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        PermissionEntity existingPermission = new PermissionBuilder().WithResourceAction("users", "read").Build();
+        PermissionEntity existingPermission = PermissionFactory.Create("users", "read");
 
-        AdminUpdatePermissionCommand command = new(
-            PermissionId: existingPermission.Id,
-            Resource: "newResource",
-            Action: null,
-            Description: null
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateCommand(
+            existingPermission.Id,
+            "newResource",
+            null,
+            null
         );
 
         using CancellationTokenSource cts = new();
