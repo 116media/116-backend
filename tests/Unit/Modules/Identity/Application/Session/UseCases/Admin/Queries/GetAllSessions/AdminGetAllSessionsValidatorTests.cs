@@ -25,7 +25,7 @@ public class AdminGetAllSessionsValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -42,7 +42,7 @@ public class AdminGetAllSessionsValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -59,7 +59,7 @@ public class AdminGetAllSessionsValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -80,7 +80,7 @@ public class AdminGetAllSessionsValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -103,7 +103,7 @@ public class AdminGetAllSessionsValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -122,7 +122,7 @@ public class AdminGetAllSessionsValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -141,7 +141,7 @@ public class AdminGetAllSessionsValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -164,7 +164,7 @@ public class AdminGetAllSessionsValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -181,7 +181,7 @@ public class AdminGetAllSessionsValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -198,7 +198,7 @@ public class AdminGetAllSessionsValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -219,7 +219,7 @@ public class AdminGetAllSessionsValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
