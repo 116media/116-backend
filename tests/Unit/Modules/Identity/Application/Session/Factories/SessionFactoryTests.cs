@@ -7,14 +7,17 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Results;
-using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
+using AwesomeAssertions;
 using Moq;
 using Xunit;
+using SessionFactory = _116.Unit.Tests.Common.Factories.SessionFactory;
+using SessionsFactory = _116.Identity.Application.Session.Factories.SessionFactory;
 
 namespace _116.Unit.Tests.Modules.Identity.Application.Session.Factories;
 
 /// <summary>
-/// Unit tests for <see cref="SessionFactory"/>.
+/// Unit tests for <see cref="SessionsFactory"/>.
 /// </summary>
 public class SessionFactoryTests
 {
@@ -23,7 +26,7 @@ public class SessionFactoryTests
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<ISessionMetadataService> _sessionMetadataServiceMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly SessionFactory _factory;
+    private readonly SessionsFactory _factory;
 
     public SessionFactoryTests()
     {
@@ -34,7 +37,7 @@ public class SessionFactoryTests
         _sessionRepositoryMock = new Mock<ISessionRepository>();
         _sessionMetadataServiceMock = new Mock<ISessionMetadataService>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
-        _factory = new SessionFactory(
+        _factory = new SessionsFactory(
             _jwtServiceMock.Object,
             _refreshTokenServiceMock.Object,
             _sessionRepositoryMock.Object,
@@ -49,7 +52,7 @@ public class SessionFactoryTests
     public async Task CreateSessionAsync_WithNewDevice_ShouldCreateNewSession()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         var userPermissions = new List<RolePermissionEntity>();
         string refreshToken = "refresh_token_123";
         string refreshTokenHash = "hashed_refresh_token";
@@ -103,9 +106,9 @@ public class SessionFactoryTests
         SessionResult result = await _factory.CreateSessionAsync(user, userPermissions, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(refreshToken, result.RefreshToken);
-        Assert.Equal(jwtResult.Token, result.AccessToken);
+        result.Should().NotBeNull();
+        result.RefreshToken.Should().Be(refreshToken);
+        result.AccessToken.Should().Be(jwtResult.Token);
         _sessionRepositoryMock.Verify(
             x => x.CreateAsync(It.IsAny<SessionEntity>(), It.IsAny<CancellationToken>()),
             Times.Once
@@ -116,12 +119,12 @@ public class SessionFactoryTests
     public async Task CreateSessionAsync_WithExistingActiveSession_ShouldReuseSession()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         var userPermissions = new List<RolePermissionEntity>();
         string refreshToken = "refresh_token_123";
         string refreshTokenHash = "hashed_refresh_token";
         string deviceId = "device_123";
-        SessionEntity existingSession = new SessionBuilder().WithDeviceId(deviceId).Build();
+        SessionEntity existingSession = SessionFactory.Create(Guid.NewGuid(), deviceId);
         var jwtResult = new JwtGenerationResult("access_token", DateTime.UtcNow.AddHours(1));
 
         _sessionMetadataServiceMock.Setup(x => x.ExtractDeviceId()).Returns(deviceId);
@@ -156,8 +159,8 @@ public class SessionFactoryTests
         SessionResult result = await _factory.CreateSessionAsync(user, userPermissions, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(refreshToken, result.RefreshToken);
+        result.Should().NotBeNull();
+        result.RefreshToken.Should().Be(refreshToken);
         _sessionRepositoryMock.Verify(
             x => x.CreateAsync(It.IsAny<SessionEntity>(), It.IsAny<CancellationToken>()),
             Times.Never
@@ -168,7 +171,7 @@ public class SessionFactoryTests
     public async Task CreateSessionAsync_ShouldGenerateRefreshToken()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         var userPermissions = new List<RolePermissionEntity>();
         string deviceId = "device_123";
 
@@ -228,7 +231,7 @@ public class SessionFactoryTests
     public async Task CreateSessionAsync_ShouldHashRefreshToken()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         var userPermissions = new List<RolePermissionEntity>();
         string refreshToken = "plain_refresh_token";
         string deviceId = "device_123";
@@ -288,7 +291,7 @@ public class SessionFactoryTests
     public async Task CreateSessionAsync_ShouldExtractMetadata()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         var userPermissions = new List<RolePermissionEntity>();
         string deviceId = "device_123";
 
@@ -355,7 +358,7 @@ public class SessionFactoryTests
     public async Task CreateSessionAsync_ShouldCommitTransaction()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         var userPermissions = new List<RolePermissionEntity>();
         string deviceId = "device_123";
 
@@ -414,7 +417,7 @@ public class SessionFactoryTests
     public async Task CreateSessionAsync_ShouldGenerateJwtToken()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         var userPermissions = new List<RolePermissionEntity>();
         string deviceId = "device_123";
 
@@ -487,7 +490,7 @@ public class SessionFactoryTests
     public async Task CreateSessionAsync_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         var userPermissions = new List<RolePermissionEntity>();
         string deviceId = "device_123";
         CancellationToken cancellationToken = new();
