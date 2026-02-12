@@ -1,5 +1,6 @@
 using _116.Identity.Domain.Entities;
 using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -71,7 +72,7 @@ public class UserRoleEntityTests
         Guid roleId = Guid.NewGuid();
 
         // Act
-        UserRoleEntity userRole = new UserRoleBuilder().WithId(id).WithUserId(userId).WithRoleId(roleId).Build();
+        UserRoleEntity userRole = UserRoleFactory.CreateWithId(id, userId, roleId);
 
         // Assert
         userRole.Id.Should().Be(id);
@@ -83,7 +84,7 @@ public class UserRoleEntityTests
     public void Builder_WithDefaultValues_ShouldCreateValidUserRole()
     {
         // Arrange & Act
-        UserRoleEntity userRole = new UserRoleBuilder().Build();
+        UserRoleEntity userRole = UserRoleFactory.Create();
 
         // Assert
         userRole.Id.Should().NotBeEmpty();
@@ -104,9 +105,9 @@ public class UserRoleEntityTests
         Guid roleId2 = Guid.NewGuid();
 
         // Act
-        UserRoleEntity userRole1 = new UserRoleBuilder().WithUserId(userId).WithRoleId(roleId1).Build();
+        UserRoleEntity userRole1 = UserRoleFactory.Create(userId, roleId1);
 
-        UserRoleEntity userRole2 = new UserRoleBuilder().WithUserId(userId).WithRoleId(roleId2).Build();
+        UserRoleEntity userRole2 = UserRoleFactory.Create(userId, roleId2);
 
         // Assert
         userRole1.UserId.Should().Be(userId);
@@ -123,9 +124,9 @@ public class UserRoleEntityTests
         Guid userId2 = Guid.NewGuid();
 
         // Act
-        UserRoleEntity userRole1 = new UserRoleBuilder().WithUserId(userId1).WithRoleId(roleId).Build();
+        UserRoleEntity userRole1 = UserRoleFactory.Create(userId1, roleId);
 
-        UserRoleEntity userRole2 = new UserRoleBuilder().WithUserId(userId2).WithRoleId(roleId).Build();
+        UserRoleEntity userRole2 = UserRoleFactory.Create(userId2, roleId);
 
         // Assert
         userRole1.RoleId.Should().Be(roleId);
