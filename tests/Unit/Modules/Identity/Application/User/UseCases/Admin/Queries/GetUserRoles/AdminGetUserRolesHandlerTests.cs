@@ -105,7 +105,7 @@ public class AdminGetUserRolesHandlerTests : BaseHandlerTest
         AdminGetUserRolesResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Roles.Should().HaveCount(1);
+        result.Roles.Should().ContainSingle();
         result.Roles.First().Name.Should().Be("TestRole");
         result.Roles.First().Description.Should().Be("Test role description");
     }
