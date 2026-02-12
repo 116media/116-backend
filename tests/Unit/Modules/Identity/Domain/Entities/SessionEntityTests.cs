@@ -1,7 +1,7 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -97,7 +97,7 @@ public class SessionEntityTests
     public void IsActive_WhenNotExpiredAndNotRevoked_ShouldReturnTrue()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().Build();
+        SessionEntity session = SessionFactory.Create();
 
         // Act
         bool result = session.IsActive();
@@ -110,7 +110,7 @@ public class SessionEntityTests
     public void IsActive_WhenExpired_ShouldReturnFalse()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().AsExpired().Build();
+        SessionEntity session = SessionFactory.CreateExpired();
 
         // Act
         bool result = session.IsActive();
@@ -123,7 +123,7 @@ public class SessionEntityTests
     public void IsActive_WhenRevoked_ShouldReturnFalse()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().AsRevoked().Build();
+        SessionEntity session = SessionFactory.CreateRevoked();
 
         // Act
         bool result = session.IsActive();
@@ -136,7 +136,8 @@ public class SessionEntityTests
     public void IsActive_WhenExpiredAndRevoked_ShouldReturnFalse()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().AsExpired().AsRevoked().Build();
+        SessionEntity session = SessionFactory.CreateExpired();
+        session.Revoke();
 
         // Act
         bool result = session.IsActive();
@@ -153,7 +154,7 @@ public class SessionEntityTests
     public void UpdateRefreshToken_ShouldUpdateTokenAndExpiration()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().Build();
+        SessionEntity session = SessionFactory.Create();
         string newRefreshTokenHash = "new_refresh_token_hash_value";
         DateTime newExpiresAt = DateTime.UtcNow.AddDays(60);
 
@@ -169,7 +170,7 @@ public class SessionEntityTests
     public void UpdateRefreshToken_ShouldExtendExpiredSession()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().AsExpired().Build();
+        SessionEntity session = SessionFactory.CreateExpired();
         string newRefreshTokenHash = "new_refresh_token_hash";
         DateTime newExpiresAt = DateTime.UtcNow.AddDays(30);
 
@@ -190,7 +191,7 @@ public class SessionEntityTests
     public void Revoke_ShouldSetIsRevokedAndRevokedAt()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().Build();
+        SessionEntity session = SessionFactory.Create();
 
         // Act
         session.Revoke();
@@ -205,7 +206,7 @@ public class SessionEntityTests
     public void Revoke_WhenAlreadyRevoked_ShouldUpdateRevokedAt()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().AsRevoked().Build();
+        SessionEntity session = SessionFactory.CreateRevoked();
         DateTime? originalRevokedAt = session.RevokedAt;
 
         // Act
@@ -220,7 +221,7 @@ public class SessionEntityTests
     public void Revoke_ShouldMakeSessionInactive()
     {
         // Arrange
-        SessionEntity session = new SessionBuilder().Build();
+        SessionEntity session = SessionFactory.Create();
         session.IsActive().Should().BeTrue(); // Pre-condition
 
         // Act
@@ -238,7 +239,7 @@ public class SessionEntityTests
     public void Create_MobileSession_ShouldHaveMobileProperties()
     {
         // Arrange & Act
-        SessionEntity session = new SessionBuilder().AsMobileSession().Build();
+        SessionEntity session = SessionFactory.CreateMobile();
 
         // Assert
         session.Device.Should().Be(EnumDevice.Mobile);
@@ -249,7 +250,7 @@ public class SessionEntityTests
     public void Create_DesktopSession_ShouldHaveDesktopProperties()
     {
         // Arrange & Act
-        SessionEntity session = new SessionBuilder().AsDesktopSession().Build();
+        SessionEntity session = SessionFactory.CreateDesktop();
 
         // Assert
         session.Device.Should().Be(EnumDevice.Desktop);
