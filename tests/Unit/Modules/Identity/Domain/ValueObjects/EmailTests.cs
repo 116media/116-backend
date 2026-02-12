@@ -1,4 +1,6 @@
 using _116.Identity.Domain.ValueObjects;
+using AwesomeAssertions;
+using AwesomeAssertions.Specialized;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Domain.ValueObjects;
@@ -20,8 +22,8 @@ public class EmailTests
         Email email = new(validEmail);
 
         // Assert
-        Assert.NotNull(email);
-        Assert.Equal("test@example.com", email.Value);
+        email.Should().NotBeNull();
+        email.Value.Should().Be("test@example.com");
     }
 
     [Fact]
@@ -34,55 +36,61 @@ public class EmailTests
         Email email = new(mixedCaseEmail);
 
         // Assert
-        Assert.Equal("test@example.com", email.Value);
+        email.Value.Should().Be("test@example.com");
     }
 
     [Fact]
     public void Constructor_WithNullEmail_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new Email(null!));
-        Assert.Contains("Email cannot be empty", exception.Message);
+        Action act = () => new Email(null!);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Email cannot be empty");
     }
 
     [Fact]
     public void Constructor_WithEmptyEmail_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new Email(string.Empty));
-        Assert.Contains("Email cannot be empty", exception.Message);
+        Action act = () => new Email(string.Empty);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Email cannot be empty");
     }
 
     [Fact]
     public void Constructor_WithWhitespaceEmail_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new Email("   "));
-        Assert.Contains("Email cannot be empty", exception.Message);
+        Action act = () => new Email("   ");
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Email cannot be empty");
     }
 
     [Fact]
     public void Constructor_WithInvalidEmailFormat_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new Email("not-an-email"));
-        Assert.Contains("Invalid email format", exception.Message);
+        Action act = () => new Email("not-an-email");
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid email format");
     }
 
     [Fact]
     public void Constructor_WithEmailMissingAtSign_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new Email("testexample.com"));
-        Assert.Contains("Invalid email format", exception.Message);
+        Action act = () => new Email("testexample.com");
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid email format");
     }
 
     [Fact]
     public void Constructor_WithEmailMissingDomain_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new Email("test@"));
-        Assert.Contains("Invalid email format", exception.Message);
+        Action act = () => new Email("test@");
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid email format");
     }
 
     [Theory]
@@ -97,7 +105,7 @@ public class EmailTests
         Email email = new(validEmail);
 
         // Assert
-        Assert.NotNull(email);
+        email.Should().NotBeNull();
     }
 
     #endregion
@@ -114,7 +122,7 @@ public class EmailTests
         string result = email;
 
         // Assert
-        Assert.Equal("test@example.com", result);
+        result.Should().Be("test@example.com");
     }
 
     [Fact]
@@ -127,8 +135,8 @@ public class EmailTests
         Email email = emailString;
 
         // Assert
-        Assert.NotNull(email);
-        Assert.Equal("test@example.com", email.Value);
+        email.Should().NotBeNull();
+        email.Value.Should().Be("test@example.com");
     }
 
     [Fact]
@@ -138,10 +146,11 @@ public class EmailTests
         string invalidEmail = "not-an-email";
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() =>
+        Action act = () =>
         {
             Email email = invalidEmail;
-        });
+        };
+        act.Should().ThrowExactly<ArgumentException>();
     }
 
     #endregion
