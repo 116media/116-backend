@@ -59,7 +59,7 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
 
         // Assert
         result.Should().NotBeNull();
-        result.Roles.Should().HaveCount(1);
+        result.Roles.Should().ContainSingle();
         result.Roles.First().Name.Should().Be("Admin");
     }
 
