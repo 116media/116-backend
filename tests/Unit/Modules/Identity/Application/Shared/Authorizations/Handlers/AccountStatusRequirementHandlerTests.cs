@@ -4,7 +4,7 @@ using _116.Identity.Application.Shared.Authorizations.Handlers;
 using _116.Identity.Application.Shared.Authorizations.Requirements;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
-using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Authorization;
 using Moq;
@@ -37,7 +37,7 @@ public class AccountStatusRequirementHandlerTests
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
         var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
 
-        UserEntity userEntity = new UserBuilder().WithId(userId).Build();
+        UserEntity userEntity = UserFactory.CreateWithId(userId);
         typeof(UserEntity).GetProperty(nameof(UserEntity.IsActive))!.SetValue(userEntity, true);
         _authRepositoryMock
             .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
@@ -64,7 +64,7 @@ public class AccountStatusRequirementHandlerTests
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsVerified, "true");
         var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
 
-        UserEntity userEntity = new UserBuilder().WithId(userId).Build();
+        UserEntity userEntity = UserFactory.CreateWithId(userId);
         typeof(UserEntity).GetProperty(nameof(UserEntity.IsVerified))!.SetValue(userEntity, true);
         _authRepositoryMock
             .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
@@ -91,7 +91,7 @@ public class AccountStatusRequirementHandlerTests
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "true");
         var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
 
-        UserEntity userEntity = new UserBuilder().WithId(userId).Build();
+        UserEntity userEntity = UserFactory.CreateWithId(userId);
         typeof(UserEntity).GetProperty(nameof(UserEntity.IsActive))!.SetValue(userEntity, false);
         _authRepositoryMock
             .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
@@ -265,7 +265,8 @@ public class AccountStatusRequirementHandlerTests
             .ThrowsAsync(new InvalidOperationException("Some other error"));
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await _handler.HandleAsync(context));
+        Func<Task> act = async () => await _handler.HandleAsync(context);
+        await act.Should().ThrowExactlyAsync<InvalidOperationException>();
     }
 
     [Fact]
@@ -307,7 +308,7 @@ public class AccountStatusRequirementHandlerTests
         var requirement = new AccountStatusRequirement("CustomClaim", "true");
         var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
 
-        UserEntity userEntity = new UserBuilder().WithId(userId).Build();
+        UserEntity userEntity = UserFactory.CreateWithId(userId);
         _authRepositoryMock
             .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
             .ReturnsAsync(userEntity);
@@ -333,7 +334,7 @@ public class AccountStatusRequirementHandlerTests
         var requirement = new AccountStatusRequirement(JwtClaimsConstants.IsActive, "invalid-boolean");
         var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
 
-        UserEntity userEntity = new UserBuilder().WithId(userId).Build();
+        UserEntity userEntity = UserFactory.CreateWithId(userId);
         typeof(UserEntity).GetProperty(nameof(UserEntity.IsActive))!.SetValue(userEntity, true);
         _authRepositoryMock
             .Setup(x => x.FindUserByIdOrThrow(It.Is<Guid>(id => id == userId), It.IsAny<CancellationToken>()))
