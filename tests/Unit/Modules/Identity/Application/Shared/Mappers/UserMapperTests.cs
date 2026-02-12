@@ -4,7 +4,7 @@ using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Mapster;
 using MapsterMapper;
@@ -41,12 +41,9 @@ public class UserMapperTests
     public void ToUserResponseDto_WithAllParameters_ShouldMapCorrectly()
     {
         // Arrange
-        UserEntity user = new UserBuilder()
-            .WithEmail("test@example.com")
-            .WithUserName("testuser")
-            .AsActive()
-            .AsVerified()
-            .Build();
+        UserEntity user = UserFactory.Create("test@example.com", "testuser");
+        user.GetType().GetProperty("IsActive")!.SetValue(user, true);
+        user.GetType().GetProperty("IsVerified")!.SetValue(user, true);
 
         var roles = new List<RoleDto>
         {
@@ -90,7 +87,7 @@ public class UserMapperTests
     public void ToUserResponseDto_WithNullAvatar_ShouldMapCorrectly()
     {
         // Arrange
-        UserEntity user = new UserBuilder().WithEmail("test@example.com").WithUserName("testuser").Build();
+        UserEntity user = UserFactory.Create("test@example.com", "testuser");
 
         var roles = new List<RoleDto>();
         var permissions = new List<PermissionDto>();
@@ -111,7 +108,7 @@ public class UserMapperTests
     public void ToUserResponseDto_WithEmptyCollections_ShouldMapCorrectly()
     {
         // Arrange
-        UserEntity user = new UserBuilder().WithEmail("test@example.com").WithUserName("testuser").Build();
+        UserEntity user = UserFactory.Create("test@example.com", "testuser");
 
         var roles = new List<RoleDto>();
         var permissions = new List<PermissionDto>();
@@ -129,7 +126,7 @@ public class UserMapperTests
     public void ToUserResponseDto_ShouldMapAuthProviderAsString()
     {
         // Arrange
-        UserEntity user = new UserBuilder().WithAuthProvider(EnumAuthProvider.Google).Build();
+        UserEntity user = UserFactory.CreateExternal(EnumAuthProvider.Google);
 
         var roles = new List<RoleDto>();
         var permissions = new List<PermissionDto>();
@@ -145,7 +142,7 @@ public class UserMapperTests
     public void ToUserResponseDto_ShouldMapAccountStatus()
     {
         // Arrange
-        UserEntity activeUser = new UserBuilder().AsActive().AsVerified().Build();
+        UserEntity activeUser = UserFactory.CreateVerifiedActive();
 
         var roles = new List<RoleDto>();
         var permissions = new List<PermissionDto>();
@@ -162,7 +159,7 @@ public class UserMapperTests
     public void ToUserResponseDto_ShouldMapPhoneNumberFields()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         user.UpdatePhoneNumber("United States", "US", "+1", "+1234567890", "***-***-7890");
 
         var roles = new List<RoleDto>();
@@ -183,13 +180,7 @@ public class UserMapperTests
     public void ToFileDto_WithValidFileEntity_ShouldMapCorrectly()
     {
         // Arrange
-        FileEntity fileEntity = new FileBuilder()
-            .WithFileName("test.jpg")
-            .WithOriginalFileName("my-test.jpg")
-            .WithMimeType("image/jpeg")
-            .WithStorageUrl("https://example.com/test.jpg")
-            .WithSizeInBytes(2048)
-            .Build();
+        FileEntity fileEntity = FileFactory.CreateJpeg();
 
         // Act
         var result = fileEntity.ToFileDto(_mapper);
@@ -224,7 +215,7 @@ public class UserMapperTests
         DateTime createdAt = DateTime.UtcNow.AddDays(-10);
         DateTime updatedAt = DateTime.UtcNow;
 
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
 
         // Set timestamps directly
         user.CreatedAt = createdAt;
