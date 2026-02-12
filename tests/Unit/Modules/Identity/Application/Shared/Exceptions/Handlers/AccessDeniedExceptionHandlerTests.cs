@@ -3,6 +3,7 @@ using _116.Identity.Application.Shared.Exceptions.Handlers;
 using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Application.Shared.Exceptions.Handlers;
@@ -38,7 +39,7 @@ public class AccessDeniedExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Title.Should().Be(nameof(AccessDeniedException));
@@ -53,7 +54,7 @@ public class AccessDeniedExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Detail.Should().Be(errorMessage);
@@ -67,7 +68,7 @@ public class AccessDeniedExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Status.Should().Be(StatusCodes.Status403Forbidden);
@@ -83,7 +84,7 @@ public class AccessDeniedExceptionHandlerTests
         context.Request.Path = requestPath;
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Instance.Should().Be(requestPath);
@@ -99,7 +100,7 @@ public class AccessDeniedExceptionHandlerTests
         context.TraceIdentifier = traceId;
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Extensions.Should().ContainKey("traceId");
@@ -114,7 +115,7 @@ public class AccessDeniedExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Extensions.Should().ContainKey("timestamp");
