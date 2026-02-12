@@ -13,7 +13,7 @@ public class AuthenticationErrorMessageTests
     public void InvalidCredentials_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = AuthenticationErrorMessage.InvalidCredentials();
+        string message = AuthenticationErrorMessage.InvalidCredentials();
 
         // Assert
         message.Should().Be("Invalid email or password");
@@ -23,7 +23,7 @@ public class AuthenticationErrorMessageTests
     public void InvalidUserAuthentication_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = AuthenticationErrorMessage.InvalidUserAuthentication();
+        string message = AuthenticationErrorMessage.InvalidUserAuthentication();
 
         // Assert
         message.Should().Be("User not authenticated or invalid user ID");
@@ -33,7 +33,7 @@ public class AuthenticationErrorMessageTests
     public void InsufficientPermissions_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = AuthenticationErrorMessage.InsufficientPermissions();
+        string message = AuthenticationErrorMessage.InsufficientPermissions();
 
         // Assert
         message.Should().Be("Access Denied. Insufficient permissions for this operation");
@@ -43,7 +43,7 @@ public class AuthenticationErrorMessageTests
     public void JwtTokenRequired_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = AuthenticationErrorMessage.JwtTokenRequired();
+        string message = AuthenticationErrorMessage.JwtTokenRequired();
 
         // Assert
         message.Should().Be("Authentication required. Please provide a valid web token");
@@ -53,7 +53,7 @@ public class AuthenticationErrorMessageTests
     public void InvalidRefreshToken_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = AuthenticationErrorMessage.InvalidRefreshToken();
+        string message = AuthenticationErrorMessage.InvalidRefreshToken();
 
         // Assert
         message.Should().Be("Invalid or expired session. Please log in again");
@@ -63,7 +63,7 @@ public class AuthenticationErrorMessageTests
     public void DeviceIdRequired_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = AuthenticationErrorMessage.DeviceIdRequired();
+        string message = AuthenticationErrorMessage.DeviceIdRequired();
 
         // Assert
         message.Should().Be("Device ID is required. Please provide X-Device-Id header");
