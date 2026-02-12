@@ -1,6 +1,8 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Persistence;
@@ -28,7 +30,7 @@ public class IdentityDbContextTests
         DbSet<UserEntity> result = context.Users;
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
     }
 
     [Fact]
@@ -42,7 +44,7 @@ public class IdentityDbContextTests
         DbSet<RoleEntity> result = context.Roles;
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
     }
 
     [Fact]
@@ -56,7 +58,7 @@ public class IdentityDbContextTests
         DbSet<PermissionEntity> result = context.Permissions;
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
     }
 
     [Fact]
@@ -70,7 +72,7 @@ public class IdentityDbContextTests
         DbSet<UserRoleEntity> result = context.UserRoles;
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
     }
 
     [Fact]
@@ -84,7 +86,7 @@ public class IdentityDbContextTests
         DbSet<RolePermissionEntity> result = context.RolePermissions;
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
     }
 
     [Fact]
@@ -98,7 +100,7 @@ public class IdentityDbContextTests
         DbSet<OtpEntity> result = context.Otps;
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
     }
 
     [Fact]
@@ -112,7 +114,7 @@ public class IdentityDbContextTests
         DbSet<SessionEntity> result = context.Sessions;
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
     }
 
     [Fact]
@@ -123,12 +125,12 @@ public class IdentityDbContextTests
         using var context = new IdentityDbContext(options);
 
         // Act
-        var model = context.Model;
+        IModel model = context.Model;
 
         // Assert
-        var userEntityType = model.FindEntityType(typeof(UserEntity));
-        Assert.NotNull(userEntityType);
-        Assert.Equal("identity", userEntityType.GetSchema());
+        IEntityType? userEntityType = model.FindEntityType(typeof(UserEntity));
+        userEntityType.Should().NotBeNull();
+        userEntityType.GetSchema().Should().Be("identity");
     }
 
     [Fact]
@@ -139,12 +141,12 @@ public class IdentityDbContextTests
         using var context = new IdentityDbContext(options);
 
         // Act
-        var model = context.Model;
+        IModel model = context.Model;
 
         // Assert
-        var roleEntityType = model.FindEntityType(typeof(RoleEntity));
-        Assert.NotNull(roleEntityType);
-        Assert.Equal("identity", roleEntityType.GetSchema());
+        IEntityType? roleEntityType = model.FindEntityType(typeof(RoleEntity));
+        roleEntityType.Should().NotBeNull();
+        roleEntityType.GetSchema().Should().Be("identity");
     }
 
     [Fact]
@@ -155,15 +157,15 @@ public class IdentityDbContextTests
         using var context = new IdentityDbContext(options);
 
         // Act
-        var model = context.Model;
+        IModel model = context.Model;
 
         // Assert
-        Assert.NotNull(model.FindEntityType(typeof(UserEntity)));
-        Assert.NotNull(model.FindEntityType(typeof(RoleEntity)));
-        Assert.NotNull(model.FindEntityType(typeof(PermissionEntity)));
-        Assert.NotNull(model.FindEntityType(typeof(UserRoleEntity)));
-        Assert.NotNull(model.FindEntityType(typeof(RolePermissionEntity)));
-        Assert.NotNull(model.FindEntityType(typeof(OtpEntity)));
-        Assert.NotNull(model.FindEntityType(typeof(SessionEntity)));
+        model.FindEntityType(typeof(UserEntity)).Should().NotBeNull();
+        model.FindEntityType(typeof(RoleEntity)).Should().NotBeNull();
+        model.FindEntityType(typeof(PermissionEntity)).Should().NotBeNull();
+        model.FindEntityType(typeof(UserRoleEntity)).Should().NotBeNull();
+        model.FindEntityType(typeof(RolePermissionEntity)).Should().NotBeNull();
+        model.FindEntityType(typeof(OtpEntity)).Should().NotBeNull();
+        model.FindEntityType(typeof(SessionEntity)).Should().NotBeNull();
     }
 }
