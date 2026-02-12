@@ -13,10 +13,10 @@ public class AuthorizationErrorMessageTests
     public void AccountInactive_WithEmail_ShouldReturnFormattedMessage()
     {
         // Arrange
-        var email = "user@example.com";
+        string email = "user@example.com";
 
         // Act
-        var message = AuthorizationErrorMessage.AccountInactive(email);
+        string message = AuthorizationErrorMessage.AccountInactive(email);
 
         // Assert
         message.Should().Be($"Account associated with '{email}' is inactive. Please contact support for assistance.");
@@ -26,10 +26,10 @@ public class AuthorizationErrorMessageTests
     public void AccountNotVerified_WithEmail_ShouldReturnFormattedMessage()
     {
         // Arrange
-        var email = "newuser@example.com";
+        string email = "newuser@example.com";
 
         // Act
-        var message = AuthorizationErrorMessage.AccountNotVerified(email);
+        string message = AuthorizationErrorMessage.AccountNotVerified(email);
 
         // Assert
         message
@@ -43,7 +43,7 @@ public class AuthorizationErrorMessageTests
     public void AccessDenied_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = AuthorizationErrorMessage.AccessDenied();
+        string message = AuthorizationErrorMessage.AccessDenied();
 
         // Assert
         message.Should().Be("Access denied. You don't have sufficient permissions to access this resource");
