@@ -1,6 +1,7 @@
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Adapters.Wangkanai.Detection;
+using AwesomeAssertions;
 using Moq;
 using Wangkanai.Detection.Models;
 using Wangkanai.Detection.Services;
@@ -130,7 +131,7 @@ public class WangkanaiClientOriginDetectionAdapterTests
         ClientOriginInfo result = _adapter.GetInfo();
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
         Assert.Equal(EnumBrowser.Chrome, result.Browser);
         Assert.Equal(EnumDevice.Desktop, result.Device);
         Assert.Equal(EnumPlatform.Windows, result.Platform);
