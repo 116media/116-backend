@@ -14,10 +14,10 @@ public class ValidationErrorMessageTests
     public void InvalidEmailFormat_WithEmail_ShouldReturnFormattedMessage()
     {
         // Arrange
-        var email = "invalid-email";
+        string email = "invalid-email";
 
         // Act
-        var message = ValidationErrorMessage.InvalidEmailFormat(email);
+        string message = ValidationErrorMessage.InvalidEmailFormat(email);
 
         // Assert
         message.Should().Be($"Invalid email format: {email}");
@@ -27,7 +27,7 @@ public class ValidationErrorMessageTests
     public void InvalidPasswordFormat_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.InvalidPasswordFormat();
+        string message = ValidationErrorMessage.InvalidPasswordFormat();
 
         // Assert
         message.Should().Be("Password does not meet security requirements");
@@ -37,10 +37,10 @@ public class ValidationErrorMessageTests
     public void InvalidUsernameFormat_WithUsername_ShouldReturnFormattedMessage()
     {
         // Arrange
-        var userName = "bad@user";
+        string userName = "bad@user";
 
         // Act
-        var message = ValidationErrorMessage.InvalidUsernameFormat(userName);
+        string message = ValidationErrorMessage.InvalidUsernameFormat(userName);
 
         // Assert
         message.Should().Be($"Username '{userName}' does not meet requirements");
@@ -50,7 +50,7 @@ public class ValidationErrorMessageTests
     public void PermissionResourceRequired_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.PermissionResourceRequired();
+        string message = ValidationErrorMessage.PermissionResourceRequired();
 
         // Assert
         message.Should().Be("Permission resource is required");
@@ -60,7 +60,7 @@ public class ValidationErrorMessageTests
     public void PermissionActionRequired_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.PermissionActionRequired();
+        string message = ValidationErrorMessage.PermissionActionRequired();
 
         // Assert
         message.Should().Be("Permission action is required");
@@ -70,7 +70,7 @@ public class ValidationErrorMessageTests
     public void PermissionDescriptionRequired_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.PermissionDescriptionRequired();
+        string message = ValidationErrorMessage.PermissionDescriptionRequired();
 
         // Assert
         message.Should().Be("Permission description is required");
@@ -80,7 +80,7 @@ public class ValidationErrorMessageTests
     public void RoleNameRequired_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.RoleNameRequired();
+        string message = ValidationErrorMessage.RoleNameRequired();
 
         // Assert
         message.Should().Be("Role name is required");
@@ -90,7 +90,7 @@ public class ValidationErrorMessageTests
     public void RoleDescriptionRequired_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.RoleDescriptionRequired();
+        string message = ValidationErrorMessage.RoleDescriptionRequired();
 
         // Assert
         message.Should().Be("Role description is required");
@@ -100,7 +100,7 @@ public class ValidationErrorMessageTests
     public void AccountAlreadyVerified_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.AccountAlreadyVerified();
+        string message = ValidationErrorMessage.AccountAlreadyVerified();
 
         // Assert
         message.Should().Be("Account is already verified");
@@ -110,7 +110,7 @@ public class ValidationErrorMessageTests
     public void NoValidOtpFound_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.NoValidOtpFound();
+        string message = ValidationErrorMessage.NoValidOtpFound();
 
         // Assert
         message.Should().Be("No valid verification code found. Please request a new verification code");
@@ -120,7 +120,7 @@ public class ValidationErrorMessageTests
     public void InvalidOtpCode_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.InvalidOtpCode();
+        string message = ValidationErrorMessage.InvalidOtpCode();
 
         // Assert
         message.Should().Be("Invalid verification code. Please check and try again");
@@ -130,7 +130,7 @@ public class ValidationErrorMessageTests
     public void OtpExpired_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.OtpExpired();
+        string message = ValidationErrorMessage.OtpExpired();
 
         // Assert
         message.Should().Be("Verification code has expired. Please request a new verification code");
@@ -140,7 +140,7 @@ public class ValidationErrorMessageTests
     public void MaxOtpAttemptsReached_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.MaxOtpAttemptsReached();
+        string message = ValidationErrorMessage.MaxOtpAttemptsReached();
 
         // Assert
         message.Should().Be("Maximum verification attempts reached. Please request a new verification code");
@@ -150,7 +150,7 @@ public class ValidationErrorMessageTests
     public void OtpNotYetVerified_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.OtpNotYetVerified();
+        string message = ValidationErrorMessage.OtpNotYetVerified();
 
         // Assert
         message.Should().Be("Please complete the verification step before proceeding");
@@ -160,7 +160,7 @@ public class ValidationErrorMessageTests
     public void NewPasswordSameAsOld_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.NewPasswordSameAsOld();
+        string message = ValidationErrorMessage.NewPasswordSameAsOld();
 
         // Assert
         message.Should().Be("New password must be different from your current password");
@@ -173,7 +173,7 @@ public class ValidationErrorMessageTests
         var provider = EnumAuthProvider.Google;
 
         // Act
-        var message = ValidationErrorMessage.PasswordNotConfigured(provider);
+        string message = ValidationErrorMessage.PasswordNotConfigured(provider);
 
         // Assert
         message.Should().Be($"This account was created via {provider}. Please set a password before changing it.");
@@ -183,7 +183,7 @@ public class ValidationErrorMessageTests
     public void IncorrectCurrentPassword_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.IncorrectCurrentPassword();
+        string message = ValidationErrorMessage.IncorrectCurrentPassword();
 
         // Assert
         message.Should().Be("The current password you entered is incorrect.");
@@ -193,7 +193,7 @@ public class ValidationErrorMessageTests
     public void EmailRequiredToSetPassword_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.EmailRequiredToSetPassword();
+        string message = ValidationErrorMessage.EmailRequiredToSetPassword();
 
         // Assert
         message.Should().Be("An email address is required to set a password");
@@ -203,7 +203,7 @@ public class ValidationErrorMessageTests
     public void PasswordOnlyForExternalAuth_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.PasswordOnlyForExternalAuth();
+        string message = ValidationErrorMessage.PasswordOnlyForExternalAuth();
 
         // Assert
         message.Should().Be("Setting password is only allowed for Google or Facebook users.");
@@ -213,10 +213,10 @@ public class ValidationErrorMessageTests
     public void CoreRoleCannotBeModified_WithRoleName_ShouldReturnFormattedMessage()
     {
         // Arrange
-        var roleName = "SuperAdmin";
+        string roleName = "SuperAdmin";
 
         // Act
-        var message = ValidationErrorMessage.CoreRoleCannotBeModified(roleName);
+        string message = ValidationErrorMessage.CoreRoleCannotBeModified(roleName);
 
         // Assert
         message.Should().Be($"Core role '{roleName}' cannot be modified");
@@ -226,10 +226,10 @@ public class ValidationErrorMessageTests
     public void CoreRoleCannotBeDeleted_WithRoleName_ShouldReturnFormattedMessage()
     {
         // Arrange
-        var roleName = "Admin";
+        string roleName = "Admin";
 
         // Act
-        var message = ValidationErrorMessage.CoreRoleCannotBeDeleted(roleName);
+        string message = ValidationErrorMessage.CoreRoleCannotBeDeleted(roleName);
 
         // Assert
         message.Should().Be($"Core role '{roleName}' cannot be deleted");
@@ -239,7 +239,7 @@ public class ValidationErrorMessageTests
     public void RoleIsInactive_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.RoleIsInactive();
+        string message = ValidationErrorMessage.RoleIsInactive();
 
         // Assert
         message.Should().Be("Cannot assign an inactive role to a user");
@@ -249,7 +249,7 @@ public class ValidationErrorMessageTests
     public void RoleIsDeleted_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.RoleIsDeleted();
+        string message = ValidationErrorMessage.RoleIsDeleted();
 
         // Assert
         message.Should().Be("Cannot use a deleted role");
@@ -259,7 +259,7 @@ public class ValidationErrorMessageTests
     public void PermissionIsInactive_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.PermissionIsInactive();
+        string message = ValidationErrorMessage.PermissionIsInactive();
 
         // Assert
         message.Should().Be("Cannot assign an inactive permission to a role");
@@ -269,7 +269,7 @@ public class ValidationErrorMessageTests
     public void PermissionIsDeleted_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.PermissionIsDeleted();
+        string message = ValidationErrorMessage.PermissionIsDeleted();
 
         // Assert
         message.Should().Be("Cannot use a deleted permission");
@@ -279,7 +279,7 @@ public class ValidationErrorMessageTests
     public void PermissionNotAssignedToRole_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.PermissionNotAssignedToRole();
+        string message = ValidationErrorMessage.PermissionNotAssignedToRole();
 
         // Assert
         message.Should().Be("Permission is not assigned to this role");
@@ -289,7 +289,7 @@ public class ValidationErrorMessageTests
     public void RoleNotAssignedToUser_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ValidationErrorMessage.RoleNotAssignedToUser();
+        string message = ValidationErrorMessage.RoleNotAssignedToUser();
 
         // Assert
         message.Should().Be("Role is not assigned to this user");
