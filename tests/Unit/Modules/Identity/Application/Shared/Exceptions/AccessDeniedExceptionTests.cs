@@ -13,7 +13,7 @@ public class AccessDeniedExceptionTests
     public void Constructor_WithMessage_ShouldSetMessage()
     {
         // Arrange
-        var message = "Access denied to this resource";
+        string message = "Access denied to this resource";
 
         // Act
         var exception = new AccessDeniedException(message);
@@ -28,8 +28,8 @@ public class AccessDeniedExceptionTests
     public void Constructor_WithMessageAndDetails_ShouldSetBothProperties()
     {
         // Arrange
-        var message = "Access denied to this resource";
-        var details = "User lacks the required permission";
+        string message = "Access denied to this resource";
+        string details = "User lacks the required permission";
 
         // Act
         var exception = new AccessDeniedException(message, details);
