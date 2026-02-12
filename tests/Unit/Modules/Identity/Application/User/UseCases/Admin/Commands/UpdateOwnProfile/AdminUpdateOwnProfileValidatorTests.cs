@@ -31,7 +31,7 @@ public class AdminUpdateOwnProfileValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateOwnProfileCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -53,7 +53,7 @@ public class AdminUpdateOwnProfileValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateOwnProfileCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -79,7 +79,7 @@ public class AdminUpdateOwnProfileValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateOwnProfileCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -101,7 +101,7 @@ public class AdminUpdateOwnProfileValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateOwnProfileCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -123,7 +123,7 @@ public class AdminUpdateOwnProfileValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateOwnProfileCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -149,7 +149,7 @@ public class AdminUpdateOwnProfileValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateOwnProfileCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -177,7 +177,7 @@ public class AdminUpdateOwnProfileValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateOwnProfileCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -199,7 +199,7 @@ public class AdminUpdateOwnProfileValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateOwnProfileCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -223,7 +223,7 @@ public class AdminUpdateOwnProfileValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateOwnProfileCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -244,7 +244,7 @@ public class AdminUpdateOwnProfileValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateOwnProfileCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -269,7 +269,7 @@ public class AdminUpdateOwnProfileValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateOwnProfileCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -291,7 +291,7 @@ public class AdminUpdateOwnProfileValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateOwnProfileCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -313,7 +313,7 @@ public class AdminUpdateOwnProfileValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateOwnProfileCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -338,7 +338,7 @@ public class AdminUpdateOwnProfileValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateOwnProfileCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -368,11 +368,11 @@ public class AdminUpdateOwnProfileValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateOwnProfileCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Count.Should().BeGreaterThanOrEqualTo(5);
+        result.Errors.Should().HaveCountGreaterThanOrEqualTo(5);
     }
 
     #endregion
