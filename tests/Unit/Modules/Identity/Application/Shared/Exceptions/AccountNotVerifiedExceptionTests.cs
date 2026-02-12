@@ -13,7 +13,7 @@ public class AccountNotVerifiedExceptionTests
     public void Constructor_WithMessage_ShouldSetMessage()
     {
         // Arrange
-        var message = "Account is not verified";
+        string message = "Account is not verified";
 
         // Act
         var exception = new AccountNotVerifiedException(message);
@@ -28,8 +28,8 @@ public class AccountNotVerifiedExceptionTests
     public void Constructor_WithMessageAndDetails_ShouldSetBothProperties()
     {
         // Arrange
-        var message = "Account is not verified";
-        var details = "Please verify your email address to continue";
+        string message = "Account is not verified";
+        string details = "Please verify your email address to continue";
 
         // Act
         var exception = new AccountNotVerifiedException(message, details);
