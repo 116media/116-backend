@@ -37,8 +37,8 @@ public class AuthorizationExtensionsTests
         // Assert
         IEnumerable<IAuthorizationHandler> handlers = provider.GetServices<IAuthorizationHandler>();
         handlers.Should().NotBeEmpty("authorization handlers should be registered");
-        handlers.Any(h => h.GetType() == typeof(UserRoleRequirementHandler)).Should().BeTrue();
-        handlers.Any(h => h.GetType() == typeof(AccountStatusRequirementHandler)).Should().BeTrue();
+        handlers.Should().Contain(h => h.GetType() == typeof(UserRoleRequirementHandler));
+        handlers.Should().Contain(h => h.GetType() == typeof(AccountStatusRequirementHandler));
     }
 
     [Fact]
