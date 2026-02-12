@@ -2,6 +2,7 @@ using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.Shared.Exceptions.Handlers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Application.Shared.Exceptions.Handlers;
@@ -22,7 +23,7 @@ public class AccountNotVerifiedExceptionHandlerTests
         var exception = new AccountNotVerifiedException("Account not verified");
         var context = new DefaultHttpContext { Request = { Path = "/api/test" } };
 
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         problemDetails.Status.Should().Be(StatusCodes.Status403Forbidden);
     }
