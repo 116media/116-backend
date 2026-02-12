@@ -1,5 +1,7 @@
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
+using AwesomeAssertions;
+using AwesomeAssertions.Specialized;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Domain.ValueObjects;
@@ -21,7 +23,7 @@ public class SessionStatusTests
         SessionStatus status = new(statusEnum);
 
         // Assert
-        Assert.NotNull(status);
+        status.Should().NotBeNull();
         Assert.Equal(EnumSessionStatus.Active, status.Value);
     }
 
@@ -34,7 +36,7 @@ public class SessionStatusTests
         SessionStatus status = new(statusEnum);
 
         // Assert
-        Assert.NotNull(status);
+        status.Should().NotBeNull();
         Assert.Equal(statusEnum, status.Value);
     }
 
@@ -45,8 +47,9 @@ public class SessionStatusTests
         EnumSessionStatus invalidEnum = (EnumSessionStatus)999;
 
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new SessionStatus(invalidEnum));
-        Assert.Contains("Invalid session status", exception.Message);
+        Action act = () => new SessionStatus(invalidEnum);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid session status");
     }
 
     #endregion
@@ -63,7 +66,7 @@ public class SessionStatusTests
         SessionStatus status = new(statusString);
 
         // Assert
-        Assert.NotNull(status);
+        status.Should().NotBeNull();
         Assert.Equal(EnumSessionStatus.Active, status.Value);
     }
 
@@ -96,24 +99,27 @@ public class SessionStatusTests
     public void Constructor_WithInvalidStringValue_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new SessionStatus("InvalidStatus"));
-        Assert.Contains("Invalid session status", exception.Message);
+        Action act = () => new SessionStatus("InvalidStatus");
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid session status");
     }
 
     [Fact]
     public void Constructor_WithEmptyString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new SessionStatus(string.Empty));
-        Assert.Contains("Invalid session status", exception.Message);
+        Action act = () => new SessionStatus(string.Empty);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid session status");
     }
 
     [Fact]
     public void Constructor_WithNullString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new SessionStatus((string)null!));
-        Assert.Contains("Invalid session status", exception.Message);
+        Action act = () => new SessionStatus((string)null!);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid session status");
     }
 
     #endregion
@@ -143,7 +149,7 @@ public class SessionStatusTests
         string result = status;
 
         // Assert
-        Assert.Equal("Expired", result);
+        result.Should().Be("Expired");
     }
 
     [Fact]
@@ -156,7 +162,7 @@ public class SessionStatusTests
         SessionStatus status = statusEnum;
 
         // Assert
-        Assert.NotNull(status);
+        status.Should().NotBeNull();
         Assert.Equal(EnumSessionStatus.Active, status.Value);
     }
 
@@ -170,7 +176,7 @@ public class SessionStatusTests
         SessionStatus status = statusString;
 
         // Assert
-        Assert.NotNull(status);
+        status.Should().NotBeNull();
         Assert.Equal(EnumSessionStatus.Expired, status.Value);
     }
 
@@ -181,10 +187,11 @@ public class SessionStatusTests
         string invalidStatus = "InvalidStatus";
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() =>
+        Action act = () =>
         {
             SessionStatus status = invalidStatus;
-        });
+        };
+        act.Should().ThrowExactly<ArgumentException>();
     }
 
     #endregion
