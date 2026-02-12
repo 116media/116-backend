@@ -29,7 +29,7 @@ public class AdminUpdateAvatarValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateAvatarCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -48,7 +48,7 @@ public class AdminUpdateAvatarValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateAvatarCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -66,7 +66,7 @@ public class AdminUpdateAvatarValidatorTests
         AdminUpdateAvatarCommand command = new(UserId: Guid.NewGuid(), SessionId: Guid.NewGuid(), AvatarFile: null!);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateAvatarCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -93,7 +93,7 @@ public class AdminUpdateAvatarValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateAvatarCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -114,7 +114,7 @@ public class AdminUpdateAvatarValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateAvatarCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -137,7 +137,7 @@ public class AdminUpdateAvatarValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateAvatarCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -165,7 +165,7 @@ public class AdminUpdateAvatarValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateAvatarCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -187,7 +187,7 @@ public class AdminUpdateAvatarValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateAvatarCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -215,7 +215,7 @@ public class AdminUpdateAvatarValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateAvatarCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -241,11 +241,11 @@ public class AdminUpdateAvatarValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminUpdateAvatarCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Count.Should().BeGreaterThanOrEqualTo(2);
+        result.Errors.Should().HaveCountGreaterThanOrEqualTo(2);
     }
 
     #endregion
