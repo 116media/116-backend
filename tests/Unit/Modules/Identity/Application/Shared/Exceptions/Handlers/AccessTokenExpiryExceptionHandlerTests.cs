@@ -3,6 +3,7 @@ using _116.Identity.Application.Shared.Exceptions.Handlers;
 using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Application.Shared.Exceptions.Handlers;
@@ -27,7 +28,7 @@ public class AccessTokenExpiryExceptionHandlerTests
         AccessTokenExpiryException exception = new("Access token expired");
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         problemDetails.Title.Should().Be(nameof(AccessTokenExpiryException));
     }
@@ -39,7 +40,7 @@ public class AccessTokenExpiryExceptionHandlerTests
         AccessTokenExpiryException exception = new(errorMessage);
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         problemDetails.Detail.Should().Be(errorMessage);
     }
@@ -50,7 +51,7 @@ public class AccessTokenExpiryExceptionHandlerTests
         AccessTokenExpiryException exception = new("Token expired");
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         problemDetails.Status.Should().Be(StatusCodes.Status401Unauthorized);
     }
@@ -63,7 +64,7 @@ public class AccessTokenExpiryExceptionHandlerTests
         string requestPath = "/api/users";
         context.Request.Path = requestPath;
 
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         problemDetails.Instance.Should().Be(requestPath);
     }
@@ -76,7 +77,7 @@ public class AccessTokenExpiryExceptionHandlerTests
         string traceId = "test-trace-123";
         context.TraceIdentifier = traceId;
 
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         problemDetails.Extensions.Should().ContainKey("traceId");
         problemDetails.Extensions["traceId"].Should().Be(traceId);
@@ -88,7 +89,7 @@ public class AccessTokenExpiryExceptionHandlerTests
         AccessTokenExpiryException exception = new("Token expired");
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         problemDetails.Extensions.Should().ContainKey("timestamp");
         var timestamp = (DateTime)problemDetails.Extensions["timestamp"]!;
