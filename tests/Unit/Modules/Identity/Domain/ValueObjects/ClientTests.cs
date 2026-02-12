@@ -1,5 +1,7 @@
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
+using AwesomeAssertions;
+using AwesomeAssertions.Specialized;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Domain.ValueObjects;
@@ -21,7 +23,7 @@ public class ClientTests
         Client client = new(clientEnum);
 
         // Assert
-        Assert.NotNull(client);
+        client.Should().NotBeNull();
         Assert.Equal(EnumClient.WebApp, client.Value);
     }
 
@@ -34,7 +36,7 @@ public class ClientTests
         Client client = new(clientEnum);
 
         // Assert
-        Assert.NotNull(client);
+        client.Should().NotBeNull();
         Assert.Equal(clientEnum, client.Value);
     }
 
@@ -45,8 +47,9 @@ public class ClientTests
         EnumClient invalidEnum = (EnumClient)999;
 
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new Client(invalidEnum));
-        Assert.Contains("Invalid client platform", exception.Message);
+        Action act = () => new Client(invalidEnum);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid client platform");
     }
 
     #endregion
@@ -63,7 +66,7 @@ public class ClientTests
         Client client = new(clientString);
 
         // Assert
-        Assert.NotNull(client);
+        client.Should().NotBeNull();
         Assert.Equal(EnumClient.WebApp, client.Value);
     }
 
@@ -96,24 +99,27 @@ public class ClientTests
     public void Constructor_WithInvalidStringValue_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new Client("InvalidClient"));
-        Assert.Contains("Invalid client platform", exception.Message);
+        Action act = () => new Client("InvalidClient");
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid client platform");
     }
 
     [Fact]
     public void Constructor_WithEmptyString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new Client(string.Empty));
-        Assert.Contains("Invalid client platform", exception.Message);
+        Action act = () => new Client(string.Empty);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid client platform");
     }
 
     [Fact]
     public void Constructor_WithNullString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new Client((string)null!));
-        Assert.Contains("Invalid client platform", exception.Message);
+        Action act = () => new Client((string)null!);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid client platform");
     }
 
     #endregion
@@ -143,7 +149,7 @@ public class ClientTests
         string result = client;
 
         // Assert
-        Assert.Equal("MobileApp", result);
+        result.Should().Be("MobileApp");
     }
 
     [Fact]
@@ -156,7 +162,7 @@ public class ClientTests
         Client client = clientEnum;
 
         // Assert
-        Assert.NotNull(client);
+        client.Should().NotBeNull();
         Assert.Equal(EnumClient.WebApp, client.Value);
     }
 
@@ -170,7 +176,7 @@ public class ClientTests
         Client client = clientString;
 
         // Assert
-        Assert.NotNull(client);
+        client.Should().NotBeNull();
         Assert.Equal(EnumClient.MobileApp, client.Value);
     }
 
@@ -181,10 +187,11 @@ public class ClientTests
         string invalidClient = "InvalidClient";
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() =>
+        Action act = () =>
         {
             Client client = invalidClient;
-        });
+        };
+        act.Should().ThrowExactly<ArgumentException>();
     }
 
     #endregion
