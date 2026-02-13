@@ -40,7 +40,7 @@ public class RateLimitingExtensionTests
         IServiceCollection result = services.AddRateLimiting();
 
         // Assert
-        Assert.Same(services, result);
+        result.Should().BeSameAs(services);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class RateLimitingExtensionTests
         var options = provider.GetService<IOptions<RateLimiterOptions>>();
 
         // Assert
-        Assert.NotNull(options);
+        options.Should().NotBeNull();
         Assert.Equal(StatusCodes.Status429TooManyRequests, options.Value.RejectionStatusCode);
     }
 
@@ -71,8 +71,8 @@ public class RateLimitingExtensionTests
         var options = provider.GetService<IOptions<RateLimiterOptions>>();
 
         // Assert
-        Assert.NotNull(options);
-        Assert.NotNull(options.Value.OnRejected);
+        options.Should().NotBeNull();
+        options.Value.OnRejected.Should().NotBeNull();
     }
 
     [Fact]
@@ -87,8 +87,8 @@ public class RateLimitingExtensionTests
         var options = provider.GetService<IOptions<RateLimiterOptions>>();
 
         // Assert
-        Assert.NotNull(options);
-        Assert.NotNull(options.Value);
+        options.Should().NotBeNull();
+        options.Value.Should().NotBeNull();
     }
 
     [Fact]
@@ -116,8 +116,8 @@ public class RateLimitingExtensionTests
         var options = provider.GetService<IOptions<RateLimiterOptions>>();
 
         // Assert - Verify options configured without error
-        Assert.NotNull(options);
-        Assert.NotNull(options.Value);
+        options.Should().NotBeNull();
+        options.Value.Should().NotBeNull();
     }
 
     [Fact]
@@ -132,8 +132,8 @@ public class RateLimitingExtensionTests
         var options = provider.GetService<IOptions<RateLimiterOptions>>();
 
         // Assert - Verify options configured without error
-        Assert.NotNull(options);
-        Assert.NotNull(options.Value);
+        options.Should().NotBeNull();
+        options.Value.Should().NotBeNull();
     }
 
     [Fact]
@@ -148,8 +148,8 @@ public class RateLimitingExtensionTests
         var options = provider.GetService<IOptions<RateLimiterOptions>>();
 
         // Assert - Verify options configured without error
-        Assert.NotNull(options);
-        Assert.NotNull(options.Value);
+        options.Should().NotBeNull();
+        options.Value.Should().NotBeNull();
     }
 
     [Fact]
@@ -159,8 +159,8 @@ public class RateLimitingExtensionTests
         var services = new ServiceCollection();
 
         // Act & Assert
-        var exception = Record.Exception(() => services.AddRateLimiting());
-        Assert.Null(exception);
+        Exception? exception = Record.Exception(() => services.AddRateLimiting());
+        exception.Should().BeNull();
     }
 
     [Fact]
@@ -171,20 +171,20 @@ public class RateLimitingExtensionTests
         services.AddRateLimiting();
 
         // Act & Assert
-        var exception = Record.Exception(() => services.BuildServiceProvider());
-        Assert.Null(exception);
+        Exception? exception = Record.Exception(() => services.BuildServiceProvider());
+        exception.Should().BeNull();
     }
 
     [Fact]
     public async Task OnRateLimitRejected_WithRetryAfterMetadata_ShouldThrowExceptionWithRetryAfter()
     {
         // Arrange
-        var retryAfter = TimeSpan.FromSeconds(30);
+        TimeSpan retryAfter = TimeSpan.FromSeconds(30);
         var lease = new TestRateLimitLease(hasRetryAfter: true, retryAfter);
         var context = new OnRejectedContext { Lease = lease, HttpContext = new DefaultHttpContext() };
 
         // Get the private method via reflection
-        var method = typeof(RateLimitingExtension).GetMethod(
+        MethodInfo? method = typeof(RateLimitingExtension).GetMethod(
             "OnRateLimitRejected",
             BindingFlags.NonPublic | BindingFlags.Static
         );
@@ -213,7 +213,7 @@ public class RateLimitingExtensionTests
         var context = new OnRejectedContext { Lease = lease, HttpContext = new DefaultHttpContext() };
 
         // Get the private method via reflection
-        var method = typeof(RateLimitingExtension).GetMethod(
+        MethodInfo? method = typeof(RateLimitingExtension).GetMethod(
             "OnRateLimitRejected",
             BindingFlags.NonPublic | BindingFlags.Static
         );
@@ -237,12 +237,12 @@ public class RateLimitingExtensionTests
     public async Task OnRateLimitRejected_WithSpecificRetryTime_ShouldPreserveExactValue()
     {
         // Arrange
-        var exactRetryAfter = TimeSpan.FromMinutes(5).Add(TimeSpan.FromSeconds(37));
+        TimeSpan exactRetryAfter = TimeSpan.FromMinutes(5).Add(TimeSpan.FromSeconds(37));
         var lease = new TestRateLimitLease(hasRetryAfter: true, exactRetryAfter);
         var context = new OnRejectedContext { Lease = lease, HttpContext = new DefaultHttpContext() };
 
         // Get the private method via reflection
-        var method = typeof(RateLimitingExtension).GetMethod(
+        MethodInfo? method = typeof(RateLimitingExtension).GetMethod(
             "OnRateLimitRejected",
             BindingFlags.NonPublic | BindingFlags.Static
         );
