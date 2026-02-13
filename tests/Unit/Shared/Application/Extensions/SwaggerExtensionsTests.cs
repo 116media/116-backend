@@ -1,4 +1,5 @@
 using _116.Shared.Application.Extensions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -21,7 +22,7 @@ public class SwaggerExtensionsTests
         SwaggerGenOptions result = options.AddSwaggerOptions();
 
         // Assert
-        Assert.Same(options, result);
+        result.Should().BeSameAs(options);
     }
 
     [Fact]
@@ -35,7 +36,7 @@ public class SwaggerExtensionsTests
 
         // Assert
         Assert.NotEmpty(options.SwaggerGeneratorOptions.SecuritySchemes);
-        Assert.True(options.SwaggerGeneratorOptions.SecuritySchemes.ContainsKey("Bearer"));
+        options.SwaggerGeneratorOptions.SecuritySchemes.Should().ContainKey("Bearer");
     }
 
     [Fact]
@@ -49,8 +50,8 @@ public class SwaggerExtensionsTests
 
         // Assert
         OpenApiSecurityScheme? scheme = options.SwaggerGeneratorOptions.SecuritySchemes["Bearer"];
-        Assert.NotNull(scheme);
-        Assert.Equal("Bearer", scheme.Scheme);
+        scheme.Should().NotBeNull();
+        scheme.Scheme.Should().Be("Bearer");
         Assert.Equal(SecuritySchemeType.ApiKey, scheme.Type);
     }
 
@@ -65,9 +66,9 @@ public class SwaggerExtensionsTests
 
         // Assert
         OpenApiSecurityScheme? scheme = options.SwaggerGeneratorOptions.SecuritySchemes["Bearer"];
-        Assert.NotNull(scheme);
+        scheme.Should().NotBeNull();
         Assert.Equal(ParameterLocation.Header, scheme.In);
-        Assert.Equal("Authorization", scheme.Name);
+        scheme.Name.Should().Be("Authorization");
     }
 
     [Fact]
@@ -81,10 +82,10 @@ public class SwaggerExtensionsTests
 
         // Assert
         OpenApiSecurityScheme? scheme = options.SwaggerGeneratorOptions.SecuritySchemes["Bearer"];
-        Assert.NotNull(scheme);
-        Assert.NotNull(scheme.Description);
-        Assert.Contains("JWT", scheme.Description);
-        Assert.Contains("Bearer", scheme.Description);
+        scheme.Should().NotBeNull();
+        scheme.Description.Should().NotBeNull();
+        scheme.Description.Should().Contain("JWT");
+        scheme.Description.Should().Contain("Bearer");
     }
 
     [Fact]
@@ -113,7 +114,7 @@ public class SwaggerExtensionsTests
         OpenApiSecurityRequirement requirement = options.SwaggerGeneratorOptions.SecurityRequirements.First();
         Assert.NotEmpty(requirement);
         OpenApiSecurityScheme scheme = requirement.Keys.First();
-        Assert.Equal("Bearer", scheme.Reference.Id);
+        scheme.Reference.Id.Should().Be("Bearer");
         Assert.Equal(ReferenceType.SecurityScheme, scheme.Reference.Type);
     }
 
@@ -127,7 +128,7 @@ public class SwaggerExtensionsTests
         options.AddSwaggerOptions();
 
         // Assert - Options object should have been configured (no exception thrown)
-        Assert.NotNull(options);
+        options.Should().NotBeNull();
     }
 
     [Fact]
@@ -140,7 +141,7 @@ public class SwaggerExtensionsTests
         options.AddSwaggerOptions();
 
         // Assert - Configuration applied successfully (no exception thrown)
-        Assert.NotNull(options);
+        options.Should().NotBeNull();
     }
 
     [Fact]
@@ -153,6 +154,6 @@ public class SwaggerExtensionsTests
         SwaggerGenOptions result = options.AddSwaggerOptions();
 
         // Assert
-        Assert.Same(options, result);
+        result.Should().BeSameAs(options);
     }
 }
