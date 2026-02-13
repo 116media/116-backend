@@ -2,6 +2,7 @@ using _116.Shared.Application.Exceptions.Handlers.Strategies;
 using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
 namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
@@ -37,7 +38,7 @@ public class DefaultExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Title.Should().Be("Exception");
@@ -52,7 +53,7 @@ public class DefaultExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Detail.Should().Be(errorMessage);
@@ -66,7 +67,7 @@ public class DefaultExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Status.Should().Be(StatusCodes.Status500InternalServerError);
@@ -82,7 +83,7 @@ public class DefaultExceptionHandlerTests
         context.Request.Path = requestPath;
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Instance.Should().Be(requestPath);
@@ -96,7 +97,7 @@ public class DefaultExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Title.Should().Be("InvalidOperationException");
@@ -110,7 +111,7 @@ public class DefaultExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Detail.Should().Be(string.Empty);
