@@ -1,6 +1,7 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
@@ -42,7 +43,7 @@ public class SuperAdminRepositoryManagerTests
         bool result = await manager.SuperAdminExistsAsync();
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -67,7 +68,7 @@ public class SuperAdminRepositoryManagerTests
         bool result = await manager.SuperAdminExistsAsync();
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -87,7 +88,7 @@ public class SuperAdminRepositoryManagerTests
         bool result = await manager.SuperAdminExistsAsync();
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     #endregion
@@ -111,9 +112,9 @@ public class SuperAdminRepositoryManagerTests
         PermissionEntity? result = await manager.FindPermissionAsync("system", "all");
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal("system", result.Resource);
-        Assert.Equal("all", result.Action);
+        result.Should().NotBeNull();
+        result.Resource.Should().Be("system");
+        result.Action.Should().Be("all");
     }
 
     [Fact]
@@ -128,7 +129,7 @@ public class SuperAdminRepositoryManagerTests
         PermissionEntity? result = await manager.FindPermissionAsync("nonexistent", "action");
 
         // Assert
-        Assert.Null(result);
+        result.Should().BeNull();
     }
 
     [Fact]
@@ -148,7 +149,7 @@ public class SuperAdminRepositoryManagerTests
         PermissionEntity? result = await manager.FindPermissionAsync("system", "all");
 
         // Assert
-        Assert.Null(result);
+        result.Should().BeNull();
     }
 
     #endregion
@@ -172,8 +173,8 @@ public class SuperAdminRepositoryManagerTests
         RoleEntity? result = await manager.FindRoleAsync("SuperAdmin");
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal("SuperAdmin", result.Name);
+        result.Should().NotBeNull();
+        result.Name.Should().Be("SuperAdmin");
     }
 
     [Fact]
@@ -188,7 +189,7 @@ public class SuperAdminRepositoryManagerTests
         RoleEntity? result = await manager.FindRoleAsync("NonExistentRole");
 
         // Assert
-        Assert.Null(result);
+        result.Should().BeNull();
     }
 
     #endregion
@@ -215,7 +216,7 @@ public class SuperAdminRepositoryManagerTests
         bool result = await manager.RolePermissionExistsAsync(roleId, permissionId);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -230,7 +231,7 @@ public class SuperAdminRepositoryManagerTests
         bool result = await manager.RolePermissionExistsAsync(Guid.NewGuid(), Guid.NewGuid());
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     #endregion
@@ -257,7 +258,7 @@ public class SuperAdminRepositoryManagerTests
         bool result = await manager.UserRoleExistsAsync(userId, roleId);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -272,7 +273,7 @@ public class SuperAdminRepositoryManagerTests
         bool result = await manager.UserRoleExistsAsync(Guid.NewGuid(), Guid.NewGuid());
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     #endregion
@@ -293,7 +294,7 @@ public class SuperAdminRepositoryManagerTests
         manager.AddPermission(permission);
 
         // Assert
-        Assert.Contains(permission, context.Permissions.Local);
+        context.Permissions.Local.Should().Contain(permission);
     }
 
     [Fact]
@@ -341,7 +342,7 @@ public class SuperAdminRepositoryManagerTests
         manager.AddRole(role);
 
         // Assert
-        Assert.Contains(role, context.Roles.Local);
+        context.Roles.Local.Should().Contain(role);
     }
 
     [Fact]
@@ -389,7 +390,7 @@ public class SuperAdminRepositoryManagerTests
         manager.AddUser(user);
 
         // Assert
-        Assert.Contains(user, context.Users.Local);
+        context.Users.Local.Should().Contain(user);
     }
 
     [Fact]
@@ -437,7 +438,7 @@ public class SuperAdminRepositoryManagerTests
         manager.AddRolePermission(rolePermission);
 
         // Assert
-        Assert.Contains(rolePermission, context.RolePermissions.Local);
+        context.RolePermissions.Local.Should().Contain(rolePermission);
     }
 
     [Fact]
@@ -485,7 +486,7 @@ public class SuperAdminRepositoryManagerTests
         manager.AddUserRole(userRole);
 
         // Assert
-        Assert.Contains(userRole, context.UserRoles.Local);
+        context.UserRoles.Local.Should().Contain(userRole);
     }
 
     [Fact]
