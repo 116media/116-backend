@@ -1,5 +1,6 @@
 using System.Reflection;
 using _116.Shared.Application.Extensions;
+using AwesomeAssertions;
 using Carter;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -22,7 +23,10 @@ public class CarterExtensionTests
         services.AddCarterWithAssemblies(testAssembly);
 
         // Assert
-        Assert.Contains(services, s => s.ServiceType.Namespace?.StartsWith("Carter") == true);
+        // Assert
+        services
+            .Should()
+            .Contain(s => s.ServiceType.Namespace != null && s.ServiceType.Namespace.StartsWith("Carter"));
     }
 
     [Fact]
@@ -36,7 +40,7 @@ public class CarterExtensionTests
         IServiceCollection result = services.AddCarterWithAssemblies(testAssembly);
 
         // Assert
-        Assert.Same(services, result);
+        result.Should().BeSameAs(services);
     }
 
     [Fact]
@@ -51,7 +55,9 @@ public class CarterExtensionTests
         services.AddCarterWithAssemblies(assembly1, assembly2);
 
         // Assert
-        Assert.Contains(services, s => s.ServiceType.Namespace?.StartsWith("Carter") == true);
+        services
+            .Should()
+            .Contain(s => s.ServiceType.Namespace != null && s.ServiceType.Namespace.StartsWith("Carter"));
     }
 
     [Fact]
@@ -61,8 +67,8 @@ public class CarterExtensionTests
         var services = new ServiceCollection();
 
         // Act & Assert
-        var exception = Record.Exception(() => services.AddCarterWithAssemblies());
-        Assert.Null(exception);
+        Exception? exception = Record.Exception(() => services.AddCarterWithAssemblies());
+        exception.Should().BeNull();
     }
 
     [Fact]
@@ -77,6 +83,6 @@ public class CarterExtensionTests
 
         // Assert - Carter services should be registered
         ServiceProvider provider = services.BuildServiceProvider();
-        Assert.NotNull(provider);
+        provider.Should().NotBeNull();
     }
 }
