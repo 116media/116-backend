@@ -182,7 +182,7 @@ public class LoggingDecoratorTests
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()
                 ),
             Times.Once
-        ); // In END log
+        );
     }
 
     #endregion
