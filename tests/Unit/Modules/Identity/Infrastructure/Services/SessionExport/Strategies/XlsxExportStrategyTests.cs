@@ -25,11 +25,11 @@ public class XlsxExportStrategyTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Length.Should().BeGreaterThan(0);
+        result.Length.Should().BePositive();
 
         // Verify it's a valid XLSX file
         using var memoryStream = new MemoryStream(result);
-        var act = () => new XLWorkbook(memoryStream);
+        Func<XLWorkbook> act = () => new XLWorkbook(memoryStream);
         act.Should().NotThrow();
     }
 
@@ -44,7 +44,7 @@ public class XlsxExportStrategyTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Length.Should().BeGreaterThan(0);
+        result.Length.Should().BePositive();
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class XlsxExportStrategyTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Length.Should().BeGreaterThan(0);
+        result.Length.Should().BePositive();
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public class XlsxExportStrategyTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Length.Should().BeGreaterThan(0);
+        result.Length.Should().BePositive();
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public class XlsxExportStrategyTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Length.Should().BeGreaterThan(0);
+        result.Length.Should().BePositive();
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public class XlsxExportStrategyTests
         using var memoryStream = new MemoryStream(result);
         using var workbook = new XLWorkbook(memoryStream);
 
-        workbook.Worksheets.Should().HaveCount(1);
+        workbook.Worksheets.Should().ContainSingle();
         workbook.Worksheets.First().Name.Should().Be("Sessions");
     }
 
