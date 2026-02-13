@@ -2,6 +2,7 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -18,7 +19,7 @@ public class UserRoleRepositoryTests : IDisposable
 
     public UserRoleRepositoryTests()
     {
-        var options = new DbContextOptionsBuilder<IdentityDbContext>()
+        DbContextOptions<IdentityDbContext> options = new DbContextOptionsBuilder<IdentityDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -38,8 +39,8 @@ public class UserRoleRepositoryTests : IDisposable
     public async Task ExistsByUserAndRoleAsync_WhenUserRoleExists_ShouldReturnTrue()
     {
         // Arrange
-        var role = new RoleBuilder().Build();
-        var user = new UserBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
+        UserEntity user = UserFactory.Create();
         var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
 
         _context.Roles.Add(role);
@@ -76,8 +77,8 @@ public class UserRoleRepositoryTests : IDisposable
     public async Task GetByUserAndRoleAsync_WhenUserRoleExists_ShouldReturnUserRole()
     {
         // Arrange
-        var role = new RoleBuilder().Build();
-        var user = new UserBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
+        UserEntity user = UserFactory.Create();
         var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
 
         _context.Roles.Add(role);
@@ -86,7 +87,7 @@ public class UserRoleRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetByUserAndRoleAsync(user.Id, role.Id);
+        UserRoleEntity? result = await _repository.GetByUserAndRoleAsync(user.Id, role.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -102,7 +103,7 @@ public class UserRoleRepositoryTests : IDisposable
         var roleId = Guid.NewGuid();
 
         // Act
-        var result = await _repository.GetByUserAndRoleAsync(userId, roleId);
+        UserRoleEntity? result = await _repository.GetByUserAndRoleAsync(userId, roleId);
 
         // Assert
         result.Should().BeNull();
@@ -116,9 +117,9 @@ public class UserRoleRepositoryTests : IDisposable
     public async Task GetUserRolesWithRoleAsync_WhenUserHasRoles_ShouldReturnUserRolesWithRoleData()
     {
         // Arrange
-        var user = new UserBuilder().Build();
-        var role1 = new RoleBuilder().WithName("Admin").Build();
-        var role2 = new RoleBuilder().WithName("Visitor").Build();
+        UserEntity user = UserFactory.Create();
+        RoleEntity role1 = RoleFactory.CreateAdmin();
+        RoleEntity role2 = RoleFactory.CreateVisitor();
         var userRole1 = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role1.Id);
         var userRole2 = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role2.Id);
 
@@ -128,7 +129,7 @@ public class UserRoleRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetUserRolesWithRoleAsync(user.Id);
+        List<UserRoleEntity> result = await _repository.GetUserRolesWithRoleAsync(user.Id);
 
         // Assert
         result.Should().HaveCount(2);
@@ -144,7 +145,7 @@ public class UserRoleRepositoryTests : IDisposable
         var userId = Guid.NewGuid();
 
         // Act
-        var result = await _repository.GetUserRolesWithRoleAsync(userId);
+        List<UserRoleEntity> result = await _repository.GetUserRolesWithRoleAsync(userId);
 
         // Assert
         result.Should().BeEmpty();
@@ -158,8 +159,8 @@ public class UserRoleRepositoryTests : IDisposable
     public async Task AddAsync_ShouldAddUserRoleToContext()
     {
         // Arrange
-        var role = new RoleBuilder().Build();
-        var user = new UserBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
+        UserEntity user = UserFactory.Create();
         var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
 
         _context.Roles.Add(role);
@@ -171,7 +172,7 @@ public class UserRoleRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Assert
-        var savedUserRole = await _context.UserRoles.FirstOrDefaultAsync(ur =>
+        UserRoleEntity? savedUserRole = await _context.UserRoles.FirstOrDefaultAsync(ur =>
             ur.UserId == user.Id && ur.RoleId == role.Id
         );
         savedUserRole.Should().NotBeNull();
@@ -187,8 +188,8 @@ public class UserRoleRepositoryTests : IDisposable
     public void Delete_ShouldRemoveUserRoleFromContext()
     {
         // Arrange
-        var role = new RoleBuilder().Build();
-        var user = new UserBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
+        UserEntity user = UserFactory.Create();
         var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
 
         _context.Roles.Add(role);
@@ -201,7 +202,9 @@ public class UserRoleRepositoryTests : IDisposable
         _context.SaveChanges();
 
         // Assert
-        var deletedUserRole = _context.UserRoles.FirstOrDefault(ur => ur.UserId == user.Id && ur.RoleId == role.Id);
+        UserRoleEntity? deletedUserRole = _context.UserRoles.FirstOrDefault(ur =>
+            ur.UserId == user.Id && ur.RoleId == role.Id
+        );
         deletedUserRole.Should().BeNull();
     }
 
