@@ -2,6 +2,7 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -18,7 +19,7 @@ public class RolePermissionRepositoryTests : IDisposable
 
     public RolePermissionRepositoryTests()
     {
-        var options = new DbContextOptionsBuilder<IdentityDbContext>()
+        DbContextOptions<IdentityDbContext> options = new DbContextOptionsBuilder<IdentityDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -38,8 +39,8 @@ public class RolePermissionRepositoryTests : IDisposable
     public async Task ExistsByRoleAndPermissionAsync_WhenRolePermissionExists_ShouldReturnTrue()
     {
         // Arrange
-        var role = new RoleBuilder().Build();
-        var permission = new PermissionBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
+        PermissionEntity permission = PermissionFactory.Create();
         var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission.Id);
 
         _context.Roles.Add(role);
@@ -76,8 +77,8 @@ public class RolePermissionRepositoryTests : IDisposable
     public async Task GetByRoleAndPermissionAsync_WhenRolePermissionExists_ShouldReturnRolePermission()
     {
         // Arrange
-        var role = new RoleBuilder().Build();
-        var permission = new PermissionBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
+        PermissionEntity permission = PermissionFactory.Create();
         var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission.Id);
 
         _context.Roles.Add(role);
@@ -86,7 +87,7 @@ public class RolePermissionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetByRoleAndPermissionAsync(role.Id, permission.Id);
+        RolePermissionEntity? result = await _repository.GetByRoleAndPermissionAsync(role.Id, permission.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -102,7 +103,7 @@ public class RolePermissionRepositoryTests : IDisposable
         var permissionId = Guid.NewGuid();
 
         // Act
-        var result = await _repository.GetByRoleAndPermissionAsync(roleId, permissionId);
+        RolePermissionEntity? result = await _repository.GetByRoleAndPermissionAsync(roleId, permissionId);
 
         // Assert
         result.Should().BeNull();
@@ -116,9 +117,9 @@ public class RolePermissionRepositoryTests : IDisposable
     public async Task GetPermissionIdsByRoleIdAsync_WhenRoleHasPermissions_ShouldReturnPermissionIds()
     {
         // Arrange
-        var role = new RoleBuilder().Build();
-        var permission1 = new PermissionBuilder().WithResource("article").WithAction("read").Build();
-        var permission2 = new PermissionBuilder().WithResource("article").WithAction("write").Build();
+        RoleEntity role = RoleFactory.Create();
+        PermissionEntity permission1 = PermissionFactory.Create("article", "read");
+        PermissionEntity permission2 = PermissionFactory.Create("article", "write");
         var rolePermission1 = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission1.Id);
         var rolePermission2 = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission2.Id);
 
@@ -128,7 +129,7 @@ public class RolePermissionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetPermissionIdsByRoleIdAsync(role.Id);
+        List<Guid> result = await _repository.GetPermissionIdsByRoleIdAsync(role.Id);
 
         // Assert
         result.Should().HaveCount(2);
@@ -143,7 +144,7 @@ public class RolePermissionRepositoryTests : IDisposable
         var roleId = Guid.NewGuid();
 
         // Act
-        var result = await _repository.GetPermissionIdsByRoleIdAsync(roleId);
+        List<Guid> result = await _repository.GetPermissionIdsByRoleIdAsync(roleId);
 
         // Assert
         result.Should().BeEmpty();
@@ -157,8 +158,8 @@ public class RolePermissionRepositoryTests : IDisposable
     public async Task AddAsync_ShouldAddRolePermissionToContext()
     {
         // Arrange
-        var role = new RoleBuilder().Build();
-        var permission = new PermissionBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
+        PermissionEntity permission = PermissionFactory.Create();
         var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission.Id);
 
         _context.Roles.Add(role);
@@ -170,7 +171,7 @@ public class RolePermissionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Assert
-        var saved = await _context.RolePermissions.FirstOrDefaultAsync(rp =>
+        RolePermissionEntity? saved = await _context.RolePermissions.FirstOrDefaultAsync(rp =>
             rp.RoleId == role.Id && rp.PermissionId == permission.Id
         );
         saved.Should().NotBeNull();
@@ -186,8 +187,8 @@ public class RolePermissionRepositoryTests : IDisposable
     public void Delete_ShouldRemoveRolePermissionFromContext()
     {
         // Arrange
-        var role = new RoleBuilder().Build();
-        var permission = new PermissionBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
+        PermissionEntity permission = PermissionFactory.Create();
         var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission.Id);
 
         _context.Roles.Add(role);
@@ -200,7 +201,7 @@ public class RolePermissionRepositoryTests : IDisposable
         _context.SaveChanges();
 
         // Assert
-        var deleted = _context.RolePermissions.FirstOrDefault(rp =>
+        RolePermissionEntity? deleted = _context.RolePermissions.FirstOrDefault(rp =>
             rp.RoleId == role.Id && rp.PermissionId == permission.Id
         );
         deleted.Should().BeNull();
