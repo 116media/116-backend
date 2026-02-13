@@ -1,4 +1,5 @@
 using _116.Shared.Application.Extensions;
+using AwesomeAssertions;
 using Microsoft.AspNetCore.Builder;
 using Xunit;
 
@@ -20,7 +21,7 @@ public class ResourceNotFoundExtensionTests
         IApplicationBuilder result = app.UseResourceNotFoundHandler();
 
         // Assert
-        Assert.Same(app, result);
+        result.Should().BeSameAs(app);
     }
 
     [Fact]
@@ -31,8 +32,8 @@ public class ResourceNotFoundExtensionTests
         WebApplication app = builder.Build();
 
         // Act & Assert
-        var exception = Record.Exception(() => app.UseResourceNotFoundHandler());
-        Assert.Null(exception);
+        Exception? exception = Record.Exception(() => app.UseResourceNotFoundHandler());
+        exception.Should().BeNull();
     }
 
     [Fact]
@@ -46,6 +47,6 @@ public class ResourceNotFoundExtensionTests
         app.UseResourceNotFoundHandler();
 
         // Assert - Middleware is added to the pipeline (no exception thrown)
-        Assert.NotNull(app);
+        app.Should().NotBeNull();
     }
 }
