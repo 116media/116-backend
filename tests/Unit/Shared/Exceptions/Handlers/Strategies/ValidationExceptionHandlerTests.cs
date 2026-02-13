@@ -4,6 +4,7 @@ using AwesomeAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
 namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
@@ -40,7 +41,7 @@ public class ValidationExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Title.Should().Be(nameof(ValidationException));
@@ -55,7 +56,7 @@ public class ValidationExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Detail.Should().NotBeNullOrEmpty();
@@ -70,7 +71,7 @@ public class ValidationExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Status.Should().Be(StatusCodes.Status400BadRequest);
@@ -87,7 +88,7 @@ public class ValidationExceptionHandlerTests
         context.Request.Path = requestPath;
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Instance.Should().Be(requestPath);
@@ -104,7 +105,7 @@ public class ValidationExceptionHandlerTests
         context.TraceIdentifier = traceId;
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Extensions.Should().ContainKey("traceId");
@@ -120,7 +121,7 @@ public class ValidationExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Extensions.Should().ContainKey("timestamp");
@@ -141,7 +142,7 @@ public class ValidationExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Extensions.Should().ContainKey("errors");
@@ -157,7 +158,7 @@ public class ValidationExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Extensions.Should().NotContainKey("errors");
@@ -171,7 +172,7 @@ public class ValidationExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Extensions.Should().NotContainKey("errors");
@@ -192,7 +193,7 @@ public class ValidationExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Extensions.Should().ContainKey("errors");
