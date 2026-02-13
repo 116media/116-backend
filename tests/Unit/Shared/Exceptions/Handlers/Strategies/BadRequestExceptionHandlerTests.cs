@@ -3,6 +3,7 @@ using _116.Shared.Application.Exceptions.Handlers.Strategies;
 using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
 namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
@@ -38,7 +39,7 @@ public class BadRequestExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Title.Should().Be(nameof(BadRequestException));
@@ -53,7 +54,7 @@ public class BadRequestExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Detail.Should().Be(errorMessage);
@@ -67,7 +68,7 @@ public class BadRequestExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Status.Should().Be(StatusCodes.Status400BadRequest);
@@ -83,7 +84,7 @@ public class BadRequestExceptionHandlerTests
         context.Request.Path = requestPath;
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Instance.Should().Be(requestPath);
@@ -99,7 +100,7 @@ public class BadRequestExceptionHandlerTests
         context.TraceIdentifier = traceId;
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Extensions.Should().ContainKey("traceId");
@@ -114,7 +115,7 @@ public class BadRequestExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Extensions.Should().ContainKey("timestamp");
@@ -132,7 +133,7 @@ public class BadRequestExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Detail.Should().Be(message);
