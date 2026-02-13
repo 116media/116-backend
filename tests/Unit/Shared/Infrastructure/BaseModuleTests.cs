@@ -31,7 +31,7 @@ public class BaseModuleTests
         services.AddModuleDatabase(options);
 
         // Assert
-        var descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(TestDbContext));
+        ServiceDescriptor? descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(TestDbContext));
         descriptor.Should().NotBeNull();
         descriptor!.Lifetime.Should().Be(ServiceLifetime.Scoped);
     }
@@ -41,7 +41,7 @@ public class BaseModuleTests
     {
         // Arrange
         var services = new ServiceCollection();
-        var customConnectionString =
+        string customConnectionString =
             "Host=custom;Port=5433;Database=custom_db;Username=custom_user;Password=custom_pass;";
         var options = new ModuleOptions<TestDbContext>
         {
@@ -53,7 +53,7 @@ public class BaseModuleTests
         services.AddModuleDatabase(options);
 
         // Assert
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
         var dbContext = serviceProvider.GetRequiredService<TestDbContext>();
         dbContext.Should().NotBeNull();
     }
@@ -74,7 +74,7 @@ public class BaseModuleTests
         services.AddModuleDatabase(options);
 
         // Assert
-        var descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(TestDbContext));
+        ServiceDescriptor? descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(TestDbContext));
         descriptor.Should().NotBeNull();
     }
 
@@ -94,7 +94,7 @@ public class BaseModuleTests
         services.AddModuleDatabase(options);
 
         // Assert
-        var descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(TestDbContext));
+        ServiceDescriptor? descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(TestDbContext));
         descriptor.Should().NotBeNull();
         descriptor!.Lifetime.Should().Be(ServiceLifetime.Scoped);
     }
@@ -114,13 +114,13 @@ public class BaseModuleTests
         services.AddModuleDatabase(options);
 
         // Assert
-        var auditInterceptor = services.FirstOrDefault(s =>
+        ServiceDescriptor? auditInterceptor = services.FirstOrDefault(s =>
             s.ServiceType == typeof(ISaveChangesInterceptor)
             && s.ImplementationType == typeof(AuditableEntityInterceptor)
         );
         auditInterceptor.Should().NotBeNull();
 
-        var domainEventInterceptor = services.FirstOrDefault(s =>
+        ServiceDescriptor? domainEventInterceptor = services.FirstOrDefault(s =>
             s.ServiceType == typeof(ISaveChangesInterceptor)
             && s.ImplementationType == typeof(DispatchDomainEventsInterceptor)
         );
@@ -147,13 +147,13 @@ public class BaseModuleTests
         services.AddModuleDatabase(options);
 
         // Assert
-        var auditInterceptors = services
+        List<ServiceDescriptor> auditInterceptors = services
             .Where(s =>
                 s.ServiceType == typeof(ISaveChangesInterceptor)
                 && s.ImplementationType == typeof(AuditableEntityInterceptor)
             )
             .ToList();
-        auditInterceptors.Should().HaveCount(1, "interceptors should not be registered twice");
+        auditInterceptors.Should().ContainSingle("interceptors should not be registered twice");
     }
 
     [Fact]
@@ -174,7 +174,7 @@ public class BaseModuleTests
 
         // Act
         services.AddModuleDatabase(options);
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
         var dbContext = serviceProvider.GetRequiredService<TestDbContext>();
 
         // Assert
@@ -194,7 +194,7 @@ public class BaseModuleTests
         };
 
         // Act
-        var result = services.AddModuleDatabase(options);
+        IServiceCollection result = services.AddModuleDatabase(options);
 
         // Assert
         result.Should().BeSameAs(services, "method should return the service collection for chaining");
@@ -207,7 +207,7 @@ public class BaseModuleTests
         var services = new ServiceCollection();
         services.AddDbContext<TestDbContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
 
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
         var app = new ApplicationBuilder(serviceProvider);
 
         var options = new ModuleOptions<TestDbContext>
@@ -218,7 +218,7 @@ public class BaseModuleTests
         };
 
         // Act
-        var result = app.UseModuleDatabase(options);
+        IApplicationBuilder result = app.UseModuleDatabase(options);
 
         // Assert
         result.Should().BeSameAs(app, "method should return the app builder for chaining");
@@ -231,7 +231,7 @@ public class BaseModuleTests
         var services = new ServiceCollection();
         services.AddDbContext<TestDbContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
 
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
         var app = new ApplicationBuilder(serviceProvider);
 
         var options = new ModuleOptions<TestDbContext>
@@ -242,7 +242,7 @@ public class BaseModuleTests
         };
 
         // Act
-        var result = app.UseModuleDatabase(options);
+        IApplicationBuilder result = app.UseModuleDatabase(options);
 
         // Assert
         result.Should().BeSameAs(app);
