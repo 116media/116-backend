@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Security.Claims;
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Domain.Entities;
@@ -7,6 +8,7 @@ using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -23,7 +25,7 @@ public class AuthRepositoryTests : IDisposable
 
     public AuthRepositoryTests()
     {
-        var options = new DbContextOptionsBuilder<IdentityDbContext>()
+        DbContextOptions<IdentityDbContext> options = new DbContextOptionsBuilder<IdentityDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -43,12 +45,12 @@ public class AuthRepositoryTests : IDisposable
     public async Task FindUserByIdOrThrow_WhenUserExists_ShouldReturnUser()
     {
         // Arrange
-        var user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.FindUserByIdOrThrow(user.Id);
+        UserEntity? result = await _repository.FindUserByIdOrThrow(user.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -76,8 +78,8 @@ public class AuthRepositoryTests : IDisposable
     public async Task GetUserWithRolesByEmailOrThrow_WhenUserExists_ShouldReturnUserWithRoles()
     {
         // Arrange
-        var user = new UserBuilder().WithEmail("test@example.com").Build();
-        var role = new RoleBuilder().WithName("Admin").Build();
+        UserEntity user = UserFactory.Create("test@example.com");
+        RoleEntity role = RoleFactory.CreateAdmin();
         var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
 
         _context.Users.Add(user);
@@ -86,12 +88,12 @@ public class AuthRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetUserWithRolesByEmailOrThrow(new Email("test@example.com"));
+        UserEntity? result = await _repository.GetUserWithRolesByEmailOrThrow(new Email("test@example.com"));
 
         // Assert
         result.Should().NotBeNull();
         result!.Email.Should().Be("test@example.com");
-        result.UserRoles.Should().HaveCount(1);
+        result.UserRoles.Should().ContainSingle();
     }
 
     [Fact]
@@ -115,9 +117,9 @@ public class AuthRepositoryTests : IDisposable
     public async Task GetUserWithRolesAndPermissionsByIdOrThrow_WhenUserExists_ShouldReturnUserWithRolesAndPermissions()
     {
         // Arrange
-        var user = new UserBuilder().Build();
-        var role = new RoleBuilder().WithName("Admin").Build();
-        var permission = new PermissionBuilder().WithResource("article").WithAction("read").Build();
+        UserEntity user = UserFactory.Create();
+        RoleEntity role = RoleFactory.CreateAdmin();
+        PermissionEntity permission = PermissionFactory.Create("article", "read");
         var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
         var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission.Id);
 
@@ -129,12 +131,12 @@ public class AuthRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetUserWithRolesAndPermissionsByIdOrThrow(user.Id);
+        UserEntity? result = await _repository.GetUserWithRolesAndPermissionsByIdOrThrow(user.Id);
 
         // Assert
         result.Should().NotBeNull();
         result!.Id.Should().Be(user.Id);
-        result.UserRoles.Should().HaveCount(1);
+        result.UserRoles.Should().ContainSingle();
     }
 
     [Fact]
@@ -158,7 +160,7 @@ public class AuthRepositoryTests : IDisposable
     public async Task ExistsByEmailAsync_WhenUserExists_ShouldReturnTrue()
     {
         // Arrange
-        var user = new UserBuilder().WithEmail("exists@example.com").Build();
+        UserEntity user = UserFactory.Create("exists@example.com");
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
@@ -187,7 +189,7 @@ public class AuthRepositoryTests : IDisposable
     public async Task ExistsByUserNameAsync_WhenUserExists_ShouldReturnTrue()
     {
         // Arrange
-        var user = new UserBuilder().WithUserName("testuser").Build();
+        UserEntity user = UserFactory.Create("default@example.com", "testuser");
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
@@ -218,14 +220,14 @@ public class AuthRepositoryTests : IDisposable
     public async Task AddAsync_ShouldAddUserToContext()
     {
         // Arrange
-        var user = new UserBuilder().WithEmail("new@example.com").Build();
+        UserEntity user = UserFactory.Create("new@example.com");
 
         // Act
         await _repository.AddAsync(user);
         await _context.SaveChangesAsync();
 
         // Assert
-        var savedUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == "new@example.com");
+        UserEntity? savedUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == "new@example.com");
         savedUser.Should().NotBeNull();
         savedUser!.Email.Should().Be("new@example.com");
     }
@@ -238,7 +240,7 @@ public class AuthRepositoryTests : IDisposable
     public void IsUserAccountActive_WhenUserIsActive_ShouldReturnTrue()
     {
         // Arrange
-        var user = new UserBuilder().AsActive().Build();
+        UserEntity user = UserFactory.CreateVerifiedActive();
 
         // Act
         bool isActive = _repository.IsUserAccountActive(user);
@@ -251,7 +253,7 @@ public class AuthRepositoryTests : IDisposable
     public void IsUserAccountActive_WhenUserIsInactive_ShouldThrowAccountInactiveException()
     {
         // Arrange
-        var user = new UserBuilder().AsInactive().Build();
+        UserEntity user = UserFactory.CreateInactive();
 
         // Act
         Action act = () => _repository.IsUserAccountActive(user);
@@ -268,7 +270,7 @@ public class AuthRepositoryTests : IDisposable
     public void IsUserAccountVerified_WhenLocalUserIsVerified_ShouldReturnTrue()
     {
         // Arrange
-        var user = new UserBuilder().WithAuthProvider(EnumAuthProvider.Local).AsVerified().Build();
+        UserEntity user = UserFactory.CreateExternal(EnumAuthProvider.Local);
 
         // Act
         bool isVerified = _repository.IsUserAccountVerified(user);
@@ -281,7 +283,7 @@ public class AuthRepositoryTests : IDisposable
     public void IsUserAccountVerified_WhenLocalUserIsNotVerified_ShouldThrowAccountNotVerifiedException()
     {
         // Arrange - Default UserBuilder creates unverified users
-        var user = new UserBuilder().WithAuthProvider(EnumAuthProvider.Local).Build();
+        UserEntity user = UserFactory.CreateUnverified();
 
         // Act
         Action act = () => _repository.IsUserAccountVerified(user);
@@ -294,7 +296,7 @@ public class AuthRepositoryTests : IDisposable
     public void IsUserAccountVerified_WhenExternalUser_ShouldReturnTrueRegardlessOfVerificationStatus()
     {
         // Arrange - External users don't need verification
-        var user = new UserBuilder().WithAuthProvider(EnumAuthProvider.Google).Build();
+        UserEntity user = UserFactory.CreateExternal(EnumAuthProvider.Google);
 
         // Act
         bool isVerified = _repository.IsUserAccountVerified(user);
@@ -317,7 +319,7 @@ public class AuthRepositoryTests : IDisposable
         var claimsPrincipal = new ClaimsPrincipal(identity);
 
         // Act
-        var result = _repository.GetSessionIdFromClaims(claimsPrincipal);
+        Guid result = _repository.GetSessionIdFromClaims(claimsPrincipal);
 
         // Assert
         result.Should().Be(sessionId);
@@ -367,7 +369,7 @@ public class AuthRepositoryTests : IDisposable
         var claimsPrincipal = new ClaimsPrincipal(identity);
 
         // Act
-        var result = _repository.GetUserIdFromClaims(claimsPrincipal);
+        Guid result = _repository.GetUserIdFromClaims(claimsPrincipal);
 
         // Assert
         result.Should().Be(userId);
@@ -415,7 +417,7 @@ public class AuthRepositoryTests : IDisposable
     {
         // Arrange
         var email = new Email("unique@example.com");
-        var userName = "uniqueuser";
+        string userName = "uniqueuser";
 
         // Act
         Func<Task> act = async () => await _repository.ValidateUniqueCredentialsAsync(email, userName);
@@ -428,12 +430,12 @@ public class AuthRepositoryTests : IDisposable
     public async Task ValidateUniqueCredentialsAsync_WhenEmailExists_ShouldThrowConflictException()
     {
         // Arrange
-        var existingUser = new UserBuilder().WithEmail("existing@example.com").Build();
+        UserEntity existingUser = UserFactory.Create("existing@example.com");
         _context.Users.Add(existingUser);
         await _context.SaveChangesAsync();
 
         var email = new Email("existing@example.com");
-        var userName = "newuser";
+        string userName = "newuser";
 
         // Act
         Func<Task> act = async () => await _repository.ValidateUniqueCredentialsAsync(email, userName);
@@ -446,12 +448,12 @@ public class AuthRepositoryTests : IDisposable
     public async Task ValidateUniqueCredentialsAsync_WhenUserNameExists_ShouldThrowConflictException()
     {
         // Arrange
-        var existingUser = new UserBuilder().WithUserName("existinguser").Build();
+        UserEntity existingUser = UserFactory.Create("default@example.com", "existinguser");
         _context.Users.Add(existingUser);
         await _context.SaveChangesAsync();
 
         var email = new Email("new@example.com");
-        var userName = "existinguser";
+        string userName = "existinguser";
 
         // Act
         Func<Task> act = async () => await _repository.ValidateUniqueCredentialsAsync(email, userName);
@@ -472,9 +474,9 @@ public class AuthRepositoryTests : IDisposable
     public async Task GetUserWithRolesAndPermissionsByEmailOrThrow_WhenUserExists_ShouldReturnUserWithRolesAndPermissions()
     {
         // Arrange
-        var user = new UserBuilder().WithEmail("test@example.com").Build();
-        var role = new RoleBuilder().WithName("Admin").Build();
-        var permission = new PermissionBuilder().WithResource("article").WithAction("read").Build();
+        UserEntity user = UserFactory.Create("test@example.com");
+        RoleEntity role = RoleFactory.CreateAdmin();
+        PermissionEntity permission = PermissionFactory.Create("article", "read");
         var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
         var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission.Id);
 
@@ -486,12 +488,14 @@ public class AuthRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetUserWithRolesAndPermissionsByEmailOrThrow(new Email("test@example.com"));
+        UserEntity? result = await _repository.GetUserWithRolesAndPermissionsByEmailOrThrow(
+            new Email("test@example.com")
+        );
 
         // Assert
         result.Should().NotBeNull();
         result!.Email.Should().Be("test@example.com");
-        result.UserRoles.Should().HaveCount(1);
+        result.UserRoles.Should().ContainSingle();
     }
 
     [Fact]
@@ -515,8 +519,8 @@ public class AuthRepositoryTests : IDisposable
     public async Task GetUserWithRolesAndPermissionsByCredentialsOrThrow_WithEmail_ShouldReturnUser()
     {
         // Arrange
-        var user = new UserBuilder().WithEmail("credentials@example.com").Build();
-        var role = new RoleBuilder().WithName("Admin").Build();
+        UserEntity user = UserFactory.Create("credentials@example.com");
+        RoleEntity role = RoleFactory.CreateAdmin();
         var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
 
         _context.Users.Add(user);
@@ -525,7 +529,9 @@ public class AuthRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetUserWithRolesAndPermissionsByCredentialsOrThrow("credentials@example.com");
+        UserEntity? result = await _repository.GetUserWithRolesAndPermissionsByCredentialsOrThrow(
+            "credentials@example.com"
+        );
 
         // Assert
         result.Should().NotBeNull();
@@ -536,8 +542,8 @@ public class AuthRepositoryTests : IDisposable
     public async Task GetUserWithRolesAndPermissionsByCredentialsOrThrow_WithUserName_ShouldReturnUser()
     {
         // Arrange
-        var user = new UserBuilder().WithUserName("testusername").Build();
-        var role = new RoleBuilder().WithName("Admin").Build();
+        UserEntity user = UserFactory.Create("default@example.com", "testusername");
+        RoleEntity role = RoleFactory.CreateAdmin();
         var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
 
         _context.Users.Add(user);
@@ -546,7 +552,7 @@ public class AuthRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetUserWithRolesAndPermissionsByCredentialsOrThrow("testusername");
+        UserEntity? result = await _repository.GetUserWithRolesAndPermissionsByCredentialsOrThrow("testusername");
 
         // Assert
         result.Should().NotBeNull();
@@ -572,10 +578,9 @@ public class AuthRepositoryTests : IDisposable
     public async Task GetUserWithSessionsByIdOrThrow_WhenUserExists_ShouldReturnUserWithSessions()
     {
         // Arrange
-        var user = new UserBuilder().Build();
-        var session = new SessionBuilder().WithUserId(user.Id).Build();
+        UserEntity user = UserFactory.Create();
+        SessionEntity session = SessionFactory.Create(user.Id);
 
-        // Set CreatedAt using reflection (SessionBuilder doesn't set it)
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow);
 
         _context.Users.Add(user);
@@ -583,12 +588,12 @@ public class AuthRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetUserWithSessionsByIdOrThrow(user.Id);
+        UserEntity? result = await _repository.GetUserWithSessionsByIdOrThrow(user.Id);
 
         // Assert
         result.Should().NotBeNull();
         result!.Id.Should().Be(user.Id);
-        result.Sessions.Should().HaveCount(1);
+        result.Sessions.Should().ContainSingle();
     }
 
     [Fact]
@@ -612,10 +617,9 @@ public class AuthRepositoryTests : IDisposable
     public async Task IsSessionValidAsync_WhenSessionIsValid_ShouldReturnTrue()
     {
         // Arrange
-        var user = new UserBuilder().Build();
-        var session = new SessionBuilder().WithUserId(user.Id).Build();
+        UserEntity user = UserFactory.Create();
+        SessionEntity session = SessionFactory.Create(user.Id);
 
-        // Set CreatedAt using reflection (SessionBuilder doesn't set it)
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow);
 
         _context.Users.Add(user);
@@ -623,7 +627,7 @@ public class AuthRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.IsSessionValidAsync(session.Id);
+        bool result = await _repository.IsSessionValidAsync(session.Id);
 
         // Assert
         result.Should().BeTrue();
@@ -646,11 +650,12 @@ public class AuthRepositoryTests : IDisposable
     public async Task IsSessionValidAsync_WhenSessionIsExpired_ShouldThrowRefreshTokenExpiryException()
     {
         // Arrange
-        var user = new UserBuilder().Build();
-        var session = new SessionBuilder().WithUserId(user.Id).AsExpired().Build();
+        UserEntity user = UserFactory.Create();
+        SessionEntity session = SessionFactory.Create(user.Id);
 
-        // Set CreatedAt using reflection (SessionBuilder doesn't set it)
+        // Set CreatedAt and ExpiresAt using reflection
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow);
+        typeof(SessionEntity).GetProperty("ExpiresAt")!.SetValue(session, DateTime.UtcNow.AddDays(-1));
 
         _context.Users.Add(user);
         _context.Sessions.Add(session);
@@ -671,16 +676,16 @@ public class AuthRepositoryTests : IDisposable
     public async Task GetUserByPhoneNumberAsync_WhenUserExistsWithFullPhoneNumber_ShouldReturnUser()
     {
         // Arrange
-        var user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         // Set phone number using reflection since UserBuilder doesn't have WithPhoneNumber
-        var fullPhoneProperty = typeof(UserEntity).GetProperty("FullPhoneNumber");
+        PropertyInfo? fullPhoneProperty = typeof(UserEntity).GetProperty("FullPhoneNumber");
         fullPhoneProperty!.SetValue(user, "+1234567890");
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetUserByPhoneNumberAsync("+1234567890");
+        UserEntity? result = await _repository.GetUserByPhoneNumberAsync("+1234567890");
 
         // Assert
         result.Should().NotBeNull();
@@ -691,7 +696,7 @@ public class AuthRepositoryTests : IDisposable
     public async Task GetUserByPhoneNumberAsync_WhenUserDoesNotExist_ShouldReturnNull()
     {
         // Arrange & Act
-        var result = await _repository.GetUserByPhoneNumberAsync("+9999999999");
+        UserEntity? result = await _repository.GetUserByPhoneNumberAsync("+9999999999");
 
         // Assert
         result.Should().BeNull();
@@ -705,8 +710,8 @@ public class AuthRepositoryTests : IDisposable
     public void IsUserAdmin_WhenUserIsAdmin_ShouldReturnTrue()
     {
         // Arrange
-        var user = new UserBuilder().Build();
-        var adminRole = new RoleBuilder().WithName("Admin").Build();
+        UserEntity user = UserFactory.Create();
+        RoleEntity adminRole = RoleFactory.CreateAdmin();
         var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, adminRole.Id);
 
         _context.Users.Add(user);
@@ -715,13 +720,13 @@ public class AuthRepositoryTests : IDisposable
         _context.SaveChanges();
 
         // Reload user with roles
-        var userWithRoles = _context
+        UserEntity userWithRoles = _context
             .Users.Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
             .First(u => u.Id == user.Id);
 
         // Act
-        var result = _repository.IsUserAdmin(userWithRoles);
+        bool result = _repository.IsUserAdmin(userWithRoles);
 
         // Assert
         result.Should().BeTrue();
@@ -731,8 +736,8 @@ public class AuthRepositoryTests : IDisposable
     public void IsUserAdmin_WhenUserIsNotAdmin_ShouldThrowAccessDeniedException()
     {
         // Arrange
-        var user = new UserBuilder().Build();
-        var visitorRole = new RoleBuilder().WithName("Visitor").Build();
+        UserEntity user = UserFactory.Create();
+        RoleEntity visitorRole = RoleFactory.CreateVisitor();
         var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, visitorRole.Id);
 
         _context.Users.Add(user);
@@ -741,7 +746,7 @@ public class AuthRepositoryTests : IDisposable
         _context.SaveChanges();
 
         // Reload user with roles
-        var userWithRoles = _context
+        UserEntity userWithRoles = _context
             .Users.Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
             .First(u => u.Id == user.Id);
@@ -761,8 +766,8 @@ public class AuthRepositoryTests : IDisposable
     public async Task AssignVisitorRoleAsync_WhenVisitorRoleExists_ShouldNotThrow()
     {
         // Arrange
-        var user = new UserBuilder().Build();
-        var visitorRole = new RoleBuilder().WithName("Visitor").Build();
+        UserEntity user = UserFactory.Create();
+        RoleEntity visitorRole = RoleFactory.CreateVisitor();
 
         _context.Users.Add(user);
         _context.Roles.Add(visitorRole);
@@ -779,7 +784,7 @@ public class AuthRepositoryTests : IDisposable
     public async Task AssignVisitorRoleAsync_WhenVisitorRoleDoesNotExist_ShouldThrowNotFoundException()
     {
         // Arrange
-        var user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
@@ -798,12 +803,12 @@ public class AuthRepositoryTests : IDisposable
     public async Task GetOrCreateExternalUserAsync_WhenUserDoesNotExist_ShouldCreateNewUser()
     {
         // Arrange
-        var visitorRole = new RoleBuilder().WithName("Visitor").Build();
+        RoleEntity visitorRole = RoleFactory.CreateVisitor();
         _context.Roles.Add(visitorRole);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetOrCreateExternalUserAsync(
+        UserEntity? result = await _repository.GetOrCreateExternalUserAsync(
             "external@example.com",
             "externaluser",
             new AuthProvider(EnumAuthProvider.Google)
@@ -820,7 +825,7 @@ public class AuthRepositoryTests : IDisposable
     public async Task GetOrCreateExternalUserAsync_WhenExternalUserExists_ShouldReturnExistingUser()
     {
         // Arrange
-        var visitorRole = new RoleBuilder().WithName("Visitor").Build();
+        RoleEntity visitorRole = RoleFactory.CreateVisitor();
         var existingUser = UserEntity.CreateExternal(
             Guid.NewGuid(),
             "existinguser",
@@ -833,7 +838,7 @@ public class AuthRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetOrCreateExternalUserAsync(
+        UserEntity? result = await _repository.GetOrCreateExternalUserAsync(
             "external@example.com",
             "existinguser",
             new AuthProvider(EnumAuthProvider.Google)
@@ -849,10 +854,7 @@ public class AuthRepositoryTests : IDisposable
     public async Task GetOrCreateExternalUserAsync_WhenLocalUserExists_ShouldThrowConflictException()
     {
         // Arrange
-        var localUser = new UserBuilder()
-            .WithEmail("local@example.com")
-            .WithAuthProvider(EnumAuthProvider.Local)
-            .Build();
+        UserEntity localUser = UserFactory.Create("local@example.com");
 
         _context.Users.Add(localUser);
         await _context.SaveChangesAsync();
@@ -873,7 +875,7 @@ public class AuthRepositoryTests : IDisposable
     public async Task GetOrCreateExternalUserAsync_WhenUpdatingUsername_ShouldUpdateIfNotTaken()
     {
         // Arrange
-        var visitorRole = new RoleBuilder().WithName("Visitor").Build();
+        RoleEntity visitorRole = RoleFactory.CreateVisitor();
         var existingUser = UserEntity.CreateExternal(
             Guid.NewGuid(),
             "oldusername",
@@ -886,7 +888,7 @@ public class AuthRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetOrCreateExternalUserAsync(
+        UserEntity? result = await _repository.GetOrCreateExternalUserAsync(
             "external@example.com",
             "newusername",
             new AuthProvider(EnumAuthProvider.Google)
@@ -901,14 +903,14 @@ public class AuthRepositoryTests : IDisposable
     public async Task GetOrCreateExternalUserAsync_WhenUpdatingUsernameToTakenOne_ShouldThrowConflictException()
     {
         // Arrange
-        var visitorRole = new RoleBuilder().WithName("Visitor").Build();
+        RoleEntity visitorRole = RoleFactory.CreateVisitor();
         var existingUser1 = UserEntity.CreateExternal(
             Guid.NewGuid(),
             "user1",
             EnumAuthProvider.Google,
             "user1@example.com"
         );
-        var existingUser2 = new UserBuilder().WithUserName("takenusername").Build();
+        UserEntity existingUser2 = UserFactory.Create("second@example.com", "takenusername");
 
         _context.Roles.Add(visitorRole);
         _context.Users.AddRange(existingUser1, existingUser2);
@@ -930,7 +932,7 @@ public class AuthRepositoryTests : IDisposable
     public async Task GetOrCreateExternalUserAsync_WhenUsernameIsNullOrWhitespace_ShouldNotUpdateUsername()
     {
         // Arrange
-        var visitorRole = new RoleBuilder().WithName("Visitor").Build();
+        RoleEntity visitorRole = RoleFactory.CreateVisitor();
         var existingUser = UserEntity.CreateExternal(
             Guid.NewGuid(),
             "originalusername",
@@ -943,7 +945,7 @@ public class AuthRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetOrCreateExternalUserAsync(
+        UserEntity? result = await _repository.GetOrCreateExternalUserAsync(
             "external@example.com",
             null,
             new AuthProvider(EnumAuthProvider.Google)
@@ -983,7 +985,7 @@ public class AuthRepositoryTests : IDisposable
         // Arrange - Create user without email by using reflection
         var user = UserEntity.CreateExternal(Guid.NewGuid(), "user", EnumAuthProvider.Google, "temp@example.com");
         // Set email to null using reflection
-        var emailProperty = typeof(UserEntity).GetProperty("Email");
+        PropertyInfo? emailProperty = typeof(UserEntity).GetProperty("Email");
         emailProperty!.SetValue(user, null);
 
         // Act
@@ -997,7 +999,7 @@ public class AuthRepositoryTests : IDisposable
     public void SetPasswordForExternalUser_WhenLocalUser_ShouldThrowBadRequestException()
     {
         // Arrange
-        var localUser = new UserBuilder().WithAuthProvider(EnumAuthProvider.Local).Build();
+        UserEntity localUser = UserFactory.CreateUnverified();
 
         // Act
         Action act = () => _repository.SetPasswordForExternalUser(localUser, "hashedPassword");
