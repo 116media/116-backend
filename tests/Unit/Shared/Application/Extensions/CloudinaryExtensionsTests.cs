@@ -1,5 +1,6 @@
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Extensions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -21,7 +22,7 @@ public class CloudinaryExtensionsTests
 
         // Assert
         ServiceDescriptor? descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(CloudinarySettings));
-        Assert.NotNull(descriptor);
+        descriptor.Should().NotBeNull();
         Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
     }
 
@@ -35,7 +36,7 @@ public class CloudinaryExtensionsTests
         IServiceCollection result = services.AddCloudinaryConfiguration();
 
         // Assert
-        Assert.Same(services, result);
+        result.Should().BeSameAs(services);
     }
 
     [Fact]
@@ -50,10 +51,10 @@ public class CloudinaryExtensionsTests
         var settings = provider.GetRequiredService<CloudinarySettings>();
 
         // Assert
-        Assert.NotNull(settings);
-        Assert.NotNull(settings.CloudName);
-        Assert.NotNull(settings.ApiKey);
-        Assert.NotNull(settings.ApiSecret);
+        settings.Should().NotBeNull();
+        settings.CloudName.Should().NotBeNull();
+        settings.ApiKey.Should().NotBeNull();
+        settings.ApiSecret.Should().NotBeNull();
     }
 
     [Fact]
@@ -68,7 +69,7 @@ public class CloudinaryExtensionsTests
         var settings = provider.GetService<CloudinarySettings>();
 
         // Assert
-        Assert.NotNull(settings);
+        settings.Should().NotBeNull();
     }
 
     [Fact]
@@ -84,6 +85,6 @@ public class CloudinaryExtensionsTests
         var settings2 = provider.GetService<CloudinarySettings>();
 
         // Assert
-        Assert.Same(settings1, settings2);
+        settings2.Should().BeSameAs(settings1);
     }
 }
