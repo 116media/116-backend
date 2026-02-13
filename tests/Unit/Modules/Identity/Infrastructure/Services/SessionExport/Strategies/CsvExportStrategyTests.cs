@@ -25,7 +25,7 @@ public class CsvExportStrategyTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Length.Should().BeGreaterThan(0);
+        result.Length.Should().BePositive();
 
         string csvContent = Encoding.UTF8.GetString(result);
         csvContent.Should().NotBeNullOrEmpty();
@@ -43,7 +43,7 @@ public class CsvExportStrategyTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Length.Should().BeGreaterThan(0);
+        result.Length.Should().BePositive();
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class CsvExportStrategyTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Length.Should().BeGreaterThan(0);
+        result.Length.Should().BePositive();
 
         string csvContent = Encoding.UTF8.GetString(result);
         csvContent.Should().Contain("192.168.1.1");
@@ -75,7 +75,7 @@ public class CsvExportStrategyTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Length.Should().BeGreaterThan(0);
+        result.Length.Should().BePositive();
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public class CsvExportStrategyTests
 
         // Assert
         result.Should().NotBeNull();
-        var act = () => Encoding.UTF8.GetString(result);
+        Func<string> act = () => Encoding.UTF8.GetString(result);
         act.Should().NotThrow();
     }
 
@@ -102,7 +102,7 @@ public class CsvExportStrategyTests
 
         // Act - This exercises the filtered columns code path
         // CsvHelper cannot handle ExpandoObject (dynamic objects) for CSV writing
-        var act = () => _sut.Export(sessions, columns);
+        Func<byte[]> act = () => _sut.Export(sessions, columns);
 
         // Assert - CsvHelper throws ConfigurationException when attempting to write ExpandoObject
         // The GetFilteredColumns method itself is fully tested in SessionExportBaseTests
