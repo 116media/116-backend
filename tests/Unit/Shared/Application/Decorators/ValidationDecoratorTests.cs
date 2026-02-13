@@ -1,6 +1,7 @@
 using _116.Shared.Application.Decorators;
 using _116.Shared.Contracts.Application.CQRS;
 using AwesomeAssertions;
+using AwesomeAssertions.Specialized;
 using FluentValidation;
 using FluentValidation.Results;
 using Moq;
@@ -19,7 +20,7 @@ public class ValidationDecoratorTests
 
     public record TestResponse(string Result);
 
-    public class TestValidator : AbstractValidator<TestRequest>
+    private class TestValidator : AbstractValidator<TestRequest>
     {
         public TestValidator()
         {
@@ -27,7 +28,7 @@ public class ValidationDecoratorTests
         }
     }
 
-    public class AlwaysFailsValidator : AbstractValidator<TestRequest>
+    private class AlwaysFailsValidator : AbstractValidator<TestRequest>
     {
         public AlwaysFailsValidator()
         {
@@ -35,7 +36,7 @@ public class ValidationDecoratorTests
         }
     }
 
-    public class CustomValidator : AbstractValidator<TestRequest>
+    private class CustomValidator : AbstractValidator<TestRequest>
     {
         public CustomValidator(string errorMessage)
         {
@@ -207,11 +208,12 @@ public class ValidationDecoratorTests
         Func<Task> act = async () => await decorator.Handle(new TestRequest("test"));
 
         // Assert
-        ValidationException exception = await Assert.ThrowsAsync<ValidationException>(act);
-        exception.Errors.Should().NotBeEmpty();
-        exception.Errors.Should().Contain(e => e.ErrorMessage == "Error 1");
-        exception.Errors.Should().Contain(e => e.ErrorMessage == "Error 2");
-        exception.Errors.Should().Contain(e => e.ErrorMessage == "Error 3");
+        ExceptionAssertions<ValidationException> exception = await act.Should()
+            .ThrowExactlyAsync<ValidationException>();
+        exception.Which.Errors.Should().NotBeEmpty();
+        exception.Which.Errors.Should().Contain(e => e.ErrorMessage == "Error 1");
+        exception.Which.Errors.Should().Contain(e => e.ErrorMessage == "Error 2");
+        exception.Which.Errors.Should().Contain(e => e.ErrorMessage == "Error 3");
     }
 
     [Fact]
@@ -227,9 +229,10 @@ public class ValidationDecoratorTests
         Func<Task> act = async () => await decorator.Handle(new TestRequest("test"));
 
         // Assert
-        ValidationException exception = await Assert.ThrowsAsync<ValidationException>(act);
-        exception.Errors.Should().HaveCount(1);
-        exception.Errors.First().ErrorMessage.Should().Be("Always fails");
+        ExceptionAssertions<ValidationException> exception = await act.Should()
+            .ThrowExactlyAsync<ValidationException>();
+        exception.Which.Errors.Should().HaveCount(1);
+        exception.Which.Errors.First().ErrorMessage.Should().Be("Always fails");
     }
 
     #endregion
@@ -365,9 +368,10 @@ public class ValidationDecoratorTests
         Func<Task> act = async () => await decorator.Handle(new TestRequest("test"));
 
         // Assert
-        ValidationException exception = await Assert.ThrowsAsync<ValidationException>(act);
-        exception.Errors.Should().HaveCount(1);
-        exception.Errors.First().ErrorMessage.Should().Be("Validation failed");
+        ExceptionAssertions<ValidationException> exception = await act.Should()
+            .ThrowExactlyAsync<ValidationException>();
+        exception.Which.Errors.Should().ContainSingle();
+        exception.Which.Errors.First().ErrorMessage.Should().Be("Validation failed");
     }
 
     #endregion
