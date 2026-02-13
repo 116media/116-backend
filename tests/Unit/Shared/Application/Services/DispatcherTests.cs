@@ -1,6 +1,7 @@
 using _116.Shared.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using AwesomeAssertions;
+using AwesomeAssertions.Specialized;
 using Moq;
 using Xunit;
 
@@ -49,12 +50,11 @@ public class DispatcherTests
         }
     }
 
-    // Handler that returns wrong type
+    // Handler that returns a wrong type
     private class InvalidReturnTypeHandler : IRequestHandler<TestQuery, TestQueryResponse>
     {
         public Task<TestQueryResponse> Handle(TestQuery request, CancellationToken cancellationToken = default)
         {
-            // This won't actually be called in the failing test
             return Task.FromResult(new TestQueryResponse("Invalid"));
         }
     }
@@ -144,7 +144,7 @@ public class DispatcherTests
         await dispatcher.Send(query);
 
         // Assert
-        handler.ReceivedCancellationToken.Should().Be(default(CancellationToken));
+        handler.ReceivedCancellationToken.Should().Be(CancellationToken.None);
     }
 
     #endregion
@@ -181,11 +181,11 @@ public class DispatcherTests
         TestQuery query = new("test");
 
         // Act & Assert
-        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await dispatcher.Send(query)
-        );
+        Func<Task> act = async () => await dispatcher.Send(query);
+        ExceptionAssertions<InvalidOperationException>? exception = await act.Should()
+            .ThrowExactlyAsync<InvalidOperationException>();
 
-        exception.Message.Should().Contain("TestQuery");
+        exception.Which.Message.Should().Contain("TestQuery");
     }
 
     #endregion
@@ -245,7 +245,7 @@ public class DispatcherTests
         await dispatcher.Send(command);
 
         // Assert
-        handler.ReceivedCancellationToken.Should().Be(default(CancellationToken));
+        handler.ReceivedCancellationToken.Should().Be(CancellationToken.None);
     }
 
     #endregion
@@ -280,11 +280,11 @@ public class DispatcherTests
         TestCommand command = new("test");
 
         // Act & Assert
-        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await dispatcher.Send(command)
-        );
+        Func<Task> act = async () => await dispatcher.Send(command);
+        ExceptionAssertions<InvalidOperationException>? exception = await act.Should()
+            .ThrowExactlyAsync<InvalidOperationException>();
 
-        exception.Message.Should().Contain("TestCommand");
+        exception.Which.Message.Should().Contain("TestCommand");
     }
 
     #endregion
