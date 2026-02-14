@@ -2,6 +2,7 @@ using _116.Shared.Domain;
 using _116.Shared.Infrastructure.Extensions;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Xunit;
 
 namespace _116.Unit.Tests.Shared.Infrastructure.Extensions;
@@ -38,7 +39,7 @@ public class EntityEntryExtensionTests
 
     private TestDbContext CreateInMemoryContext()
     {
-        var options = new DbContextOptionsBuilder<TestDbContext>()
+        DbContextOptions<TestDbContext> options = new DbContextOptionsBuilder<TestDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -49,12 +50,12 @@ public class EntityEntryExtensionTests
     public void HasChangedOwnedEntities_WithNoOwnedEntities_ShouldReturnFalse()
     {
         // Arrange
-        using var context = CreateInMemoryContext();
+        using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
         context.TestEntities.Add(entity);
 
         // Act
-        var entry = context.Entry(entity);
+        EntityEntry<TestEntity> entry = context.Entry(entity);
         bool hasChanges = entry.HasChangedOwnedEntities();
 
         // Assert
@@ -65,7 +66,7 @@ public class EntityEntryExtensionTests
     public void HasChangedOwnedEntities_WithAddedOwnedEntity_ShouldReturnTrue()
     {
         // Arrange
-        using var context = CreateInMemoryContext();
+        using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity
         {
             Id = Guid.NewGuid(),
@@ -75,7 +76,7 @@ public class EntityEntryExtensionTests
         context.TestEntities.Add(entity);
 
         // Act
-        var entry = context.Entry(entity);
+        EntityEntry<TestEntity> entry = context.Entry(entity);
         bool hasChanges = entry.HasChangedOwnedEntities();
 
         // Assert
@@ -86,7 +87,7 @@ public class EntityEntryExtensionTests
     public void HasChangedOwnedEntities_WithModifiedOwnedEntity_ShouldReturnTrue()
     {
         // Arrange
-        using var context = CreateInMemoryContext();
+        using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity
         {
             Id = Guid.NewGuid(),
@@ -101,7 +102,7 @@ public class EntityEntryExtensionTests
         context.Entry(entity.OwnedData).State = EntityState.Modified;
 
         // Act
-        var entry = context.Entry(entity);
+        EntityEntry<TestEntity> entry = context.Entry(entity);
         bool hasChanges = entry.HasChangedOwnedEntities();
 
         // Assert
@@ -112,7 +113,7 @@ public class EntityEntryExtensionTests
     public void HasChangedOwnedEntities_WithUnchangedOwnedEntity_ShouldReturnFalse()
     {
         // Arrange
-        using var context = CreateInMemoryContext();
+        using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity
         {
             Id = Guid.NewGuid(),
@@ -126,7 +127,7 @@ public class EntityEntryExtensionTests
         context.Entry(entity).State = EntityState.Unchanged;
 
         // Act
-        var entry = context.Entry(entity);
+        EntityEntry<TestEntity> entry = context.Entry(entity);
         bool hasChanges = entry.HasChangedOwnedEntities();
 
         // Assert
@@ -137,7 +138,7 @@ public class EntityEntryExtensionTests
     public void HasChangedOwnedEntities_WithDeletedOwnedEntity_ShouldReturnFalse()
     {
         // Arrange
-        using var context = CreateInMemoryContext();
+        using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity
         {
             Id = Guid.NewGuid(),
@@ -154,7 +155,7 @@ public class EntityEntryExtensionTests
         }
 
         // Act
-        var entry = context.Entry(entity);
+        EntityEntry<TestEntity> entry = context.Entry(entity);
         bool hasChanges = entry.HasChangedOwnedEntities();
 
         // Assert
