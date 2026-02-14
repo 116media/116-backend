@@ -38,7 +38,7 @@ public class AuditableEntityInterceptorTests
 
     private TestDbContext CreateInMemoryContext()
     {
-        var options = new DbContextOptionsBuilder<TestDbContext>()
+        DbContextOptions<TestDbContext> options = new DbContextOptionsBuilder<TestDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .AddInterceptors(new AuditableEntityInterceptor())
             .Options;
@@ -50,7 +50,7 @@ public class AuditableEntityInterceptorTests
     public void SavingChanges_WithNewEntity_ShouldSetCreatedFields()
     {
         // Arrange
-        using var context = CreateInMemoryContext();
+        using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
         DateTime beforeSave = DateTime.UtcNow;
 
@@ -70,7 +70,7 @@ public class AuditableEntityInterceptorTests
     public void SavingChanges_WithNewEntity_ShouldSetUpdatedFields()
     {
         // Arrange
-        using var context = CreateInMemoryContext();
+        using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
         DateTime beforeSave = DateTime.UtcNow;
 
@@ -90,7 +90,7 @@ public class AuditableEntityInterceptorTests
     public void SavingChanges_WithModifiedEntity_ShouldUpdateUpdatedFields()
     {
         // Arrange
-        using var context = CreateInMemoryContext();
+        using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Original" };
         context.TestEntities.Add(entity);
         context.SaveChanges();
@@ -116,7 +116,7 @@ public class AuditableEntityInterceptorTests
     public void SavingChanges_WithModifiedEntity_ShouldNotChangeCreatedFields()
     {
         // Arrange
-        using var context = CreateInMemoryContext();
+        using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Original" };
         context.TestEntities.Add(entity);
         context.SaveChanges();
@@ -137,7 +137,7 @@ public class AuditableEntityInterceptorTests
     public async Task SavingChangesAsync_WithNewEntity_ShouldSetCreatedFields()
     {
         // Arrange
-        using var context = CreateInMemoryContext();
+        using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
         DateTime beforeSave = DateTime.UtcNow;
 
@@ -157,7 +157,7 @@ public class AuditableEntityInterceptorTests
     public async Task SavingChangesAsync_WithModifiedEntity_ShouldUpdateUpdatedFields()
     {
         // Arrange
-        using var context = CreateInMemoryContext();
+        using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Original" };
         context.TestEntities.Add(entity);
         await context.SaveChangesAsync();
@@ -183,7 +183,7 @@ public class AuditableEntityInterceptorTests
     public void SavingChanges_WithUnchangedEntity_ShouldNotUpdateFields()
     {
         // Arrange
-        using var context = CreateInMemoryContext();
+        using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
         context.TestEntities.Add(entity);
         context.SaveChanges();
@@ -204,7 +204,7 @@ public class AuditableEntityInterceptorTests
     public void SavingChanges_WithMultipleEntities_ShouldUpdateAll()
     {
         // Arrange
-        using var context = CreateInMemoryContext();
+        using TestDbContext context = CreateInMemoryContext();
         var entity1 = new TestEntity { Id = Guid.NewGuid(), Name = "Entity 1" };
         var entity2 = new TestEntity { Id = Guid.NewGuid(), Name = "Entity 2" };
         DateTime beforeSave = DateTime.UtcNow;
@@ -225,7 +225,7 @@ public class AuditableEntityInterceptorTests
     public void SavingChanges_WithDeletedEntity_ShouldNotUpdateFields()
     {
         // Arrange
-        using var context = CreateInMemoryContext();
+        using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
         context.TestEntities.Add(entity);
         context.SaveChanges();
@@ -244,7 +244,7 @@ public class AuditableEntityInterceptorTests
     public void SavingChanges_WithUnchangedEntityButModifiedOwnedEntity_ShouldUpdateFields()
     {
         // Arrange - Create entity with owned entity
-        using var context = CreateInMemoryContext();
+        using TestDbContext context = CreateInMemoryContext();
         var entity = new TestEntity
         {
             Id = Guid.NewGuid(),
