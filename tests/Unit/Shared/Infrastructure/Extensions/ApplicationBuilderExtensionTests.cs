@@ -23,11 +23,11 @@ public class ApplicationBuilderExtensionTests
     {
         // Arrange
         var services = new ServiceCollection();
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
         var app = new ApplicationBuilder(serviceProvider);
 
         // Act
-        var act = () => app.UseSeed();
+        Func<IApplicationBuilder> act = () => app.UseSeed();
 
         // Assert
         act.Should().NotThrow();
@@ -38,11 +38,11 @@ public class ApplicationBuilderExtensionTests
     {
         // Arrange
         var services = new ServiceCollection();
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
         var app = new ApplicationBuilder(serviceProvider);
 
         // Act
-        var result = app.UseSeed();
+        IApplicationBuilder result = app.UseSeed();
 
         // Assert
         result.Should().BeSameAs(app, "method should return the same app builder for chaining");
@@ -62,7 +62,7 @@ public class ApplicationBuilderExtensionTests
         services.AddSingleton(seeder1Mock.Object);
         services.AddSingleton(seeder2Mock.Object);
 
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
         var app = new ApplicationBuilder(serviceProvider);
 
         // Act
@@ -89,7 +89,7 @@ public class ApplicationBuilderExtensionTests
         services.AddSingleton(seeder1Mock.Object);
         services.AddSingleton(seeder2Mock.Object);
 
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
         var app = new ApplicationBuilder(serviceProvider);
 
         // Act
@@ -108,11 +108,11 @@ public class ApplicationBuilderExtensionTests
         seederMock.Setup(s => s.SeedAllAsync()).ThrowsAsync(new InvalidOperationException("Seeding failed"));
 
         services.AddSingleton(seederMock.Object);
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
         var app = new ApplicationBuilder(serviceProvider);
 
         // Act
-        var act = () => app.UseSeed();
+        Func<IApplicationBuilder> act = () => app.UseSeed();
 
         // Assert
         act.Should().Throw<InvalidOperationException>().WithMessage("Seeding failed");
