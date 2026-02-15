@@ -25,7 +25,7 @@ public class PublicSignOutValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicSignOutCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -43,7 +43,7 @@ public class PublicSignOutValidatorTests
         PublicSignOutCommand command = new(UserId: Guid.NewGuid(), RefreshToken: null!);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicSignOutCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -57,7 +57,7 @@ public class PublicSignOutValidatorTests
         PublicSignOutCommand command = new(UserId: Guid.NewGuid(), RefreshToken: string.Empty);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicSignOutCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -71,7 +71,7 @@ public class PublicSignOutValidatorTests
         PublicSignOutCommand command = new(UserId: Guid.NewGuid(), RefreshToken: "   ");
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicSignOutCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();

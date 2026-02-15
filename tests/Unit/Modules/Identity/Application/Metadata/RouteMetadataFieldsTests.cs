@@ -1,3 +1,4 @@
+using System.Reflection;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
@@ -54,6 +55,7 @@ using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile;
 using _116.Identity.Application.User.UseCases.Admin.Queries.GetOwnProfile;
 using _116.Identity.Application.User.UseCases.Admin.Queries.GetUserRoles;
 using _116.Shared.Application.Metadata;
+using AwesomeAssertions;
 using Xunit;
 using PublicGetOwnProfileNS = _116.Identity.Application.User.UseCases.Public.Queries.GetOwnProfile;
 using PublicUpdateAvatarNS = _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
@@ -152,20 +154,20 @@ public class RouteMetadataFieldsTests
     public void MetaField_ShouldHaveValidRouteMetadata(Type metaFieldType, string fieldName, string expectedName)
     {
         // Arrange & Act
-        var field = metaFieldType.GetField(
+        FieldInfo? field = metaFieldType.GetField(
             fieldName,
             System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
         );
 
         // Assert
-        Assert.NotNull(field);
+        field.Should().NotBeNull();
 
         var metadata = field.GetValue(null) as RouteMetadata?;
-        Assert.NotNull(metadata);
+        metadata.Should().NotBeNull();
 
-        Assert.Equal(expectedName, metadata.Value.Name);
-        Assert.False(string.IsNullOrWhiteSpace(metadata.Value.Summary));
-        Assert.False(string.IsNullOrWhiteSpace(metadata.Value.Description));
+        metadata.Value.Name.Should().Be(expectedName);
+        metadata.Value.Summary.Should().NotBeNullOrWhiteSpace();
+        metadata.Value.Description.Should().NotBeNullOrWhiteSpace();
     }
 
     [Theory]
@@ -180,16 +182,16 @@ public class RouteMetadataFieldsTests
     public void MetaField_Summary_ShouldNotBeEmpty(Type metaFieldType, string fieldName)
     {
         // Arrange & Act
-        var field = metaFieldType.GetField(
+        FieldInfo? field = metaFieldType.GetField(
             fieldName,
             System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
         );
         var metadata = field!.GetValue(null) as RouteMetadata?;
 
         // Assert
-        Assert.NotNull(metadata);
+        metadata.Should().NotBeNull();
         Assert.NotEmpty(metadata.Value.Summary);
-        Assert.True(metadata.Value.Summary.Length > 10, "Summary should be descriptive");
+        (metadata.Value.Summary.Length > 10).Should().BeTrue("Summary should be descriptive");
     }
 
     [Theory]
@@ -200,23 +202,23 @@ public class RouteMetadataFieldsTests
     public void MetaField_Description_ShouldContainUsefulInformation(Type metaFieldType, string fieldName)
     {
         // Arrange & Act
-        var field = metaFieldType.GetField(
+        FieldInfo? field = metaFieldType.GetField(
             fieldName,
             System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
         );
         var metadata = field!.GetValue(null) as RouteMetadata?;
 
         // Assert
-        Assert.NotNull(metadata);
+        metadata.Should().NotBeNull();
         Assert.NotEmpty(metadata.Value.Description);
-        Assert.True(metadata.Value.Description.Length > 50, "Description should be detailed");
+        (metadata.Value.Description.Length > 50).Should().BeTrue("Description should be detailed");
     }
 
     [Fact]
     public void AllMetaFieldClasses_ShouldBeStatic()
     {
         // Arrange
-        var metaFieldTypes = new[]
+        Type[] metaFieldTypes = new[]
         {
             typeof(AdminLoginMetaField),
             typeof(PublicLoginMetaField),
@@ -229,9 +231,9 @@ public class RouteMetadataFieldsTests
         };
 
         // Act & Assert
-        foreach (var type in metaFieldTypes)
+        foreach (Type type in metaFieldTypes)
         {
-            Assert.True(type.IsAbstract && type.IsSealed, $"{type.Name} should be a static class");
+            (type.IsAbstract && type.IsSealed).Should().BeTrue($"{type.Name} should be a static class");
         }
     }
 
@@ -239,7 +241,7 @@ public class RouteMetadataFieldsTests
     public void AllMetaFieldFields_ShouldBePublicStaticReadonly()
     {
         // Arrange
-        var testCases = new[]
+        (Type, string)[] testCases = new[]
         {
             (typeof(AdminLoginMetaField), "AdminLogin"),
             (typeof(PublicLoginMetaField), "PublicLogin"),
@@ -250,15 +252,15 @@ public class RouteMetadataFieldsTests
         // Act & Assert
         foreach (var (type, fieldName) in testCases)
         {
-            var field = type.GetField(
+            FieldInfo? field = type.GetField(
                 fieldName,
                 System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
             );
 
-            Assert.NotNull(field);
-            Assert.True(field.IsPublic, $"{type.Name}.{fieldName} should be public");
-            Assert.True(field.IsStatic, $"{type.Name}.{fieldName} should be static");
-            Assert.True(field.IsInitOnly, $"{type.Name}.{fieldName} should be readonly");
+            field.Should().NotBeNull();
+            field.IsPublic.Should().BeTrue($"{type.Name}.{fieldName} should be public");
+            field.IsStatic.Should().BeTrue($"{type.Name}.{fieldName} should be static");
+            field.IsInitOnly.Should().BeTrue($"{type.Name}.{fieldName} should be readonly");
         }
     }
 }

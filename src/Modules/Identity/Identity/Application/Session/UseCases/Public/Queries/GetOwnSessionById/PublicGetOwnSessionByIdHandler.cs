@@ -3,6 +3,7 @@ using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessionById;
 
@@ -10,7 +11,8 @@ namespace _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessio
 /// Handles the <see cref="PublicGetOwnSessionByIdQuery" /> to retrieve a specific session by ID.
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
-public class PublicGetOwnSessionByIdHandler(ISessionRepository sessionRepository)
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class PublicGetOwnSessionByIdHandler(ISessionRepository sessionRepository, IMapper mapper)
     : IQueryHandler<PublicGetOwnSessionByIdQuery, PublicGetOwnSessionByIdResult>
 {
     /// <summary>
@@ -37,7 +39,7 @@ public class PublicGetOwnSessionByIdHandler(ISessionRepository sessionRepository
             throw SessionErrors.SessionNotFound(sessionId: sessionId);
         }
 
-        var sessionDto = session.ToSessionDto();
+        var sessionDto = session.ToSessionDto(mapper);
 
         return new PublicGetOwnSessionByIdResult(Session: sessionDto);
     }

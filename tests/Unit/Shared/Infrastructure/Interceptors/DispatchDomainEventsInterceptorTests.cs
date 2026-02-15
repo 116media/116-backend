@@ -43,12 +43,12 @@ public class DispatchDomainEventsInterceptorTests
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddScoped(_ => publisherMock.Object);
 
-        var serviceProvider = serviceCollection.BuildServiceProvider();
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
         var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
         var interceptor = new DispatchDomainEventsInterceptor(serviceScopeFactory);
 
-        var options = new DbContextOptionsBuilder<TestDbContext>()
+        DbContextOptions<TestDbContext> options = new DbContextOptionsBuilder<TestDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .AddInterceptors(interceptor)
             .Options;

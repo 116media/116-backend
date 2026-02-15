@@ -1,3 +1,4 @@
+using System.Reflection;
 using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
@@ -27,7 +28,7 @@ public class AdminExportSessionDataValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -47,7 +48,7 @@ public class AdminExportSessionDataValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -65,7 +66,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Format: "Csv");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -78,7 +79,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Format: "Xlsx");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -91,7 +92,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Format: "json");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -105,7 +106,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Format: "csv");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -122,7 +123,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Status: "active");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -135,7 +136,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Status: "expired");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -148,7 +149,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Status: "pending");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -164,7 +165,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Status: "ACTIVE");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -181,7 +182,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Columns: "Id");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -194,7 +195,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Columns: "Id,UserId,IpAddress,UserAgent,Browser");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -207,7 +208,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Columns: "Id,InvalidColumn");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -221,7 +222,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Columns: "Id, UserId, IpAddress");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -236,7 +237,7 @@ public class AdminExportSessionDataValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -253,7 +254,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(FromDate: DateTime.UtcNow.AddDays(-7), ToDate: DateTime.UtcNow);
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -267,7 +268,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(FromDate: sameDate, ToDate: sameDate);
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -280,7 +281,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(FromDate: DateTime.UtcNow, ToDate: DateTime.UtcNow.AddDays(-7));
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -296,7 +297,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(FromDate: DateTime.UtcNow.AddDays(-7), ToDate: null);
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -309,7 +310,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(FromDate: null, ToDate: DateTime.UtcNow);
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -326,7 +327,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Format: "   ");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -339,7 +340,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Format: "");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -352,7 +353,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Status: "   ");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -365,7 +366,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Status: "");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -378,7 +379,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Columns: "   ");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -391,7 +392,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Columns: "");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -404,7 +405,7 @@ public class AdminExportSessionDataValidatorTests
         AdminExportSessionDataQuery query = new(Columns: "id,userid,ipaddress");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -427,11 +428,11 @@ public class AdminExportSessionDataValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Count.Should().BeGreaterThanOrEqualTo(4);
+        result.Errors.Should().HaveCountGreaterThanOrEqualTo(4);
     }
 
     #endregion
@@ -445,7 +446,7 @@ public class AdminExportSessionDataValidatorTests
     public void BeValidExportFormat_WithNullOrWhitespace_ShouldReturnFalse(string? format)
     {
         // Arrange
-        var method = typeof(AdminExportSessionDataValidator).GetMethod(
+        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
             "BeValidExportFormat",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
         );
@@ -466,7 +467,7 @@ public class AdminExportSessionDataValidatorTests
     public void BeValidExportFormat_WithValidFormat_ShouldReturnTrue(string format)
     {
         // Arrange
-        var method = typeof(AdminExportSessionDataValidator).GetMethod(
+        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
             "BeValidExportFormat",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
         );
@@ -485,7 +486,7 @@ public class AdminExportSessionDataValidatorTests
     public void BeValidExportFormat_WithInvalidFormat_ShouldReturnFalse(string format)
     {
         // Arrange
-        var method = typeof(AdminExportSessionDataValidator).GetMethod(
+        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
             "BeValidExportFormat",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
         );
@@ -504,7 +505,7 @@ public class AdminExportSessionDataValidatorTests
     public void BeValidSessionStatus_WithNullOrWhitespace_ShouldReturnFalse(string? status)
     {
         // Arrange
-        var method = typeof(AdminExportSessionDataValidator).GetMethod(
+        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
             "BeValidSessionStatus",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
         );
@@ -526,7 +527,7 @@ public class AdminExportSessionDataValidatorTests
     public void BeValidSessionStatus_WithValidStatus_ShouldReturnTrue(string status)
     {
         // Arrange
-        var method = typeof(AdminExportSessionDataValidator).GetMethod(
+        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
             "BeValidSessionStatus",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
         );
@@ -545,7 +546,7 @@ public class AdminExportSessionDataValidatorTests
     public void BeValidSessionStatus_WithInvalidStatus_ShouldReturnFalse(string status)
     {
         // Arrange
-        var method = typeof(AdminExportSessionDataValidator).GetMethod(
+        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
             "BeValidSessionStatus",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
         );
@@ -564,7 +565,7 @@ public class AdminExportSessionDataValidatorTests
     public void BeValidColumns_WithNullOrWhitespace_ShouldReturnTrue(string? columns)
     {
         // Arrange
-        var method = typeof(AdminExportSessionDataValidator).GetMethod(
+        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
             "BeValidColumns",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
         );
@@ -585,7 +586,7 @@ public class AdminExportSessionDataValidatorTests
     public void BeValidColumns_WithValidColumns_ShouldReturnTrue(string columns)
     {
         // Arrange
-        var method = typeof(AdminExportSessionDataValidator).GetMethod(
+        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
             "BeValidColumns",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
         );
@@ -604,7 +605,7 @@ public class AdminExportSessionDataValidatorTests
     public void BeValidColumns_WithInvalidColumns_ShouldReturnFalse(string columns)
     {
         // Arrange
-        var method = typeof(AdminExportSessionDataValidator).GetMethod(
+        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
             "BeValidColumns",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
         );
@@ -620,7 +621,7 @@ public class AdminExportSessionDataValidatorTests
     public void BeValidColumns_WithColumnsContainingSpaces_ShouldTrimAndValidate()
     {
         // Arrange
-        var method = typeof(AdminExportSessionDataValidator).GetMethod(
+        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
             "BeValidColumns",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
         );

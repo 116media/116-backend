@@ -3,6 +3,7 @@ using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.Session.UseCases.Admin.Queries.GetAllSessions;
 
@@ -10,7 +11,8 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Queries.GetAllSession
 /// Handles the <see cref="AdminGetAllSessionsQuery" /> to retrieve all sessions with pagination and filtering.
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
-public class AdminGetAllSessionsHandler(ISessionRepository sessionRepository)
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class AdminGetAllSessionsHandler(ISessionRepository sessionRepository, IMapper mapper)
     : IQueryHandler<AdminGetAllSessionsQuery, AdminGetAllSessionsResult>
 {
     /// <summary>
@@ -46,7 +48,7 @@ public class AdminGetAllSessionsHandler(ISessionRepository sessionRepository)
             cancellationToken: cancellationToken
         );
 
-        List<SessionDto> sessionDtos = sessions.Select(s => s.ToSessionDto()).ToList();
+        List<SessionDto> sessionDtos = sessions.Select(s => s.ToSessionDto(mapper)).ToList();
 
         var paginatedResult = new PaginatedResult<SessionDto>(
             pageIndex: pageIndex,

@@ -2,8 +2,7 @@ using _116.Core.Infrastructure.Services;
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions;
 using AwesomeAssertions;
-using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
+using AwesomeAssertions.Specialized;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -16,19 +15,13 @@ namespace _116.Unit.Tests.Modules.Core.Infrastructure.Services;
 /// </summary>
 public class CloudinaryServiceTests
 {
-    private readonly Mock<ILogger<CloudinaryService>> _loggerMock;
-    private readonly CloudinarySettings _settings;
-
-    public CloudinaryServiceTests()
+    private readonly Mock<ILogger<CloudinaryService>> _loggerMock = new();
+    private readonly CloudinarySettings _settings = new()
     {
-        _loggerMock = new Mock<ILogger<CloudinaryService>>();
-        _settings = new CloudinarySettings
-        {
-            CloudName = "test-cloud",
-            ApiKey = "test-key",
-            ApiSecret = "test-secret",
-        };
-    }
+        CloudName = "test-cloud",
+        ApiKey = "test-key",
+        ApiSecret = "test-secret",
+    };
 
     #region Constructor Tests
 
@@ -56,7 +49,8 @@ public class CloudinaryServiceTests
         var service = new CloudinaryService(_settings, _loggerMock.Object);
 
         // Act & Assert
-        await Assert.ThrowsAsync<BadRequestException>(() => service.UploadImageAsync(null!, "test-id"));
+        Func<Task> act = async () => await service.UploadImageAsync(null!, "test-id");
+        await act.Should().ThrowExactlyAsync<BadRequestException>();
     }
 
     [Fact]
@@ -68,8 +62,8 @@ public class CloudinaryServiceTests
         fileMock.Setup(f => f.Length).Returns(0);
         fileMock.Setup(f => f.FileName).Returns("test.jpg");
 
-        // Act & Assert
-        await Assert.ThrowsAsync<BadRequestException>(() => service.UploadImageAsync(fileMock.Object, "test-id"));
+        Func<Task> act = () => service.UploadImageAsync(fileMock.Object, "test-id");
+        await act.Should().ThrowAsync<BadRequestException>();
     }
 
     [Fact]
@@ -82,7 +76,8 @@ public class CloudinaryServiceTests
         fileMock.Setup(f => f.FileName).Returns("test.jpg");
 
         // Act & Assert
-        await Assert.ThrowsAsync<BadRequestException>(() => service.UploadImageAsync(fileMock.Object, "test-id"));
+        Func<Task> act = async () => await service.UploadImageAsync(fileMock.Object, "test-id");
+        await act.Should().ThrowExactlyAsync<BadRequestException>();
     }
 
     [Fact]
@@ -96,7 +91,8 @@ public class CloudinaryServiceTests
         fileMock.Setup(f => f.ContentType).Returns("application/x-msdownload");
 
         // Act & Assert
-        await Assert.ThrowsAsync<BadRequestException>(() => service.UploadImageAsync(fileMock.Object, "test-id"));
+        Func<Task> act = async () => await service.UploadImageAsync(fileMock.Object, "test-id");
+        await act.Should().ThrowExactlyAsync<BadRequestException>();
     }
 
     [Fact]
@@ -110,11 +106,11 @@ public class CloudinaryServiceTests
         fileMock.Setup(f => f.ContentType).Returns("application/pdf");
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<BadRequestException>(() =>
-            service.UploadImageAsync(fileMock.Object, "test-id")
-        );
+        Func<Task> act = async () => await service.UploadImageAsync(fileMock.Object, "test-id");
+        ExceptionAssertions<BadRequestException>? exception = await act.Should()
+            .ThrowExactlyAsync<BadRequestException>();
 
-        exception.Message.Should().Be("File.InvalidExtension");
+        exception.Which.Message.Should().Be("File.InvalidExtension");
     }
 
     [Fact]
@@ -130,7 +126,8 @@ public class CloudinaryServiceTests
 
         // Act & Assert - Should not throw during validation, but will fail at actual upload
         // which is expected since we're not mocking the Cloudinary SDK
-        await Assert.ThrowsAsync<BadGatewayException>(() => service.UploadImageAsync(fileMock.Object, "test-id"));
+        Func<Task> act = async () => await service.UploadImageAsync(fileMock.Object, "test-id");
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
     }
 
     [Fact]
@@ -145,7 +142,8 @@ public class CloudinaryServiceTests
         fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
 
         // Act & Assert - Should not throw during validation
-        await Assert.ThrowsAsync<BadGatewayException>(() => service.UploadImageAsync(fileMock.Object, "test-id"));
+        Func<Task> act = async () => await service.UploadImageAsync(fileMock.Object, "test-id");
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
     }
 
     [Fact]
@@ -160,7 +158,8 @@ public class CloudinaryServiceTests
         fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
 
         // Act & Assert - Should not throw during validation
-        await Assert.ThrowsAsync<BadGatewayException>(() => service.UploadImageAsync(fileMock.Object, "test-id"));
+        Func<Task> act = async () => await service.UploadImageAsync(fileMock.Object, "test-id");
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
     }
 
     [Fact]
@@ -175,7 +174,8 @@ public class CloudinaryServiceTests
         fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
 
         // Act & Assert - Should not throw during validation
-        await Assert.ThrowsAsync<BadGatewayException>(() => service.UploadImageAsync(fileMock.Object, "test-id"));
+        Func<Task> act = async () => await service.UploadImageAsync(fileMock.Object, "test-id");
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
     }
 
     [Fact]
@@ -190,7 +190,8 @@ public class CloudinaryServiceTests
         fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
 
         // Act & Assert - Should not throw during validation
-        await Assert.ThrowsAsync<BadGatewayException>(() => service.UploadImageAsync(fileMock.Object, "test-id"));
+        Func<Task> act = async () => await service.UploadImageAsync(fileMock.Object, "test-id");
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
     }
 
     [Fact]
@@ -205,7 +206,8 @@ public class CloudinaryServiceTests
         fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
 
         // Act & Assert - Should parse "image/jpeg" from "image/jpeg; boundary=..."
-        await Assert.ThrowsAsync<BadGatewayException>(() => service.UploadImageAsync(fileMock.Object, "test-id"));
+        Func<Task> act = async () => await service.UploadImageAsync(fileMock.Object, "test-id");
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
     }
 
     [Fact]
@@ -216,11 +218,12 @@ public class CloudinaryServiceTests
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("avatar.jpg");
-        fileMock.Setup(f => f.ContentType).Returns((string?)null);
+        fileMock.Setup(f => f.ContentType).Returns((Func<string>)null!);
         fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
 
         // Act & Assert - Should allow null content type (common in mobile uploads)
-        await Assert.ThrowsAsync<BadGatewayException>(() => service.UploadImageAsync(fileMock.Object, "test-id"));
+        Func<Task> act = async () => await service.UploadImageAsync(fileMock.Object, "test-id");
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
     }
 
     [Fact]
@@ -235,7 +238,8 @@ public class CloudinaryServiceTests
         fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
 
         // Act & Assert - Should allow empty content type
-        await Assert.ThrowsAsync<BadGatewayException>(() => service.UploadImageAsync(fileMock.Object, "test-id"));
+        Func<Task> act = async () => await service.UploadImageAsync(fileMock.Object, "test-id");
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
     }
 
     [Fact]
@@ -250,7 +254,8 @@ public class CloudinaryServiceTests
         fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
 
         // Act & Assert - Should allow generic binary content type
-        await Assert.ThrowsAsync<BadGatewayException>(() => service.UploadImageAsync(fileMock.Object, "test-id"));
+        Func<Task> act = async () => await service.UploadImageAsync(fileMock.Object, "test-id");
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
     }
 
     [Fact]
@@ -265,7 +270,8 @@ public class CloudinaryServiceTests
         fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
 
         // Act & Assert - Should allow multipart/form-data content type
-        await Assert.ThrowsAsync<BadGatewayException>(() => service.UploadImageAsync(fileMock.Object, "test-id"));
+        Func<Task> act = async () => await service.UploadImageAsync(fileMock.Object, "test-id");
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
     }
 
     [Fact]
@@ -279,11 +285,11 @@ public class CloudinaryServiceTests
         fileMock.Setup(f => f.ContentType).Returns("video/mp4");
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<BadRequestException>(() =>
-            service.UploadImageAsync(fileMock.Object, "test-id")
-        );
+        Func<Task> act = async () => await service.UploadImageAsync(fileMock.Object, "test-id");
+        ExceptionAssertions<BadRequestException>? exception = await act.Should()
+            .ThrowExactlyAsync<BadRequestException>();
 
-        exception.Message.Should().Be("File.InvalidType");
+        exception.Which.Message.Should().Be("File.InvalidType");
     }
 
     [Fact]
@@ -298,7 +304,8 @@ public class CloudinaryServiceTests
         fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
 
         // Act & Assert - Should normalize .JPG to .jpg and pass validation
-        await Assert.ThrowsAsync<BadGatewayException>(() => service.UploadImageAsync(fileMock.Object, "test-id"));
+        Func<Task> act = async () => await service.UploadImageAsync(fileMock.Object, "test-id");
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
     }
 
     [Fact]
@@ -313,7 +320,8 @@ public class CloudinaryServiceTests
         fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
 
         // Act & Assert - Should normalize to lowercase and pass validation
-        await Assert.ThrowsAsync<BadGatewayException>(() => service.UploadImageAsync(fileMock.Object, "test-id"));
+        Func<Task> act = async () => await service.UploadImageAsync(fileMock.Object, "test-id");
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
     }
 
     #endregion

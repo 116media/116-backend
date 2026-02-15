@@ -1,7 +1,9 @@
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.Shared.Exceptions.Handlers;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Application.Shared.Exceptions.Handlers;
@@ -34,10 +36,10 @@ public class AccessDeniedExceptionHandlerTests
     {
         // Arrange
         AccessDeniedException exception = new("Access denied");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Title.Should().Be(nameof(AccessDeniedException));
@@ -49,10 +51,10 @@ public class AccessDeniedExceptionHandlerTests
         // Arrange
         string errorMessage = "You do not have permission to access this resource";
         AccessDeniedException exception = new(errorMessage);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Detail.Should().Be(errorMessage);
@@ -63,10 +65,10 @@ public class AccessDeniedExceptionHandlerTests
     {
         // Arrange
         AccessDeniedException exception = new("Access denied");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Status.Should().Be(StatusCodes.Status403Forbidden);
@@ -77,12 +79,12 @@ public class AccessDeniedExceptionHandlerTests
     {
         // Arrange
         AccessDeniedException exception = new("Access denied");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         string requestPath = "/api/admin/users";
         context.Request.Path = requestPath;
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Instance.Should().Be(requestPath);
@@ -93,12 +95,12 @@ public class AccessDeniedExceptionHandlerTests
     {
         // Arrange
         AccessDeniedException exception = new("Access denied");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         string traceId = "test-trace-123";
         context.TraceIdentifier = traceId;
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Extensions.Should().ContainKey("traceId");
@@ -110,10 +112,10 @@ public class AccessDeniedExceptionHandlerTests
     {
         // Arrange
         AccessDeniedException exception = new("Access denied");
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Extensions.Should().ContainKey("timestamp");
@@ -124,14 +126,6 @@ public class AccessDeniedExceptionHandlerTests
     #endregion
 
     #region Helper Methods
-
-    private static DefaultHttpContext CreateHttpContext()
-    {
-        DefaultHttpContext context = new();
-        context.Request.Path = "/api/test";
-        context.TraceIdentifier = "test-trace-id";
-        return context;
-    }
 
     #endregion
 }

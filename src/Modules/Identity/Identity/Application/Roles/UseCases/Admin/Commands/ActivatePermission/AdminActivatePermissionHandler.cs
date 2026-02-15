@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.ActivatePermission;
 
@@ -12,8 +13,12 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.ActivatePermis
 /// </summary>
 /// <param name="permissionRepository">Repository for permission data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminActivatePermissionHandler(IPermissionRepository permissionRepository, IIdentityUnitOfWork unitOfWork)
-    : ICommandHandler<AdminActivatePermissionCommand, AdminActivatePermissionResult>
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class AdminActivatePermissionHandler(
+    IPermissionRepository permissionRepository,
+    IIdentityUnitOfWork unitOfWork,
+    IMapper mapper
+) : ICommandHandler<AdminActivatePermissionCommand, AdminActivatePermissionResult>
 {
     /// <summary>
     /// Handles the permission activation command.
@@ -40,7 +45,7 @@ public class AdminActivatePermissionHandler(IPermissionRepository permissionRepo
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        var permissionDto = permission.ToPermissionDto();
+        var permissionDto = permission.ToPermissionDto(mapper);
         return new AdminActivatePermissionResult(Permission: permissionDto);
     }
 }

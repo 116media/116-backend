@@ -2,6 +2,7 @@ using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -76,7 +77,7 @@ public class RoleEntityTests
     public void Update_WithValidParameters_ShouldUpdateRole()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
         string newName = "UpdatedRole";
         string newDescription = "Updated role description for testing purposes.";
 
@@ -95,7 +96,7 @@ public class RoleEntityTests
     public void Update_WithInvalidName_ShouldThrowBadRequestException(string? invalidName)
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
 
         // Act
         Action act = () => role.Update(invalidName!, TestConstants.Role.ValidDescription);
@@ -111,7 +112,7 @@ public class RoleEntityTests
     public void Update_WithInvalidDescription_ShouldThrowBadRequestException(string? invalidDescription)
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
 
         // Act
         Action act = () => role.Update(TestConstants.Role.ValidName, invalidDescription!);
@@ -128,7 +129,7 @@ public class RoleEntityTests
     public void Activate_WhenInactive_ShouldActivateAndReturnTrue()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().AsInactive().Build();
+        RoleEntity role = RoleFactory.CreateInactive();
 
         // Act
         bool result = role.Activate();
@@ -142,7 +143,7 @@ public class RoleEntityTests
     public void Activate_WhenAlreadyActive_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build(); // Default is active
+        RoleEntity role = RoleFactory.Create(); // Default is active
 
         // Act
         bool result = role.Activate();
@@ -160,7 +161,7 @@ public class RoleEntityTests
     public void Deactivate_WhenActive_ShouldDeactivateAndReturnTrue()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build(); // Default is active
+        RoleEntity role = RoleFactory.Create(); // Default is active
 
         // Act
         bool result = role.Deactivate();
@@ -174,7 +175,7 @@ public class RoleEntityTests
     public void Deactivate_WhenAlreadyInactive_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().AsInactive().Build();
+        RoleEntity role = RoleFactory.CreateInactive();
 
         // Act
         bool result = role.Deactivate();
@@ -192,7 +193,7 @@ public class RoleEntityTests
     public void SoftDelete_WhenNotDeleted_ShouldSoftDeleteAndReturnTrue()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
 
         // Act
         bool result = role.SoftDelete();
@@ -209,7 +210,7 @@ public class RoleEntityTests
     public void SoftDelete_WhenAlreadyDeleted_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().AsDeleted().Build();
+        RoleEntity role = RoleFactory.CreateDeleted();
 
         // Act
         bool result = role.SoftDelete();
@@ -227,7 +228,7 @@ public class RoleEntityTests
     public void Restore_WhenDeleted_ShouldRestoreAndReturnTrue()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().AsDeleted().Build();
+        RoleEntity role = RoleFactory.CreateDeleted();
 
         // Act
         bool result = role.Restore();
@@ -242,7 +243,7 @@ public class RoleEntityTests
     public void Restore_WhenNotDeleted_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
 
         // Act
         bool result = role.Restore();
@@ -256,7 +257,7 @@ public class RoleEntityTests
     public void Restore_ShouldNotAutomaticallyActivate()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().AsDeleted().Build();
+        RoleEntity role = RoleFactory.CreateDeleted();
 
         // Act
         role.Restore();

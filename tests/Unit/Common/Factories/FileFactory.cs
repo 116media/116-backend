@@ -80,4 +80,33 @@ public static class FileFactory
             .WithStorageUrl(TestConstants.File.ValidStorageUrl)
             .WithSizeInBytes(TestConstants.File.ValidSizeInBytes)
             .Build();
+
+    /// <summary>
+    /// Creates a file with a specific stored filename.
+    /// </summary>
+    /// <param name="fileName">The stored filename.</param>
+    /// <returns>A new FileEntity with the specified filename.</returns>
+    public static FileEntity CreateWithFileName(string fileName) => new FileBuilder().WithFileName(fileName).Build();
+
+    /// <summary>
+    /// Creates a file with a specific MIME type.
+    /// </summary>
+    /// <param name="mimeType">The MIME type.</param>
+    /// <returns>A new FileEntity with the specified MIME type.</returns>
+    public static FileEntity CreateWithMimeType(string mimeType) => new FileBuilder().WithMimeType(mimeType).Build();
+
+    /// <summary>
+    /// Creates a deleted file with a specific ID.
+    /// </summary>
+    /// <param name="id">The file identifier.</param>
+    /// <returns>A new deleted FileEntity with the specified ID.</returns>
+    public static FileEntity CreateDeletedWithId(Guid id) => new FileBuilder().WithId(id).AsDeleted().Build();
+
+    /// <summary>
+    /// Creates a file with a specific storage URL.
+    /// </summary>
+    /// <param name="storageUrl">The storage URL.</param>
+    /// <returns>A new FileEntity with the specified storage URL.</returns>
+    public static FileEntity CreateWithStorageUrl(string storageUrl) =>
+        new FileBuilder().WithStorageUrl(storageUrl).Build();
 }

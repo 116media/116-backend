@@ -7,8 +7,9 @@ namespace _116.Unit.Tests.Common.Builders.Entities;
 
 /// <summary>
 /// Fluent builder for creating <see cref="OtpEntity"/> instances in tests.
+/// For test code, prefer using OtpFactory instead of direct Builder usage.
 /// </summary>
-public class OtpBuilder
+internal class OtpBuilder
 {
     private readonly Faker _faker = new();
 
@@ -153,7 +154,7 @@ public class OtpBuilder
     /// <returns>A configured OtpEntity instance.</returns>
     public OtpEntity Build()
     {
-        OtpEntity otp = OtpEntity.Create(_id, _userId, _code, _purpose, _expiresAt);
+        var otp = OtpEntity.Create(_id, _userId, _code, _purpose, _expiresAt);
 
         for (int i = 0; i < _attemptCount; i++)
         {

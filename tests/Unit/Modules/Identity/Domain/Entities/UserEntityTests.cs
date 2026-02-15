@@ -3,6 +3,7 @@ using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -168,7 +169,7 @@ public class UserEntityTests
     public void UpdateEmail_WithValidEmail_ShouldUpdateEmailAndResetVerification()
     {
         // Arrange
-        UserEntity user = new UserBuilder().AsVerified().Build();
+        UserEntity user = UserFactory.CreateExternal(EnumAuthProvider.Local);
         string newEmail = "newemail@example.com";
 
         // Act
@@ -186,7 +187,7 @@ public class UserEntityTests
     public void UpdateEmail_WithInvalidEmail_ShouldThrowException(string? invalidEmail)
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
 
         // Act
         Action act = () => user.UpdateEmail(invalidEmail!);
@@ -203,7 +204,7 @@ public class UserEntityTests
     public void UpdatePassword_WithValidHash_ShouldUpdatePassword()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         string newPasswordHash = "new_hashed_password_value";
 
         // Act
@@ -220,7 +221,7 @@ public class UserEntityTests
     public void UpdatePassword_WithInvalidHash_ShouldThrowException(string? invalidHash)
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
 
         // Act
         Action act = () => user.UpdatePassword(invalidHash!);
@@ -233,7 +234,7 @@ public class UserEntityTests
     public void UpdatePassword_WhenNonLocalUserWithoutEmail_ShouldThrowException()
     {
         // Arrange
-        UserEntity user = new UserBuilder().WithAuthProvider(EnumAuthProvider.Google).Build();
+        UserEntity user = UserFactory.CreateExternal(EnumAuthProvider.Google);
 
         // Remove email by using reflection to set it to null (simulating social login without email)
         typeof(UserEntity).GetProperty(nameof(UserEntity.Email))!.SetValue(user, null);
@@ -253,7 +254,7 @@ public class UserEntityTests
     public void SetPasswordAndChangeToLocal_WithValidPassword_ShouldSetPasswordAndChangeProvider()
     {
         // Arrange
-        UserEntity user = new UserBuilder().WithAuthProvider(EnumAuthProvider.Google).Build();
+        UserEntity user = UserFactory.CreateExternal(EnumAuthProvider.Google);
         string passwordHash = "valid_password_hash";
 
         // Act
@@ -271,7 +272,7 @@ public class UserEntityTests
     public void SetPasswordAndChangeToLocal_WithInvalidPassword_ShouldThrowException(string? invalidPassword)
     {
         // Arrange
-        UserEntity user = new UserBuilder().WithAuthProvider(EnumAuthProvider.Google).Build();
+        UserEntity user = UserFactory.CreateExternal(EnumAuthProvider.Google);
 
         // Act
         Action act = () => user.SetPasswordAndChangeToLocal(invalidPassword!);
@@ -284,7 +285,7 @@ public class UserEntityTests
     public void SetPasswordAndChangeToLocal_WhenUserHasNoEmail_ShouldThrowException()
     {
         // Arrange
-        UserEntity user = new UserBuilder().WithAuthProvider(EnumAuthProvider.Facebook).Build();
+        UserEntity user = UserFactory.CreateExternal(EnumAuthProvider.Facebook);
 
         // Remove email by using reflection to set it to null (simulating social login without email)
         typeof(UserEntity).GetProperty(nameof(UserEntity.Email))!.SetValue(user, null);
@@ -304,7 +305,7 @@ public class UserEntityTests
     public void UpdateUserName_WithValidUserName_ShouldUpdateUserName()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         string newUserName = "newusername";
 
         // Act
@@ -321,7 +322,7 @@ public class UserEntityTests
     public void UpdateUserName_WithInvalidUserName_ShouldThrowException(string? invalidUserName)
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
 
         // Act
         Action act = () => user.UpdateUserName(invalidUserName!);
@@ -338,7 +339,7 @@ public class UserEntityTests
     public void MarkAsVerified_ShouldSetIsVerifiedToTrue()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
 
         // Act
         user.MarkAsVerified();
@@ -355,7 +356,7 @@ public class UserEntityTests
     public void Activate_ShouldSetIsActiveToTrue()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
 
         // Act
         user.Activate();
@@ -368,7 +369,7 @@ public class UserEntityTests
     public void Deactivate_ShouldSetIsActiveToFalse()
     {
         // Arrange
-        UserEntity user = new UserBuilder().AsActive().Build();
+        UserEntity user = UserFactory.CreateVerifiedActive();
 
         // Act
         user.Deactivate();
@@ -385,7 +386,7 @@ public class UserEntityTests
     public void ValidateCanLogin_WhenActiveAndVerified_ShouldNotThrow()
     {
         // Arrange
-        UserEntity user = new UserBuilder().AsActive().AsVerified().Build();
+        UserEntity user = UserFactory.CreateVerifiedActive();
 
         // Act
         Action act = () => user.ValidateCanLogin();
@@ -398,7 +399,8 @@ public class UserEntityTests
     public void ValidateCanLogin_WhenInactive_ShouldThrowException()
     {
         // Arrange
-        UserEntity user = new UserBuilder().AsVerified().AsInactive().Build();
+        UserEntity user = UserFactory.CreateInactive();
+        typeof(UserEntity).GetProperty("IsVerified")!.SetValue(user, true);
 
         // Act
         Action act = () => user.ValidateCanLogin();
@@ -411,7 +413,7 @@ public class UserEntityTests
     public void ValidateCanLogin_WhenNotVerifiedAndLocalAuth_ShouldThrowException()
     {
         // Arrange
-        UserEntity user = new UserBuilder().AsActive().Build(); // Not verified, Local auth
+        UserEntity user = UserFactory.CreateUnverified(); // Not verified, Local auth
 
         // Act
         Action act = () => user.ValidateCanLogin();
@@ -429,8 +431,8 @@ public class UserEntityTests
     {
         // Arrange
         Guid roleId = Guid.NewGuid();
-        UserRoleEntity userRole = new UserRoleBuilder().WithRoleId(roleId).Build();
-        UserEntity user = new UserBuilder().Build();
+        UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
+        UserEntity user = UserFactory.Create();
         user.AssignRole(userRole);
 
         // Act
@@ -444,7 +446,7 @@ public class UserEntityTests
     public void HasRole_WhenUserDoesNotHaveRole_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
 
         // Act
         bool result = user.HasRole(Guid.NewGuid());
@@ -457,16 +459,16 @@ public class UserEntityTests
     public void AssignRole_WhenRoleNotAssigned_ShouldAddRole()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         Guid roleId = Guid.NewGuid();
-        UserRoleEntity userRole = new UserRoleBuilder().WithUserId(user.Id).WithRoleId(roleId).Build();
+        UserRoleEntity userRole = UserRoleFactory.Create(user.Id, roleId);
 
         // Act
         user.AssignRole(userRole);
 
         // Assert
         user.HasRole(roleId).Should().BeTrue();
-        user.UserRoles.Should().HaveCount(1);
+        user.UserRoles.Should().ContainSingle();
     }
 
     [Fact]
@@ -474,11 +476,11 @@ public class UserEntityTests
     {
         // Arrange
         Guid roleId = Guid.NewGuid();
-        UserRoleEntity userRole = new UserRoleBuilder().WithRoleId(roleId).Build();
-        UserEntity user = new UserBuilder().Build();
+        UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
+        UserEntity user = UserFactory.Create();
         user.AssignRole(userRole);
 
-        UserRoleEntity duplicateRole = new UserRoleBuilder().WithRoleId(roleId).Build();
+        UserRoleEntity duplicateRole = UserRoleFactory.CreateWithRoleId(roleId);
 
         // Act
         Action act = () => user.AssignRole(duplicateRole);
@@ -492,8 +494,8 @@ public class UserEntityTests
     {
         // Arrange
         Guid roleId = Guid.NewGuid();
-        UserRoleEntity userRole = new UserRoleBuilder().WithRoleId(roleId).Build();
-        UserEntity user = new UserBuilder().Build();
+        UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
+        UserEntity user = UserFactory.Create();
         user.AssignRole(userRole);
 
         // Act
@@ -508,7 +510,7 @@ public class UserEntityTests
     public void RemoveRole_WhenRoleNotAssigned_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
 
         // Act
         bool result = user.RemoveRole(Guid.NewGuid());
@@ -525,7 +527,7 @@ public class UserEntityTests
     public void UpdateAvatar_ShouldUpdateAvatarProperties()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         Guid avatarFileId = Guid.NewGuid();
 
         // Act
@@ -540,7 +542,7 @@ public class UserEntityTests
     public void UpdateAvatar_WithNull_ShouldClearAvatar()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         user.UpdateAvatar(Guid.NewGuid(), EnumAvatarSource.Manual);
 
         // Act
@@ -559,7 +561,7 @@ public class UserEntityTests
     public void UpdatePhoneNumber_ShouldUpdateAllPhoneProperties()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
 
         // Act
         user.UpdatePhoneNumber(
@@ -582,7 +584,7 @@ public class UserEntityTests
     public void UpdatePhoneNumber_WithNulls_ShouldClearPhoneProperties()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         user.UpdatePhoneNumber("USA", "US", "+1", "+1234567890", "***-***-7890");
 
         // Act

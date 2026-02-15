@@ -1,6 +1,6 @@
 using _116.Core.Application.Shared.Specifications;
 using _116.Core.Domain.Entities;
-using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -17,7 +17,7 @@ public class FileStatusSpecificationsTests
     public void FileIsNotDeletedSpecification_WithNonDeletedFile_ShouldReturnTrue()
     {
         // Arrange
-        FileEntity file = new FileBuilder().Build();
+        FileEntity file = FileFactory.Create();
         FileIsNotDeletedSpecification spec = new();
 
         // Act
@@ -31,7 +31,7 @@ public class FileStatusSpecificationsTests
     public void FileIsNotDeletedSpecification_WithDeletedFile_ShouldReturnFalse()
     {
         // Arrange
-        FileEntity file = new FileBuilder().AsDeleted().Build();
+        FileEntity file = FileFactory.CreateDeleted();
         FileIsNotDeletedSpecification spec = new();
 
         // Act
@@ -49,7 +49,7 @@ public class FileStatusSpecificationsTests
     public void FileIsDeletedSpecification_WithDeletedFile_ShouldReturnTrue()
     {
         // Arrange
-        FileEntity file = new FileBuilder().AsDeleted().Build();
+        FileEntity file = FileFactory.CreateDeleted();
         FileIsDeletedSpecification spec = new();
 
         // Act
@@ -63,7 +63,7 @@ public class FileStatusSpecificationsTests
     public void FileIsDeletedSpecification_WithNonDeletedFile_ShouldReturnFalse()
     {
         // Arrange
-        FileEntity file = new FileBuilder().Build();
+        FileEntity file = FileFactory.Create();
         FileIsDeletedSpecification spec = new();
 
         // Act
@@ -82,7 +82,7 @@ public class FileStatusSpecificationsTests
     {
         // Arrange
         long fileSize = 5000;
-        FileEntity file = new FileBuilder().WithSizeInBytes(fileSize).Build();
+        FileEntity file = FileFactory.CreateWithSize(fileSize);
         FileBySizeRangeSpecification spec = new(minSize: 1000, maxSize: 10000);
 
         // Act
@@ -97,7 +97,7 @@ public class FileStatusSpecificationsTests
     {
         // Arrange
         long fileSize = 1000;
-        FileEntity file = new FileBuilder().WithSizeInBytes(fileSize).Build();
+        FileEntity file = FileFactory.CreateWithSize(fileSize);
         FileBySizeRangeSpecification spec = new(minSize: 1000, maxSize: 10000);
 
         // Act
@@ -112,7 +112,7 @@ public class FileStatusSpecificationsTests
     {
         // Arrange
         long fileSize = 10000;
-        FileEntity file = new FileBuilder().WithSizeInBytes(fileSize).Build();
+        FileEntity file = FileFactory.CreateWithSize(fileSize);
         FileBySizeRangeSpecification spec = new(minSize: 1000, maxSize: 10000);
 
         // Act
@@ -127,7 +127,7 @@ public class FileStatusSpecificationsTests
     {
         // Arrange
         long fileSize = 500;
-        FileEntity file = new FileBuilder().WithSizeInBytes(fileSize).Build();
+        FileEntity file = FileFactory.CreateWithSize(fileSize);
         FileBySizeRangeSpecification spec = new(minSize: 1000, maxSize: 10000);
 
         // Act
@@ -142,7 +142,7 @@ public class FileStatusSpecificationsTests
     {
         // Arrange
         long fileSize = 15000;
-        FileEntity file = new FileBuilder().WithSizeInBytes(fileSize).Build();
+        FileEntity file = FileFactory.CreateWithSize(fileSize);
         FileBySizeRangeSpecification spec = new(minSize: 1000, maxSize: 10000);
 
         // Act
@@ -160,12 +160,7 @@ public class FileStatusSpecificationsTests
     public void FileIsNotDeletedSpecification_WithLinq_ShouldFilterCorrectly()
     {
         // Arrange
-        List<FileEntity> files =
-        [
-            new FileBuilder().Build(),
-            new FileBuilder().Build(),
-            new FileBuilder().AsDeleted().Build(),
-        ];
+        List<FileEntity> files = [FileFactory.Create(), FileFactory.Create(), FileFactory.CreateDeleted()];
 
         FileIsNotDeletedSpecification spec = new();
 
@@ -174,7 +169,7 @@ public class FileStatusSpecificationsTests
 
         // Assert
         filtered.Should().HaveCount(2);
-        filtered.All(f => !f.IsDeleted).Should().BeTrue();
+        filtered.Should().OnlyContain(f => !f.IsDeleted);
     }
 
     [Fact]
@@ -183,10 +178,10 @@ public class FileStatusSpecificationsTests
         // Arrange
         List<FileEntity> files =
         [
-            new FileBuilder().WithSizeInBytes(500).Build(),
-            new FileBuilder().WithSizeInBytes(5000).Build(),
-            new FileBuilder().WithSizeInBytes(8000).Build(),
-            new FileBuilder().WithSizeInBytes(15000).Build(),
+            FileFactory.CreateWithSize(500),
+            FileFactory.CreateWithSize(5000),
+            FileFactory.CreateWithSize(8000),
+            FileFactory.CreateWithSize(15000),
         ];
 
         FileBySizeRangeSpecification spec = new(minSize: 1000, maxSize: 10000);
@@ -196,7 +191,7 @@ public class FileStatusSpecificationsTests
 
         // Assert
         filtered.Should().HaveCount(2);
-        filtered.All(f => f.SizeInBytes >= 1000 && f.SizeInBytes <= 10000).Should().BeTrue();
+        filtered.Should().OnlyContain(f => f.SizeInBytes >= 1000 && f.SizeInBytes <= 10000);
     }
 
     #endregion

@@ -1,5 +1,6 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Xunit;
@@ -32,11 +33,11 @@ public class EntityConfigurationsTests
         IEntityType? entityType = context.Model.FindEntityType(typeof(UserEntity));
 
         // Assert
-        Assert.NotNull(entityType);
+        entityType.Should().NotBeNull();
         IKey? primaryKey = entityType.FindPrimaryKey();
-        Assert.NotNull(primaryKey);
+        primaryKey.Should().NotBeNull();
         Assert.Single(primaryKey.Properties);
-        Assert.Equal("Id", primaryKey.Properties.First().Name);
+        primaryKey.Properties.First().Name.Should().Be("Id");
     }
 
     [Fact]
@@ -86,11 +87,11 @@ public class EntityConfigurationsTests
         IEntityType? entityType = context.Model.FindEntityType(typeof(RoleEntity));
 
         // Assert
-        Assert.NotNull(entityType);
+        entityType.Should().NotBeNull();
         IKey? primaryKey = entityType.FindPrimaryKey();
-        Assert.NotNull(primaryKey);
+        primaryKey.Should().NotBeNull();
         Assert.Single(primaryKey.Properties);
-        Assert.Equal("Id", primaryKey.Properties.First().Name);
+        primaryKey.Properties.First().Name.Should().Be("Id");
     }
 
     [Fact]

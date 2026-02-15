@@ -11,9 +11,9 @@ public class UpdatePermissionCommandBuilder
 {
     private readonly Faker _faker = new();
 
-    private Guid _permissionId;
-    private string? _resource;
     private string? _action;
+    private string? _resource;
+    private Guid _permissionId;
     private string? _description;
 
     /// <summary>
@@ -22,10 +22,9 @@ public class UpdatePermissionCommandBuilder
     public UpdatePermissionCommandBuilder()
     {
         _permissionId = Guid.NewGuid();
-        _resource = _faker.Lorem.Word()[
-            ..Math.Min(TestConstants.Permission.ResourceMaxLength, _faker.Lorem.Word().Length)
-        ];
-        _action = _faker.PickRandom(new[] { "read", "create", "update", "delete" });
+        string resourceWord = _faker.Lorem.Word();
+        _resource = resourceWord[..Math.Min(TestConstants.Permission.ResourceMaxLength, resourceWord.Length)];
+        _action = _faker.PickRandom("read", "create", "update", "delete");
         _description = _faker.Lorem.Sentence(wordCount: 5);
     }
 

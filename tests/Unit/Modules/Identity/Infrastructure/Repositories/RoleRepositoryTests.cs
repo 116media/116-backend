@@ -1,8 +1,10 @@
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -19,7 +21,7 @@ public class RoleRepositoryTests : IDisposable
 
     public RoleRepositoryTests()
     {
-        var options = new DbContextOptionsBuilder<IdentityDbContext>()
+        DbContextOptions<IdentityDbContext> options = new DbContextOptionsBuilder<IdentityDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -39,9 +41,9 @@ public class RoleRepositoryTests : IDisposable
     public async Task GetRoleByIdWithPermissionsOrThrowAsync_WhenRoleExists_ShouldReturnRoleWithPermissions()
     {
         // Arrange
-        var role = new RoleBuilder().Build();
-        var permission1 = new PermissionBuilder().WithResource("article").WithAction("read").Build();
-        var permission2 = new PermissionBuilder().WithResource("article").WithAction("write").Build();
+        RoleEntity role = RoleFactory.Create();
+        PermissionEntity permission1 = PermissionFactory.Create("article", "read");
+        PermissionEntity permission2 = PermissionFactory.Create("article", "write");
         var rolePermission1 = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission1.Id);
         var rolePermission2 = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission2.Id);
 
@@ -51,7 +53,7 @@ public class RoleRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetRoleByIdWithPermissionsOrThrowAsync(role.Id);
+        RoleEntity? result = await _repository.GetRoleByIdWithPermissionsOrThrowAsync(role.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -77,12 +79,12 @@ public class RoleRepositoryTests : IDisposable
     public async Task GetRoleByIdWithPermissionsOrThrowAsync_WhenRoleExistsWithNoPermissions_ShouldReturnRoleWithEmptyPermissions()
     {
         // Arrange
-        var role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
         _context.Roles.Add(role);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetRoleByIdWithPermissionsOrThrowAsync(role.Id);
+        RoleEntity? result = await _repository.GetRoleByIdWithPermissionsOrThrowAsync(role.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -98,12 +100,12 @@ public class RoleRepositoryTests : IDisposable
     public async Task GetRoleByIdOrThrowAsync_WhenRoleExists_ShouldReturnRole()
     {
         // Arrange
-        var role = new RoleBuilder().WithName("TestRole").Build();
+        RoleEntity role = RoleFactory.Create("TestRole");
         _context.Roles.Add(role);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetRoleByIdOrThrowAsync(role.Id);
+        RoleEntity? result = await _repository.GetRoleByIdOrThrowAsync(role.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -132,7 +134,7 @@ public class RoleRepositoryTests : IDisposable
     public async Task ExistsByNameAsync_WhenRoleExists_ShouldReturnTrue()
     {
         // Arrange
-        var role = new RoleBuilder().WithName("UniqueRole").Build();
+        RoleEntity role = RoleFactory.Create("UniqueRole");
         _context.Roles.Add(role);
         await _context.SaveChangesAsync();
 
@@ -161,14 +163,14 @@ public class RoleRepositoryTests : IDisposable
     public async Task AddAsync_ShouldAddRoleToContext()
     {
         // Arrange
-        var role = new RoleBuilder().WithName("NewRole").Build();
+        RoleEntity role = RoleFactory.Create("NewRole");
 
         // Act
         await _repository.AddAsync(role);
         await _context.SaveChangesAsync();
 
         // Assert
-        var savedRole = await _context.Roles.FirstOrDefaultAsync(r => r.Id == role.Id);
+        RoleEntity? savedRole = await _context.Roles.FirstOrDefaultAsync(r => r.Id == role.Id);
         savedRole.Should().NotBeNull();
         savedRole!.Name.Should().Be("NewRole");
     }
@@ -181,9 +183,9 @@ public class RoleRepositoryTests : IDisposable
     public async Task GetAllWithPaginationAsync_WithNoFilters_ShouldReturnAllRoles()
     {
         // Arrange
-        var role1 = new RoleBuilder().WithName("Role1").Build();
-        var role2 = new RoleBuilder().WithName("Role2").Build();
-        var role3 = new RoleBuilder().WithName("Role3").Build();
+        RoleEntity role1 = RoleFactory.Create("Role1");
+        RoleEntity role2 = RoleFactory.Create("Role2");
+        RoleEntity role3 = RoleFactory.Create("Role3");
 
         _context.Roles.AddRange(role1, role2, role3);
         await _context.SaveChangesAsync();
@@ -202,7 +204,7 @@ public class RoleRepositoryTests : IDisposable
         // Arrange
         for (int i = 1; i <= 5; i++)
         {
-            var role = new RoleBuilder().WithName($"Role{i}").Build();
+            RoleEntity role = RoleFactory.Create($"Role{i}");
             _context.Roles.Add(role);
         }
         await _context.SaveChangesAsync();
@@ -222,8 +224,9 @@ public class RoleRepositoryTests : IDisposable
     public async Task GetAllWithPaginationAsync_WithActiveFilter_ShouldFilterByActiveStatus()
     {
         // Arrange
-        var activeRole = new RoleBuilder().WithName("ActiveRole").Build();
-        var inactiveRole = new RoleBuilder().WithName("InactiveRole").AsInactive().Build();
+        RoleEntity activeRole = RoleFactory.Create("ActiveRole");
+        RoleEntity inactiveRole = RoleFactory.Create("InactiveRole");
+        inactiveRole.Deactivate();
 
         _context.Roles.AddRange(activeRole, inactiveRole);
         await _context.SaveChangesAsync();
@@ -232,7 +235,7 @@ public class RoleRepositoryTests : IDisposable
         var (roles, totalCount) = await _repository.GetAllWithPaginationAsync(page: 1, pageSize: 10, isActive: true);
 
         // Assert
-        roles.Should().HaveCount(1);
+        roles.Should().ContainSingle();
         totalCount.Should().Be(1);
         roles.First().Name.Should().Be("ActiveRole");
     }
@@ -241,8 +244,9 @@ public class RoleRepositoryTests : IDisposable
     public async Task GetAllWithPaginationAsync_WithDeletedFilter_ShouldFilterByDeletedStatus()
     {
         // Arrange
-        var normalRole = new RoleBuilder().WithName("NormalRole").Build();
-        var deletedRole = new RoleBuilder().WithName("DeletedRole").AsDeleted().Build();
+        RoleEntity normalRole = RoleFactory.Create("NormalRole");
+        RoleEntity deletedRole = RoleFactory.Create("DeletedRole");
+        deletedRole.SoftDelete();
 
         _context.Roles.AddRange(normalRole, deletedRole);
         await _context.SaveChangesAsync();
@@ -251,7 +255,7 @@ public class RoleRepositoryTests : IDisposable
         var (roles, totalCount) = await _repository.GetAllWithPaginationAsync(page: 1, pageSize: 10, isDeleted: false);
 
         // Assert
-        roles.Should().HaveCount(1);
+        roles.Should().ContainSingle();
         totalCount.Should().Be(1);
         roles.First().Name.Should().Be("NormalRole");
     }
@@ -271,9 +275,9 @@ public class RoleRepositoryTests : IDisposable
     public async Task GetAllWithPaginationAsync_ShouldOrderByCreatedAtDescending()
     {
         // Arrange
-        var role1 = new RoleBuilder().WithName("First").Build();
-        var role2 = new RoleBuilder().WithName("Second").Build();
-        var role3 = new RoleBuilder().WithName("Third").Build();
+        RoleEntity role1 = RoleFactory.Create("First");
+        RoleEntity role2 = RoleFactory.Create("Second");
+        RoleEntity role3 = RoleFactory.Create("Third");
 
         _context.Roles.AddRange(role1, role2, role3);
         await _context.SaveChangesAsync();
@@ -285,7 +289,7 @@ public class RoleRepositoryTests : IDisposable
         roles.Should().HaveCount(3);
         // InMemoryDatabase may not preserve exact insertion order for CreatedAt
         // Just verify all roles are returned
-        var roleNames = roles.Select(r => r.Name).ToList();
+        List<string> roleNames = roles.Select(r => r.Name).ToList();
         roleNames.Should().Contain("First");
         roleNames.Should().Contain("Second");
         roleNames.Should().Contain("Third");
@@ -299,9 +303,9 @@ public class RoleRepositoryTests : IDisposable
     public void GetUserRoles_WithUserRoles_ShouldReturnRoleDtos()
     {
         // Arrange
-        var role1 = new RoleBuilder().WithName("Admin").Build();
-        var role2 = new RoleBuilder().WithName("Visitor").Build();
-        var user = new UserBuilder().Build();
+        RoleEntity role1 = RoleFactory.Create("Admin");
+        RoleEntity role2 = RoleFactory.Create("Visitor");
+        UserEntity user = UserFactory.Create();
         var userRole1 = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role1.Id);
         var userRole2 = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role2.Id);
 
@@ -312,7 +316,7 @@ public class RoleRepositoryTests : IDisposable
         var userRoles = new List<UserRoleEntity> { userRole1, userRole2 };
 
         // Act
-        var result = _repository.GetUserRoles(userRoles);
+        IReadOnlyCollection<RoleDto> result = _repository.GetUserRoles(userRoles);
 
         // Assert
         result.Should().HaveCount(2);
@@ -327,7 +331,7 @@ public class RoleRepositoryTests : IDisposable
         var userRoles = new List<UserRoleEntity>();
 
         // Act
-        var result = _repository.GetUserRoles(userRoles);
+        IReadOnlyCollection<RoleDto> result = _repository.GetUserRoles(userRoles);
 
         // Assert
         result.Should().BeEmpty();
@@ -341,13 +345,13 @@ public class RoleRepositoryTests : IDisposable
     public void GetUserPermissions_WithUserRoles_ShouldReturnUniquePermissions()
     {
         // Arrange
-        var role1 = new RoleBuilder().WithName("Admin").Build();
-        var role2 = new RoleBuilder().WithName("Editor").Build();
-        var user = new UserBuilder().Build();
+        RoleEntity role1 = RoleFactory.Create("Admin");
+        RoleEntity role2 = RoleFactory.Create("Editor");
+        UserEntity user = UserFactory.Create();
 
-        var permission1 = new PermissionBuilder().WithResource("article").WithAction("read").Build();
-        var permission2 = new PermissionBuilder().WithResource("article").WithAction("write").Build();
-        var permission3 = new PermissionBuilder().WithResource("user").WithAction("read").Build();
+        PermissionEntity permission1 = PermissionFactory.Create("article", "read");
+        PermissionEntity permission2 = PermissionFactory.Create("article", "write");
+        PermissionEntity permission3 = PermissionFactory.Create("user", "read");
 
         var rolePermission1 = RolePermissionEntity.Create(Guid.NewGuid(), role1.Id, permission1.Id);
         var rolePermission2 = RolePermissionEntity.Create(Guid.NewGuid(), role1.Id, permission2.Id);
@@ -378,7 +382,7 @@ public class RoleRepositoryTests : IDisposable
         var userRoles = new List<UserRoleEntity> { userRole1, userRole2 };
 
         // Act
-        var result = _repository.GetUserPermissions(userRoles);
+        IReadOnlyCollection<PermissionDto> result = _repository.GetUserPermissions(userRoles);
 
         // Assert
         result.Should().HaveCount(3); // Duplicates removed
@@ -394,7 +398,7 @@ public class RoleRepositoryTests : IDisposable
         var userRoles = new List<UserRoleEntity>();
 
         // Act
-        var result = _repository.GetUserPermissions(userRoles);
+        IReadOnlyCollection<PermissionDto> result = _repository.GetUserPermissions(userRoles);
 
         // Assert
         result.Should().BeEmpty();
@@ -408,9 +412,9 @@ public class RoleRepositoryTests : IDisposable
     public void GetUserRolesAndPermissions_ShouldReturnBothRolesAndPermissions()
     {
         // Arrange
-        var role = new RoleBuilder().WithName("Admin").Build();
-        var user = new UserBuilder().Build();
-        var permission = new PermissionBuilder().WithResource("article").WithAction("read").Build();
+        RoleEntity role = RoleFactory.Create("Admin");
+        UserEntity user = UserFactory.Create();
+        PermissionEntity permission = PermissionFactory.Create("article", "read");
 
         var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission.Id);
         rolePermission.GetType().GetProperty("Permission")!.SetValue(rolePermission, permission);
@@ -427,9 +431,9 @@ public class RoleRepositoryTests : IDisposable
         var (roles, permissions) = _repository.GetUserRolesAndPermissions(userRoles);
 
         // Assert
-        roles.Should().HaveCount(1);
+        roles.Should().ContainSingle();
         roles.First().Name.Should().Be("Admin");
-        permissions.Should().HaveCount(1);
+        permissions.Should().ContainSingle();
         permissions.First().Resource.Should().Be("article");
         permissions.First().Action.Should().Be("read");
     }
@@ -442,7 +446,7 @@ public class RoleRepositoryTests : IDisposable
     public void Delete_ShouldRemoveRoleFromContext()
     {
         // Arrange
-        var role = new RoleBuilder().WithName("ToDelete").Build();
+        RoleEntity role = RoleFactory.Create("ToDelete");
         _context.Roles.Add(role);
         _context.SaveChanges();
 
@@ -451,7 +455,7 @@ public class RoleRepositoryTests : IDisposable
         _context.SaveChanges();
 
         // Assert
-        var deletedRole = _context.Roles.FirstOrDefault(r => r.Id == role.Id);
+        RoleEntity? deletedRole = _context.Roles.FirstOrDefault(r => r.Id == role.Id);
         deletedRole.Should().BeNull();
     }
 

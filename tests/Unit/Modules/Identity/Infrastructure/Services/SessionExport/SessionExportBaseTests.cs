@@ -65,7 +65,7 @@ public class SessionExportBaseTests
         List<ExpandoObject> result = TestableSessionExportBase.PublicGetFilteredColumns(sessions, columns);
 
         // Assert
-        result.Should().HaveCount(1);
+        result.Should().ContainSingle();
         var firstResult = (IDictionary<string, object?>)result[0];
         firstResult.Should().HaveCount(12);
         firstResult.Should().ContainKey("Id");
@@ -101,7 +101,7 @@ public class SessionExportBaseTests
         List<ExpandoObject> result = TestableSessionExportBase.PublicGetFilteredColumns(sessions, columns);
 
         // Assert
-        result.Should().HaveCount(1);
+        result.Should().ContainSingle();
         var firstResult = (IDictionary<string, object?>)result[0];
         firstResult.Should().HaveCount(3);
         firstResult.Should().ContainKey("Id");
@@ -139,7 +139,7 @@ public class SessionExportBaseTests
         List<ExpandoObject> result = TestableSessionExportBase.PublicGetFilteredColumns(sessions, columns);
 
         // Assert
-        result.Should().HaveCount(1);
+        result.Should().ContainSingle();
         var firstResult = (IDictionary<string, object?>)result[0];
         firstResult.Should().HaveCount(3);
         firstResult.Should().ContainKey("Id");
@@ -239,7 +239,7 @@ public class SessionExportBaseTests
         List<ExpandoObject> result = TestableSessionExportBase.PublicGetFilteredColumns(sessions, columns);
 
         // Assert
-        result.Should().HaveCount(1);
+        result.Should().ContainSingle();
         var firstResult = (IDictionary<string, object?>)result[0];
         firstResult.Should().BeEmpty();
     }
@@ -272,7 +272,7 @@ public class SessionExportBaseTests
         List<ExpandoObject> result = TestableSessionExportBase.PublicGetFilteredColumns(sessions, columns);
 
         // Assert
-        result.Should().HaveCount(1);
+        result.Should().ContainSingle();
         var firstResult = (IDictionary<string, object?>)result[0];
         firstResult.Should().HaveCount(2);
         firstResult.Should().ContainKey("Id");

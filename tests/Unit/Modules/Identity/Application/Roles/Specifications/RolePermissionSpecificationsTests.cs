@@ -1,6 +1,7 @@
 using _116.Identity.Application.Roles.Specifications;
 using _116.Identity.Domain.Entities;
 using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -84,7 +85,7 @@ public class RolePermissionSpecificationsTests
     {
         // Arrange
         Guid id = Guid.NewGuid();
-        RolePermissionEntity rolePermission = new RolePermissionBuilder().WithId(id).Build();
+        RolePermissionEntity rolePermission = RolePermissionFactory.CreateWithId(id);
         RolePermissionByIdSpecification spec = new(id);
 
         // Act
@@ -98,7 +99,7 @@ public class RolePermissionSpecificationsTests
     public void RolePermissionByIdSpecification_WithDifferentId_ShouldReturnFalse()
     {
         // Arrange
-        RolePermissionEntity rolePermission = new RolePermissionBuilder().WithId(Guid.NewGuid()).Build();
+        RolePermissionEntity rolePermission = RolePermissionFactory.CreateWithId(Guid.NewGuid());
         RolePermissionByIdSpecification spec = new(Guid.NewGuid());
 
         // Act
@@ -118,10 +119,7 @@ public class RolePermissionSpecificationsTests
         // Arrange
         Guid roleId = Guid.NewGuid();
         Guid permissionId = Guid.NewGuid();
-        RolePermissionEntity rolePermission = new RolePermissionBuilder()
-            .WithRoleId(roleId)
-            .WithPermissionId(permissionId)
-            .Build();
+        RolePermissionEntity rolePermission = RolePermissionFactory.Create(roleId, permissionId);
         RolePermissionByRoleAndPermissionSpecification spec = new(roleId, permissionId);
 
         // Act
@@ -207,7 +205,7 @@ public class RolePermissionSpecificationsTests
 
         // Assert
         filtered.Should().HaveCount(2);
-        filtered.All(rp => rp.RoleId == targetRoleId).Should().BeTrue();
+        filtered.Should().OnlyContain(rp => rp.RoleId == targetRoleId);
     }
 
     [Fact]
@@ -219,9 +217,9 @@ public class RolePermissionSpecificationsTests
 
         List<RolePermissionEntity> rolePermissions =
         [
-            new RolePermissionBuilder().WithRoleId(roleId).WithPermissionId(permissionId).Build(),
-            new RolePermissionBuilder().WithRoleId(roleId).WithPermissionId(Guid.NewGuid()).Build(),
-            new RolePermissionBuilder().WithRoleId(Guid.NewGuid()).WithPermissionId(permissionId).Build(),
+            RolePermissionFactory.Create(roleId, permissionId),
+            RolePermissionFactory.Create(roleId, Guid.NewGuid()),
+            RolePermissionFactory.Create(Guid.NewGuid(), permissionId),
         ];
 
         RolePermissionByRoleAndPermissionSpecification spec = new(roleId, permissionId);
@@ -230,7 +228,7 @@ public class RolePermissionSpecificationsTests
         List<RolePermissionEntity> filtered = rolePermissions.Where(spec.ToExpression().Compile()).ToList();
 
         // Assert
-        filtered.Should().HaveCount(1);
+        filtered.Should().ContainSingle();
         filtered[0].RoleId.Should().Be(roleId);
         filtered[0].PermissionId.Should().Be(permissionId);
     }

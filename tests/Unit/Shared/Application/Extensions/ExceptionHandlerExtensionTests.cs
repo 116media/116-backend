@@ -2,6 +2,7 @@ using _116.Shared.Application.Exceptions.Handlers;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
 using _116.Shared.Application.Extensions;
+using AwesomeAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +25,7 @@ public class ExceptionHandlerExtensionTests
         services.AddAppExceptionHandler();
 
         // Assert
-        Assert.Contains(services, s => s.ServiceType == typeof(IExceptionHandler));
+        services.Should().Contain(s => s.ServiceType == typeof(IExceptionHandler));
     }
 
     [Fact]
@@ -51,7 +52,7 @@ public class ExceptionHandlerExtensionTests
 
         // Assert
         ServiceDescriptor? descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(DefaultExceptionHandler));
-        Assert.NotNull(descriptor);
+        descriptor.Should().NotBeNull();
         Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
     }
 
@@ -68,7 +69,7 @@ public class ExceptionHandlerExtensionTests
         ServiceDescriptor? descriptor = services.FirstOrDefault(s =>
             s.ServiceType == typeof(ExceptionStrategyRegistry)
         );
-        Assert.NotNull(descriptor);
+        descriptor.Should().NotBeNull();
         Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
     }
 
@@ -82,7 +83,7 @@ public class ExceptionHandlerExtensionTests
         IServiceCollection result = services.AddAppExceptionHandler();
 
         // Assert
-        Assert.Same(services, result);
+        result.Should().BeSameAs(services);
     }
 
     [Fact]
@@ -125,7 +126,7 @@ public class ExceptionHandlerExtensionTests
         var defaultStrategy = provider.GetService<DefaultExceptionHandler>();
 
         // Assert
-        Assert.NotNull(defaultStrategy);
+        defaultStrategy.Should().NotBeNull();
     }
 
     [Fact]
@@ -141,7 +142,7 @@ public class ExceptionHandlerExtensionTests
         var registry = provider.GetService<ExceptionStrategyRegistry>();
 
         // Assert
-        Assert.NotNull(registry);
+        registry.Should().NotBeNull();
     }
 
     [Fact]
@@ -170,7 +171,7 @@ public class ExceptionHandlerExtensionTests
         IApplicationBuilder result = app.UseAppExceptionHandler();
 
         // Assert
-        Assert.Same(app, result);
+        result.Should().BeSameAs(app);
     }
 
     [Fact]
@@ -182,7 +183,7 @@ public class ExceptionHandlerExtensionTests
         WebApplication app = builder.Build();
 
         // Act & Assert
-        var exception = Record.Exception(() => app.UseAppExceptionHandler());
-        Assert.Null(exception);
+        Exception? exception = Record.Exception(() => app.UseAppExceptionHandler());
+        exception.Should().BeNull();
     }
 }

@@ -6,7 +6,7 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Results;
 using _116.Identity.Infrastructure.Services;
-using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
@@ -363,17 +363,17 @@ public class JwtServiceTests : IDisposable
         Guid userId = Guid.NewGuid();
         Guid sessionId = Guid.NewGuid();
 
-        var permission1 = new PermissionBuilder().WithResourceAction("articles", "read").Build();
+        PermissionEntity permission1 = PermissionFactory.Create("articles", "read");
 
-        var permission2 = new PermissionBuilder().WithResourceAction("articles", "create").Build();
+        PermissionEntity permission2 = PermissionFactory.Create("articles", "create");
 
-        var permission3 = new PermissionBuilder().WithResourceAction("users", "update").Build();
+        PermissionEntity permission3 = PermissionFactory.Create("users", "update");
 
         var rolePermissions = new List<RolePermissionEntity>
         {
-            new RolePermissionBuilder().WithPermission(permission1).Build(),
-            new RolePermissionBuilder().WithPermission(permission2).Build(),
-            new RolePermissionBuilder().WithPermission(permission3).Build(),
+            RolePermissionFactory.CreateWithPermission(Guid.NewGuid(), permission1),
+            RolePermissionFactory.CreateWithPermission(Guid.NewGuid(), permission2),
+            RolePermissionFactory.CreateWithPermission(Guid.NewGuid(), permission3),
         };
 
         // Act
@@ -415,14 +415,14 @@ public class JwtServiceTests : IDisposable
         Guid userId = Guid.NewGuid();
         Guid sessionId = Guid.NewGuid();
 
-        var permission1 = new PermissionBuilder().WithResourceAction("articles", "read").Build();
+        PermissionEntity permission1 = PermissionFactory.Create("articles", "read");
 
-        var permission2 = new PermissionBuilder().WithResourceAction("articles", "read").Build();
+        PermissionEntity permission2 = PermissionFactory.Create("articles", "read");
 
         var rolePermissions = new List<RolePermissionEntity>
         {
-            new RolePermissionBuilder().WithPermission(permission1).Build(),
-            new RolePermissionBuilder().WithPermission(permission2).Build(),
+            RolePermissionFactory.CreateWithPermission(Guid.NewGuid(), permission1),
+            RolePermissionFactory.CreateWithPermission(Guid.NewGuid(), permission2),
         };
 
         // Act
@@ -450,7 +450,7 @@ public class JwtServiceTests : IDisposable
         // JWT library extracts JSON array elements as separate claims
         // Verify deduplication - should only have one claim value
         List<string> permissions = permissionsClaims.Select(c => c.Value).ToList();
-        permissions.Should().HaveCount(1);
+        permissions.Should().ContainSingle();
         permissions.Should().Contain("articles:read");
     }
 

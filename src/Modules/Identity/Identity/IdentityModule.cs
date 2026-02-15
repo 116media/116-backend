@@ -56,6 +56,8 @@ using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Infrastructure;
 using _116.Shared.Infrastructure.Seed;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -103,9 +105,11 @@ public static class IdentityModule
     public static IServiceCollection AddIdentityModule(this IServiceCollection services)
     {
         services.AddModuleDatabase(GetModuleOptions());
-        UserMapper.Configure();
-        SessionMapper.Configure();
-        RoleMapper.Configure();
+
+        // Register Mapster configuration and IMapper (thread-safe, no global state)
+        TypeAdapterConfig mappingConfig = MappingRegistration.CreateConfiguration();
+        services.AddSingleton(mappingConfig);
+        services.AddScoped<IMapper>(sp => new Mapper(sp.GetRequiredService<TypeAdapterConfig>()));
 
         services.AddHttpContextAccessor();
         services.AddDetection();

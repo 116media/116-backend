@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessions;
 
@@ -11,7 +12,8 @@ namespace _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessio
 /// Handles the <see cref="PublicGetOwnSessionsQuery" /> to retrieve user's active sessions.
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
-public class PublicGetOwnSessionsHandler(ISessionRepository sessionRepository)
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class PublicGetOwnSessionsHandler(ISessionRepository sessionRepository, IMapper mapper)
     : IQueryHandler<PublicGetOwnSessionsQuery, PublicGetOwnSessionsResult>
 {
     /// <summary>
@@ -31,7 +33,7 @@ public class PublicGetOwnSessionsHandler(ISessionRepository sessionRepository)
             cancellationToken: cancellationToken
         );
 
-        ReadOnlyCollection<SessionDto> sessionDtos = sessions.Select(s => s.ToSessionDto()).ToList().AsReadOnly();
+        ReadOnlyCollection<SessionDto> sessionDtos = sessions.Select(s => s.ToSessionDto(mapper)).ToList().AsReadOnly();
 
         return new PublicGetOwnSessionsResult(Sessions: sessionDtos);
     }

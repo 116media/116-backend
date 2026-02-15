@@ -3,6 +3,7 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.BulkUpdateRolePermissions;
 
@@ -12,10 +13,12 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.BulkUpdateRole
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="rolePermissionRepository">Repository for role-permission data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminBulkUpdateRolePermissionsHandler(
     IRoleRepository roleRepository,
     IRolePermissionRepository rolePermissionRepository,
-    IIdentityUnitOfWork unitOfWork
+    IIdentityUnitOfWork unitOfWork,
+    IMapper mapper
 ) : ICommandHandler<AdminBulkUpdateRolePermissionsCommand, AdminBulkUpdateRolePermissionsResult>
 {
     /// <summary>
@@ -82,7 +85,7 @@ public class AdminBulkUpdateRolePermissionsHandler(
             cancellationToken: cancellationToken
         );
 
-        var roleDto = role!.ToRoleWithPermissionsDto();
+        var roleDto = role!.ToRoleWithPermissionsDto(mapper);
         return new AdminBulkUpdateRolePermissionsResult(Role: roleDto);
     }
 }

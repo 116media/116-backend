@@ -21,7 +21,7 @@ public class AdminForceLogoutUserValidatorTests
         AdminForceLogoutUserCommand command = new(UserId: Guid.NewGuid().ToString());
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminForceLogoutUserCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -39,7 +39,7 @@ public class AdminForceLogoutUserValidatorTests
         AdminForceLogoutUserCommand command = new(UserId: null!);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminForceLogoutUserCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -53,7 +53,7 @@ public class AdminForceLogoutUserValidatorTests
         AdminForceLogoutUserCommand command = new(UserId: string.Empty);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminForceLogoutUserCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -67,7 +67,7 @@ public class AdminForceLogoutUserValidatorTests
         AdminForceLogoutUserCommand command = new(UserId: "   ");
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminForceLogoutUserCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -81,7 +81,7 @@ public class AdminForceLogoutUserValidatorTests
         AdminForceLogoutUserCommand command = new(UserId: "not-a-guid");
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminForceLogoutUserCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();

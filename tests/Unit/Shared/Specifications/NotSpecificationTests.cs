@@ -227,7 +227,7 @@ public class NotSpecificationTests
 
         // Assert
         filtered.Should().HaveCount(2);
-        filtered.All(e => e.Value <= 10).Should().BeTrue();
+        filtered.Should().OnlyContain(e => e.Value <= 10);
         filtered.Should().Contain(e => e.Value == 5);
         filtered.Should().Contain(e => e.Value == 10);
     }

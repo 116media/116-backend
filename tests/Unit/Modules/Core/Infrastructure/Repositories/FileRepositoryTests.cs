@@ -2,7 +2,7 @@ using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Core.Infrastructure.Persistence;
 using _116.Core.Infrastructure.Repositories;
-using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +22,7 @@ public class FileRepositoryTests : IDisposable
 
     public FileRepositoryTests()
     {
-        var options = new DbContextOptionsBuilder<CoreDbContext>()
+        DbContextOptions<CoreDbContext> options = new DbContextOptionsBuilder<CoreDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -43,16 +43,16 @@ public class FileRepositoryTests : IDisposable
     public async Task GetByIdAsync_WhenFileExists_ShouldReturnFile()
     {
         // Arrange
-        var file = new FileBuilder().Build();
+        FileEntity file = FileFactory.Create();
         _context.Files.Add(file);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetByIdAsync(file.Id);
+        FileEntity? result = await _repository.GetByIdAsync(file.Id);
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(file.Id);
+        result.Id.Should().Be(file.Id);
         result.FileName.Should().Be(file.FileName);
     }
 
@@ -63,7 +63,7 @@ public class FileRepositoryTests : IDisposable
         var fileId = Guid.NewGuid();
 
         // Act
-        var result = await _repository.GetByIdAsync(fileId);
+        FileEntity? result = await _repository.GetByIdAsync(fileId);
 
         // Assert
         result.Should().BeNull();
@@ -73,12 +73,12 @@ public class FileRepositoryTests : IDisposable
     public async Task GetByIdAsync_WhenFileIsDeleted_ShouldReturnNull()
     {
         // Arrange
-        var file = new FileBuilder().AsDeleted().Build();
+        FileEntity file = FileFactory.CreateDeleted();
         _context.Files.Add(file);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetByIdAsync(file.Id);
+        FileEntity? result = await _repository.GetByIdAsync(file.Id);
 
         // Assert
         result.Should().BeNull();
@@ -92,16 +92,16 @@ public class FileRepositoryTests : IDisposable
     public async Task AddAsync_ShouldAddFileToContext()
     {
         // Arrange
-        var file = new FileBuilder().Build();
+        FileEntity file = FileFactory.Create();
 
         // Act
         await _repository.AddAsync(file);
         await _context.SaveChangesAsync();
 
         // Assert
-        var savedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == file.Id);
+        FileEntity? savedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == file.Id);
         savedFile.Should().NotBeNull();
-        savedFile!.Id.Should().Be(file.Id);
+        savedFile.Id.Should().Be(file.Id);
     }
 
     #endregion
@@ -112,11 +112,11 @@ public class FileRepositoryTests : IDisposable
     public async Task UpdateAsync_ShouldMarkFileAsModified()
     {
         // Arrange
-        var file = new FileBuilder().Build();
+        FileEntity file = FileFactory.Create();
         _context.Files.Add(file);
         await _context.SaveChangesAsync();
 
-        var newUrl = "https://new-storage-url.com/file.jpg";
+        const string newUrl = "https://new-storage-url.com/file.jpg";
         file.UpdateStorageUrl(newUrl);
 
         // Act
@@ -124,9 +124,9 @@ public class FileRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Assert
-        var updatedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == file.Id);
+        FileEntity? updatedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == file.Id);
         updatedFile.Should().NotBeNull();
-        updatedFile!.StorageUrl.Should().Be(newUrl);
+        updatedFile.StorageUrl.Should().Be(newUrl);
     }
 
     #endregion
@@ -137,7 +137,7 @@ public class FileRepositoryTests : IDisposable
     public void Remove_ShouldRemoveFileFromContext()
     {
         // Arrange
-        var file = new FileBuilder().Build();
+        FileEntity file = FileFactory.Create();
         _context.Files.Add(file);
         _context.SaveChanges();
 
@@ -146,7 +146,7 @@ public class FileRepositoryTests : IDisposable
         _context.SaveChanges();
 
         // Assert
-        var removedFile = _context.Files.FirstOrDefault(f => f.Id == file.Id);
+        FileEntity? removedFile = _context.Files.FirstOrDefault(f => f.Id == file.Id);
         removedFile.Should().BeNull();
     }
 
@@ -158,23 +158,23 @@ public class FileRepositoryTests : IDisposable
     public async Task GetAvatarFileAsync_WhenAvatarFileIdHasValueAndExists_ShouldReturnFile()
     {
         // Arrange
-        var file = new FileBuilder().AsPngImage().Build();
+        FileEntity file = FileFactory.CreatePng();
         _context.Files.Add(file);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetAvatarFileAsync(file.Id);
+        FileEntity? result = await _repository.GetAvatarFileAsync(file.Id);
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(file.Id);
+        result.Id.Should().Be(file.Id);
     }
 
     [Fact]
     public async Task GetAvatarFileAsync_WhenAvatarFileIdIsNull_ShouldReturnNull()
     {
         // Act
-        var result = await _repository.GetAvatarFileAsync(null);
+        FileEntity? result = await _repository.GetAvatarFileAsync(null);
 
         // Assert
         result.Should().BeNull();
@@ -187,7 +187,7 @@ public class FileRepositoryTests : IDisposable
         var fileId = Guid.NewGuid();
 
         // Act
-        var result = await _repository.GetAvatarFileAsync(fileId);
+        FileEntity? result = await _repository.GetAvatarFileAsync(fileId);
 
         // Assert
         result.Should().BeNull();
@@ -201,14 +201,14 @@ public class FileRepositoryTests : IDisposable
     public async Task SaveChangesAsync_ShouldPersistChanges()
     {
         // Arrange
-        var file = new FileBuilder().Build();
+        FileEntity file = FileFactory.Create();
         _context.Files.Add(file);
 
         // Act
         await _repository.SaveChangesAsync();
 
         // Assert
-        var savedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == file.Id);
+        FileEntity? savedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == file.Id);
         savedFile.Should().NotBeNull();
     }
 
@@ -221,9 +221,9 @@ public class FileRepositoryTests : IDisposable
     {
         // Arrange
         var mockFormFile = new Mock<IFormFile>();
-        var userId = Guid.NewGuid().ToString();
-        var originalFileName = "avatar.jpg";
-        var mimeType = "image/jpeg";
+        string userId = Guid.NewGuid().ToString();
+        const string originalFileName = "avatar.jpg";
+        const string mimeType = "image/jpeg";
 
         var uploadResult = new FileUploadResult(
             FileId: Guid.NewGuid(),
@@ -239,7 +239,7 @@ public class FileRepositoryTests : IDisposable
             .ReturnsAsync(uploadResult);
 
         // Act
-        var result = await _repository.UploadAndStoreAvatarAsync(
+        FileEntity result = await _repository.UploadAndStoreAvatarAsync(
             mockFormFile.Object,
             userId,
             originalFileName,
@@ -255,7 +255,7 @@ public class FileRepositoryTests : IDisposable
         result.StorageUrl.Should().Be(uploadResult.SecureUrl);
         result.SizeInBytes.Should().Be(uploadResult.Bytes);
 
-        var savedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == uploadResult.FileId);
+        FileEntity? savedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == uploadResult.FileId);
         savedFile.Should().NotBeNull();
 
         _mockFileService.Verify(
@@ -272,8 +272,8 @@ public class FileRepositoryTests : IDisposable
     public async Task DownloadAndStoreAvatarFromUrlAsync_ShouldDownloadAndStoreMetadata()
     {
         // Arrange
-        var avatarUrl = "https://social-provider.com/avatar.jpg";
-        var userId = Guid.NewGuid().ToString();
+        string userId = Guid.NewGuid().ToString();
+        const string avatarUrl = "https://social-provider.com/avatar.jpg";
 
         var downloadResult = new FileDownloadResult(
             FileId: Guid.NewGuid(),
@@ -289,7 +289,7 @@ public class FileRepositoryTests : IDisposable
             .ReturnsAsync(downloadResult);
 
         // Act
-        var result = await _repository.DownloadAndStoreAvatarFromUrlAsync(avatarUrl, userId);
+        FileEntity result = await _repository.DownloadAndStoreAvatarFromUrlAsync(avatarUrl, userId);
 
         // Assert
         result.Should().NotBeNull();
@@ -300,7 +300,7 @@ public class FileRepositoryTests : IDisposable
         result.StorageUrl.Should().Be(downloadResult.StorageUrl);
         result.SizeInBytes.Should().Be(downloadResult.SizeInBytes);
 
-        var savedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == downloadResult.FileId);
+        FileEntity? savedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == downloadResult.FileId);
         savedFile.Should().NotBeNull();
 
         _mockFileService.Verify(s => s.DownloadFileAsync(avatarUrl, It.IsAny<CancellationToken>()), Times.Once);
@@ -314,8 +314,8 @@ public class FileRepositoryTests : IDisposable
     public async Task UpdateAvatarFromUrlAsync_WhenNoCurrentAvatar_ShouldDownloadAndStoreNewAvatar()
     {
         // Arrange
-        var newAvatarUrl = "https://social-provider.com/new-avatar.jpg";
-        var userId = Guid.NewGuid().ToString();
+        string userId = Guid.NewGuid().ToString();
+        const string newAvatarUrl = "https://social-provider.com/new-avatar.jpg";
 
         var downloadResult = new FileDownloadResult(
             FileId: Guid.NewGuid(),
@@ -331,11 +331,11 @@ public class FileRepositoryTests : IDisposable
             .ReturnsAsync(downloadResult);
 
         // Act
-        var result = await _repository.UpdateAvatarFromUrlAsync(null, newAvatarUrl, userId);
+        FileEntity? result = await _repository.UpdateAvatarFromUrlAsync(null, newAvatarUrl, userId);
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(downloadResult.FileId);
+        result.Id.Should().Be(downloadResult.FileId);
         result.StorageUrl.Should().Be(newAvatarUrl);
 
         _mockFileService.Verify(s => s.DownloadFileAsync(newAvatarUrl, It.IsAny<CancellationToken>()), Times.Once);
@@ -345,16 +345,16 @@ public class FileRepositoryTests : IDisposable
     public async Task UpdateAvatarFromUrlAsync_WhenCurrentAvatarHasSameUrl_ShouldReturnNull()
     {
         // Arrange
-        var avatarUrl = "https://social-provider.com/avatar.jpg";
-        var userId = Guid.NewGuid().ToString();
+        string userId = Guid.NewGuid().ToString();
+        const string avatarUrl = "https://social-provider.com/avatar.jpg";
 
-        var existingFile = new FileBuilder().WithStorageUrl(avatarUrl).Build();
+        FileEntity existingFile = FileFactory.CreateWithStorageUrl(avatarUrl);
 
         _context.Files.Add(existingFile);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.UpdateAvatarFromUrlAsync(existingFile.Id, avatarUrl, userId);
+        FileEntity? result = await _repository.UpdateAvatarFromUrlAsync(existingFile.Id, avatarUrl, userId);
 
         // Assert
         result.Should().BeNull();
@@ -369,11 +369,10 @@ public class FileRepositoryTests : IDisposable
     public async Task UpdateAvatarFromUrlAsync_WhenCurrentAvatarHasDifferentUrl_ShouldDeleteOldAndDownloadNew()
     {
         // Arrange
-        var oldAvatarUrl = "https://social-provider.com/old-avatar.jpg";
-        var newAvatarUrl = "https://social-provider.com/new-avatar.jpg";
-        var userId = Guid.NewGuid().ToString();
+        string userId = Guid.NewGuid().ToString();
+        const string newAvatarUrl = "https://social-provider.com/new-avatar.jpg";
 
-        var oldFile = new FileBuilder().WithStorageUrl(oldAvatarUrl).Build();
+        FileEntity oldFile = FileFactory.Create();
 
         _context.Files.Add(oldFile);
         await _context.SaveChangesAsync();
@@ -392,14 +391,14 @@ public class FileRepositoryTests : IDisposable
             .ReturnsAsync(downloadResult);
 
         // Act
-        var result = await _repository.UpdateAvatarFromUrlAsync(oldFile.Id, newAvatarUrl, userId);
+        FileEntity? result = await _repository.UpdateAvatarFromUrlAsync(oldFile.Id, newAvatarUrl, userId);
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(downloadResult.FileId);
+        result.Id.Should().Be(downloadResult.FileId);
         result.StorageUrl.Should().Be(newAvatarUrl);
 
-        var deletedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == oldFile.Id);
+        FileEntity? deletedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == oldFile.Id);
         deletedFile.Should().BeNull();
 
         _mockFileService.Verify(s => s.DownloadFileAsync(newAvatarUrl, It.IsAny<CancellationToken>()), Times.Once);
@@ -410,8 +409,8 @@ public class FileRepositoryTests : IDisposable
     {
         // Arrange
         var nonExistentFileId = Guid.NewGuid();
-        var newAvatarUrl = "https://social-provider.com/new-avatar.jpg";
-        var userId = Guid.NewGuid().ToString();
+        const string newAvatarUrl = "https://social-provider.com/new-avatar.jpg";
+        string userId = Guid.NewGuid().ToString();
 
         var downloadResult = new FileDownloadResult(
             FileId: Guid.NewGuid(),
@@ -427,11 +426,11 @@ public class FileRepositoryTests : IDisposable
             .ReturnsAsync(downloadResult);
 
         // Act
-        var result = await _repository.UpdateAvatarFromUrlAsync(nonExistentFileId, newAvatarUrl, userId);
+        FileEntity? result = await _repository.UpdateAvatarFromUrlAsync(nonExistentFileId, newAvatarUrl, userId);
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(downloadResult.FileId);
+        result.Id.Should().Be(downloadResult.FileId);
 
         _mockFileService.Verify(s => s.DownloadFileAsync(newAvatarUrl, It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -445,9 +444,9 @@ public class FileRepositoryTests : IDisposable
     {
         // Arrange
         var mockFormFile = new Mock<IFormFile>();
-        var userId = Guid.NewGuid().ToString();
-        var originalFileName = "new-avatar.png";
-        var mimeType = "image/png";
+        string userId = Guid.NewGuid().ToString();
+        const string originalFileName = "new-avatar.png";
+        const string mimeType = "image/png";
 
         var uploadResult = new FileUploadResult(
             FileId: Guid.NewGuid(),
@@ -463,7 +462,7 @@ public class FileRepositoryTests : IDisposable
             .ReturnsAsync(uploadResult);
 
         // Act
-        var result = await _repository.UpdateAvatarFromFileAsync(
+        FileEntity result = await _repository.UpdateAvatarFromFileAsync(
             null,
             mockFormFile.Object,
             userId,
@@ -486,14 +485,14 @@ public class FileRepositoryTests : IDisposable
     public async Task UpdateAvatarFromFileAsync_WhenCurrentAvatarExists_ShouldDeleteOldAndUploadNew()
     {
         // Arrange
-        var oldFile = new FileBuilder().Build();
+        FileEntity oldFile = FileFactory.Create();
         _context.Files.Add(oldFile);
         await _context.SaveChangesAsync();
 
         var mockFormFile = new Mock<IFormFile>();
-        var userId = Guid.NewGuid().ToString();
-        var originalFileName = "updated-avatar.jpg";
-        var mimeType = "image/jpeg";
+        string userId = Guid.NewGuid().ToString();
+        const string originalFileName = "updated-avatar.jpg";
+        const string mimeType = "image/jpeg";
 
         var uploadResult = new FileUploadResult(
             FileId: Guid.NewGuid(),
@@ -509,7 +508,7 @@ public class FileRepositoryTests : IDisposable
             .ReturnsAsync(uploadResult);
 
         // Act
-        var result = await _repository.UpdateAvatarFromFileAsync(
+        FileEntity result = await _repository.UpdateAvatarFromFileAsync(
             oldFile.Id,
             mockFormFile.Object,
             userId,
@@ -521,7 +520,7 @@ public class FileRepositoryTests : IDisposable
         result.Should().NotBeNull();
         result.Id.Should().Be(uploadResult.FileId);
 
-        var deletedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == oldFile.Id);
+        FileEntity? deletedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == oldFile.Id);
         deletedFile.Should().BeNull();
 
         _mockFileService.Verify(
@@ -536,9 +535,9 @@ public class FileRepositoryTests : IDisposable
         // Arrange
         var nonExistentFileId = Guid.NewGuid();
         var mockFormFile = new Mock<IFormFile>();
-        var userId = Guid.NewGuid().ToString();
-        var originalFileName = "avatar.jpg";
-        var mimeType = "image/jpeg";
+        string userId = Guid.NewGuid().ToString();
+        const string originalFileName = "avatar.jpg";
+        const string mimeType = "image/jpeg";
 
         var uploadResult = new FileUploadResult(
             FileId: Guid.NewGuid(),
@@ -554,7 +553,7 @@ public class FileRepositoryTests : IDisposable
             .ReturnsAsync(uploadResult);
 
         // Act
-        var result = await _repository.UpdateAvatarFromFileAsync(
+        FileEntity result = await _repository.UpdateAvatarFromFileAsync(
             nonExistentFileId,
             mockFormFile.Object,
             userId,
@@ -580,10 +579,15 @@ public class FileRepositoryTests : IDisposable
     public async Task UpdateAvatarUrlFromSourceAsync_WhenAvatarUrlIsNull_ShouldReturnNull()
     {
         // Arrange
-        var userId = Guid.NewGuid().ToString();
+        string userId = Guid.NewGuid().ToString();
 
         // Act
-        var result = await _repository.UpdateAvatarUrlFromSourceAsync(null, null, userId, isAvatarSourceManual: false);
+        FileEntity? result = await _repository.UpdateAvatarUrlFromSourceAsync(
+            null,
+            null,
+            userId,
+            isAvatarSourceManual: false
+        );
 
         // Assert
         result.Should().BeNull();
@@ -598,10 +602,15 @@ public class FileRepositoryTests : IDisposable
     public async Task UpdateAvatarUrlFromSourceAsync_WhenAvatarUrlIsEmpty_ShouldReturnNull()
     {
         // Arrange
-        var userId = Guid.NewGuid().ToString();
+        string userId = Guid.NewGuid().ToString();
 
         // Act
-        var result = await _repository.UpdateAvatarUrlFromSourceAsync(null, "", userId, isAvatarSourceManual: false);
+        FileEntity? result = await _repository.UpdateAvatarUrlFromSourceAsync(
+            null,
+            "",
+            userId,
+            isAvatarSourceManual: false
+        );
 
         // Assert
         result.Should().BeNull();
@@ -616,10 +625,15 @@ public class FileRepositoryTests : IDisposable
     public async Task UpdateAvatarUrlFromSourceAsync_WhenAvatarUrlIsWhitespace_ShouldReturnNull()
     {
         // Arrange
-        var userId = Guid.NewGuid().ToString();
+        string userId = Guid.NewGuid().ToString();
 
         // Act
-        var result = await _repository.UpdateAvatarUrlFromSourceAsync(null, "   ", userId, isAvatarSourceManual: false);
+        FileEntity? result = await _repository.UpdateAvatarUrlFromSourceAsync(
+            null,
+            "   ",
+            userId,
+            isAvatarSourceManual: false
+        );
 
         // Assert
         result.Should().BeNull();
@@ -634,11 +648,11 @@ public class FileRepositoryTests : IDisposable
     public async Task UpdateAvatarUrlFromSourceAsync_WhenIsAvatarSourceManualIsTrue_ShouldReturnNull()
     {
         // Arrange
-        var avatarUrl = "https://social-provider.com/avatar.jpg";
-        var userId = Guid.NewGuid().ToString();
+        string userId = Guid.NewGuid().ToString();
+        const string avatarUrl = "https://social-provider.com/avatar.jpg";
 
         // Act
-        var result = await _repository.UpdateAvatarUrlFromSourceAsync(
+        FileEntity? result = await _repository.UpdateAvatarUrlFromSourceAsync(
             null,
             avatarUrl,
             userId,
@@ -658,8 +672,8 @@ public class FileRepositoryTests : IDisposable
     public async Task UpdateAvatarUrlFromSourceAsync_WhenConditionsAreMet_ShouldCallUpdateAvatarFromUrlAsync()
     {
         // Arrange
-        var avatarUrl = "https://social-provider.com/avatar.jpg";
-        var userId = Guid.NewGuid().ToString();
+        string userId = Guid.NewGuid().ToString();
+        const string avatarUrl = "https://social-provider.com/avatar.jpg";
 
         var downloadResult = new FileDownloadResult(
             FileId: Guid.NewGuid(),
@@ -675,7 +689,7 @@ public class FileRepositoryTests : IDisposable
             .ReturnsAsync(downloadResult);
 
         // Act
-        var result = await _repository.UpdateAvatarUrlFromSourceAsync(
+        FileEntity? result = await _repository.UpdateAvatarUrlFromSourceAsync(
             null,
             avatarUrl,
             userId,
@@ -684,7 +698,7 @@ public class FileRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(downloadResult.FileId);
+        result.Id.Should().Be(downloadResult.FileId);
         result.StorageUrl.Should().Be(avatarUrl);
 
         _mockFileService.Verify(s => s.DownloadFileAsync(avatarUrl, It.IsAny<CancellationToken>()), Times.Once);

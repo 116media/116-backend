@@ -2,6 +2,7 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -56,8 +57,8 @@ public class VisitorRoleSeederTests
         RoleEntity? visitorRole = await context.Roles.FirstOrDefaultAsync(r =>
             r.Name == nameof(EnumCoreUserRole.Visitor)
         );
-        Assert.NotNull(visitorRole);
-        Assert.Equal(nameof(EnumCoreUserRole.Visitor), visitorRole.Name);
+        visitorRole.Should().NotBeNull();
+        visitorRole.Name.Should().Be(nameof(EnumCoreUserRole.Visitor));
     }
 
     [Fact]
@@ -73,7 +74,7 @@ public class VisitorRoleSeederTests
 
         // Assert
         int permissionCount = await context.Permissions.CountAsync();
-        Assert.True(permissionCount > 0);
+        (permissionCount > 0).Should().BeTrue();
     }
 
     [Fact]
@@ -283,9 +284,9 @@ public class VisitorRoleSeederTests
         RoleEntity? visitorRole = await context.Roles.FirstOrDefaultAsync(r =>
             r.Name == nameof(EnumCoreUserRole.Visitor)
         );
-        Assert.NotNull(visitorRole);
-        Assert.Contains("Standard public", visitorRole.Description);
-        Assert.Contains("content access", visitorRole.Description);
+        visitorRole.Should().NotBeNull();
+        visitorRole.Description.Should().Contain("Standard public");
+        visitorRole.Description.Should().Contain("content access");
     }
 
     #endregion

@@ -21,7 +21,7 @@ public class CloudinarySettingsTests
         };
 
         // Act
-        var isValid = settings.IsValid();
+        bool isValid = settings.IsValid();
 
         // Assert
         isValid.Should().BeTrue();
@@ -39,7 +39,7 @@ public class CloudinarySettingsTests
         };
 
         // Act
-        var isValid = settings.IsValid();
+        bool isValid = settings.IsValid();
 
         // Assert
         isValid.Should().BeFalse();
@@ -57,7 +57,7 @@ public class CloudinarySettingsTests
         };
 
         // Act
-        var isValid = settings.IsValid();
+        bool isValid = settings.IsValid();
 
         // Assert
         isValid.Should().BeFalse();
@@ -75,7 +75,7 @@ public class CloudinarySettingsTests
         };
 
         // Act
-        var isValid = settings.IsValid();
+        bool isValid = settings.IsValid();
 
         // Assert
         isValid.Should().BeFalse();
@@ -93,7 +93,7 @@ public class CloudinarySettingsTests
         };
 
         // Act
-        var isValid = settings.IsValid();
+        bool isValid = settings.IsValid();
 
         // Assert
         isValid.Should().BeFalse();
@@ -111,7 +111,7 @@ public class CloudinarySettingsTests
         };
 
         // Act
-        var isValid = settings.IsValid();
+        bool isValid = settings.IsValid();
 
         // Assert
         isValid.Should().BeFalse();
@@ -129,7 +129,7 @@ public class CloudinarySettingsTests
         };
 
         // Act
-        var isValid = settings.IsValid();
+        bool isValid = settings.IsValid();
 
         // Assert
         isValid.Should().BeFalse();
@@ -147,7 +147,7 @@ public class CloudinarySettingsTests
         };
 
         // Act
-        var isValid = settings.IsValid();
+        bool isValid = settings.IsValid();
 
         // Assert
         isValid.Should().BeFalse();
@@ -165,7 +165,7 @@ public class CloudinarySettingsTests
         };
 
         // Act
-        var isValid = settings.IsValid();
+        bool isValid = settings.IsValid();
 
         // Assert
         isValid.Should().BeFalse();
@@ -183,7 +183,7 @@ public class CloudinarySettingsTests
         };
 
         // Act
-        var isValid = settings.IsValid();
+        bool isValid = settings.IsValid();
 
         // Assert
         isValid.Should().BeFalse();
@@ -201,7 +201,7 @@ public class CloudinarySettingsTests
         };
 
         // Act
-        var isValid = settings.IsValid();
+        bool isValid = settings.IsValid();
 
         // Assert
         isValid.Should().BeFalse();

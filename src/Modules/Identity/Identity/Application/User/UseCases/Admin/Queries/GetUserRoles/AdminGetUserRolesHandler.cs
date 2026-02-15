@@ -3,6 +3,7 @@ using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.User.UseCases.Admin.Queries.GetUserRoles;
 
@@ -10,7 +11,8 @@ namespace _116.Identity.Application.User.UseCases.Admin.Queries.GetUserRoles;
 /// Handles the <see cref="AdminGetUserRolesQuery" /> to get all roles assigned to a user.
 /// </summary>
 /// <param name="userRoleRepository">Repository for user-role data access operations.</param>
-public class AdminGetUserRolesHandler(IUserRoleRepository userRoleRepository)
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class AdminGetUserRolesHandler(IUserRoleRepository userRoleRepository, IMapper mapper)
     : IQueryHandler<AdminGetUserRolesQuery, AdminGetUserRolesResult>
 {
     /// <summary>
@@ -26,7 +28,7 @@ public class AdminGetUserRolesHandler(IUserRoleRepository userRoleRepository)
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyCollection<RoleDto> roles = userRoles.Select(ur => ur.Role.ToRoleDto()).ToList();
+        IReadOnlyCollection<RoleDto> roles = userRoles.Select(ur => ur.Role.ToRoleDto(mapper)).ToList();
         return new AdminGetUserRolesResult(Roles: roles);
     }
 }

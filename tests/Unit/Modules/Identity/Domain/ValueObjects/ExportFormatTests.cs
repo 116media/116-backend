@@ -1,5 +1,7 @@
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
+using AwesomeAssertions;
+using AwesomeAssertions.Specialized;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Domain.ValueObjects;
@@ -21,7 +23,7 @@ public class ExportFormatTests
         ExportFormat format = new(formatEnum);
 
         // Assert
-        Assert.NotNull(format);
+        format.Should().NotBeNull();
         Assert.Equal(SessionExportFormat.Csv, format.Value);
     }
 
@@ -34,7 +36,7 @@ public class ExportFormatTests
         ExportFormat format = new(formatEnum);
 
         // Assert
-        Assert.NotNull(format);
+        format.Should().NotBeNull();
         Assert.Equal(formatEnum, format.Value);
     }
 
@@ -45,8 +47,9 @@ public class ExportFormatTests
         SessionExportFormat invalidEnum = (SessionExportFormat)999;
 
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new ExportFormat(invalidEnum));
-        Assert.Contains("Invalid export format", exception.Message);
+        Action act = () => new ExportFormat(invalidEnum);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid export format");
     }
 
     #endregion
@@ -63,7 +66,7 @@ public class ExportFormatTests
         ExportFormat format = new(formatString);
 
         // Assert
-        Assert.NotNull(format);
+        format.Should().NotBeNull();
         Assert.Equal(SessionExportFormat.Csv, format.Value);
     }
 
@@ -96,24 +99,27 @@ public class ExportFormatTests
     public void Constructor_WithInvalidStringValue_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new ExportFormat("InvalidFormat"));
-        Assert.Contains("Invalid export format", exception.Message);
+        Action act = () => new ExportFormat("InvalidFormat");
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid export format");
     }
 
     [Fact]
     public void Constructor_WithEmptyString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new ExportFormat(string.Empty));
-        Assert.Contains("Invalid export format", exception.Message);
+        Action act = () => new ExportFormat(string.Empty);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid export format");
     }
 
     [Fact]
     public void Constructor_WithNullString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new ExportFormat((string)null!));
-        Assert.Contains("Invalid export format", exception.Message);
+        Action act = () => new ExportFormat((string)null!);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid export format");
     }
 
     #endregion
@@ -143,7 +149,7 @@ public class ExportFormatTests
         string result = format;
 
         // Assert
-        Assert.Equal("Xlsx", result);
+        result.Should().Be("Xlsx");
     }
 
     [Fact]
@@ -156,7 +162,7 @@ public class ExportFormatTests
         ExportFormat format = formatEnum;
 
         // Assert
-        Assert.NotNull(format);
+        format.Should().NotBeNull();
         Assert.Equal(SessionExportFormat.Csv, format.Value);
     }
 
@@ -170,7 +176,7 @@ public class ExportFormatTests
         ExportFormat format = formatString;
 
         // Assert
-        Assert.NotNull(format);
+        format.Should().NotBeNull();
         Assert.Equal(SessionExportFormat.Xlsx, format.Value);
     }
 
@@ -181,10 +187,11 @@ public class ExportFormatTests
         string invalidFormat = "InvalidFormat";
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() =>
+        Action act = () =>
         {
             ExportFormat format = invalidFormat;
-        });
+        };
+        act.Should().ThrowExactly<ArgumentException>();
     }
 
     #endregion

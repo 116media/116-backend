@@ -1,6 +1,9 @@
 using _116.Identity.Application.Auth.Services;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
+using AwesomeAssertions;
+using AwesomeAssertions.Specialized;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -207,9 +210,11 @@ public class SuperAdminSeederTests
         await seeder.SeedAllAsync();
 
         // Assert
-        var superAdminUser = await context.Users.FirstOrDefaultAsync(u => u.Email == SuperAdminConfiguration.Email);
-        Assert.NotNull(superAdminUser);
-        Assert.Equal(SuperAdminConfiguration.Username, superAdminUser.UserName);
+        UserEntity? superAdminUser = await context.Users.FirstOrDefaultAsync(u =>
+            u.Email == SuperAdminConfiguration.Email
+        );
+        superAdminUser.Should().NotBeNull();
+        superAdminUser.UserName.Should().Be(SuperAdminConfiguration.Username);
     }
 
     [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
@@ -231,8 +236,10 @@ public class SuperAdminSeederTests
         await seeder.SeedAllAsync();
 
         // Assert
-        var superAdminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == SuperAdminConfiguration.RoleName);
-        Assert.NotNull(superAdminRole);
+        RoleEntity? superAdminRole = await context.Roles.FirstOrDefaultAsync(r =>
+            r.Name == SuperAdminConfiguration.RoleName
+        );
+        superAdminRole.Should().NotBeNull();
     }
 
     [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
@@ -254,10 +261,10 @@ public class SuperAdminSeederTests
         await seeder.SeedAllAsync();
 
         // Assert
-        var systemPermission = await context.Permissions.FirstOrDefaultAsync(p =>
+        PermissionEntity? systemPermission = await context.Permissions.FirstOrDefaultAsync(p =>
             p.Resource == "system" && p.Action == "all"
         );
-        Assert.NotNull(systemPermission);
+        systemPermission.Should().NotBeNull();
     }
 
     [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
@@ -279,8 +286,8 @@ public class SuperAdminSeederTests
         await seeder.SeedAllAsync();
 
         // Assert
-        var userRole = await context.UserRoles.FirstOrDefaultAsync();
-        Assert.NotNull(userRole);
+        UserRoleEntity? userRole = await context.UserRoles.FirstOrDefaultAsync();
+        userRole.Should().NotBeNull();
     }
 
     [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
@@ -302,8 +309,8 @@ public class SuperAdminSeederTests
         await seeder.SeedAllAsync();
 
         // Assert
-        var rolePermission = await context.RolePermissions.FirstOrDefaultAsync();
-        Assert.NotNull(rolePermission);
+        RolePermissionEntity? rolePermission = await context.RolePermissions.FirstOrDefaultAsync();
+        rolePermission.Should().NotBeNull();
     }
 
     [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
@@ -389,9 +396,11 @@ public class SuperAdminSeederTests
         await seeder.SeedAllAsync();
 
         // Assert
-        var superAdminUser = await context.Users.FirstOrDefaultAsync(u => u.Email == SuperAdminConfiguration.Email);
-        Assert.NotNull(superAdminUser);
-        Assert.True(superAdminUser.IsVerified);
+        UserEntity? superAdminUser = await context.Users.FirstOrDefaultAsync(u =>
+            u.Email == SuperAdminConfiguration.Email
+        );
+        superAdminUser.Should().NotBeNull();
+        superAdminUser.IsVerified.Should().BeTrue();
     }
 
     [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
@@ -413,9 +422,11 @@ public class SuperAdminSeederTests
         await seeder.SeedAllAsync();
 
         // Assert
-        var superAdminUser = await context.Users.FirstOrDefaultAsync(u => u.Email == SuperAdminConfiguration.Email);
-        Assert.NotNull(superAdminUser);
-        Assert.True(superAdminUser.IsActive);
+        UserEntity? superAdminUser = await context.Users.FirstOrDefaultAsync(u =>
+            u.Email == SuperAdminConfiguration.Email
+        );
+        superAdminUser.Should().NotBeNull();
+        superAdminUser.IsActive.Should().BeTrue();
     }
 
     [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
@@ -463,7 +474,8 @@ public class SuperAdminSeederTests
         );
 
         // Act & Assert
-        await Assert.ThrowsAsync<Exception>(() => seeder.SeedAllAsync());
+        Func<Task> act = async () => await seeder.SeedAllAsync();
+        await act.Should().ThrowExactlyAsync<Exception>();
 
         _seederLoggerMock.Verify(
             x =>
@@ -496,8 +508,9 @@ public class SuperAdminSeederTests
         );
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<Exception>(() => seeder.SeedAllAsync());
-        Assert.Equal("Password hashing failed", exception.Message);
+        Func<Task> act = async () => await seeder.SeedAllAsync();
+        ExceptionAssertions<Exception>? exception = await act.Should().ThrowExactlyAsync<Exception>();
+        exception.Which.Message.Should().Be("Password hashing failed");
     }
 
     [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
@@ -518,7 +531,8 @@ public class SuperAdminSeederTests
         );
 
         // Act & Assert
-        await Assert.ThrowsAsync<Exception>(() => seeder.SeedAllAsync());
+        Func<Task> act = async () => await seeder.SeedAllAsync();
+        await act.Should().ThrowExactlyAsync<Exception>();
 
         _seederLoggerMock.Verify(
             x =>

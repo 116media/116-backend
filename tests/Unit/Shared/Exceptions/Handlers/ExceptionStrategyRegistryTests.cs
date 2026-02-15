@@ -2,6 +2,7 @@ using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +32,7 @@ public class ExceptionStrategyRegistryTests
         ExceptionStrategyRegistry registry = new(strategies, defaultStrategy);
 
         // Assert - Should not throw and be able to create problem details
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         BadRequestException badRequestException = new("Bad request", "TEST_001");
         ProblemDetails result = registry.CreateProblemDetails(badRequestException, context);
         result.Should().NotBeNull();
@@ -48,7 +49,7 @@ public class ExceptionStrategyRegistryTests
         ExceptionStrategyRegistry registry = new(strategies, defaultStrategy);
 
         // Assert - Should use default strategy for unknown exception
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         InvalidOperationException exception = new("Invalid operation");
         ProblemDetails result = registry.CreateProblemDetails(exception, context);
         result.Should().NotBeNull();
@@ -68,7 +69,7 @@ public class ExceptionStrategyRegistryTests
         List<IExceptionStrategy> strategies = [defaultStrategy, badRequestStrategy];
 
         ExceptionStrategyRegistry registry = new(strategies, defaultStrategy);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         BadRequestException exception = new("Bad request", "TEST_001");
 
         // Act
@@ -88,7 +89,7 @@ public class ExceptionStrategyRegistryTests
         List<IExceptionStrategy> strategies = [defaultStrategy];
 
         ExceptionStrategyRegistry registry = new(strategies, defaultStrategy);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         InvalidOperationException exception = new("Invalid operation");
 
         // Act
@@ -111,7 +112,7 @@ public class ExceptionStrategyRegistryTests
         List<IExceptionStrategy> strategies = [defaultStrategy, notFoundStrategy, conflictStrategy];
 
         ExceptionStrategyRegistry registry = new(strategies, defaultStrategy);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act - Test NotFoundException
         NotFoundException notFoundException = new("Not found", "TEST_002");
@@ -141,7 +142,7 @@ public class ExceptionStrategyRegistryTests
         List<IExceptionStrategy> strategies = [defaultStrategy, badRequestStrategy];
 
         ExceptionStrategyRegistry registry = new(strategies, defaultStrategy);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         ProblemDetails result = registry.CreateProblemDetails(customException, context);
@@ -162,7 +163,7 @@ public class ExceptionStrategyRegistryTests
         List<IExceptionStrategy> strategies = [defaultStrategy, badRequestStrategy];
 
         ExceptionStrategyRegistry registry = new(strategies, defaultStrategy);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act - First call should traverse hierarchy
         ProblemDetails firstResult = registry.CreateProblemDetails(customException, context);
@@ -189,7 +190,7 @@ public class ExceptionStrategyRegistryTests
         List<IExceptionStrategy> strategies = [defaultStrategy, authStrategy];
 
         ExceptionStrategyRegistry registry = new(strategies, defaultStrategy);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         AuthenticationException exception = new("Authentication failed", "TEST_004");
 
         // Act
@@ -209,7 +210,7 @@ public class ExceptionStrategyRegistryTests
         List<IExceptionStrategy> strategies = [defaultStrategy, authzStrategy];
 
         ExceptionStrategyRegistry registry = new(strategies, defaultStrategy);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         AuthorizationException exception = new("Authorization failed", "TEST_005");
 
         // Act
@@ -229,7 +230,7 @@ public class ExceptionStrategyRegistryTests
         List<IExceptionStrategy> strategies = [defaultStrategy, internalServerStrategy];
 
         ExceptionStrategyRegistry registry = new(strategies, defaultStrategy);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         InternalServerException exception = new("Internal server error", "TEST_006");
 
         // Act
@@ -252,7 +253,7 @@ public class ExceptionStrategyRegistryTests
         List<IExceptionStrategy> strategies = [defaultStrategy];
 
         ExceptionStrategyRegistry registry = new(strategies, defaultStrategy);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
         Action act = () => registry.CreateProblemDetails(null!, context);
@@ -270,7 +271,7 @@ public class ExceptionStrategyRegistryTests
         List<IExceptionStrategy> strategies = [defaultStrategy, badRequestStrategy];
 
         ExceptionStrategyRegistry registry = new(strategies, defaultStrategy);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         BadRequestException exception = new("Bad request", "TEST_001");
 
         // Act
@@ -290,7 +291,7 @@ public class ExceptionStrategyRegistryTests
         List<IExceptionStrategy> strategies = [];
 
         ExceptionStrategyRegistry registry = new(strategies, defaultStrategy);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         Exception exception = new("Test error");
 
         // Act
@@ -304,15 +305,6 @@ public class ExceptionStrategyRegistryTests
     #endregion
 
     #region Helper Methods and Classes
-
-    private static DefaultHttpContext CreateHttpContext()
-    {
-        DefaultHttpContext context = new();
-        context.Request.Path = "/api/test";
-        context.Request.Method = "GET";
-        context.TraceIdentifier = "test-trace-id";
-        return context;
-    }
 
     /// <summary>
     /// Custom exception for testing inheritance hierarchy.

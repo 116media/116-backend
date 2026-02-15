@@ -3,6 +3,7 @@ using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -19,7 +20,7 @@ public class PermissionRepositoryTests : IDisposable
 
     public PermissionRepositoryTests()
     {
-        var options = new DbContextOptionsBuilder<IdentityDbContext>()
+        DbContextOptions<IdentityDbContext> options = new DbContextOptionsBuilder<IdentityDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -39,13 +40,13 @@ public class PermissionRepositoryTests : IDisposable
     public async Task GetPermissionByIdOrThrowAsync_WhenPermissionExists_ShouldReturnPermission()
     {
         // Arrange
-        var permission = new PermissionBuilder().WithResource("article").WithAction("read").Build();
+        PermissionEntity permission = PermissionFactory.CreateRead("article");
 
         _context.Permissions.Add(permission);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetPermissionByIdOrThrowAsync(permission.Id);
+        PermissionEntity? result = await _repository.GetPermissionByIdOrThrowAsync(permission.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -75,7 +76,7 @@ public class PermissionRepositoryTests : IDisposable
     public async Task ExistsByResourceAndActionAsync_WhenPermissionExists_ShouldReturnTrue()
     {
         // Arrange
-        var permission = new PermissionBuilder().WithResource("user").WithAction("create").Build();
+        PermissionEntity permission = PermissionFactory.CreateCreate("user");
 
         _context.Permissions.Add(permission);
         await _context.SaveChangesAsync();
@@ -101,7 +102,7 @@ public class PermissionRepositoryTests : IDisposable
     public async Task ExistsByResourceAndActionAsync_WithDifferentResource_ShouldReturnFalse()
     {
         // Arrange
-        var permission = new PermissionBuilder().WithResource("article").WithAction("read").Build();
+        PermissionEntity permission = PermissionFactory.CreateRead("article");
 
         _context.Permissions.Add(permission);
         await _context.SaveChangesAsync();
@@ -117,7 +118,7 @@ public class PermissionRepositoryTests : IDisposable
     public async Task ExistsByResourceAndActionAsync_WithDifferentAction_ShouldReturnFalse()
     {
         // Arrange
-        var permission = new PermissionBuilder().WithResource("article").WithAction("read").Build();
+        PermissionEntity permission = PermissionFactory.CreateRead("article");
 
         _context.Permissions.Add(permission);
         await _context.SaveChangesAsync();
@@ -137,14 +138,14 @@ public class PermissionRepositoryTests : IDisposable
     public async Task AddAsync_ShouldAddPermissionToContext()
     {
         // Arrange
-        var permission = new PermissionBuilder().WithResource("comment").WithAction("delete").Build();
+        PermissionEntity permission = PermissionFactory.CreateDelete("comment");
 
         // Act
         await _repository.AddAsync(permission);
         await _context.SaveChangesAsync();
 
         // Assert
-        var savedPermission = await _context.Permissions.FirstOrDefaultAsync(p => p.Id == permission.Id);
+        PermissionEntity? savedPermission = await _context.Permissions.FirstOrDefaultAsync(p => p.Id == permission.Id);
         savedPermission.Should().NotBeNull();
         savedPermission!.Resource.Should().Be("comment");
         savedPermission.Action.Should().Be("delete");
@@ -158,9 +159,9 @@ public class PermissionRepositoryTests : IDisposable
     public async Task GetAllWithPaginationAsync_WithNoFilters_ShouldReturnAllPermissions()
     {
         // Arrange
-        var permission1 = new PermissionBuilder().WithResource("article").WithAction("read").Build();
-        var permission2 = new PermissionBuilder().WithResource("article").WithAction("write").Build();
-        var permission3 = new PermissionBuilder().WithResource("user").WithAction("create").Build();
+        PermissionEntity permission1 = PermissionFactory.CreateRead("article");
+        PermissionEntity permission2 = PermissionFactory.Create("article", "write");
+        PermissionEntity permission3 = PermissionFactory.CreateCreate("user");
 
         _context.Permissions.AddRange(permission1, permission2, permission3);
         await _context.SaveChangesAsync();
@@ -179,7 +180,7 @@ public class PermissionRepositoryTests : IDisposable
         // Arrange
         for (int i = 1; i <= 5; i++)
         {
-            var permission = new PermissionBuilder().WithResource($"resource{i}").WithAction("read").Build();
+            PermissionEntity permission = PermissionFactory.Create($"resource{i}", "read");
             _context.Permissions.Add(permission);
         }
         await _context.SaveChangesAsync();
@@ -199,12 +200,9 @@ public class PermissionRepositoryTests : IDisposable
     public async Task GetAllWithPaginationAsync_WithActiveFilter_ShouldFilterByActiveStatus()
     {
         // Arrange
-        var activePermission = new PermissionBuilder().WithResource("active").WithAction("read").Build();
-        var inactivePermission = new PermissionBuilder()
-            .WithResource("inactive")
-            .WithAction("read")
-            .AsInactive()
-            .Build();
+        PermissionEntity activePermission = PermissionFactory.CreateRead("active");
+        PermissionEntity inactivePermission = PermissionFactory.Create("inactive", "read");
+        inactivePermission.Deactivate();
 
         _context.Permissions.AddRange(activePermission, inactivePermission);
         await _context.SaveChangesAsync();
@@ -217,7 +215,7 @@ public class PermissionRepositoryTests : IDisposable
         );
 
         // Assert
-        permissions.Should().HaveCount(1);
+        permissions.Should().ContainSingle();
         totalCount.Should().Be(1);
         permissions.First().Resource.Should().Be("active");
     }
@@ -226,8 +224,8 @@ public class PermissionRepositoryTests : IDisposable
     public async Task GetAllWithPaginationAsync_WithDeletedFilter_ShouldFilterByDeletedStatus()
     {
         // Arrange
-        var normalPermission = new PermissionBuilder().WithResource("normal").WithAction("read").Build();
-        var deletedPermission = new PermissionBuilder().WithResource("deleted").WithAction("read").AsDeleted().Build();
+        PermissionEntity normalPermission = PermissionFactory.CreateRead("normal");
+        PermissionEntity deletedPermission = PermissionFactory.CreateDeleted();
 
         _context.Permissions.AddRange(normalPermission, deletedPermission);
         await _context.SaveChangesAsync();
@@ -240,7 +238,7 @@ public class PermissionRepositoryTests : IDisposable
         );
 
         // Assert
-        permissions.Should().HaveCount(1);
+        permissions.Should().ContainSingle();
         totalCount.Should().Be(1);
         permissions.First().Resource.Should().Be("normal");
     }
@@ -260,9 +258,9 @@ public class PermissionRepositoryTests : IDisposable
     public async Task GetAllWithPaginationAsync_ShouldOrderByCreatedAtDescending()
     {
         // Arrange
-        var permission1 = new PermissionBuilder().WithResource("first").WithAction("read").Build();
-        var permission2 = new PermissionBuilder().WithResource("second").WithAction("read").Build();
-        var permission3 = new PermissionBuilder().WithResource("third").WithAction("read").Build();
+        PermissionEntity permission1 = PermissionFactory.CreateRead("first");
+        PermissionEntity permission2 = PermissionFactory.CreateRead("second");
+        PermissionEntity permission3 = PermissionFactory.CreateRead("third");
 
         _context.Permissions.AddRange(permission1, permission2, permission3);
         await _context.SaveChangesAsync();
@@ -274,7 +272,7 @@ public class PermissionRepositoryTests : IDisposable
         permissions.Should().HaveCount(3);
         // InMemoryDatabase may not preserve exact insertion order for CreatedAt
         // Just verify all permissions are returned
-        var resources = permissions.Select(p => p.Resource).ToList();
+        List<string> resources = permissions.Select(p => p.Resource).ToList();
         resources.Should().Contain("first");
         resources.Should().Contain("second");
         resources.Should().Contain("third");
@@ -284,17 +282,11 @@ public class PermissionRepositoryTests : IDisposable
     public async Task GetAllWithPaginationAsync_WithBothActiveAndDeletedFilters_ShouldApplyBothFilters()
     {
         // Arrange
-        var activeNotDeleted = new PermissionBuilder().WithResource("activeNotDeleted").WithAction("read").Build();
-        var inactiveNotDeleted = new PermissionBuilder()
-            .WithResource("inactiveNotDeleted")
-            .WithAction("read")
-            .AsInactive()
-            .Build();
-        var activeDeleted = new PermissionBuilder()
-            .WithResource("activeDeleted")
-            .WithAction("read")
-            .AsDeleted()
-            .Build();
+        PermissionEntity activeNotDeleted = PermissionFactory.CreateRead("activeNotDeleted");
+        PermissionEntity inactiveNotDeleted = PermissionFactory.Create("inactiveNotDeleted", "read");
+        inactiveNotDeleted.Deactivate();
+        PermissionEntity activeDeleted = PermissionFactory.Create("activeDeleted", "read");
+        activeDeleted.SoftDelete();
 
         _context.Permissions.AddRange(activeNotDeleted, inactiveNotDeleted, activeDeleted);
         await _context.SaveChangesAsync();
@@ -308,7 +300,7 @@ public class PermissionRepositoryTests : IDisposable
         );
 
         // Assert
-        permissions.Should().HaveCount(1);
+        permissions.Should().ContainSingle();
         totalCount.Should().Be(1);
         permissions.First().Resource.Should().Be("activeNotDeleted");
     }
@@ -321,7 +313,7 @@ public class PermissionRepositoryTests : IDisposable
     public void Delete_ShouldRemovePermissionFromContext()
     {
         // Arrange
-        var permission = new PermissionBuilder().WithResource("toDelete").WithAction("delete").Build();
+        PermissionEntity permission = PermissionFactory.CreateDelete("toDelete");
 
         _context.Permissions.Add(permission);
         _context.SaveChanges();
@@ -331,7 +323,7 @@ public class PermissionRepositoryTests : IDisposable
         _context.SaveChanges();
 
         // Assert
-        var deletedPermission = _context.Permissions.FirstOrDefault(p => p.Id == permission.Id);
+        PermissionEntity? deletedPermission = _context.Permissions.FirstOrDefault(p => p.Id == permission.Id);
         deletedPermission.Should().BeNull();
     }
 

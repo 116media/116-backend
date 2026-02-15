@@ -7,7 +7,7 @@ namespace _116.Unit.Tests.Shared.Domain;
 /// <summary>
 /// Unit tests for <see cref="IDomainEvent"/> interface properties.
 /// </summary>
-public class IDomainEventTests
+public class DomainEventTests
 {
     private class TestDomainEvent : IDomainEvent
     {

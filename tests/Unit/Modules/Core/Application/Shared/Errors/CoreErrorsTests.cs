@@ -14,11 +14,11 @@ public class CoreErrorsTests
     public void FileUploadFailed_WithFileNameAndReason_ShouldReturnConflictException()
     {
         // Arrange
-        var fileName = "avatar.jpg";
-        var reason = "Network timeout";
+        string fileName = "avatar.jpg";
+        string reason = "Network timeout";
 
         // Act
-        var exception = CoreErrors.FileUploadFailed(fileName, reason);
+        ConflictException exception = CoreErrors.FileUploadFailed(fileName, reason);
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -30,11 +30,11 @@ public class CoreErrorsTests
     public void UnsupportedFileType_WithFileTypeAndAllowedTypes_ShouldReturnBadRequestException()
     {
         // Arrange
-        var fileType = "application/exe";
-        var allowedTypes = new[] { "image/jpeg", "image/png" };
+        string fileType = "application/exe";
+        string[] allowedTypes = new[] { "image/jpeg", "image/png" };
 
         // Act
-        var exception = CoreErrors.UnsupportedFileType(fileType, allowedTypes);
+        BadRequestException exception = CoreErrors.UnsupportedFileType(fileType, allowedTypes);
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -49,7 +49,7 @@ public class CoreErrorsTests
         long maxSize = 5242880; // 5MB
 
         // Act
-        var exception = CoreErrors.FileTooLarge(fileSize, maxSize);
+        BadRequestException exception = CoreErrors.FileTooLarge(fileSize, maxSize);
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -61,10 +61,10 @@ public class CoreErrorsTests
     public void CorruptedFile_WithFileName_ShouldReturnBadRequestException()
     {
         // Arrange
-        var fileName = "corrupted.pdf";
+        string fileName = "corrupted.pdf";
 
         // Act
-        var exception = CoreErrors.CorruptedFile(fileName);
+        BadRequestException exception = CoreErrors.CorruptedFile(fileName);
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -75,10 +75,10 @@ public class CoreErrorsTests
     public void FileNotFound_WithFileId_ShouldReturnNotFoundException()
     {
         // Arrange
-        var fileId = 123;
+        int fileId = 123;
 
         // Act
-        var exception = CoreErrors.FileNotFound(fileId);
+        NotFoundException exception = CoreErrors.FileNotFound(fileId);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
@@ -90,10 +90,10 @@ public class CoreErrorsTests
     public void FileNotFoundByName_WithFileName_ShouldReturnNotFoundException()
     {
         // Arrange
-        var fileName = "missing.jpg";
+        string fileName = "missing.jpg";
 
         // Act
-        var exception = CoreErrors.FileNotFoundByName(fileName);
+        NotFoundException exception = CoreErrors.FileNotFoundByName(fileName);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
@@ -105,10 +105,10 @@ public class CoreErrorsTests
     public void InvalidConfiguration_WithConfigKey_ShouldReturnBadRequestException()
     {
         // Arrange
-        var configKey = "Cloudinary:ApiKey";
+        string configKey = "Cloudinary:ApiKey";
 
         // Act
-        var exception = CoreErrors.InvalidConfiguration(configKey);
+        BadRequestException exception = CoreErrors.InvalidConfiguration(configKey);
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -119,10 +119,10 @@ public class CoreErrorsTests
     public void ServiceUnavailable_WithServiceName_ShouldReturnInternalServerException()
     {
         // Arrange
-        var serviceName = "Cloudinary";
+        string serviceName = "Cloudinary";
 
         // Act
-        var exception = CoreErrors.ServiceUnavailable(serviceName);
+        InternalServerException exception = CoreErrors.ServiceUnavailable(serviceName);
 
         // Assert
         exception.Should().BeOfType<InternalServerException>();
@@ -133,7 +133,7 @@ public class CoreErrorsTests
     public void DatabaseConnectionFailed_ShouldReturnInternalServerException()
     {
         // Act
-        var exception = CoreErrors.DatabaseConnectionFailed();
+        InternalServerException exception = CoreErrors.DatabaseConnectionFailed();
 
         // Assert
         exception.Should().BeOfType<InternalServerException>();
@@ -144,7 +144,7 @@ public class CoreErrorsTests
     public void FileNameRequired_ShouldReturnBadRequestException()
     {
         // Act
-        var exception = CoreErrors.FileNameRequired();
+        BadRequestException exception = CoreErrors.FileNameRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -155,7 +155,7 @@ public class CoreErrorsTests
     public void OriginalFileNameRequired_ShouldReturnBadRequestException()
     {
         // Act
-        var exception = CoreErrors.OriginalFileNameRequired();
+        BadRequestException exception = CoreErrors.OriginalFileNameRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -166,7 +166,7 @@ public class CoreErrorsTests
     public void MimeTypeRequired_ShouldReturnBadRequestException()
     {
         // Act
-        var exception = CoreErrors.MimeTypeRequired();
+        BadRequestException exception = CoreErrors.MimeTypeRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -177,7 +177,7 @@ public class CoreErrorsTests
     public void StorageUrlRequired_ShouldReturnBadRequestException()
     {
         // Act
-        var exception = CoreErrors.StorageUrlRequired();
+        BadRequestException exception = CoreErrors.StorageUrlRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -188,7 +188,7 @@ public class CoreErrorsTests
     public void FileSizeMustBeGreaterThanZero_ShouldReturnBadRequestException()
     {
         // Act
-        var exception = CoreErrors.FileSizeMustBeGreaterThanZero();
+        BadRequestException exception = CoreErrors.FileSizeMustBeGreaterThanZero();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -199,11 +199,11 @@ public class CoreErrorsTests
     public void FileDownloadFailed_WithFileUrlAndReason_ShouldReturnInternalServerException()
     {
         // Arrange
-        var fileUrl = "https://example.com/avatar.jpg";
-        var reason = "Connection timeout";
+        string fileUrl = "https://example.com/avatar.jpg";
+        string reason = "Connection timeout";
 
         // Act
-        var exception = CoreErrors.FileDownloadFailed(fileUrl, reason);
+        InternalServerException exception = CoreErrors.FileDownloadFailed(fileUrl, reason);
 
         // Assert
         exception.Should().BeOfType<InternalServerException>();
@@ -215,10 +215,10 @@ public class CoreErrorsTests
     public void InvalidFileUrl_WithFileUrl_ShouldReturnBadRequestException()
     {
         // Arrange
-        var fileUrl = "invalid-url";
+        string fileUrl = "invalid-url";
 
         // Act
-        var exception = CoreErrors.InvalidFileUrl(fileUrl);
+        BadRequestException exception = CoreErrors.InvalidFileUrl(fileUrl);
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -229,10 +229,10 @@ public class CoreErrorsTests
     public void FileStorageFailed_WithReason_ShouldReturnInternalServerException()
     {
         // Arrange
-        var reason = "Disk full";
+        string reason = "Disk full";
 
         // Act
-        var exception = CoreErrors.FileStorageFailed(reason);
+        InternalServerException exception = CoreErrors.FileStorageFailed(reason);
 
         // Assert
         exception.Should().BeOfType<InternalServerException>();
@@ -243,7 +243,7 @@ public class CoreErrorsTests
     public void FileUrlRequired_ShouldReturnBadRequestException()
     {
         // Act
-        var exception = CoreErrors.FileUrlRequired();
+        BadRequestException exception = CoreErrors.FileUrlRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -254,10 +254,10 @@ public class CoreErrorsTests
     public void BadRequest_WithCustomMessage_ShouldReturnBadRequestException()
     {
         // Arrange
-        var message = "Custom error message";
+        string message = "Custom error message";
 
         // Act
-        var exception = CoreErrors.BadRequest(message);
+        BadRequestException exception = CoreErrors.BadRequest(message);
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -268,7 +268,7 @@ public class CoreErrorsTests
     public void FileRequired_ShouldReturnBadRequestException()
     {
         // Act
-        var exception = CoreErrors.FileRequired();
+        BadRequestException exception = CoreErrors.FileRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -285,7 +285,7 @@ public class CoreErrorsTests
         long maxSizeMB = 5;
 
         // Act
-        var exception = CoreErrors.FileTooLarge(actualSize, maxSize, maxSizeMB);
+        BadRequestException exception = CoreErrors.FileTooLarge(actualSize, maxSize, maxSizeMB);
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -299,11 +299,11 @@ public class CoreErrorsTests
     public void InvalidFileType_WithProvidedAndAllowedTypes_ShouldReturnBadRequestException()
     {
         // Arrange
-        var providedType = "application/exe";
-        var allowedTypes = "image/jpeg, image/png";
+        string providedType = "application/exe";
+        string allowedTypes = "image/jpeg, image/png";
 
         // Act
-        var exception = CoreErrors.InvalidFileType(providedType, allowedTypes);
+        BadRequestException exception = CoreErrors.InvalidFileType(providedType, allowedTypes);
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -316,11 +316,11 @@ public class CoreErrorsTests
     public void InvalidFileExtension_WithProvidedAndAllowedExtensions_ShouldReturnBadRequestException()
     {
         // Arrange
-        var providedExtension = ".exe";
-        var allowedExtensions = ".jpg, .png, .gif";
+        string providedExtension = ".exe";
+        string allowedExtensions = ".jpg, .png, .gif";
 
         // Act
-        var exception = CoreErrors.InvalidFileExtension(providedExtension, allowedExtensions);
+        BadRequestException exception = CoreErrors.InvalidFileExtension(providedExtension, allowedExtensions);
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -333,10 +333,10 @@ public class CoreErrorsTests
     public void FileUploadFailed_WithJustReason_ShouldReturnBadGatewayException()
     {
         // Arrange
-        var reason = "External service unavailable";
+        string reason = "External service unavailable";
 
         // Act
-        var exception = CoreErrors.FileUploadFailed(reason);
+        BadGatewayException exception = CoreErrors.FileUploadFailed(reason);
 
         // Assert
         exception.Should().BeOfType<BadGatewayException>();
@@ -348,7 +348,7 @@ public class CoreErrorsTests
     public void ValidationErrorMessage_StorageUrlCannotBeEmpty_ShouldReturnCorrectMessage()
     {
         // Arrange & Act
-        var message = _116.Core.Application.Shared.Errors.Messages.ValidationErrorMessage.StorageUrlCannotBeEmpty();
+        string message = _116.Core.Application.Shared.Errors.Messages.ValidationErrorMessage.StorageUrlCannotBeEmpty();
 
         // Assert
         message.Should().Be("Storage URL cannot be empty");

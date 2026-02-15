@@ -1,6 +1,7 @@
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
+using AwesomeAssertions;
 using Moq;
 using Xunit;
 
@@ -39,8 +40,8 @@ public class SuperAdminEntityFactoryTests
         UserEntity result = _factory.CreateSuperAdminUser();
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(SuperAdminConfiguration.Email, result.Email);
+        result.Should().NotBeNull();
+        result.Email.Should().Be(SuperAdminConfiguration.Email);
     }
 
     [Fact]
@@ -53,7 +54,7 @@ public class SuperAdminEntityFactoryTests
         UserEntity result = _factory.CreateSuperAdminUser();
 
         // Assert
-        Assert.Equal(SuperAdminConfiguration.Username, result.UserName);
+        result.UserName.Should().Be(SuperAdminConfiguration.Username);
     }
 
     [Fact]
@@ -81,7 +82,7 @@ public class SuperAdminEntityFactoryTests
         UserEntity result = _factory.CreateSuperAdminUser();
 
         // Assert
-        Assert.Equal(hashedPassword, result.PasswordHash);
+        result.PasswordHash.Should().Be(hashedPassword);
     }
 
     [Fact]
@@ -94,7 +95,7 @@ public class SuperAdminEntityFactoryTests
         UserEntity result = _factory.CreateSuperAdminUser();
 
         // Assert
-        Assert.True(result.IsVerified);
+        result.IsVerified.Should().BeTrue();
     }
 
     [Fact]
@@ -107,7 +108,7 @@ public class SuperAdminEntityFactoryTests
         UserEntity result = _factory.CreateSuperAdminUser();
 
         // Assert
-        Assert.True(result.IsActive);
+        result.IsActive.Should().BeTrue();
     }
 
     [Fact]
@@ -148,8 +149,8 @@ public class SuperAdminEntityFactoryTests
         RoleEntity result = SuperAdminEntityFactory.CreateSuperAdminRole();
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(SuperAdminConfiguration.RoleName, result.Name);
+        result.Should().NotBeNull();
+        result.Name.Should().Be(SuperAdminConfiguration.RoleName);
     }
 
     [Fact]
@@ -159,7 +160,7 @@ public class SuperAdminEntityFactoryTests
         RoleEntity result = SuperAdminEntityFactory.CreateSuperAdminRole();
 
         // Assert
-        Assert.Equal(SuperAdminConfiguration.RoleDescription, result.Description);
+        result.Description.Should().Be(SuperAdminConfiguration.RoleDescription);
     }
 
     [Fact]
@@ -194,8 +195,8 @@ public class SuperAdminEntityFactoryTests
         PermissionEntity result = SuperAdminEntityFactory.CreateSystemAllPermission();
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(SuperAdminConfiguration.PermissionResource, result.Resource);
+        result.Should().NotBeNull();
+        result.Resource.Should().Be(SuperAdminConfiguration.PermissionResource);
     }
 
     [Fact]
@@ -205,7 +206,7 @@ public class SuperAdminEntityFactoryTests
         PermissionEntity result = SuperAdminEntityFactory.CreateSystemAllPermission();
 
         // Assert
-        Assert.Equal(SuperAdminConfiguration.PermissionAction, result.Action);
+        result.Action.Should().Be(SuperAdminConfiguration.PermissionAction);
     }
 
     [Fact]
@@ -215,7 +216,7 @@ public class SuperAdminEntityFactoryTests
         PermissionEntity result = SuperAdminEntityFactory.CreateSystemAllPermission();
 
         // Assert
-        Assert.Equal(SuperAdminConfiguration.PermissionDescription, result.Description);
+        result.Description.Should().Be(SuperAdminConfiguration.PermissionDescription);
     }
 
     [Fact]
@@ -254,7 +255,7 @@ public class SuperAdminEntityFactoryTests
         UserRoleEntity result = SuperAdminEntityFactory.CreateUserRoleAssociation(userId, roleId);
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
         Assert.Equal(userId, result.UserId);
     }
 
@@ -316,7 +317,7 @@ public class SuperAdminEntityFactoryTests
         RolePermissionEntity result = SuperAdminEntityFactory.CreateRolePermissionAssociation(roleId, permissionId);
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
         Assert.Equal(roleId, result.RoleId);
     }
 

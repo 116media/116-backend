@@ -1,5 +1,7 @@
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
+using AwesomeAssertions;
+using AwesomeAssertions.Specialized;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Domain.ValueObjects;
@@ -21,7 +23,7 @@ public class OtpPurposeTests
         OtpPurpose purpose = new(purposeEnum);
 
         // Assert
-        Assert.NotNull(purpose);
+        purpose.Should().NotBeNull();
         Assert.Equal(EnumOtpPurpose.EmailVerification, purpose.Value);
     }
 
@@ -34,7 +36,7 @@ public class OtpPurposeTests
         OtpPurpose purpose = new(purposeEnum);
 
         // Assert
-        Assert.NotNull(purpose);
+        purpose.Should().NotBeNull();
         Assert.Equal(purposeEnum, purpose.Value);
     }
 
@@ -45,8 +47,9 @@ public class OtpPurposeTests
         EnumOtpPurpose invalidEnum = (EnumOtpPurpose)999;
 
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new OtpPurpose(invalidEnum));
-        Assert.Contains("Invalid OTP purpose", exception.Message);
+        Action act = () => new OtpPurpose(invalidEnum);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid OTP purpose");
     }
 
     #endregion
@@ -63,7 +66,7 @@ public class OtpPurposeTests
         OtpPurpose purpose = new(purposeString);
 
         // Assert
-        Assert.NotNull(purpose);
+        purpose.Should().NotBeNull();
         Assert.Equal(EnumOtpPurpose.EmailVerification, purpose.Value);
     }
 
@@ -96,24 +99,27 @@ public class OtpPurposeTests
     public void Constructor_WithInvalidStringValue_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new OtpPurpose("InvalidPurpose"));
-        Assert.Contains("Invalid OTP purpose", exception.Message);
+        Action act = () => new OtpPurpose("InvalidPurpose");
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid OTP purpose");
     }
 
     [Fact]
     public void Constructor_WithEmptyString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new OtpPurpose(string.Empty));
-        Assert.Contains("Invalid OTP purpose", exception.Message);
+        Action act = () => new OtpPurpose(string.Empty);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid OTP purpose");
     }
 
     [Fact]
     public void Constructor_WithNullString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new OtpPurpose((string)null!));
-        Assert.Contains("Invalid OTP purpose", exception.Message);
+        Action act = () => new OtpPurpose((string)null!);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid OTP purpose");
     }
 
     #endregion
@@ -143,7 +149,7 @@ public class OtpPurposeTests
         string result = purpose;
 
         // Assert
-        Assert.Equal("PasswordReset", result);
+        result.Should().Be("PasswordReset");
     }
 
     [Fact]
@@ -156,7 +162,7 @@ public class OtpPurposeTests
         OtpPurpose purpose = purposeEnum;
 
         // Assert
-        Assert.NotNull(purpose);
+        purpose.Should().NotBeNull();
         Assert.Equal(EnumOtpPurpose.EmailVerification, purpose.Value);
     }
 
@@ -170,7 +176,7 @@ public class OtpPurposeTests
         OtpPurpose purpose = purposeString;
 
         // Assert
-        Assert.NotNull(purpose);
+        purpose.Should().NotBeNull();
         Assert.Equal(EnumOtpPurpose.PasswordReset, purpose.Value);
     }
 
@@ -181,10 +187,11 @@ public class OtpPurposeTests
         string invalidPurpose = "InvalidPurpose";
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() =>
+        Action act = () =>
         {
             OtpPurpose purpose = invalidPurpose;
-        });
+        };
+        act.Should().ThrowExactly<ArgumentException>();
     }
 
     #endregion

@@ -60,7 +60,7 @@ public class CoreModuleTests : IDisposable
 
         // Act
         services.AddCoreModule();
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
         var dbContext = serviceProvider.GetService<CoreDbContext>();
@@ -85,7 +85,7 @@ public class CoreModuleTests : IDisposable
 
         // Act
         services.AddCoreModule();
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
         var unitOfWork = serviceProvider.GetService<ICoreUnitOfWork>();
@@ -111,7 +111,7 @@ public class CoreModuleTests : IDisposable
 
         // Act
         services.AddCoreModule();
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
         var repository = serviceProvider.GetService<IFileRepository>();
@@ -137,7 +137,7 @@ public class CoreModuleTests : IDisposable
 
         // Act
         services.AddCoreModule();
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
         var fileService = serviceProvider.GetService<IFileService>();
@@ -163,7 +163,7 @@ public class CoreModuleTests : IDisposable
 
         // Act
         services.AddCoreModule();
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
         var cloudinaryService = serviceProvider.GetService<ICloudinaryService>();
@@ -178,7 +178,7 @@ public class CoreModuleTests : IDisposable
         _services.AddSingleton(_cloudinarySettings);
 
         // Act
-        var result = _services.AddCoreModule();
+        IServiceCollection result = _services.AddCoreModule();
 
         // Assert
         result.Should().NotBeNull();
@@ -195,13 +195,13 @@ public class CoreModuleTests : IDisposable
 
         // Act
         services.AddCoreModule();
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Assert
         var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
         httpClientFactory.Should().NotBeNull();
 
-        var httpClient = httpClientFactory!.CreateClient(nameof(FileService));
+        HttpClient httpClient = httpClientFactory!.CreateClient(nameof(FileService));
         httpClient.Should().NotBeNull();
     }
 
@@ -210,9 +210,9 @@ public class CoreModuleTests : IDisposable
     {
         // Arrange & Act
         _services.AddSingleton(_cloudinarySettings);
-        var result = _services.AddCoreModule();
+        IServiceCollection result = _services.AddCoreModule();
 
-        var serviceProvider = _services.BuildServiceProvider();
+        ServiceProvider serviceProvider = _services.BuildServiceProvider();
 
         // Assert - verify all services are registered
         serviceProvider.GetService<CoreDbContext>().Should().NotBeNull();

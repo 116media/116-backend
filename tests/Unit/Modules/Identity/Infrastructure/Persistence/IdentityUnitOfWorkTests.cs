@@ -1,5 +1,6 @@
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Infrastructure.Persistence;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -22,14 +23,14 @@ public class IdentityUnitOfWorkTests
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
-        using var context = new IdentityDbContext(options);
-        IIdentityUnitOfWork unitOfWork = new IdentityUnitOfWork(context);
+        await using var context = new IdentityDbContext(options);
+        var unitOfWork = new IdentityUnitOfWork(context);
 
         // Act
         int result = await unitOfWork.CommitAsync();
 
         // Assert
-        Assert.Equal(0, result); // No changes to save
+        Assert.Equal(0, result);
     }
 
     [Fact]
@@ -37,8 +38,8 @@ public class IdentityUnitOfWorkTests
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
-        using var context = new IdentityDbContext(options);
-        IIdentityUnitOfWork unitOfWork = new IdentityUnitOfWork(context);
+        await using var context = new IdentityDbContext(options);
+        var unitOfWork = new IdentityUnitOfWork(context);
         CancellationToken cancellationToken = new();
 
         // Act
@@ -53,14 +54,14 @@ public class IdentityUnitOfWorkTests
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
-        using var context = new IdentityDbContext(options);
-        IIdentityUnitOfWork unitOfWork = new IdentityUnitOfWork(context);
+        await using var context = new IdentityDbContext(options);
+        var unitOfWork = new IdentityUnitOfWork(context);
 
         // Act
         int result = await unitOfWork.CommitAsync();
 
         // Assert
-        Assert.IsType<int>(result);
+        result.Should().BeOfType(typeof(int));
     }
 
     [Fact]
@@ -68,8 +69,8 @@ public class IdentityUnitOfWorkTests
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
-        using var context = new IdentityDbContext(options);
-        IIdentityUnitOfWork unitOfWork = new IdentityUnitOfWork(context);
+        await using var context = new IdentityDbContext(options);
+        var unitOfWork = new IdentityUnitOfWork(context);
 
         // Act
         int result = await unitOfWork.CommitAsync();
@@ -83,8 +84,8 @@ public class IdentityUnitOfWorkTests
     {
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
-        using var context = new IdentityDbContext(options);
-        IIdentityUnitOfWork unitOfWork = new IdentityUnitOfWork(context);
+        await using var context = new IdentityDbContext(options);
+        var unitOfWork = new IdentityUnitOfWork(context);
 
         // Act
         int result1 = await unitOfWork.CommitAsync();

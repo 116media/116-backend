@@ -15,7 +15,7 @@ public class SessionErrorsTests
     public void InvalidRefreshToken_ShouldReturnRefreshTokenExpiryException()
     {
         // Act
-        var exception = SessionErrors.InvalidRefreshToken();
+        RefreshTokenExpiryException exception = SessionErrors.InvalidRefreshToken();
 
         // Assert
         exception.Should().NotBeNull();
@@ -30,7 +30,7 @@ public class SessionErrorsTests
         var sessionId = Guid.NewGuid();
 
         // Act
-        var exception = SessionErrors.SessionNotFound(sessionId);
+        NotFoundException exception = SessionErrors.SessionNotFound(sessionId);
 
         // Assert
         exception.Should().NotBeNull();
@@ -43,7 +43,7 @@ public class SessionErrorsTests
     public void DeviceIdRequired_ShouldReturnBadRequestException()
     {
         // Act
-        var exception = SessionErrors.DeviceIdRequired();
+        BadRequestException exception = SessionErrors.DeviceIdRequired();
 
         // Assert
         exception.Should().NotBeNull();

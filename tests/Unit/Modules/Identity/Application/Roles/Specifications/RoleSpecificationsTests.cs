@@ -1,6 +1,7 @@
+using System.Linq.Expressions;
 using _116.Identity.Application.Roles.Specifications;
 using _116.Identity.Domain.Entities;
-using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -17,7 +18,7 @@ public class RoleSpecificationsTests
     public void RoleByNameSpecification_WithMatchingName_ShouldReturnTrue()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().WithName("Admin").Build();
+        RoleEntity role = RoleFactory.CreateAdmin();
         RoleByNameSpecification spec = new("Admin");
 
         // Act
@@ -31,7 +32,7 @@ public class RoleSpecificationsTests
     public void RoleByNameSpecification_WithDifferentName_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().WithName("Admin").Build();
+        RoleEntity role = RoleFactory.CreateAdmin();
         RoleByNameSpecification spec = new("Visitor");
 
         // Act
@@ -45,7 +46,7 @@ public class RoleSpecificationsTests
     public void RoleByNameSpecification_IsCaseSensitive()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().WithName("Admin").Build();
+        RoleEntity role = RoleFactory.CreateAdmin();
         RoleByNameSpecification spec = new("admin");
 
         // Act
@@ -64,7 +65,7 @@ public class RoleSpecificationsTests
     {
         // Arrange
         Guid roleId = Guid.NewGuid();
-        RoleEntity role = new RoleBuilder().WithId(roleId).Build();
+        RoleEntity role = RoleFactory.CreateWithId(roleId);
         RoleByIdSpecification spec = new(roleId);
 
         // Act
@@ -78,7 +79,7 @@ public class RoleSpecificationsTests
     public void RoleByIdSpecification_WithDifferentId_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().WithId(Guid.NewGuid()).Build();
+        RoleEntity role = RoleFactory.CreateWithId(Guid.NewGuid());
         RoleByIdSpecification spec = new(Guid.NewGuid());
 
         // Act
@@ -96,7 +97,7 @@ public class RoleSpecificationsTests
     public void RoleIsActiveSpecification_WithActiveRole_ShouldReturnTrue()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
         role.Activate();
         RoleIsActiveSpecification spec = new();
 
@@ -111,7 +112,7 @@ public class RoleSpecificationsTests
     public void RoleIsActiveSpecification_WithInactiveRole_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
         role.Deactivate();
         RoleIsActiveSpecification spec = new();
 
@@ -130,7 +131,7 @@ public class RoleSpecificationsTests
     public void RoleIsDeletedSpecification_WithDeletedRole_ShouldReturnTrue()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
         role.SoftDelete();
         RoleIsDeletedSpecification spec = new();
 
@@ -145,7 +146,7 @@ public class RoleSpecificationsTests
     public void RoleIsDeletedSpecification_WithNonDeletedRole_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
         RoleIsDeletedSpecification spec = new();
 
         // Act
@@ -163,7 +164,7 @@ public class RoleSpecificationsTests
     public void RoleNotDeletedSpecification_WithNonDeletedRole_ShouldReturnTrue()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
         RoleNotDeletedSpecification spec = new();
 
         // Act
@@ -177,7 +178,7 @@ public class RoleSpecificationsTests
     public void RoleNotDeletedSpecification_WithDeletedRole_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
         role.SoftDelete();
         RoleNotDeletedSpecification spec = new();
 
@@ -196,7 +197,7 @@ public class RoleSpecificationsTests
     public void ActiveRoleSpecification_WithActiveAndNonDeletedRole_ShouldReturnTrue()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
         role.Activate();
         ActiveRoleSpecification spec = new();
 
@@ -211,7 +212,7 @@ public class RoleSpecificationsTests
     public void ActiveRoleSpecification_WithInactiveRole_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
         role.Deactivate();
         ActiveRoleSpecification spec = new();
 
@@ -226,7 +227,7 @@ public class RoleSpecificationsTests
     public void ActiveRoleSpecification_WithDeletedRole_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
         role.Activate();
         role.SoftDelete();
         ActiveRoleSpecification spec = new();
@@ -242,7 +243,7 @@ public class RoleSpecificationsTests
     public void ActiveRoleSpecification_WithInactiveAndDeletedRole_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
         role.Deactivate();
         role.SoftDelete();
         ActiveRoleSpecification spec = new();
@@ -262,7 +263,7 @@ public class RoleSpecificationsTests
     public void RoleIsNotActiveSpecification_WithInactiveRole_ShouldReturnTrue()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
         role.Deactivate();
         RoleIsNotActiveSpecification spec = new();
 
@@ -277,7 +278,7 @@ public class RoleSpecificationsTests
     public void RoleIsNotActiveSpecification_WithActiveRole_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity role = new RoleBuilder().Build();
+        RoleEntity role = RoleFactory.Create();
         role.Activate();
         RoleIsNotActiveSpecification spec = new();
 
@@ -299,7 +300,7 @@ public class RoleSpecificationsTests
         RoleSearchSpecification spec = new("Admin");
 
         // Act
-        var expression = spec.ToExpression();
+        Expression<Func<RoleEntity, bool>> expression = spec.ToExpression();
 
         // Assert
         expression.Should().NotBeNull();
@@ -316,9 +317,9 @@ public class RoleSpecificationsTests
         // Arrange
         List<RoleEntity> roles =
         [
-            new RoleBuilder().WithName("Admin").Build(),
-            new RoleBuilder().WithName("Visitor").Build(),
-            new RoleBuilder().WithName("Moderator").Build(),
+            RoleFactory.Create("Admin"),
+            RoleFactory.Create("Visitor"),
+            RoleFactory.Create("Moderator"),
         ];
 
         RoleByNameSpecification spec = new("Admin");
@@ -327,7 +328,7 @@ public class RoleSpecificationsTests
         List<RoleEntity> filtered = roles.Where(spec.ToExpression().Compile()).ToList();
 
         // Assert
-        filtered.Should().HaveCount(1);
+        filtered.Should().ContainSingle();
         filtered[0].Name.Should().Be("Admin");
     }
 
@@ -335,13 +336,13 @@ public class RoleSpecificationsTests
     public void ActiveRoleSpecification_WithLinq_ShouldFilterCorrectly()
     {
         // Arrange
-        RoleEntity activeRole = new RoleBuilder().WithName("Active").Build();
+        RoleEntity activeRole = RoleFactory.Create("Active");
         activeRole.Activate();
 
-        RoleEntity inactiveRole = new RoleBuilder().WithName("Inactive").Build();
+        RoleEntity inactiveRole = RoleFactory.Create("Inactive");
         inactiveRole.Deactivate();
 
-        RoleEntity deletedRole = new RoleBuilder().WithName("Deleted").Build();
+        RoleEntity deletedRole = RoleFactory.Create("Deleted");
         deletedRole.SoftDelete();
 
         List<RoleEntity> roles = [activeRole, inactiveRole, deletedRole];
@@ -351,7 +352,7 @@ public class RoleSpecificationsTests
         List<RoleEntity> filtered = roles.Where(spec.ToExpression().Compile()).ToList();
 
         // Assert
-        filtered.Should().HaveCount(1);
+        filtered.Should().ContainSingle();
         filtered[0].Name.Should().Be("Active");
     }
 

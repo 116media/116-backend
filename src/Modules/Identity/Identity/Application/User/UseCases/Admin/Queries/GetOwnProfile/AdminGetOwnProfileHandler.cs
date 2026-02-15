@@ -5,6 +5,7 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.User.UseCases.Admin.Queries.GetOwnProfile;
 
@@ -14,10 +15,12 @@ namespace _116.Identity.Application.User.UseCases.Admin.Queries.GetOwnProfile;
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminGetOwnProfileHandler(
     IAuthRepository authRepository,
     IRoleRepository roleRepository,
-    IFileRepository fileRepository
+    IFileRepository fileRepository,
+    IMapper mapper
 ) : IQueryHandler<AdminGetOwnProfileQuery, AdminGetOwnProfileResult>
 {
     /// <summary>
@@ -46,9 +49,9 @@ public class AdminGetOwnProfileHandler(
             avatarFileId: user.AvatarFileId,
             cancellationToken: cancellationToken
         );
-        // Map to userDTO with avatar
-        var avatarDto = avatarFile?.ToFileDto();
-        var userDto = user.ToUserResponseDto(roles: roles, permissions: permissions, avatar: avatarDto);
+
+        var avatarDto = avatarFile?.ToFileDto(mapper);
+        var userDto = user.ToUserResponseDto(mapper: mapper, roles: roles, permissions: permissions, avatar: avatarDto);
         return new AdminGetOwnProfileResult(User: userDto);
     }
 }

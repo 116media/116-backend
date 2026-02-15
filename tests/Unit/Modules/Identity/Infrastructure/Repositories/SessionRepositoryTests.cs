@@ -3,6 +3,7 @@ using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -19,7 +20,7 @@ public class SessionRepositoryTests : IDisposable
 
     public SessionRepositoryTests()
     {
-        var options = new DbContextOptionsBuilder<IdentityDbContext>()
+        DbContextOptions<IdentityDbContext> options = new DbContextOptionsBuilder<IdentityDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -35,9 +36,8 @@ public class SessionRepositoryTests : IDisposable
 
     private SessionEntity CreateSessionWithCreatedAt(Guid? userId = null)
     {
-        var session = new SessionBuilder().WithUserId(userId ?? Guid.NewGuid()).Build();
+        SessionEntity session = SessionFactory.Create(userId ?? Guid.NewGuid());
 
-        // Set CreatedAt using reflection to bypass SessionBuilder limitation
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow);
 
         return session;
@@ -49,14 +49,14 @@ public class SessionRepositoryTests : IDisposable
     public async Task CreateAsync_ShouldAddSessionToContext()
     {
         // Arrange
-        var session = CreateSessionWithCreatedAt();
+        SessionEntity session = CreateSessionWithCreatedAt();
 
         // Act
         await _repository.CreateAsync(session);
         await _context.SaveChangesAsync();
 
         // Assert
-        var savedSession = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == session.Id);
+        SessionEntity? savedSession = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == session.Id);
         savedSession.Should().NotBeNull();
         savedSession!.Id.Should().Be(session.Id);
     }
@@ -69,13 +69,13 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetByRefreshTokenHashAsync_WhenSessionExists_ShouldReturnSessionWithUserAndRoles()
     {
         // Arrange
-        var user = new UserBuilder().Build();
-        var role = new RoleBuilder().WithName("Admin").Build();
-        var permission = new PermissionBuilder().WithResource("article").WithAction("read").Build();
+        UserEntity user = UserFactory.Create();
+        RoleEntity role = RoleFactory.CreateAdmin();
+        PermissionEntity permission = PermissionFactory.Create("article", "read");
         var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
         var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission.Id);
 
-        var session = CreateSessionWithCreatedAt(user.Id);
+        SessionEntity session = CreateSessionWithCreatedAt(user.Id);
 
         _context.Users.Add(user);
         _context.Roles.Add(role);
@@ -86,20 +86,20 @@ public class SessionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetByRefreshTokenHashAsync(session.RefreshTokenHash);
+        SessionEntity? result = await _repository.GetByRefreshTokenHashAsync(session.RefreshTokenHash);
 
         // Assert
         result.Should().NotBeNull();
         result!.Id.Should().Be(session.Id);
         result.User.Should().NotBeNull();
-        result.User.UserRoles.Should().HaveCount(1);
+        result.User.UserRoles.Should().ContainSingle();
     }
 
     [Fact]
     public async Task GetByRefreshTokenHashAsync_WhenSessionDoesNotExist_ShouldReturnNull()
     {
         // Arrange & Act
-        var result = await _repository.GetByRefreshTokenHashAsync("nonexistent-hash");
+        SessionEntity? result = await _repository.GetByRefreshTokenHashAsync("nonexistent-hash");
 
         // Assert
         result.Should().BeNull();
@@ -109,8 +109,8 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetByRefreshTokenHashAsync_WhenSessionIsRevoked_ShouldReturnNull()
     {
         // Arrange
-        var user = new UserBuilder().Build();
-        var session = CreateSessionWithCreatedAt(user.Id);
+        UserEntity user = UserFactory.Create();
+        SessionEntity session = CreateSessionWithCreatedAt(user.Id);
         session.Revoke();
 
         _context.Users.Add(user);
@@ -118,7 +118,7 @@ public class SessionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetByRefreshTokenHashAsync(session.RefreshTokenHash);
+        SessionEntity? result = await _repository.GetByRefreshTokenHashAsync(session.RefreshTokenHash);
 
         // Assert
         result.Should().BeNull();
@@ -132,7 +132,7 @@ public class SessionRepositoryTests : IDisposable
     public async Task RevokeAsync_WhenSessionExists_ShouldRevokeSession()
     {
         // Arrange
-        var session = CreateSessionWithCreatedAt();
+        SessionEntity session = CreateSessionWithCreatedAt();
         _context.Sessions.Add(session);
         await _context.SaveChangesAsync();
 
@@ -141,7 +141,7 @@ public class SessionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Assert
-        var revokedSession = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == session.Id);
+        SessionEntity? revokedSession = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == session.Id);
         revokedSession.Should().NotBeNull();
         revokedSession!.IsRevoked.Should().BeTrue();
         revokedSession.RevokedAt.Should().NotBeNull();
@@ -151,9 +151,9 @@ public class SessionRepositoryTests : IDisposable
     public async Task RevokeAsync_WhenSessionAlreadyRevoked_ShouldNotChangeSession()
     {
         // Arrange
-        var session = CreateSessionWithCreatedAt();
+        SessionEntity session = CreateSessionWithCreatedAt();
         session.Revoke();
-        var originalRevokedAt = session.RevokedAt;
+        DateTime? originalRevokedAt = session.RevokedAt;
 
         _context.Sessions.Add(session);
         await _context.SaveChangesAsync();
@@ -163,7 +163,7 @@ public class SessionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Assert
-        var revokedSession = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == session.Id);
+        SessionEntity? revokedSession = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == session.Id);
         revokedSession.Should().NotBeNull();
         revokedSession!.RevokedAt.Should().Be(originalRevokedAt);
     }
@@ -190,9 +190,9 @@ public class SessionRepositoryTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var session1 = CreateSessionWithCreatedAt(userId);
-        var session2 = CreateSessionWithCreatedAt(userId);
-        var session3 = CreateSessionWithCreatedAt(Guid.NewGuid()); // Different user
+        SessionEntity session1 = CreateSessionWithCreatedAt(userId);
+        SessionEntity session2 = CreateSessionWithCreatedAt(userId);
+        SessionEntity session3 = CreateSessionWithCreatedAt(Guid.NewGuid()); // Different user
 
         _context.Sessions.AddRange(session1, session2, session3);
         await _context.SaveChangesAsync();
@@ -202,11 +202,11 @@ public class SessionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Assert
-        var userSessions = await _context.Sessions.Where(s => s.UserId == userId).ToListAsync();
+        List<SessionEntity> userSessions = await _context.Sessions.Where(s => s.UserId == userId).ToListAsync();
         userSessions.Should().HaveCount(2);
         userSessions.Should().AllSatisfy(s => s.IsRevoked.Should().BeTrue());
 
-        var otherUserSession = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == session3.Id);
+        SessionEntity? otherUserSession = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == session3.Id);
         otherUserSession!.IsRevoked.Should().BeFalse();
     }
 
@@ -231,9 +231,9 @@ public class SessionRepositoryTests : IDisposable
     public async Task DeleteExpiredSessionsAsync_WhenExpiredSessionsExist_ShouldRevokeThemAndReturnCount()
     {
         // Arrange
-        var expiredSession1 = new SessionBuilder().AsExpired().Build();
-        var expiredSession2 = new SessionBuilder().AsExpired().Build();
-        var activeSession = CreateSessionWithCreatedAt();
+        SessionEntity expiredSession1 = SessionFactory.CreateExpired();
+        SessionEntity expiredSession2 = SessionFactory.CreateExpired();
+        SessionEntity activeSession = CreateSessionWithCreatedAt();
 
         // Set CreatedAt for expired sessions
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(expiredSession1, DateTime.UtcNow);
@@ -243,19 +243,19 @@ public class SessionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var count = await _repository.DeleteExpiredSessionsAsync();
+        int count = await _repository.DeleteExpiredSessionsAsync();
         await _context.SaveChangesAsync();
 
         // Assert
         count.Should().Be(2);
 
-        var expired1 = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == expiredSession1.Id);
+        SessionEntity? expired1 = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == expiredSession1.Id);
         expired1!.IsRevoked.Should().BeTrue();
 
-        var expired2 = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == expiredSession2.Id);
+        SessionEntity? expired2 = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == expiredSession2.Id);
         expired2!.IsRevoked.Should().BeTrue();
 
-        var active = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == activeSession.Id);
+        SessionEntity? active = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == activeSession.Id);
         active!.IsRevoked.Should().BeFalse();
     }
 
@@ -263,12 +263,12 @@ public class SessionRepositoryTests : IDisposable
     public async Task DeleteExpiredSessionsAsync_WhenNoExpiredSessions_ShouldReturnZero()
     {
         // Arrange
-        var activeSession = CreateSessionWithCreatedAt();
+        SessionEntity activeSession = CreateSessionWithCreatedAt();
         _context.Sessions.Add(activeSession);
         await _context.SaveChangesAsync();
 
         // Act
-        var count = await _repository.DeleteExpiredSessionsAsync();
+        int count = await _repository.DeleteExpiredSessionsAsync();
 
         // Assert
         count.Should().Be(0);
@@ -278,7 +278,7 @@ public class SessionRepositoryTests : IDisposable
     public async Task DeleteExpiredSessionsAsync_ShouldNotRevokeAlreadyRevokedSessions()
     {
         // Arrange
-        var expiredSession = new SessionBuilder().AsExpired().Build();
+        SessionEntity expiredSession = SessionFactory.CreateExpired();
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(expiredSession, DateTime.UtcNow);
         expiredSession.Revoke();
 
@@ -286,7 +286,7 @@ public class SessionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var count = await _repository.DeleteExpiredSessionsAsync();
+        int count = await _repository.DeleteExpiredSessionsAsync();
 
         // Assert
         count.Should().Be(0);
@@ -300,12 +300,12 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetByIdAsync_WhenSessionExists_ShouldReturnSession()
     {
         // Arrange
-        var session = CreateSessionWithCreatedAt();
+        SessionEntity session = CreateSessionWithCreatedAt();
         _context.Sessions.Add(session);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetByIdAsync(session.Id);
+        SessionEntity? result = await _repository.GetByIdAsync(session.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -319,7 +319,7 @@ public class SessionRepositoryTests : IDisposable
         var nonExistentId = Guid.NewGuid();
 
         // Act
-        var result = await _repository.GetByIdAsync(nonExistentId);
+        SessionEntity? result = await _repository.GetByIdAsync(nonExistentId);
 
         // Assert
         result.Should().BeNull();
@@ -329,14 +329,14 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetByIdAsync_WhenSessionIsRevoked_ShouldReturnNull()
     {
         // Arrange
-        var session = CreateSessionWithCreatedAt();
+        SessionEntity session = CreateSessionWithCreatedAt();
         session.Revoke();
 
         _context.Sessions.Add(session);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetByIdAsync(session.Id);
+        SessionEntity? result = await _repository.GetByIdAsync(session.Id);
 
         // Assert
         result.Should().BeNull();
@@ -351,8 +351,8 @@ public class SessionRepositoryTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var deviceId = "device-123";
-        var session = new SessionBuilder().WithUserId(userId).WithDeviceId(deviceId).Build();
+        string deviceId = "device-123";
+        SessionEntity session = SessionFactory.Create(userId, deviceId);
 
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session, DateTime.UtcNow);
 
@@ -360,7 +360,7 @@ public class SessionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetActiveSessionByUserIdAndDeviceIdAsync(userId, deviceId);
+        SessionEntity? result = await _repository.GetActiveSessionByUserIdAndDeviceIdAsync(userId, deviceId);
 
         // Assert
         result.Should().NotBeNull();
@@ -374,10 +374,10 @@ public class SessionRepositoryTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var deviceId = "device-123";
+        string deviceId = "device-123";
 
         // Act
-        var result = await _repository.GetActiveSessionByUserIdAndDeviceIdAsync(userId, deviceId);
+        SessionEntity? result = await _repository.GetActiveSessionByUserIdAndDeviceIdAsync(userId, deviceId);
 
         // Assert
         result.Should().BeNull();
@@ -392,15 +392,15 @@ public class SessionRepositoryTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var session1 = CreateSessionWithCreatedAt(userId);
-        var session2 = CreateSessionWithCreatedAt(userId);
-        var otherUserSession = CreateSessionWithCreatedAt(Guid.NewGuid());
+        SessionEntity session1 = CreateSessionWithCreatedAt(userId);
+        SessionEntity session2 = CreateSessionWithCreatedAt(userId);
+        SessionEntity otherUserSession = CreateSessionWithCreatedAt(Guid.NewGuid());
 
         _context.Sessions.AddRange(session1, session2, otherUserSession);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetUserSessionsAsync(userId);
+        List<SessionEntity> result = await _repository.GetUserSessionsAsync(userId);
 
         // Assert
         result.Should().HaveCount(2);
@@ -412,18 +412,18 @@ public class SessionRepositoryTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var activeSession = CreateSessionWithCreatedAt(userId);
-        var revokedSession = CreateSessionWithCreatedAt(userId);
+        SessionEntity activeSession = CreateSessionWithCreatedAt(userId);
+        SessionEntity revokedSession = CreateSessionWithCreatedAt(userId);
         revokedSession.Revoke();
 
         _context.Sessions.AddRange(activeSession, revokedSession);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetUserSessionsAsync(userId, isActive: true);
+        List<SessionEntity> result = await _repository.GetUserSessionsAsync(userId, isActive: true);
 
         // Assert
-        result.Should().HaveCount(1);
+        result.Should().ContainSingle();
         result.First().Id.Should().Be(activeSession.Id);
     }
 
@@ -432,17 +432,17 @@ public class SessionRepositoryTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var session1 = CreateSessionWithCreatedAt(userId);
+        SessionEntity session1 = CreateSessionWithCreatedAt(userId);
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session1, DateTime.UtcNow.AddMinutes(-10));
 
-        var session2 = CreateSessionWithCreatedAt(userId);
+        SessionEntity session2 = CreateSessionWithCreatedAt(userId);
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session2, DateTime.UtcNow);
 
         _context.Sessions.AddRange(session1, session2);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetUserSessionsAsync(userId);
+        List<SessionEntity> result = await _repository.GetUserSessionsAsync(userId);
 
         // Assert
         result.Should().HaveCount(2);
@@ -457,9 +457,9 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetAllWithPaginationAsync_WithNoFilters_ShouldReturnAllSessions()
     {
         // Arrange
-        var session1 = CreateSessionWithCreatedAt();
-        var session2 = CreateSessionWithCreatedAt();
-        var session3 = CreateSessionWithCreatedAt();
+        SessionEntity session1 = CreateSessionWithCreatedAt();
+        SessionEntity session2 = CreateSessionWithCreatedAt();
+        SessionEntity session3 = CreateSessionWithCreatedAt();
 
         _context.Sessions.AddRange(session1, session2, session3);
         await _context.SaveChangesAsync();
@@ -478,7 +478,7 @@ public class SessionRepositoryTests : IDisposable
         // Arrange
         for (int i = 0; i < 5; i++)
         {
-            var session = CreateSessionWithCreatedAt();
+            SessionEntity session = CreateSessionWithCreatedAt();
             _context.Sessions.Add(session);
         }
         await _context.SaveChangesAsync();
@@ -495,8 +495,8 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetAllWithPaginationAsync_WithStatusFilter_ShouldFilterByStatus()
     {
         // Arrange
-        var activeSession = CreateSessionWithCreatedAt();
-        var expiredSession = new SessionBuilder().AsExpired().Build();
+        SessionEntity activeSession = CreateSessionWithCreatedAt();
+        SessionEntity expiredSession = SessionFactory.CreateExpired();
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(expiredSession, DateTime.UtcNow);
 
         _context.Sessions.AddRange(activeSession, expiredSession);
@@ -510,7 +510,7 @@ public class SessionRepositoryTests : IDisposable
         );
 
         // Assert
-        sessions.Should().HaveCount(1);
+        sessions.Should().ContainSingle();
         totalCount.Should().Be(1);
     }
 
@@ -519,8 +519,8 @@ public class SessionRepositoryTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var userSession = CreateSessionWithCreatedAt(userId);
-        var otherSession = CreateSessionWithCreatedAt(Guid.NewGuid());
+        SessionEntity userSession = CreateSessionWithCreatedAt(userId);
+        SessionEntity otherSession = CreateSessionWithCreatedAt(Guid.NewGuid());
 
         _context.Sessions.AddRange(userSession, otherSession);
         await _context.SaveChangesAsync();
@@ -529,7 +529,7 @@ public class SessionRepositoryTests : IDisposable
         var (sessions, totalCount) = await _repository.GetAllWithPaginationAsync(page: 1, pageSize: 10, userId: userId);
 
         // Assert
-        sessions.Should().HaveCount(1);
+        sessions.Should().ContainSingle();
         totalCount.Should().Be(1);
         sessions.First().UserId.Should().Be(userId);
     }
@@ -538,8 +538,8 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetAllWithPaginationAsync_WithIpAddressFilter_ShouldFilterByIpAddress()
     {
         // Arrange
-        var session1 = new SessionBuilder().WithIpAddress("192.168.1.1").Build();
-        var session2 = new SessionBuilder().WithIpAddress("192.168.1.2").Build();
+        SessionEntity session1 = SessionFactory.CreateWithIpAddress("192.168.1.1");
+        SessionEntity session2 = SessionFactory.CreateWithIpAddress("192.168.1.2");
 
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session1, DateTime.UtcNow);
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(session2, DateTime.UtcNow);
@@ -555,7 +555,7 @@ public class SessionRepositoryTests : IDisposable
         );
 
         // Assert
-        sessions.Should().HaveCount(1);
+        sessions.Should().ContainSingle();
         totalCount.Should().Be(1);
         sessions.First().IpAddress.Should().Be("192.168.1.1");
     }
@@ -564,10 +564,10 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetAllWithPaginationAsync_WithDateRangeFilter_ShouldFilterByDateRange()
     {
         // Arrange
-        var oldSession = CreateSessionWithCreatedAt();
+        SessionEntity oldSession = CreateSessionWithCreatedAt();
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(oldSession, DateTime.UtcNow.AddDays(-10));
 
-        var recentSession = CreateSessionWithCreatedAt();
+        SessionEntity recentSession = CreateSessionWithCreatedAt();
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(recentSession, DateTime.UtcNow);
 
         _context.Sessions.AddRange(oldSession, recentSession);
@@ -582,7 +582,7 @@ public class SessionRepositoryTests : IDisposable
         );
 
         // Assert
-        sessions.Should().HaveCount(1);
+        sessions.Should().ContainSingle();
         totalCount.Should().Be(1);
     }
 
@@ -594,9 +594,9 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetActiveSessionCountByBrowserAsync_ShouldReturnCountsByBrowser()
     {
         // Arrange
-        var chromeSession1 = new SessionBuilder().WithBrowser(EnumBrowser.Chrome).Build();
-        var chromeSession2 = new SessionBuilder().WithBrowser(EnumBrowser.Chrome).Build();
-        var firefoxSession = new SessionBuilder().WithBrowser(EnumBrowser.Firefox).Build();
+        SessionEntity chromeSession1 = SessionFactory.CreateWithBrowser(EnumBrowser.Chrome);
+        SessionEntity chromeSession2 = SessionFactory.CreateWithBrowser(EnumBrowser.Chrome);
+        SessionEntity firefoxSession = SessionFactory.CreateWithBrowser(EnumBrowser.Firefox);
 
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(chromeSession1, DateTime.UtcNow);
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(chromeSession2, DateTime.UtcNow);
@@ -606,7 +606,7 @@ public class SessionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetActiveSessionCountByBrowserAsync();
+        Dictionary<EnumBrowser, int> result = await _repository.GetActiveSessionCountByBrowserAsync();
 
         // Assert
         result.Should().ContainKey(EnumBrowser.Chrome);
@@ -619,8 +619,8 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetActiveSessionCountByBrowserAsync_ShouldNotIncludeRevokedSessions()
     {
         // Arrange
-        var activeSession = new SessionBuilder().WithBrowser(EnumBrowser.Chrome).Build();
-        var revokedSession = new SessionBuilder().WithBrowser(EnumBrowser.Chrome).Build();
+        SessionEntity activeSession = SessionFactory.CreateWithBrowser(EnumBrowser.Chrome);
+        SessionEntity revokedSession = SessionFactory.CreateWithBrowser(EnumBrowser.Chrome);
         revokedSession.Revoke();
 
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(activeSession, DateTime.UtcNow);
@@ -630,7 +630,7 @@ public class SessionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetActiveSessionCountByBrowserAsync();
+        Dictionary<EnumBrowser, int> result = await _repository.GetActiveSessionCountByBrowserAsync();
 
         // Assert
         result[EnumBrowser.Chrome].Should().Be(1);
@@ -644,8 +644,8 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetActiveSessionCountByDeviceAsync_ShouldReturnCountsByDevice()
     {
         // Arrange
-        var desktopSession = new SessionBuilder().WithDevice(EnumDevice.Desktop).Build();
-        var mobileSession = new SessionBuilder().WithDevice(EnumDevice.Mobile).Build();
+        SessionEntity desktopSession = SessionFactory.CreateDesktop();
+        SessionEntity mobileSession = SessionFactory.CreateMobile();
 
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(desktopSession, DateTime.UtcNow);
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(mobileSession, DateTime.UtcNow);
@@ -654,7 +654,7 @@ public class SessionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetActiveSessionCountByDeviceAsync();
+        Dictionary<EnumDevice, int> result = await _repository.GetActiveSessionCountByDeviceAsync();
 
         // Assert
         result.Should().ContainKey(EnumDevice.Desktop);
@@ -671,8 +671,8 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetActiveSessionCountByPlatformAsync_ShouldReturnCountsByPlatform()
     {
         // Arrange
-        var windowsSession = new SessionBuilder().WithPlatform(EnumPlatform.Windows).Build();
-        var iosSession = new SessionBuilder().WithPlatform(EnumPlatform.Ios).Build();
+        SessionEntity windowsSession = SessionFactory.CreateWithPlatform(EnumPlatform.Windows);
+        SessionEntity iosSession = SessionFactory.CreateWithPlatform(EnumPlatform.Ios);
 
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(windowsSession, DateTime.UtcNow);
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(iosSession, DateTime.UtcNow);
@@ -681,7 +681,7 @@ public class SessionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetActiveSessionCountByPlatformAsync();
+        Dictionary<EnumPlatform, int> result = await _repository.GetActiveSessionCountByPlatformAsync();
 
         // Assert
         result.Should().ContainKey(EnumPlatform.Windows);
@@ -698,8 +698,8 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetActiveSessionCountByClientAsync_ShouldReturnCountsByClient()
     {
         // Arrange
-        var webAppSession = new SessionBuilder().WithClient(EnumClient.WebApp).Build();
-        var mobileAppSession = new SessionBuilder().WithClient(EnumClient.MobileApp).Build();
+        SessionEntity webAppSession = SessionFactory.CreateWithClient(EnumClient.WebApp);
+        SessionEntity mobileAppSession = SessionFactory.CreateWithClient(EnumClient.MobileApp);
 
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(webAppSession, DateTime.UtcNow);
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(mobileAppSession, DateTime.UtcNow);
@@ -708,7 +708,7 @@ public class SessionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetActiveSessionCountByClientAsync();
+        Dictionary<EnumClient, int> result = await _repository.GetActiveSessionCountByClientAsync();
 
         // Assert
         result.Should().ContainKey(EnumClient.WebApp);
@@ -725,16 +725,16 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetTotalActiveSessionsCountAsync_ShouldReturnCountOfActiveSessions()
     {
         // Arrange
-        var activeSession1 = CreateSessionWithCreatedAt();
-        var activeSession2 = CreateSessionWithCreatedAt();
-        var revokedSession = CreateSessionWithCreatedAt();
+        SessionEntity activeSession1 = CreateSessionWithCreatedAt();
+        SessionEntity activeSession2 = CreateSessionWithCreatedAt();
+        SessionEntity revokedSession = CreateSessionWithCreatedAt();
         revokedSession.Revoke();
 
         _context.Sessions.AddRange(activeSession1, activeSession2, revokedSession);
         await _context.SaveChangesAsync();
 
         // Act
-        var count = await _repository.GetTotalActiveSessionsCountAsync();
+        int count = await _repository.GetTotalActiveSessionsCountAsync();
 
         // Assert
         count.Should().Be(2);
@@ -751,15 +751,15 @@ public class SessionRepositoryTests : IDisposable
         var user1Id = Guid.NewGuid();
         var user2Id = Guid.NewGuid();
 
-        var user1Session1 = CreateSessionWithCreatedAt(user1Id);
-        var user1Session2 = CreateSessionWithCreatedAt(user1Id);
-        var user2Session = CreateSessionWithCreatedAt(user2Id);
+        SessionEntity user1Session1 = CreateSessionWithCreatedAt(user1Id);
+        SessionEntity user1Session2 = CreateSessionWithCreatedAt(user1Id);
+        SessionEntity user2Session = CreateSessionWithCreatedAt(user2Id);
 
         _context.Sessions.AddRange(user1Session1, user1Session2, user2Session);
         await _context.SaveChangesAsync();
 
         // Act
-        var count = await _repository.GetTotalActiveUsersCountAsync();
+        int count = await _repository.GetTotalActiveUsersCountAsync();
 
         // Assert
         count.Should().Be(2);
@@ -773,14 +773,14 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetSessionsForExportAsync_WithNoFilters_ShouldReturnAllSessions()
     {
         // Arrange
-        var session1 = CreateSessionWithCreatedAt();
-        var session2 = CreateSessionWithCreatedAt();
+        SessionEntity session1 = CreateSessionWithCreatedAt();
+        SessionEntity session2 = CreateSessionWithCreatedAt();
 
         _context.Sessions.AddRange(session1, session2);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetSessionsForExportAsync();
+        List<SessionEntity> result = await _repository.GetSessionsForExportAsync();
 
         // Assert
         result.Should().HaveCount(2);
@@ -790,41 +790,41 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetSessionsForExportAsync_WithStatusFilter_ShouldFilterByStatus()
     {
         // Arrange
-        var activeSession = CreateSessionWithCreatedAt();
-        var revokedSession = CreateSessionWithCreatedAt();
+        SessionEntity activeSession = CreateSessionWithCreatedAt();
+        SessionEntity revokedSession = CreateSessionWithCreatedAt();
         revokedSession.Revoke();
 
         _context.Sessions.AddRange(activeSession, revokedSession);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetSessionsForExportAsync(status: "active");
+        List<SessionEntity> result = await _repository.GetSessionsForExportAsync(status: "active");
 
         // Assert
-        result.Should().HaveCount(1);
+        result.Should().ContainSingle();
     }
 
     [Fact]
     public async Task GetSessionsForExportAsync_WithDateRangeFilter_ShouldFilterByDateRange()
     {
         // Arrange
-        var oldSession = CreateSessionWithCreatedAt();
+        SessionEntity oldSession = CreateSessionWithCreatedAt();
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(oldSession, DateTime.UtcNow.AddDays(-10));
 
-        var recentSession = CreateSessionWithCreatedAt();
+        SessionEntity recentSession = CreateSessionWithCreatedAt();
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(recentSession, DateTime.UtcNow);
 
         _context.Sessions.AddRange(oldSession, recentSession);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetSessionsForExportAsync(
+        List<SessionEntity> result = await _repository.GetSessionsForExportAsync(
             fromDate: DateTime.UtcNow.AddDays(-5),
             toDate: DateTime.UtcNow.AddDays(1)
         );
 
         // Assert
-        result.Should().HaveCount(1);
+        result.Should().ContainSingle();
     }
 
     #endregion
@@ -835,19 +835,19 @@ public class SessionRepositoryTests : IDisposable
     public async Task UpdateRefreshTokenAsync_WhenSessionExists_ShouldUpdateRefreshToken()
     {
         // Arrange
-        var session = CreateSessionWithCreatedAt();
+        SessionEntity session = CreateSessionWithCreatedAt();
         _context.Sessions.Add(session);
         await _context.SaveChangesAsync();
 
-        var newHash = "new-hash";
-        var newExpiresAt = DateTime.UtcNow.AddDays(60);
+        string newHash = "new-hash";
+        DateTime newExpiresAt = DateTime.UtcNow.AddDays(60);
 
         // Act
         await _repository.UpdateRefreshTokenAsync(session.Id, newHash, newExpiresAt);
         await _context.SaveChangesAsync();
 
         // Assert
-        var updatedSession = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == session.Id);
+        SessionEntity? updatedSession = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == session.Id);
         updatedSession.Should().NotBeNull();
         updatedSession!.RefreshTokenHash.Should().Be(newHash);
         updatedSession.ExpiresAt.Should().BeCloseTo(newExpiresAt, TimeSpan.FromSeconds(1));
@@ -871,9 +871,9 @@ public class SessionRepositoryTests : IDisposable
     public async Task UpdateRefreshTokenAsync_WhenSessionIsRevoked_ShouldNotUpdate()
     {
         // Arrange
-        var session = CreateSessionWithCreatedAt();
+        SessionEntity session = CreateSessionWithCreatedAt();
         session.Revoke();
-        var originalHash = session.RefreshTokenHash;
+        string originalHash = session.RefreshTokenHash;
 
         _context.Sessions.Add(session);
         await _context.SaveChangesAsync();
@@ -883,7 +883,7 @@ public class SessionRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Assert
-        var updatedSession = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == session.Id);
+        SessionEntity? updatedSession = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == session.Id);
         updatedSession!.RefreshTokenHash.Should().Be(originalHash);
     }
 

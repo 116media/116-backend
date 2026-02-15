@@ -2,6 +2,7 @@ using _116.Identity.Application.Roles.Specifications;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -18,8 +19,8 @@ public class UserRoleSpecificationsTests
     public void UserHasAdminRoleSpecification_WithAdminRole_ShouldReturnTrue()
     {
         // Arrange
-        RoleEntity adminRole = new RoleBuilder().WithName(nameof(EnumCoreUserRole.Admin)).Build();
-        UserEntity user = new UserBuilder().WithRole(adminRole).Build();
+        RoleEntity adminRole = RoleFactory.CreateAdmin();
+        UserEntity user = UserFactory.CreateWithRole(adminRole);
         UserHasAdminRoleSpecification spec = new();
 
         // Act
@@ -33,8 +34,8 @@ public class UserRoleSpecificationsTests
     public void UserHasAdminRoleSpecification_WithSuperAdminRole_ShouldReturnTrue()
     {
         // Arrange
-        RoleEntity superAdminRole = new RoleBuilder().WithName(nameof(EnumCoreUserRole.SuperAdmin)).Build();
-        UserEntity user = new UserBuilder().WithRole(superAdminRole).Build();
+        RoleEntity superAdminRole = RoleFactory.CreateSuperAdmin();
+        UserEntity user = UserFactory.CreateWithRole(superAdminRole);
         UserHasAdminRoleSpecification spec = new();
 
         // Act
@@ -48,8 +49,8 @@ public class UserRoleSpecificationsTests
     public void UserHasAdminRoleSpecification_WithVisitorRole_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity visitorRole = new RoleBuilder().WithName(nameof(EnumCoreUserRole.Visitor)).Build();
-        UserEntity user = new UserBuilder().WithRole(visitorRole).Build();
+        RoleEntity visitorRole = RoleFactory.CreateVisitor();
+        UserEntity user = UserFactory.CreateWithRole(visitorRole);
         UserHasAdminRoleSpecification spec = new();
 
         // Act
@@ -63,7 +64,7 @@ public class UserRoleSpecificationsTests
     public void UserHasAdminRoleSpecification_WithNoRoles_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         UserHasAdminRoleSpecification spec = new();
 
         // Act
@@ -81,8 +82,8 @@ public class UserRoleSpecificationsTests
     public void UserHasRoleSpecification_WithMatchingRole_ShouldReturnTrue()
     {
         // Arrange
-        RoleEntity moderatorRole = new RoleBuilder().WithName("Moderator").Build();
-        UserEntity user = new UserBuilder().WithRole(moderatorRole).Build();
+        RoleEntity moderatorRole = RoleFactory.Create("Moderator");
+        UserEntity user = UserFactory.CreateWithRole(moderatorRole);
         UserHasRoleSpecification spec = new("Moderator");
 
         // Act
@@ -96,8 +97,8 @@ public class UserRoleSpecificationsTests
     public void UserHasRoleSpecification_WithDifferentRole_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity visitorRole = new RoleBuilder().WithName("Visitor").Build();
-        UserEntity user = new UserBuilder().WithRole(visitorRole).Build();
+        RoleEntity visitorRole = RoleFactory.Create("Visitor");
+        UserEntity user = UserFactory.CreateWithRole(visitorRole);
         UserHasRoleSpecification spec = new("Admin");
 
         // Act
@@ -115,8 +116,8 @@ public class UserRoleSpecificationsTests
     public void UserHasVisitorRoleSpecification_WithVisitorRole_ShouldReturnTrue()
     {
         // Arrange
-        RoleEntity visitorRole = new RoleBuilder().WithName(nameof(EnumCoreUserRole.Visitor)).Build();
-        UserEntity user = new UserBuilder().WithRole(visitorRole).Build();
+        RoleEntity visitorRole = RoleFactory.CreateVisitor();
+        UserEntity user = UserFactory.CreateWithRole(visitorRole);
         UserHasVisitorRoleSpecification spec = new();
 
         // Act
@@ -130,8 +131,8 @@ public class UserRoleSpecificationsTests
     public void UserHasVisitorRoleSpecification_WithAdminRole_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity adminRole = new RoleBuilder().WithName(nameof(EnumCoreUserRole.Admin)).Build();
-        UserEntity user = new UserBuilder().WithRole(adminRole).Build();
+        RoleEntity adminRole = RoleFactory.CreateAdmin();
+        UserEntity user = UserFactory.CreateWithRole(adminRole);
         UserHasVisitorRoleSpecification spec = new();
 
         // Act
@@ -149,8 +150,8 @@ public class UserRoleSpecificationsTests
     public void UserIsActiveAdminSpecification_WithActiveAdminUser_ShouldReturnTrue()
     {
         // Arrange
-        RoleEntity adminRole = new RoleBuilder().WithName(nameof(EnumCoreUserRole.Admin)).Build();
-        UserEntity user = new UserBuilder().WithRole(adminRole).AsActive().Build();
+        RoleEntity adminRole = RoleFactory.CreateAdmin();
+        UserEntity user = UserFactory.CreateWithRole(adminRole);
         UserIsActiveAdminSpecification spec = new();
 
         // Act
@@ -164,8 +165,8 @@ public class UserRoleSpecificationsTests
     public void UserIsActiveAdminSpecification_WithActiveSuperAdminUser_ShouldReturnTrue()
     {
         // Arrange
-        RoleEntity superAdminRole = new RoleBuilder().WithName(nameof(EnumCoreUserRole.SuperAdmin)).Build();
-        UserEntity user = new UserBuilder().WithRole(superAdminRole).AsActive().Build();
+        RoleEntity superAdminRole = RoleFactory.CreateSuperAdmin();
+        UserEntity user = UserFactory.CreateWithRole(superAdminRole);
         UserIsActiveAdminSpecification spec = new();
 
         // Act
@@ -179,8 +180,9 @@ public class UserRoleSpecificationsTests
     public void UserIsActiveAdminSpecification_WithInactiveAdminUser_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity adminRole = new RoleBuilder().WithName(nameof(EnumCoreUserRole.Admin)).Build();
-        UserEntity user = new UserBuilder().WithRole(adminRole).AsInactive().Build();
+        RoleEntity adminRole = RoleFactory.CreateAdmin();
+        UserEntity user = UserFactory.CreateInactive();
+        user.AssignRole(UserRoleFactory.Create(user.Id, adminRole.Id));
         UserIsActiveAdminSpecification spec = new();
 
         // Act
@@ -194,8 +196,8 @@ public class UserRoleSpecificationsTests
     public void UserIsActiveAdminSpecification_WithActiveVisitorUser_ShouldReturnFalse()
     {
         // Arrange
-        RoleEntity visitorRole = new RoleBuilder().WithName(nameof(EnumCoreUserRole.Visitor)).Build();
-        UserEntity user = new UserBuilder().WithRole(visitorRole).AsActive().Build();
+        RoleEntity visitorRole = RoleFactory.CreateVisitor();
+        UserEntity user = UserFactory.CreateWithRole(visitorRole);
         UserIsActiveAdminSpecification spec = new();
 
         // Act
@@ -209,7 +211,7 @@ public class UserRoleSpecificationsTests
     public void UserIsActiveAdminSpecification_WithInactiveUserNoRoles_ShouldReturnFalse()
     {
         // Arrange
-        UserEntity user = new UserBuilder().AsInactive().Build();
+        UserEntity user = UserFactory.CreateInactive();
         UserIsActiveAdminSpecification spec = new();
 
         // Act
@@ -228,7 +230,7 @@ public class UserRoleSpecificationsTests
     {
         // Arrange
         Guid userId = Guid.NewGuid();
-        UserRoleEntity userRole = new UserRoleBuilder().WithUserId(userId).Build();
+        UserRoleEntity userRole = UserRoleFactory.CreateWithUserId(userId);
         UserRoleByUserIdSpecification spec = new(userId);
 
         // Act
@@ -242,7 +244,7 @@ public class UserRoleSpecificationsTests
     public void UserRoleByUserIdSpecification_WithDifferentUserId_ShouldReturnFalse()
     {
         // Arrange
-        UserRoleEntity userRole = new UserRoleBuilder().WithUserId(Guid.NewGuid()).Build();
+        UserRoleEntity userRole = UserRoleFactory.CreateWithUserId(Guid.NewGuid());
         UserRoleByUserIdSpecification spec = new(Guid.NewGuid());
 
         // Act
@@ -261,7 +263,7 @@ public class UserRoleSpecificationsTests
     {
         // Arrange
         Guid roleId = Guid.NewGuid();
-        UserRoleEntity userRole = new UserRoleBuilder().WithRoleId(roleId).Build();
+        UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
         UserRoleByRoleIdSpecification spec = new(roleId);
 
         // Act
@@ -275,7 +277,7 @@ public class UserRoleSpecificationsTests
     public void UserRoleByRoleIdSpecification_WithDifferentRoleId_ShouldReturnFalse()
     {
         // Arrange
-        UserRoleEntity userRole = new UserRoleBuilder().WithRoleId(Guid.NewGuid()).Build();
+        UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(Guid.NewGuid());
         UserRoleByRoleIdSpecification spec = new(Guid.NewGuid());
 
         // Act
@@ -295,7 +297,7 @@ public class UserRoleSpecificationsTests
         // Arrange
         Guid userId = Guid.NewGuid();
         Guid roleId = Guid.NewGuid();
-        UserRoleEntity userRole = new UserRoleBuilder().WithUserId(userId).WithRoleId(roleId).Build();
+        UserRoleEntity userRole = UserRoleFactory.Create(userId, roleId);
         UserRoleByUserAndRoleSpecification spec = new(userId, roleId);
 
         // Act
@@ -310,7 +312,7 @@ public class UserRoleSpecificationsTests
     {
         // Arrange
         Guid roleId = Guid.NewGuid();
-        UserRoleEntity userRole = new UserRoleBuilder().WithUserId(Guid.NewGuid()).WithRoleId(roleId).Build();
+        UserRoleEntity userRole = UserRoleFactory.Create(Guid.NewGuid(), roleId);
         UserRoleByUserAndRoleSpecification spec = new(Guid.NewGuid(), roleId);
 
         // Act

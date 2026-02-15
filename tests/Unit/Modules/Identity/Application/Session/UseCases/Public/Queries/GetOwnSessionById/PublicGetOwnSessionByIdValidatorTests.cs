@@ -21,7 +21,7 @@ public class PublicGetOwnSessionByIdValidatorTests
         PublicGetOwnSessionByIdQuery query = new(UserId: Guid.NewGuid(), SessionId: Guid.NewGuid().ToString());
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<PublicGetOwnSessionByIdQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -39,7 +39,7 @@ public class PublicGetOwnSessionByIdValidatorTests
         PublicGetOwnSessionByIdQuery query = new(UserId: Guid.NewGuid(), SessionId: null!);
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<PublicGetOwnSessionByIdQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -53,7 +53,7 @@ public class PublicGetOwnSessionByIdValidatorTests
         PublicGetOwnSessionByIdQuery query = new(UserId: Guid.NewGuid(), SessionId: string.Empty);
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<PublicGetOwnSessionByIdQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -67,7 +67,7 @@ public class PublicGetOwnSessionByIdValidatorTests
         PublicGetOwnSessionByIdQuery query = new(UserId: Guid.NewGuid(), SessionId: "   ");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<PublicGetOwnSessionByIdQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -81,7 +81,7 @@ public class PublicGetOwnSessionByIdValidatorTests
         PublicGetOwnSessionByIdQuery query = new(UserId: Guid.NewGuid(), SessionId: "not-a-guid");
 
         // Act
-        var result = await _validator.TestValidateAsync(query);
+        TestValidationResult<PublicGetOwnSessionByIdQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();

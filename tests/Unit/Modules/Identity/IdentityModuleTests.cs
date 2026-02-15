@@ -7,6 +7,7 @@ using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Shared.Infrastructure.Seed;
+using AwesomeAssertions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,7 +32,7 @@ public class IdentityModuleTests
 
         // Assert
         ServiceDescriptor? descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(IIdentityUnitOfWork));
-        Assert.NotNull(descriptor);
+        descriptor.Should().NotBeNull();
         Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
     }
 
@@ -49,7 +50,7 @@ public class IdentityModuleTests
         ServiceDescriptor? descriptor = services.FirstOrDefault(s =>
             s.ServiceType == typeof(IClientOriginDetectionAdapter)
         );
-        Assert.NotNull(descriptor);
+        descriptor.Should().NotBeNull();
         Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
     }
 
@@ -64,10 +65,10 @@ public class IdentityModuleTests
         services.AddIdentityModule();
 
         // Assert
-        Assert.Contains(services, s => s.ServiceType == typeof(IJwtService));
-        Assert.Contains(services, s => s.ServiceType == typeof(IPasswordService));
-        Assert.Contains(services, s => s.ServiceType == typeof(IRefreshTokenService));
-        Assert.Contains(services, s => s.ServiceType == typeof(IOtpService));
+        services.Should().Contain(s => s.ServiceType == typeof(IJwtService));
+        services.Should().Contain(s => s.ServiceType == typeof(IPasswordService));
+        services.Should().Contain(s => s.ServiceType == typeof(IRefreshTokenService));
+        services.Should().Contain(s => s.ServiceType == typeof(IOtpService));
     }
 
     [Fact]
@@ -81,13 +82,13 @@ public class IdentityModuleTests
         services.AddIdentityModule();
 
         // Assert
-        Assert.Contains(services, s => s.ServiceType == typeof(IAuthRepository));
-        Assert.Contains(services, s => s.ServiceType == typeof(IRoleRepository));
-        Assert.Contains(services, s => s.ServiceType == typeof(IPermissionRepository));
-        Assert.Contains(services, s => s.ServiceType == typeof(IRolePermissionRepository));
-        Assert.Contains(services, s => s.ServiceType == typeof(IUserRoleRepository));
-        Assert.Contains(services, s => s.ServiceType == typeof(IOtpRepository));
-        Assert.Contains(services, s => s.ServiceType == typeof(ISessionRepository));
+        services.Should().Contain(s => s.ServiceType == typeof(IAuthRepository));
+        services.Should().Contain(s => s.ServiceType == typeof(IRoleRepository));
+        services.Should().Contain(s => s.ServiceType == typeof(IPermissionRepository));
+        services.Should().Contain(s => s.ServiceType == typeof(IRolePermissionRepository));
+        services.Should().Contain(s => s.ServiceType == typeof(IUserRoleRepository));
+        services.Should().Contain(s => s.ServiceType == typeof(IOtpRepository));
+        services.Should().Contain(s => s.ServiceType == typeof(ISessionRepository));
     }
 
     [Fact]
@@ -101,8 +102,8 @@ public class IdentityModuleTests
         services.AddIdentityModule();
 
         // Assert
-        Assert.Contains(services, s => s.ServiceType == typeof(ISessionMetadataService));
-        Assert.Contains(services, s => s.ServiceType == typeof(ISessionExportService));
+        services.Should().Contain(s => s.ServiceType == typeof(ISessionMetadataService));
+        services.Should().Contain(s => s.ServiceType == typeof(ISessionExportService));
     }
 
     [Fact]
@@ -117,7 +118,7 @@ public class IdentityModuleTests
 
         // Assert
         List<ServiceDescriptor> seeders = services.Where(s => s.ServiceType == typeof(IDataSeeder)).ToList();
-        Assert.True(seeders.Count >= 2); // SuperAdminSeeder and VisitorRoleSeeder
+        (seeders.Count >= 2).Should().BeTrue(); // SuperAdminSeeder and VisitorRoleSeeder
     }
 
     [Fact]
@@ -134,7 +135,7 @@ public class IdentityModuleTests
         ServiceDescriptor? authenticationDescriptor = services.FirstOrDefault(s =>
             s.ServiceType.Name.Contains("Authentication")
         );
-        Assert.NotNull(authenticationDescriptor);
+        authenticationDescriptor.Should().NotBeNull();
     }
 
     [Fact]
@@ -148,7 +149,7 @@ public class IdentityModuleTests
         IServiceCollection result = services.AddIdentityModule();
 
         // Assert
-        Assert.Same(services, result);
+        result.Should().BeSameAs(services);
     }
 
     [Fact]
@@ -162,7 +163,7 @@ public class IdentityModuleTests
         services.AddIdentityModule();
 
         // Assert
-        Assert.Contains(services, s => s.ServiceType.Name.Contains("HttpContextAccessor"));
+        services.Should().Contain(s => s.ServiceType.Name.Contains("HttpContextAccessor"));
     }
 
     // Removed UseIdentityModule test - requires full host configuration
@@ -175,7 +176,7 @@ public class IdentityModuleTests
         services.AddLogging();
 
         // Act & Assert
-        var exception = Record.Exception(() => services.AddIdentityModule());
-        Assert.Null(exception);
+        Exception? exception = Record.Exception(() => services.AddIdentityModule());
+        exception.Should().BeNull();
     }
 }

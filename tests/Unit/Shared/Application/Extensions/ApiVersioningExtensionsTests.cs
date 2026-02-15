@@ -1,6 +1,7 @@
 using _116.Shared.Application.Extensions;
-using Asp.Versioning;
+using AwesomeAssertions;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -20,8 +21,8 @@ public class ApiVersioningExtensionsTests
         WebApplication app = builder.Build();
 
         // Act & Assert
-        var exception = Record.Exception(() => app.UseApiVersioning());
-        Assert.Null(exception);
+        Exception? exception = Record.Exception(() => app.UseApiVersioning());
+        exception.Should().BeNull();
     }
 
     [Fact]
@@ -36,7 +37,7 @@ public class ApiVersioningExtensionsTests
         app.UseApiVersioning();
 
         // Assert - No exception thrown, versioning initialized
-        Assert.NotNull(app);
+        app.Should().NotBeNull();
     }
 
     [Fact]
@@ -49,10 +50,10 @@ public class ApiVersioningExtensionsTests
         app.UseApiVersioning();
 
         // Act
-        var result = app.MapApiVersionGroup(1);
+        RouteGroupBuilder result = app.MapApiVersionGroup(1);
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
     }
 
     [Fact]
@@ -65,10 +66,10 @@ public class ApiVersioningExtensionsTests
         app.UseApiVersioning();
 
         // Act
-        var result = app.MapApiVersionGroup(2);
+        RouteGroupBuilder result = app.MapApiVersionGroup(2);
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
     }
 
     [Fact]
@@ -81,10 +82,10 @@ public class ApiVersioningExtensionsTests
         app.UseApiVersioning();
 
         // Act
-        var result = app.MapApiVersionGroup(1, isDeprecated: true);
+        RouteGroupBuilder result = app.MapApiVersionGroup(1, isDeprecated: true);
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
     }
 
     [Fact]
@@ -97,10 +98,10 @@ public class ApiVersioningExtensionsTests
         app.UseApiVersioning();
 
         // Act
-        var result = app.MapApiVersionGroup(2, isDeprecated: false);
+        RouteGroupBuilder result = app.MapApiVersionGroup(2, isDeprecated: false);
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
     }
 
     // Note: Removed tests for static state checking as they interfere with other tests
@@ -116,12 +117,12 @@ public class ApiVersioningExtensionsTests
         app.UseApiVersioning();
 
         // Act
-        var v1 = app.MapApiVersionGroup(1);
-        var v2 = app.MapApiVersionGroup(2);
+        RouteGroupBuilder v1 = app.MapApiVersionGroup(1);
+        RouteGroupBuilder v2 = app.MapApiVersionGroup(2);
 
         // Assert
-        Assert.NotNull(v1);
-        Assert.NotNull(v2);
+        v1.Should().NotBeNull();
+        v2.Should().NotBeNull();
     }
 
     [Fact]
@@ -136,9 +137,9 @@ public class ApiVersioningExtensionsTests
         app.UseApiVersioning();
 
         // Assert - Both versions can be mapped
-        var v1 = app.MapApiVersionGroup(1);
-        var v2 = app.MapApiVersionGroup(2);
-        Assert.NotNull(v1);
-        Assert.NotNull(v2);
+        RouteGroupBuilder v1 = app.MapApiVersionGroup(1);
+        RouteGroupBuilder v2 = app.MapApiVersionGroup(2);
+        v1.Should().NotBeNull();
+        v2.Should().NotBeNull();
     }
 }

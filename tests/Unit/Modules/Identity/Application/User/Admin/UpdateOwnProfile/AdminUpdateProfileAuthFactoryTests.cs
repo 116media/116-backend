@@ -4,7 +4,8 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile.Contracts;
 using _116.Identity.Domain.Entities;
-using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
+using AwesomeAssertions;
 using Moq;
 using Xunit;
 
@@ -46,7 +47,7 @@ public class AdminUpdateProfileAuthFactoryTests
         string countryDialCode = "+250";
         string partialPhoneNumber = "788123456";
 
-        UserEntity user = new UserBuilder().WithId(userId).Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
         var roles = new List<RoleDto> { new(Guid.NewGuid(), "Admin", "Admin role", true, false, null) };
         var permissions = new List<PermissionDto>
         {
@@ -88,7 +89,7 @@ public class AdminUpdateProfileAuthFactoryTests
         );
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
         Assert.Equal(user, result.User);
         Assert.Equal(roles, result.Roles);
         Assert.Equal(permissions, result.Permissions);
@@ -100,7 +101,7 @@ public class AdminUpdateProfileAuthFactoryTests
         // Arrange
         Guid userId = Guid.NewGuid();
         Guid sessionId = Guid.NewGuid();
-        UserEntity user = new UserBuilder().WithId(userId).Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
@@ -131,7 +132,7 @@ public class AdminUpdateProfileAuthFactoryTests
         // Arrange
         Guid userId = Guid.NewGuid();
         Guid sessionId = Guid.NewGuid();
-        UserEntity user = new UserBuilder().WithId(userId).Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
@@ -163,7 +164,8 @@ public class AdminUpdateProfileAuthFactoryTests
         Guid userId = Guid.NewGuid();
         Guid sessionId = Guid.NewGuid();
         string newUserName = "newusername";
-        UserEntity user = new UserBuilder().WithId(userId).WithUserName("oldusername").Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
+        user.UpdateUserName("oldusername");
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
@@ -211,7 +213,8 @@ public class AdminUpdateProfileAuthFactoryTests
         Guid userId = Guid.NewGuid();
         Guid sessionId = Guid.NewGuid();
         string userName = "sameusername";
-        UserEntity user = new UserBuilder().WithId(userId).WithUserName(userName).Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
+        user.UpdateUserName(userName);
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
@@ -249,7 +252,7 @@ public class AdminUpdateProfileAuthFactoryTests
         string partialPhoneNumber = "788123456";
         string fullPhoneNumber = $"{countryDialCode}{partialPhoneNumber}";
 
-        UserEntity user = new UserBuilder().WithId(userId).Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
@@ -300,7 +303,7 @@ public class AdminUpdateProfileAuthFactoryTests
         string partialPhoneNumber = "788123456";
         string fullPhoneNumber = $"{countryDialCode}{partialPhoneNumber}";
 
-        UserEntity user = new UserBuilder().WithId(userId).Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
@@ -342,7 +345,7 @@ public class AdminUpdateProfileAuthFactoryTests
         // Arrange
         Guid userId = Guid.NewGuid();
         Guid sessionId = Guid.NewGuid();
-        UserEntity user = new UserBuilder().WithId(userId).Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
@@ -373,7 +376,7 @@ public class AdminUpdateProfileAuthFactoryTests
         // Arrange
         Guid userId = Guid.NewGuid();
         Guid sessionId = Guid.NewGuid();
-        UserEntity user = new UserBuilder().WithId(userId).Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
@@ -404,7 +407,7 @@ public class AdminUpdateProfileAuthFactoryTests
         // Arrange
         Guid userId = Guid.NewGuid();
         Guid sessionId = Guid.NewGuid();
-        UserEntity user = new UserBuilder().WithId(userId).Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
         CancellationToken cancellationToken = new();
 
         _authRepositoryMock

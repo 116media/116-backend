@@ -5,8 +5,9 @@ namespace _116.Unit.Tests.Common.Builders.Entities;
 
 /// <summary>
 /// Fluent builder for creating <see cref="UserRoleEntity"/> instances in tests.
+/// For complex junction table scenarios.
 /// </summary>
-public class UserRoleBuilder
+internal class UserRoleBuilder
 {
     private Guid _id;
     private Guid _userId;
@@ -87,7 +88,7 @@ public class UserRoleBuilder
     /// <returns>A configured UserRoleEntity instance.</returns>
     public UserRoleEntity Build()
     {
-        UserRoleEntity userRole = UserRoleEntity.Create(_id, _userId, _roleId);
+        var userRole = UserRoleEntity.Create(_id, _userId, _roleId);
 
         if (_role is not null)
         {

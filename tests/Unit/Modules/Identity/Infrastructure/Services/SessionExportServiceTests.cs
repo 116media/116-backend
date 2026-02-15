@@ -42,7 +42,7 @@ public class SessionExportServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Length.Should().BeGreaterThan(0);
+        result.Length.Should().BePositive();
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public class SessionExportServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Length.Should().BeGreaterThan(0);
+        result.Length.Should().BePositive();
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public class SessionExportServiceTests
         };
 
         // Act
-        var act = () => _service.Export(sessions, (SessionExportFormat)999);
+        Func<byte[]> act = () => _service.Export(sessions, (SessionExportFormat)999);
 
         // Assert
         act.Should().Throw<ArgumentException>().WithMessage("*No export strategy found for format*");
@@ -147,7 +147,7 @@ public class SessionExportServiceTests
     public void GetContentType_WithUnsupportedFormat_ShouldThrowArgumentException()
     {
         // Act
-        var act = () => _service.GetContentType((SessionExportFormat)999);
+        Func<string> act = () => _service.GetContentType((SessionExportFormat)999);
 
         // Assert
         act.Should().Throw<ArgumentException>().WithMessage("*Unsupported export format*");
@@ -204,7 +204,7 @@ public class SessionExportServiceTests
     public void GenerateFileName_WithUnsupportedFormat_ShouldThrowArgumentException()
     {
         // Act
-        var act = () => _service.GenerateFileName((SessionExportFormat)999);
+        Func<string> act = () => _service.GenerateFileName((SessionExportFormat)999);
 
         // Assert
         act.Should().Throw<ArgumentException>().WithMessage("*Unsupported export format*");

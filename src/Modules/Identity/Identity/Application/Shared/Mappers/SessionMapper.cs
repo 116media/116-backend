@@ -1,36 +1,40 @@
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using Mapster;
+using MapsterMapper;
 
 namespace _116.Identity.Application.Shared.Mappers;
 
 /// <summary>
 /// Mapster configuration for Session entity mappings.
+/// Uses dependency injection instead of global static state.
 /// </summary>
 public static class SessionMapper
 {
     /// <summary>
-    /// Configures Mapster mappings for SessionEntity.
+    /// Registers Session entity mappings into the provided TypeAdapterConfig.
+    /// This method does NOT mutate global state.
     /// </summary>
-    public static void Configure()
+    /// <param name="config">The TypeAdapterConfig to register mappings into.</param>
+    public static void Register(TypeAdapterConfig config)
     {
-        TypeAdapterConfig<SessionEntity, SessionDto>
-            .NewConfig()
+        config
+            .NewConfig<SessionEntity, SessionDto>()
             .Map(dest => dest.IsActive, src => !src.IsRevoked && src.ExpiresAt > DateTime.UtcNow)
             .Map(dest => dest.Browser, src => src.Browser.ToString())
             .Map(dest => dest.Device, src => src.Device.ToString())
             .Map(dest => dest.Platform, src => src.Platform.ToString())
-            .Map(dest => dest.Client, src => src.Client.ToString())
-            .Compile();
+            .Map(dest => dest.Client, src => src.Client.ToString());
     }
 
     /// <summary>
     /// Maps a SessionEntity to a SessionDto for display to users.
     /// </summary>
     /// <param name="session">The session entity to map.</param>
+    /// <param name="mapper">Injected IMapper instance</param>
     /// <returns>A SessionDto containing session information.</returns>
-    public static SessionDto ToSessionDto(this SessionEntity session)
+    public static SessionDto ToSessionDto(this SessionEntity session, IMapper mapper)
     {
-        return session.Adapt<SessionDto>();
+        return mapper.Map<SessionDto>(session);
     }
 }

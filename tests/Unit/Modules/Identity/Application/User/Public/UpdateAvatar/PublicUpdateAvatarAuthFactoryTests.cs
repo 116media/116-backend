@@ -5,7 +5,8 @@ using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar.Contracts;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
+using AwesomeAssertions;
 using Moq;
 using Xunit;
 
@@ -41,7 +42,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         // Arrange
         Guid userId = Guid.NewGuid();
         Guid sessionId = Guid.NewGuid();
-        UserEntity user = new UserBuilder().WithId(userId).Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
         var roles = new List<RoleDto> { new(Guid.NewGuid(), "Visitor", "Visitor role", true, false, null) };
         var permissions = new List<PermissionDto>
         {
@@ -70,7 +71,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         );
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
         Assert.Equal(user, result.User);
         Assert.Equal(roles, result.Roles);
         Assert.Equal(permissions, result.Permissions);
@@ -82,7 +83,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         // Arrange
         Guid userId = Guid.NewGuid();
         Guid sessionId = Guid.NewGuid();
-        UserEntity user = new UserBuilder().WithId(userId).Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
@@ -113,7 +114,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         // Arrange
         Guid userId = Guid.NewGuid();
         Guid sessionId = Guid.NewGuid();
-        UserEntity user = new UserBuilder().WithId(userId).Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
@@ -144,7 +145,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         // Arrange
         Guid userId = Guid.NewGuid();
         Guid sessionId = Guid.NewGuid();
-        UserEntity user = new UserBuilder().WithId(userId).Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
@@ -175,7 +176,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         // Arrange
         Guid userId = Guid.NewGuid();
         Guid sessionId = Guid.NewGuid();
-        UserEntity user = new UserBuilder().WithId(userId).Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
         CancellationToken cancellationToken = new();
 
         _authRepositoryMock
@@ -213,7 +214,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         // Arrange
         Guid userId = Guid.NewGuid();
         Guid avatarFileId = Guid.NewGuid();
-        UserEntity user = new UserBuilder().WithId(userId).Build();
+        UserEntity user = UserFactory.CreateWithId(userId);
         var roles = new List<RoleDto> { new(Guid.NewGuid(), "Visitor", "Visitor role", true, false, null) };
         var permissions = new List<PermissionDto>
         {
@@ -232,7 +233,7 @@ public class PublicUpdateAvatarAuthFactoryTests
         );
 
         // Assert
-        Assert.NotNull(result);
+        result.Should().NotBeNull();
         Assert.Equal(user, result.User);
         Assert.Equal(roles, result.Roles);
         Assert.Equal(permissions, result.Permissions);
@@ -243,7 +244,7 @@ public class PublicUpdateAvatarAuthFactoryTests
     {
         // Arrange
         Guid avatarFileId = Guid.NewGuid();
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
@@ -264,7 +265,7 @@ public class PublicUpdateAvatarAuthFactoryTests
     {
         // Arrange
         Guid avatarFileId = Guid.NewGuid();
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
@@ -284,7 +285,7 @@ public class PublicUpdateAvatarAuthFactoryTests
     {
         // Arrange
         Guid avatarFileId = Guid.NewGuid();
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
         CancellationToken cancellationToken = new();
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
@@ -305,7 +306,7 @@ public class PublicUpdateAvatarAuthFactoryTests
     {
         // Arrange
         Guid avatarFileId = Guid.NewGuid();
-        UserEntity user = new UserBuilder().Build();
+        UserEntity user = UserFactory.Create();
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 

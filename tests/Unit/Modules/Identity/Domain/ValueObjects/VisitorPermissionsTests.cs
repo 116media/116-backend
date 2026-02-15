@@ -1,5 +1,6 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
+using AwesomeAssertions;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Domain.ValueObjects;
@@ -18,7 +19,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Content;
 
         // Assert
-        Assert.NotNull(permissions);
+        permissions.Should().NotBeNull();
         Assert.Equal(3, permissions.Length);
     }
 
@@ -29,7 +30,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Content;
 
         // Assert
-        Assert.Contains(permissions, p => p.Resource == "articles" && p.Action == "read");
+        permissions.Should().Contain(p => p.Resource == "articles" && p.Action == "read");
     }
 
     [Fact]
@@ -39,7 +40,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Content;
 
         // Assert
-        Assert.Contains(permissions, p => p.Resource == "videos" && p.Action == "read");
+        permissions.Should().Contain(p => p.Resource == "videos" && p.Action == "read");
     }
 
     [Fact]
@@ -49,7 +50,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Content;
 
         // Assert
-        Assert.Contains(permissions, p => p.Resource == "contents" && p.Action == "read");
+        permissions.Should().Contain(p => p.Resource == "contents" && p.Action == "read");
     }
 
     #endregion
@@ -63,7 +64,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Profile;
 
         // Assert
-        Assert.NotNull(permissions);
+        permissions.Should().NotBeNull();
         Assert.Equal(2, permissions.Length);
     }
 
@@ -74,7 +75,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Profile;
 
         // Assert
-        Assert.Contains(permissions, p => p.Resource == "own_profile" && p.Action == "read");
+        permissions.Should().Contain(p => p.Resource == "own_profile" && p.Action == "read");
     }
 
     [Fact]
@@ -84,7 +85,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Profile;
 
         // Assert
-        Assert.Contains(permissions, p => p.Resource == "own_profile" && p.Action == "update");
+        permissions.Should().Contain(p => p.Resource == "own_profile" && p.Action == "update");
     }
 
     #endregion
@@ -98,7 +99,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Likes;
 
         // Assert
-        Assert.NotNull(permissions);
+        permissions.Should().NotBeNull();
         Assert.Equal(3, permissions.Length);
     }
 
@@ -113,7 +114,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Comments;
 
         // Assert
-        Assert.NotNull(permissions);
+        permissions.Should().NotBeNull();
         Assert.Equal(4, permissions.Length);
     }
 
@@ -128,7 +129,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Bookmarks;
 
         // Assert
-        Assert.NotNull(permissions);
+        permissions.Should().NotBeNull();
         Assert.Equal(4, permissions.Length);
     }
 
@@ -143,7 +144,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Navigation;
 
         // Assert
-        Assert.NotNull(permissions);
+        permissions.Should().NotBeNull();
         Assert.Equal(2, permissions.Length);
     }
 
@@ -154,7 +155,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Navigation;
 
         // Assert
-        Assert.Contains(permissions, p => p.Resource == "tags" && p.Action == "read");
+        permissions.Should().Contain(p => p.Resource == "tags" && p.Action == "read");
     }
 
     [Fact]
@@ -164,7 +165,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Navigation;
 
         // Assert
-        Assert.Contains(permissions, p => p.Resource == "categories" && p.Action == "read");
+        permissions.Should().Contain(p => p.Resource == "categories" && p.Action == "read");
     }
 
     #endregion
@@ -178,7 +179,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Playlists;
 
         // Assert
-        Assert.NotNull(permissions);
+        permissions.Should().NotBeNull();
         Assert.Equal(4, permissions.Length);
     }
 
@@ -193,7 +194,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Ads;
 
         // Assert
-        Assert.NotNull(permissions);
+        permissions.Should().NotBeNull();
         Assert.Equal(2, permissions.Length);
     }
 
@@ -208,7 +209,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Rates;
 
         // Assert
-        Assert.NotNull(permissions);
+        permissions.Should().NotBeNull();
         Assert.Equal(2, permissions.Length);
     }
 
@@ -223,7 +224,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] permissions = VisitorPermissions.Shares;
 
         // Assert
-        Assert.NotNull(permissions);
+        permissions.Should().NotBeNull();
         Assert.Equal(3, permissions.Length);
     }
 
@@ -238,7 +239,7 @@ public class VisitorPermissionsTests
         PermissionEntity[] allPermissions = VisitorPermissions.GetAllPermissions();
 
         // Assert
-        Assert.NotNull(allPermissions);
+        allPermissions.Should().NotBeNull();
         Assert.Equal(29, allPermissions.Length);
     }
 
@@ -249,16 +250,16 @@ public class VisitorPermissionsTests
         PermissionEntity[] allPermissions = VisitorPermissions.GetAllPermissions();
 
         // Assert - check that permissions from each category are present
-        Assert.Contains(allPermissions, p => p.Resource == "articles");
-        Assert.Contains(allPermissions, p => p.Resource == "own_profile");
-        Assert.Contains(allPermissions, p => p.Resource == "likes");
-        Assert.Contains(allPermissions, p => p.Resource == "comments");
-        Assert.Contains(allPermissions, p => p.Resource == "bookmarks");
-        Assert.Contains(allPermissions, p => p.Resource == "tags");
-        Assert.Contains(allPermissions, p => p.Resource == "playlists");
-        Assert.Contains(allPermissions, p => p.Resource == "ads_banners");
-        Assert.Contains(allPermissions, p => p.Resource == "rates");
-        Assert.Contains(allPermissions, p => p.Resource == "shares");
+        allPermissions.Should().Contain(p => p.Resource == "articles");
+        allPermissions.Should().Contain(p => p.Resource == "own_profile");
+        allPermissions.Should().Contain(p => p.Resource == "likes");
+        allPermissions.Should().Contain(p => p.Resource == "comments");
+        allPermissions.Should().Contain(p => p.Resource == "bookmarks");
+        allPermissions.Should().Contain(p => p.Resource == "tags");
+        allPermissions.Should().Contain(p => p.Resource == "playlists");
+        allPermissions.Should().Contain(p => p.Resource == "ads_banners");
+        allPermissions.Should().Contain(p => p.Resource == "rates");
+        allPermissions.Should().Contain(p => p.Resource == "shares");
     }
 
     [Fact]
@@ -283,9 +284,9 @@ public class VisitorPermissionsTests
             allPermissions,
             permission =>
             {
-                Assert.NotNull(permission.Resource);
+                permission.Resource.Should().NotBeNull();
                 Assert.NotEmpty(permission.Resource);
-                Assert.NotNull(permission.Action);
+                permission.Action.Should().NotBeNull();
                 Assert.NotEmpty(permission.Action);
             }
         );
@@ -302,7 +303,7 @@ public class VisitorPermissionsTests
             allPermissions,
             permission =>
             {
-                Assert.NotNull(permission.Description);
+                permission.Description.Should().NotBeNull();
                 Assert.NotEmpty(permission.Description);
             }
         );

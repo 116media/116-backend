@@ -1,4 +1,5 @@
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Unit.Tests.Common.Builders.Entities;
 
 namespace _116.Unit.Tests.Common.Factories;
@@ -118,4 +119,60 @@ public static class SessionFactory
     /// <returns>A list of SessionEntity instances for the specified user.</returns>
     public static List<SessionEntity> CreateMany(Guid userId, int count) =>
         Enumerable.Range(0, count).Select(_ => Create(userId)).ToList();
+
+    /// <summary>
+    /// Creates a session with a specific refresh token hash.
+    /// </summary>
+    /// <param name="refreshTokenHash">The refresh token hash.</param>
+    /// <returns>A new SessionEntity with the specified refresh token hash.</returns>
+    public static SessionEntity CreateWithRefreshTokenHash(string refreshTokenHash) =>
+        new SessionBuilder().WithRefreshTokenHash(refreshTokenHash).Build();
+
+    /// <summary>
+    /// Creates a session with a specific refresh token hash for a user.
+    /// </summary>
+    /// <param name="userId">The user identifier.</param>
+    /// <param name="refreshTokenHash">The refresh token hash.</param>
+    /// <returns>A new SessionEntity with the specified values.</returns>
+    public static SessionEntity CreateWithRefreshTokenHash(Guid userId, string refreshTokenHash) =>
+        new SessionBuilder().WithUserId(userId).WithRefreshTokenHash(refreshTokenHash).Build();
+
+    /// <summary>
+    /// Creates a session with a specific IP address.
+    /// </summary>
+    /// <param name="ipAddress">The IP address.</param>
+    /// <returns>A new SessionEntity with the specified IP address.</returns>
+    public static SessionEntity CreateWithIpAddress(string ipAddress) =>
+        new SessionBuilder().WithIpAddress(ipAddress).Build();
+
+    /// <summary>
+    /// Creates a session with a specific browser.
+    /// </summary>
+    /// <param name="browser">The browser type.</param>
+    /// <returns>A new SessionEntity with the specified browser.</returns>
+    public static SessionEntity CreateWithBrowser(EnumBrowser browser) =>
+        new SessionBuilder().WithBrowser(browser).Build();
+
+    /// <summary>
+    /// Creates a session with a specific platform.
+    /// </summary>
+    /// <param name="platform">The platform type.</param>
+    /// <returns>A new SessionEntity with the specified platform.</returns>
+    public static SessionEntity CreateWithPlatform(EnumPlatform platform) =>
+        new SessionBuilder().WithPlatform(platform).Build();
+
+    /// <summary>
+    /// Creates a session with a specific client.
+    /// </summary>
+    /// <param name="client">The client type.</param>
+    /// <returns>A new SessionEntity with the specified client.</returns>
+    public static SessionEntity CreateWithClient(EnumClient client) => new SessionBuilder().WithClient(client).Build();
+
+    /// <summary>
+    /// Creates a session with a specific expiration date.
+    /// </summary>
+    /// <param name="expiresAt">The expiration date.</param>
+    /// <returns>A new SessionEntity with the specified expiration date.</returns>
+    public static SessionEntity CreateWithExpiresAt(DateTime expiresAt) =>
+        new SessionBuilder().WithExpiresAt(expiresAt).Build();
 }

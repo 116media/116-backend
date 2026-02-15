@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissionToRole;
 
@@ -14,11 +15,13 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissi
 /// <param name="permissionRepository">Repository for permission data access operations.</param>
 /// <param name="rolePermissionRepository">Repository for role-permission data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminAssignPermissionToRoleHandler(
     IRoleRepository roleRepository,
     IPermissionRepository permissionRepository,
     IRolePermissionRepository rolePermissionRepository,
-    IIdentityUnitOfWork unitOfWork
+    IIdentityUnitOfWork unitOfWork,
+    IMapper mapper
 ) : ICommandHandler<AdminAssignPermissionToRoleCommand, AdminAssignPermissionToRoleResult>
 {
     /// <summary>
@@ -94,7 +97,7 @@ public class AdminAssignPermissionToRoleHandler(
             cancellationToken: cancellationToken
         );
 
-        var roleDto = role!.ToRoleWithPermissionsDto();
+        var roleDto = role!.ToRoleWithPermissionsDto(mapper);
         return new AdminAssignPermissionToRoleResult(Role: roleDto);
     }
 }

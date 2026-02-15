@@ -1,7 +1,7 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -64,7 +64,7 @@ public class OtpEntityTests
     public void MarkAsUsed_ShouldSetIsUsedAndUsedAt()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().Build();
+        OtpEntity otp = OtpFactory.Create();
 
         // Act
         otp.MarkAsUsed();
@@ -79,7 +79,7 @@ public class OtpEntityTests
     public void MarkAsUsed_WhenAlreadyUsed_ShouldUpdateUsedAt()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().AsUsed().Build();
+        OtpEntity otp = OtpFactory.CreateUsed();
         DateTime? originalUsedAt = otp.UsedAt;
 
         // Act
@@ -98,7 +98,7 @@ public class OtpEntityTests
     public void IncrementAttemptCount_ShouldIncreaseCountByOne()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().Build();
+        OtpEntity otp = OtpFactory.Create();
         int initialCount = otp.AttemptCount;
 
         // Act
@@ -112,7 +112,7 @@ public class OtpEntityTests
     public void IncrementAttemptCount_MultipleTimes_ShouldAccumulateCorrectly()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().Build();
+        OtpEntity otp = OtpFactory.Create();
 
         // Act
         otp.IncrementAttemptCount();
@@ -131,7 +131,7 @@ public class OtpEntityTests
     public void IsValid_WhenNotUsedNotExpiredAndBelowMaxAttempts_ShouldReturnTrue()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().Build();
+        OtpEntity otp = OtpFactory.Create();
 
         // Act
         bool result = otp.IsValid();
@@ -144,7 +144,7 @@ public class OtpEntityTests
     public void IsValid_WhenUsed_ShouldReturnFalse()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().AsUsed().Build();
+        OtpEntity otp = OtpFactory.CreateUsed();
 
         // Act
         bool result = otp.IsValid();
@@ -157,7 +157,7 @@ public class OtpEntityTests
     public void IsValid_WhenExpired_ShouldReturnFalse()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().AsExpired().Build();
+        OtpEntity otp = OtpFactory.CreateExpired();
 
         // Act
         bool result = otp.IsValid();
@@ -170,7 +170,7 @@ public class OtpEntityTests
     public void IsValid_WhenMaxAttemptsReached_ShouldReturnFalse()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().AsMaxAttemptsReached().Build();
+        OtpEntity otp = OtpFactory.CreateMaxAttemptsReached();
 
         // Act
         bool result = otp.IsValid();
@@ -187,7 +187,7 @@ public class OtpEntityTests
     public void IsExpired_WhenNotExpired_ShouldReturnFalse()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().Build();
+        OtpEntity otp = OtpFactory.Create();
 
         // Act
         bool result = otp.IsExpired();
@@ -200,7 +200,7 @@ public class OtpEntityTests
     public void IsExpired_WhenExpired_ShouldReturnTrue()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().AsExpired().Build();
+        OtpEntity otp = OtpFactory.CreateExpired();
 
         // Act
         bool result = otp.IsExpired();
@@ -217,7 +217,7 @@ public class OtpEntityTests
     public void HasMaxAttemptsReached_WhenBelowMax_ShouldReturnFalse()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().Build();
+        OtpEntity otp = OtpFactory.Create();
 
         // Act
         bool result = otp.HasMaxAttemptsReached();
@@ -230,7 +230,7 @@ public class OtpEntityTests
     public void HasMaxAttemptsReached_WhenAtMax_ShouldReturnTrue()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().AsMaxAttemptsReached().Build();
+        OtpEntity otp = OtpFactory.CreateMaxAttemptsReached();
 
         // Act
         bool result = otp.HasMaxAttemptsReached();
@@ -243,7 +243,7 @@ public class OtpEntityTests
     public void HasMaxAttemptsReached_AfterIncrementingToMax_ShouldReturnTrue()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().Build();
+        OtpEntity otp = OtpFactory.Create();
 
         // Act - Increment to max attempts (5 by default)
         for (int i = 0; i < TestConstants.Otp.MaxAttempts; i++)
@@ -263,7 +263,7 @@ public class OtpEntityTests
     public void Create_ForEmailVerification_ShouldHaveCorrectPurpose()
     {
         // Arrange & Act
-        OtpEntity otp = new OtpBuilder().ForEmailVerification().Build();
+        OtpEntity otp = OtpFactory.CreateForEmailVerification(Guid.NewGuid());
 
         // Assert
         otp.Purpose.Should().Be(EnumOtpPurpose.EmailVerification);
@@ -273,7 +273,7 @@ public class OtpEntityTests
     public void Create_ForPasswordReset_ShouldHaveCorrectPurpose()
     {
         // Arrange & Act
-        OtpEntity otp = new OtpBuilder().ForPasswordReset().Build();
+        OtpEntity otp = OtpFactory.CreateForPasswordReset(Guid.NewGuid());
 
         // Assert
         otp.Purpose.Should().Be(EnumOtpPurpose.PasswordReset);

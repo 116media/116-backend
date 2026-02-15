@@ -13,7 +13,7 @@ public class AccountInactiveExceptionTests
     public void Constructor_WithMessage_ShouldSetMessage()
     {
         // Arrange
-        var message = "Account is inactive";
+        string message = "Account is inactive";
 
         // Act
         var exception = new AccountInactiveException(message);
@@ -28,8 +28,8 @@ public class AccountInactiveExceptionTests
     public void Constructor_WithMessageAndDetails_ShouldSetBothProperties()
     {
         // Arrange
-        var message = "Account is inactive";
-        var details = "The user account has been deactivated by an administrator";
+        string message = "Account is inactive";
+        string details = "The user account has been deactivated by an administrator";
 
         // Act
         var exception = new AccountInactiveException(message, details);

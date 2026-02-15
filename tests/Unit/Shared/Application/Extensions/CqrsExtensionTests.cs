@@ -2,6 +2,7 @@ using System.Reflection;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
+using AwesomeAssertions;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -21,8 +22,8 @@ public class CqrsExtensionTests
         services.AddLogging();
 
         // Act & Assert - Should throw Scrutor exception because no handlers to decorate
-        var exception = Record.Exception(() => services.AddCqrsWithAssemblies());
-        Assert.NotNull(exception);
+        Exception? exception = Record.Exception(() => services.AddCqrsWithAssemblies());
+        exception.Should().NotBeNull();
     }
 
     [Fact]
@@ -45,7 +46,7 @@ public class CqrsExtensionTests
 
         // Assert - Check if Dispatcher was registered (before decoration fails)
         bool hasDispatcher = services.Any(s => s.ServiceType == typeof(IDispatcher));
-        Assert.True(hasDispatcher);
+        hasDispatcher.Should().BeTrue();
     }
 
     [Fact]
@@ -68,7 +69,7 @@ public class CqrsExtensionTests
 
         // Assert - Check if DomainEventPublisher was registered (before decoration fails)
         bool hasPublisher = services.Any(s => s.ServiceType == typeof(IDomainEventPublisher));
-        Assert.True(hasPublisher);
+        hasPublisher.Should().BeTrue();
     }
 
     [Fact]
@@ -85,7 +86,7 @@ public class CqrsExtensionTests
 
         // Assert
         ServiceDescriptor? descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(IDispatcher));
-        Assert.NotNull(descriptor);
+        descriptor.Should().NotBeNull();
     }
 
     [Fact]
@@ -102,8 +103,8 @@ public class CqrsExtensionTests
         var dispatcher = provider.GetService<IDispatcher>();
 
         // Assert
-        Assert.NotNull(dispatcher);
-        Assert.IsType<Dispatcher>(dispatcher);
+        dispatcher.Should().NotBeNull();
+        dispatcher.Should().BeOfType<Dispatcher>();
     }
 
     [Fact]
@@ -120,7 +121,7 @@ public class CqrsExtensionTests
         var publisher = provider.GetService<IDomainEventPublisher>();
 
         // Assert
-        Assert.NotNull(publisher);
-        Assert.IsType<DomainEventPublisher>(publisher);
+        publisher.Should().NotBeNull();
+        publisher.Should().BeOfType<DomainEventPublisher>();
     }
 }

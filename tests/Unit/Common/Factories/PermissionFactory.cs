@@ -1,6 +1,5 @@
 using _116.Identity.Domain.Entities;
 using _116.Unit.Tests.Common.Builders.Entities;
-using _116.Unit.Tests.Common.Constants;
 
 namespace _116.Unit.Tests.Common.Factories;
 

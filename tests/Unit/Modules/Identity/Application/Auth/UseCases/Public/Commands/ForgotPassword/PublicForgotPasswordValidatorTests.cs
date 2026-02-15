@@ -23,7 +23,7 @@ public class PublicForgotPasswordValidatorTests
         PublicForgotPasswordCommand command = new(Email: TestConstants.User.ValidEmail);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicForgotPasswordCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -41,7 +41,7 @@ public class PublicForgotPasswordValidatorTests
         PublicForgotPasswordCommand command = new(Email: null!);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicForgotPasswordCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -55,7 +55,7 @@ public class PublicForgotPasswordValidatorTests
         PublicForgotPasswordCommand command = new(Email: string.Empty);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicForgotPasswordCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -69,7 +69,7 @@ public class PublicForgotPasswordValidatorTests
         PublicForgotPasswordCommand command = new(Email: "notanemail");
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicForgotPasswordCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -84,7 +84,7 @@ public class PublicForgotPasswordValidatorTests
         PublicForgotPasswordCommand command = new(Email: longEmail);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicForgotPasswordCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();

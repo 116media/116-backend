@@ -25,7 +25,7 @@ public class PublicLoginValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -42,7 +42,7 @@ public class PublicLoginValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -60,7 +60,7 @@ public class PublicLoginValidatorTests
         PublicLoginCommand command = new(Credentials: null!, Password: TestConstants.User.ValidPassword);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -74,7 +74,7 @@ public class PublicLoginValidatorTests
         PublicLoginCommand command = new(Credentials: string.Empty, Password: TestConstants.User.ValidPassword);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -88,7 +88,7 @@ public class PublicLoginValidatorTests
         PublicLoginCommand command = new(Credentials: "   ", Password: TestConstants.User.ValidPassword);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -106,7 +106,7 @@ public class PublicLoginValidatorTests
         PublicLoginCommand command = new(Credentials: TestConstants.User.ValidEmail, Password: null!);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -120,7 +120,7 @@ public class PublicLoginValidatorTests
         PublicLoginCommand command = new(Credentials: TestConstants.User.ValidEmail, Password: string.Empty);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -134,7 +134,7 @@ public class PublicLoginValidatorTests
         PublicLoginCommand command = new(Credentials: TestConstants.User.ValidEmail, Password: "   ");
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -152,7 +152,7 @@ public class PublicLoginValidatorTests
         PublicLoginCommand command = new(Credentials: string.Empty, Password: string.Empty);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();

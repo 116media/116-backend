@@ -26,7 +26,7 @@ public class AggregateTests
     public void DomainEvents_InitiallyEmpty_ShouldReturnEmptyList()
     {
         // Arrange
-        TestAggregate aggregate = TestAggregate.Create(Guid.NewGuid());
+        var aggregate = TestAggregate.Create(Guid.NewGuid());
 
         // Act
         IReadOnlyList<IDomainEvent> events = aggregate.DomainEvents;
@@ -40,14 +40,14 @@ public class AggregateTests
     public void AddDomainEvent_WithValidEvent_ShouldAddToList()
     {
         // Arrange
-        TestAggregate aggregate = TestAggregate.Create(Guid.NewGuid());
+        var aggregate = TestAggregate.Create(Guid.NewGuid());
         var domainEvent = new TestDomainEvent { Message = "Test event" };
 
         // Act
         aggregate.AddDomainEvent(domainEvent);
 
         // Assert
-        aggregate.DomainEvents.Should().HaveCount(1);
+        aggregate.DomainEvents.Should().ContainSingle();
         aggregate.DomainEvents.Should().Contain(domainEvent);
     }
 
@@ -55,7 +55,7 @@ public class AggregateTests
     public void AddDomainEvent_WithMultipleEvents_ShouldAddAllInOrder()
     {
         // Arrange
-        TestAggregate aggregate = TestAggregate.Create(Guid.NewGuid());
+        var aggregate = TestAggregate.Create(Guid.NewGuid());
         var event1 = new TestDomainEvent { Message = "First event" };
         var event2 = new TestDomainEvent { Message = "Second event" };
         var event3 = new TestDomainEvent { Message = "Third event" };
@@ -67,16 +67,16 @@ public class AggregateTests
 
         // Assert
         aggregate.DomainEvents.Should().HaveCount(3);
-        aggregate.DomainEvents[0].Should().Be(event1);
-        aggregate.DomainEvents[1].Should().Be(event2);
-        aggregate.DomainEvents[2].Should().Be(event3);
+        aggregate.DomainEvents.Should().HaveElementAt(0, event1);
+        aggregate.DomainEvents.Should().HaveElementAt(1, event2);
+        aggregate.DomainEvents.Should().HaveElementAt(2, event3);
     }
 
     [Fact]
     public void ClearDomainEvents_WithEvents_ShouldReturnEventsAndClearList()
     {
         // Arrange
-        TestAggregate aggregate = TestAggregate.Create(Guid.NewGuid());
+        var aggregate = TestAggregate.Create(Guid.NewGuid());
         var event1 = new TestDomainEvent { Message = "Event 1" };
         var event2 = new TestDomainEvent { Message = "Event 2" };
         aggregate.AddDomainEvent(event1);
@@ -87,8 +87,8 @@ public class AggregateTests
 
         // Assert
         clearedEvents.Should().HaveCount(2);
-        clearedEvents[0].Should().Be(event1);
-        clearedEvents[1].Should().Be(event2);
+        clearedEvents.Should().HaveElementAt(0, event1);
+        clearedEvents.Should().HaveElementAt(1, event2);
         aggregate.DomainEvents.Should().BeEmpty();
     }
 
@@ -96,7 +96,7 @@ public class AggregateTests
     public void ClearDomainEvents_WithNoEvents_ShouldReturnEmptyArray()
     {
         // Arrange
-        TestAggregate aggregate = TestAggregate.Create(Guid.NewGuid());
+        var aggregate = TestAggregate.Create(Guid.NewGuid());
 
         // Act
         IDomainEvent[] clearedEvents = aggregate.ClearDomainEvents();
@@ -111,7 +111,7 @@ public class AggregateTests
     public void ClearDomainEvents_CalledMultipleTimes_ShouldReturnEmptyAfterFirst()
     {
         // Arrange
-        TestAggregate aggregate = TestAggregate.Create(Guid.NewGuid());
+        var aggregate = TestAggregate.Create(Guid.NewGuid());
         aggregate.AddDomainEvent(new TestDomainEvent { Message = "Event" });
 
         // Act
@@ -119,7 +119,7 @@ public class AggregateTests
         IDomainEvent[] secondClear = aggregate.ClearDomainEvents();
 
         // Assert
-        firstClear.Should().HaveCount(1);
+        firstClear.Should().ContainSingle();
         secondClear.Should().BeEmpty();
         aggregate.DomainEvents.Should().BeEmpty();
     }
@@ -128,7 +128,7 @@ public class AggregateTests
     public void DomainEvents_ShouldReturnReadOnlyList()
     {
         // Arrange
-        TestAggregate aggregate = TestAggregate.Create(Guid.NewGuid());
+        var aggregate = TestAggregate.Create(Guid.NewGuid());
         aggregate.AddDomainEvent(new TestDomainEvent { Message = "Event" });
 
         // Act
@@ -136,7 +136,6 @@ public class AggregateTests
 
         // Assert
         events.Should().BeAssignableTo<IReadOnlyList<IDomainEvent>>();
-        // Verify it's truly readonly by checking type
         events.GetType().Name.Should().Contain("ReadOnly");
     }
 
@@ -144,7 +143,7 @@ public class AggregateTests
     public void AddDomainEvent_AfterClear_ShouldStartFresh()
     {
         // Arrange
-        TestAggregate aggregate = TestAggregate.Create(Guid.NewGuid());
+        var aggregate = TestAggregate.Create(Guid.NewGuid());
         aggregate.AddDomainEvent(new TestDomainEvent { Message = "Old event" });
         aggregate.ClearDomainEvents();
 
@@ -153,7 +152,7 @@ public class AggregateTests
         aggregate.AddDomainEvent(newEvent);
 
         // Assert
-        aggregate.DomainEvents.Should().HaveCount(1);
-        aggregate.DomainEvents[0].Should().Be(newEvent);
+        aggregate.DomainEvents.Should().ContainSingle();
+        aggregate.DomainEvents.Should().HaveElementAt(0, newEvent);
     }
 }

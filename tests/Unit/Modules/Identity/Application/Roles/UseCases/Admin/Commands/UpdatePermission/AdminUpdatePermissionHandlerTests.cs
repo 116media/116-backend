@@ -1,0 +1,237 @@
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdatePermission;
+using _116.Identity.Application.Shared.Persistence;
+using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Domain.Entities;
+using _116.Shared.Application.Exceptions;
+using _116.Unit.Tests.Common;
+using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
+using _116.Unit.Tests.Common.Mocks.Infrastructure;
+using _116.Unit.Tests.Common.Mocks.Repositories;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Unit.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Commands.UpdatePermission;
+
+/// <summary>
+/// Unit tests for <see cref="AdminUpdatePermissionHandler"/>.
+/// </summary>
+public class AdminUpdatePermissionHandlerTests : BaseHandlerTest
+{
+    private readonly Mock<IPermissionRepository> _permissionRepositoryMock;
+    private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
+    private readonly AdminUpdatePermissionHandler _handler;
+
+    public AdminUpdatePermissionHandlerTests()
+    {
+        _permissionRepositoryMock = MockPermissionRepository.Create();
+        _unitOfWorkMock = MockIdentityUnitOfWork.Create();
+
+        _handler = new AdminUpdatePermissionHandler(_permissionRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
+    }
+
+    #region Success Cases
+
+    [Fact]
+    public async Task Handle_WithAllFieldsUpdated_ShouldUpdatePermissionAndReturnResult()
+    {
+        // Arrange
+        PermissionEntity existingPermission = PermissionFactory.Create("oldResource", "oldAction", "Old description");
+
+        string newResource = "newResource";
+        string newAction = "newAction";
+        string newDescription = "New description";
+
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateCommand(
+            existingPermission.Id,
+            newResource,
+            newAction,
+            newDescription
+        );
+
+        _permissionRepositoryMock.SetupGetByIdOrThrow(existingPermission);
+        _permissionRepositoryMock.SetupExistsByResourceAndAction(newResource, newAction, exists: false);
+
+        // Act
+        AdminUpdatePermissionResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Permission.Resource.Should().Be(newResource);
+        result.Permission.Action.Should().Be(newAction);
+        result.Permission.Description.Should().Be(newDescription);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WithOnlyResourceUpdated_ShouldUpdateOnlyResource()
+    {
+        // Arrange
+        string originalAction = "read";
+        string originalDescription = "Original description";
+        PermissionEntity existingPermission = PermissionFactory.Create(
+            "oldResource",
+            originalAction,
+            originalDescription
+        );
+
+        string newResource = "newResource";
+
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateCommand(
+            existingPermission.Id,
+            newResource,
+            null,
+            null
+        );
+
+        _permissionRepositoryMock.SetupGetByIdOrThrow(existingPermission);
+        _permissionRepositoryMock.SetupExistsByResourceAndAction(newResource, originalAction, exists: false);
+
+        // Act
+        AdminUpdatePermissionResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Permission.Resource.Should().Be(newResource);
+        result.Permission.Action.Should().Be(originalAction);
+        result.Permission.Description.Should().Be(originalDescription);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WithOnlyDescriptionUpdated_ShouldUpdateOnlyDescription()
+    {
+        // Arrange
+        PermissionEntity existingPermission = PermissionFactory.Create("users", "read", "Old description");
+
+        string newDescription = "New description";
+
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateCommand(
+            existingPermission.Id,
+            null,
+            null,
+            newDescription
+        );
+
+        _permissionRepositoryMock.SetupGetByIdOrThrow(existingPermission);
+
+        // Act
+        AdminUpdatePermissionResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Permission.Resource.Should().Be("users");
+        result.Permission.Action.Should().Be("read");
+        result.Permission.Description.Should().Be(newDescription);
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    #endregion
+
+    #region No Changes Cases
+
+    [Fact]
+    public async Task Handle_WithNoChanges_ShouldNotCommit()
+    {
+        // Arrange
+        PermissionEntity existingPermission = PermissionFactory.Create(
+            TestConstants.Permission.ValidResource,
+            TestConstants.Permission.ValidAction,
+            TestConstants.Permission.ValidDescription
+        );
+
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateCommand(
+            existingPermission.Id,
+            null,
+            null,
+            null
+        );
+
+        _permissionRepositoryMock.SetupGetByIdOrThrow(existingPermission);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _unitOfWorkMock.VerifyCommitNotCalled();
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
+    public async Task Handle_WhenPermissionNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        Guid nonExistentPermissionId = Guid.NewGuid();
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateValidCommand(nonExistentPermissionId);
+
+        _permissionRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPermissionId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenNewResourceActionAlreadyExists_ShouldThrowConflictException()
+    {
+        // Arrange
+        PermissionEntity existingPermission = PermissionFactory.Create("oldResource", "oldAction");
+
+        string duplicateResource = "existingResource";
+        string duplicateAction = "existingAction";
+
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateCommand(
+            existingPermission.Id,
+            duplicateResource,
+            duplicateAction,
+            null
+        );
+
+        _permissionRepositoryMock.SetupGetByIdOrThrow(existingPermission);
+        _permissionRepositoryMock.SetupExistsByResourceAndAction(duplicateResource, duplicateAction, exists: true);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+    }
+
+    #endregion
+
+    #region Edge Cases
+
+    [Fact]
+    public async Task Handle_WithCancellationToken_ShouldPassToRepository()
+    {
+        // Arrange
+        PermissionEntity existingPermission = PermissionFactory.Create("users", "read");
+
+        AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateCommand(
+            existingPermission.Id,
+            "newResource",
+            null,
+            null
+        );
+
+        using CancellationTokenSource cts = new();
+        _permissionRepositoryMock.SetupGetByIdOrThrow(existingPermission);
+        _permissionRepositoryMock.SetupExistsByResourceAndAction("newResource", "read", exists: false);
+
+        // Act
+        await _handler.Handle(command, cts.Token);
+
+        // Assert
+        _permissionRepositoryMock.Verify(
+            x => x.GetPermissionByIdOrThrowAsync(existingPermission.Id, cts.Token),
+            Times.Once
+        );
+    }
+
+    #endregion
+}

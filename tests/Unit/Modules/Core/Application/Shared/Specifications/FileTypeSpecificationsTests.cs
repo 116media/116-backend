@@ -1,6 +1,6 @@
 using _116.Core.Application.Shared.Specifications;
 using _116.Core.Domain.Entities;
-using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -22,7 +22,7 @@ public class FileTypeSpecificationsTests
     public void FileIsImageSpecification_WithValidImageMimeType_ShouldReturnTrue(string mimeType)
     {
         // Arrange
-        FileEntity file = new FileBuilder().WithMimeType(mimeType).Build();
+        FileEntity file = FileFactory.CreateWithMimeType(mimeType);
         FileIsImageSpecification spec = new();
 
         // Act
@@ -40,7 +40,7 @@ public class FileTypeSpecificationsTests
     public void FileIsImageSpecification_WithNonImageMimeType_ShouldReturnFalse(string mimeType)
     {
         // Arrange
-        FileEntity file = new FileBuilder().WithMimeType(mimeType).Build();
+        FileEntity file = FileFactory.CreateWithMimeType(mimeType);
         FileIsImageSpecification spec = new();
 
         // Act
@@ -54,7 +54,7 @@ public class FileTypeSpecificationsTests
     public void FileIsImageSpecification_WithUnsupportedImageFormat_ShouldReturnFalse()
     {
         // Arrange - image/ prefix but unsupported format
-        FileEntity file = new FileBuilder().WithMimeType("image/tiff").Build();
+        FileEntity file = FileFactory.CreateWithMimeType("image/tiff");
         FileIsImageSpecification spec = new();
 
         // Act
@@ -68,7 +68,7 @@ public class FileTypeSpecificationsTests
     public void FileIsImageSpecification_WithJpegImage_ShouldReturnTrue()
     {
         // Arrange
-        FileEntity file = new FileBuilder().AsJpegImage().Build();
+        FileEntity file = FileFactory.CreateJpeg();
         FileIsImageSpecification spec = new();
 
         // Act
@@ -82,7 +82,7 @@ public class FileTypeSpecificationsTests
     public void FileIsImageSpecification_WithPngImage_ShouldReturnTrue()
     {
         // Arrange
-        FileEntity file = new FileBuilder().AsPngImage().Build();
+        FileEntity file = FileFactory.CreatePng();
         FileIsImageSpecification spec = new();
 
         // Act
@@ -96,7 +96,7 @@ public class FileTypeSpecificationsTests
     public void FileIsImageSpecification_WithPdfDocument_ShouldReturnFalse()
     {
         // Arrange
-        FileEntity file = new FileBuilder().AsPdfDocument().Build();
+        FileEntity file = FileFactory.CreatePdf();
         FileIsImageSpecification spec = new();
 
         // Act
@@ -114,7 +114,7 @@ public class FileTypeSpecificationsTests
     public void FileIsValidAvatarSpecification_WithValidImageNotDeleted_ShouldReturnTrue()
     {
         // Arrange
-        FileEntity file = new FileBuilder().AsJpegImage().Build();
+        FileEntity file = FileFactory.CreateJpeg();
         FileIsValidAvatarSpecification spec = new();
 
         // Act
@@ -128,7 +128,7 @@ public class FileTypeSpecificationsTests
     public void FileIsValidAvatarSpecification_WithValidImageButDeleted_ShouldReturnFalse()
     {
         // Arrange
-        FileEntity file = new FileBuilder().AsJpegImage().AsDeleted().Build();
+        FileEntity file = FileFactory.CreateDeleted();
         FileIsValidAvatarSpecification spec = new();
 
         // Act
@@ -142,7 +142,7 @@ public class FileTypeSpecificationsTests
     public void FileIsValidAvatarSpecification_WithNonImageNotDeleted_ShouldReturnFalse()
     {
         // Arrange
-        FileEntity file = new FileBuilder().AsPdfDocument().Build();
+        FileEntity file = FileFactory.CreatePdf();
         FileIsValidAvatarSpecification spec = new();
 
         // Act
@@ -156,7 +156,7 @@ public class FileTypeSpecificationsTests
     public void FileIsValidAvatarSpecification_WithNonImageAndDeleted_ShouldReturnFalse()
     {
         // Arrange
-        FileEntity file = new FileBuilder().AsPdfDocument().AsDeleted().Build();
+        FileEntity file = FileFactory.CreateDeleted();
         FileIsValidAvatarSpecification spec = new();
 
         // Act
@@ -170,7 +170,7 @@ public class FileTypeSpecificationsTests
     public void FileIsValidAvatarSpecification_WithPngImageNotDeleted_ShouldReturnTrue()
     {
         // Arrange
-        FileEntity file = new FileBuilder().AsPngImage().Build();
+        FileEntity file = FileFactory.CreatePng();
         FileIsValidAvatarSpecification spec = new();
 
         // Act
@@ -190,10 +190,10 @@ public class FileTypeSpecificationsTests
         // Arrange
         List<FileEntity> files =
         [
-            new FileBuilder().AsJpegImage().Build(),
-            new FileBuilder().AsPngImage().Build(),
-            new FileBuilder().AsPdfDocument().Build(),
-            new FileBuilder().WithMimeType("text/plain").Build(),
+            FileFactory.CreateJpeg(),
+            FileFactory.CreatePng(),
+            FileFactory.CreatePdf(),
+            FileFactory.CreateWithMimeType("text/plain"),
         ];
 
         FileIsImageSpecification spec = new();
@@ -203,7 +203,7 @@ public class FileTypeSpecificationsTests
 
         // Assert
         filtered.Should().HaveCount(2);
-        filtered.All(f => f.MimeType.StartsWith("image/")).Should().BeTrue();
+        filtered.Should().OnlyContain(f => f.MimeType.StartsWith("image/"));
     }
 
     [Fact]
@@ -212,10 +212,10 @@ public class FileTypeSpecificationsTests
         // Arrange
         List<FileEntity> files =
         [
-            new FileBuilder().AsJpegImage().Build(), // Valid avatar
-            new FileBuilder().AsPngImage().Build(), // Valid avatar
-            new FileBuilder().AsJpegImage().AsDeleted().Build(), // Deleted
-            new FileBuilder().AsPdfDocument().Build(), // Not image
+            FileFactory.CreateJpeg(), // Valid avatar
+            FileFactory.CreatePng(), // Valid avatar
+            FileFactory.CreateDeleted(), // Deleted
+            FileFactory.CreatePdf(), // Not image
         ];
 
         FileIsValidAvatarSpecification spec = new();
@@ -225,7 +225,7 @@ public class FileTypeSpecificationsTests
 
         // Assert
         filtered.Should().HaveCount(2);
-        filtered.All(f => !f.IsDeleted && f.MimeType.StartsWith("image/")).Should().BeTrue();
+        filtered.Should().OnlyContain(f => !f.IsDeleted && f.MimeType.StartsWith("image/"));
     }
 
     #endregion

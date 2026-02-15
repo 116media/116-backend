@@ -6,8 +6,9 @@ namespace _116.Unit.Tests.Common.Builders.Entities;
 
 /// <summary>
 /// Fluent builder for creating <see cref="FileEntity"/> instances in tests.
+/// For test code, prefer using FileFactory instead of direct Builder usage.
 /// </summary>
-public class FileBuilder
+internal class FileBuilder
 {
     private readonly Faker _faker = new();
 
@@ -25,7 +26,7 @@ public class FileBuilder
     public FileBuilder()
     {
         _id = Guid.NewGuid();
-        string extension = _faker.PickRandom(new[] { "jpg", "png", "pdf", "docx" });
+        string extension = _faker.PickRandom("jpg", "png", "pdf", "docx");
         _fileName = $"{Guid.NewGuid()}.{extension}";
         _originalFileName = $"{_faker.Lorem.Word()}.{extension}";
         _mimeType = GetMimeTypeForExtension(extension);
@@ -152,7 +153,7 @@ public class FileBuilder
     /// <returns>A configured FileEntity instance.</returns>
     public FileEntity Build()
     {
-        FileEntity file = FileEntity.Create(_id, _fileName, _originalFileName, _mimeType, _storageUrl, _sizeInBytes);
+        var file = FileEntity.Create(_id, _fileName, _originalFileName, _mimeType, _storageUrl, _sizeInBytes);
 
         if (_isDeleted)
         {

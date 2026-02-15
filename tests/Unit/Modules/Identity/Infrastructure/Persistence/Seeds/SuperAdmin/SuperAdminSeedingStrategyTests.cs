@@ -2,6 +2,7 @@ using _116.Identity.Application.Auth.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -87,10 +88,10 @@ public class SuperAdminSeedingStrategyTests
         await repositoryManager.SaveChangesAsync();
 
         // Assert
-        var permission = await context.Permissions.FirstOrDefaultAsync(p =>
+        PermissionEntity? permission = await context.Permissions.FirstOrDefaultAsync(p =>
             p.Resource == "system" && p.Action == "all"
         );
-        Assert.NotNull(permission);
+        permission.Should().NotBeNull();
     }
 
     [Fact]
@@ -134,8 +135,8 @@ public class SuperAdminSeedingStrategyTests
         await repositoryManager.SaveChangesAsync();
 
         // Assert
-        var role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "SuperAdmin");
-        Assert.NotNull(role);
+        RoleEntity? role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "SuperAdmin");
+        role.Should().NotBeNull();
     }
 
     [Fact]
@@ -179,8 +180,8 @@ public class SuperAdminSeedingStrategyTests
         await repositoryManager.SaveChangesAsync();
 
         // Assert
-        var rolePermission = await context.RolePermissions.FirstOrDefaultAsync();
-        Assert.NotNull(rolePermission);
+        RolePermissionEntity? rolePermission = await context.RolePermissions.FirstOrDefaultAsync();
+        rolePermission.Should().NotBeNull();
     }
 
     [Fact]
@@ -228,9 +229,9 @@ public class SuperAdminSeedingStrategyTests
         await repositoryManager.SaveChangesAsync();
 
         // Assert
-        var user = await context.Users.FirstOrDefaultAsync();
-        Assert.NotNull(user);
-        Assert.Equal(SuperAdminConfiguration.Username, user.UserName);
+        UserEntity? user = await context.Users.FirstOrDefaultAsync();
+        user.Should().NotBeNull();
+        user.UserName.Should().Be(SuperAdminConfiguration.Username);
     }
 
     [Fact]
@@ -249,8 +250,8 @@ public class SuperAdminSeedingStrategyTests
         await repositoryManager.SaveChangesAsync();
 
         // Assert
-        var userRole = await context.UserRoles.FirstOrDefaultAsync();
-        Assert.NotNull(userRole);
+        UserRoleEntity? userRole = await context.UserRoles.FirstOrDefaultAsync();
+        userRole.Should().NotBeNull();
     }
 
     [Fact]

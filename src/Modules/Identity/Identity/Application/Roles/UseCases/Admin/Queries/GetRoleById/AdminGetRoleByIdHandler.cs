@@ -3,6 +3,7 @@ using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.Roles.UseCases.Admin.Queries.GetRoleById;
 
@@ -10,7 +11,8 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Queries.GetRoleById;
 /// Handles the <see cref="AdminGetRoleByIdQuery" /> to retrieve a role by its ID with associated permissions.
 /// </summary>
 /// <param name="roleRepository">Repository for role data access operations.</param>
-public class AdminGetRoleByIdHandler(IRoleRepository roleRepository)
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class AdminGetRoleByIdHandler(IRoleRepository roleRepository, IMapper mapper)
     : IQueryHandler<AdminGetRoleByIdQuery, AdminGetRoleByIdResult>
 {
     /// <summary>
@@ -28,8 +30,8 @@ public class AdminGetRoleByIdHandler(IRoleRepository roleRepository)
             cancellationToken: cancellationToken
         );
 
-        var roleDto = role!.ToRoleDto();
-        IReadOnlyCollection<PermissionDto> permissions = role!.RolePermissions.ToPermissionDtos();
+        var roleDto = role!.ToRoleDto(mapper);
+        IReadOnlyCollection<PermissionDto> permissions = role!.RolePermissions.ToPermissionDtos(mapper);
 
         return new AdminGetRoleByIdResult(Role: roleDto, Permissions: permissions);
     }

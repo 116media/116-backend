@@ -2,6 +2,7 @@ using _116.Identity.Application.Auth.Specifications;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -19,7 +20,7 @@ public class OtpSpecificationsTests
     {
         // Arrange
         Guid userId = Guid.NewGuid();
-        OtpEntity otp = new OtpBuilder().WithUserId(userId).Build();
+        OtpEntity otp = OtpFactory.Create(userId);
         OtpByUserIdSpecification spec = new(userId);
 
         // Act
@@ -33,7 +34,7 @@ public class OtpSpecificationsTests
     public void OtpByUserIdSpecification_WithDifferentUserId_ShouldReturnFalse()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().WithUserId(Guid.NewGuid()).Build();
+        OtpEntity otp = OtpFactory.Create(Guid.NewGuid());
         OtpByUserIdSpecification spec = new(Guid.NewGuid());
 
         // Act
@@ -52,7 +53,7 @@ public class OtpSpecificationsTests
     {
         // Arrange
         EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
-        OtpEntity otp = new OtpBuilder().WithPurpose(purpose).Build();
+        OtpEntity otp = OtpFactory.CreateWithPurpose(purpose);
         OtpByPurposeSpecification spec = new(purpose);
 
         // Act
@@ -66,7 +67,7 @@ public class OtpSpecificationsTests
     public void OtpByPurposeSpecification_WithDifferentPurpose_ShouldReturnFalse()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().WithPurpose(EnumOtpPurpose.EmailVerification).Build();
+        OtpEntity otp = OtpFactory.CreateWithPurpose(EnumOtpPurpose.EmailVerification);
         OtpByPurposeSpecification spec = new(EnumOtpPurpose.PasswordReset);
 
         // Act
@@ -85,7 +86,7 @@ public class OtpSpecificationsTests
     {
         // Arrange
         string code = "123456";
-        OtpEntity otp = new OtpBuilder().WithCode(code).Build();
+        OtpEntity otp = OtpFactory.CreateWithCode(code);
         OtpByCodeSpecification spec = new(code);
 
         // Act
@@ -99,7 +100,7 @@ public class OtpSpecificationsTests
     public void OtpByCodeSpecification_WithDifferentCode_ShouldReturnFalse()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().WithCode("123456").Build();
+        OtpEntity otp = OtpFactory.CreateWithCode("123456");
         OtpByCodeSpecification spec = new("654321");
 
         // Act
@@ -117,7 +118,7 @@ public class OtpSpecificationsTests
     public void OtpIsNotUsedSpecification_WithUnusedOtp_ShouldReturnTrue()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().Build();
+        OtpEntity otp = OtpFactory.Create();
         OtpIsNotUsedSpecification spec = new();
 
         // Act
@@ -131,7 +132,7 @@ public class OtpSpecificationsTests
     public void OtpIsNotUsedSpecification_WithUsedOtp_ShouldReturnFalse()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().AsUsed().Build();
+        OtpEntity otp = OtpFactory.CreateUsed();
         OtpIsNotUsedSpecification spec = new();
 
         // Act
@@ -149,7 +150,7 @@ public class OtpSpecificationsTests
     public void OtpIsUsedSpecification_WithUsedOtp_ShouldReturnTrue()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().AsUsed().Build();
+        OtpEntity otp = OtpFactory.CreateUsed();
         OtpIsUsedSpecification spec = new();
 
         // Act
@@ -163,7 +164,7 @@ public class OtpSpecificationsTests
     public void OtpIsUsedSpecification_WithUnusedOtp_ShouldReturnFalse()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().Build();
+        OtpEntity otp = OtpFactory.Create();
         OtpIsUsedSpecification spec = new();
 
         // Act
@@ -181,7 +182,7 @@ public class OtpSpecificationsTests
     public void OtpIsNotExpiredSpecification_WithNonExpiredOtp_ShouldReturnTrue()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().WithExpiresAt(DateTime.UtcNow.AddMinutes(10)).Build();
+        OtpEntity otp = OtpFactory.CreateWithExpiresAt(DateTime.UtcNow.AddMinutes(10));
         OtpIsNotExpiredSpecification spec = new();
 
         // Act
@@ -195,7 +196,7 @@ public class OtpSpecificationsTests
     public void OtpIsNotExpiredSpecification_WithExpiredOtp_ShouldReturnFalse()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().WithExpiresAt(DateTime.UtcNow.AddMinutes(-1)).Build();
+        OtpEntity otp = OtpFactory.CreateWithExpiresAt(DateTime.UtcNow.AddMinutes(-1));
         OtpIsNotExpiredSpecification spec = new();
 
         // Act
@@ -213,7 +214,7 @@ public class OtpSpecificationsTests
     public void OtpIsExpiredSpecification_WithExpiredOtp_ShouldReturnTrue()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().WithExpiresAt(DateTime.UtcNow.AddMinutes(-1)).Build();
+        OtpEntity otp = OtpFactory.CreateWithExpiresAt(DateTime.UtcNow.AddMinutes(-1));
         OtpIsExpiredSpecification spec = new();
 
         // Act
@@ -227,7 +228,7 @@ public class OtpSpecificationsTests
     public void OtpIsExpiredSpecification_WithNonExpiredOtp_ShouldReturnFalse()
     {
         // Arrange
-        OtpEntity otp = new OtpBuilder().WithExpiresAt(DateTime.UtcNow.AddMinutes(10)).Build();
+        OtpEntity otp = OtpFactory.CreateWithExpiresAt(DateTime.UtcNow.AddMinutes(10));
         OtpIsExpiredSpecification spec = new();
 
         // Act
@@ -313,7 +314,7 @@ public class OtpSpecificationsTests
         Guid userId = Guid.NewGuid();
         string code = "123456";
         EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
-        OtpEntity otp = new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).Build();
+        OtpEntity otp = OtpFactory.Create(userId, code, purpose);
         OtpForValidationSpecification spec = new(userId, code, purpose);
 
         // Act
@@ -330,7 +331,8 @@ public class OtpSpecificationsTests
         Guid userId = Guid.NewGuid();
         string code = "123456";
         EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
-        OtpEntity otp = new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).AsUsed().Build();
+        OtpEntity otp = OtpFactory.Create(userId, code, purpose);
+        otp.MarkAsUsed();
         OtpForValidationSpecification spec = new(userId, code, purpose);
 
         // Act
@@ -346,7 +348,7 @@ public class OtpSpecificationsTests
         // Arrange
         Guid userId = Guid.NewGuid();
         EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
-        OtpEntity otp = new OtpBuilder().WithUserId(userId).WithCode("123456").WithPurpose(purpose).Build();
+        OtpEntity otp = OtpFactory.Create(userId, "123456", purpose);
         OtpForValidationSpecification spec = new(userId, "654321", purpose);
 
         // Act
@@ -366,7 +368,7 @@ public class OtpSpecificationsTests
         // Arrange
         Guid userId = Guid.NewGuid();
         EnumOtpPurpose purpose = EnumOtpPurpose.PasswordReset;
-        OtpEntity otp = new OtpBuilder().WithUserId(userId).WithPurpose(purpose).Build();
+        OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
         OtpForInvalidationSpecification spec = new(userId, purpose);
 
         // Act
@@ -382,7 +384,8 @@ public class OtpSpecificationsTests
         // Arrange
         Guid userId = Guid.NewGuid();
         EnumOtpPurpose purpose = EnumOtpPurpose.PasswordReset;
-        OtpEntity otp = new OtpBuilder().WithUserId(userId).WithPurpose(purpose).AsUsed().Build();
+        OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
+        otp.MarkAsUsed();
         OtpForInvalidationSpecification spec = new(userId, purpose);
 
         // Act
@@ -403,7 +406,8 @@ public class OtpSpecificationsTests
         Guid userId = Guid.NewGuid();
         string code = "123456";
         EnumOtpPurpose purpose = EnumOtpPurpose.TwoFactorAuthentication;
-        OtpEntity otp = new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).AsUsed().Build();
+        OtpEntity otp = OtpFactory.Create(userId, code, purpose);
+        otp.MarkAsUsed();
         OtpForUsedValidationSpecification spec = new(userId, code, purpose);
 
         // Act
@@ -420,7 +424,7 @@ public class OtpSpecificationsTests
         Guid userId = Guid.NewGuid();
         string code = "123456";
         EnumOtpPurpose purpose = EnumOtpPurpose.TwoFactorAuthentication;
-        OtpEntity otp = new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).Build();
+        OtpEntity otp = OtpFactory.Create(userId, code, purpose);
         OtpForUsedValidationSpecification spec = new(userId, code, purpose);
 
         // Act
@@ -441,9 +445,9 @@ public class OtpSpecificationsTests
         Guid userId = Guid.NewGuid();
         List<OtpEntity> otps =
         [
-            new OtpBuilder().WithUserId(userId).Build(),
-            new OtpBuilder().WithUserId(userId).Build(),
-            new OtpBuilder().WithUserId(Guid.NewGuid()).Build(),
+            OtpFactory.Create(userId),
+            OtpFactory.Create(userId),
+            OtpFactory.Create(Guid.NewGuid()),
         ];
 
         OtpByUserIdSpecification spec = new(userId);
@@ -453,7 +457,7 @@ public class OtpSpecificationsTests
 
         // Assert
         filtered.Should().HaveCount(2);
-        filtered.All(o => o.UserId == userId).Should().BeTrue();
+        filtered.Should().OnlyContain(o => o.UserId == userId);
     }
 
     [Fact]
@@ -489,7 +493,7 @@ public class OtpSpecificationsTests
         List<OtpEntity> filtered = otps.Where(spec.ToExpression().Compile()).ToList();
 
         // Assert
-        filtered.Should().HaveCount(1);
+        filtered.Should().ContainSingle();
         filtered[0].UserId.Should().Be(userId);
     }
 

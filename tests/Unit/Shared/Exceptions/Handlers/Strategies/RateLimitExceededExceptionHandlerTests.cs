@@ -1,7 +1,9 @@
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
+using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
 namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
@@ -34,10 +36,10 @@ public class RateLimitExceededExceptionHandlerTests
     {
         // Arrange
         RateLimitExceededException exception = new(TimeSpan.FromSeconds(60));
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Title.Should().Be(nameof(RateLimitExceededException));
@@ -49,10 +51,10 @@ public class RateLimitExceededExceptionHandlerTests
         // Arrange
         TimeSpan retryAfter = TimeSpan.FromSeconds(30);
         RateLimitExceededException exception = new(retryAfter);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Detail.Should().Contain("Rate limit exceeded");
@@ -64,10 +66,10 @@ public class RateLimitExceededExceptionHandlerTests
     {
         // Arrange
         RateLimitExceededException exception = new(TimeSpan.FromSeconds(60));
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Status.Should().Be(StatusCodes.Status429TooManyRequests);
@@ -78,12 +80,12 @@ public class RateLimitExceededExceptionHandlerTests
     {
         // Arrange
         RateLimitExceededException exception = new(TimeSpan.FromSeconds(60));
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         string requestPath = "/api/v1/public/auth/login";
         context.Request.Path = requestPath;
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Instance.Should().Be(requestPath);
@@ -94,12 +96,12 @@ public class RateLimitExceededExceptionHandlerTests
     {
         // Arrange
         RateLimitExceededException exception = new(TimeSpan.FromSeconds(60));
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
         string traceId = "ratelimit-trace-505";
         context.TraceIdentifier = traceId;
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Extensions.Should().ContainKey("traceId");
@@ -111,10 +113,10 @@ public class RateLimitExceededExceptionHandlerTests
     {
         // Arrange
         RateLimitExceededException exception = new(TimeSpan.FromSeconds(60));
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Extensions.Should().ContainKey("timestamp");
@@ -128,10 +130,10 @@ public class RateLimitExceededExceptionHandlerTests
         // Arrange
         TimeSpan retryAfter = TimeSpan.FromSeconds(120);
         RateLimitExceededException exception = new(retryAfter);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         context.Response.Headers.Should().ContainKey("Retry-After");
@@ -144,10 +146,10 @@ public class RateLimitExceededExceptionHandlerTests
         // Arrange
         TimeSpan retryAfter = TimeSpan.FromMinutes(5);
         RateLimitExceededException exception = new(retryAfter);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         context.Response.Headers["Retry-After"].ToString().Should().Be("300");
@@ -160,10 +162,10 @@ public class RateLimitExceededExceptionHandlerTests
         string customMessage = "Too many login attempts";
         TimeSpan retryAfter = TimeSpan.FromSeconds(60);
         RateLimitExceededException exception = new(customMessage, retryAfter);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         problemDetails.Detail.Should().Be(customMessage);
@@ -175,25 +177,13 @@ public class RateLimitExceededExceptionHandlerTests
         // Arrange
         TimeSpan retryAfter = TimeSpan.FromSeconds(45.7);
         RateLimitExceededException exception = new(retryAfter);
-        DefaultHttpContext context = CreateHttpContext();
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        var problemDetails = _handler.CreateProblemDetails(exception, context);
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
         context.Response.Headers["Retry-After"].ToString().Should().Be("45");
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private static DefaultHttpContext CreateHttpContext()
-    {
-        DefaultHttpContext context = new();
-        context.Request.Path = "/api/test";
-        context.TraceIdentifier = "test-trace-id";
-        return context;
     }
 
     #endregion

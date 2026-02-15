@@ -5,6 +5,7 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUser;
 
@@ -14,10 +15,12 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUse
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="userRoleRepository">Repository for user-role data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminAssignRoleToUserHandler(
     IRoleRepository roleRepository,
     IUserRoleRepository userRoleRepository,
-    IIdentityUnitOfWork unitOfWork
+    IIdentityUnitOfWork unitOfWork,
+    IMapper mapper
 ) : ICommandHandler<AdminAssignRoleToUserCommand, AdminAssignRoleToUserResult>
 {
     /// <summary>
@@ -73,7 +76,7 @@ public class AdminAssignRoleToUserHandler(
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyCollection<RoleDto> roles = userRoles.Select(ur => ur.Role.ToRoleDto()).ToList();
+        IReadOnlyCollection<RoleDto> roles = userRoles.Select(ur => ur.Role.ToRoleDto(mapper)).ToList();
         return new AdminAssignRoleToUserResult(Roles: roles);
     }
 }

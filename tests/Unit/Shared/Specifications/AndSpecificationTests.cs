@@ -226,7 +226,7 @@ public class AndSpecificationTests
 
         // Assert
         filtered.Should().HaveCount(2);
-        filtered.All(e => e.Value > 5 && e.Value < 15).Should().BeTrue();
+        filtered.Should().OnlyContain(e => e.Value > 5 && e.Value < 15);
         filtered.Should().Contain(e => e.Value == 7);
         filtered.Should().Contain(e => e.Value == 10);
     }

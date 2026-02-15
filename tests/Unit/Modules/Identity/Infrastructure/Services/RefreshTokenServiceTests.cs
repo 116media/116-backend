@@ -51,7 +51,7 @@ public class RefreshTokenServiceTests
         string token = _sut.GenerateRefreshToken();
 
         // Assert
-        token.Length.Should().Be(expectedBase64Length);
+        token.Should().HaveLength(expectedBase64Length);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class RefreshTokenServiceTests
         }
 
         // Assert
-        tokens.Count.Should().Be(100, "All generated tokens should be unique");
+        tokens.Should().HaveCount(100, "All generated tokens should be unique");
     }
 
     [Fact]
@@ -165,7 +165,7 @@ public class RefreshTokenServiceTests
         string hash = _sut.HashRefreshToken(token);
 
         // Assert
-        hash.Length.Should().Be(expectedLength);
+        hash.Should().HaveLength(expectedLength);
     }
 
     [Fact]
@@ -195,7 +195,7 @@ public class RefreshTokenServiceTests
 
         // Assert
         hash.Should().NotBeNullOrEmpty();
-        hash.Length.Should().Be(44);
+        hash.Should().HaveLength(44);
     }
 
     [Fact]
@@ -209,7 +209,7 @@ public class RefreshTokenServiceTests
 
         // Assert
         hash.Should().NotBeNullOrEmpty();
-        hash.Length.Should().Be(44);
+        hash.Should().HaveLength(44);
     }
 
     #endregion
@@ -242,7 +242,7 @@ public class RefreshTokenServiceTests
         }
 
         // Assert
-        hashes.Count.Should().Be(50, "All hashes should be unique");
+        hashes.Should().HaveCount(50, "All hashes should be unique");
     }
 
     #endregion

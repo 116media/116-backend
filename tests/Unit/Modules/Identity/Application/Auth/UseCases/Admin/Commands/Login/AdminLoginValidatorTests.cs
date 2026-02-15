@@ -26,7 +26,7 @@ public class AdminLoginValidatorTests
         );
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -41,7 +41,7 @@ public class AdminLoginValidatorTests
         AdminLoginCommand command = new(Email: maxEmail, Password: TestConstants.User.ValidPassword);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -59,7 +59,7 @@ public class AdminLoginValidatorTests
         AdminLoginCommand command = new(Email: null!, Password: TestConstants.User.ValidPassword);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -73,7 +73,7 @@ public class AdminLoginValidatorTests
         AdminLoginCommand command = new(Email: string.Empty, Password: TestConstants.User.ValidPassword);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -87,7 +87,7 @@ public class AdminLoginValidatorTests
         AdminLoginCommand command = new(Email: "   ", Password: TestConstants.User.ValidPassword);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -101,7 +101,7 @@ public class AdminLoginValidatorTests
         AdminLoginCommand command = new(Email: "notanemail", Password: TestConstants.User.ValidPassword);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -116,7 +116,7 @@ public class AdminLoginValidatorTests
         AdminLoginCommand command = new(Email: longEmail, Password: TestConstants.User.ValidPassword);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -136,7 +136,7 @@ public class AdminLoginValidatorTests
         AdminLoginCommand command = new(Email: TestConstants.User.ValidEmail, Password: null!);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -150,7 +150,7 @@ public class AdminLoginValidatorTests
         AdminLoginCommand command = new(Email: TestConstants.User.ValidEmail, Password: string.Empty);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -164,7 +164,7 @@ public class AdminLoginValidatorTests
         AdminLoginCommand command = new(Email: TestConstants.User.ValidEmail, Password: "   ");
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -182,11 +182,11 @@ public class AdminLoginValidatorTests
         AdminLoginCommand command = new(Email: string.Empty, Password: string.Empty);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<AdminLoginCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Count.Should().BeGreaterThanOrEqualTo(2);
+        result.Errors.Should().HaveCountGreaterThanOrEqualTo(2);
         result.ShouldHaveValidationErrorFor(x => x.Email);
         result.ShouldHaveValidationErrorFor(x => x.Password);
     }

@@ -13,10 +13,10 @@ public class ConflictErrorMessageTests
     public void EmailAlreadyExists_WithEmail_ShouldReturnFormattedMessage()
     {
         // Arrange
-        var email = "test@example.com";
+        string email = "test@example.com";
 
         // Act
-        var message = ConflictErrorMessage.EmailAlreadyExists(email);
+        string message = ConflictErrorMessage.EmailAlreadyExists(email);
 
         // Assert
         message.Should().Be($"User with email '{email}' already exists");
@@ -26,10 +26,10 @@ public class ConflictErrorMessageTests
     public void UsernameAlreadyExists_WithUsername_ShouldReturnFormattedMessage()
     {
         // Arrange
-        var username = "testuser";
+        string username = "testuser";
 
         // Act
-        var message = ConflictErrorMessage.UsernameAlreadyExists(username);
+        string message = ConflictErrorMessage.UsernameAlreadyExists(username);
 
         // Assert
         message.Should().Be($"Username '{username}' is already taken");
@@ -39,10 +39,10 @@ public class ConflictErrorMessageTests
     public void PhoneNumberAlreadyExists_WithPhoneNumber_ShouldReturnFormattedMessage()
     {
         // Arrange
-        var phoneNumber = "+1234567890";
+        string phoneNumber = "+1234567890";
 
         // Act
-        var message = ConflictErrorMessage.PhoneNumberAlreadyExists(phoneNumber);
+        string message = ConflictErrorMessage.PhoneNumberAlreadyExists(phoneNumber);
 
         // Assert
         message.Should().Be($"Phone number '{phoneNumber}' is already taken");
@@ -52,10 +52,10 @@ public class ConflictErrorMessageTests
     public void RoleAlreadyExists_WithRoleName_ShouldReturnFormattedMessage()
     {
         // Arrange
-        var name = "Admin";
+        string name = "Admin";
 
         // Act
-        var message = ConflictErrorMessage.RoleAlreadyExists(name);
+        string message = ConflictErrorMessage.RoleAlreadyExists(name);
 
         // Assert
         message.Should().Be($"Role '{name}' already exists");
@@ -65,11 +65,11 @@ public class ConflictErrorMessageTests
     public void PermissionAlreadyExists_WithResourceAndAction_ShouldReturnFormattedMessage()
     {
         // Arrange
-        var resource = "users";
-        var action = "create";
+        string resource = "users";
+        string action = "create";
 
         // Act
-        var message = ConflictErrorMessage.PermissionAlreadyExists(resource, action);
+        string message = ConflictErrorMessage.PermissionAlreadyExists(resource, action);
 
         // Assert
         message.Should().Be($"Permission '{resource}.{action}' already exists");
@@ -79,7 +79,7 @@ public class ConflictErrorMessageTests
     public void RoleAlreadyAssignedToUser_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ConflictErrorMessage.RoleAlreadyAssignedToUser();
+        string message = ConflictErrorMessage.RoleAlreadyAssignedToUser();
 
         // Assert
         message.Should().Be("Role is already assigned to this user");
@@ -89,7 +89,7 @@ public class ConflictErrorMessageTests
     public void PermissionAlreadyAssignedToRole_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ConflictErrorMessage.PermissionAlreadyAssignedToRole();
+        string message = ConflictErrorMessage.PermissionAlreadyAssignedToRole();
 
         // Assert
         message.Should().Be("Permission is already assigned to this role");
@@ -99,7 +99,7 @@ public class ConflictErrorMessageTests
     public void RoleAlreadyActive_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ConflictErrorMessage.RoleAlreadyActive();
+        string message = ConflictErrorMessage.RoleAlreadyActive();
 
         // Assert
         message.Should().Be("Role is already active");
@@ -109,7 +109,7 @@ public class ConflictErrorMessageTests
     public void RoleAlreadyInactive_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ConflictErrorMessage.RoleAlreadyInactive();
+        string message = ConflictErrorMessage.RoleAlreadyInactive();
 
         // Assert
         message.Should().Be("Role is already inactive");
@@ -119,7 +119,7 @@ public class ConflictErrorMessageTests
     public void RoleAlreadyDeleted_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ConflictErrorMessage.RoleAlreadyDeleted();
+        string message = ConflictErrorMessage.RoleAlreadyDeleted();
 
         // Assert
         message.Should().Be("Role is already deleted");
@@ -129,7 +129,7 @@ public class ConflictErrorMessageTests
     public void RoleNotDeleted_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ConflictErrorMessage.RoleNotDeleted();
+        string message = ConflictErrorMessage.RoleNotDeleted();
 
         // Assert
         message.Should().Be("Role is not deleted and cannot be restored");
@@ -139,7 +139,7 @@ public class ConflictErrorMessageTests
     public void PermissionAlreadyActive_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ConflictErrorMessage.PermissionAlreadyActive();
+        string message = ConflictErrorMessage.PermissionAlreadyActive();
 
         // Assert
         message.Should().Be("Permission is already active");
@@ -149,7 +149,7 @@ public class ConflictErrorMessageTests
     public void PermissionAlreadyInactive_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ConflictErrorMessage.PermissionAlreadyInactive();
+        string message = ConflictErrorMessage.PermissionAlreadyInactive();
 
         // Assert
         message.Should().Be("Permission is already inactive");
@@ -159,7 +159,7 @@ public class ConflictErrorMessageTests
     public void PermissionAlreadyDeleted_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ConflictErrorMessage.PermissionAlreadyDeleted();
+        string message = ConflictErrorMessage.PermissionAlreadyDeleted();
 
         // Assert
         message.Should().Be("Permission is already deleted");
@@ -169,7 +169,7 @@ public class ConflictErrorMessageTests
     public void PermissionNotDeleted_ShouldReturnCorrectMessage()
     {
         // Act
-        var message = ConflictErrorMessage.PermissionNotDeleted();
+        string message = ConflictErrorMessage.PermissionNotDeleted();
 
         // Assert
         message.Should().Be("Permission is not deleted and cannot be restored");

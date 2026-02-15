@@ -22,7 +22,7 @@ public class PublicRefreshTokenValidatorTests
         PublicRefreshTokenCommand command = new(RefreshToken: TestConstants.Session.DefaultRefreshToken);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicRefreshTokenCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -40,7 +40,7 @@ public class PublicRefreshTokenValidatorTests
         PublicRefreshTokenCommand command = new(RefreshToken: null!);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicRefreshTokenCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -54,7 +54,7 @@ public class PublicRefreshTokenValidatorTests
         PublicRefreshTokenCommand command = new(RefreshToken: string.Empty);
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicRefreshTokenCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();
@@ -68,7 +68,7 @@ public class PublicRefreshTokenValidatorTests
         PublicRefreshTokenCommand command = new(RefreshToken: "   ");
 
         // Act
-        var result = await _validator.TestValidateAsync(command);
+        TestValidationResult<PublicRefreshTokenCommand>? result = await _validator.TestValidateAsync(command);
 
         // Assert
         result.IsValid.Should().BeFalse();

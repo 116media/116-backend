@@ -1,5 +1,7 @@
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
+using AwesomeAssertions;
+using AwesomeAssertions.Specialized;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
@@ -18,9 +20,9 @@ public class SuperAdminConfigurationTests
         string email = SuperAdminConfiguration.Email;
 
         // Assert
-        Assert.Contains("@", email);
-        Assert.Contains(".", email);
-        Assert.Equal("superadmin@116.com", email);
+        email.Should().Contain("@");
+        email.Should().Contain(".");
+        email.Should().Be("superadmin@116.com");
     }
 
     [Fact]
@@ -30,8 +32,8 @@ public class SuperAdminConfigurationTests
         string username = SuperAdminConfiguration.Username;
 
         // Assert
-        Assert.False(string.IsNullOrWhiteSpace(username));
-        Assert.Equal("sigmacool", username);
+        username.Should().NotBeNullOrWhiteSpace();
+        username.Should().Be("sigmacool");
     }
 
     [Fact]
@@ -41,8 +43,8 @@ public class SuperAdminConfigurationTests
         string description = SuperAdminConfiguration.RoleDescription;
 
         // Assert
-        Assert.False(string.IsNullOrWhiteSpace(description));
-        Assert.Contains("Super Administrator", description);
+        description.Should().NotBeNullOrWhiteSpace();
+        description.Should().Contain("Super Administrator");
         Assert.Contains("complete system access", description, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -53,7 +55,7 @@ public class SuperAdminConfigurationTests
         string resource = SuperAdminConfiguration.PermissionResource;
 
         // Assert
-        Assert.Equal("system", resource);
+        resource.Should().Be("system");
     }
 
     [Fact]
@@ -63,7 +65,7 @@ public class SuperAdminConfigurationTests
         string action = SuperAdminConfiguration.PermissionAction;
 
         // Assert
-        Assert.Equal("all", action);
+        action.Should().Be("all");
     }
 
     [Fact]
@@ -73,7 +75,7 @@ public class SuperAdminConfigurationTests
         string description = SuperAdminConfiguration.PermissionDescription;
 
         // Assert
-        Assert.False(string.IsNullOrWhiteSpace(description));
+        description.Should().NotBeNullOrWhiteSpace();
         Assert.Contains("system access", description, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("all permissions", description, StringComparison.OrdinalIgnoreCase);
     }
@@ -89,8 +91,8 @@ public class SuperAdminConfigurationTests
         string roleName = SuperAdminConfiguration.RoleName;
 
         // Assert
-        Assert.Equal(nameof(EnumCoreUserRole.SuperAdmin), roleName);
-        Assert.Equal("SuperAdmin", roleName);
+        roleName.Should().Be(nameof(EnumCoreUserRole.SuperAdmin));
+        roleName.Should().Be("SuperAdmin");
     }
 
     [Fact]
@@ -100,7 +102,7 @@ public class SuperAdminConfigurationTests
         string roleName = SuperAdminConfiguration.RoleName;
 
         // Assert
-        Assert.False(string.IsNullOrWhiteSpace(roleName));
+        roleName.Should().NotBeNullOrWhiteSpace();
     }
 
     #endregion
@@ -117,9 +119,11 @@ public class SuperAdminConfigurationTests
         try
         {
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => SuperAdminConfiguration.GetPassword());
-            Assert.Contains("DEFAULT_USER_PASSWORD", exception.Message);
-            Assert.Contains("missing or empty", exception.Message);
+            Action act = () => SuperAdminConfiguration.GetPassword();
+            ExceptionAssertions<InvalidOperationException>? exception = act.Should()
+                .ThrowExactly<InvalidOperationException>();
+            exception.Which.Message.Should().Contain("DEFAULT_USER_PASSWORD");
+            exception.Which.Message.Should().Contain("missing or empty");
         }
         finally
         {
@@ -138,8 +142,10 @@ public class SuperAdminConfigurationTests
         try
         {
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => SuperAdminConfiguration.GetPassword());
-            Assert.Contains("DEFAULT_USER_PASSWORD", exception.Message);
+            Action act = () => SuperAdminConfiguration.GetPassword();
+            ExceptionAssertions<InvalidOperationException>? exception = act.Should()
+                .ThrowExactly<InvalidOperationException>();
+            exception.Which.Message.Should().Contain("DEFAULT_USER_PASSWORD");
         }
         finally
         {
@@ -158,8 +164,10 @@ public class SuperAdminConfigurationTests
         try
         {
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => SuperAdminConfiguration.GetPassword());
-            Assert.Contains("DEFAULT_USER_PASSWORD", exception.Message);
+            Action act = () => SuperAdminConfiguration.GetPassword();
+            ExceptionAssertions<InvalidOperationException>? exception = act.Should()
+                .ThrowExactly<InvalidOperationException>();
+            exception.Which.Message.Should().Contain("DEFAULT_USER_PASSWORD");
         }
         finally
         {
@@ -182,7 +190,7 @@ public class SuperAdminConfigurationTests
             string result = SuperAdminConfiguration.GetPassword();
 
             // Assert
-            Assert.Equal(testPassword, result);
+            result.Should().Be(testPassword);
         }
         finally
         {

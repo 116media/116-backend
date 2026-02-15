@@ -1,6 +1,6 @@
 using _116.Core.Application.Shared.Specifications;
 using _116.Core.Domain.Entities;
-using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -18,7 +18,7 @@ public class FileIdentificationSpecificationsTests
     {
         // Arrange
         Guid fileId = Guid.NewGuid();
-        FileEntity file = new FileBuilder().WithId(fileId).Build();
+        FileEntity file = FileFactory.CreateWithId(fileId);
         FileByIdSpecification spec = new(fileId);
 
         // Act
@@ -32,7 +32,7 @@ public class FileIdentificationSpecificationsTests
     public void FileByIdSpecification_WithDifferentId_ShouldReturnFalse()
     {
         // Arrange
-        FileEntity file = new FileBuilder().WithId(Guid.NewGuid()).Build();
+        FileEntity file = FileFactory.CreateWithId(Guid.NewGuid());
         FileByIdSpecification spec = new(Guid.NewGuid());
 
         // Act
@@ -51,7 +51,7 @@ public class FileIdentificationSpecificationsTests
     {
         // Arrange
         string fileName = "document.pdf";
-        FileEntity file = new FileBuilder().WithOriginalFileName(fileName).Build();
+        FileEntity file = FileFactory.Create(fileName);
         FileByOriginalFileNameSpecification spec = new(fileName);
 
         // Act
@@ -65,7 +65,7 @@ public class FileIdentificationSpecificationsTests
     public void FileByOriginalFileNameSpecification_WithDifferentName_ShouldReturnFalse()
     {
         // Arrange
-        FileEntity file = new FileBuilder().WithOriginalFileName("document.pdf").Build();
+        FileEntity file = FileFactory.Create("document.pdf");
         FileByOriginalFileNameSpecification spec = new("image.jpg");
 
         // Act
@@ -79,7 +79,7 @@ public class FileIdentificationSpecificationsTests
     public void FileByOriginalFileNameSpecification_IsCaseSensitive()
     {
         // Arrange
-        FileEntity file = new FileBuilder().WithOriginalFileName("Document.PDF").Build();
+        FileEntity file = FileFactory.Create("Document.PDF");
         FileByOriginalFileNameSpecification spec = new("document.pdf");
 
         // Act
@@ -98,7 +98,7 @@ public class FileIdentificationSpecificationsTests
     {
         // Arrange
         string storedFileName = "abc123-def456.pdf";
-        FileEntity file = new FileBuilder().WithFileName(storedFileName).Build();
+        FileEntity file = FileFactory.CreateWithFileName(storedFileName);
         FileByFileNameSpecification spec = new(storedFileName);
 
         // Act
@@ -112,7 +112,7 @@ public class FileIdentificationSpecificationsTests
     public void FileByFileNameSpecification_WithDifferentName_ShouldReturnFalse()
     {
         // Arrange
-        FileEntity file = new FileBuilder().WithFileName("abc123-def456.pdf").Build();
+        FileEntity file = FileFactory.CreateWithFileName("abc123-def456.pdf");
         FileByFileNameSpecification spec = new("xyz789-uvw012.pdf");
 
         // Act
@@ -131,7 +131,7 @@ public class FileIdentificationSpecificationsTests
     {
         // Arrange
         string mimeType = "image/jpeg";
-        FileEntity file = new FileBuilder().WithMimeType(mimeType).Build();
+        FileEntity file = FileFactory.CreateWithMimeType(mimeType);
         FileByMimeTypeSpecification spec = new(mimeType);
 
         // Act
@@ -145,7 +145,7 @@ public class FileIdentificationSpecificationsTests
     public void FileByMimeTypeSpecification_WithDifferentMimeType_ShouldReturnFalse()
     {
         // Arrange
-        FileEntity file = new FileBuilder().WithMimeType("image/jpeg").Build();
+        FileEntity file = FileFactory.CreateWithMimeType("image/jpeg");
         FileByMimeTypeSpecification spec = new("application/pdf");
 
         // Act
@@ -159,7 +159,7 @@ public class FileIdentificationSpecificationsTests
     public void FileByMimeTypeSpecification_WithJpegImage_ShouldReturnTrue()
     {
         // Arrange
-        FileEntity file = new FileBuilder().AsJpegImage().Build();
+        FileEntity file = FileFactory.CreateJpeg();
         FileByMimeTypeSpecification spec = new("image/jpeg");
 
         // Act
@@ -173,7 +173,7 @@ public class FileIdentificationSpecificationsTests
     public void FileByMimeTypeSpecification_WithPdfDocument_ShouldReturnTrue()
     {
         // Arrange
-        FileEntity file = new FileBuilder().AsPdfDocument().Build();
+        FileEntity file = FileFactory.CreatePdf();
         FileByMimeTypeSpecification spec = new("application/pdf");
 
         // Act
@@ -192,7 +192,7 @@ public class FileIdentificationSpecificationsTests
     {
         // Arrange
         Guid fileId = Guid.NewGuid();
-        FileEntity file = new FileBuilder().WithId(fileId).Build();
+        FileEntity file = FileFactory.CreateWithId(fileId);
         FileByIdNotDeletedSpecification spec = new(fileId);
 
         // Act
@@ -207,7 +207,7 @@ public class FileIdentificationSpecificationsTests
     {
         // Arrange
         Guid fileId = Guid.NewGuid();
-        FileEntity file = new FileBuilder().WithId(fileId).AsDeleted().Build();
+        FileEntity file = FileFactory.CreateDeletedWithId(fileId);
         FileByIdNotDeletedSpecification spec = new(fileId);
 
         // Act
@@ -221,7 +221,7 @@ public class FileIdentificationSpecificationsTests
     public void FileByIdNotDeletedSpecification_WithDifferentIdNotDeleted_ShouldReturnFalse()
     {
         // Arrange
-        FileEntity file = new FileBuilder().WithId(Guid.NewGuid()).Build();
+        FileEntity file = FileFactory.CreateWithId(Guid.NewGuid());
         FileByIdNotDeletedSpecification spec = new(Guid.NewGuid());
 
         // Act
@@ -235,7 +235,7 @@ public class FileIdentificationSpecificationsTests
     public void FileByIdNotDeletedSpecification_WithDifferentIdAndDeleted_ShouldReturnFalse()
     {
         // Arrange
-        FileEntity file = new FileBuilder().WithId(Guid.NewGuid()).AsDeleted().Build();
+        FileEntity file = FileFactory.CreateDeletedWithId(Guid.NewGuid());
         FileByIdNotDeletedSpecification spec = new(Guid.NewGuid());
 
         // Act
@@ -256,9 +256,9 @@ public class FileIdentificationSpecificationsTests
         Guid targetId = Guid.NewGuid();
         List<FileEntity> files =
         [
-            new FileBuilder().WithId(targetId).Build(),
-            new FileBuilder().WithId(Guid.NewGuid()).Build(),
-            new FileBuilder().WithId(Guid.NewGuid()).Build(),
+            FileFactory.CreateWithId(targetId),
+            FileFactory.CreateWithId(Guid.NewGuid()),
+            FileFactory.CreateWithId(Guid.NewGuid()),
         ];
 
         FileByIdSpecification spec = new(targetId);
@@ -267,7 +267,7 @@ public class FileIdentificationSpecificationsTests
         List<FileEntity> filtered = files.Where(spec.ToExpression().Compile()).ToList();
 
         // Assert
-        filtered.Should().HaveCount(1);
+        filtered.Should().ContainSingle();
         filtered[0].Id.Should().Be(targetId);
     }
 
@@ -277,10 +277,10 @@ public class FileIdentificationSpecificationsTests
         // Arrange
         List<FileEntity> files =
         [
-            new FileBuilder().AsJpegImage().Build(),
-            new FileBuilder().AsJpegImage().Build(),
-            new FileBuilder().AsPngImage().Build(),
-            new FileBuilder().AsPdfDocument().Build(),
+            FileFactory.CreateJpeg(),
+            FileFactory.CreateJpeg(),
+            FileFactory.CreatePng(),
+            FileFactory.CreatePdf(),
         ];
 
         FileByMimeTypeSpecification spec = new("image/jpeg");
@@ -290,7 +290,7 @@ public class FileIdentificationSpecificationsTests
 
         // Assert
         filtered.Should().HaveCount(2);
-        filtered.All(f => f.MimeType == "image/jpeg").Should().BeTrue();
+        filtered.Should().OnlyContain(f => f.MimeType == "image/jpeg");
     }
 
     [Fact]
@@ -300,10 +300,10 @@ public class FileIdentificationSpecificationsTests
         Guid targetId = Guid.NewGuid();
         List<FileEntity> files =
         [
-            new FileBuilder().WithId(targetId).Build(), // Match
-            new FileBuilder().WithId(targetId).AsDeleted().Build(), // Wrong - deleted
-            new FileBuilder().WithId(Guid.NewGuid()).Build(), // Wrong - different ID
-            new FileBuilder().WithId(Guid.NewGuid()).AsDeleted().Build(), // Wrong - both
+            FileFactory.CreateWithId(targetId), // Match
+            FileFactory.CreateDeletedWithId(targetId), // Wrong - deleted
+            FileFactory.CreateWithId(Guid.NewGuid()), // Wrong - different ID
+            FileFactory.CreateDeletedWithId(Guid.NewGuid()), // Wrong - both
         ];
 
         FileByIdNotDeletedSpecification spec = new(targetId);
@@ -312,7 +312,7 @@ public class FileIdentificationSpecificationsTests
         List<FileEntity> filtered = files.Where(spec.ToExpression().Compile()).ToList();
 
         // Assert
-        filtered.Should().HaveCount(1);
+        filtered.Should().ContainSingle();
         filtered[0].Id.Should().Be(targetId);
         filtered[0].IsDeleted.Should().BeFalse();
     }
@@ -324,9 +324,9 @@ public class FileIdentificationSpecificationsTests
         string targetName = "important-document.pdf";
         List<FileEntity> files =
         [
-            new FileBuilder().WithOriginalFileName(targetName).Build(),
-            new FileBuilder().WithOriginalFileName(targetName).Build(),
-            new FileBuilder().WithOriginalFileName("other-file.pdf").Build(),
+            FileFactory.Create(targetName),
+            FileFactory.Create(targetName),
+            FileFactory.Create("other-file.pdf"),
         ];
 
         FileByOriginalFileNameSpecification spec = new(targetName);
@@ -336,7 +336,7 @@ public class FileIdentificationSpecificationsTests
 
         // Assert
         filtered.Should().HaveCount(2);
-        filtered.All(f => f.OriginalFileName == targetName).Should().BeTrue();
+        filtered.Should().OnlyContain(f => f.OriginalFileName == targetName);
     }
 
     #endregion

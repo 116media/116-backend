@@ -1,7 +1,7 @@
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
-using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Constants;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -110,7 +110,7 @@ public class PermissionEntityTests
     public void Update_WithValidParameters_ShouldUpdatePermission()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
         string newResource = "articles";
         string newAction = "create";
         string newDescription = "Updated permission description for testing.";
@@ -131,7 +131,7 @@ public class PermissionEntityTests
     public void Update_WithInvalidResource_ShouldThrowBadRequestException(string? invalidResource)
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
 
         // Act
         Action act = () =>
@@ -152,7 +152,7 @@ public class PermissionEntityTests
     public void Update_WithInvalidAction_ShouldThrowBadRequestException(string? invalidAction)
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
 
         // Act
         Action act = () =>
@@ -173,7 +173,7 @@ public class PermissionEntityTests
     public void Update_WithInvalidDescription_ShouldThrowBadRequestException(string? invalidDescription)
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
 
         // Act
         Action act = () =>
@@ -195,7 +195,7 @@ public class PermissionEntityTests
     public void Activate_WhenInactive_ShouldActivateAndReturnTrue()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().AsInactive().Build();
+        PermissionEntity permission = PermissionFactory.CreateInactive();
 
         // Act
         bool result = permission.Activate();
@@ -209,7 +209,7 @@ public class PermissionEntityTests
     public void Activate_WhenAlreadyActive_ShouldReturnFalse()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build(); // Default is active
+        PermissionEntity permission = PermissionFactory.Create(); // Default is active
 
         // Act
         bool result = permission.Activate();
@@ -227,7 +227,7 @@ public class PermissionEntityTests
     public void Deactivate_WhenActive_ShouldDeactivateAndReturnTrue()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build(); // Default is active
+        PermissionEntity permission = PermissionFactory.Create(); // Default is active
 
         // Act
         bool result = permission.Deactivate();
@@ -241,7 +241,7 @@ public class PermissionEntityTests
     public void Deactivate_WhenAlreadyInactive_ShouldReturnFalse()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().AsInactive().Build();
+        PermissionEntity permission = PermissionFactory.CreateInactive();
 
         // Act
         bool result = permission.Deactivate();
@@ -259,7 +259,7 @@ public class PermissionEntityTests
     public void SoftDelete_WhenNotDeleted_ShouldSoftDeleteAndReturnTrue()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
 
         // Act
         bool result = permission.SoftDelete();
@@ -276,7 +276,7 @@ public class PermissionEntityTests
     public void SoftDelete_WhenAlreadyDeleted_ShouldReturnFalse()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().AsDeleted().Build();
+        PermissionEntity permission = PermissionFactory.CreateDeleted();
 
         // Act
         bool result = permission.SoftDelete();
@@ -294,7 +294,7 @@ public class PermissionEntityTests
     public void Restore_WhenDeleted_ShouldRestoreAndReturnTrue()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().AsDeleted().Build();
+        PermissionEntity permission = PermissionFactory.CreateDeleted();
 
         // Act
         bool result = permission.Restore();
@@ -309,7 +309,7 @@ public class PermissionEntityTests
     public void Restore_WhenNotDeleted_ShouldReturnFalse()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().Build();
+        PermissionEntity permission = PermissionFactory.Create();
 
         // Act
         bool result = permission.Restore();
@@ -323,7 +323,7 @@ public class PermissionEntityTests
     public void Restore_ShouldNotAutomaticallyActivate()
     {
         // Arrange
-        PermissionEntity permission = new PermissionBuilder().AsDeleted().Build();
+        PermissionEntity permission = PermissionFactory.CreateDeleted();
 
         // Act
         permission.Restore();

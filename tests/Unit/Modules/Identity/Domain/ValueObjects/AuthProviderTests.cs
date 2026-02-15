@@ -1,5 +1,7 @@
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
+using AwesomeAssertions;
+using AwesomeAssertions.Specialized;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity.Domain.ValueObjects;
@@ -21,7 +23,7 @@ public class AuthProviderTests
         AuthProvider provider = new(providerEnum);
 
         // Assert
-        Assert.NotNull(provider);
+        provider.Should().NotBeNull();
         Assert.Equal(EnumAuthProvider.Local, provider.Value);
     }
 
@@ -35,7 +37,7 @@ public class AuthProviderTests
         AuthProvider provider = new(providerEnum);
 
         // Assert
-        Assert.NotNull(provider);
+        provider.Should().NotBeNull();
         Assert.Equal(providerEnum, provider.Value);
     }
 
@@ -46,8 +48,9 @@ public class AuthProviderTests
         EnumAuthProvider invalidEnum = (EnumAuthProvider)999;
 
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new AuthProvider(invalidEnum));
-        Assert.Contains("Invalid auth provider", exception.Message);
+        Action act = () => new AuthProvider(invalidEnum);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid auth provider");
     }
 
     #endregion
@@ -64,7 +67,7 @@ public class AuthProviderTests
         AuthProvider provider = new(providerString);
 
         // Assert
-        Assert.NotNull(provider);
+        provider.Should().NotBeNull();
         Assert.Equal(EnumAuthProvider.Local, provider.Value);
     }
 
@@ -98,24 +101,27 @@ public class AuthProviderTests
     public void Constructor_WithInvalidStringValue_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new AuthProvider("InvalidProvider"));
-        Assert.Contains("Invalid auth provider", exception.Message);
+        Action act = () => new AuthProvider("InvalidProvider");
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid auth provider");
     }
 
     [Fact]
     public void Constructor_WithEmptyString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new AuthProvider(string.Empty));
-        Assert.Contains("Invalid auth provider", exception.Message);
+        Action act = () => new AuthProvider(string.Empty);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid auth provider");
     }
 
     [Fact]
     public void Constructor_WithNullString_ShouldThrowArgumentException()
     {
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new AuthProvider((string)null!));
-        Assert.Contains("Invalid auth provider", exception.Message);
+        Action act = () => new AuthProvider((string)null!);
+        ExceptionAssertions<ArgumentException>? exception = act.Should().ThrowExactly<ArgumentException>();
+        exception.Which.Message.Should().Contain("Invalid auth provider");
     }
 
     #endregion
@@ -145,7 +151,7 @@ public class AuthProviderTests
         string result = provider;
 
         // Assert
-        Assert.Equal("Google", result);
+        result.Should().Be("Google");
     }
 
     [Fact]
@@ -158,7 +164,7 @@ public class AuthProviderTests
         AuthProvider provider = providerEnum;
 
         // Assert
-        Assert.NotNull(provider);
+        provider.Should().NotBeNull();
         Assert.Equal(EnumAuthProvider.Facebook, provider.Value);
     }
 
@@ -172,7 +178,7 @@ public class AuthProviderTests
         AuthProvider provider = providerString;
 
         // Assert
-        Assert.NotNull(provider);
+        provider.Should().NotBeNull();
         Assert.Equal(EnumAuthProvider.Google, provider.Value);
     }
 
@@ -183,10 +189,11 @@ public class AuthProviderTests
         string invalidProvider = "InvalidProvider";
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() =>
+        Action act = () =>
         {
             AuthProvider provider = invalidProvider;
-        });
+        };
+        act.Should().ThrowExactly<ArgumentException>();
     }
 
     #endregion
