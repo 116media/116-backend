@@ -10,6 +10,7 @@ using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common.Factories;
+using _116.Unit.Tests.Common.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using _116.Unit.Tests.Common.Mocks.Services;
@@ -63,7 +64,7 @@ public class PublicSignUpAuthFactoryTests
         string hashedPassword = "hashed_password";
         UserEntity user = UserFactory.CreateVerifiedActive();
         OtpEntity otp = OtpFactory.CreateForEmailVerification(Guid.NewGuid());
-        List<RoleDto> roles = [new RoleDto(Guid.NewGuid(), "Visitor", "Visitor role", true, false, null)];
+        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(name: "Visitor", description: "Visitor role")];
         List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupValidateUniqueCredentialsSuccess();
