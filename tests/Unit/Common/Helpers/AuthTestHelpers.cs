@@ -5,7 +5,6 @@ using _116.Identity.Application.Session.Factories;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Unit.Tests.Common.Builders;
-using _116.Unit.Tests.Common.Factories;
 
 namespace _116.Unit.Tests.Common.Helpers;
 
@@ -82,25 +81,12 @@ public static class AuthTestHelpers
     }
 
     /// <summary>
-    /// Creates PublicLoginAuthData with random user data (via UserFactory).
-    /// </summary>
-    /// <returns>PublicLoginAuthData with random verified active user.</returns>
-    public static PublicLoginAuthData CreatePublicLoginAuthData() => new AuthDataBuilder().BuildPublicLoginAuthData();
-
-    /// <summary>
     /// Creates PublicLoginAuthData with a specific user (predictable scenario).
     /// </summary>
     /// <param name="user">The user entity to use.</param>
     /// <returns>PublicLoginAuthData with the specified user.</returns>
     public static PublicLoginAuthData CreatePublicLoginAuthData(UserEntity user) =>
         new AuthDataBuilder(user).BuildPublicLoginAuthData();
-
-    /// <summary>
-    /// Creates PublicSocialLoginAuthData with random user data.
-    /// </summary>
-    /// <returns>PublicSocialLoginAuthData with random verified active user.</returns>
-    public static PublicSocialLoginAuthData CreatePublicSocialLoginAuthData() =>
-        new AuthDataBuilder().BuildPublicSocialLoginAuthData();
 
     /// <summary>
     /// Creates PublicSocialLoginAuthData with a specific user.
@@ -111,23 +97,10 @@ public static class AuthTestHelpers
         new AuthDataBuilder(user).BuildPublicSocialLoginAuthData();
 
     /// <summary>
-    /// Creates AdminLoginAuthData with random user data.
-    /// </summary>
-    /// <returns>AdminLoginAuthData with random verified active user.</returns>
-    public static AdminLoginAuthData CreateAdminLoginAuthData() => new AuthDataBuilder().BuildAdminLoginAuthData();
-
-    /// <summary>
     /// Creates AdminLoginAuthData with a specific user (e.g., UserFactory.CreateSuperAdmin()).
     /// </summary>
     /// <param name="user">The user entity to use.</param>
     /// <returns>AdminLoginAuthData with the specified user.</returns>
     public static AdminLoginAuthData CreateAdminLoginAuthData(UserEntity user) =>
         new AuthDataBuilder(user).BuildAdminLoginAuthData();
-
-    /// <summary>
-    /// Creates AdminLoginAuthData for SuperAdmin (predictable email: superadmin@116.com).
-    /// </summary>
-    /// <returns>AdminLoginAuthData with SuperAdmin user.</returns>
-    public static AdminLoginAuthData CreateSuperAdminLoginAuthData() =>
-        new AuthDataBuilder(UserFactory.CreateSuperAdmin()).BuildAdminLoginAuthData();
 }
