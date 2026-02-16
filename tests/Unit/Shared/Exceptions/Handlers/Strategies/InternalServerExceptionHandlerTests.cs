@@ -1,5 +1,6 @@
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
+using _116.Unit.Tests.Common.Constants;
 using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
@@ -80,7 +81,7 @@ public class InternalServerExceptionHandlerTests
         // Arrange
         InternalServerException exception = new("Internal error");
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-        string requestPath = "/api/v1/admin/users";
+        string requestPath = TestConstants.ApiRoutes.Admin.Users;
         context.Request.Path = requestPath;
 
         // Act
