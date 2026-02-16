@@ -7,6 +7,7 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common.Factories;
+using _116.Unit.Tests.Common.Helpers;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
@@ -47,7 +48,7 @@ public class AdminLoginAuthFactoryTests
         string email = "admin@example.com";
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateAdmin();
-        List<RoleDto> roles = [new RoleDto(Guid.NewGuid(), "Admin", "Admin role", true, false, null)];
+        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(description: "Admin role")];
         List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupGetUserWithRolesByEmail(user);
@@ -153,11 +154,8 @@ public class AdminLoginAuthFactoryTests
         string email = "admin@example.com";
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateAdmin();
-        List<RoleDto> roles = [new RoleDto(Guid.NewGuid(), "Admin", "Admin role", true, false, null)];
-        List<PermissionDto> permissions =
-        [
-            new PermissionDto(Guid.NewGuid(), "users", "read", "Read users", true, false, null),
-        ];
+        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(description: "Admin role")];
+        List<PermissionDto> permissions = [AuthTestHelpers.CreatePermissionDto()];
 
         _authRepositoryMock.SetupGetUserWithRolesByEmail(user);
         _passwordServiceMock.SetupVerifyReturnsTrue();
