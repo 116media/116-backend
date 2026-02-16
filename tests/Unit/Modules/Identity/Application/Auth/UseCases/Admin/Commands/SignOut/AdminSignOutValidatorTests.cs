@@ -1,5 +1,5 @@
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
-using _116.Unit.Tests.Common.Constants;
+using _116.Tests.Fixtures.Constants;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
