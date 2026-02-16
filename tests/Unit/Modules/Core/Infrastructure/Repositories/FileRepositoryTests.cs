@@ -2,7 +2,7 @@ using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Core.Infrastructure.Persistence;
 using _116.Core.Infrastructure.Repositories;
-using _116.Unit.Tests.Common.Factories;
+using _116.Tests.Fixtures.Factories;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
