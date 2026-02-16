@@ -78,10 +78,10 @@ public static class PermissionFactory
     public static PermissionEntity CreateRead(string resource) => Create(resource, PermissionActions.Read);
 
     /// <summary>
-    /// Creates a create permission for a specific resource.
+    /// Creates a create-permission for a specific resource.
     /// </summary>
     /// <param name="resource">The resource name.</param>
-    /// <returns>A new create PermissionEntity.</returns>
+    /// <returns>A new creation PermissionEntity.</returns>
     public static PermissionEntity CreateCreate(string resource) => Create(resource, PermissionActions.Create);
 
     /// <summary>
