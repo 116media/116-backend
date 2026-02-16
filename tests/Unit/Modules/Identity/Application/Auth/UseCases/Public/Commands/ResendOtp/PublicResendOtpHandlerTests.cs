@@ -4,13 +4,13 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
-using _116.Unit.Tests.Common.Factories;
+using _116.Tests.Fixtures.Factories;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Identity.Application.Auth.Public.ResendOtp;
+namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
 
 /// <summary>
 /// Unit tests for <see cref="PublicResendOtpHandler"/>.
