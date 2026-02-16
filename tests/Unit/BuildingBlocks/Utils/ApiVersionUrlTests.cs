@@ -1,4 +1,5 @@
 using _116.BuildingBlocks.Utils;
+using _116.Unit.Tests.Common.Constants;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -72,7 +73,7 @@ public class ApiVersionUrlTests
         string result = ApiVersionUrl.Build(httpContext, "admin/roles");
 
         // Assert
-        result.Should().Be("/api/v1/admin/roles");
+        result.Should().Be(TestConstants.ApiRoutes.Admin.Roles);
     }
 
     [Fact]
@@ -118,7 +119,7 @@ public class ApiVersionUrlTests
         string result = ApiVersionUrl.Build(httpContext, "admin/permissions");
 
         // Assert
-        result.Should().Be("/api/v1/admin/permissions");
+        result.Should().Be(TestConstants.ApiRoutes.Admin.Permissions);
     }
 
     [Fact]
