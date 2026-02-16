@@ -1,5 +1,6 @@
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
+using _116.Unit.Tests.Common.Constants;
 using _116.Unit.Tests.Common.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
@@ -80,7 +81,7 @@ public class AuthorizationExceptionHandlerTests
         // Arrange
         AuthorizationException exception = new("Forbidden");
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-        string requestPath = "/api/v1/admin/roles";
+        string requestPath = TestConstants.ApiRoutes.Admin.Roles;
         context.Request.Path = requestPath;
 
         // Act
