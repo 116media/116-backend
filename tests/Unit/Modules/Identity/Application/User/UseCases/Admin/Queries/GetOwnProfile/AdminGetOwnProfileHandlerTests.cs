@@ -6,6 +6,7 @@ using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Factories;
+using _116.Unit.Tests.Common.Helpers;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
 using Moq;
@@ -45,7 +46,7 @@ public class AdminGetOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         AdminGetOwnProfileQuery query = new(UserId: user.Id);
-        List<RoleDto> roles = [new RoleDto(Guid.NewGuid(), "Admin", "Administrator role", true, false, null)];
+        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto()];
         List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
@@ -118,11 +119,8 @@ public class AdminGetOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         AdminGetOwnProfileQuery query = new(UserId: user.Id);
-        List<RoleDto> roles = [new RoleDto(Guid.NewGuid(), "Admin", "Administrator", true, false, null)];
-        List<PermissionDto> permissions =
-        [
-            new PermissionDto(Guid.NewGuid(), "users", "read", "Read users", true, false, null),
-        ];
+        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(description: "Administrator")];
+        List<PermissionDto> permissions = [AuthTestHelpers.CreatePermissionDto()];
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
