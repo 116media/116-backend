@@ -8,6 +8,7 @@ using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Results;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Factories;
+using _116.Unit.Tests.Common.Helpers;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
 using Moq;
@@ -50,7 +51,7 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         string refreshToken = "valid-refresh-token";
         string newRefreshToken = "new-refresh-token";
         string accessToken = "new-access-token";
-        List<RoleDto> roles = [new RoleDto(Guid.NewGuid(), "Visitor", "Visitor role", true, false, null)];
+        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(name: "Visitor", description: "Visitor role")];
         List<PermissionDto> permissions = [];
         DateTime accessTokenExpiry = DateTime.UtcNow.AddHours(1);
 
@@ -238,7 +239,7 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         SessionEntity session = SessionFactory.Create(user.Id);
         string refreshToken = "valid-refresh-token";
-        List<RoleDto> roles = [new RoleDto(Guid.NewGuid(), "Visitor", "Visitor role", true, false, null)];
+        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(name: "Visitor", description: "Visitor role")];
         List<PermissionDto> permissions = [];
 
         PublicRefreshTokenCommand command = new(RefreshToken: refreshToken);
