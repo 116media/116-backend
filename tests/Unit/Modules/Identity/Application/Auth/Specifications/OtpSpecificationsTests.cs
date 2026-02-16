@@ -1,7 +1,7 @@
 using _116.Identity.Application.Auth.Specifications;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Unit.Tests.Common.Factories;
+using _116.Tests.Fixtures.Factories;
 using AwesomeAssertions;
 using Xunit;
 
