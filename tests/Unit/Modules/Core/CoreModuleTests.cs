@@ -7,11 +7,8 @@ using _116.Core.Infrastructure.Repositories;
 using _116.Core.Infrastructure.Services;
 using _116.Shared.Application.Configurations;
 using AwesomeAssertions;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Moq;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Core;
