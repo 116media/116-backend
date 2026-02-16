@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Utils;
-using _116.Unit.Tests.Common.Constants;
+using _116.Tests.Fixtures.Constants;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
