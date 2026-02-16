@@ -2,7 +2,7 @@ using _116.Identity.Application.Auth.Services;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Results;
-using _116.Unit.Tests.Common.Constants;
+using _116.Tests.Fixtures.Constants;
 using Moq;
 
 namespace _116.Unit.Tests.Common.Mocks.Services;
