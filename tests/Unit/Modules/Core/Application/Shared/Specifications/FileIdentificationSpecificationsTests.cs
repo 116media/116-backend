@@ -1,6 +1,6 @@
 using _116.Core.Application.Shared.Specifications;
 using _116.Core.Domain.Entities;
-using _116.Unit.Tests.Common.Factories;
+using _116.Tests.Fixtures.Factories;
 using AwesomeAssertions;
 using Xunit;
 
