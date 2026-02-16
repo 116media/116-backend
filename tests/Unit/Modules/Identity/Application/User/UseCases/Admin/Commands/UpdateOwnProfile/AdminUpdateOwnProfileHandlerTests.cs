@@ -6,6 +6,7 @@ using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Factories;
+using _116.Unit.Tests.Common.Helpers;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
 using Moq;
@@ -39,7 +40,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
         string newUserName = "newadminuser";
-        List<RoleDto> roles = [new RoleDto(Guid.NewGuid(), "Admin", "Admin role", true, false, null)];
+        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(description: "Admin role")];
         List<PermissionDto> permissions = [];
 
         AdminUpdateOwnProfileCommand command = new(
