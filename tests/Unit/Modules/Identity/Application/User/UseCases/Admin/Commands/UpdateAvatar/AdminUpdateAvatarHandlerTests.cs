@@ -42,7 +42,7 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
         Guid newAvatarFileId = Guid.NewGuid();
-        List<RoleDto> roles = [new RoleDto(Guid.NewGuid(), "Admin", "Admin role", true, false, null)];
+        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(description: "Admin role")];
         List<PermissionDto> permissions = [];
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
         FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
