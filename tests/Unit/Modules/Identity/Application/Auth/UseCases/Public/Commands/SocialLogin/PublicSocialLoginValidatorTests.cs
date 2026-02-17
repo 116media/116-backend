@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 using _116.Identity.Domain.Enums;
-using _116.Unit.Tests.Common.Constants;
+using _116.Tests.Fixtures.Constants;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
