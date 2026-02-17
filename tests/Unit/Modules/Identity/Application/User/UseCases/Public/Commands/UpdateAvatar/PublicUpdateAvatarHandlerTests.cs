@@ -42,7 +42,7 @@ public class PublicUpdateAvatarHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
         Guid newAvatarFileId = Guid.NewGuid();
-        List<RoleDto> roles = [new RoleDto(Guid.NewGuid(), "Visitor", "Visitor role", true, false, null)];
+        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(name: "Visitor", description: "Visitor role")];
         List<PermissionDto> permissions = [];
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
         FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
