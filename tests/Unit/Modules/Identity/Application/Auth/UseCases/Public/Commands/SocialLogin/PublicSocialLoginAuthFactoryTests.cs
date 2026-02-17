@@ -8,7 +8,7 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
-using _116.Unit.Tests.Common.Factories;
+using _116.Tests.Fixtures.Factories;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
