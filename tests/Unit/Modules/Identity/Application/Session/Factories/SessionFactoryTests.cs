@@ -7,11 +7,11 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Results;
-using _116.Unit.Tests.Common.Factories;
+using _116.Tests.Fixtures.Factories;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
-using SessionFactory = _116.Unit.Tests.Common.Factories.SessionFactory;
+using SessionFactory = _116.Tests.Fixtures.Factories.SessionFactory;
 using SessionsFactory = _116.Identity.Application.Session.Factories.SessionFactory;
 
 namespace _116.Unit.Tests.Modules.Identity.Application.Session.Factories;
