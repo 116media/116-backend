@@ -165,4 +165,62 @@ public static class OtpFactory
         EnumOtpPurpose purpose,
         int attemptCount
     ) => new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).WithAttemptCount(attemptCount).Build();
+
+    /// <summary>
+    /// Creates an expired OTP for a specific user and purpose.
+    /// </summary>
+    /// <param name="userId">The user identifier.</param>
+    /// <param name="purpose">The OTP purpose.</param>
+    /// <returns>A new expired OtpEntity for the specified user and purpose.</returns>
+    public static OtpEntity CreateExpired(Guid userId, EnumOtpPurpose purpose) =>
+        new OtpBuilder().WithUserId(userId).WithPurpose(purpose).AsExpired().Build();
+
+    /// <summary>
+    /// Creates a used OTP for a specific user and purpose.
+    /// </summary>
+    /// <param name="userId">The user identifier.</param>
+    /// <param name="purpose">The OTP purpose.</param>
+    /// <returns>A new used OtpEntity for the specified user and purpose.</returns>
+    public static OtpEntity CreateUsed(Guid userId, EnumOtpPurpose purpose) =>
+        new OtpBuilder().WithUserId(userId).WithPurpose(purpose).AsUsed().Build();
+
+    /// <summary>
+    /// Creates an expired OTP for a specific user, code, and purpose.
+    /// </summary>
+    /// <param name="userId">The user identifier.</param>
+    /// <param name="code">The OTP code.</param>
+    /// <param name="purpose">The OTP purpose.</param>
+    /// <returns>A new expired OtpEntity with the specified values.</returns>
+    public static OtpEntity CreateExpired(Guid userId, string code, EnumOtpPurpose purpose) =>
+        new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).AsExpired().Build();
+
+    /// <summary>
+    /// Creates an OTP with max attempts reached for a specific user, code, and purpose.
+    /// </summary>
+    /// <param name="userId">The user identifier.</param>
+    /// <param name="code">The OTP code.</param>
+    /// <param name="purpose">The OTP purpose.</param>
+    /// <returns>A new OtpEntity with max attempts for the specified values.</returns>
+    public static OtpEntity CreateMaxAttemptsReached(Guid userId, string code, EnumOtpPurpose purpose) =>
+        new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).AsMaxAttemptsReached().Build();
+
+    /// <summary>
+    /// Creates a used OTP for a specific user, code, and purpose.
+    /// </summary>
+    /// <param name="userId">The user identifier.</param>
+    /// <param name="code">The OTP code.</param>
+    /// <param name="purpose">The OTP purpose.</param>
+    /// <returns>A new used OtpEntity with the specified values.</returns>
+    public static OtpEntity CreateUsed(Guid userId, string code, EnumOtpPurpose purpose) =>
+        new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).AsUsed().Build();
+
+    /// <summary>
+    /// Creates a used and expired OTP for a specific user, code, and purpose.
+    /// </summary>
+    /// <param name="userId">The user identifier.</param>
+    /// <param name="code">The OTP code.</param>
+    /// <param name="purpose">The OTP purpose.</param>
+    /// <returns>A new used and expired OtpEntity with the specified values.</returns>
+    public static OtpEntity CreateUsedAndExpired(Guid userId, string code, EnumOtpPurpose purpose) =>
+        new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).AsUsed().AsExpired().Build();
 }
