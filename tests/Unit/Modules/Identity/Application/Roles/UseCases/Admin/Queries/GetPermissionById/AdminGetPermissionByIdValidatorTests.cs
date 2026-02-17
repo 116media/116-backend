@@ -1,5 +1,5 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Queries.GetPermissionById;
-using _116.Unit.Tests.Common.Constants;
+using _116.Tests.Fixtures.Constants;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
