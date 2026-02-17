@@ -1,11 +1,9 @@
 using _116.Identity.Application.Auth.Exceptions;
-using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
-using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -37,13 +35,10 @@ public class OtpRepositoryTests : IDisposable
         _context.Dispose();
     }
 
-    private OtpEntity CreateOtpWithCreatedAt(OtpBuilder? builder = null)
+    private static OtpEntity CreateOtpWithCreatedAt(OtpEntity otp)
     {
-        OtpEntity otp = builder?.Build() ?? OtpFactory.Create();
-
-        // Set CreatedAt using reflection to bypass OtpBuilder limitation
+        // Set CreatedAt using reflection to bypass OtpEntity limitation
         typeof(OtpEntity).GetProperty("CreatedAt")!.SetValue(otp, DateTime.UtcNow);
-
         return otp;
     }
 
@@ -53,7 +48,7 @@ public class OtpRepositoryTests : IDisposable
     public async Task AddAsync_ShouldAddOtpToContext()
     {
         // Arrange
-        OtpEntity otp = CreateOtpWithCreatedAt();
+        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.Create());
 
         // Act
         await _repository.AddAsync(otp);
@@ -77,7 +72,7 @@ public class OtpRepositoryTests : IDisposable
         string code = "123456";
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity otp = CreateOtpWithCreatedAt(new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose));
+        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, code, purpose));
 
         _context.Otps.Add(otp);
         await _context.SaveChangesAsync();
@@ -98,9 +93,7 @@ public class OtpRepositoryTests : IDisposable
         string code = "123456";
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity otp = CreateOtpWithCreatedAt(
-            new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).AsExpired()
-        );
+        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.CreateExpired(userId, code, purpose));
 
         _context.Otps.Add(otp);
         await _context.SaveChangesAsync();
@@ -120,9 +113,7 @@ public class OtpRepositoryTests : IDisposable
         string code = "123456";
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity otp = CreateOtpWithCreatedAt(
-            new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).AsMaxAttemptsReached()
-        );
+        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.CreateMaxAttemptsReached(userId, code, purpose));
 
         _context.Otps.Add(otp);
         await _context.SaveChangesAsync();
@@ -143,9 +134,7 @@ public class OtpRepositoryTests : IDisposable
         string wrongCode = "654321";
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity otp = CreateOtpWithCreatedAt(
-            new OtpBuilder().WithUserId(userId).WithCode(correctCode).WithPurpose(purpose)
-        );
+        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, correctCode, purpose));
 
         _context.Otps.Add(otp);
         await _context.SaveChangesAsync();
@@ -171,9 +160,7 @@ public class OtpRepositoryTests : IDisposable
         string wrongCode = "654321";
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity otp = CreateOtpWithCreatedAt(
-            new OtpBuilder().WithUserId(userId).WithCode(correctCode).WithPurpose(purpose).WithAttemptCount(2) // One less than max (max = 3)
-        );
+        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.CreateWithAttemptCount(userId, correctCode, purpose, 2)); // One less than max (max = 3)
 
         _context.Otps.Add(otp);
         await _context.SaveChangesAsync();
@@ -194,9 +181,7 @@ public class OtpRepositoryTests : IDisposable
         string wrongCode = "654321";
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity latestOtp = CreateOtpWithCreatedAt(
-            new OtpBuilder().WithUserId(userId).WithCode(correctCode).WithPurpose(purpose)
-        );
+        OtpEntity latestOtp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, correctCode, purpose));
 
         _context.Otps.Add(latestOtp);
         await _context.SaveChangesAsync();
@@ -220,9 +205,7 @@ public class OtpRepositoryTests : IDisposable
         string wrongCode = "654321";
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity latestOtp = CreateOtpWithCreatedAt(
-            new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).AsExpired()
-        );
+        OtpEntity latestOtp = CreateOtpWithCreatedAt(OtpFactory.CreateExpired(userId, code, purpose));
 
         _context.Otps.Add(latestOtp);
         await _context.SaveChangesAsync();
@@ -243,9 +226,7 @@ public class OtpRepositoryTests : IDisposable
         string wrongCode = "654321";
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity latestOtp = CreateOtpWithCreatedAt(
-            new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).AsMaxAttemptsReached()
-        );
+        OtpEntity latestOtp = CreateOtpWithCreatedAt(OtpFactory.CreateMaxAttemptsReached(userId, code, purpose));
 
         _context.Otps.Add(latestOtp);
         await _context.SaveChangesAsync();
@@ -282,8 +263,8 @@ public class OtpRepositoryTests : IDisposable
         var purpose = EnumOtpPurpose.EmailVerification;
 
         OtpEntity latestOtp = CreateOtpWithCreatedAt(
-            new OtpBuilder().WithUserId(userId).WithCode(correctCode).WithPurpose(purpose).WithAttemptCount(2) // One less than max (max = 3)
-        );
+            OtpFactory.CreateWithAttemptCount(userId, correctCode, purpose, 2)
+        ); // One less than max (max = 3)
 
         _context.Otps.Add(latestOtp);
         await _context.SaveChangesAsync();
@@ -306,14 +287,10 @@ public class OtpRepositoryTests : IDisposable
         string code = "123456";
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity olderOtp = CreateOtpWithCreatedAt(
-            new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose)
-        );
+        OtpEntity olderOtp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, code, purpose));
         typeof(OtpEntity).GetProperty("CreatedAt")!.SetValue(olderOtp, DateTime.UtcNow.AddMinutes(-10));
 
-        OtpEntity newerOtp = CreateOtpWithCreatedAt(
-            new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose)
-        );
+        OtpEntity newerOtp = CreateOtpWithCreatedAt(OtpFactory.Create(userId, code, purpose));
         typeof(OtpEntity).GetProperty("CreatedAt")!.SetValue(newerOtp, DateTime.UtcNow);
 
         _context.Otps.AddRange(olderOtp, newerOtp);
@@ -338,9 +315,7 @@ public class OtpRepositoryTests : IDisposable
         string code = "123456";
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity otp = CreateOtpWithCreatedAt(
-            new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).AsUsed()
-        );
+        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.CreateUsed(userId, code, purpose));
 
         _context.Otps.Add(otp);
         await _context.SaveChangesAsync();
@@ -376,9 +351,7 @@ public class OtpRepositoryTests : IDisposable
         string code = "123456";
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity otp = CreateOtpWithCreatedAt(
-            new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).AsUsed().AsExpired()
-        );
+        OtpEntity otp = CreateOtpWithCreatedAt(OtpFactory.CreateUsedAndExpired(userId, code, purpose));
 
         _context.Otps.Add(otp);
         await _context.SaveChangesAsync();
@@ -398,14 +371,10 @@ public class OtpRepositoryTests : IDisposable
         string code = "123456";
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity olderOtp = CreateOtpWithCreatedAt(
-            new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).AsUsed()
-        );
+        OtpEntity olderOtp = CreateOtpWithCreatedAt(OtpFactory.CreateUsed(userId, code, purpose));
         typeof(OtpEntity).GetProperty("CreatedAt")!.SetValue(olderOtp, DateTime.UtcNow.AddMinutes(-10));
 
-        OtpEntity newerOtp = CreateOtpWithCreatedAt(
-            new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).AsUsed()
-        );
+        OtpEntity newerOtp = CreateOtpWithCreatedAt(OtpFactory.CreateUsed(userId, code, purpose));
         typeof(OtpEntity).GetProperty("CreatedAt")!.SetValue(newerOtp, DateTime.UtcNow);
 
         _context.Otps.AddRange(olderOtp, newerOtp);
@@ -429,13 +398,11 @@ public class OtpRepositoryTests : IDisposable
         var userId = Guid.NewGuid();
         var purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity otp1 = CreateOtpWithCreatedAt(new OtpBuilder().WithUserId(userId).WithPurpose(purpose));
+        OtpEntity otp1 = CreateOtpWithCreatedAt(OtpFactory.Create(userId, purpose));
 
-        OtpEntity otp2 = CreateOtpWithCreatedAt(new OtpBuilder().WithUserId(userId).WithPurpose(purpose));
+        OtpEntity otp2 = CreateOtpWithCreatedAt(OtpFactory.Create(userId, purpose));
 
-        OtpEntity otherUserOtp = CreateOtpWithCreatedAt(
-            new OtpBuilder().WithUserId(Guid.NewGuid()).WithPurpose(purpose)
-        );
+        OtpEntity otherUserOtp = CreateOtpWithCreatedAt(OtpFactory.Create(Guid.NewGuid(), purpose));
 
         _context.Otps.AddRange(otp1, otp2, otherUserOtp);
         await _context.SaveChangesAsync();
@@ -503,11 +470,11 @@ public class OtpRepositoryTests : IDisposable
     public async Task CleanupExpiredOtpsAsync_WhenExpiredOtpsExist_ShouldRemoveThemAndReturnCount()
     {
         // Arrange
-        OtpEntity expiredOtp1 = CreateOtpWithCreatedAt(new OtpBuilder().AsExpired());
+        OtpEntity expiredOtp1 = CreateOtpWithCreatedAt(OtpFactory.CreateExpired());
 
-        OtpEntity expiredOtp2 = CreateOtpWithCreatedAt(new OtpBuilder().AsExpired());
+        OtpEntity expiredOtp2 = CreateOtpWithCreatedAt(OtpFactory.CreateExpired());
 
-        OtpEntity activeOtp = CreateOtpWithCreatedAt(new OtpBuilder());
+        OtpEntity activeOtp = CreateOtpWithCreatedAt(OtpFactory.Create());
 
         _context.Otps.AddRange(expiredOtp1, expiredOtp2, activeOtp);
         await _context.SaveChangesAsync();
@@ -528,7 +495,7 @@ public class OtpRepositoryTests : IDisposable
     public async Task CleanupExpiredOtpsAsync_WhenNoExpiredOtps_ShouldReturnZero()
     {
         // Arrange
-        OtpEntity activeOtp = CreateOtpWithCreatedAt(new OtpBuilder());
+        OtpEntity activeOtp = CreateOtpWithCreatedAt(OtpFactory.Create());
 
         _context.Otps.Add(activeOtp);
         await _context.SaveChangesAsync();
