@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
-using _116.Unit.Tests.Common.Helpers;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Microsoft.AspNetCore.Http;
