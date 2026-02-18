@@ -3,13 +3,13 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.SignOut.Contracts;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
-using _116.Unit.Tests.Common.Factories;
+using _116.Tests.Fixtures.Factories;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Identity.Application.Auth.Public.SignOut;
+namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.SignOut;
 
 /// <summary>
 /// Unit tests for <see cref="PublicSignOutHandler"/>.

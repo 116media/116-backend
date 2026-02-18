@@ -2,19 +2,18 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.Contracts;
 using _116.Identity.Application.Session.Factories;
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
-using _116.Unit.Tests.Common.Constants;
-using _116.Unit.Tests.Common.Factories;
-using _116.Unit.Tests.Common.Helpers;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Identity.Application.Auth.Public.Login;
+namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.Login;
 
 /// <summary>
 /// Unit tests for <see cref="PublicLoginHandler"/>.

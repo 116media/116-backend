@@ -1,5 +1,5 @@
 using _116.Identity.Application.Auth.Services;
-using _116.Unit.Tests.Common.Constants;
+using _116.Tests.Fixtures.Constants;
 using Moq;
 
 namespace _116.Unit.Tests.Common.Mocks.Services;

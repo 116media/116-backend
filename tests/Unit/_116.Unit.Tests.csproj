@@ -55,5 +55,6 @@
         <ProjectReference Include="..\..\src\Shared\Shared\Shared.csproj" />
         <ProjectReference Include="..\..\src\Shared\Shared.Contracts\Shared.Contracts.csproj" />
         <ProjectReference Include="..\..\src\BuildingBlocks\BuildingBlocks.csproj" />
+        <ProjectReference Include="..\Fixtures\_116.Tests.Fixtures.csproj" />
     </ItemGroup>
 </Project>

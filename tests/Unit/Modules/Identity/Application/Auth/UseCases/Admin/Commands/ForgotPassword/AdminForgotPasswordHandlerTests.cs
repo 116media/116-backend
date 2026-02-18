@@ -3,13 +3,13 @@ using _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword.Cont
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
-using _116.Unit.Tests.Common.Factories;
+using _116.Tests.Fixtures.Factories;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Identity.Application.Auth.Admin.ForgotPassword;
+namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
 
 /// <summary>
 /// Unit tests for <see cref="AdminForgotPasswordHandler"/>.

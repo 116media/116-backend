@@ -81,7 +81,7 @@ public class DispatchDomainEventsInterceptorTests
     public void SavingChanges_WithDomainEvents_ShouldClearEventsAfterPublish()
     {
         // Arrange
-        var (context, publisherMock) = CreateTestContext();
+        var (context, _) = CreateTestContext();
         var aggregate = TestAggregate.Create(Guid.NewGuid(), "Test");
         aggregate.AddDomainEvent(new TestDomainEvent { Message = "Event" });
 

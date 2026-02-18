@@ -1,5 +1,5 @@
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
-using _116.Unit.Tests.Common.Helpers;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation;
 using FluentValidation.Results;

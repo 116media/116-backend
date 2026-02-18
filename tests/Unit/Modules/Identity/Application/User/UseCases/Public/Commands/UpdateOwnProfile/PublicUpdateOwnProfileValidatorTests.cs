@@ -1,6 +1,6 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
-using _116.Unit.Tests.Common.Constants;
+using _116.Tests.Fixtures.Constants;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;

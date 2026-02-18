@@ -1,6 +1,6 @@
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp;
 using _116.Identity.Domain.Enums;
-using _116.Unit.Tests.Common.Constants;
+using _116.Tests.Fixtures.Constants;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;

@@ -1,7 +1,7 @@
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Domain.Enums;
-using _116.Unit.Tests.Common.Constants;
+using _116.Tests.Fixtures.Constants;
 using Moq;
 
 namespace _116.Unit.Tests.Common.Mocks.Services;

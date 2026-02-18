@@ -1,4 +1,4 @@
-namespace _116.BuildingBlocks.Constants;
+namespace _116.BuildingBlocks.Constants.RateLimit;
 
 /// <summary>
 /// Rate limiting configuration for OTP endpoints (verify, resend).

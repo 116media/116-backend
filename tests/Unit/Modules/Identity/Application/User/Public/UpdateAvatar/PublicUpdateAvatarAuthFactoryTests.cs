@@ -5,7 +5,7 @@ using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar.Contracts;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Unit.Tests.Common.Factories;
+using _116.Tests.Fixtures.Factories;
 using AwesomeAssertions;
 using Moq;
 using Xunit;

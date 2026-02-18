@@ -4,7 +4,7 @@ using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Unit.Tests.Common.Factories;
+using _116.Tests.Fixtures.Factories;
 using AwesomeAssertions;
 using Mapster;
 using MapsterMapper;
