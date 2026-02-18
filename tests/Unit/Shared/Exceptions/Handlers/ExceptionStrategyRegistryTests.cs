@@ -2,11 +2,10 @@ using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
-using _116.Unit.Tests.Common.Helpers;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Moq;
 using Xunit;
 
 namespace _116.Unit.Tests.Shared.Exceptions.Handlers;
