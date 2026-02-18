@@ -6,7 +6,7 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Results;
 using _116.Identity.Infrastructure.Services;
-using _116.Unit.Tests.Common.Factories;
+using _116.Tests.Fixtures.Factories;
 using AwesomeAssertions;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
