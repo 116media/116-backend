@@ -1,6 +1,6 @@
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.Shared.Exceptions.Handlers;
-using _116.Unit.Tests.Common.Helpers;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
