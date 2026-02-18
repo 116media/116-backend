@@ -2,7 +2,7 @@ using System.Text.Json;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
-using _116.Unit.Tests.Common.Helpers;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
