@@ -82,6 +82,17 @@ public class FileValidationTests
     }
 
     [Fact]
+    public void ValidAvatar_WithNullFileAndRequired_ShouldOnlyReturnAvatarFileErrors()
+    {
+        var validator = new TestCommandValidator(isRequired: true);
+        var command = new TestCommand { AvatarFile = null };
+
+        TestValidationResult<TestCommand>? result = validator.TestValidate(command);
+
+        result.Errors.Should().OnlyContain(e => e.PropertyName == nameof(TestCommand.AvatarFile));
+    }
+
+    [Fact]
     public void ValidAvatar_WithFileTooLarge_ShouldFail()
     {
         // Arrange
@@ -119,7 +130,7 @@ public class FileValidationTests
     {
         // Arrange
         var validator = new TestCommandValidator();
-        var command = new TestCommand { AvatarFile = CreateMockFile("avatar.exe", "application/exe", 1024) };
+        var command = new TestCommand { AvatarFile = CreateMockFile("avatar.exe", "application/exe") };
 
         // Act
         TestValidationResult<TestCommand>? result = validator.TestValidate(command);

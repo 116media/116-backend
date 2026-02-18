@@ -24,7 +24,7 @@ public class ClientTests
 
         // Assert
         client.Should().NotBeNull();
-        Assert.Equal(EnumClient.WebApp, client.Value);
+        client.Value.Should().Be(EnumClient.WebApp);
     }
 
     [Theory]
@@ -37,7 +37,7 @@ public class ClientTests
 
         // Assert
         client.Should().NotBeNull();
-        Assert.Equal(clientEnum, client.Value);
+        client.Value.Should().Be(clientEnum);
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class ClientTests
 
         // Assert
         client.Should().NotBeNull();
-        Assert.Equal(EnumClient.WebApp, client.Value);
+        client.Value.Should().Be(EnumClient.WebApp);
     }
 
     [Theory]
@@ -79,7 +79,7 @@ public class ClientTests
         Client client = new(input);
 
         // Assert
-        Assert.Equal(expected, client.Value);
+        client.Value.Should().Be(expected);
     }
 
     [Theory]
@@ -92,7 +92,7 @@ public class ClientTests
         Client client = new(input);
 
         // Assert
-        Assert.Equal(EnumClient.WebApp, client.Value);
+        client.Value.Should().Be(EnumClient.WebApp);
     }
 
     [Fact]
@@ -136,7 +136,7 @@ public class ClientTests
         EnumClient result = client;
 
         // Assert
-        Assert.Equal(EnumClient.MobileApp, result);
+        result.Should().Be(EnumClient.MobileApp);
     }
 
     [Fact]
@@ -163,7 +163,7 @@ public class ClientTests
 
         // Assert
         client.Should().NotBeNull();
-        Assert.Equal(EnumClient.WebApp, client.Value);
+        client.Value.Should().Be(EnumClient.WebApp);
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public class ClientTests
 
         // Assert
         client.Should().NotBeNull();
-        Assert.Equal(EnumClient.MobileApp, client.Value);
+        client.Value.Should().Be(EnumClient.MobileApp);
     }
 
     [Fact]
@@ -206,7 +206,7 @@ public class ClientTests
         Client client2 = new(EnumClient.WebApp);
 
         // Act & Assert
-        Assert.Equal(client1, client2);
+        client1.Should().Be(client2);
     }
 
     [Fact]
@@ -217,7 +217,7 @@ public class ClientTests
         Client client2 = new(EnumClient.MobileApp);
 
         // Act & Assert
-        Assert.NotEqual(client1, client2);
+        client1.Should().NotBe(client2);
     }
 
     [Fact]
@@ -232,7 +232,7 @@ public class ClientTests
         int hash2 = client2.GetHashCode();
 
         // Assert
-        Assert.Equal(hash1, hash2);
+        hash1.Should().Be(hash2);
     }
 
     #endregion

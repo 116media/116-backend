@@ -26,7 +26,7 @@ public class CoreModuleTests : IDisposable
 
     public CoreModuleTests()
     {
-        _services = new ServiceCollection();
+        _services = [];
         _services.AddLogging();
 
         _cloudinarySettings = new CloudinarySettings

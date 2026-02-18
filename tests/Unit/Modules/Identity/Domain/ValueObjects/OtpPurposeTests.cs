@@ -24,7 +24,7 @@ public class OtpPurposeTests
 
         // Assert
         purpose.Should().NotBeNull();
-        Assert.Equal(EnumOtpPurpose.EmailVerification, purpose.Value);
+        purpose.Value.Should().Be(EnumOtpPurpose.EmailVerification);
     }
 
     [Theory]
@@ -37,7 +37,7 @@ public class OtpPurposeTests
 
         // Assert
         purpose.Should().NotBeNull();
-        Assert.Equal(purposeEnum, purpose.Value);
+        purpose.Value.Should().Be(purposeEnum);
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class OtpPurposeTests
 
         // Assert
         purpose.Should().NotBeNull();
-        Assert.Equal(EnumOtpPurpose.EmailVerification, purpose.Value);
+        purpose.Value.Should().Be(EnumOtpPurpose.EmailVerification);
     }
 
     [Theory]
@@ -79,7 +79,7 @@ public class OtpPurposeTests
         OtpPurpose purpose = new(input);
 
         // Assert
-        Assert.Equal(expected, purpose.Value);
+        purpose.Value.Should().Be(expected);
     }
 
     [Theory]
@@ -92,7 +92,7 @@ public class OtpPurposeTests
         OtpPurpose purpose = new(input);
 
         // Assert
-        Assert.Equal(EnumOtpPurpose.EmailVerification, purpose.Value);
+        purpose.Value.Should().Be(EnumOtpPurpose.EmailVerification);
     }
 
     [Fact]
@@ -136,7 +136,7 @@ public class OtpPurposeTests
         EnumOtpPurpose result = purpose;
 
         // Assert
-        Assert.Equal(EnumOtpPurpose.PasswordReset, result);
+        result.Should().Be(EnumOtpPurpose.PasswordReset);
     }
 
     [Fact]
@@ -163,7 +163,7 @@ public class OtpPurposeTests
 
         // Assert
         purpose.Should().NotBeNull();
-        Assert.Equal(EnumOtpPurpose.EmailVerification, purpose.Value);
+        purpose.Value.Should().Be(EnumOtpPurpose.EmailVerification);
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public class OtpPurposeTests
 
         // Assert
         purpose.Should().NotBeNull();
-        Assert.Equal(EnumOtpPurpose.PasswordReset, purpose.Value);
+        purpose.Value.Should().Be(EnumOtpPurpose.PasswordReset);
     }
 
     [Fact]
@@ -206,7 +206,7 @@ public class OtpPurposeTests
         OtpPurpose purpose2 = new(EnumOtpPurpose.EmailVerification);
 
         // Act & Assert
-        Assert.Equal(purpose1, purpose2);
+        purpose1.Should().Be(purpose2);
     }
 
     [Fact]
@@ -217,7 +217,7 @@ public class OtpPurposeTests
         OtpPurpose purpose2 = new(EnumOtpPurpose.PasswordReset);
 
         // Act & Assert
-        Assert.NotEqual(purpose1, purpose2);
+        purpose1.Should().NotBe(purpose2);
     }
 
     [Fact]
@@ -232,7 +232,7 @@ public class OtpPurposeTests
         int hash2 = purpose2.GetHashCode();
 
         // Assert
-        Assert.Equal(hash1, hash2);
+        hash1.Should().Be(hash2);
     }
 
     #endregion

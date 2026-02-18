@@ -144,7 +144,7 @@ public static class MockSessionRepository
     public static Mock<ISessionRepository> SetupGetUserSessionsEmpty(this Mock<ISessionRepository> mock, Guid userId)
     {
         mock.Setup(x => x.GetUserSessionsAsync(userId, It.IsAny<bool?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<SessionEntity>());
+            .ReturnsAsync([]);
         return mock;
     }
 

@@ -92,11 +92,11 @@ public class PublicRefreshTokenFactoryTests
 
         // Assert
         result.Should().NotBeNull();
-        Assert.Equal(user, result.User);
-        Assert.Equal(session, result.Session);
+        result.User.Should().Be(user);
+        result.Session.Should().Be(session);
         result.NewRefreshToken.Should().Be(newRefreshToken);
-        Assert.Equal(roles, result.Roles);
-        Assert.Equal(permissions, result.Permissions);
+        result.Roles.Should().BeSameAs(roles);
+        result.Permissions.Should().BeSameAs(permissions);
     }
 
     [Fact]

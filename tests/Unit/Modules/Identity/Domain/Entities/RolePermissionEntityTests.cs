@@ -1,5 +1,5 @@
 using _116.Identity.Domain.Entities;
-using _116.Unit.Tests.Common.Builders.Entities;
+using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
 
@@ -75,11 +75,7 @@ public class RolePermissionEntityTests
         Guid permissionId = Guid.NewGuid();
 
         // Act
-        RolePermissionEntity rolePermission = new RolePermissionBuilder()
-            .WithId(id)
-            .WithRoleId(roleId)
-            .WithPermissionId(permissionId)
-            .Build();
+        RolePermissionEntity rolePermission = RolePermissionEntity.Create(id, roleId, permissionId);
 
         // Assert
         rolePermission.Id.Should().Be(id);
@@ -91,7 +87,7 @@ public class RolePermissionEntityTests
     public void Builder_WithDefaultValues_ShouldCreateValidRolePermission()
     {
         // Arrange & Act
-        RolePermissionEntity rolePermission = new RolePermissionBuilder().Build();
+        RolePermissionEntity rolePermission = RolePermissionFactory.Create();
 
         // Assert
         rolePermission.Id.Should().NotBeEmpty();
@@ -112,15 +108,9 @@ public class RolePermissionEntityTests
         Guid permissionId2 = Guid.NewGuid();
 
         // Act
-        RolePermissionEntity rolePermission1 = new RolePermissionBuilder()
-            .WithRoleId(roleId)
-            .WithPermissionId(permissionId1)
-            .Build();
+        RolePermissionEntity rolePermission1 = RolePermissionFactory.Create(roleId, permissionId1);
 
-        RolePermissionEntity rolePermission2 = new RolePermissionBuilder()
-            .WithRoleId(roleId)
-            .WithPermissionId(permissionId2)
-            .Build();
+        RolePermissionEntity rolePermission2 = RolePermissionFactory.Create(roleId, permissionId2);
 
         // Assert
         rolePermission1.RoleId.Should().Be(roleId);
@@ -137,15 +127,9 @@ public class RolePermissionEntityTests
         Guid roleId2 = Guid.NewGuid();
 
         // Act
-        RolePermissionEntity rolePermission1 = new RolePermissionBuilder()
-            .WithRoleId(roleId1)
-            .WithPermissionId(permissionId)
-            .Build();
+        RolePermissionEntity rolePermission1 = RolePermissionFactory.Create(roleId1, permissionId);
 
-        RolePermissionEntity rolePermission2 = new RolePermissionBuilder()
-            .WithRoleId(roleId2)
-            .WithPermissionId(permissionId)
-            .Build();
+        RolePermissionEntity rolePermission2 = RolePermissionFactory.Create(roleId2, permissionId);
 
         // Assert
         rolePermission1.PermissionId.Should().Be(permissionId);

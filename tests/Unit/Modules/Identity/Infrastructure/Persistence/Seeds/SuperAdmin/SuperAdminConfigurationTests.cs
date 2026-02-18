@@ -45,7 +45,7 @@ public class SuperAdminConfigurationTests
         // Assert
         description.Should().NotBeNullOrWhiteSpace();
         description.Should().Contain("Super Administrator");
-        Assert.Contains("complete system access", description, StringComparison.OrdinalIgnoreCase);
+        description.Should().ContainEquivalentOf("complete system access");
     }
 
     [Fact]
@@ -76,8 +76,8 @@ public class SuperAdminConfigurationTests
 
         // Assert
         description.Should().NotBeNullOrWhiteSpace();
-        Assert.Contains("system access", description, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("all permissions", description, StringComparison.OrdinalIgnoreCase);
+        description.Should().ContainEquivalentOf("system access");
+        description.Should().ContainEquivalentOf("all permissions");
     }
 
     #endregion

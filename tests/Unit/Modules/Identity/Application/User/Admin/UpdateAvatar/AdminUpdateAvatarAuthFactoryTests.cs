@@ -70,17 +70,17 @@ public class AdminUpdateAvatarAuthFactoryTests
 
         // Assert
         result.Should().NotBeNull();
-        Assert.Equal(user, result.User);
-        Assert.Equal(roles, result.Roles);
-        Assert.Equal(permissions, result.Permissions);
+        result.User.Should().Be(user);
+        result.Roles.Should().BeSameAs(roles);
+        result.Permissions.Should().BeSameAs(permissions);
     }
 
     [Fact]
     public async Task GetUserForAvatarUpdateAsync_ShouldValidateUserIsActive()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
@@ -108,8 +108,8 @@ public class AdminUpdateAvatarAuthFactoryTests
     public async Task GetUserForAvatarUpdateAsync_ShouldValidateSession()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
@@ -137,10 +137,10 @@ public class AdminUpdateAvatarAuthFactoryTests
     public async Task GetUserForAvatarUpdateAsync_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
-        CancellationToken cancellationToken = new();
+        CancellationToken cancellationToken = CancellationToken.None;
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, cancellationToken))
@@ -191,16 +191,16 @@ public class AdminUpdateAvatarAuthFactoryTests
 
         // Assert
         result.Should().NotBeNull();
-        Assert.Equal(user, result.User);
-        Assert.Equal(roles, result.Roles);
-        Assert.Equal(permissions, result.Permissions);
+        result.User.Should().Be(user);
+        result.Roles.Should().BeSameAs(roles);
+        result.Permissions.Should().BeSameAs(permissions);
     }
 
     [Fact]
     public async Task UpdateAvatarAsync_ShouldSetAvatarSourceToManual()
     {
         // Arrange
-        Guid avatarFileId = Guid.NewGuid();
+        var avatarFileId = Guid.NewGuid();
         UserEntity user = UserFactory.Create();
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
@@ -213,15 +213,15 @@ public class AdminUpdateAvatarAuthFactoryTests
         await _factory.UpdateAvatarAsync(user, avatarFileId, CancellationToken.None);
 
         // Assert
-        Assert.Equal(EnumAvatarSource.Manual, user.AvatarSource);
-        Assert.Equal(avatarFileId, user.AvatarFileId);
+        user.AvatarSource.Should().Be(EnumAvatarSource.Manual);
+        user.AvatarFileId.Should().Be(avatarFileId);
     }
 
     [Fact]
     public async Task UpdateAvatarAsync_ShouldCommitTransaction()
     {
         // Arrange
-        Guid avatarFileId = Guid.NewGuid();
+        var avatarFileId = Guid.NewGuid();
         UserEntity user = UserFactory.Create();
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
@@ -241,9 +241,9 @@ public class AdminUpdateAvatarAuthFactoryTests
     public async Task UpdateAvatarAsync_WithCancellationToken_ShouldPassToCommit()
     {
         // Arrange
-        Guid avatarFileId = Guid.NewGuid();
+        var avatarFileId = Guid.NewGuid();
         UserEntity user = UserFactory.Create();
-        CancellationToken cancellationToken = new();
+        CancellationToken cancellationToken = CancellationToken.None;
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
 
@@ -262,7 +262,7 @@ public class AdminUpdateAvatarAuthFactoryTests
     public async Task UpdateAvatarAsync_ShouldGetRolesAndPermissions()
     {
         // Arrange
-        Guid avatarFileId = Guid.NewGuid();
+        var avatarFileId = Guid.NewGuid();
         UserEntity user = UserFactory.Create();
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);

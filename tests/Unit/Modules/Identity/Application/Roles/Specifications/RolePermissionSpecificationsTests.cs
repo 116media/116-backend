@@ -1,6 +1,5 @@
 using _116.Identity.Application.Roles.Specifications;
 using _116.Identity.Domain.Entities;
-using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
@@ -19,7 +18,7 @@ public class RolePermissionSpecificationsTests
     {
         // Arrange
         Guid roleId = Guid.NewGuid();
-        RolePermissionEntity rolePermission = new RolePermissionBuilder().WithRoleId(roleId).Build();
+        RolePermissionEntity rolePermission = RolePermissionFactory.Create(roleId, Guid.NewGuid());
         RolePermissionByRoleIdSpecification spec = new(roleId);
 
         // Act
@@ -33,7 +32,7 @@ public class RolePermissionSpecificationsTests
     public void RolePermissionByRoleIdSpecification_WithDifferentRoleId_ShouldReturnFalse()
     {
         // Arrange
-        RolePermissionEntity rolePermission = new RolePermissionBuilder().WithRoleId(Guid.NewGuid()).Build();
+        RolePermissionEntity rolePermission = RolePermissionFactory.Create();
         RolePermissionByRoleIdSpecification spec = new(Guid.NewGuid());
 
         // Act
@@ -52,7 +51,7 @@ public class RolePermissionSpecificationsTests
     {
         // Arrange
         Guid permissionId = Guid.NewGuid();
-        RolePermissionEntity rolePermission = new RolePermissionBuilder().WithPermissionId(permissionId).Build();
+        RolePermissionEntity rolePermission = RolePermissionFactory.Create(Guid.NewGuid(), permissionId);
         RolePermissionByPermissionIdSpecification spec = new(permissionId);
 
         // Act
@@ -66,7 +65,7 @@ public class RolePermissionSpecificationsTests
     public void RolePermissionByPermissionIdSpecification_WithDifferentPermissionId_ShouldReturnFalse()
     {
         // Arrange
-        RolePermissionEntity rolePermission = new RolePermissionBuilder().WithPermissionId(Guid.NewGuid()).Build();
+        RolePermissionEntity rolePermission = RolePermissionFactory.Create();
         RolePermissionByPermissionIdSpecification spec = new(Guid.NewGuid());
 
         // Act
@@ -134,10 +133,7 @@ public class RolePermissionSpecificationsTests
     {
         // Arrange
         Guid permissionId = Guid.NewGuid();
-        RolePermissionEntity rolePermission = new RolePermissionBuilder()
-            .WithRoleId(Guid.NewGuid())
-            .WithPermissionId(permissionId)
-            .Build();
+        RolePermissionEntity rolePermission = RolePermissionFactory.Create(Guid.NewGuid(), permissionId);
         RolePermissionByRoleAndPermissionSpecification spec = new(Guid.NewGuid(), permissionId);
 
         // Act
@@ -152,10 +148,7 @@ public class RolePermissionSpecificationsTests
     {
         // Arrange
         Guid roleId = Guid.NewGuid();
-        RolePermissionEntity rolePermission = new RolePermissionBuilder()
-            .WithRoleId(roleId)
-            .WithPermissionId(Guid.NewGuid())
-            .Build();
+        RolePermissionEntity rolePermission = RolePermissionFactory.Create(roleId, Guid.NewGuid());
         RolePermissionByRoleAndPermissionSpecification spec = new(roleId, Guid.NewGuid());
 
         // Act
@@ -169,10 +162,7 @@ public class RolePermissionSpecificationsTests
     public void RolePermissionByRoleAndPermissionSpecification_WithBothDifferent_ShouldReturnFalse()
     {
         // Arrange
-        RolePermissionEntity rolePermission = new RolePermissionBuilder()
-            .WithRoleId(Guid.NewGuid())
-            .WithPermissionId(Guid.NewGuid())
-            .Build();
+        RolePermissionEntity rolePermission = RolePermissionFactory.Create();
         RolePermissionByRoleAndPermissionSpecification spec = new(Guid.NewGuid(), Guid.NewGuid());
 
         // Act
@@ -193,9 +183,9 @@ public class RolePermissionSpecificationsTests
         Guid targetRoleId = Guid.NewGuid();
         List<RolePermissionEntity> rolePermissions =
         [
-            new RolePermissionBuilder().WithRoleId(targetRoleId).Build(),
-            new RolePermissionBuilder().WithRoleId(targetRoleId).Build(),
-            new RolePermissionBuilder().WithRoleId(Guid.NewGuid()).Build(),
+            RolePermissionFactory.Create(targetRoleId, Guid.NewGuid()),
+            RolePermissionFactory.Create(targetRoleId, Guid.NewGuid()),
+            RolePermissionFactory.Create(),
         ];
 
         RolePermissionByRoleIdSpecification spec = new(targetRoleId);

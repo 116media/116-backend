@@ -116,7 +116,7 @@ public class SuperAdminSeedingStrategyTests
 
         // Assert
         int permissionCount = await context.Permissions.CountAsync(p => p.Resource == "system" && p.Action == "all");
-        Assert.Equal(1, permissionCount); // Should still be just one
+        permissionCount.Should().Be(1); // Should still be just one
     }
 
     [Fact]
@@ -161,7 +161,7 @@ public class SuperAdminSeedingStrategyTests
 
         // Assert
         int roleCount = await context.Roles.CountAsync(r => r.Name == "SuperAdmin");
-        Assert.Equal(1, roleCount); // Should still be just one
+        roleCount.Should().Be(1); // Should still be just one
     }
 
     [Fact]
@@ -210,7 +210,7 @@ public class SuperAdminSeedingStrategyTests
 
         // Assert
         int rolePermissionCount = await context.RolePermissions.CountAsync();
-        Assert.Equal(1, rolePermissionCount); // Should still be just one
+        rolePermissionCount.Should().Be(1); // Should still be just one
     }
 
     [Fact]

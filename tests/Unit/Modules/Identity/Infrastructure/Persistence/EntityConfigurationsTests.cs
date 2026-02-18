@@ -36,7 +36,7 @@ public class EntityConfigurationsTests
         entityType.Should().NotBeNull();
         IKey? primaryKey = entityType.FindPrimaryKey();
         primaryKey.Should().NotBeNull();
-        Assert.Single(primaryKey.Properties);
+        primaryKey.Properties.Should().ContainSingle();
         primaryKey.Properties.First().Name.Should().Be("Id");
     }
 
@@ -52,8 +52,8 @@ public class EntityConfigurationsTests
         IProperty? emailProperty = entityType?.FindProperty("Email");
 
         // Assert
-        Assert.NotNull(emailProperty);
-        Assert.NotNull(emailProperty.GetMaxLength());
+        emailProperty.Should().NotBeNull();
+        emailProperty.GetMaxLength().Should().NotBeNull();
     }
 
     [Fact]
@@ -68,8 +68,8 @@ public class EntityConfigurationsTests
         IProperty? userNameProperty = entityType?.FindProperty("UserName");
 
         // Assert
-        Assert.NotNull(userNameProperty);
-        Assert.False(userNameProperty.IsNullable);
+        userNameProperty.Should().NotBeNull();
+        userNameProperty.IsNullable.Should().BeFalse();
     }
 
     #endregion
@@ -90,7 +90,7 @@ public class EntityConfigurationsTests
         entityType.Should().NotBeNull();
         IKey? primaryKey = entityType.FindPrimaryKey();
         primaryKey.Should().NotBeNull();
-        Assert.Single(primaryKey.Properties);
+        primaryKey.Properties.Should().ContainSingle();
         primaryKey.Properties.First().Name.Should().Be("Id");
     }
 
@@ -106,8 +106,8 @@ public class EntityConfigurationsTests
         IProperty? nameProperty = entityType?.FindProperty("Name");
 
         // Assert
-        Assert.NotNull(nameProperty);
-        Assert.False(nameProperty.IsNullable);
+        nameProperty.Should().NotBeNull();
+        nameProperty.IsNullable.Should().BeFalse();
     }
 
     #endregion
@@ -125,11 +125,11 @@ public class EntityConfigurationsTests
         IEntityType? entityType = context.Model.FindEntityType(typeof(PermissionEntity));
 
         // Assert
-        Assert.NotNull(entityType);
+        entityType.Should().NotBeNull();
         IKey? primaryKey = entityType.FindPrimaryKey();
-        Assert.NotNull(primaryKey);
-        Assert.Single(primaryKey.Properties);
-        Assert.Equal("Id", primaryKey.Properties.First().Name);
+        primaryKey.Should().NotBeNull();
+        primaryKey.Properties.Should().ContainSingle();
+        primaryKey.Properties.First().Name.Should().Be("Id");
     }
 
     [Fact]
@@ -144,8 +144,8 @@ public class EntityConfigurationsTests
         IProperty? resourceProperty = entityType?.FindProperty("Resource");
 
         // Assert
-        Assert.NotNull(resourceProperty);
-        Assert.False(resourceProperty.IsNullable);
+        resourceProperty.Should().NotBeNull();
+        resourceProperty.IsNullable.Should().BeFalse();
     }
 
     #endregion
@@ -163,11 +163,11 @@ public class EntityConfigurationsTests
         IEntityType? entityType = context.Model.FindEntityType(typeof(SessionEntity));
 
         // Assert
-        Assert.NotNull(entityType);
+        entityType.Should().NotBeNull();
         IKey? primaryKey = entityType.FindPrimaryKey();
-        Assert.NotNull(primaryKey);
-        Assert.Single(primaryKey.Properties);
-        Assert.Equal("Id", primaryKey.Properties.First().Name);
+        primaryKey.Should().NotBeNull();
+        primaryKey.Properties.Should().ContainSingle();
+        primaryKey.Properties.First().Name.Should().Be("Id");
     }
 
     [Fact]
@@ -182,8 +182,8 @@ public class EntityConfigurationsTests
         IProperty? userIdProperty = entityType?.FindProperty("UserId");
 
         // Assert
-        Assert.NotNull(userIdProperty);
-        Assert.False(userIdProperty.IsNullable);
+        userIdProperty.Should().NotBeNull();
+        userIdProperty.IsNullable.Should().BeFalse();
     }
 
     #endregion
@@ -201,11 +201,11 @@ public class EntityConfigurationsTests
         IEntityType? entityType = context.Model.FindEntityType(typeof(OtpEntity));
 
         // Assert
-        Assert.NotNull(entityType);
+        entityType.Should().NotBeNull();
         IKey? primaryKey = entityType.FindPrimaryKey();
-        Assert.NotNull(primaryKey);
-        Assert.Single(primaryKey.Properties);
-        Assert.Equal("Id", primaryKey.Properties.First().Name);
+        primaryKey.Should().NotBeNull();
+        primaryKey.Properties.Should().ContainSingle();
+        primaryKey.Properties.First().Name.Should().Be("Id");
     }
 
     [Fact]
@@ -220,8 +220,8 @@ public class EntityConfigurationsTests
         IProperty? codeProperty = entityType?.FindProperty("Code");
 
         // Assert
-        Assert.NotNull(codeProperty);
-        Assert.False(codeProperty.IsNullable);
+        codeProperty.Should().NotBeNull();
+        codeProperty.IsNullable.Should().BeFalse();
     }
 
     #endregion
@@ -239,11 +239,11 @@ public class EntityConfigurationsTests
         IEntityType? entityType = context.Model.FindEntityType(typeof(UserRoleEntity));
 
         // Assert
-        Assert.NotNull(entityType);
+        entityType.Should().NotBeNull();
         IKey? primaryKey = entityType.FindPrimaryKey();
-        Assert.NotNull(primaryKey);
-        Assert.Single(primaryKey.Properties);
-        Assert.Equal("Id", primaryKey.Properties.First().Name);
+        primaryKey.Should().NotBeNull();
+        primaryKey.Properties.Should().ContainSingle();
+        primaryKey.Properties.First().Name.Should().Be("Id");
     }
 
     [Fact]
@@ -258,8 +258,8 @@ public class EntityConfigurationsTests
         IProperty? userIdProperty = entityType?.FindProperty("UserId");
 
         // Assert
-        Assert.NotNull(userIdProperty);
-        Assert.False(userIdProperty.IsNullable);
+        userIdProperty.Should().NotBeNull();
+        userIdProperty.IsNullable.Should().BeFalse();
     }
 
     [Fact]
@@ -274,8 +274,8 @@ public class EntityConfigurationsTests
         IProperty? roleIdProperty = entityType?.FindProperty("RoleId");
 
         // Assert
-        Assert.NotNull(roleIdProperty);
-        Assert.False(roleIdProperty.IsNullable);
+        roleIdProperty.Should().NotBeNull();
+        roleIdProperty.IsNullable.Should().BeFalse();
     }
 
     #endregion
@@ -293,11 +293,11 @@ public class EntityConfigurationsTests
         IEntityType? entityType = context.Model.FindEntityType(typeof(RolePermissionEntity));
 
         // Assert
-        Assert.NotNull(entityType);
+        entityType.Should().NotBeNull();
         IKey? primaryKey = entityType.FindPrimaryKey();
-        Assert.NotNull(primaryKey);
-        Assert.Single(primaryKey.Properties);
-        Assert.Equal("Id", primaryKey.Properties.First().Name);
+        primaryKey.Should().NotBeNull();
+        primaryKey.Properties.Should().ContainSingle();
+        primaryKey.Properties.First().Name.Should().Be("Id");
     }
 
     [Fact]
@@ -312,8 +312,8 @@ public class EntityConfigurationsTests
         IProperty? roleIdProperty = entityType?.FindProperty("RoleId");
 
         // Assert
-        Assert.NotNull(roleIdProperty);
-        Assert.False(roleIdProperty.IsNullable);
+        roleIdProperty.Should().NotBeNull();
+        roleIdProperty.IsNullable.Should().BeFalse();
     }
 
     [Fact]
@@ -328,8 +328,8 @@ public class EntityConfigurationsTests
         IProperty? permissionIdProperty = entityType?.FindProperty("PermissionId");
 
         // Assert
-        Assert.NotNull(permissionIdProperty);
-        Assert.False(permissionIdProperty.IsNullable);
+        permissionIdProperty.Should().NotBeNull();
+        permissionIdProperty.IsNullable.Should().BeFalse();
     }
 
     #endregion
@@ -344,13 +344,13 @@ public class EntityConfigurationsTests
         using var context = new IdentityDbContext(options);
 
         // Act & Assert
-        Assert.Equal("identity", context.Model.FindEntityType(typeof(UserEntity))?.GetSchema());
-        Assert.Equal("identity", context.Model.FindEntityType(typeof(RoleEntity))?.GetSchema());
-        Assert.Equal("identity", context.Model.FindEntityType(typeof(PermissionEntity))?.GetSchema());
-        Assert.Equal("identity", context.Model.FindEntityType(typeof(SessionEntity))?.GetSchema());
-        Assert.Equal("identity", context.Model.FindEntityType(typeof(OtpEntity))?.GetSchema());
-        Assert.Equal("identity", context.Model.FindEntityType(typeof(UserRoleEntity))?.GetSchema());
-        Assert.Equal("identity", context.Model.FindEntityType(typeof(RolePermissionEntity))?.GetSchema());
+        context.Model.FindEntityType(typeof(UserEntity))?.GetSchema().Should().Be("identity");
+        context.Model.FindEntityType(typeof(RoleEntity))?.GetSchema().Should().Be("identity");
+        context.Model.FindEntityType(typeof(PermissionEntity))?.GetSchema().Should().Be("identity");
+        context.Model.FindEntityType(typeof(SessionEntity))?.GetSchema().Should().Be("identity");
+        context.Model.FindEntityType(typeof(OtpEntity))?.GetSchema().Should().Be("identity");
+        context.Model.FindEntityType(typeof(UserRoleEntity))?.GetSchema().Should().Be("identity");
+        context.Model.FindEntityType(typeof(RolePermissionEntity))?.GetSchema().Should().Be("identity");
     }
 
     #endregion

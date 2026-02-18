@@ -33,7 +33,7 @@ public class IdentityModuleTests
         // Assert
         ServiceDescriptor? descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(IIdentityUnitOfWork));
         descriptor.Should().NotBeNull();
-        Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
+        descriptor.Lifetime.Should().Be(ServiceLifetime.Scoped);
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class IdentityModuleTests
             s.ServiceType == typeof(IClientOriginDetectionAdapter)
         );
         descriptor.Should().NotBeNull();
-        Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
+        descriptor.Lifetime.Should().Be(ServiceLifetime.Scoped);
     }
 
     [Fact]

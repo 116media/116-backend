@@ -96,9 +96,9 @@ public class PublicSocialLoginAuthFactoryTests
 
         // Assert
         result.Should().NotBeNull();
-        Assert.Equal(user, result.User);
-        Assert.Equal(roles, result.Roles);
-        Assert.Equal(permissions, result.Permissions);
+        result.User.Should().Be(user);
+        result.Roles.Should().BeSameAs(roles);
+        result.Permissions.Should().BeSameAs(permissions);
     }
 
     [Fact]
@@ -380,8 +380,8 @@ public class PublicSocialLoginAuthFactoryTests
         await _factory.AuthenticateOrCreateAsync(email, userName, provider, avatarUrl, CancellationToken.None);
 
         // Assert
-        Assert.Equal(avatarFileId, user.AvatarFileId);
-        Assert.Equal(EnumAvatarSource.Provider, user.AvatarSource);
+        user.AvatarFileId.Should().Be(avatarFileId);
+        user.AvatarSource.Should().Be(EnumAvatarSource.Provider);
     }
 
     [Fact]

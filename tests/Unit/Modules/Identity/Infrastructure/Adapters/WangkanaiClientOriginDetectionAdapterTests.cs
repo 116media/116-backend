@@ -57,7 +57,7 @@ public class WangkanaiClientOriginDetectionAdapterTests
         ClientOriginInfo result = _adapter.GetInfo();
 
         // Assert
-        Assert.Equal(expectedBrowser, result.Browser);
+        result.Browser.Should().Be(expectedBrowser);
     }
 
     #endregion
@@ -85,7 +85,7 @@ public class WangkanaiClientOriginDetectionAdapterTests
         ClientOriginInfo result = _adapter.GetInfo();
 
         // Assert
-        Assert.Equal(expectedDevice, result.Device);
+        result.Device.Should().Be(expectedDevice);
     }
 
     #endregion
@@ -112,7 +112,7 @@ public class WangkanaiClientOriginDetectionAdapterTests
         ClientOriginInfo result = _adapter.GetInfo();
 
         // Assert
-        Assert.Equal(expectedPlatform, result.Platform);
+        result.Platform.Should().Be(expectedPlatform);
     }
 
     #endregion
@@ -132,9 +132,9 @@ public class WangkanaiClientOriginDetectionAdapterTests
 
         // Assert
         result.Should().NotBeNull();
-        Assert.Equal(EnumBrowser.Chrome, result.Browser);
-        Assert.Equal(EnumDevice.Desktop, result.Device);
-        Assert.Equal(EnumPlatform.Windows, result.Platform);
+        result.Browser.Should().Be(EnumBrowser.Chrome);
+        result.Device.Should().Be(EnumDevice.Desktop);
+        result.Platform.Should().Be(EnumPlatform.Windows);
     }
 
     [Fact]

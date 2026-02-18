@@ -175,4 +175,12 @@ public static class SessionFactory
     /// <returns>A new SessionEntity with the specified expiration date.</returns>
     public static SessionEntity CreateWithExpiresAt(DateTime expiresAt) =>
         new SessionBuilder().WithExpiresAt(expiresAt).Build();
+
+    /// <summary>
+    /// Creates an expired session with a specific refresh token hash.
+    /// </summary>
+    /// <param name="refreshTokenHash">The refresh token hash.</param>
+    /// <returns>A new expired SessionEntity with the specified refresh token hash.</returns>
+    public static SessionEntity CreateExpiredWithRefreshTokenHash(string refreshTokenHash) =>
+        new SessionBuilder().WithRefreshTokenHash(refreshTokenHash).AsExpired().Build();
 }

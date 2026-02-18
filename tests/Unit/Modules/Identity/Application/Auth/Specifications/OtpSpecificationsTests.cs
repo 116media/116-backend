@@ -1,7 +1,6 @@
 using _116.Identity.Application.Auth.Specifications;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
-using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Factories;
 using AwesomeAssertions;
 using Xunit;
@@ -246,13 +245,9 @@ public class OtpSpecificationsTests
     public void OtpIsValidForUserAndPurposeSpecification_WithValidOtp_ShouldReturnTrue()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
-        OtpEntity otp = new OtpBuilder()
-            .WithUserId(userId)
-            .WithPurpose(purpose)
-            .WithExpiresAt(DateTime.UtcNow.AddMinutes(10))
-            .Build();
+        var userId = Guid.NewGuid();
+        const EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        OtpEntity otp = OtpFactory.Create(userId, purpose);
         OtpIsValidForUserAndPurposeSpecification spec = new(userId, purpose);
 
         // Act
@@ -268,11 +263,7 @@ public class OtpSpecificationsTests
         // Arrange
         Guid userId = Guid.NewGuid();
         EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
-        OtpEntity otp = new OtpBuilder()
-            .WithUserId(userId)
-            .WithPurpose(purpose)
-            .WithExpiresAt(DateTime.UtcNow.AddMinutes(-1))
-            .Build();
+        OtpEntity otp = OtpFactory.CreateExpired(userId, purpose);
         OtpIsValidForUserAndPurposeSpecification spec = new(userId, purpose);
 
         // Act
@@ -288,12 +279,7 @@ public class OtpSpecificationsTests
         // Arrange
         Guid userId = Guid.NewGuid();
         EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
-        OtpEntity otp = new OtpBuilder()
-            .WithUserId(userId)
-            .WithPurpose(purpose)
-            .AsUsed()
-            .WithExpiresAt(DateTime.UtcNow.AddMinutes(10))
-            .Build();
+        OtpEntity otp = OtpFactory.CreateUsed(userId, purpose);
         OtpIsValidForUserAndPurposeSpecification spec = new(userId, purpose);
 
         // Act
@@ -467,24 +453,11 @@ public class OtpSpecificationsTests
         Guid userId = Guid.NewGuid();
         EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
 
-        OtpEntity validOtp = new OtpBuilder()
-            .WithUserId(userId)
-            .WithPurpose(purpose)
-            .WithExpiresAt(DateTime.UtcNow.AddMinutes(10))
-            .Build();
+        OtpEntity validOtp = OtpFactory.Create(userId, purpose);
 
-        OtpEntity expiredOtp = new OtpBuilder()
-            .WithUserId(userId)
-            .WithPurpose(purpose)
-            .WithExpiresAt(DateTime.UtcNow.AddMinutes(-1))
-            .Build();
+        OtpEntity expiredOtp = OtpFactory.CreateExpired(userId, purpose);
 
-        OtpEntity usedOtp = new OtpBuilder()
-            .WithUserId(userId)
-            .WithPurpose(purpose)
-            .AsUsed()
-            .WithExpiresAt(DateTime.UtcNow.AddMinutes(10))
-            .Build();
+        OtpEntity usedOtp = OtpFactory.CreateUsed(userId, purpose);
 
         List<OtpEntity> otps = [validOtp, expiredOtp, usedOtp];
         OtpIsValidForUserAndPurposeSpecification spec = new(userId, purpose);

@@ -80,6 +80,15 @@ public static class RoleFactory
     public static List<RoleEntity> CreateMany(int count) => Enumerable.Range(0, count).Select(_ => Create()).ToList();
 
     /// <summary>
+    /// Creates a role with a specific name and permissions.
+    /// </summary>
+    /// <param name="name">The role name.</param>
+    /// <param name="permissions">The permissions to attach to the role.</param>
+    /// <returns>A new RoleEntity with the specified name and permissions.</returns>
+    public static RoleEntity Create(string name, IEnumerable<PermissionEntity> permissions) =>
+        new RoleBuilder().WithName(name).WithPermissions(permissions).Build();
+
+    /// <summary>
     /// Creates a SuperAdmin role.
     /// </summary>
     /// <returns>A RoleEntity representing SuperAdmin.</returns>

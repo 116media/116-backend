@@ -536,7 +536,7 @@ public class SuperAdminRepositoryManagerTests
 
         // Assert
         int roleCount = await context.Roles.CountAsync();
-        Assert.Equal(1, roleCount);
+        roleCount.Should().Be(1);
     }
 
     [Fact]

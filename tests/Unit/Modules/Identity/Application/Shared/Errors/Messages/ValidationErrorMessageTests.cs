@@ -1,5 +1,6 @@
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Enums;
+using _116.Unit.Tests.Common.Constants;
 using AwesomeAssertions;
 using Xunit;
 
@@ -83,7 +84,7 @@ public class ValidationErrorMessageTests
         string message = ValidationErrorMessage.RoleNameRequired();
 
         // Assert
-        message.Should().Be("Role name is required");
+        message.Should().Be(TestConstants.ValidationMessages.Role.NameRequired);
     }
 
     [Fact]
@@ -93,7 +94,7 @@ public class ValidationErrorMessageTests
         string message = ValidationErrorMessage.RoleDescriptionRequired();
 
         // Assert
-        message.Should().Be("Role description is required");
+        message.Should().Be(TestConstants.ValidationMessages.Role.DescriptionRequired);
     }
 
     [Fact]

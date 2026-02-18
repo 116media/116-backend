@@ -24,7 +24,7 @@ public class ExportFormatTests
 
         // Assert
         format.Should().NotBeNull();
-        Assert.Equal(SessionExportFormat.Csv, format.Value);
+        format.Value.Should().Be(SessionExportFormat.Csv);
     }
 
     [Theory]
@@ -37,7 +37,7 @@ public class ExportFormatTests
 
         // Assert
         format.Should().NotBeNull();
-        Assert.Equal(formatEnum, format.Value);
+        format.Value.Should().Be(formatEnum);
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class ExportFormatTests
 
         // Assert
         format.Should().NotBeNull();
-        Assert.Equal(SessionExportFormat.Csv, format.Value);
+        format.Value.Should().Be(SessionExportFormat.Csv);
     }
 
     [Theory]
@@ -79,7 +79,7 @@ public class ExportFormatTests
         ExportFormat format = new(input);
 
         // Assert
-        Assert.Equal(expected, format.Value);
+        format.Value.Should().Be(expected);
     }
 
     [Theory]
@@ -92,7 +92,7 @@ public class ExportFormatTests
         ExportFormat format = new(input);
 
         // Assert
-        Assert.Equal(SessionExportFormat.Csv, format.Value);
+        format.Value.Should().Be(SessionExportFormat.Csv);
     }
 
     [Fact]
@@ -136,7 +136,7 @@ public class ExportFormatTests
         SessionExportFormat result = format;
 
         // Assert
-        Assert.Equal(SessionExportFormat.Xlsx, result);
+        result.Should().Be(SessionExportFormat.Xlsx);
     }
 
     [Fact]
@@ -163,7 +163,7 @@ public class ExportFormatTests
 
         // Assert
         format.Should().NotBeNull();
-        Assert.Equal(SessionExportFormat.Csv, format.Value);
+        format.Value.Should().Be(SessionExportFormat.Csv);
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public class ExportFormatTests
 
         // Assert
         format.Should().NotBeNull();
-        Assert.Equal(SessionExportFormat.Xlsx, format.Value);
+        format.Value.Should().Be(SessionExportFormat.Xlsx);
     }
 
     [Fact]
@@ -206,7 +206,7 @@ public class ExportFormatTests
         ExportFormat format2 = new(SessionExportFormat.Csv);
 
         // Act & Assert
-        Assert.Equal(format1, format2);
+        format1.Should().Be(format2);
     }
 
     [Fact]
@@ -217,7 +217,7 @@ public class ExportFormatTests
         ExportFormat format2 = new(SessionExportFormat.Xlsx);
 
         // Act & Assert
-        Assert.NotEqual(format1, format2);
+        format1.Should().NotBe(format2);
     }
 
     [Fact]
@@ -232,7 +232,7 @@ public class ExportFormatTests
         int hash2 = format2.GetHashCode();
 
         // Assert
-        Assert.Equal(hash1, hash2);
+        hash1.Should().Be(hash2);
     }
 
     #endregion

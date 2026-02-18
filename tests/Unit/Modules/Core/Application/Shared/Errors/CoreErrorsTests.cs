@@ -31,7 +31,7 @@ public class CoreErrorsTests
     {
         // Arrange
         string fileType = "application/exe";
-        string[] allowedTypes = new[] { "image/jpeg", "image/png" };
+        string[] allowedTypes = ["image/jpeg", "image/png"];
 
         // Act
         BadRequestException exception = CoreErrors.UnsupportedFileType(fileType, allowedTypes);

@@ -72,9 +72,9 @@ public class PublicUpdateAvatarAuthFactoryTests
 
         // Assert
         result.Should().NotBeNull();
-        Assert.Equal(user, result.User);
-        Assert.Equal(roles, result.Roles);
-        Assert.Equal(permissions, result.Permissions);
+        result.User.Should().Be(user);
+        result.Roles.Should().BeSameAs(roles);
+        result.Permissions.Should().BeSameAs(permissions);
     }
 
     [Fact]
@@ -234,9 +234,9 @@ public class PublicUpdateAvatarAuthFactoryTests
 
         // Assert
         result.Should().NotBeNull();
-        Assert.Equal(user, result.User);
-        Assert.Equal(roles, result.Roles);
-        Assert.Equal(permissions, result.Permissions);
+        result.User.Should().Be(user);
+        result.Roles.Should().BeSameAs(roles);
+        result.Permissions.Should().BeSameAs(permissions);
     }
 
     [Fact]
@@ -256,8 +256,8 @@ public class PublicUpdateAvatarAuthFactoryTests
         await _factory.UpdateAvatarAsync(user, avatarFileId, CancellationToken.None);
 
         // Assert
-        Assert.Equal(EnumAvatarSource.Manual, user.AvatarSource);
-        Assert.Equal(avatarFileId, user.AvatarFileId);
+        user.AvatarSource.Should().Be(EnumAvatarSource.Manual);
+        user.AvatarFileId.Should().Be(avatarFileId);
     }
 
     [Fact]

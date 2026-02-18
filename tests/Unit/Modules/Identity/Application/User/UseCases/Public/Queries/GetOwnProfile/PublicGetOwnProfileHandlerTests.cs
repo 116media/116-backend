@@ -6,6 +6,7 @@ using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Factories;
+using _116.Unit.Tests.Common.Helpers;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
 using Moq;
@@ -45,7 +46,7 @@ public class PublicGetOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         PublicGetOwnProfileQuery query = new(UserId: user.Id);
-        List<RoleDto> roles = [new RoleDto(Guid.NewGuid(), "Visitor", "Visitor role", true, false, null)];
+        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(name: "Visitor", description: "Visitor role")];
         List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
@@ -145,10 +146,10 @@ public class PublicGetOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         PublicGetOwnProfileQuery query = new(UserId: user.Id);
-        List<RoleDto> roles = [new RoleDto(Guid.NewGuid(), "Visitor", "Visitor", true, false, null)];
+        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(name: "Visitor", description: "Visitor")];
         List<PermissionDto> permissions =
         [
-            new PermissionDto(Guid.NewGuid(), "articles", "read", "Read articles", true, false, null),
+            AuthTestHelpers.CreatePermissionDto(resource: "articles", description: "Read articles"),
         ];
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);

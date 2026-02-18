@@ -18,7 +18,7 @@ public class UserRoleRequirementHandlerTests
         var claims = new[] { new Claim(ClaimTypes.Role, "Admin") };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var context = new AuthorizationHandlerContext(
-            new[] { new UserRoleRequirement(new[] { "Admin", "SuperAdmin" }) },
+            [new UserRoleRequirement(new[] { "Admin", "SuperAdmin" })],
             user,
             null
         );
@@ -38,7 +38,7 @@ public class UserRoleRequirementHandlerTests
         var claims = new[] { new Claim(ClaimTypes.Role, "admin") };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new UserRoleRequirement(new[] { "Admin" });
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         // Act
         await _handler.HandleAsync(context);
@@ -54,7 +54,7 @@ public class UserRoleRequirementHandlerTests
         var claims = new[] { new Claim(ClaimTypes.Role, "Visitor") };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new UserRoleRequirement(new[] { "Admin", "SuperAdmin" });
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         // Act
         await _handler.HandleAsync(context);
@@ -69,7 +69,7 @@ public class UserRoleRequirementHandlerTests
         // Arrange
         var user = new ClaimsPrincipal(new ClaimsIdentity());
         var requirement = new UserRoleRequirement(new[] { "Admin" });
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         // Act
         await _handler.HandleAsync(context);
@@ -85,7 +85,7 @@ public class UserRoleRequirementHandlerTests
         var claims = new[] { new Claim(ClaimTypes.Role, "SuperAdmin") };
         var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
         var requirement = new UserRoleRequirement(new[] { "Admin", "SuperAdmin", "Moderator" });
-        var context = new AuthorizationHandlerContext(new[] { requirement }, user, null);
+        var context = new AuthorizationHandlerContext([requirement], user, null);
 
         // Act
         await _handler.HandleAsync(context);

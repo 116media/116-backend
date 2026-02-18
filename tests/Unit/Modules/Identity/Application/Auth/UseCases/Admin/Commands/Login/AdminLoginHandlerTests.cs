@@ -6,7 +6,6 @@ using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common;
-using _116.Unit.Tests.Common.Builders;
 using _116.Unit.Tests.Common.Constants;
 using _116.Unit.Tests.Common.Factories;
 using _116.Unit.Tests.Common.Helpers;
@@ -51,7 +50,7 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         string password = TestConstants.Auth.AdminLoginPassword;
         UserEntity user = UserFactory.CreateVerifiedActive();
         List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto("Admin", "Administrator role")];
-        AdminLoginAuthData authData = new AuthDataBuilder(user).WithRoles(roles).BuildAdminLoginAuthData();
+        AdminLoginAuthData authData = AuthTestHelpers.CreateAdminLoginAuthData(user, roles);
         List<RolePermissionEntity> permissions = authData.UserPermissions;
         SessionResult sessionResult = new(
             RefreshToken: "refresh-token",

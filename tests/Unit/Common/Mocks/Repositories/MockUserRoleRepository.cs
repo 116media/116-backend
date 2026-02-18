@@ -113,8 +113,7 @@ public static class MockUserRoleRepository
         Guid userId
     )
     {
-        mock.Setup(x => x.GetUserRolesWithRoleAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<UserRoleEntity>());
+        mock.Setup(x => x.GetUserRolesWithRoleAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync([]);
         return mock;
     }
 

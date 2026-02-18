@@ -4,7 +4,6 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common;
-using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Constants;
 using _116.Unit.Tests.Common.Factories;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -81,11 +80,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
 
         PermissionEntity permission2 = PermissionFactory.Create("users", "write");
 
-        RoleEntity role = new RoleBuilder()
-            .WithName(TestConstants.Role.ValidName)
-            .WithPermission(permission1)
-            .WithPermission(permission2)
-            .Build();
+        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, [permission1, permission2]);
 
         AdminGetRoleByIdQuery query = new(RoleId: role.Id.ToString());
 
@@ -111,7 +106,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
             PermissionFactory.Create("articles", "update"),
         ];
 
-        RoleEntity role = new RoleBuilder().WithName(TestConstants.Role.ValidName).WithPermissions(permissions).Build();
+        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, permissions);
 
         AdminGetRoleByIdQuery query = new(RoleId: role.Id.ToString());
 
@@ -211,7 +206,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidDescription
         );
 
-        RoleEntity role = new RoleBuilder().WithName(TestConstants.Role.ValidName).WithPermission(permission).Build();
+        RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, [permission]);
 
         AdminGetRoleByIdQuery query = new(RoleId: role.Id.ToString());
 

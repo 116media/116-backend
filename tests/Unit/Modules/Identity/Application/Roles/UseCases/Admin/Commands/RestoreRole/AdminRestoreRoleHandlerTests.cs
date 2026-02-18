@@ -4,7 +4,6 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Unit.Tests.Common;
-using _116.Unit.Tests.Common.Builders.Entities;
 using _116.Unit.Tests.Common.Constants;
 using _116.Unit.Tests.Common.Factories;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -183,7 +182,7 @@ public class AdminRestoreRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WithInactiveNotDeletedRole_ShouldThrowConflictException()
     {
         // Arrange
-        RoleEntity inactiveRole = new RoleBuilder().WithName(TestConstants.Role.ValidName).AsInactive().Build();
+        RoleEntity inactiveRole = RoleFactory.CreateInactive(TestConstants.Role.ValidName);
 
         AdminRestoreRoleCommand command = new(RoleId: inactiveRole.Id);
 

@@ -121,7 +121,7 @@ public class SuperAdminEntityFactoryTests
         UserEntity result = _factory.CreateSuperAdminUser();
 
         // Assert
-        Assert.NotEqual(Guid.Empty, result.Id);
+        result.Id.Should().NotBe(Guid.Empty);
     }
 
     [Fact]
@@ -135,7 +135,7 @@ public class SuperAdminEntityFactoryTests
         UserEntity user2 = _factory.CreateSuperAdminUser();
 
         // Assert
-        Assert.NotEqual(user1.Id, user2.Id);
+        user1.Id.Should().NotBe(user2.Id);
     }
 
     #endregion
@@ -170,7 +170,7 @@ public class SuperAdminEntityFactoryTests
         RoleEntity result = SuperAdminEntityFactory.CreateSuperAdminRole();
 
         // Assert
-        Assert.NotEqual(Guid.Empty, result.Id);
+        result.Id.Should().NotBe(Guid.Empty);
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public class SuperAdminEntityFactoryTests
         RoleEntity role2 = SuperAdminEntityFactory.CreateSuperAdminRole();
 
         // Assert
-        Assert.NotEqual(role1.Id, role2.Id);
+        role1.Id.Should().NotBe(role2.Id);
     }
 
     #endregion
@@ -226,7 +226,7 @@ public class SuperAdminEntityFactoryTests
         PermissionEntity result = SuperAdminEntityFactory.CreateSystemAllPermission();
 
         // Assert
-        Assert.NotEqual(Guid.Empty, result.Id);
+        result.Id.Should().NotBe(Guid.Empty);
     }
 
     [Fact]
@@ -237,7 +237,7 @@ public class SuperAdminEntityFactoryTests
         PermissionEntity permission2 = SuperAdminEntityFactory.CreateSystemAllPermission();
 
         // Assert
-        Assert.NotEqual(permission1.Id, permission2.Id);
+        permission1.Id.Should().NotBe(permission2.Id);
     }
 
     #endregion
@@ -256,7 +256,7 @@ public class SuperAdminEntityFactoryTests
 
         // Assert
         result.Should().NotBeNull();
-        Assert.Equal(userId, result.UserId);
+        result.UserId.Should().Be(userId);
     }
 
     [Fact]
@@ -270,7 +270,7 @@ public class SuperAdminEntityFactoryTests
         UserRoleEntity result = SuperAdminEntityFactory.CreateUserRoleAssociation(userId, roleId);
 
         // Assert
-        Assert.Equal(roleId, result.RoleId);
+        result.RoleId.Should().Be(roleId);
     }
 
     [Fact]
@@ -284,7 +284,7 @@ public class SuperAdminEntityFactoryTests
         UserRoleEntity result = SuperAdminEntityFactory.CreateUserRoleAssociation(userId, roleId);
 
         // Assert
-        Assert.NotEqual(Guid.Empty, result.Id);
+        result.Id.Should().NotBe(Guid.Empty);
     }
 
     [Fact]
@@ -299,7 +299,7 @@ public class SuperAdminEntityFactoryTests
         UserRoleEntity association2 = SuperAdminEntityFactory.CreateUserRoleAssociation(userId, roleId);
 
         // Assert
-        Assert.NotEqual(association1.Id, association2.Id);
+        association1.Id.Should().NotBe(association2.Id);
     }
 
     #endregion
@@ -318,7 +318,7 @@ public class SuperAdminEntityFactoryTests
 
         // Assert
         result.Should().NotBeNull();
-        Assert.Equal(roleId, result.RoleId);
+        result.RoleId.Should().Be(roleId);
     }
 
     [Fact]
@@ -332,7 +332,7 @@ public class SuperAdminEntityFactoryTests
         RolePermissionEntity result = SuperAdminEntityFactory.CreateRolePermissionAssociation(roleId, permissionId);
 
         // Assert
-        Assert.Equal(permissionId, result.PermissionId);
+        result.PermissionId.Should().Be(permissionId);
     }
 
     [Fact]
@@ -346,7 +346,7 @@ public class SuperAdminEntityFactoryTests
         RolePermissionEntity result = SuperAdminEntityFactory.CreateRolePermissionAssociation(roleId, permissionId);
 
         // Assert
-        Assert.NotEqual(Guid.Empty, result.Id);
+        result.Id.Should().NotBe(Guid.Empty);
     }
 
     [Fact]
@@ -367,7 +367,7 @@ public class SuperAdminEntityFactoryTests
         );
 
         // Assert
-        Assert.NotEqual(association1.Id, association2.Id);
+        association1.Id.Should().NotBe(association2.Id);
     }
 
     #endregion
