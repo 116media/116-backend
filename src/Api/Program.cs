@@ -17,9 +17,10 @@ builder.Services.AddCloudinaryConfiguration();
 
 Assembly coreAssembly = typeof(CoreModule).Assembly;
 Assembly identityAssembly = typeof(IdentityModule).Assembly;
+Assembly contentAssembly = typeof(ContentModule).Assembly;
 
-builder.Services.AddCarterWithAssemblies(identityAssembly, coreAssembly);
-builder.Services.AddCqrsWithAssemblies(identityAssembly, coreAssembly);
+builder.Services.AddCarterWithAssemblies(identityAssembly, coreAssembly, contentAssembly);
+builder.Services.AddCqrsWithAssemblies(identityAssembly, coreAssembly, contentAssembly);
 
 builder
     .Services.AddApiVersioning(options =>
@@ -54,6 +55,7 @@ builder.Services.AddCors(options =>
 builder
     .Services.AddIdentityModule()
     .AddCoreModule()
+    .AddContentModule()
     .AddEndpointsApiExplorer()
     .AddSwaggerGen(c => c.AddSwaggerOptions());
 
@@ -85,6 +87,6 @@ app.UseApiVersioning();
 app.MapCarter();
 app.UseResourceNotFoundHandler();
 
-app.UseIdentityModule().UseCoreModule();
+app.UseIdentityModule().UseCoreModule().UseContentModule();
 
 app.Run();
