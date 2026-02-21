@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Lookup.Constants;
 using _116.Content.Application.Shared.DTOs;
@@ -60,7 +61,8 @@ public class UpdatePromotionLevelEndpointV1 : ICarterModule
             .WithName(endpointName: UpdatePromotionLevelMetaField.UpdatePromotionLevel.Name)
             .WithSummary(summary: UpdatePromotionLevelMetaField.UpdatePromotionLevel.Summary)
             .WithDescription(description: UpdatePromotionLevelMetaField.UpdatePromotionLevel.Description)
-            .RequireAuthorization()
+            .RequireAuthorization(AccountStatusPolicies.RequireActiveUser)
+            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<UpdatePromotionLevelResponse>(statusCode: StatusCodes.Status200OK)
