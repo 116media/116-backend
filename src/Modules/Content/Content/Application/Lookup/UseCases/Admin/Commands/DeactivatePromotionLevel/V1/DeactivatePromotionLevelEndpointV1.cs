@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Lookup.Constants;
 using _116.Content.Domain.Constants;
@@ -35,7 +36,8 @@ public class DeactivatePromotionLevelEndpointV1 : ICarterModule
             .WithName(endpointName: DeactivatePromotionLevelMetaField.DeactivatePromotionLevel.Name)
             .WithSummary(summary: DeactivatePromotionLevelMetaField.DeactivatePromotionLevel.Summary)
             .WithDescription(description: DeactivatePromotionLevelMetaField.DeactivatePromotionLevel.Description)
-            .RequireAuthorization()
+            .RequireAuthorization(AccountStatusPolicies.RequireActiveUser)
+            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
