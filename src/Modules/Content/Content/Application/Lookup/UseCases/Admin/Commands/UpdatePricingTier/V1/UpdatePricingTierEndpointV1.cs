@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Lookup.Constants;
 using _116.Content.Application.Shared.DTOs;
@@ -58,7 +59,8 @@ public class UpdatePricingTierEndpointV1 : ICarterModule
             .WithName(endpointName: UpdatePricingTierMetaField.UpdatePricingTier.Name)
             .WithSummary(summary: UpdatePricingTierMetaField.UpdatePricingTier.Summary)
             .WithDescription(description: UpdatePricingTierMetaField.UpdatePricingTier.Description)
-            .RequireAuthorization()
+            .RequireAuthorization(AccountStatusPolicies.RequireActiveUser)
+            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<UpdatePricingTierResponse>(statusCode: StatusCodes.Status200OK)
