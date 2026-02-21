@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.BuildingBlocks.Utils;
 using _116.Content.Application.Lookup.Constants;
@@ -58,7 +59,8 @@ public class CreateContentTypeEndpointV1 : ICarterModule
             .WithName(endpointName: CreateContentTypeMetaField.CreateContentType.Name)
             .WithSummary(summary: CreateContentTypeMetaField.CreateContentType.Summary)
             .WithDescription(description: CreateContentTypeMetaField.CreateContentType.Description)
-            .RequireAuthorization()
+            .RequireAuthorization(AccountStatusPolicies.RequireActiveUser)
+            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<CreateContentTypeResponse>(statusCode: StatusCodes.Status201Created)
