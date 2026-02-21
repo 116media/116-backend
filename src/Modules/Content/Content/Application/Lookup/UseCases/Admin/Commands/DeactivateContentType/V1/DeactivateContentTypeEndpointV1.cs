@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Lookup.Constants;
 using _116.Content.Domain.Constants;
@@ -35,7 +36,8 @@ public class DeactivateContentTypeEndpointV1 : ICarterModule
             .WithName(endpointName: DeactivateContentTypeMetaField.DeactivateContentType.Name)
             .WithSummary(summary: DeactivateContentTypeMetaField.DeactivateContentType.Summary)
             .WithDescription(description: DeactivateContentTypeMetaField.DeactivateContentType.Description)
-            .RequireAuthorization()
+            .RequireAuthorization(AccountStatusPolicies.RequireActiveUser)
+            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces(statusCode: StatusCodes.Status204NoContent)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
