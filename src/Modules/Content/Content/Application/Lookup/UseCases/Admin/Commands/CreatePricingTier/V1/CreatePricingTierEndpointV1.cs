@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.BuildingBlocks.Utils;
 using _116.Content.Application.Lookup.Constants;
@@ -59,7 +60,8 @@ public class CreatePricingTierEndpointV1 : ICarterModule
             .WithName(endpointName: CreatePricingTierMetaField.CreatePricingTier.Name)
             .WithSummary(summary: CreatePricingTierMetaField.CreatePricingTier.Summary)
             .WithDescription(description: CreatePricingTierMetaField.CreatePricingTier.Description)
-            .RequireAuthorization()
+            .RequireAuthorization(AccountStatusPolicies.RequireActiveUser)
+            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<CreatePricingTierResponse>(statusCode: StatusCodes.Status201Created)
