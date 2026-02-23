@@ -1,8 +1,9 @@
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
-using Mapster;
+using MapsterMapper;
 
 namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetActivePromotionLevels;
 
@@ -10,7 +11,8 @@ namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetActivePromo
 /// Handles the <see cref="GetActivePromotionLevelsQuery" /> to retrieve all active promotion levels.
 /// </summary>
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
-public class GetActivePromotionLevelsHandler(ILookupRepository lookupRepository)
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class GetActivePromotionLevelsHandler(ILookupRepository lookupRepository, IMapper mapper)
     : IQueryHandler<GetActivePromotionLevelsQuery, GetActivePromotionLevelsResult>
 {
     /// <inheritdoc />
@@ -23,8 +25,7 @@ public class GetActivePromotionLevelsHandler(ILookupRepository lookupRepository)
             cancellationToken: cancellationToken
         );
 
-        var dtos = promotionLevels.Adapt<IReadOnlyList<PromotionLevelDto>>();
-
-        return new GetActivePromotionLevelsResult(PromotionLevels: dtos);
+        IReadOnlyList<PromotionLevelDto> dtoList = promotionLevels.ToPromotionLevelDtos(mapper);
+        return new GetActivePromotionLevelsResult(PromotionLevels: dtoList);
     }
 }
