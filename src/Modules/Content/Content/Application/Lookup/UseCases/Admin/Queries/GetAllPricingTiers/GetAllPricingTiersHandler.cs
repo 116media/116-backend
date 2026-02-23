@@ -1,8 +1,9 @@
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
-using Mapster;
+using MapsterMapper;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllPricingTiers;
 
@@ -10,7 +11,8 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllPricingTi
 /// Handles the <see cref="GetAllPricingTiersQuery" /> to retrieve all pricing tiers.
 /// </summary>
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
-public class GetAllPricingTiersHandler(ILookupRepository lookupRepository)
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class GetAllPricingTiersHandler(ILookupRepository lookupRepository, IMapper mapper)
     : IQueryHandler<GetAllPricingTiersQuery, GetAllPricingTiersResult>
 {
     /// <inheritdoc />
@@ -23,8 +25,7 @@ public class GetAllPricingTiersHandler(ILookupRepository lookupRepository)
             cancellationToken: cancellationToken
         );
 
-        var dtos = pricingTiers.Adapt<IReadOnlyList<PricingTierDto>>();
-
-        return new GetAllPricingTiersResult(PricingTiers: dtos);
+        IReadOnlyList<PricingTierDto> dtoList = pricingTiers.ToPricingTierDtos(mapper);
+        return new GetAllPricingTiersResult(PricingTiers: dtoList);
     }
 }
