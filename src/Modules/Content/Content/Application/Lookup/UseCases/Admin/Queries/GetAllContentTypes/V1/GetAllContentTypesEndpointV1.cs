@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Lookup.Constants;
 using _116.Content.Application.Shared.DTOs;
@@ -47,7 +48,8 @@ public class GetAllContentTypesEndpointV1 : ICarterModule
             .WithName(endpointName: GetAllContentTypesMetaField.GetAllContentTypes.Name)
             .WithSummary(summary: GetAllContentTypesMetaField.GetAllContentTypes.Summary)
             .WithDescription(description: GetAllContentTypesMetaField.GetAllContentTypes.Description)
-            .RequireAuthorization()
+            .RequireAuthorization(AccountStatusPolicies.RequireActiveUser)
+            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<GetAllContentTypesResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
