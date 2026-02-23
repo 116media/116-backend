@@ -40,7 +40,6 @@ public class GetAllTagsEndpointV1 : ICarterModule
                     GetAllTagsResult result = await dispatcher.Send(request: query);
 
                     var response = new GetAllTagsResponse(Tags: result.Tags);
-
                     return Results.Ok(response);
                 }
             )
