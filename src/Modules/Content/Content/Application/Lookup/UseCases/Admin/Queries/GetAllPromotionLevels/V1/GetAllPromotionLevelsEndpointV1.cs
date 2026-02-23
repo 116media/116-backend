@@ -6,6 +6,7 @@ using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
 using Carter;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -41,15 +42,14 @@ public class GetAllPromotionLevelsEndpointV1 : ICarterModule
                     GetAllPromotionLevelsResult result = await dispatcher.Send(request: query);
 
                     var response = new GetAllPromotionLevelsResponse(PromotionLevels: result.PromotionLevels);
-
                     return Results.Ok(response);
                 }
             )
             .WithName(endpointName: GetAllPromotionLevelsMetaField.GetAllPromotionLevels.Name)
             .WithSummary(summary: GetAllPromotionLevelsMetaField.GetAllPromotionLevels.Summary)
             .WithDescription(description: GetAllPromotionLevelsMetaField.GetAllPromotionLevels.Description)
-            .RequireAuthorization(AccountStatusPolicies.RequireActiveUser)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithMetadata(new AuthorizeAttribute(AccountStatusPolicies.RequireActiveUser))
+            .WithMetadata(new AuthorizeAttribute(UserRolePolicies.RequireAdminOrSuperAdmin))
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<GetAllPromotionLevelsResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
