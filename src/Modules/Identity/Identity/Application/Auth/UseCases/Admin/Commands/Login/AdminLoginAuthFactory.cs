@@ -12,12 +12,8 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="passwordService">Service for verifying hashed passwords.</param>
-/// <param name="roleRepository">Repository for role and permission data operations.</param>
-public class AdminLoginAuthFactory(
-    IAuthRepository authRepository,
-    IPasswordService passwordService,
-    IRoleRepository roleRepository
-) : IAdminLoginAuthFactory
+public class AdminLoginAuthFactory(IAuthRepository authRepository, IPasswordService passwordService)
+    : IAdminLoginAuthFactory
 {
     /// <summary>
     /// Authenticates an admin user with their email and password.
@@ -44,13 +40,6 @@ public class AdminLoginAuthFactory(
 
         List<RolePermissionEntity> userPermissions = user.UserRoles.SelectMany(ur => ur.Role.RolePermissions).ToList();
 
-        var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user.UserRoles);
-
-        return new AdminLoginAuthData(
-            User: user,
-            Roles: roles,
-            Permissions: permissions,
-            UserPermissions: userPermissions
-        );
+        return new AdminLoginAuthData(User: user, UserPermissions: userPermissions);
     }
 }
