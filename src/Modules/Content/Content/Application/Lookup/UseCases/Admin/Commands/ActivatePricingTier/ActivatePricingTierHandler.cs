@@ -1,8 +1,10 @@
 using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
+using MapsterMapper;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.ActivatePricingTier;
 
@@ -11,11 +13,18 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.ActivatePricin
 /// </summary>
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class ActivatePricingTierHandler(ILookupRepository lookupRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<ActivatePricingTierCommand>
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class ActivatePricingTierHandler(
+    ILookupRepository lookupRepository,
+    IContentUnitOfWork unitOfWork,
+    IMapper mapper
+) : ICommandHandler<ActivatePricingTierCommand, ActivatePricingTierResult>
 {
     /// <inheritdoc />
-    public async Task Handle(ActivatePricingTierCommand command, CancellationToken cancellationToken)
+    public async Task<ActivatePricingTierResult> Handle(
+        ActivatePricingTierCommand command,
+        CancellationToken cancellationToken
+    )
     {
         PricingTierEntity pricingTier = await lookupRepository.GetPricingTierByIdOrThrowAsync(
             id: command.Id,
@@ -30,5 +39,8 @@ public class ActivatePricingTierHandler(ILookupRepository lookupRepository, ICon
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        var dto = pricingTier.ToPricingTierDto(mapper);
+        return new ActivatePricingTierResult(PricingTier: dto);
     }
 }
