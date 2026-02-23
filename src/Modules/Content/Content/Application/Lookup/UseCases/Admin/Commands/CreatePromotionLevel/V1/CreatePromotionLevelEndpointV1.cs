@@ -54,9 +54,9 @@ public class CreatePromotionLevelEndpointV1 : ICarterModule
                     CreatePromotionLevelResult result = await dispatcher.Send(request: command);
 
                     var response = new CreatePromotionLevelResponse(PromotionLevel: result.PromotionLevel);
+                    Guid promotionLevelId = response.PromotionLevel.Id;
 
-                    string path =
-                        $"{ContentConstants.Admin}/{LookupRouteConstants.PromotionLevels}/{response.PromotionLevel.Id}";
+                    string path = $"{ContentConstants.Admin}/{LookupRouteConstants.PromotionLevels}/{promotionLevelId}";
                     string locationUrl = ApiVersionUrl.Build(context: httpContext, path: path);
 
                     return Results.Created(uri: locationUrl, value: response);
