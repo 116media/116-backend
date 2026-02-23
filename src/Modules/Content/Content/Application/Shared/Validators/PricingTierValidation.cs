@@ -14,9 +14,9 @@ public static class PricingTierValidation
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the ID property.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, Guid> ValidPricingTierId<T>(this IRuleBuilder<T, Guid> ruleBuilder)
+    public static void ValidPricingTierId<T>(this IRuleBuilder<T, Guid> ruleBuilder)
     {
-        return ruleBuilder.NotEmpty().WithMessage("Pricing tier ID is required.");
+        ruleBuilder.NotEmpty().WithMessage("Pricing tier ID is required.");
     }
 
     /// <summary>
