@@ -48,9 +48,9 @@ public class CreateContentTypeEndpointV1 : ICarterModule
                     CreateContentTypeResult result = await dispatcher.Send(request: command);
 
                     var response = new CreateContentTypeResponse(ContentType: result.ContentType);
+                    Guid contentTypeId = response.ContentType.Id;
 
-                    string path =
-                        $"{ContentConstants.Admin}/{LookupRouteConstants.ContentTypes}/{response.ContentType.Id}";
+                    string path = $"{ContentConstants.Admin}/{LookupRouteConstants.ContentTypes}/{contentTypeId}";
                     string locationUrl = ApiVersionUrl.Build(context: httpContext, path: path);
 
                     return Results.Created(uri: locationUrl, value: response);
