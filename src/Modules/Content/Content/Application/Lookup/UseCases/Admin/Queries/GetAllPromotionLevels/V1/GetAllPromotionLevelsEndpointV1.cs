@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Lookup.Constants;
 using _116.Content.Application.Shared.DTOs;
@@ -47,7 +48,8 @@ public class GetAllPromotionLevelsEndpointV1 : ICarterModule
             .WithName(endpointName: GetAllPromotionLevelsMetaField.GetAllPromotionLevels.Name)
             .WithSummary(summary: GetAllPromotionLevelsMetaField.GetAllPromotionLevels.Summary)
             .WithDescription(description: GetAllPromotionLevelsMetaField.GetAllPromotionLevels.Description)
-            .RequireAuthorization()
+            .RequireAuthorization(AccountStatusPolicies.RequireActiveUser)
+            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<GetAllPromotionLevelsResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
