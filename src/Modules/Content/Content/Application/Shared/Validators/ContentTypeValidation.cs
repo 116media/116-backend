@@ -14,9 +14,9 @@ public static class ContentTypeValidation
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the ID property.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, Guid> ValidContentTypeId<T>(this IRuleBuilder<T, Guid> ruleBuilder)
+    public static void ValidContentTypeId<T>(this IRuleBuilder<T, Guid> ruleBuilder)
     {
-        return ruleBuilder.NotEmpty().WithMessage("Content type ID is required.");
+        ruleBuilder.NotEmpty().WithMessage("Content type ID is required.");
     }
 
     /// <summary>
