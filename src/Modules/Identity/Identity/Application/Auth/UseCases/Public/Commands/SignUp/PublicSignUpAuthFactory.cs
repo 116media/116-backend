@@ -13,14 +13,12 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 /// Factory implementation for handling user registration logic in the signup flow.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
-/// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
 /// <param name="passwordService">Service for hashing passwords.</param>
 /// <param name="otpService">Service for generating OTP codes.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicSignUpAuthFactory(
     IAuthRepository authRepository,
-    IRoleRepository roleRepository,
     IOtpRepository otpRepository,
     IPasswordService passwordService,
     IOtpService otpService,
@@ -70,13 +68,6 @@ public class PublicSignUpAuthFactory(
             .UserRoles.SelectMany(ur => ur.Role.RolePermissions)
             .ToList();
 
-        var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: userWithRoles.UserRoles);
-
-        return new PublicSignUpAuthData(
-            Roles: roles,
-            User: userWithRoles,
-            Permissions: permissions,
-            UserPermissions: userPermissions
-        );
+        return new PublicSignUpAuthData(User: userWithRoles, UserPermissions: userPermissions);
     }
 }
