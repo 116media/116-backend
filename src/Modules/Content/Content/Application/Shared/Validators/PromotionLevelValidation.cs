@@ -14,9 +14,9 @@ public static class PromotionLevelValidation
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the ID property.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, Guid> ValidPromotionLevelId<T>(this IRuleBuilder<T, Guid> ruleBuilder)
+    public static void ValidPromotionLevelId<T>(this IRuleBuilder<T, Guid> ruleBuilder)
     {
-        return ruleBuilder.NotEmpty().WithMessage("Promotion level ID is required.");
+        ruleBuilder.NotEmpty().WithMessage("Promotion level ID is required.");
     }
 
     /// <summary>
