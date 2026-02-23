@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Constants;
@@ -6,6 +7,8 @@ using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 using _116.Content.Infrastructure.Repositories;
 using _116.Shared.Infrastructure;
 using _116.Shared.Infrastructure.Seed;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -38,6 +41,11 @@ public static class ContentModule
     public static IServiceCollection AddContentModule(this IServiceCollection services)
     {
         services.AddModuleDatabase(GetModuleOptions());
+
+        // Register Mapster configuration and IMapper (thread-safe, no global state)
+        TypeAdapterConfig mappingConfig = MappingRegistration.CreateConfiguration();
+        services.AddSingleton(mappingConfig);
+        services.AddScoped<IMapper>(sp => new Mapper(sp.GetRequiredService<TypeAdapterConfig>()));
 
         services.AddScoped<IContentUnitOfWork, ContentUnitOfWork>();
         services.AddScoped<ILookupRepository, LookupRepository>();
