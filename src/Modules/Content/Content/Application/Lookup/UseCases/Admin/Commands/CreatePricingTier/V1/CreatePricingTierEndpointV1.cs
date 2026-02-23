@@ -49,9 +49,9 @@ public class CreatePricingTierEndpointV1 : ICarterModule
                     CreatePricingTierResult result = await dispatcher.Send(request: command);
 
                     var response = new CreatePricingTierResponse(PricingTier: result.PricingTier);
+                    Guid priceTierId = response.PricingTier.Id;
 
-                    string path =
-                        $"{ContentConstants.Admin}/{LookupRouteConstants.PricingTiers}/{response.PricingTier.Id}";
+                    string path = $"{ContentConstants.Admin}/{LookupRouteConstants.PricingTiers}/{priceTierId}";
                     string locationUrl = ApiVersionUrl.Build(context: httpContext, path: path);
 
                     return Results.Created(uri: locationUrl, value: response);
