@@ -1,10 +1,10 @@
-using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
-using Mapster;
+using MapsterMapper;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateContentType;
 
@@ -13,7 +13,8 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateContentT
 /// </summary>
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class CreateContentTypeHandler(ILookupRepository lookupRepository, IContentUnitOfWork unitOfWork)
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class CreateContentTypeHandler(ILookupRepository lookupRepository, IContentUnitOfWork unitOfWork, IMapper mapper)
     : ICommandHandler<CreateContentTypeCommand, CreateContentTypeResult>
 {
     /// <inheritdoc />
@@ -37,8 +38,7 @@ public class CreateContentTypeHandler(ILookupRepository lookupRepository, IConte
         await lookupRepository.AddContentTypeAsync(contentType: contentType, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        var dto = contentType.Adapt<ContentTypeDto>();
-
+        var dto = contentType.ToContentTypeDto(mapper);
         return new CreateContentTypeResult(ContentType: dto);
     }
 }
