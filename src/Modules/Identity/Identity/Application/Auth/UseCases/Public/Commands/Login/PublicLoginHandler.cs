@@ -60,8 +60,8 @@ public class PublicLoginHandler(
         var avatarDto = avatarFile?.ToFileDto(mapper);
         var userDto = authData.User.ToUserResponseDto(
             mapper: mapper,
-            roles: authData.Roles,
-            permissions: authData.Permissions,
+            roles: authData.User.UserRoles.ToRoleDtos(mapper),
+            permissions: authData.User.UserRoles.ToPermissionDtos(mapper),
             avatar: avatarDto
         );
 
