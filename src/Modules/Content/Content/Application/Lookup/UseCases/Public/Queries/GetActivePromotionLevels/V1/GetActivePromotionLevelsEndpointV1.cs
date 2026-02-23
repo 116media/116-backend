@@ -40,7 +40,6 @@ public class GetActivePromotionLevelsEndpointV1 : ICarterModule
                     GetActivePromotionLevelsResult result = await dispatcher.Send(request: query);
 
                     var response = new GetActivePromotionLevelsResponse(PromotionLevels: result.PromotionLevels);
-
                     return Results.Ok(response);
                 }
             )
