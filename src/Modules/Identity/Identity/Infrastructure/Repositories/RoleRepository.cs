@@ -1,12 +1,10 @@
 using _116.Identity.Application.Roles.Builders;
 using _116.Identity.Application.Roles.Specifications;
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
-using Mapster;
 using Microsoft.EntityFrameworkCore;
 
 namespace _116.Identity.Infrastructure.Repositories;
@@ -82,33 +80,6 @@ public class RoleRepository(IdentityDbContext context) : IRoleRepository
             .ToListAsync(cancellationToken: cancellationToken);
 
         return (roles, totalCount);
-    }
-
-    /// <inheritdoc />
-    public IReadOnlyCollection<RoleDto> GetUserRoles(ICollection<UserRoleEntity> userRoles)
-    {
-        return userRoles.Select(ur => ur.Role.Adapt<RoleDto>()).ToList();
-    }
-
-    /// <inheritdoc />
-    public IReadOnlyCollection<PermissionDto> GetUserPermissions(ICollection<UserRoleEntity> userRoles)
-    {
-        return userRoles
-            .SelectMany(ur => ur.Role.RolePermissions)
-            .Select(rp => rp.Permission.Adapt<PermissionDto>())
-            .DistinctBy(p => p.Id)
-            .ToList();
-    }
-
-    /// <inheritdoc />
-    public (
-        IReadOnlyCollection<RoleDto> Roles,
-        IReadOnlyCollection<PermissionDto> Permissions
-    ) GetUserRolesAndPermissions(ICollection<UserRoleEntity> userRoles)
-    {
-        IReadOnlyCollection<RoleDto> roles = GetUserRoles(userRoles: userRoles);
-        IReadOnlyCollection<PermissionDto> permissions = GetUserPermissions(userRoles: userRoles);
-        return (roles, permissions);
     }
 
     /// <inheritdoc />
