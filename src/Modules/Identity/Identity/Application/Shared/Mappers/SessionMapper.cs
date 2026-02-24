@@ -25,6 +25,10 @@ public static class SessionMapper
             .Map(dest => dest.Device, src => src.Device.ToString())
             .Map(dest => dest.Platform, src => src.Platform.ToString())
             .Map(dest => dest.Client, src => src.Client.ToString());
+
+        config
+            .NewConfig<SessionEntity, SessionExportDto>()
+            .Map(dest => dest.IsActive, src => !src.IsRevoked && src.ExpiresAt > DateTime.UtcNow);
     }
 
     /// <summary>
@@ -36,5 +40,16 @@ public static class SessionMapper
     public static SessionDto ToSessionDto(this SessionEntity session, IMapper mapper)
     {
         return mapper.Map<SessionDto>(session);
+    }
+
+    /// <summary>
+    /// Maps a collection of SessionEntity to a list of SessionExportDto for data export.
+    /// </summary>
+    /// <param name="sessions">The session entities to map.</param>
+    /// <param name="mapper">Injected IMapper instance.</param>
+    /// <returns>A list of SessionExportDto containing session export data.</returns>
+    public static List<SessionExportDto> ToSessionExportDtos(this List<SessionEntity> sessions, IMapper mapper)
+    {
+        return mapper.Map<List<SessionExportDto>>(sessions);
     }
 }
