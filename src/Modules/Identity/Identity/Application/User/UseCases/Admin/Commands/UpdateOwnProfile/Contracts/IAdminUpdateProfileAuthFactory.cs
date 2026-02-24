@@ -1,16 +1,11 @@
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 
 namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile.Contracts;
 
 /// <summary>
-/// Contains updated admin user data and associated roles/permissions.
+/// Contains updated admin user data.
 /// </summary>
-public record AdminUpdateProfileAuthData(
-    UserEntity User,
-    IReadOnlyCollection<RoleDto> Roles,
-    IReadOnlyCollection<PermissionDto> Permissions
-);
+public record AdminUpdateProfileAuthData(UserEntity User);
 
 /// <summary>
 /// Factory for handling admin user profile update logic.
