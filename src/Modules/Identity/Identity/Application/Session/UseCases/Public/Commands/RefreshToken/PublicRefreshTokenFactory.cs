@@ -3,7 +3,6 @@ using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken.Contracts;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
-using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Configurations;
 
@@ -14,12 +13,10 @@ namespace _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToke
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="refreshTokenService">Service for refresh token generation and hashing.</param>
-/// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicRefreshTokenFactory(
     ISessionRepository sessionRepository,
     IRefreshTokenService refreshTokenService,
-    IRoleRepository roleRepository,
     IIdentityUnitOfWork unitOfWork
 ) : IPublicRefreshTokenFactory
 {
@@ -56,26 +53,12 @@ public class PublicRefreshTokenFactory(
 
         session.UpdateRefreshToken(newRefreshTokenHash: newRefreshTokenHash, newExpiresAt: newRefreshTokenExpiresAt);
 
-        var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: session.User.UserRoles);
-
-        return new PublicRefreshTokenData(
-            Roles: roles,
-            Session: session,
-            User: session.User,
-            Permissions: permissions,
-            NewRefreshToken: newRefreshToken
-        );
+        return new PublicRefreshTokenData(User: session.User, Session: session, NewRefreshToken: newRefreshToken);
     }
 
     /// <summary>
     /// Generates a new refresh token with its hash and expiration time.
     /// </summary>
-    /// <returns>
-    /// A tuple containing:
-    /// - token: The plain refresh token to return to the client
-    /// - hash: The hashed refresh token for secure storage
-    /// - expiresAt: The expiration timestamp for the refresh token
-    /// </returns>
     private (string token, string hash, DateTime expiresAt) GenerateNewRefreshToken()
     {
         var (_, _, _, _, refreshTokenExpirationMinutes) = AppEnvironment.Jwt();
