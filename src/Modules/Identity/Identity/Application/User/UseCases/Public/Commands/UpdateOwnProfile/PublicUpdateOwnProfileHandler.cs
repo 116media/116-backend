@@ -56,8 +56,8 @@ public class PublicUpdateOwnProfileHandler(
         var userDto = authData.User.ToUserResponseDto(
             mapper: mapper,
             avatar: avatarDto,
-            roles: authData.Roles,
-            permissions: authData.Permissions
+            roles: authData.User.UserRoles.ToRoleDtos(mapper),
+            permissions: authData.User.UserRoles.ToPermissionDtos(mapper)
         );
         return new PublicUpdateOwnProfileResult(User: userDto);
     }
