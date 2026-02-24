@@ -9,13 +9,9 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
 /// Factory implementation for handling user avatar update logic.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
-/// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicUpdateAvatarAuthFactory(
-    IAuthRepository authRepository,
-    IRoleRepository roleRepository,
-    IIdentityUnitOfWork unitOfWork
-) : IPublicUpdateAvatarAuthFactory
+public class PublicUpdateAvatarAuthFactory(IAuthRepository authRepository, IIdentityUnitOfWork unitOfWork)
+    : IPublicUpdateAvatarAuthFactory
 {
     /// <summary>
     /// Gets and validates user for avatar update.
@@ -35,9 +31,7 @@ public class PublicUpdateAvatarAuthFactory(
         authRepository.IsUserAccountVerified(user!);
         await authRepository.IsSessionValidAsync(sessionId, cancellationToken);
 
-        var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user!.UserRoles);
-
-        return new PublicUpdateAvatarAuthData(User: user, Roles: roles, Permissions: permissions);
+        return new PublicUpdateAvatarAuthData(User: user!);
     }
 
     /// <summary>
@@ -53,8 +47,6 @@ public class PublicUpdateAvatarAuthFactory(
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user.UserRoles);
-
-        return new PublicUpdateAvatarAuthData(User: user, Roles: roles, Permissions: permissions);
+        return new PublicUpdateAvatarAuthData(User: user);
     }
 }
