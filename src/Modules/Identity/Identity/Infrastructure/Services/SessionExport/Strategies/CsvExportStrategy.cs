@@ -2,7 +2,7 @@ using System.Dynamic;
 using System.Globalization;
 using System.Text;
 using _116.Identity.Application.Session.Services;
-using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
+using _116.Identity.Application.Shared.DTOs;
 using CsvHelper;
 
 namespace _116.Identity.Infrastructure.Services.SessionExport.Strategies;
