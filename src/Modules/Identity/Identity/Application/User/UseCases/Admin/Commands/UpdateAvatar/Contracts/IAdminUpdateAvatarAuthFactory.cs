@@ -1,16 +1,11 @@
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 
 namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.Contracts;
 
 /// <summary>
-/// Contains updated admin user data with avatar and associated roles/permissions.
+/// Contains updated admin user data with avatar.
 /// </summary>
-public record AdminUpdateAvatarAuthData(
-    UserEntity User,
-    IReadOnlyCollection<RoleDto> Roles,
-    IReadOnlyCollection<PermissionDto> Permissions
-);
+public record AdminUpdateAvatarAuthData(UserEntity User);
 
 /// <summary>
 /// Factory for handling admin user avatar update logic.
