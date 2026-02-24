@@ -1,6 +1,6 @@
 using System.Dynamic;
 using _116.Identity.Application.Session.Services;
-using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
+using _116.Identity.Application.Shared.DTOs;
 using ClosedXML.Excel;
 
 namespace _116.Identity.Infrastructure.Services.SessionExport.Strategies;
