@@ -2,6 +2,7 @@ using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Session.Services;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
