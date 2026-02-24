@@ -11,13 +11,9 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfi
 /// Factory implementation for handling user profile update logic.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
-/// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicUpdateProfileAuthFactory(
-    IAuthRepository authRepository,
-    IRoleRepository roleRepository,
-    IIdentityUnitOfWork unitOfWork
-) : IPublicUpdateProfileAuthFactory
+public class PublicUpdateProfileAuthFactory(IAuthRepository authRepository, IIdentityUnitOfWork unitOfWork)
+    : IPublicUpdateProfileAuthFactory
 {
     /// <summary>
     /// Updates a user's profile with new information.
@@ -78,9 +74,7 @@ public class PublicUpdateProfileAuthFactory(
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user!.UserRoles);
-
-        return new PublicUpdateProfileAuthData(User: user, Roles: roles, Permissions: permissions);
+        return new PublicUpdateProfileAuthData(User: user!);
     }
 
     private async Task EnsureEmailUnique(string email, CancellationToken cancellationToken)
