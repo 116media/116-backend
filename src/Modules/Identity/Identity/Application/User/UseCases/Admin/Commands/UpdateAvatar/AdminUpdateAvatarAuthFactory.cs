@@ -9,13 +9,9 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
 /// Factory implementation for handling admin user avatar update logic.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
-/// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminUpdateAvatarAuthFactory(
-    IAuthRepository authRepository,
-    IRoleRepository roleRepository,
-    IIdentityUnitOfWork unitOfWork
-) : IAdminUpdateAvatarAuthFactory
+public class AdminUpdateAvatarAuthFactory(IAuthRepository authRepository, IIdentityUnitOfWork unitOfWork)
+    : IAdminUpdateAvatarAuthFactory
 {
     /// <summary>
     /// Gets and validates admin user for avatar update.
@@ -34,9 +30,7 @@ public class AdminUpdateAvatarAuthFactory(
         authRepository.IsUserAccountActive(user!);
         await authRepository.IsSessionValidAsync(sessionId, cancellationToken);
 
-        var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user!.UserRoles);
-
-        return new AdminUpdateAvatarAuthData(User: user, Roles: roles, Permissions: permissions);
+        return new AdminUpdateAvatarAuthData(User: user!);
     }
 
     /// <summary>
@@ -51,8 +45,6 @@ public class AdminUpdateAvatarAuthFactory(
         user.UpdateAvatar(avatarFileId: avatarFileId, avatarSource: Domain.Enums.EnumAvatarSource.Manual);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user.UserRoles);
-
-        return new AdminUpdateAvatarAuthData(User: user, Roles: roles, Permissions: permissions);
+        return new AdminUpdateAvatarAuthData(User: user);
     }
 }
