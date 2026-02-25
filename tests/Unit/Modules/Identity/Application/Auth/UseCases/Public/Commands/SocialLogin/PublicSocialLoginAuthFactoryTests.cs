@@ -2,7 +2,6 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
@@ -21,7 +20,6 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Comm
 public class PublicSocialLoginAuthFactoryTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
-    private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly PublicSocialLoginAuthFactory _factory;
@@ -29,12 +27,10 @@ public class PublicSocialLoginAuthFactoryTests
     public PublicSocialLoginAuthFactoryTests()
     {
         _authRepositoryMock = new Mock<IAuthRepository>();
-        _roleRepositoryMock = new Mock<IRoleRepository>();
         _fileRepositoryMock = new Mock<IFileRepository>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
         _factory = new PublicSocialLoginAuthFactory(
             _authRepositoryMock.Object,
-            _roleRepositoryMock.Object,
             _fileRepositoryMock.Object,
             _unitOfWorkMock.Object
         );
@@ -52,11 +48,6 @@ public class PublicSocialLoginAuthFactoryTests
         string? avatarUrl = "https://avatar.url/image.jpg";
         UserEntity user = UserFactory.Create(email);
         FileEntity avatarFile = FileFactory.Create();
-        var roles = new List<RoleDto> { new(Guid.NewGuid(), "Visitor", "Visitor role", true, false, null) };
-        var permissions = new List<PermissionDto>
-        {
-            new(Guid.NewGuid(), "profile", "read", "Read profile", true, false, null),
-        };
 
         _authRepositoryMock
             .Setup(x =>
@@ -83,8 +74,6 @@ public class PublicSocialLoginAuthFactoryTests
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        _roleRepositoryMock.Setup(x => x.GetUserRolesAndPermissions(user.UserRoles)).Returns((roles, permissions));
-
         // Act
         PublicSocialLoginAuthData result = await _factory.AuthenticateOrCreateAsync(
             email,
@@ -97,8 +86,6 @@ public class PublicSocialLoginAuthFactoryTests
         // Assert
         result.Should().NotBeNull();
         result.User.Should().Be(user);
-        result.Roles.Should().BeSameAs(roles);
-        result.Permissions.Should().BeSameAs(permissions);
     }
 
     [Fact]
@@ -110,11 +97,6 @@ public class PublicSocialLoginAuthFactoryTests
         string provider = "Google";
         string? avatarUrl = null;
         UserEntity user = UserFactory.Create(email);
-        var roles = new List<RoleDto> { new(Guid.NewGuid(), "Visitor", "Visitor role", true, false, null) };
-        var permissions = new List<PermissionDto>
-        {
-            new(Guid.NewGuid(), "profile", "read", "Read profile", true, false, null),
-        };
 
         _authRepositoryMock
             .Setup(x =>
@@ -140,8 +122,6 @@ public class PublicSocialLoginAuthFactoryTests
             .ReturnsAsync((FileEntity?)null);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _roleRepositoryMock.Setup(x => x.GetUserRolesAndPermissions(user.UserRoles)).Returns((roles, permissions));
 
         // Act
         PublicSocialLoginAuthData result = await _factory.AuthenticateOrCreateAsync(
@@ -202,10 +182,6 @@ public class PublicSocialLoginAuthFactoryTests
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
         // Act
         await _factory.AuthenticateOrCreateAsync(email, userName, provider, avatarUrl, CancellationToken.None);
 
@@ -256,10 +232,6 @@ public class PublicSocialLoginAuthFactoryTests
             .ReturnsAsync((FileEntity?)null);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
 
         // Act
         await _factory.AuthenticateOrCreateAsync(email, userName, provider, avatarUrl, CancellationToken.None);
@@ -313,10 +285,6 @@ public class PublicSocialLoginAuthFactoryTests
             .ReturnsAsync((FileEntity?)null);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
 
         // Act
         await _factory.AuthenticateOrCreateAsync(email, userName, provider, avatarUrl, CancellationToken.None);
@@ -372,10 +340,6 @@ public class PublicSocialLoginAuthFactoryTests
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
         // Act
         await _factory.AuthenticateOrCreateAsync(email, userName, provider, avatarUrl, CancellationToken.None);
 
@@ -419,61 +383,11 @@ public class PublicSocialLoginAuthFactoryTests
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
         // Act
         await _factory.AuthenticateOrCreateAsync(email, userName, provider, avatarUrl, CancellationToken.None);
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task AuthenticateOrCreateAsync_ShouldGetRolesAndPermissions()
-    {
-        // Arrange
-        string email = "user@example.com";
-        string userName = "socialuser";
-        string provider = "Google";
-        string? avatarUrl = null;
-        UserEntity user = UserFactory.Create(email);
-
-        _authRepositoryMock
-            .Setup(x =>
-                x.GetOrCreateExternalUserAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<AuthProvider>(),
-                    It.IsAny<CancellationToken>()
-                )
-            )
-            .ReturnsAsync(user);
-
-        _fileRepositoryMock
-            .Setup(x =>
-                x.UpdateAvatarUrlFromSourceAsync(
-                    It.IsAny<Guid?>(),
-                    It.IsAny<string?>(),
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<CancellationToken>()
-                )
-            )
-            .ReturnsAsync((FileEntity?)null);
-
-        _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(user.UserRoles))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
-        // Act
-        await _factory.AuthenticateOrCreateAsync(email, userName, provider, avatarUrl, CancellationToken.None);
-
-        // Assert
-        _roleRepositoryMock.Verify(x => x.GetUserRolesAndPermissions(user.UserRoles), Times.Once);
     }
 
     [Fact]
@@ -511,10 +425,6 @@ public class PublicSocialLoginAuthFactoryTests
             .ReturnsAsync((FileEntity?)null);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
-
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
 
         // Act
         await _factory.AuthenticateOrCreateAsync(email, userName, provider, avatarUrl, cancellationToken);
