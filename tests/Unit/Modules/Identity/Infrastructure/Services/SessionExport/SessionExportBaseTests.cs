@@ -1,5 +1,5 @@
 using System.Dynamic;
-using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Services.SessionExport;
 using AwesomeAssertions;
