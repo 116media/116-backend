@@ -1,9 +1,12 @@
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
+using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Entities;
 using _116.Tests.Fixtures.Factories;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
+using Mapster;
+using MapsterMapper;
 using Moq;
 using Xunit;
 
@@ -19,8 +22,11 @@ public class AdminExportSessionDataHandlerTests
 
     public AdminExportSessionDataHandlerTests()
     {
+        TypeAdapterConfig config = MappingRegistration.CreateConfiguration();
+        IMapper mapper = new Mapper(config);
+
         _sessionRepositoryMock = MockSessionRepository.Create();
-        _handler = new AdminExportSessionDataHandler(_sessionRepositoryMock.Object);
+        _handler = new AdminExportSessionDataHandler(_sessionRepositoryMock.Object, mapper);
     }
 
     #region Success Cases
@@ -151,7 +157,7 @@ public class AdminExportSessionDataHandlerTests
     public async Task Handle_ShouldMapSessionsToExportDtos()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         List<SessionEntity> sessions = SessionFactory.CreateMany(userId, 2);
 
         AdminExportSessionDataQuery query = new();
