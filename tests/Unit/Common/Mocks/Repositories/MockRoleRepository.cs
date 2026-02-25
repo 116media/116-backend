@@ -1,4 +1,3 @@
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
@@ -148,36 +147,6 @@ public static class MockRoleRepository
                 )
             )
             .ReturnsAsync((new List<RoleEntity>(), 0));
-        return mock;
-    }
-
-    /// <summary>
-    /// Sets up GetUserRoles to return the specified roles.
-    /// </summary>
-    /// <param name="mock">The mock instance.</param>
-    /// <param name="roles">The role DTOs to return.</param>
-    /// <returns>The mock instance for chaining.</returns>
-    public static Mock<IRoleRepository> SetupGetUserRoles(
-        this Mock<IRoleRepository> mock,
-        IReadOnlyCollection<RoleDto> roles
-    )
-    {
-        mock.Setup(x => x.GetUserRoles(It.IsAny<ICollection<UserRoleEntity>>())).Returns(roles);
-        return mock;
-    }
-
-    /// <summary>
-    /// Sets up GetUserPermissions to return the specified permissions.
-    /// </summary>
-    /// <param name="mock">The mock instance.</param>
-    /// <param name="permissions">The permission DTOs to return.</param>
-    /// <returns>The mock instance for chaining.</returns>
-    public static Mock<IRoleRepository> SetupGetUserPermissions(
-        this Mock<IRoleRepository> mock,
-        IReadOnlyCollection<PermissionDto> permissions
-    )
-    {
-        mock.Setup(x => x.GetUserPermissions(It.IsAny<ICollection<UserRoleEntity>>())).Returns(permissions);
         return mock;
     }
 
