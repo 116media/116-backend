@@ -1,11 +1,9 @@
 using _116.Core.Application.Shared.Repositories;
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile.Contracts;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories;
-using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -40,8 +38,6 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
         string newUserName = "newadminuser";
-        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(description: "Admin role")];
-        List<PermissionDto> permissions = [];
 
         AdminUpdateOwnProfileCommand command = new(
             UserId: user.Id,
@@ -53,7 +49,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryDialCode: null
         );
 
-        AdminUpdateProfileAuthData authData = new(user, roles, permissions);
+        AdminUpdateProfileAuthData authData = new(User: user);
 
         _authFactoryMock
             .Setup(x =>
@@ -86,8 +82,6 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
         string newUserName = "newadminuser";
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         AdminUpdateOwnProfileCommand command = new(
             UserId: user.Id,
@@ -99,7 +93,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryDialCode: null
         );
 
-        AdminUpdateProfileAuthData authData = new(user, roles, permissions);
+        AdminUpdateProfileAuthData authData = new(User: user);
 
         _authFactoryMock
             .Setup(x =>
@@ -143,8 +137,6 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         AdminUpdateOwnProfileCommand command = new(
             UserId: user.Id,
@@ -156,7 +148,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryDialCode: null
         );
 
-        AdminUpdateProfileAuthData authData = new(user, roles, permissions);
+        AdminUpdateProfileAuthData authData = new(User: user);
 
         _authFactoryMock
             .Setup(x =>
@@ -195,8 +187,6 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
         string countryIsoCode = "US";
         string countryDialCode = "+1";
         string partialPhoneNumber = "5551234567";
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         AdminUpdateOwnProfileCommand command = new(
             UserId: user.Id,
@@ -208,7 +198,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryDialCode: countryDialCode
         );
 
-        AdminUpdateProfileAuthData authData = new(user, roles, permissions);
+        AdminUpdateProfileAuthData authData = new(User: user);
 
         _authFactoryMock
             .Setup(x =>
@@ -336,8 +326,6 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
         using CancellationTokenSource cts = new();
 
         AdminUpdateOwnProfileCommand command = new(
@@ -350,7 +338,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryDialCode: null
         );
 
-        AdminUpdateProfileAuthData authData = new(user, roles, permissions);
+        AdminUpdateProfileAuthData authData = new(User: user);
 
         _authFactoryMock
             .Setup(x =>
@@ -384,8 +372,6 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
         using CancellationTokenSource cts = new();
 
         AdminUpdateOwnProfileCommand command = new(
@@ -398,7 +384,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryDialCode: null
         );
 
-        AdminUpdateProfileAuthData authData = new(user, roles, permissions);
+        AdminUpdateProfileAuthData authData = new(User: user);
 
         _authFactoryMock
             .Setup(x =>
