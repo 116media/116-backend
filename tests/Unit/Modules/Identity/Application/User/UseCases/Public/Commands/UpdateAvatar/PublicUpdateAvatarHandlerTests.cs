@@ -1,6 +1,5 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar.Contracts;
 using _116.Identity.Domain.Entities;
@@ -42,13 +41,11 @@ public class PublicUpdateAvatarHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
         Guid newAvatarFileId = Guid.NewGuid();
-        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(name: "Visitor", description: "Visitor role")];
-        List<PermissionDto> permissions = [];
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
         FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
 
         PublicUpdateAvatarCommand command = new(UserId: user.Id, SessionId: sessionId, AvatarFile: avatarFile);
-        PublicUpdateAvatarAuthData authData = new(user, roles, permissions);
+        PublicUpdateAvatarAuthData authData = new(User: user);
 
         _authFactoryMock
             .Setup(x => x.GetUserForAvatarUpdateAsync(user.Id, sessionId, It.IsAny<CancellationToken>()))
@@ -85,13 +82,11 @@ public class PublicUpdateAvatarHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
         Guid newAvatarFileId = Guid.NewGuid();
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
         FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
 
         PublicUpdateAvatarCommand command = new(UserId: user.Id, SessionId: sessionId, AvatarFile: avatarFile);
-        PublicUpdateAvatarAuthData authData = new(user, roles, permissions);
+        PublicUpdateAvatarAuthData authData = new(User: user);
 
         _authFactoryMock
             .Setup(x => x.GetUserForAvatarUpdateAsync(user.Id, sessionId, It.IsAny<CancellationToken>()))
@@ -130,13 +125,11 @@ public class PublicUpdateAvatarHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
         Guid newAvatarFileId = Guid.NewGuid();
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
         FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
 
         PublicUpdateAvatarCommand command = new(UserId: user.Id, SessionId: sessionId, AvatarFile: avatarFile);
-        PublicUpdateAvatarAuthData authData = new(user, roles, permissions);
+        PublicUpdateAvatarAuthData authData = new(User: user);
 
         _authFactoryMock
             .Setup(x => x.GetUserForAvatarUpdateAsync(user.Id, sessionId, It.IsAny<CancellationToken>()))
@@ -183,13 +176,11 @@ public class PublicUpdateAvatarHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
         Guid newAvatarFileId = Guid.NewGuid();
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
         FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
 
         PublicUpdateAvatarCommand command = new(UserId: user.Id, SessionId: sessionId, AvatarFile: avatarFile);
-        PublicUpdateAvatarAuthData authData = new(user, roles, permissions);
+        PublicUpdateAvatarAuthData authData = new(User: user);
 
         _authFactoryMock
             .Setup(x => x.GetUserForAvatarUpdateAsync(user.Id, sessionId, It.IsAny<CancellationToken>()))
@@ -296,14 +287,12 @@ public class PublicUpdateAvatarHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
         Guid newAvatarFileId = Guid.NewGuid();
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
         FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
         using CancellationTokenSource cts = new();
 
         PublicUpdateAvatarCommand command = new(UserId: user.Id, SessionId: sessionId, AvatarFile: avatarFile);
-        PublicUpdateAvatarAuthData authData = new(user, roles, permissions);
+        PublicUpdateAvatarAuthData authData = new(User: user);
 
         _authFactoryMock
             .Setup(x => x.GetUserForAvatarUpdateAsync(user.Id, sessionId, It.IsAny<CancellationToken>()))
