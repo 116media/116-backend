@@ -1,4 +1,3 @@
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
@@ -18,20 +17,14 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.Admin.UpdateAvatar;
 public class AdminUpdateAvatarAuthFactoryTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
-    private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly AdminUpdateAvatarAuthFactory _factory;
 
     public AdminUpdateAvatarAuthFactoryTests()
     {
         _authRepositoryMock = new Mock<IAuthRepository>();
-        _roleRepositoryMock = new Mock<IRoleRepository>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
-        _factory = new AdminUpdateAvatarAuthFactory(
-            _authRepositoryMock.Object,
-            _roleRepositoryMock.Object,
-            _unitOfWorkMock.Object
-        );
+        _factory = new AdminUpdateAvatarAuthFactory(_authRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     #region GetUserForAvatarUpdateAsync Tests
@@ -43,11 +36,6 @@ public class AdminUpdateAvatarAuthFactoryTests
         Guid userId = Guid.NewGuid();
         Guid sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
-        var roles = new List<RoleDto> { new(Guid.NewGuid(), "Admin", "Admin role", true, false, null) };
-        var permissions = new List<PermissionDto>
-        {
-            new(Guid.NewGuid(), "users", "read", "Read users", true, false, null),
-        };
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
@@ -59,8 +47,6 @@ public class AdminUpdateAvatarAuthFactoryTests
             .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        _roleRepositoryMock.Setup(x => x.GetUserRolesAndPermissions(user.UserRoles)).Returns((roles, permissions));
-
         // Act
         AdminUpdateAvatarAuthData result = await _factory.GetUserForAvatarUpdateAsync(
             userId,
@@ -71,8 +57,6 @@ public class AdminUpdateAvatarAuthFactoryTests
         // Assert
         result.Should().NotBeNull();
         result.User.Should().Be(user);
-        result.Roles.Should().BeSameAs(roles);
-        result.Permissions.Should().BeSameAs(permissions);
     }
 
     [Fact]
@@ -92,10 +76,6 @@ public class AdminUpdateAvatarAuthFactoryTests
         _authRepositoryMock
             .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
-
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
 
         // Act
         await _factory.GetUserForAvatarUpdateAsync(userId, sessionId, CancellationToken.None);
@@ -122,10 +102,6 @@ public class AdminUpdateAvatarAuthFactoryTests
             .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
         // Act
         await _factory.GetUserForAvatarUpdateAsync(userId, sessionId, CancellationToken.None);
 
@@ -150,10 +126,6 @@ public class AdminUpdateAvatarAuthFactoryTests
 
         _authRepositoryMock.Setup(x => x.IsSessionValidAsync(sessionId, cancellationToken)).ReturnsAsync(true);
 
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
         // Act
         await _factory.GetUserForAvatarUpdateAsync(userId, sessionId, cancellationToken);
 
@@ -176,15 +148,8 @@ public class AdminUpdateAvatarAuthFactoryTests
         Guid userId = Guid.NewGuid();
         Guid avatarFileId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
-        var roles = new List<RoleDto> { new(Guid.NewGuid(), "Admin", "Admin role", true, false, null) };
-        var permissions = new List<PermissionDto>
-        {
-            new(Guid.NewGuid(), "users", "read", "Read users", true, false, null),
-        };
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _roleRepositoryMock.Setup(x => x.GetUserRolesAndPermissions(user.UserRoles)).Returns((roles, permissions));
 
         // Act
         AdminUpdateAvatarAuthData result = await _factory.UpdateAvatarAsync(user, avatarFileId, CancellationToken.None);
@@ -192,8 +157,6 @@ public class AdminUpdateAvatarAuthFactoryTests
         // Assert
         result.Should().NotBeNull();
         result.User.Should().Be(user);
-        result.Roles.Should().BeSameAs(roles);
-        result.Permissions.Should().BeSameAs(permissions);
     }
 
     [Fact]
@@ -204,10 +167,6 @@ public class AdminUpdateAvatarAuthFactoryTests
         UserEntity user = UserFactory.Create();
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
 
         // Act
         await _factory.UpdateAvatarAsync(user, avatarFileId, CancellationToken.None);
@@ -226,10 +185,6 @@ public class AdminUpdateAvatarAuthFactoryTests
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
         // Act
         await _factory.UpdateAvatarAsync(user, avatarFileId, CancellationToken.None);
 
@@ -247,35 +202,11 @@ public class AdminUpdateAvatarAuthFactoryTests
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
 
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
         // Act
         await _factory.UpdateAvatarAsync(user, avatarFileId, cancellationToken);
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(cancellationToken), Times.Once);
-    }
-
-    [Fact]
-    public async Task UpdateAvatarAsync_ShouldGetRolesAndPermissions()
-    {
-        // Arrange
-        var avatarFileId = Guid.NewGuid();
-        UserEntity user = UserFactory.Create();
-
-        _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(user.UserRoles))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
-        // Act
-        await _factory.UpdateAvatarAsync(user, avatarFileId, CancellationToken.None);
-
-        // Assert
-        _roleRepositoryMock.Verify(x => x.GetUserRolesAndPermissions(user.UserRoles), Times.Once);
     }
 
     #endregion
