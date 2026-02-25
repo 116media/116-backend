@@ -27,12 +27,8 @@ public class SuperAdminSeedingStrategyTests
 
         _passwordServiceMock.Setup(x => x.Hash(It.IsAny<string>())).Returns("hashedPassword");
 
-        // Setup default password environment variable
-        string? originalPassword = Environment.GetEnvironmentVariable("DEFAULT_USER_PASSWORD");
-        if (string.IsNullOrWhiteSpace(originalPassword))
-        {
-            Environment.SetEnvironmentVariable("DEFAULT_USER_PASSWORD", "TestPassword123!");
-        }
+        // Ensure password env variable is always set for tests
+        Environment.SetEnvironmentVariable("DEFAULT_USER_PASSWORD", "TestPassword123!");
     }
 
     private DbContextOptions<IdentityDbContext> CreateOptions()
