@@ -1,13 +1,11 @@
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts;
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories;
-using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
@@ -23,20 +21,14 @@ public class AdminLoginAuthFactoryTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
-    private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly AdminLoginAuthFactory _factory;
 
     public AdminLoginAuthFactoryTests()
     {
         _authRepositoryMock = MockAuthRepository.Create();
         _passwordServiceMock = MockPasswordService.Create();
-        _roleRepositoryMock = MockRoleRepository.Create();
 
-        _factory = new AdminLoginAuthFactory(
-            _authRepositoryMock.Object,
-            _passwordServiceMock.Object,
-            _roleRepositoryMock.Object
-        );
+        _factory = new AdminLoginAuthFactory(_authRepositoryMock.Object, _passwordServiceMock.Object);
     }
 
     #region Success Cases
@@ -48,15 +40,10 @@ public class AdminLoginAuthFactoryTests
         string email = "admin@example.com";
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateAdmin();
-        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(description: "Admin role")];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupGetUserWithRolesByEmail(user);
         _passwordServiceMock.SetupVerifyReturnsTrue();
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
 
         // Act
         AdminLoginAuthData result = await _factory.AuthenticateAsync(email, password, CancellationToken.None);
@@ -65,7 +52,6 @@ public class AdminLoginAuthFactoryTests
         result.Should().NotBeNull();
         result.User.Should().NotBeNull();
         result.User.Id.Should().Be(user.Id);
-        result.Roles.Should().ContainSingle();
     }
 
     [Fact]
@@ -75,15 +61,10 @@ public class AdminLoginAuthFactoryTests
         string email = "admin@example.com";
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateAdmin();
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupGetUserWithRolesByEmail(user);
         _passwordServiceMock.SetupVerifyReturnsTrue();
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
 
         // Act
         await _factory.AuthenticateAsync(email, password, CancellationToken.None);
@@ -106,15 +87,10 @@ public class AdminLoginAuthFactoryTests
         string email = "admin@example.com";
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateAdmin();
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupGetUserWithRolesByEmail(user);
         _passwordServiceMock.SetupVerifyReturnsTrue();
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
 
         // Act
         await _factory.AuthenticateAsync(email, password, CancellationToken.None);
@@ -130,50 +106,16 @@ public class AdminLoginAuthFactoryTests
         string email = "admin@example.com";
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateAdmin();
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupGetUserWithRolesByEmail(user);
         _passwordServiceMock.SetupVerifyReturnsTrue();
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
 
         // Act
         await _factory.AuthenticateAsync(email, password, CancellationToken.None);
 
         // Assert
         _authRepositoryMock.Verify(x => x.IsUserAdmin(It.IsAny<UserEntity>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task AuthenticateAsync_ShouldExtractRolesAndPermissions()
-    {
-        // Arrange
-        string email = "admin@example.com";
-        string password = "ValidPassword123!";
-        UserEntity user = UserFactory.CreateAdmin();
-        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(description: "Admin role")];
-        List<PermissionDto> permissions = [AuthTestHelpers.CreatePermissionDto()];
-
-        _authRepositoryMock.SetupGetUserWithRolesByEmail(user);
-        _passwordServiceMock.SetupVerifyReturnsTrue();
-        _authRepositoryMock.SetupIsUserAdminReturnsTrue();
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
-
-        // Act
-        AdminLoginAuthData result = await _factory.AuthenticateAsync(email, password, CancellationToken.None);
-
-        // Assert
-        result.Roles.Should().ContainSingle();
-        result.Permissions.Should().ContainSingle();
-        _roleRepositoryMock.Verify(
-            x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()),
-            Times.Once
-        );
     }
 
     #endregion
@@ -269,16 +211,11 @@ public class AdminLoginAuthFactoryTests
         string email = "admin@example.com";
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateAdmin();
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
         using CancellationTokenSource cts = new();
 
         _authRepositoryMock.SetupGetUserWithRolesByEmail(user);
         _passwordServiceMock.SetupVerifyReturnsTrue();
         _authRepositoryMock.SetupIsUserAdminReturnsTrue();
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
 
         // Act
         await _factory.AuthenticateAsync(email, password, cts.Token);
