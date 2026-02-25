@@ -1,4 +1,3 @@
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
@@ -18,20 +17,14 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.Public.UpdateOwnProf
 public class PublicUpdateProfileAuthFactoryTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
-    private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly PublicUpdateProfileAuthFactory _factory;
 
     public PublicUpdateProfileAuthFactoryTests()
     {
         _authRepositoryMock = new Mock<IAuthRepository>();
-        _roleRepositoryMock = new Mock<IRoleRepository>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
-        _factory = new PublicUpdateProfileAuthFactory(
-            _authRepositoryMock.Object,
-            _roleRepositoryMock.Object,
-            _unitOfWorkMock.Object
-        );
+        _factory = new PublicUpdateProfileAuthFactory(_authRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     #region UpdateProfileAsync Tests
@@ -50,11 +43,6 @@ public class PublicUpdateProfileAuthFactoryTests
         string partialPhoneNumber = "788123456";
 
         UserEntity user = UserFactory.CreateWithId(userId);
-        var roles = new List<RoleDto> { new(Guid.NewGuid(), "Visitor", "Visitor role", true, false, null) };
-        var permissions = new List<PermissionDto>
-        {
-            new(Guid.NewGuid(), "profile", "update", "Update profile", true, false, null),
-        };
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
@@ -82,8 +70,6 @@ public class PublicUpdateProfileAuthFactoryTests
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        _roleRepositoryMock.Setup(x => x.GetUserRolesAndPermissions(user.UserRoles)).Returns((roles, permissions));
-
         // Act
         PublicUpdateProfileAuthData result = await _factory.UpdateProfileAsync(
             userId,
@@ -100,8 +86,6 @@ public class PublicUpdateProfileAuthFactoryTests
         // Assert
         result.Should().NotBeNull();
         result.User.Should().Be(user);
-        result.Roles.Should().BeSameAs(roles);
-        result.Permissions.Should().BeSameAs(permissions);
     }
 
     [Fact]
@@ -125,10 +109,6 @@ public class PublicUpdateProfileAuthFactoryTests
             .ReturnsAsync(true);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
 
         // Act
         await _factory.UpdateProfileAsync(
@@ -169,10 +149,6 @@ public class PublicUpdateProfileAuthFactoryTests
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
         // Act
         await _factory.UpdateProfileAsync(
             userId,
@@ -211,10 +187,6 @@ public class PublicUpdateProfileAuthFactoryTests
             .ReturnsAsync(true);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
 
         // Act
         await _factory.UpdateProfileAsync(
@@ -260,10 +232,6 @@ public class PublicUpdateProfileAuthFactoryTests
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
         // Act
         await _factory.UpdateProfileAsync(
             userId,
@@ -307,10 +275,6 @@ public class PublicUpdateProfileAuthFactoryTests
             .ReturnsAsync(true);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
 
         // Act
         await _factory.UpdateProfileAsync(
@@ -360,10 +324,6 @@ public class PublicUpdateProfileAuthFactoryTests
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
         // Act
         await _factory.UpdateProfileAsync(
             userId,
@@ -407,10 +367,6 @@ public class PublicUpdateProfileAuthFactoryTests
             .ReturnsAsync(true);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
 
         // Act
         await _factory.UpdateProfileAsync(
@@ -461,10 +417,6 @@ public class PublicUpdateProfileAuthFactoryTests
             .ReturnsAsync((UserEntity?)null);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
 
         // Act
         await _factory.UpdateProfileAsync(
@@ -517,10 +469,6 @@ public class PublicUpdateProfileAuthFactoryTests
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
         // Act & Assert (should not throw)
         await _factory.UpdateProfileAsync(
             userId,
@@ -557,10 +505,6 @@ public class PublicUpdateProfileAuthFactoryTests
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
         // Act
         await _factory.UpdateProfileAsync(
             userId,
@@ -576,49 +520,6 @@ public class PublicUpdateProfileAuthFactoryTests
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task UpdateProfileAsync_ShouldGetRolesAndPermissions()
-    {
-        // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
-        UserEntity user = UserFactory.CreateWithId(userId);
-
-        _authRepositoryMock
-            .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
-
-        _authRepositoryMock.Setup(x => x.IsUserAccountActive(user));
-
-        _authRepositoryMock.Setup(x => x.IsUserAccountVerified(user));
-
-        _authRepositoryMock
-            .Setup(x => x.IsSessionValidAsync(sessionId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
-
-        _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(user.UserRoles))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
-        // Act
-        await _factory.UpdateProfileAsync(
-            userId,
-            sessionId,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            CancellationToken.None
-        );
-
-        // Assert
-        _roleRepositoryMock.Verify(x => x.GetUserRolesAndPermissions(user.UserRoles), Times.Once);
     }
 
     [Fact]
@@ -641,10 +542,6 @@ public class PublicUpdateProfileAuthFactoryTests
         _authRepositoryMock.Setup(x => x.IsSessionValidAsync(sessionId, cancellationToken)).ReturnsAsync(true);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
-
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
 
         // Act
         await _factory.UpdateProfileAsync(userId, sessionId, null, null, null, null, null, null, cancellationToken);
