@@ -1,4 +1,4 @@
-using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Services.SessionExport.Strategies;
 using AwesomeAssertions;
@@ -67,7 +67,7 @@ public class XlsxExportStrategyTests
     public void Export_WithMultipleSessions_ShouldReturnValidXlsxBytes()
     {
         // Arrange
-        var sessions = new List<SessionExportDto> { CreateSessionDto("192.168.1.1"), CreateSessionDto("192.168.1.2") };
+        var sessions = new List<SessionExportDto> { CreateSessionDto(), CreateSessionDto("192.168.1.2") };
 
         // Act
         byte[] result = _sut.Export(sessions, null);
