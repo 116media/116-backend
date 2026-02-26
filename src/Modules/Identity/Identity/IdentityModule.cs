@@ -55,7 +55,6 @@ using _116.Identity.Infrastructure.Services;
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Infrastructure;
-using _116.Shared.Infrastructure.Seed;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -153,8 +152,8 @@ public static class IdentityModule
         services.AddScoped<IAdminSignOutSessionFactory, AdminSignOutSessionFactory>();
         services.AddScoped<IPublicRefreshTokenFactory, PublicRefreshTokenFactory>();
 
-        services.AddScoped<IDataSeeder, SuperAdminSeeder>();
-        services.AddScoped<IDataSeeder, VisitorRoleSeeder>();
+        services.AddScoped<SuperAdminSeeder>();
+        services.AddScoped<VisitorRoleSeeder>();
 
         var (secret, issuer, audience, _, _) = AppEnvironment.Jwt();
         services
@@ -205,7 +204,18 @@ public static class IdentityModule
     /// </example>
     public static IApplicationBuilder UseIdentityModule(this IApplicationBuilder app)
     {
-        app.UseModuleDatabase(GetModuleOptions());
+        ModuleOptions<IdentityDbContext> options = GetModuleOptions();
+        app.UseModuleDatabase(options);
+
+        if (!options.EnableSeeding)
+        {
+            return app;
+        }
+
+        using IServiceScope scope = app.ApplicationServices.CreateScope();
+        scope.ServiceProvider.GetRequiredService<SuperAdminSeeder>().SeedAllAsync().GetAwaiter().GetResult();
+        scope.ServiceProvider.GetRequiredService<VisitorRoleSeeder>().SeedAllAsync().GetAwaiter().GetResult();
+
         return app;
     }
 }
