@@ -6,7 +6,6 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 using _116.Content.Infrastructure.Repositories;
 using _116.Shared.Infrastructure;
-using _116.Shared.Infrastructure.Seed;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Builder;
@@ -24,12 +23,15 @@ public static class ContentModule
     /// </summary>
     private static ModuleOptions<ContentDbContext> GetModuleOptions()
     {
+        string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+        bool enableSeeding = !environment.Equals("Testing", StringComparison.OrdinalIgnoreCase);
+
         return new ModuleOptions<ContentDbContext>
         {
             ModuleName = ContentConstants.ModuleName,
             SchemaName = ContentConstants.SchemaName,
             EnableMigrations = true,
-            EnableSeeding = true,
+            EnableSeeding = enableSeeding,
         };
     }
 
@@ -49,7 +51,7 @@ public static class ContentModule
 
         services.AddScoped<IContentUnitOfWork, ContentUnitOfWork>();
         services.AddScoped<ILookupRepository, LookupRepository>();
-        services.AddScoped<IDataSeeder, ContentTypeSeeder>();
+        services.AddScoped<ContentTypeSeeder>();
 
         return services;
     }
@@ -61,7 +63,17 @@ public static class ContentModule
     /// <returns>The updated <see cref="IApplicationBuilder" /> for chaining.</returns>
     public static IApplicationBuilder UseContentModule(this IApplicationBuilder app)
     {
-        app.UseModuleDatabase(GetModuleOptions());
+        ModuleOptions<ContentDbContext> options = GetModuleOptions();
+        app.UseModuleDatabase(options);
+
+        if (!options.EnableSeeding)
+        {
+            return app;
+        }
+
+        using IServiceScope scope = app.ApplicationServices.CreateScope();
+        scope.ServiceProvider.GetRequiredService<ContentTypeSeeder>().SeedAllAsync().GetAwaiter().GetResult();
+
         return app;
     }
 }
