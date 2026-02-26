@@ -53,7 +53,7 @@ public class AdminSignOutFromAllDevicesEndpointV1 : ICarterModule
             .WithName(endpointName: AdminSignOutFromAllDevicesMetaField.AdminSignOutFromAllDevices.Name)
             .WithSummary(summary: AdminSignOutFromAllDevicesMetaField.AdminSignOutFromAllDevices.Summary)
             .WithDescription(description: AdminSignOutFromAllDevicesMetaField.AdminSignOutFromAllDevices.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .Produces<AdminSignOutFromAllDevicesResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
