@@ -65,7 +65,7 @@ public class PublicSetPasswordEndpointV1 : ICarterModule
             .WithName(endpointName: PublicSetPasswordMetaField.SetPassword.Name)
             .WithSummary(summary: PublicSetPasswordMetaField.SetPassword.Summary)
             .WithDescription(description: PublicSetPasswordMetaField.SetPassword.Description)
-            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.PasswordManagement)
             .ProducesValidationProblem()
             .Produces<PublicSetPasswordResponse>()
