@@ -64,7 +64,7 @@ public class AdminSignOutEndpointV1 : ICarterModule
             .WithName(endpointName: AdminSignOutMetaField.AdminSignOut.Name)
             .WithSummary(summary: AdminSignOutMetaField.AdminSignOut.Summary)
             .WithDescription(description: AdminSignOutMetaField.AdminSignOut.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .Produces<AdminSignOutResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
