@@ -63,7 +63,7 @@ public class PublicSignOutEndpointV1 : ICarterModule
             .WithName(endpointName: PublicSignOutMetaField.SignOut.Name)
             .WithSummary(summary: PublicSignOutMetaField.SignOut.Summary)
             .WithDescription(description: PublicSignOutMetaField.SignOut.Description)
-            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .Produces<PublicSignOutResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
