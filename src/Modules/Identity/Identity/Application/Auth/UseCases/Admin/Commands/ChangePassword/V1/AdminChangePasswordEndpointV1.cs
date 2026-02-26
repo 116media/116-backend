@@ -72,7 +72,7 @@ public class AdminChangePasswordEndpointV1 : ICarterModule
             .WithName(endpointName: AdminChangePasswordMetaField.ChangePassword.Name)
             .WithSummary(summary: AdminChangePasswordMetaField.ChangePassword.Summary)
             .WithDescription(description: AdminChangePasswordMetaField.ChangePassword.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.PasswordManagement)
             .ProducesValidationProblem()
             .Produces<AdminChangePasswordResponse>()
