@@ -72,7 +72,7 @@ public class PublicChangePasswordEndpointV1 : ICarterModule
             .WithName(endpointName: PublicChangePasswordMetaField.ChangePassword.Name)
             .WithSummary(summary: PublicChangePasswordMetaField.ChangePassword.Summary)
             .WithDescription(description: PublicChangePasswordMetaField.ChangePassword.Description)
-            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.PasswordManagement)
             .ProducesValidationProblem()
             .Produces<PublicChangePasswordResponse>()
