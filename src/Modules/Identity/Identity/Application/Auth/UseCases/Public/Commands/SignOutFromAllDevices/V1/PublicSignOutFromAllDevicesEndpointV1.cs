@@ -52,7 +52,7 @@ public class PublicSignOutFromAllDevicesEndpointV1 : ICarterModule
             .WithName(endpointName: PublicSignOutFromAllDevicesMetaField.SignOutFromAllDevices.Name)
             .WithSummary(summary: PublicSignOutFromAllDevicesMetaField.SignOutFromAllDevices.Summary)
             .WithDescription(description: PublicSignOutFromAllDevicesMetaField.SignOutFromAllDevices.Description)
-            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .Produces<PublicSignOutFromAllDevicesResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
