@@ -86,7 +86,7 @@ public class AdminUpdateOwnProfileEndpointV1 : ICarterModule
             .WithName(endpointName: AdminUpdateOwnProfileMetaField.UpdateOwnProfile.Name)
             .WithSummary(summary: AdminUpdateOwnProfileMetaField.UpdateOwnProfile.Summary)
             .WithDescription(description: AdminUpdateOwnProfileMetaField.UpdateOwnProfile.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.UserProfile)
             .ProducesValidationProblem()
             .Produces<AdminUpdateOwnProfileResponse>()
