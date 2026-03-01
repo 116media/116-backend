@@ -50,7 +50,7 @@ public class AdminRemoveRoleFromUserEndpointV1 : ICarterModule
             .WithName(endpointName: AdminRemoveRoleFromUserMetaField.AdminRemoveRoleFromUser.Name)
             .WithSummary(summary: AdminRemoveRoleFromUserMetaField.AdminRemoveRoleFromUser.Summary)
             .WithDescription(description: AdminRemoveRoleFromUserMetaField.AdminRemoveRoleFromUser.Description)
-            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminRemoveRoleFromUserResponse>()
