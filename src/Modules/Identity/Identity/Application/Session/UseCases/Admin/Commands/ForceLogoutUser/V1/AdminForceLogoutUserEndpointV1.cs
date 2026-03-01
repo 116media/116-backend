@@ -50,7 +50,7 @@ public class AdminForceLogoutUserEndpointV1 : ICarterModule
             .WithName(endpointName: AdminForceLogoutUserMetaField.AdminForceLogoutUser.Name)
             .WithSummary(summary: AdminForceLogoutUserMetaField.AdminForceLogoutUser.Summary)
             .WithDescription(description: AdminForceLogoutUserMetaField.AdminForceLogoutUser.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
             .Produces<AdminForceLogoutUserResponse>()
