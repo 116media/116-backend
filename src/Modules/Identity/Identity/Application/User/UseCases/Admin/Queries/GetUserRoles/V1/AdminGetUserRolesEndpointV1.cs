@@ -50,7 +50,7 @@ public class AdminGetUserRolesEndpointV1 : ICarterModule
             .WithName(endpointName: AdminGetUserRolesMetaField.AdminGetUserRoles.Name)
             .WithSummary(summary: AdminGetUserRolesMetaField.AdminGetUserRoles.Summary)
             .WithDescription(description: AdminGetUserRolesMetaField.AdminGetUserRoles.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminGetUserRolesResponse>()
