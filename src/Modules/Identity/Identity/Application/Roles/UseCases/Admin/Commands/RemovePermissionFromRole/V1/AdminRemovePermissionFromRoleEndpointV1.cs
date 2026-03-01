@@ -53,7 +53,7 @@ public class AdminRemovePermissionFromRoleEndpointV1 : ICarterModule
             .WithDescription(
                 description: AdminRemovePermissionFromRoleMetaField.AdminRemovePermissionFromRole.Description
             )
-            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminRemovePermissionFromRoleResponse>()
