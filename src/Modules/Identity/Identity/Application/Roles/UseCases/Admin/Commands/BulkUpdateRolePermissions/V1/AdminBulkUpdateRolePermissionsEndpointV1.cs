@@ -62,7 +62,7 @@ public class AdminBulkUpdateRolePermissionsEndpointV1 : ICarterModule
             .WithDescription(
                 description: AdminBulkUpdateRolePermissionsMetaField.AdminBulkUpdateRolePermissions.Description
             )
-            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminBulkUpdateRolePermissionsResponse>()
