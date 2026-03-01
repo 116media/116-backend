@@ -55,7 +55,7 @@ public class PublicGetOwnProfileEndpointV1 : ICarterModule
             .WithName(endpointName: PublicGetOwnProfileMetaField.GetOwnProfile.Name)
             .WithSummary(summary: PublicGetOwnProfileMetaField.GetOwnProfile.Summary)
             .WithDescription(description: PublicGetOwnProfileMetaField.GetOwnProfile.Description)
-            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.UserProfile)
             .Produces<PublicGetOwnProfileResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
