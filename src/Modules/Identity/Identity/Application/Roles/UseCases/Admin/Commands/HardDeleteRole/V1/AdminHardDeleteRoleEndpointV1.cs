@@ -50,7 +50,7 @@ public class AdminHardDeleteRoleEndpointV1 : ICarterModule
             .WithName(endpointName: AdminHardDeleteRoleMetaField.AdminHardDeleteRole.Name)
             .WithSummary(summary: AdminHardDeleteRoleMetaField.AdminHardDeleteRole.Summary)
             .WithDescription(description: AdminHardDeleteRoleMetaField.AdminHardDeleteRole.Description)
-            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminHardDeleteRoleResponse>()
