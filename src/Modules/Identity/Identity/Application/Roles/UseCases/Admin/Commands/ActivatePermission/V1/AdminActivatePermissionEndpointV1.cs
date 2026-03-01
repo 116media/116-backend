@@ -51,7 +51,7 @@ public class AdminActivatePermissionEndpointV1 : ICarterModule
             .WithName(endpointName: AdminActivatePermissionMetaField.AdminActivatePermission.Name)
             .WithSummary(summary: AdminActivatePermissionMetaField.AdminActivatePermission.Summary)
             .WithDescription(description: AdminActivatePermissionMetaField.AdminActivatePermission.Description)
-            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminActivatePermissionResponse>()
