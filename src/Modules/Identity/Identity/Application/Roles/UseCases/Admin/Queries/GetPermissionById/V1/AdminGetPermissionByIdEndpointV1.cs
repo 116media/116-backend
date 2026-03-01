@@ -50,7 +50,7 @@ public class AdminGetPermissionByIdEndpointV1 : ICarterModule
             .WithName(endpointName: AdminGetPermissionByIdMetaField.AdminGetPermissionById.Name)
             .WithSummary(summary: AdminGetPermissionByIdMetaField.AdminGetPermissionById.Summary)
             .WithDescription(description: AdminGetPermissionByIdMetaField.AdminGetPermissionById.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminGetPermissionByIdResponse>()
