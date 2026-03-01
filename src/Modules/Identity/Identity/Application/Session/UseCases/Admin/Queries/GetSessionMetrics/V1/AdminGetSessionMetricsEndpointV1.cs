@@ -68,7 +68,7 @@ public class AdminGetSessionMetricsEndpointV1 : ICarterModule
             .WithName(endpointName: AdminGetSessionMetricsMetaField.AdminGetSessionMetrics.Name)
             .WithSummary(summary: AdminGetSessionMetricsMetaField.AdminGetSessionMetrics.Summary)
             .WithDescription(description: AdminGetSessionMetricsMetaField.AdminGetSessionMetrics.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.AdminMetrics)
             .Produces<AdminGetSessionMetricsResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
