@@ -65,7 +65,7 @@ public class PublicUpdateAvatarEndpointV1 : ICarterModule
             .WithName(endpointName: PublicUpdateAvatarMetaField.UpdateAvatar.Name)
             .WithSummary(summary: PublicUpdateAvatarMetaField.UpdateAvatar.Summary)
             .WithDescription(description: PublicUpdateAvatarMetaField.UpdateAvatar.Description)
-            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.FileUpload)
             .DisableAntiforgery()
             .ProducesValidationProblem()
