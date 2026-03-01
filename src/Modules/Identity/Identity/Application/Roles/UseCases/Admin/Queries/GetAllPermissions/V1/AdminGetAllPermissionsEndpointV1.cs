@@ -66,7 +66,7 @@ public class AdminGetAllPermissionsEndpointV1 : ICarterModule
             .WithName(endpointName: AdminGetAllPermissionsMetaField.AdminGetAllPermissions.Name)
             .WithSummary(summary: AdminGetAllPermissionsMetaField.AdminGetAllPermissions.Summary)
             .WithDescription(description: AdminGetAllPermissionsMetaField.AdminGetAllPermissions.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminGetAllPermissionsResponse>()
