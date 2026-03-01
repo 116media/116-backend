@@ -51,7 +51,7 @@ public class AdminActivateRoleEndpointV1 : ICarterModule
             .WithName(endpointName: AdminActivateRoleMetaField.AdminActivateRole.Name)
             .WithSummary(summary: AdminActivateRoleMetaField.AdminActivateRole.Summary)
             .WithDescription(description: AdminActivateRoleMetaField.AdminActivateRole.Description)
-            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminActivateRoleResponse>()
