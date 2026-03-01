@@ -51,7 +51,7 @@ public class AdminGetRoleByIdEndpointV1 : ICarterModule
             .WithName(endpointName: AdminGetRoleByIdMetaField.AdminGetRoleById.Name)
             .WithSummary(summary: AdminGetRoleByIdMetaField.AdminGetRoleById.Summary)
             .WithDescription(description: AdminGetRoleByIdMetaField.AdminGetRoleById.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminGetRoleByIdResponse>()
