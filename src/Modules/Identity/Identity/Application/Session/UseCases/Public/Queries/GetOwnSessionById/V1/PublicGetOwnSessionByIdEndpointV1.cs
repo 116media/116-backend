@@ -54,7 +54,7 @@ public class PublicGetOwnSessionByIdEndpointV1 : ICarterModule
             .WithName(endpointName: PublicGetOwnSessionByIdMetaField.PublicGetOwnSessionById.Name)
             .WithSummary(summary: PublicGetOwnSessionByIdMetaField.PublicGetOwnSessionById.Summary)
             .WithDescription(description: PublicGetOwnSessionByIdMetaField.PublicGetOwnSessionById.Description)
-            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
             .Produces<PublicGetOwnSessionByIdResponse>()
