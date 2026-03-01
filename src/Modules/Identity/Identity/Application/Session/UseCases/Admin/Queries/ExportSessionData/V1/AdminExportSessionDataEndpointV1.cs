@@ -69,7 +69,7 @@ public class AdminExportSessionDataEndpointV1 : ICarterModule
             .WithName(endpointName: AdminExportSessionDataMetaField.AdminExportSessionData.Name)
             .WithSummary(summary: AdminExportSessionDataMetaField.AdminExportSessionData.Summary)
             .WithDescription(description: AdminExportSessionDataMetaField.AdminExportSessionData.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.DataExport)
             .ProducesValidationProblem()
             .Produces<AdminExportSessionDataResponse>()
