@@ -64,7 +64,7 @@ public class AdminUpdateAvatarEndpointV1 : ICarterModule
             .WithName(endpointName: AdminUpdateAvatarMetaField.UpdateAvatar.Name)
             .WithSummary(summary: AdminUpdateAvatarMetaField.UpdateAvatar.Summary)
             .WithDescription(description: AdminUpdateAvatarMetaField.UpdateAvatar.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.FileUpload)
             .DisableAntiforgery()
             .ProducesValidationProblem()
