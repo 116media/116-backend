@@ -60,7 +60,7 @@ public class AdminAssignPermissionToRoleEndpointV1 : ICarterModule
             .WithName(endpointName: AdminAssignPermissionToRoleMetaField.AdminAssignPermissionToRole.Name)
             .WithSummary(summary: AdminAssignPermissionToRoleMetaField.AdminAssignPermissionToRole.Summary)
             .WithDescription(description: AdminAssignPermissionToRoleMetaField.AdminAssignPermissionToRole.Description)
-            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminAssignPermissionToRoleResponse>()
