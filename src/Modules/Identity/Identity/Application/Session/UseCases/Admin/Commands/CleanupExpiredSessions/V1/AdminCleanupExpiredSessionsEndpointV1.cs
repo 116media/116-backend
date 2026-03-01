@@ -49,7 +49,7 @@ public class AdminCleanupExpiredSessionsEndpointV1 : ICarterModule
             .WithName(endpointName: AdminCleanupExpiredSessionsMetaField.AdminCleanupExpiredSessions.Name)
             .WithSummary(summary: AdminCleanupExpiredSessionsMetaField.AdminCleanupExpiredSessions.Summary)
             .WithDescription(description: AdminCleanupExpiredSessionsMetaField.AdminCleanupExpiredSessions.Description)
-            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
             .Produces<AdminCleanupExpiredSessionsResponse>()
