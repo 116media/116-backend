@@ -60,7 +60,7 @@ public class PublicGetOwnSessionsEndpointV1 : ICarterModule
             .WithName(endpointName: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Name)
             .WithSummary(summary: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Summary)
             .WithDescription(description: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Description)
-            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .Produces<PublicGetOwnSessionsResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
