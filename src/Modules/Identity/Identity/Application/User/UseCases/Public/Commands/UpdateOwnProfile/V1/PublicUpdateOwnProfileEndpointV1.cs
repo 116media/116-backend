@@ -89,7 +89,7 @@ public class PublicUpdateOwnProfileEndpointV1 : ICarterModule
             .WithName(endpointName: PublicUpdateOwnProfileMetaField.UpdateOwnProfile.Name)
             .WithSummary(summary: PublicUpdateOwnProfileMetaField.UpdateOwnProfile.Summary)
             .WithDescription(description: PublicUpdateOwnProfileMetaField.UpdateOwnProfile.Description)
-            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.UserProfile)
             .ProducesValidationProblem()
             .Produces<PublicUpdateOwnProfileResponse>()
