@@ -70,7 +70,7 @@ public class AdminGetAllSessionsEndpointV1 : ICarterModule
             .WithName(endpointName: AdminGetAllSessionsMetaField.AdminGetAllSessions.Name)
             .WithSummary(summary: AdminGetAllSessionsMetaField.AdminGetAllSessions.Summary)
             .WithDescription(description: AdminGetAllSessionsMetaField.AdminGetAllSessions.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
             .Produces<AdminGetAllSessionsResponse>()
