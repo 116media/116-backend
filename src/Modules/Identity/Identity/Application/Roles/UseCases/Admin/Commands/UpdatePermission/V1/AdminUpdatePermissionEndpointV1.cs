@@ -64,7 +64,7 @@ public class AdminUpdatePermissionEndpointV1 : ICarterModule
             .WithName(endpointName: AdminUpdatePermissionMetaField.AdminUpdatePermission.Name)
             .WithSummary(summary: AdminUpdatePermissionMetaField.AdminUpdatePermission.Summary)
             .WithDescription(description: AdminUpdatePermissionMetaField.AdminUpdatePermission.Description)
-            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminUpdatePermissionResponse>()
