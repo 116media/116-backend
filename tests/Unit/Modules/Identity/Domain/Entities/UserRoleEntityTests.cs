@@ -1,5 +1,4 @@
 using _116.Identity.Domain.Entities;
-using _116.Tests.Fixtures.Builders.Entities;
 using _116.Tests.Fixtures.Factories;
 using AwesomeAssertions;
 using Xunit;
