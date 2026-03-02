@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
-namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.v1;
+namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.V1;
 
 /// <summary>
 /// Request model for public user signup.
