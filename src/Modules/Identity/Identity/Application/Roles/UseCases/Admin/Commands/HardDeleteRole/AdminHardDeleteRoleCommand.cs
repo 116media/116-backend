@@ -11,5 +11,5 @@ public record AdminHardDeleteRoleCommand(Guid RoleId) : ICommand<AdminHardDelete
 /// <summary>
 /// Result of the <see cref="AdminHardDeleteRoleCommand" />.
 /// </summary>
-/// <param name="Success">Indicates whether the role was successfully deleted.</param>
-public record AdminHardDeleteRoleResult(bool Success);
+/// <param name="IsSuccess">Indicates whether the role was successfully deleted.</param>
+public record AdminHardDeleteRoleResult(bool IsSuccess);
