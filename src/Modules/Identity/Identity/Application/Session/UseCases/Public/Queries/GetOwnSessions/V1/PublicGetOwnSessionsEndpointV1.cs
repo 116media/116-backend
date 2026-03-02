@@ -28,14 +28,14 @@ public class PublicGetOwnSessionsEndpointV1 : ICarterModule
 {
     /// <summary>
     /// Configures the get own sessions route within the API pipeline.
-    /// Maps the <c>/api/v1/public/sessions</c> endpoint to handle session retrieval requests.
+    /// Maps the <c>/api/v1/public/me/sessions</c> endpoint to handle session retrieval requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)
-            .MapGroup($"{IdentityConstants.Public}/{SessionRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Public}::{SessionRouteConstants.Endpoint}");
+            .MapGroup($"{IdentityConstants.Public}/{IdentityConstants.Me}/{SessionRouteConstants.Endpoint}")
+            .WithTags($"{IdentityConstants.Public}::{IdentityConstants.Me}::{SessionRouteConstants.Endpoint}");
 
         group
             .MapGet(
