@@ -43,6 +43,6 @@ public class AdminSoftDeleteRoleHandler(IRoleRepository roleRepository, IIdentit
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var roleDto = role.ToRoleDto(mapper);
-        return new AdminSoftDeleteRoleResult(Role: roleDto);
+        return new AdminSoftDeleteRoleResult(Role: roleDto, IsSuccess: true);
     }
 }
