@@ -28,14 +28,14 @@ public class AdminUpdateAvatarEndpointV1 : ICarterModule
 {
     /// <summary>
     /// Configures the admin update avatar route within the API pipeline.
-    /// Maps the <c>/api/v1/admin/user/avatar</c> endpoint to handle admin avatar update requests.
+    /// Maps the <c>/api/v1/admin/me/avatar</c> endpoint to handle admin avatar update requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)
-            .MapGroup($"{IdentityConstants.Admin}/{UserRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Admin}::{UserRouteConstants.Endpoint}");
+            .MapGroup($"{IdentityConstants.Admin}/{IdentityConstants.Me}")
+            .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.Me}");
 
         group
             .MapPatch(
