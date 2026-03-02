@@ -9,7 +9,9 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
 using AwesomeAssertions;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Identity;
@@ -165,7 +167,30 @@ public class IdentityModuleTests
         services.Should().Contain(s => s.ServiceType.Name.Contains("HttpContextAccessor"));
     }
 
-    // Removed UseIdentityModule test - requires full host configuration
+    [Fact]
+    public void UseIdentityModule_WithTestingEnvironment_ShouldReturnAppBuilderEarly()
+    {
+        // Arrange — Testing env sets EnableMigrations=false, EnableSeeding=false so
+        // UseModuleDatabase is a no-op and the method returns app before reaching the seeders.
+        string? previousEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
+
+        try
+        {
+            var appBuilderMock = new Mock<IApplicationBuilder>();
+
+            // Act
+            IApplicationBuilder result = appBuilderMock.Object.UseIdentityModule();
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeSameAs(appBuilderMock.Object);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", previousEnv);
+        }
+    }
 
     [Fact]
     public void AddIdentityModule_ShouldNotThrow()
