@@ -16,7 +16,8 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeleteRole
 /// Response model for successful role soft deletion.
 /// </summary>
 /// <param name="Role">The soft deleted role information.</param>
-public record AdminSoftDeleteRoleResponse(RoleDto Role);
+/// <param name="IsSuccess">Indicates whether the role was successfully soft deleted.</param>
+public record AdminSoftDeleteRoleResponse(RoleDto Role, bool IsSuccess);
 
 /// <summary>
 /// Defines the admin soft delete role endpoint.
@@ -44,7 +45,7 @@ public class AdminSoftDeleteRoleEndpointV1 : ICarterModule
 
                     AdminSoftDeleteRoleResult result = await dispatcher.Send(request: command);
 
-                    var response = new AdminSoftDeleteRoleResponse(Role: result.Role);
+                    var response = new AdminSoftDeleteRoleResponse(Role: result.Role, IsSuccess: result.IsSuccess);
                     return Results.Ok(value: response);
                 }
             )
