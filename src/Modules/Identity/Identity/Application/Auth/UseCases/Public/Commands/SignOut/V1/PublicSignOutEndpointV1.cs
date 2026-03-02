@@ -32,6 +32,7 @@ public class PublicSignOutEndpointV1 : ICarterModule
 {
     /// <summary>
     /// Configures the sign-out route within the API pipeline.
+    /// Maps the <c>POST /api/v1/public/auth/sign-out</c> endpoint to handle sign-out requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
