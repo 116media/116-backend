@@ -49,7 +49,7 @@ public class AdminHardDeletePermissionHandlerTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Success.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
         _permissionRepositoryMock.VerifyDeleteCalled(permission);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -72,7 +72,7 @@ public class AdminHardDeletePermissionHandlerTests
         AdminHardDeletePermissionResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
         _permissionRepositoryMock.VerifyDeleteCalled(deletedPermission);
     }
 
@@ -94,7 +94,7 @@ public class AdminHardDeletePermissionHandlerTests
         AdminHardDeletePermissionResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
         _permissionRepositoryMock.VerifyDeleteCalled(inactivePermission);
     }
 
