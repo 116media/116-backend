@@ -17,6 +17,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Modules\Identity\Identity\Identity.csproj" />
         <ProjectReference Include="..\..\src\Modules\Core\Core\Core.csproj" />
+        <ProjectReference Include="..\..\src\Modules\Content\Content\Content.csproj" />
         <ProjectReference Include="..\..\src\Shared\Shared\Shared.csproj" />
         <ProjectReference Include="..\..\src\Shared\Shared.Contracts\Shared.Contracts.csproj" />
         <ProjectReference Include="..\..\src\BuildingBlocks\BuildingBlocks.csproj" />
