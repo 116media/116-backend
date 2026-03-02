@@ -9,14 +9,14 @@ public static class UserRouteConstants
     /// <summary>
     /// Route segment for avatar management endpoints.
     /// Used for uploading and updating user profile images.
-    /// Example: /api/v1/public/user/avatar.
+    /// Example: /api/v1/public/me/avatar.
     /// </summary>
     public const string Avatar = "avatar";
 
     /// <summary>
     /// Route segment for user profile management endpoints.
     /// Used for retrieving and updating user profile information.
-    /// Example: /api/v1/public/user/profile.
+    /// Example: /api/v1/public/me/profile.
     /// </summary>
     public const string Profile = "profile";
 
