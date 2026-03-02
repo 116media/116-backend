@@ -30,6 +30,7 @@ public class PublicResendOtpEndpointV1 : ICarterModule
 {
     /// <summary>
     /// Configures the public resend OTP route within the API pipeline.
+    /// Maps the <c>POST /api/v1/public/auth/resend-otp</c> endpoint to handle OTP resend requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
