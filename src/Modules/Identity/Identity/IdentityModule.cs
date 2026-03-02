@@ -74,7 +74,7 @@ public static class IdentityModule
     /// </summary>
     private static ModuleOptions<IdentityDbContext> GetModuleOptions()
     {
-        // Disable seeding in Testing environment (tests seed their own data)
+        // Disable migrations and seeding in Testing environment (tests use InMemory database)
         string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
         bool enableSeeding = !environment.Equals("Testing", StringComparison.OrdinalIgnoreCase);
 
@@ -82,7 +82,7 @@ public static class IdentityModule
         {
             ModuleName = IdentityConstants.ModuleName,
             SchemaName = IdentityConstants.SchemaName,
-            EnableMigrations = true,
+            EnableMigrations = enableSeeding,
             EnableSeeding = enableSeeding,
         };
     }
