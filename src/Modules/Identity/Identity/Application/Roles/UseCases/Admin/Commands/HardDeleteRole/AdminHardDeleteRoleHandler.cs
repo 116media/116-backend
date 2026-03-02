@@ -40,13 +40,14 @@ public class AdminHardDeleteRoleHandler(IRoleRepository roleRepository, IIdentit
         roleRepository.Delete(entity: role);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        return new AdminHardDeleteRoleResult(Success: true);
+        return new AdminHardDeleteRoleResult(IsSuccess: true);
     }
 
     private static bool IsCoreRole(string roleName)
     {
-        return roleName == nameof(EnumCoreUserRole.SuperAdmin)
-            || roleName == nameof(EnumCoreUserRole.Admin)
-            || roleName == nameof(EnumCoreUserRole.Visitor);
+        return roleName
+            is nameof(EnumCoreUserRole.SuperAdmin)
+                or nameof(EnumCoreUserRole.Admin)
+                or nameof(EnumCoreUserRole.Visitor);
     }
 }
