@@ -32,7 +32,11 @@ public record CreatePricingTierResponse(PricingTierDto PricingTier);
 /// </summary>
 public class CreatePricingTierEndpointV1 : ICarterModule
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Configures the pricing tier creation route within the API pipeline.
+    /// Maps the <c>POST /api/v1/admin/pricing-tiers</c> endpoint to handle pricing tier creation requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)
