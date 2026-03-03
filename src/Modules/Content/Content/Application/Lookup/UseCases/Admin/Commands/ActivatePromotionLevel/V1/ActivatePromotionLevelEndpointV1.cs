@@ -21,7 +21,11 @@ public record ActivatePromotionLevelResponse(PromotionLevelDto PromotionLevel);
 /// </summary>
 public class ActivatePromotionLevelEndpointV1 : ICarterModule
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Configures the promotion level activation route within the API pipeline.
+    /// Maps the <c>PATCH /api/v1/admin/promotion-levels/{id:guid}/activate</c> endpoint to handle promotion level activation requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)
