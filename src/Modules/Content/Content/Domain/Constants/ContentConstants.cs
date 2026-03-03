@@ -67,4 +67,64 @@ public static class ContentConstants
     /// Used in entity validation and Entity Framework property configuration.
     /// </summary>
     public const int MaxTagSlugLength = 60;
+
+    /// <summary>
+    /// Maximum allowed length for a category name field (e.g., "Artist Profile", "116 Le Focus").
+    /// Used in entity validation and Entity Framework property configuration.
+    /// </summary>
+    public const int MaxCategoryNameLength = 60;
+
+    /// <summary>
+    /// Maximum allowed length for a category slug field (e.g., "artist-profile", "116-le-focus").
+    /// Used in entity validation and Entity Framework property configuration.
+    /// </summary>
+    public const int MaxCategorySlugLength = 80;
+
+    /// <summary>
+    /// Maximum allowed length for a category description field.
+    /// Used in entity validation and Entity Framework property configuration.
+    /// </summary>
+    public const int MaxCategoryDescriptionLength = 300;
+
+    /// <summary>
+    /// Maximum allowed length for a customer full name field.
+    /// Used in entity validation and Entity Framework property configuration.
+    /// </summary>
+    public const int MaxCustomerFullNameLength = 100;
+
+    /// <summary>
+    /// Maximum allowed length for a customer email field.
+    /// Used in entity validation and Entity Framework property configuration.
+    /// </summary>
+    public const int MaxCustomerEmailLength = 200;
+
+    /// <summary>
+    /// Maximum allowed length for a customer phone field.
+    /// Used in entity validation and Entity Framework property configuration.
+    /// </summary>
+    public const int MaxCustomerPhoneLength = 30;
+
+    /// <summary>
+    /// Maximum allowed length for a customer company field.
+    /// Used in entity validation and Entity Framework property configuration.
+    /// </summary>
+    public const int MaxCustomerCompanyLength = 100;
+
+    /// <summary>
+    /// Maximum allowed length for a customer notes field.
+    /// Used in entity validation and Entity Framework property configuration.
+    /// </summary>
+    public const int MaxCustomerNotesLength = 500;
+
+    /// <summary>
+    /// Maximum allowed length for a package name field.
+    /// Used in entity validation and Entity Framework property configuration.
+    /// </summary>
+    public const int MaxPackageNameLength = 100;
+
+    /// <summary>
+    /// Maximum allowed length for a package description field.
+    /// Used in entity validation and Entity Framework property configuration.
+    /// </summary>
+    public const int MaxPackageDescriptionLength = 500;
 }
