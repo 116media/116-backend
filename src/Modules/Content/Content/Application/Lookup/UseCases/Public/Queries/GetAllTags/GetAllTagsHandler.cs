@@ -18,7 +18,10 @@ public class GetAllTagsHandler(ILookupRepository lookupRepository, IMapper mappe
     /// <inheritdoc />
     public async Task<GetAllTagsResult> Handle(GetAllTagsQuery query, CancellationToken cancellationToken)
     {
-        IReadOnlyList<TagEntity> tags = await lookupRepository.GetAllTagsAsync(cancellationToken: cancellationToken);
+        IReadOnlyList<TagEntity> tags = await lookupRepository.GetAllTagsAsync(
+            search: query.Search,
+            cancellationToken: cancellationToken
+        );
 
         IReadOnlyList<TagDto> dtoList = tags.ToTagDtos(mapper);
         return new GetAllTagsResult(Tags: dtoList);
