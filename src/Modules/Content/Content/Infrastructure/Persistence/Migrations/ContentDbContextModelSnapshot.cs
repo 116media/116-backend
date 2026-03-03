@@ -23,6 +23,123 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("_116.Content.Domain.Entities.CategoryEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ContentTypeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("content_type_id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("IsFree")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_free");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("slug");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_categories");
+
+                    b.HasIndex("ContentTypeId")
+                        .HasDatabaseName("ix_categories_content_type_id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_categories_slug");
+
+                    b.ToTable("categories", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.CategoryPricingEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<decimal>("PriceUsd")
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("price_usd");
+
+                    b.Property<Guid>("PricingTierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("pricing_tier_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_category_pricing");
+
+                    b.HasIndex("PricingTierId")
+                        .HasDatabaseName("ix_category_pricing_pricing_tier_id");
+
+                    b.HasIndex("CategoryId", "PricingTierId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_category_pricing_category_tier");
+
+                    b.ToTable("category_pricing", "content");
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.ContentTypeEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -66,6 +183,167 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_content_types_name");
 
                     b.ToTable("content_types", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.CustomerEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Company")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("company");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("full_name");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("phone");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_customers");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("ix_customers_email");
+
+                    b.ToTable("customers", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.PackageEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("description");
+
+                    b.Property<decimal>("FlatPriceUsd")
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("flat_price_usd");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_packages");
+
+                    b.ToTable("packages", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.PackageSlotEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_required");
+
+                    b.Property<Guid>("PackageId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("package_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_package_slots");
+
+                    b.HasIndex("CategoryId")
+                        .HasDatabaseName("ix_package_slots_category_id");
+
+                    b.HasIndex("PackageId")
+                        .HasDatabaseName("ix_package_slots_package_id");
+
+                    b.ToTable("package_slots", "content");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.PricingTierEntity", b =>
@@ -219,6 +497,71 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_tags_slug");
 
                     b.ToTable("tags", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.CategoryEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.ContentTypeEntity", "ContentType")
+                        .WithMany()
+                        .HasForeignKey("ContentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_categories_content_types_content_type_id");
+
+                    b.Navigation("ContentType");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.CategoryPricingEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", "Category")
+                        .WithMany("Pricing")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_category_pricing_categories_category_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.PricingTierEntity", "PricingTier")
+                        .WithMany()
+                        .HasForeignKey("PricingTierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_category_pricing_pricing_tiers_pricing_tier_id");
+
+                    b.Navigation("Category");
+
+                    b.Navigation("PricingTier");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.PackageSlotEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", "Category")
+                        .WithMany("PackageSlots")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_package_slots_categories_category_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.PackageEntity", "Package")
+                        .WithMany("Slots")
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_package_slots_packages_package_id");
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Package");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.CategoryEntity", b =>
+                {
+                    b.Navigation("PackageSlots");
+
+                    b.Navigation("Pricing");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.PackageEntity", b =>
+                {
+                    b.Navigation("Slots");
                 });
 #pragma warning restore 612, 618
         }
