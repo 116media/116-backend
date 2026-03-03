@@ -24,7 +24,11 @@ public record GetAllPricingTiersResponse(IReadOnlyList<PricingTierDto> PricingTi
 /// </summary>
 public class GetAllPricingTiersEndpointV1 : ICarterModule
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Configures the pricing tier retrieval route within the API pipeline.
+    /// Maps the <c>GET /api/v1/admin/pricing-tiers</c> endpoint to handle pricing tier retrieval requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)
