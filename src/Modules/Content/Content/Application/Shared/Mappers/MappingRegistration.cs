@@ -22,6 +22,9 @@ public static class MappingRegistration
         PricingTierMapper.Register(config);
         PromotionLevelMapper.Register(config);
         TagMapper.Register(config);
+        CategoryMapper.Register(config);
+        CustomerMapper.Register(config);
+        PackageMapper.Register(config);
 
         // Compile once for performance
         config.Compile();
