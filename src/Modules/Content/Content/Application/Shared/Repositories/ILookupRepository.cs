@@ -136,9 +136,13 @@ public interface ILookupRepository : IRepository<ContentTypeEntity>
     Task<TagEntity?> GetTagBySlugAsync(string slug, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves all tags ordered by name.
+    /// Retrieves all tags ordered by name, with optional search filtering.
     /// </summary>
+    /// <param name="search">Optional search term for case-insensitive partial match on Name and Slug.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>A read-only list of all tag entities.</returns>
-    Task<IReadOnlyList<TagEntity>> GetAllTagsAsync(CancellationToken cancellationToken = default);
+    /// <returns>A read-only list of matching tag entities.</returns>
+    Task<IReadOnlyList<TagEntity>> GetAllTagsAsync(
+        string? search = null,
+        CancellationToken cancellationToken = default
+    );
 }
