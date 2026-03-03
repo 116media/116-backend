@@ -23,7 +23,11 @@ public record GetAllTagsResponse(IReadOnlyList<TagDto> Tags);
 /// </summary>
 public class GetAllTagsEndpointV1 : ICarterModule
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Configures the tag retrieval route within the API pipeline.
+    /// Maps the <c>GET /api/v1/public/tags</c> endpoint to handle tag retrieval requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)
@@ -33,9 +37,9 @@ public class GetAllTagsEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher) =>
+                async (IDispatcher dispatcher, string? search = null) =>
                 {
-                    var query = new GetAllTagsQuery();
+                    var query = new GetAllTagsQuery(Search: search);
 
                     GetAllTagsResult result = await dispatcher.Send(request: query);
 
