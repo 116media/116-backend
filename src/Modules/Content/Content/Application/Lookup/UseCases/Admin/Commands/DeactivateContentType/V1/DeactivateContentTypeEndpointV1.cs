@@ -21,7 +21,11 @@ public record DeactivateContentTypeResponse(ContentTypeDto ContentType);
 /// </summary>
 public class DeactivateContentTypeEndpointV1 : ICarterModule
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Configures the content type deactivation route within the API pipeline.
+    /// Maps the <c>PATCH /api/v1/admin/content-types/{id:guid}/deactivate</c> endpoint to handle content type deactivation requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)
