@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Specifications;
+using Microsoft.EntityFrameworkCore;
 
 namespace _116.Content.Application.Lookup.Specifications;
 
@@ -17,14 +18,14 @@ public class PromotionLevelByIdSpecification(Guid id) : Specification<PromotionL
 }
 
 /// <summary>
-/// Specification that matches a promotion level by its name.
+/// Specification that matches a promotion level by its name (case-insensitive).
 /// </summary>
 public class PromotionLevelByNameSpecification(string name) : Specification<PromotionLevelEntity>
 {
     /// <inheritdoc />
     public override Expression<Func<PromotionLevelEntity, bool>> ToExpression()
     {
-        return promotionLevel => promotionLevel.Name == name;
+        return promotionLevel => EF.Functions.ILike(promotionLevel.Name, name);
     }
 }
 
