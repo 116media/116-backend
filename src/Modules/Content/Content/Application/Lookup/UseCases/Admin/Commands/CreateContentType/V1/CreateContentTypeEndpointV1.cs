@@ -31,7 +31,11 @@ public record CreateContentTypeResponse(ContentTypeDto ContentType);
 /// </summary>
 public class CreateContentTypeEndpointV1 : ICarterModule
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Configures the content type creation route within the API pipeline.
+    /// Maps the <c>POST /api/v1/admin/content-types</c> endpoint to handle content type creation requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)
