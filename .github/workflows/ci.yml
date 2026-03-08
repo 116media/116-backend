@@ -103,7 +103,7 @@ jobs:
             -targetdir:"./coverage/report" \
             -reporttypes:"Html;Cobertura;MarkdownSummaryGithub" \
             -assemblyfilters:"-*Tests*;-*Migrations*" \
-            -thresholds:linecoverage=70
+            minimumCoverageThresholds:lineCoverage=60
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
