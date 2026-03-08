@@ -1,7 +1,7 @@
 using System.Security.Claims;
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -72,7 +72,7 @@ public class AdminChangePasswordEndpointV1 : ICarterModule
             .WithName(endpointName: AdminChangePasswordMetaField.ChangePassword.Name)
             .WithSummary(summary: AdminChangePasswordMetaField.ChangePassword.Summary)
             .WithDescription(description: AdminChangePasswordMetaField.ChangePassword.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.PasswordManagement)
             .ProducesValidationProblem()
             .Produces<AdminChangePasswordResponse>()

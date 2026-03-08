@@ -1,7 +1,7 @@
 using System.Security.Claims;
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -63,7 +63,7 @@ public class PublicSignOutEndpointV1 : ICarterModule
             .WithName(endpointName: PublicSignOutMetaField.SignOut.Name)
             .WithSummary(summary: PublicSignOutMetaField.SignOut.Summary)
             .WithDescription(description: PublicSignOutMetaField.SignOut.Description)
-            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .Produces<PublicSignOutResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)

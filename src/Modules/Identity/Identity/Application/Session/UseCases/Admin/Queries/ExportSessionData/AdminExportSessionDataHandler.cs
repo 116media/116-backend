@@ -1,7 +1,9 @@
 using _116.Identity.Application.Session.Repositories;
+using _116.Identity.Application.Shared.DTOs;
+using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
-using Mapster;
+using MapsterMapper;
 
 namespace _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
 
@@ -9,7 +11,8 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSession
 /// Handles the <see cref="AdminExportSessionDataQuery" /> to retrieve session data for export.
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
-public class AdminExportSessionDataHandler(ISessionRepository sessionRepository)
+/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+public class AdminExportSessionDataHandler(ISessionRepository sessionRepository, IMapper mapper)
     : IQueryHandler<AdminExportSessionDataQuery, AdminExportSessionDataResult>
 {
     /// <summary>
@@ -30,8 +33,7 @@ public class AdminExportSessionDataHandler(ISessionRepository sessionRepository)
             cancellationToken: cancellationToken
         );
 
-        var sessionData = sessions.Adapt<List<SessionExportDto>>();
-
+        List<SessionExportDto> sessionData = sessions.ToSessionExportDtos(mapper);
         return new AdminExportSessionDataResult(SessionData: sessionData);
     }
 }

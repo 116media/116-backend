@@ -59,6 +59,35 @@ public static class RoleMapper
     }
 
     /// <summary>
+    /// Maps a collection of UserRoleEntity to a read-only collection of RoleDto.
+    /// </summary>
+    /// <param name="userRoles">The user roles to map.</param>
+    /// <param name="mapper">Injected IMapper instance.</param>
+    /// <returns>A read-only collection of RoleDto.</returns>
+    public static IReadOnlyCollection<RoleDto> ToRoleDtos(this ICollection<UserRoleEntity> userRoles, IMapper mapper)
+    {
+        return userRoles.Select(ur => ur.Role.ToRoleDto(mapper)).ToList();
+    }
+
+    /// <summary>
+    /// Maps a collection of UserRoleEntity to a deduplicated read-only collection of PermissionDto.
+    /// </summary>
+    /// <param name="userRoles">The user roles to map.</param>
+    /// <param name="mapper">Injected IMapper instance.</param>
+    /// <returns>A read-only collection of unique PermissionDto across all roles.</returns>
+    public static IReadOnlyCollection<PermissionDto> ToPermissionDtos(
+        this ICollection<UserRoleEntity> userRoles,
+        IMapper mapper
+    )
+    {
+        return userRoles
+            .SelectMany(ur => ur.Role.RolePermissions)
+            .Select(rp => rp.Permission.ToPermissionDto(mapper))
+            .DistinctBy(p => p.Id)
+            .ToList();
+    }
+
+    /// <summary>
     /// Maps a RoleEntity with its permissions to a RoleWithPermissionsDto.
     /// </summary>
     /// <param name="role">The role entity with permissions loaded.</param>

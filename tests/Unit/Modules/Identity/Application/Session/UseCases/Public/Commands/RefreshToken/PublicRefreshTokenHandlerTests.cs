@@ -2,12 +2,10 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken.Contracts;
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Results;
 using _116.Tests.Fixtures.Factories;
-using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -51,12 +49,10 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         string refreshToken = "valid-refresh-token";
         string newRefreshToken = "new-refresh-token";
         string accessToken = "new-access-token";
-        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(name: "Visitor", description: "Visitor role")];
-        List<PermissionDto> permissions = [];
         DateTime accessTokenExpiry = DateTime.UtcNow.AddHours(1);
 
         PublicRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        PublicRefreshTokenData authData = new(user, session, newRefreshToken, roles, permissions);
+        PublicRefreshTokenData authData = new(user, session, newRefreshToken);
         JwtGenerationResult jwtResult = new(accessToken, accessTokenExpiry);
 
         _refreshTokenFactoryMock
@@ -96,11 +92,9 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         SessionEntity session = SessionFactory.Create(user.Id);
         string refreshToken = "valid-refresh-token";
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         PublicRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        PublicRefreshTokenData authData = new(user, session, "new-token", roles, permissions);
+        PublicRefreshTokenData authData = new(user, session, "new-token");
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
@@ -140,11 +134,9 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         SessionEntity session = SessionFactory.Create(user.Id);
         string refreshToken = "valid-refresh-token";
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         PublicRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        PublicRefreshTokenData authData = new(user, session, "new-token", roles, permissions);
+        PublicRefreshTokenData authData = new(user, session, "new-token");
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
@@ -195,11 +187,9 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         SessionEntity session = SessionFactory.Create(user.Id);
         string refreshToken = "valid-refresh-token";
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         PublicRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        PublicRefreshTokenData authData = new(user, session, "new-token", roles, permissions);
+        PublicRefreshTokenData authData = new(user, session, "new-token");
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
@@ -239,11 +229,9 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         SessionEntity session = SessionFactory.Create(user.Id);
         string refreshToken = "valid-refresh-token";
-        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(name: "Visitor", description: "Visitor role")];
-        List<PermissionDto> permissions = [];
 
         PublicRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        PublicRefreshTokenData authData = new(user, session, "new-token", roles, permissions);
+        PublicRefreshTokenData authData = new(user, session, "new-token");
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
@@ -285,12 +273,10 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         SessionEntity session = SessionFactory.Create(user.Id);
         string refreshToken = "valid-refresh-token";
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
         using CancellationTokenSource cts = new();
 
         PublicRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        PublicRefreshTokenData authData = new(user, session, "new-token", roles, permissions);
+        PublicRefreshTokenData authData = new(user, session, "new-token");
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
@@ -327,12 +313,10 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         SessionEntity session = SessionFactory.Create(user.Id);
         string refreshToken = "valid-refresh-token";
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
         using CancellationTokenSource cts = new();
 
         PublicRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        PublicRefreshTokenData authData = new(user, session, "new-token", roles, permissions);
+        PublicRefreshTokenData authData = new(user, session, "new-token");
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock

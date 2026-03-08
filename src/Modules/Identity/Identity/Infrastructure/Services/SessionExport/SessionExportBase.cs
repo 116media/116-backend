@@ -1,6 +1,6 @@
 using System.Dynamic;
 using System.Reflection;
-using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
+using _116.Identity.Application.Shared.DTOs;
 
 namespace _116.Identity.Infrastructure.Services.SessionExport;
 

@@ -1,7 +1,7 @@
 using System.Security.Claims;
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -72,7 +72,7 @@ public class PublicChangePasswordEndpointV1 : ICarterModule
             .WithName(endpointName: PublicChangePasswordMetaField.ChangePassword.Name)
             .WithSummary(summary: PublicChangePasswordMetaField.ChangePassword.Summary)
             .WithDescription(description: PublicChangePasswordMetaField.ChangePassword.Description)
-            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.PasswordManagement)
             .ProducesValidationProblem()
             .Produces<PublicChangePasswordResponse>()

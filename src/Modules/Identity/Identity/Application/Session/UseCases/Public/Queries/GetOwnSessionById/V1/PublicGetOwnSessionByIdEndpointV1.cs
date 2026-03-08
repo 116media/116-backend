@@ -1,7 +1,7 @@
 using System.Security.Claims;
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Session.Constants;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Constants;
@@ -54,7 +54,7 @@ public class PublicGetOwnSessionByIdEndpointV1 : ICarterModule
             .WithName(endpointName: PublicGetOwnSessionByIdMetaField.PublicGetOwnSessionById.Name)
             .WithSummary(summary: PublicGetOwnSessionByIdMetaField.PublicGetOwnSessionById.Summary)
             .WithDescription(description: PublicGetOwnSessionByIdMetaField.PublicGetOwnSessionById.Description)
-            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
             .Produces<PublicGetOwnSessionByIdResponse>()

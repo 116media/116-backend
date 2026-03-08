@@ -30,11 +30,6 @@ public static class AuthTestHelpers
     /// <summary>
     /// Creates a RoleDto for testing purposes.
     /// </summary>
-    /// <param name="name">The role name.</param>
-    /// <param name="description">The role description.</param>
-    /// <param name="isActive">Whether the role is active.</param>
-    /// <param name="isDeleted">Whether the role is deleted.</param>
-    /// <returns>A configured RoleDto instance.</returns>
     public static RoleDto CreateRoleDto(
         string name = "Admin",
         string description = "Administrator role",
@@ -55,12 +50,6 @@ public static class AuthTestHelpers
     /// <summary>
     /// Creates a PermissionDto for testing purposes.
     /// </summary>
-    /// <param name="resource">The resource name.</param>
-    /// <param name="action">The action type.</param>
-    /// <param name="description">The permission description.</param>
-    /// <param name="isActive">Whether the permission is active.</param>
-    /// <param name="isDeleted">Whether the permission is deleted.</param>
-    /// <returns>A configured PermissionDto instance.</returns>
     public static PermissionDto CreatePermissionDto(
         string resource = "users",
         string action = "read",
@@ -83,33 +72,18 @@ public static class AuthTestHelpers
     /// <summary>
     /// Creates PublicLoginAuthData with a specific user (predictable scenario).
     /// </summary>
-    /// <param name="user">The user entity to use.</param>
-    /// <returns>PublicLoginAuthData with the specified user.</returns>
     public static PublicLoginAuthData CreatePublicLoginAuthData(UserEntity user) =>
         new AuthDataBuilder(user).BuildPublicLoginAuthData();
 
     /// <summary>
     /// Creates PublicSocialLoginAuthData with a specific user.
     /// </summary>
-    /// <param name="user">The user entity to use.</param>
-    /// <returns>PublicSocialLoginAuthData with the specified user.</returns>
     public static PublicSocialLoginAuthData CreatePublicSocialLoginAuthData(UserEntity user) =>
         new AuthDataBuilder(user).BuildPublicSocialLoginAuthData();
 
     /// <summary>
-    /// Creates AdminLoginAuthData with a specific user (e.g., UserFactory.CreateSuperAdmin()).
+    /// Creates AdminLoginAuthData with a specific user.
     /// </summary>
-    /// <param name="user">The user entity to use.</param>
-    /// <returns>AdminLoginAuthData with the specified user.</returns>
     public static AdminLoginAuthData CreateAdminLoginAuthData(UserEntity user) =>
         new AuthDataBuilder(user).BuildAdminLoginAuthData();
-
-    /// <summary>
-    /// Creates AdminLoginAuthData with a specific user and roles.
-    /// </summary>
-    /// <param name="user">The user entity to use.</param>
-    /// <param name="roles">The list of role DTOs.</param>
-    /// <returns>AdminLoginAuthData with the specified user and roles.</returns>
-    public static AdminLoginAuthData CreateAdminLoginAuthData(UserEntity user, List<RoleDto> roles) =>
-        new AuthDataBuilder(user).WithRoles(roles).BuildAdminLoginAuthData();
 }

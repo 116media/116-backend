@@ -1,11 +1,9 @@
 using _116.Core.Application.Shared.Repositories;
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories;
-using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -40,8 +38,6 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
         string newUserName = "newusername";
-        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(name: "Visitor", description: "Visitor role")];
-        List<PermissionDto> permissions = [];
 
         PublicUpdateOwnProfileCommand command = new(
             UserId: user.Id,
@@ -54,7 +50,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryDialCode: null
         );
 
-        PublicUpdateProfileAuthData authData = new(user, roles, permissions);
+        PublicUpdateProfileAuthData authData = new(User: user);
 
         _authFactoryMock
             .Setup(x =>
@@ -88,8 +84,6 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
         string newUserName = "newusername";
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         PublicUpdateOwnProfileCommand command = new(
             UserId: user.Id,
@@ -102,7 +96,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryDialCode: null
         );
 
-        PublicUpdateProfileAuthData authData = new(user, roles, permissions);
+        PublicUpdateProfileAuthData authData = new(User: user);
 
         _authFactoryMock
             .Setup(x =>
@@ -148,8 +142,6 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         PublicUpdateOwnProfileCommand command = new(
             UserId: user.Id,
@@ -162,7 +154,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryDialCode: null
         );
 
-        PublicUpdateProfileAuthData authData = new(user, roles, permissions);
+        PublicUpdateProfileAuthData authData = new(User: user);
 
         _authFactoryMock
             .Setup(x =>
@@ -325,8 +317,6 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
         using CancellationTokenSource cts = new();
 
         PublicUpdateOwnProfileCommand command = new(
@@ -340,7 +330,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryDialCode: null
         );
 
-        PublicUpdateProfileAuthData authData = new(user, roles, permissions);
+        PublicUpdateProfileAuthData authData = new(User: user);
 
         _authFactoryMock
             .Setup(x =>
@@ -375,8 +365,6 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         Guid sessionId = Guid.NewGuid();
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
         using CancellationTokenSource cts = new();
 
         PublicUpdateOwnProfileCommand command = new(
@@ -390,7 +378,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
             CountryDialCode: null
         );
 
-        PublicUpdateProfileAuthData authData = new(user, roles, permissions);
+        PublicUpdateProfileAuthData authData = new(User: user);
 
         _authFactoryMock
             .Setup(x =>

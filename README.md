@@ -1,4 +1,8 @@
 # 116-backend
+
+[![CI](https://github.com/coolbeatz71/116-backend/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/coolbeatz71/116-backend/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/github/coolbeatz71/116-backend/graph/badge.svg?token=100GLHYWH6)](https://codecov.io/github/coolbeatz71/116-backend)
+
 116 (Cent-Seize) is a bold digital platform that promotes music and hip-hop culture in DR and beyond. Through articles, video shows, and exclusive behind-the-scenes content, it connects fans with artists, highlights emerging talent, and tells the stories shaping the culture.
 
 ## 🚀 Getting Started

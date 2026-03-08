@@ -1,16 +1,11 @@
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 
 namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
 
 /// <summary>
-/// Contains updated user data and associated roles/permissions.
+/// Contains updated user data.
 /// </summary>
-public record PublicUpdateProfileAuthData(
-    UserEntity User,
-    IReadOnlyCollection<RoleDto> Roles,
-    IReadOnlyCollection<PermissionDto> Permissions
-);
+public record PublicUpdateProfileAuthData(UserEntity User);
 
 /// <summary>
 /// Factory for handling user profile update logic.

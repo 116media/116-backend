@@ -1,7 +1,7 @@
 using System.Security.Claims;
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Session.Constants;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Constants;
@@ -60,7 +60,7 @@ public class PublicGetOwnSessionsEndpointV1 : ICarterModule
             .WithName(endpointName: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Name)
             .WithSummary(summary: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Summary)
             .WithDescription(description: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Description)
-            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .Produces<PublicGetOwnSessionsResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)

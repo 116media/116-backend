@@ -2,7 +2,6 @@ using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contracts;
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
@@ -10,7 +9,6 @@ using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories;
-using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using _116.Unit.Tests.Common.Mocks.Services;
@@ -26,7 +24,6 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Comm
 public class PublicSignUpAuthFactoryTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
-    private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IOtpRepository> _otpRepositoryMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
     private readonly Mock<IOtpService> _otpServiceMock;
@@ -36,7 +33,6 @@ public class PublicSignUpAuthFactoryTests
     public PublicSignUpAuthFactoryTests()
     {
         _authRepositoryMock = MockAuthRepository.Create();
-        _roleRepositoryMock = MockRoleRepository.Create();
         _otpRepositoryMock = MockOtpRepository.Create();
         _passwordServiceMock = MockPasswordService.Create();
         _otpServiceMock = MockOtpService.Create();
@@ -44,7 +40,6 @@ public class PublicSignUpAuthFactoryTests
 
         _factory = new PublicSignUpAuthFactory(
             _authRepositoryMock.Object,
-            _roleRepositoryMock.Object,
             _otpRepositoryMock.Object,
             _passwordServiceMock.Object,
             _otpServiceMock.Object,
@@ -64,16 +59,11 @@ public class PublicSignUpAuthFactoryTests
         string hashedPassword = "hashed_password";
         UserEntity user = UserFactory.CreateVerifiedActive();
         OtpEntity otp = OtpFactory.CreateForEmailVerification(Guid.NewGuid());
-        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(name: "Visitor", description: "Visitor role")];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupValidateUniqueCredentialsSuccess();
         _passwordServiceMock.SetupHashReturns(hashedPassword);
         _otpServiceMock.SetupCreateOtpReturns(otp);
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
 
         // Act
         PublicSignUpAuthData result = await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
@@ -81,7 +71,6 @@ public class PublicSignUpAuthFactoryTests
         // Assert
         result.Should().NotBeNull();
         result.User.Should().NotBeNull();
-        result.Roles.Should().ContainSingle();
     }
 
     [Fact]
@@ -93,16 +82,11 @@ public class PublicSignUpAuthFactoryTests
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
         OtpEntity otp = OtpFactory.CreateForEmailVerification(Guid.NewGuid());
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupValidateUniqueCredentialsSuccess();
         _passwordServiceMock.SetupHashReturns("hashed");
         _otpServiceMock.SetupCreateOtpReturns(otp);
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
 
         // Act
         await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
@@ -128,16 +112,11 @@ public class PublicSignUpAuthFactoryTests
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
         OtpEntity otp = OtpFactory.CreateForEmailVerification(Guid.NewGuid());
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupValidateUniqueCredentialsSuccess();
         _passwordServiceMock.SetupHashReturns("hashed");
         _otpServiceMock.SetupCreateOtpReturns(otp);
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
 
         // Act
         await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
@@ -155,16 +134,11 @@ public class PublicSignUpAuthFactoryTests
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
         OtpEntity otp = OtpFactory.CreateForEmailVerification(Guid.NewGuid());
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupValidateUniqueCredentialsSuccess();
         _passwordServiceMock.SetupHashReturns("hashed");
         _otpServiceMock.SetupCreateOtpReturns(otp);
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
 
         // Act
         await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
@@ -182,16 +156,11 @@ public class PublicSignUpAuthFactoryTests
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
         OtpEntity otp = OtpFactory.CreateForEmailVerification(Guid.NewGuid());
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupValidateUniqueCredentialsSuccess();
         _passwordServiceMock.SetupHashReturns("hashed");
         _otpServiceMock.SetupCreateOtpReturns(otp);
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
 
         // Act
         await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
@@ -212,16 +181,11 @@ public class PublicSignUpAuthFactoryTests
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
         OtpEntity otp = OtpFactory.CreateForEmailVerification(Guid.NewGuid());
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupValidateUniqueCredentialsSuccess();
         _passwordServiceMock.SetupHashReturns("hashed");
         _otpServiceMock.SetupCreateOtpReturns(otp);
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
 
         // Act
         await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
@@ -239,16 +203,11 @@ public class PublicSignUpAuthFactoryTests
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
         OtpEntity otp = OtpFactory.CreateForEmailVerification(Guid.NewGuid());
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupValidateUniqueCredentialsSuccess();
         _passwordServiceMock.SetupHashReturns("hashed");
         _otpServiceMock.SetupCreateOtpReturns(otp);
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
 
         // Act
         await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
@@ -266,16 +225,11 @@ public class PublicSignUpAuthFactoryTests
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
         OtpEntity otp = OtpFactory.CreateForEmailVerification(Guid.NewGuid());
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupValidateUniqueCredentialsSuccess();
         _passwordServiceMock.SetupHashReturns("hashed");
         _otpServiceMock.SetupCreateOtpReturns(otp);
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
 
         // Act
         await _factory.RegisterAsync(email, userName, password, CancellationToken.None);
@@ -365,17 +319,12 @@ public class PublicSignUpAuthFactoryTests
         string password = "ValidPassword123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
         OtpEntity otp = OtpFactory.CreateForEmailVerification(Guid.NewGuid());
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
         using CancellationTokenSource cts = new();
 
         _authRepositoryMock.SetupValidateUniqueCredentialsSuccess();
         _passwordServiceMock.SetupHashReturns("hashed");
         _otpServiceMock.SetupCreateOtpReturns(otp);
         _authRepositoryMock.SetupGetUserWithRolesByCredentials(user);
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
 
         // Act
         await _factory.RegisterAsync(email, userName, password, cts.Token);

@@ -1,6 +1,6 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Session.Constants;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -70,7 +70,7 @@ public class AdminGetAllSessionsEndpointV1 : ICarterModule
             .WithName(endpointName: AdminGetAllSessionsMetaField.AdminGetAllSessions.Name)
             .WithSummary(summary: AdminGetAllSessionsMetaField.AdminGetAllSessions.Summary)
             .WithDescription(description: AdminGetAllSessionsMetaField.AdminGetAllSessions.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
             .Produces<AdminGetAllSessionsResponse>()

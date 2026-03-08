@@ -1,18 +1,11 @@
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 
 namespace _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken.Contracts;
 
 /// <summary>
-/// Contains refreshed session data with user, roles, permissions, and new refresh token.
+/// Contains refreshed session data with user and new refresh token.
 /// </summary>
-public record PublicRefreshTokenData(
-    UserEntity User,
-    SessionEntity Session,
-    string NewRefreshToken,
-    IReadOnlyCollection<RoleDto> Roles,
-    IReadOnlyCollection<PermissionDto> Permissions
-);
+public record PublicRefreshTokenData(UserEntity User, SessionEntity Session, string NewRefreshToken);
 
 /// <summary>
 /// Factory for handling refresh token validation and rotation logic.

@@ -1,7 +1,7 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.BuildingBlocks.Utils;
 using _116.Identity.Application.Roles.Constants;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -69,7 +69,7 @@ public class AdminCreatePermissionEndpointV1 : ICarterModule
             .WithName(endpointName: AdminCreatePermissionMetaField.AdminCreatePermission.Name)
             .WithSummary(summary: AdminCreatePermissionMetaField.AdminCreatePermission.Summary)
             .WithDescription(description: AdminCreatePermissionMetaField.AdminCreatePermission.Description)
-            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminCreatePermissionResponse>(statusCode: StatusCodes.Status201Created)

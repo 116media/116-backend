@@ -1,6 +1,6 @@
 using System.Security.Claims;
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.Constants;
@@ -55,7 +55,7 @@ public class AdminGetOwnProfileEndpointV1 : ICarterModule
             .WithName(endpointName: AdminGetOwnProfileMetaField.GetOwnProfile.Name)
             .WithSummary(summary: AdminGetOwnProfileMetaField.GetOwnProfile.Summary)
             .WithDescription(description: AdminGetOwnProfileMetaField.GetOwnProfile.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.UserProfile)
             .Produces<AdminGetOwnProfileResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)

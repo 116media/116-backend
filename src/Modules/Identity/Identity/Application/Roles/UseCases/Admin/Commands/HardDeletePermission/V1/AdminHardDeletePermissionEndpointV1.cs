@@ -1,6 +1,6 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Roles.Constants;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -50,7 +50,7 @@ public class AdminHardDeletePermissionEndpointV1 : ICarterModule
             .WithName(endpointName: AdminHardDeletePermissionMetaField.AdminHardDeletePermission.Name)
             .WithSummary(summary: AdminHardDeletePermissionMetaField.AdminHardDeletePermission.Summary)
             .WithDescription(description: AdminHardDeletePermissionMetaField.AdminHardDeletePermission.Description)
-            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminHardDeletePermissionResponse>()

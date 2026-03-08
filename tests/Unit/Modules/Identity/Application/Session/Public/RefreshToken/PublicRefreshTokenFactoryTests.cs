@@ -2,9 +2,7 @@ using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken.Contracts;
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Persistence;
-using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Tests.Fixtures.Factories;
 using AwesomeAssertions;
@@ -20,7 +18,6 @@ public class PublicRefreshTokenFactoryTests
 {
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IRefreshTokenService> _refreshTokenServiceMock;
-    private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly PublicRefreshTokenFactory _factory;
 
@@ -30,12 +27,10 @@ public class PublicRefreshTokenFactoryTests
 
         _sessionRepositoryMock = new Mock<ISessionRepository>();
         _refreshTokenServiceMock = new Mock<IRefreshTokenService>();
-        _roleRepositoryMock = new Mock<IRoleRepository>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
         _factory = new PublicRefreshTokenFactory(
             _sessionRepositoryMock.Object,
             _refreshTokenServiceMock.Object,
-            _roleRepositoryMock.Object,
             _unitOfWorkMock.Object
         );
     }
@@ -53,11 +48,6 @@ public class PublicRefreshTokenFactoryTests
         UserEntity user = UserFactory.Create();
         SessionEntity session = SessionFactory.Create(user.Id);
         typeof(SessionEntity).GetProperty("User")!.SetValue(session, user);
-        var roles = new List<RoleDto> { new(Guid.NewGuid(), "Visitor", "Visitor role", true, false, null) };
-        var permissions = new List<PermissionDto>
-        {
-            new(Guid.NewGuid(), "profile", "read", "Read profile", true, false, null),
-        };
 
         _refreshTokenServiceMock.Setup(x => x.HashRefreshToken(refreshToken)).Returns(refreshTokenHash);
 
@@ -82,10 +72,6 @@ public class PublicRefreshTokenFactoryTests
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(session.User.UserRoles))
-            .Returns((roles, permissions));
-
         // Act
         PublicRefreshTokenData result = await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
@@ -94,8 +80,6 @@ public class PublicRefreshTokenFactoryTests
         result.User.Should().Be(user);
         result.Session.Should().Be(session);
         result.NewRefreshToken.Should().Be(newRefreshToken);
-        result.Roles.Should().BeSameAs(roles);
-        result.Permissions.Should().BeSameAs(permissions);
     }
 
     [Fact]
@@ -194,10 +178,6 @@ public class PublicRefreshTokenFactoryTests
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
         // Act
         await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
@@ -240,10 +220,6 @@ public class PublicRefreshTokenFactoryTests
             .Returns(Task.CompletedTask);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
 
         // Act
         await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
@@ -296,10 +272,6 @@ public class PublicRefreshTokenFactoryTests
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
         // Act
         await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
@@ -342,15 +314,13 @@ public class PublicRefreshTokenFactoryTests
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(session.User.UserRoles))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
-
         // Act
-        await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        PublicRefreshTokenData result = await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
         // Assert
-        _roleRepositoryMock.Verify(x => x.GetUserRolesAndPermissions(session.User.UserRoles), Times.Once);
+        result.Should().NotBeNull();
+        result.User.Should().Be(user);
+        result.Session.Should().Be(session);
     }
 
     [Fact]
@@ -383,10 +353,6 @@ public class PublicRefreshTokenFactoryTests
             .Returns(Task.CompletedTask);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(cancellationToken)).ReturnsAsync(1);
-
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((new List<RoleDto>(), new List<PermissionDto>()));
 
         // Act
         await _factory.RefreshTokenAsync(refreshToken, cancellationToken);

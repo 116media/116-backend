@@ -1,6 +1,6 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Session.Constants;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -68,7 +68,7 @@ public class AdminGetSessionMetricsEndpointV1 : ICarterModule
             .WithName(endpointName: AdminGetSessionMetricsMetaField.AdminGetSessionMetrics.Name)
             .WithSummary(summary: AdminGetSessionMetricsMetaField.AdminGetSessionMetrics.Summary)
             .WithDescription(description: AdminGetSessionMetricsMetaField.AdminGetSessionMetrics.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.AdminMetrics)
             .Produces<AdminGetSessionMetricsResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)

@@ -10,13 +10,9 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfil
 /// Factory implementation for handling admin user profile update logic.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
-/// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminUpdateProfileAuthFactory(
-    IAuthRepository authRepository,
-    IRoleRepository roleRepository,
-    IIdentityUnitOfWork unitOfWork
-) : IAdminUpdateProfileAuthFactory
+public class AdminUpdateProfileAuthFactory(IAuthRepository authRepository, IIdentityUnitOfWork unitOfWork)
+    : IAdminUpdateProfileAuthFactory
 {
     /// <summary>
     /// Updates an admin user's profile with new information.
@@ -68,9 +64,7 @@ public class AdminUpdateProfileAuthFactory(
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user!.UserRoles);
-
-        return new AdminUpdateProfileAuthData(User: user, Roles: roles, Permissions: permissions);
+        return new AdminUpdateProfileAuthData(User: user!);
     }
 
     private async Task EnsureUsernameUnique(string username, CancellationToken cancellationToken)

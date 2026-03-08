@@ -1,7 +1,8 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Session.Services;
-using _116.Identity.Application.Shared.Authorizations.Policies;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
@@ -68,7 +69,7 @@ public class AdminExportSessionDataEndpointV1 : ICarterModule
             .WithName(endpointName: AdminExportSessionDataMetaField.AdminExportSessionData.Name)
             .WithSummary(summary: AdminExportSessionDataMetaField.AdminExportSessionData.Summary)
             .WithDescription(description: AdminExportSessionDataMetaField.AdminExportSessionData.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.DataExport)
             .ProducesValidationProblem()
             .Produces<AdminExportSessionDataResponse>()

@@ -1,17 +1,11 @@
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts;
 
 /// <summary>
-/// Contains authenticated admin user data and associated roles/permissions.
+/// Contains authenticated admin user data and associated permissions.
 /// </summary>
-public record AdminLoginAuthData(
-    UserEntity User,
-    List<RolePermissionEntity> UserPermissions,
-    IReadOnlyCollection<RoleDto> Roles,
-    IReadOnlyCollection<PermissionDto> Permissions
-);
+public record AdminLoginAuthData(UserEntity User, List<RolePermissionEntity> UserPermissions);
 
 /// <summary>
 /// Factory for handling admin user authentication logic in the login flow.

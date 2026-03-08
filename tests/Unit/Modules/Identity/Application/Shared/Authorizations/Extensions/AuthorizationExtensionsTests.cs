@@ -1,7 +1,7 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.Identity.Application.Shared.Authorizations.Configuration;
 using _116.Identity.Application.Shared.Authorizations.Extensions;
 using _116.Identity.Application.Shared.Authorizations.Handlers;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -35,9 +35,11 @@ public class AuthorizationExtensionsTests
 
         // Assert
         IEnumerable<IAuthorizationHandler> handlers = provider.GetServices<IAuthorizationHandler>();
-        handlers.Should().NotBeEmpty("authorization handlers should be registered");
-        handlers.Should().Contain(h => h.GetType() == typeof(UserRoleRequirementHandler));
-        handlers.Should().Contain(h => h.GetType() == typeof(AccountStatusRequirementHandler));
+        List<IAuthorizationHandler> authorizationHandlers = handlers.ToList();
+
+        authorizationHandlers.Should().NotBeEmpty("authorization handlers should be registered");
+        authorizationHandlers.Should().Contain(h => h.GetType() == typeof(UserRoleRequirementHandler));
+        authorizationHandlers.Should().Contain(h => h.GetType() == typeof(AccountStatusRequirementHandler));
     }
 
     [Fact]
@@ -69,7 +71,7 @@ public class AuthorizationExtensionsTests
         ServiceProvider provider = services.BuildServiceProvider();
 
         // Assert
-        IAuthorizationPolicyProvider policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
+        var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
         policyProvider.Should().NotBeNull("authorization policy provider should be configured");
     }
 
@@ -94,10 +96,10 @@ public class AuthorizationExtensionsTests
 
         // Assert
         userRoleHandler.Should().NotBeNull();
-        userRoleHandler!.Lifetime.Should().Be(ServiceLifetime.Scoped);
+        userRoleHandler.Lifetime.Should().Be(ServiceLifetime.Scoped);
 
         accountStatusHandler.Should().NotBeNull();
-        accountStatusHandler!.Lifetime.Should().Be(ServiceLifetime.Scoped);
+        accountStatusHandler.Lifetime.Should().Be(ServiceLifetime.Scoped);
     }
 
     [Fact]
@@ -111,7 +113,7 @@ public class AuthorizationExtensionsTests
         services.AddIdentityModuleAuthorization();
         ServiceProvider provider = services.BuildServiceProvider();
 
-        IAuthorizationPolicyProvider policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
+        var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
 
         // Act
         AuthorizationPolicy? policy = await policyProvider.GetPolicyAsync(UserRolePolicies.RequireSuperAdminOnly);
@@ -131,7 +133,7 @@ public class AuthorizationExtensionsTests
         services.AddIdentityModuleAuthorization();
         ServiceProvider provider = services.BuildServiceProvider();
 
-        IAuthorizationPolicyProvider policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
+        var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
 
         // Act
         AuthorizationPolicy? policy = await policyProvider.GetPolicyAsync(UserRolePolicies.RequireAdminOnly);
@@ -151,7 +153,7 @@ public class AuthorizationExtensionsTests
         services.AddIdentityModuleAuthorization();
         ServiceProvider provider = services.BuildServiceProvider();
 
-        IAuthorizationPolicyProvider policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
+        var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
 
         // Act
         AuthorizationPolicy? policy = await policyProvider.GetPolicyAsync(UserRolePolicies.RequireVisitorOnly);
@@ -171,7 +173,7 @@ public class AuthorizationExtensionsTests
         services.AddIdentityModuleAuthorization();
         ServiceProvider provider = services.BuildServiceProvider();
 
-        IAuthorizationPolicyProvider policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
+        var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
 
         // Act
         AuthorizationPolicy? policy = await policyProvider.GetPolicyAsync(UserRolePolicies.RequireAdminOrSuperAdmin);
@@ -191,7 +193,7 @@ public class AuthorizationExtensionsTests
         services.AddIdentityModuleAuthorization();
         ServiceProvider provider = services.BuildServiceProvider();
 
-        IAuthorizationPolicyProvider policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
+        var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
         AuthorizationConfiguration config = AuthorizationPolicyConfiguration.GetConfiguration();
 
         // Act & Assert - Check all account status policies are registered
@@ -229,7 +231,7 @@ public class AuthorizationExtensionsTests
         options.ConfigureJwtBearerEvents();
 
         // Assert
-        options.Events!.OnChallenge.Should().NotBeNull("OnChallenge event should be configured");
+        options.Events.OnChallenge.Should().NotBeNull("OnChallenge event should be configured");
     }
 
     [Fact]
@@ -242,7 +244,7 @@ public class AuthorizationExtensionsTests
         options.ConfigureJwtBearerEvents();
 
         // Assert
-        options.Events!.OnForbidden.Should().NotBeNull("OnForbidden event should be configured");
+        options.Events.OnForbidden.Should().NotBeNull("OnForbidden event should be configured");
     }
 
     [Fact]
@@ -252,8 +254,7 @@ public class AuthorizationExtensionsTests
         JwtBearerOptions options = new();
         options.ConfigureJwtBearerEvents();
 
-        DefaultHttpContext httpContext = new();
-        httpContext.Response.Body = new MemoryStream();
+        DefaultHttpContext httpContext = new() { Response = { Body = new MemoryStream() } };
 
         Mock<AuthenticationScheme> schemeMock = new("Bearer", "Bearer", typeof(JwtBearerHandler));
 
@@ -265,7 +266,7 @@ public class AuthorizationExtensionsTests
         );
 
         // Act
-        await options.Events!.OnChallenge(challengeContext);
+        await options.Events.OnChallenge(challengeContext);
 
         // Assert
         httpContext.Response.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
@@ -287,19 +288,14 @@ public class AuthorizationExtensionsTests
         JwtBearerOptions options = new();
         options.ConfigureJwtBearerEvents();
 
-        DefaultHttpContext httpContext = new();
-        httpContext.Response.Body = new MemoryStream();
+        DefaultHttpContext httpContext = new() { Response = { Body = new MemoryStream() } };
 
         Mock<AuthenticationScheme> schemeMock = new("Bearer", "Bearer", typeof(JwtBearerHandler));
 
-        Microsoft.AspNetCore.Authentication.JwtBearer.ForbiddenContext forbiddenContext = new(
-            httpContext,
-            schemeMock.Object,
-            options
-        );
+        ForbiddenContext forbiddenContext = new(httpContext, schemeMock.Object, options);
 
         // Act
-        await options.Events!.OnForbidden(forbiddenContext);
+        await options.Events.OnForbidden(forbiddenContext);
 
         // Assert
         httpContext.Response.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
@@ -320,8 +316,7 @@ public class AuthorizationExtensionsTests
         JwtBearerOptions options = new();
         options.ConfigureJwtBearerEvents();
 
-        DefaultHttpContext httpContext = new();
-        httpContext.Response.Body = new MemoryStream();
+        DefaultHttpContext httpContext = new() { Response = { Body = new MemoryStream() } };
 
         Mock<AuthenticationScheme> schemeMock = new("Bearer", "Bearer", typeof(JwtBearerHandler));
 
@@ -333,7 +328,7 @@ public class AuthorizationExtensionsTests
         );
 
         // Act
-        await options.Events!.OnChallenge(challengeContext);
+        await options.Events.OnChallenge(challengeContext);
 
         // Assert - Verify camelCase JSON serialization
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
@@ -350,19 +345,14 @@ public class AuthorizationExtensionsTests
         JwtBearerOptions options = new();
         options.ConfigureJwtBearerEvents();
 
-        DefaultHttpContext httpContext = new();
-        httpContext.Response.Body = new MemoryStream();
+        DefaultHttpContext httpContext = new() { Response = { Body = new MemoryStream() } };
 
         Mock<AuthenticationScheme> schemeMock = new("Bearer", "Bearer", typeof(JwtBearerHandler));
 
-        Microsoft.AspNetCore.Authentication.JwtBearer.ForbiddenContext forbiddenContext = new(
-            httpContext,
-            schemeMock.Object,
-            options
-        );
+        ForbiddenContext forbiddenContext = new(httpContext, schemeMock.Object, options);
 
         // Act
-        await options.Events!.OnForbidden(forbiddenContext);
+        await options.Events.OnForbidden(forbiddenContext);
 
         // Assert - Verify camelCase JSON serialization
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);

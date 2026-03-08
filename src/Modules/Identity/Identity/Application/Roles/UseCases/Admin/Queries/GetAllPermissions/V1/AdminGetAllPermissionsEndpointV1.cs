@@ -1,6 +1,6 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Roles.Constants;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -66,7 +66,7 @@ public class AdminGetAllPermissionsEndpointV1 : ICarterModule
             .WithName(endpointName: AdminGetAllPermissionsMetaField.AdminGetAllPermissions.Name)
             .WithSummary(summary: AdminGetAllPermissionsMetaField.AdminGetAllPermissions.Summary)
             .WithDescription(description: AdminGetAllPermissionsMetaField.AdminGetAllPermissions.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminGetAllPermissionsResponse>()

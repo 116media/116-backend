@@ -13,12 +13,10 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 /// Factory implementation for handling social authentication logic.
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
-/// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class PublicSocialLoginAuthFactory(
     IAuthRepository authRepository,
-    IRoleRepository roleRepository,
     IFileRepository fileRepository,
     IIdentityUnitOfWork unitOfWork
 ) : IPublicSocialLoginAuthFactory
@@ -60,13 +58,6 @@ public class PublicSocialLoginAuthFactory(
 
         List<RolePermissionEntity> userPermissions = user.UserRoles.SelectMany(ur => ur.Role.RolePermissions).ToList();
 
-        var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user.UserRoles);
-
-        return new PublicSocialLoginAuthData(
-            User: user,
-            Roles: roles,
-            Permissions: permissions,
-            UserPermissions: userPermissions
-        );
+        return new PublicSocialLoginAuthData(User: user, UserPermissions: userPermissions);
     }
 }

@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Constants;
-using _116.Identity.Application.Shared.Authorizations.Policies;
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.Identity.Domain.Enums;
 
 namespace _116.Identity.Application.Shared.Authorizations.Configuration;

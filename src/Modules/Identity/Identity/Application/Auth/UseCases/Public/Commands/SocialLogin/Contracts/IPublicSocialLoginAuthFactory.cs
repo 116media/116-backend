@@ -1,17 +1,11 @@
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
 
 /// <summary>
-/// Contains authenticated social user data and associated roles/permissions.
+/// Contains authenticated social user data and associated permissions.
 /// </summary>
-public record PublicSocialLoginAuthData(
-    UserEntity User,
-    List<RolePermissionEntity> UserPermissions,
-    IReadOnlyCollection<RoleDto> Roles,
-    IReadOnlyCollection<PermissionDto> Permissions
-);
+public record PublicSocialLoginAuthData(UserEntity User, List<RolePermissionEntity> UserPermissions);
 
 /// <summary>
 /// Factory for handling social authentication logic.

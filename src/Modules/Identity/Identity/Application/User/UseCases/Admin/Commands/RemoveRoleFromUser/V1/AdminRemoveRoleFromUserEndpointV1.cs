@@ -1,5 +1,5 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -50,7 +50,7 @@ public class AdminRemoveRoleFromUserEndpointV1 : ICarterModule
             .WithName(endpointName: AdminRemoveRoleFromUserMetaField.AdminRemoveRoleFromUser.Name)
             .WithSummary(summary: AdminRemoveRoleFromUserMetaField.AdminRemoveRoleFromUser.Summary)
             .WithDescription(description: AdminRemoveRoleFromUserMetaField.AdminRemoveRoleFromUser.Description)
-            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminRemoveRoleFromUserResponse>()

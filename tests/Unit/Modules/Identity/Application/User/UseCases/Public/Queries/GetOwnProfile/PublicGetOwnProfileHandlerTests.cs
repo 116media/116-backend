@@ -1,11 +1,9 @@
 using _116.Core.Application.Shared.Repositories;
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.UseCases.Public.Queries.GetOwnProfile;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories;
-using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -20,22 +18,15 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.UseCases.Public.Quer
 public class PublicGetOwnProfileHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
-    private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetOwnProfileHandler _handler;
 
     public PublicGetOwnProfileHandlerTests()
     {
         _authRepositoryMock = MockAuthRepository.Create();
-        _roleRepositoryMock = MockRoleRepository.Create();
         _fileRepositoryMock = MockFileRepository.Create();
 
-        _handler = new PublicGetOwnProfileHandler(
-            _authRepositoryMock.Object,
-            _roleRepositoryMock.Object,
-            _fileRepositoryMock.Object,
-            Mapper
-        );
+        _handler = new PublicGetOwnProfileHandler(_authRepositoryMock.Object, _fileRepositoryMock.Object, Mapper);
     }
 
     #region Success Cases
@@ -46,15 +37,10 @@ public class PublicGetOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         PublicGetOwnProfileQuery query = new(UserId: user.Id);
-        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(name: "Visitor", description: "Visitor role")];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
         _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
         _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
 
         // Act
@@ -71,15 +57,10 @@ public class PublicGetOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         PublicGetOwnProfileQuery query = new(UserId: user.Id);
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
         _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
         _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
 
         // Act
@@ -98,15 +79,10 @@ public class PublicGetOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         PublicGetOwnProfileQuery query = new(UserId: user.Id);
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
         _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
         _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
 
         // Act
@@ -122,15 +98,10 @@ public class PublicGetOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         PublicGetOwnProfileQuery query = new(UserId: user.Id);
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
         _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
         _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
 
         // Act
@@ -146,26 +117,18 @@ public class PublicGetOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         PublicGetOwnProfileQuery query = new(UserId: user.Id);
-        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto(name: "Visitor", description: "Visitor")];
-        List<PermissionDto> permissions =
-        [
-            AuthTestHelpers.CreatePermissionDto(resource: "articles", description: "Read articles"),
-        ];
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
         _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
         _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
 
         // Act
         await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        _roleRepositoryMock.Verify(
-            x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()),
+        _authRepositoryMock.Verify(
+            x => x.GetUserWithRolesAndPermissionsByIdOrThrow(user.Id, It.IsAny<CancellationToken>()),
             Times.Once
         );
     }
@@ -176,15 +139,10 @@ public class PublicGetOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         PublicGetOwnProfileQuery query = new(UserId: user.Id);
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
         _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
         _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
 
         // Act
@@ -227,16 +185,11 @@ public class PublicGetOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         PublicGetOwnProfileQuery query = new(UserId: user.Id);
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
         using CancellationTokenSource cts = new();
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
         _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
         _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
 
         // Act
@@ -252,16 +205,11 @@ public class PublicGetOwnProfileHandlerTests : BaseHandlerTest
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
         PublicGetOwnProfileQuery query = new(UserId: user.Id);
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissions = [];
         using CancellationTokenSource cts = new();
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsById(user);
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
         _authRepositoryMock.SetupIsUserAccountVerifiedReturnsTrue();
-        _roleRepositoryMock
-            .Setup(x => x.GetUserRolesAndPermissions(It.IsAny<ICollection<UserRoleEntity>>()))
-            .Returns((roles, permissions));
         _fileRepositoryMock.SetupGetAvatarFileReturnsNull(user.AvatarFileId);
 
         // Act

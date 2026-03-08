@@ -11,12 +11,8 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="passwordService">Service for verifying hashed passwords.</param>
-/// <param name="roleRepository">Repository for role and permission data operations.</param>
-public class PublicLoginAuthFactory(
-    IAuthRepository authRepository,
-    IPasswordService passwordService,
-    IRoleRepository roleRepository
-) : IPublicLoginAuthFactory
+public class PublicLoginAuthFactory(IAuthRepository authRepository, IPasswordService passwordService)
+    : IPublicLoginAuthFactory
 {
     /// <summary>
     /// Authenticates a user with their credentials and password.
@@ -41,13 +37,6 @@ public class PublicLoginAuthFactory(
 
         List<RolePermissionEntity> userPermissions = user.UserRoles.SelectMany(ur => ur.Role.RolePermissions).ToList();
 
-        var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user.UserRoles);
-
-        return new PublicLoginAuthData(
-            User: user,
-            UserPermissions: userPermissions,
-            Roles: roles,
-            Permissions: permissions
-        );
+        return new PublicLoginAuthData(User: user, UserPermissions: userPermissions);
     }
 }

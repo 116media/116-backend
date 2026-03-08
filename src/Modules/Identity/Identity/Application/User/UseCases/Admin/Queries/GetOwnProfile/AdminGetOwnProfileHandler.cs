@@ -16,12 +16,8 @@ namespace _116.Identity.Application.User.UseCases.Admin.Queries.GetOwnProfile;
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminGetOwnProfileHandler(
-    IAuthRepository authRepository,
-    IRoleRepository roleRepository,
-    IFileRepository fileRepository,
-    IMapper mapper
-) : IQueryHandler<AdminGetOwnProfileQuery, AdminGetOwnProfileResult>
+public class AdminGetOwnProfileHandler(IAuthRepository authRepository, IFileRepository fileRepository, IMapper mapper)
+    : IQueryHandler<AdminGetOwnProfileQuery, AdminGetOwnProfileResult>
 {
     /// <summary>
     /// Handles the admin user profile query by retrieving complete user information with roles and permissions.
@@ -42,8 +38,9 @@ public class AdminGetOwnProfileHandler(
         );
         // Validate user account status - admin accounts must be active
         authRepository.IsUserAccountActive(user!);
-        // Extract roles and permissions using repository
-        var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user!.UserRoles);
+        // Extract roles and permissions from loaded user roles
+        var roles = user!.UserRoles.ToRoleDtos(mapper);
+        var permissions = user.UserRoles.ToPermissionDtos(mapper);
         // Fetch the avatar file if the user has one
         FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(
             avatarFileId: user.AvatarFileId,

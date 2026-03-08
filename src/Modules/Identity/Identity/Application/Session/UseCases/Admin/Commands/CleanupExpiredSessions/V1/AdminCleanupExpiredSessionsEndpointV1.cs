@@ -1,6 +1,6 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Session.Constants;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -49,7 +49,7 @@ public class AdminCleanupExpiredSessionsEndpointV1 : ICarterModule
             .WithName(endpointName: AdminCleanupExpiredSessionsMetaField.AdminCleanupExpiredSessions.Name)
             .WithSummary(summary: AdminCleanupExpiredSessionsMetaField.AdminCleanupExpiredSessions.Summary)
             .WithDescription(description: AdminCleanupExpiredSessionsMetaField.AdminCleanupExpiredSessions.Description)
-            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
             .Produces<AdminCleanupExpiredSessionsResponse>()

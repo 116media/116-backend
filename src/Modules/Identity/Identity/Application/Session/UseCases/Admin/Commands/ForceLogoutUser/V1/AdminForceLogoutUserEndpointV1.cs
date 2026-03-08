@@ -1,7 +1,7 @@
 using _116.BuildingBlocks.Constants;
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Session.Constants;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -50,7 +50,7 @@ public class AdminForceLogoutUserEndpointV1 : ICarterModule
             .WithName(endpointName: AdminForceLogoutUserMetaField.AdminForceLogoutUser.Name)
             .WithSummary(summary: AdminForceLogoutUserMetaField.AdminForceLogoutUser.Summary)
             .WithDescription(description: AdminForceLogoutUserMetaField.AdminForceLogoutUser.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
             .Produces<AdminForceLogoutUserResponse>()

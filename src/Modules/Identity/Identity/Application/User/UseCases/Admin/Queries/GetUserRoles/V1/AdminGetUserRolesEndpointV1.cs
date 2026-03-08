@@ -1,5 +1,5 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -50,7 +50,7 @@ public class AdminGetUserRolesEndpointV1 : ICarterModule
             .WithName(endpointName: AdminGetUserRolesMetaField.AdminGetUserRoles.Name)
             .WithSummary(summary: AdminGetUserRolesMetaField.AdminGetUserRoles.Summary)
             .WithDescription(description: AdminGetUserRolesMetaField.AdminGetUserRoles.Description)
-            .RequireAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminGetUserRolesResponse>()

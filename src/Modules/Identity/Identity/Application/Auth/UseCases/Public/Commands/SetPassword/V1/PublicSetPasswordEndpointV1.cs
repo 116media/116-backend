@@ -1,7 +1,7 @@
 using System.Security.Claims;
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -65,7 +65,7 @@ public class PublicSetPasswordEndpointV1 : ICarterModule
             .WithName(endpointName: PublicSetPasswordMetaField.SetPassword.Name)
             .WithSummary(summary: PublicSetPasswordMetaField.SetPassword.Summary)
             .WithDescription(description: PublicSetPasswordMetaField.SetPassword.Description)
-            .RequireAuthorization(UserRolePolicies.RequireVisitorOnly)
+            .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.PasswordManagement)
             .ProducesValidationProblem()
             .Produces<PublicSetPasswordResponse>()

@@ -1,6 +1,6 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Roles.Constants;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -60,7 +60,7 @@ public class AdminAssignPermissionToRoleEndpointV1 : ICarterModule
             .WithName(endpointName: AdminAssignPermissionToRoleMetaField.AdminAssignPermissionToRole.Name)
             .WithSummary(summary: AdminAssignPermissionToRoleMetaField.AdminAssignPermissionToRole.Summary)
             .WithDescription(description: AdminAssignPermissionToRoleMetaField.AdminAssignPermissionToRole.Description)
-            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminAssignPermissionToRoleResponse>()

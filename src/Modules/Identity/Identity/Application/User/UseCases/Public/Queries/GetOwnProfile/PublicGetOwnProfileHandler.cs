@@ -16,12 +16,8 @@ namespace _116.Identity.Application.User.UseCases.Public.Queries.GetOwnProfile;
 /// <param name="roleRepository">Repository for role and permission data operations.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetOwnProfileHandler(
-    IAuthRepository authRepository,
-    IRoleRepository roleRepository,
-    IFileRepository fileRepository,
-    IMapper mapper
-) : IQueryHandler<PublicGetOwnProfileQuery, PublicGetOwnProfileResult>
+public class PublicGetOwnProfileHandler(IAuthRepository authRepository, IFileRepository fileRepository, IMapper mapper)
+    : IQueryHandler<PublicGetOwnProfileQuery, PublicGetOwnProfileResult>
 {
     /// <summary>
     /// Handles the user profile query by retrieving complete user information with roles and permissions.
@@ -44,7 +40,8 @@ public class PublicGetOwnProfileHandler(
         authRepository.IsUserAccountActive(user!);
         authRepository.IsUserAccountVerified(user!);
 
-        var (roles, permissions) = roleRepository.GetUserRolesAndPermissions(userRoles: user!.UserRoles);
+        var roles = user!.UserRoles.ToRoleDtos(mapper);
+        var permissions = user.UserRoles.ToPermissionDtos(mapper);
 
         // Fetch the avatar file if the user has one
         FileEntity? avatarFile = await fileRepository.GetAvatarFileAsync(

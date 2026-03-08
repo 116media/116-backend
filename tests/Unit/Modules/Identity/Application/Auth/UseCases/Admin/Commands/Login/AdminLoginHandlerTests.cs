@@ -2,7 +2,6 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts;
 using _116.Identity.Application.Session.Factories;
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
@@ -49,8 +48,7 @@ public class AdminLoginHandlerTests : BaseHandlerTest
         string email = TestConstants.Auth.AdminLoginEmail;
         string password = TestConstants.Auth.AdminLoginPassword;
         UserEntity user = UserFactory.CreateVerifiedActive();
-        List<RoleDto> roles = [AuthTestHelpers.CreateRoleDto("Admin", "Administrator role")];
-        AdminLoginAuthData authData = AuthTestHelpers.CreateAdminLoginAuthData(user, roles);
+        AdminLoginAuthData authData = AuthTestHelpers.CreateAdminLoginAuthData(user);
         List<RolePermissionEntity> permissions = authData.UserPermissions;
         SessionResult sessionResult = new(
             RefreshToken: "refresh-token",

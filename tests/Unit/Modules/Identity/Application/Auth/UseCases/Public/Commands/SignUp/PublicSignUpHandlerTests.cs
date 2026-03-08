@@ -1,7 +1,6 @@
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contracts;
 using _116.Identity.Application.Session.Factories;
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories;
@@ -40,11 +39,9 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
         string password = "Password123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
         List<RolePermissionEntity> permissions = [];
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissionDtos = [];
 
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
-        PublicSignUpAuthData authData = new(user, permissions, roles, permissionDtos);
+        PublicSignUpAuthData authData = new(User: user, UserPermissions: permissions);
         SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
@@ -72,11 +69,9 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
         string password = "Password123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
         List<RolePermissionEntity> permissions = [];
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissionDtos = [];
 
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
-        PublicSignUpAuthData authData = new(user, permissions, roles, permissionDtos);
+        PublicSignUpAuthData authData = new(User: user, UserPermissions: permissions);
         SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
@@ -105,11 +100,9 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
         string password = "Password123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
         List<RolePermissionEntity> permissions = [];
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissionDtos = [];
 
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
-        PublicSignUpAuthData authData = new(user, permissions, roles, permissionDtos);
+        PublicSignUpAuthData authData = new(User: user, UserPermissions: permissions);
         SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
@@ -221,12 +214,10 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
         string password = "Password123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
         List<RolePermissionEntity> permissions = [];
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissionDtos = [];
         using CancellationTokenSource cts = new();
 
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
-        PublicSignUpAuthData authData = new(user, permissions, roles, permissionDtos);
+        PublicSignUpAuthData authData = new(User: user, UserPermissions: permissions);
         SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock
@@ -252,12 +243,10 @@ public class PublicSignUpHandlerTests : BaseHandlerTest
         string password = "Password123!";
         UserEntity user = UserFactory.CreateVerifiedActive();
         List<RolePermissionEntity> permissions = [];
-        List<RoleDto> roles = [];
-        List<PermissionDto> permissionDtos = [];
         using CancellationTokenSource cts = new();
 
         PublicSignUpCommand command = new(Email: email, UserName: userName, Password: password);
-        PublicSignUpAuthData authData = new(user, permissions, roles, permissionDtos);
+        PublicSignUpAuthData authData = new(User: user, UserPermissions: permissions);
         SessionResult sessionResult = AuthTestHelpers.CreateDefaultSessionResult();
 
         _authFactoryMock

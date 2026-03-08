@@ -1,6 +1,6 @@
+using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Roles.Constants;
-using _116.Identity.Application.Shared.Authorizations.Policies;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -51,7 +51,7 @@ public class AdminDeactivateRoleEndpointV1 : ICarterModule
             .WithName(endpointName: AdminDeactivateRoleMetaField.AdminDeactivateRole.Name)
             .WithSummary(summary: AdminDeactivateRoleMetaField.AdminDeactivateRole.Summary)
             .WithDescription(description: AdminDeactivateRoleMetaField.AdminDeactivateRole.Description)
-            .RequireAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminDeactivateRoleResponse>()

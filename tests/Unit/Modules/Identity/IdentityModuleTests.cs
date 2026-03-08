@@ -6,10 +6,9 @@ using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
-using _116.Shared.Infrastructure.Seed;
+using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
+using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
 using AwesomeAssertions;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -117,8 +116,8 @@ public class IdentityModuleTests
         services.AddIdentityModule();
 
         // Assert
-        List<ServiceDescriptor> seeders = services.Where(s => s.ServiceType == typeof(IDataSeeder)).ToList();
-        (seeders.Count >= 2).Should().BeTrue(); // SuperAdminSeeder and VisitorRoleSeeder
+        services.Should().Contain(s => s.ServiceType == typeof(SuperAdminSeeder));
+        services.Should().Contain(s => s.ServiceType == typeof(VisitorRoleSeeder));
     }
 
     [Fact]
