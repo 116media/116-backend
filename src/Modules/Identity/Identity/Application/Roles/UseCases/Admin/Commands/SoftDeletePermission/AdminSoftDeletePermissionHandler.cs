@@ -46,6 +46,6 @@ public class AdminSoftDeletePermissionHandler(
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         var permissionDto = permission.ToPermissionDto(mapper);
-        return new AdminSoftDeletePermissionResult(Permission: permissionDto);
+        return new AdminSoftDeletePermissionResult(Permission: permissionDto, IsSuccess: true);
     }
 }

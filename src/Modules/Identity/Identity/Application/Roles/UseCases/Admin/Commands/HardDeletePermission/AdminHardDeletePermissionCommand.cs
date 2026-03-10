@@ -11,5 +11,5 @@ public record AdminHardDeletePermissionCommand(Guid PermissionId) : ICommand<Adm
 /// <summary>
 /// Result of the <see cref="AdminHardDeletePermissionCommand" />.
 /// </summary>
-/// <param name="Success">Indicates whether the permission was successfully deleted.</param>
-public record AdminHardDeletePermissionResult(bool Success);
+/// <param name="IsSuccess">Indicates whether the permission was successfully deleted.</param>
+public record AdminHardDeletePermissionResult(bool IsSuccess);

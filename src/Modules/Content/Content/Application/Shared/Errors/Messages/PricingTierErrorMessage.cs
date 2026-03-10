@@ -41,6 +41,17 @@ public static class PricingTierErrorMessage
     }
 
     /// <summary>
+    /// Gets an error message for when an inactive pricing tier is used in an operation that requires an active one.
+    /// </summary>
+    /// <returns>
+    /// An error message indicating that the pricing tier is inactive and cannot be used.
+    /// </returns>
+    public static string IsInactive()
+    {
+        return "Cannot use an inactive pricing tier";
+    }
+
+    /// <summary>
     /// Gets an error message for when a pricing tier name is required but not provided.
     /// </summary>
     /// <returns>

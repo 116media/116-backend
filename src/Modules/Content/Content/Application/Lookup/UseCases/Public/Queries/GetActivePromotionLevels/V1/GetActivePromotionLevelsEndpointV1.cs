@@ -23,7 +23,11 @@ public record GetActivePromotionLevelsResponse(IReadOnlyList<PromotionLevelDto> 
 /// </summary>
 public class GetActivePromotionLevelsEndpointV1 : ICarterModule
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Configures the active promotion level retrieval route within the API pipeline.
+    /// Maps the <c>GET /api/v1/public/promotion-levels</c> endpoint to handle active promotion level retrieval requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)

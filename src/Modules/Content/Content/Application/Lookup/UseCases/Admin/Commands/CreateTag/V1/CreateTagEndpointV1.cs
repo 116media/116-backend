@@ -32,7 +32,11 @@ public record CreateTagResponse(TagDto Tag);
 /// </summary>
 public class CreateTagEndpointV1 : ICarterModule
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Configures the tag creation route within the API pipeline.
+    /// Maps the <c>POST /api/v1/admin/tags</c> endpoint to handle tag creation requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)

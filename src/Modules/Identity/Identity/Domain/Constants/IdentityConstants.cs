@@ -30,4 +30,10 @@ public static class IdentityConstants
     /// Used to construct publicly accessible API routes (e.g., /api/v1/public/auth).
     /// </summary>
     public const string Public = "public";
+
+    /// <summary>
+    /// Route segment for self-referencing endpoints scoped to the authenticated user.
+    /// Used to construct "own resource" API routes (e.g., /api/v1/public/me/profile).
+    /// </summary>
+    public const string Me = "me";
 }

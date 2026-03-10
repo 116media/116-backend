@@ -30,6 +30,7 @@ public class PublicForgotPasswordEndpointV1 : ICarterModule
 {
     /// <summary>
     /// Configures the forgot password route within the API pipeline.
+    /// Maps the <c>POST /api/v1/public/auth/forgot-password</c> endpoint to handle password reset initiation requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)

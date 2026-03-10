@@ -45,7 +45,7 @@ public class AdminHardDeleteRoleHandlerTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Success.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
         _roleRepositoryMock.VerifyDeleteCalled(customRole);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -64,7 +64,7 @@ public class AdminHardDeleteRoleHandlerTests
         AdminHardDeleteRoleResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
         _roleRepositoryMock.VerifyDeleteCalled(deletedRole);
     }
 

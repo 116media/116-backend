@@ -16,7 +16,8 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.RemovePermissi
 /// Response model for successful permission removal.
 /// </summary>
 /// <param name="Role">The role with updated permissions.</param>
-public record AdminRemovePermissionFromRoleResponse(RoleWithPermissionsDto Role);
+/// <param name="IsSuccess">Indicates whether the permission was successfully removed from the role.</param>
+public record AdminRemovePermissionFromRoleResponse(RoleWithPermissionsDto Role, bool IsSuccess);
 
 /// <summary>
 /// Defines the admin remove permission from role endpoint.
@@ -44,7 +45,10 @@ public class AdminRemovePermissionFromRoleEndpointV1 : ICarterModule
 
                     AdminRemovePermissionFromRoleResult result = await dispatcher.Send(request: command);
 
-                    var response = new AdminRemovePermissionFromRoleResponse(Role: result.Role);
+                    var response = new AdminRemovePermissionFromRoleResponse(
+                        Role: result.Role,
+                        IsSuccess: result.IsSuccess
+                    );
                     return Results.Ok(value: response);
                 }
             )

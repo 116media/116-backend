@@ -223,6 +223,108 @@ public static class TestConstants
     }
 
     /// <summary>
+    /// Constants for Content module entity testing.
+    /// </summary>
+    public static class Content
+    {
+        /// <summary>Constants for ContentType entity testing.</summary>
+        public static class ContentType
+        {
+            public const int NameMaxLength = 30;
+            public const string ValidName = "Article";
+            public const string AnotherValidName = "Video";
+        }
+
+        /// <summary>Constants for PricingTier entity testing.</summary>
+        public static class PricingTier
+        {
+            public const int NameMaxLength = 40;
+            public const int DescriptionMaxLength = 200;
+            public const string ValidName = "base_upload";
+            public const string AnotherValidName = "social_boost";
+            public const string ValidDescription = "Base upload fee for content.";
+        }
+
+        /// <summary>Constants for PromotionLevel entity testing.</summary>
+        public static class PromotionLevel
+        {
+            public const int NameMaxLength = 40;
+            public const string ValidName = "Featured — 7 days";
+            public const string AnotherValidName = "À la Une — 14 days";
+            public const int ValidDurationDays = 7;
+            public const decimal ValidPriceUsd = 50m;
+            public const decimal ZeroPriceUsd = 0m;
+        }
+
+        /// <summary>Constants for Tag entity testing.</summary>
+        public static class Tag
+        {
+            public const int NameMaxLength = 50;
+            public const int SlugMaxLength = 60;
+            public const string ValidName = "Fally Ipupa";
+            public const string ValidSlug = "fally-ipupa";
+            public const string AnotherValidName = "Kinshasa";
+            public const string AnotherValidSlug = "kinshasa";
+        }
+
+        /// <summary>Constants for Category entity testing.</summary>
+        public static class Category
+        {
+            public const int NameMaxLength = 60;
+            public const int SlugMaxLength = 80;
+            public const int DescriptionMaxLength = 300;
+            public const string ValidName = "Artist Profile";
+            public const string ValidSlug = "artist-profile";
+            public const string AnotherValidName = "116 Le Focus";
+            public const string AnotherValidSlug = "116-le-focus";
+            public const string ValidDescription = "Artist profile category.";
+        }
+
+        /// <summary>Constants for Customer entity testing.</summary>
+        public static class Customer
+        {
+            public const int FullNameMaxLength = 100;
+            public const int EmailMaxLength = 200;
+            public const int PhoneMaxLength = 30;
+            public const int CompanyMaxLength = 100;
+            public const int NotesMaxLength = 500;
+            public const string ValidFullName = "John Doe";
+            public const string ValidEmail = "customer@example.com";
+            public const string AnotherValidEmail = "other@example.com";
+            public const string ValidPhone = "+243812345678";
+            public const string ValidCompany = "Acme Music Label";
+            public const string ValidNotes = "VIP customer with special pricing.";
+        }
+
+        /// <summary>Constants for Package entity testing.</summary>
+        public static class Package
+        {
+            public const int NameMaxLength = 100;
+            public const int DescriptionMaxLength = 500;
+            public const string ValidName = "Artist Starter Pack";
+            public const string AnotherValidName = "Premium Bundle";
+            public const string ValidDescription = "Includes 1 artist profile and 1 interview.";
+            public const decimal ValidFlatPriceUsd = 300m;
+            public const decimal ZeroFlatPriceUsd = 0m;
+        }
+
+        /// <summary>Constants for PackageSlot entity testing.</summary>
+        public static class PackageSlot
+        {
+            public const int ValidQuantity = 1;
+            public const int AnotherValidQuantity = 2;
+        }
+
+        /// <summary>Constants for CategoryPricing entity testing.</summary>
+        public static class CategoryPricing
+        {
+            public const decimal ValidPriceUsd = 25m;
+            public const decimal ZeroPriceUsd = 0m;
+            public const decimal UpdatedPriceUsd = 50m;
+        }
+    }
+
+    /// <summary>
     /// Constants for API routes used in testing.
     /// </summary>
     public static class ApiRoutes

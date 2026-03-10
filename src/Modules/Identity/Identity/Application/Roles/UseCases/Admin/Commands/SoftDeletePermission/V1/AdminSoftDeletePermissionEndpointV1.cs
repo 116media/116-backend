@@ -16,7 +16,8 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeletePerm
 /// Response model for successful permission soft deletion.
 /// </summary>
 /// <param name="Permission">The soft deleted permission information.</param>
-public record AdminSoftDeletePermissionResponse(PermissionDto Permission);
+/// <param name="IsSuccess">Indicates whether the permission was successfully soft deleted.</param>
+public record AdminSoftDeletePermissionResponse(PermissionDto Permission, bool IsSuccess);
 
 /// <summary>
 /// Defines the admin soft delete permission endpoint.
@@ -44,7 +45,10 @@ public class AdminSoftDeletePermissionEndpointV1 : ICarterModule
 
                     AdminSoftDeletePermissionResult result = await dispatcher.Send(request: command);
 
-                    var response = new AdminSoftDeletePermissionResponse(Permission: result.Permission);
+                    var response = new AdminSoftDeletePermissionResponse(
+                        Permission: result.Permission,
+                        IsSuccess: result.IsSuccess
+                    );
                     return Results.Ok(value: response);
                 }
             )

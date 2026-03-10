@@ -30,7 +30,7 @@ public static class ContentModule
         {
             ModuleName = ContentConstants.ModuleName,
             SchemaName = ContentConstants.SchemaName,
-            EnableMigrations = true,
+            EnableMigrations = enableSeeding,
             EnableSeeding = enableSeeding,
         };
     }
@@ -51,6 +51,9 @@ public static class ContentModule
 
         services.AddScoped<IContentUnitOfWork, ContentUnitOfWork>();
         services.AddScoped<ILookupRepository, LookupRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<IPackageRepository, PackageRepository>();
         services.AddScoped<ContentTypeSeeder>();
 
         return services;

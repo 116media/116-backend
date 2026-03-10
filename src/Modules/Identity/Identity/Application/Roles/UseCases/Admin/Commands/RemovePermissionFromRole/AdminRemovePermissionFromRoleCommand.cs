@@ -15,4 +15,5 @@ public record AdminRemovePermissionFromRoleCommand(Guid RoleId, Guid PermissionI
 /// Result of the <see cref="AdminRemovePermissionFromRoleCommand" /> containing the role with updated permissions.
 /// </summary>
 /// <param name="Role">The role information with permissions.</param>
-public record AdminRemovePermissionFromRoleResult(RoleWithPermissionsDto Role);
+/// <param name="IsSuccess">Indicates whether the permission was successfully removed from the role.</param>
+public record AdminRemovePermissionFromRoleResult(RoleWithPermissionsDto Role, bool IsSuccess);

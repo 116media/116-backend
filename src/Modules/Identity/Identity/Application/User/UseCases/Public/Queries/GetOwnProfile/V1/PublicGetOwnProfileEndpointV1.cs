@@ -28,14 +28,14 @@ public class PublicGetOwnProfileEndpointV1 : ICarterModule
 {
     /// <summary>
     /// Configures the user profile route within the API pipeline.
-    /// Maps the <c>/api/v1/public/user/profile</c> endpoint to handle profile retrieval requests.
+    /// Maps the <c>/api/v1/public/me/profile</c> endpoint to handle profile retrieval requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)
-            .MapGroup($"{IdentityConstants.Public}/{UserRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Public}::{UserRouteConstants.Endpoint}");
+            .MapGroup($"{IdentityConstants.Public}/{IdentityConstants.Me}")
+            .WithTags($"{IdentityConstants.Public}::{IdentityConstants.Me}");
 
         group
             .MapGet(

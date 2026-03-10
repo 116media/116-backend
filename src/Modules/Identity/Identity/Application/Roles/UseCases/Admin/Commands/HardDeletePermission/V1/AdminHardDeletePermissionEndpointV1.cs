@@ -14,8 +14,8 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.HardDeletePerm
 /// <summary>
 /// Response model for successful permission hard deletion.
 /// </summary>
-/// <param name="Success">Indicates whether the permission was successfully deleted.</param>
-public record AdminHardDeletePermissionResponse(bool Success);
+/// <param name="IsSuccess">Indicates whether the permission was successfully deleted.</param>
+public record AdminHardDeletePermissionResponse(bool IsSuccess);
 
 /// <summary>
 /// Defines the admin hard delete permission endpoint.
@@ -43,7 +43,7 @@ public class AdminHardDeletePermissionEndpointV1 : ICarterModule
 
                     AdminHardDeletePermissionResult result = await dispatcher.Send(request: command);
 
-                    var response = new AdminHardDeletePermissionResponse(Success: result.Success);
+                    var response = new AdminHardDeletePermissionResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(value: response);
                 }
             )

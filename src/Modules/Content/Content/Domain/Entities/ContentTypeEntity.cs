@@ -45,6 +45,21 @@ public class ContentTypeEntity : Aggregate<Guid>
     }
 
     /// <summary>
+    /// Updates the content type name.
+    /// </summary>
+    /// <param name="name">The new display name of the content type.</param>
+    /// <exception cref="ArgumentException">Thrown when name is empty or whitespace.</exception>
+    public void Update(string name)
+    {
+        if (string.IsNullOrWhiteSpace(value: name))
+        {
+            throw ContentTypeErrors.NameRequired();
+        }
+
+        Name = name;
+    }
+
+    /// <summary>
     /// Activates the content type, making it selectable when creating new categories.
     /// </summary>
     /// <returns>True if the content type was activated, false if already active.</returns>

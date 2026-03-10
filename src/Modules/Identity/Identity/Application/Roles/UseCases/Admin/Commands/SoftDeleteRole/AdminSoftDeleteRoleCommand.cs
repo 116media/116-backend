@@ -13,4 +13,5 @@ public record AdminSoftDeleteRoleCommand(Guid RoleId) : ICommand<AdminSoftDelete
 /// Result of the <see cref="AdminSoftDeleteRoleCommand" /> containing the soft deleted role details.
 /// </summary>
 /// <param name="Role">The soft deleted role information.</param>
-public record AdminSoftDeleteRoleResult(RoleDto Role);
+/// <param name="IsSuccess">Indicates whether the role was successfully soft deleted.</param>
+public record AdminSoftDeleteRoleResult(RoleDto Role, bool IsSuccess);

@@ -2,7 +2,6 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
-using _116.Tests.Fixtures.Builders.Entities;
 using _116.Tests.Fixtures.Factories;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;

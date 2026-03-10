@@ -13,4 +13,5 @@ public record AdminSoftDeletePermissionCommand(Guid PermissionId) : ICommand<Adm
 /// Result of the <see cref="AdminSoftDeletePermissionCommand" /> containing the soft deleted permission details.
 /// </summary>
 /// <param name="Permission">The soft-deleted permission information.</param>
-public record AdminSoftDeletePermissionResult(PermissionDto Permission);
+/// <param name="IsSuccess">Indicates whether the permission was successfully soft deleted.</param>
+public record AdminSoftDeletePermissionResult(PermissionDto Permission, bool IsSuccess);

@@ -1,6 +1,5 @@
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Builders.Entities;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories;
 using AwesomeAssertions;

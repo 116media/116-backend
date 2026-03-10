@@ -55,6 +55,6 @@ public class AdminRemoveRoleFromUserHandler(
         );
 
         IReadOnlyCollection<RoleDto> roles = userRoles.Select(ur => ur.Role.ToRoleDto(mapper)).ToList();
-        return new AdminRemoveRoleFromUserResult(Roles: roles);
+        return new AdminRemoveRoleFromUserResult(Roles: roles, IsSuccess: true);
     }
 }

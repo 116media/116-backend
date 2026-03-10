@@ -27,7 +27,7 @@ public class AdminGetAllRolesEndpointV1 : ICarterModule
 {
     /// <summary>
     /// Configures the admin get all roles route within the API pipeline.
-    /// Maps the <c>/api/v1/admin/roles</c> endpoint to handle role retrieval requests.
+    /// Maps the <c>/api/v1/admin/roles</c> endpoint to handle role retrieval requests.did y
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)

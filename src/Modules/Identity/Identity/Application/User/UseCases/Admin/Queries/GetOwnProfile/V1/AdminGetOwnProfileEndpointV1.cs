@@ -28,14 +28,14 @@ public class AdminGetOwnProfileEndpointV1 : ICarterModule
 {
     /// <summary>
     /// Configures the admin user profile route within the API pipeline.
-    /// Maps the <c>/api/v1/admin/user/profile</c> endpoint to handle admin profile retrieval requests.
+    /// Maps the <c>/api/v1/admin/me/profile</c> endpoint to handle admin profile retrieval requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)
-            .MapGroup($"{IdentityConstants.Admin}/{UserRouteConstants.Endpoint}")
-            .WithTags($"{IdentityConstants.Admin}::{UserRouteConstants.Endpoint}");
+            .MapGroup($"{IdentityConstants.Admin}/{IdentityConstants.Me}")
+            .WithTags($"{IdentityConstants.Admin}::{IdentityConstants.Me}");
 
         group
             .MapGet(

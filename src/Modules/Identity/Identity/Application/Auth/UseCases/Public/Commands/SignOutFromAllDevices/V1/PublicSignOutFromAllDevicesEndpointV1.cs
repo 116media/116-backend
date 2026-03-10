@@ -25,7 +25,8 @@ public record PublicSignOutFromAllDevicesResponse(bool IsSuccess);
 public class PublicSignOutFromAllDevicesEndpointV1 : ICarterModule
 {
     /// <summary>
-    /// Configures the sign-out from all devices routes within the API pipeline.
+    /// Configures the sign-out from all devices route within the API pipeline.
+    /// Maps the <c>POST /api/v1/public/auth/sign-out-all</c> endpoint to handle sign-out from all devices requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)

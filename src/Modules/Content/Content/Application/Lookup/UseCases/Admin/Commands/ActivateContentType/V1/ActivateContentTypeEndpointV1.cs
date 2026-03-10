@@ -21,7 +21,11 @@ public record ActivateContentTypeResponse(ContentTypeDto ContentType);
 /// </summary>
 public class ActivateContentTypeEndpointV1 : ICarterModule
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Configures the content type activation route within the API pipeline.
+    /// Maps the <c>PATCH /api/v1/admin/content-types/{id:guid}/activate</c> endpoint to handle content type activation requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)

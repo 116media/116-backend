@@ -32,7 +32,11 @@ public record UpdatePromotionLevelResponse(PromotionLevelDto PromotionLevel);
 /// </summary>
 public class UpdatePromotionLevelEndpointV1 : ICarterModule
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Configures the promotion level update route within the API pipeline.
+    /// Maps the <c>PUT /api/v1/admin/promotion-levels/{id:guid}</c> endpoint to handle promotion level update requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)

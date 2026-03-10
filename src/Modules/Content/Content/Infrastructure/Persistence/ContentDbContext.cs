@@ -24,6 +24,21 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options) : DbCo
     /// <summary>Gets the DbSet for tag entities.</summary>
     public DbSet<TagEntity> Tags => Set<TagEntity>();
 
+    /// <summary>Gets the DbSet for category entities.</summary>
+    public DbSet<CategoryEntity> Categories => Set<CategoryEntity>();
+
+    /// <summary>Gets the DbSet for category pricing entities.</summary>
+    public DbSet<CategoryPricingEntity> CategoryPricing => Set<CategoryPricingEntity>();
+
+    /// <summary>Gets the DbSet for customer entities.</summary>
+    public DbSet<CustomerEntity> Customers => Set<CustomerEntity>();
+
+    /// <summary>Gets the DbSet for package entities.</summary>
+    public DbSet<PackageEntity> Packages => Set<PackageEntity>();
+
+    /// <summary>Gets the DbSet for package slot entities.</summary>
+    public DbSet<PackageSlotEntity> PackageSlots => Set<PackageSlotEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

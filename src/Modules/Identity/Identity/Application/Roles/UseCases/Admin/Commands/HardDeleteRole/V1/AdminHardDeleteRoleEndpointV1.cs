@@ -14,8 +14,8 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.HardDeleteRole
 /// <summary>
 /// Response model for successful role hard deletion.
 /// </summary>
-/// <param name="Success">Indicates whether the role was successfully deleted.</param>
-public record AdminHardDeleteRoleResponse(bool Success);
+/// <param name="IsSuccess">Indicates whether the role was successfully deleted.</param>
+public record AdminHardDeleteRoleResponse(bool IsSuccess);
 
 /// <summary>
 /// Defines the admin hard delete role endpoint.
@@ -43,7 +43,7 @@ public class AdminHardDeleteRoleEndpointV1 : ICarterModule
 
                     AdminHardDeleteRoleResult result = await dispatcher.Send(request: command);
 
-                    var response = new AdminHardDeleteRoleResponse(Success: result.Success);
+                    var response = new AdminHardDeleteRoleResponse(IsSuccess: result.IsSuccess);
                     return Results.Ok(value: response);
                 }
             )

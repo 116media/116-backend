@@ -24,7 +24,11 @@ public record GetAllContentTypesResponse(IReadOnlyList<ContentTypeDto> ContentTy
 /// </summary>
 public class GetAllContentTypesEndpointV1 : ICarterModule
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Configures the content type retrieval route within the API pipeline.
+    /// Maps the <c>GET /api/v1/admin/content-types</c> endpoint to handle content type retrieval requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)

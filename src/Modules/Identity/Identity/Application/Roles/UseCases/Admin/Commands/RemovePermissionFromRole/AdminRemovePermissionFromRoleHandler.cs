@@ -59,6 +59,6 @@ public class AdminRemovePermissionFromRoleHandler(
         );
 
         var roleDto = role!.ToRoleWithPermissionsDto(mapper);
-        return new AdminRemovePermissionFromRoleResult(Role: roleDto);
+        return new AdminRemovePermissionFromRoleResult(Role: roleDto, IsSuccess: true);
     }
 }

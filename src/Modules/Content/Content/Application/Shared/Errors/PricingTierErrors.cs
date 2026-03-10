@@ -42,6 +42,14 @@ public static class PricingTierErrors
     }
 
     /// <summary>
+    /// Throws when an inactive pricing tier is used in an operation that requires an active one.
+    /// </summary>
+    public static BadRequestException IsInactive()
+    {
+        return new BadRequestException(PricingTierErrorMessage.IsInactive());
+    }
+
+    /// <summary>
     /// Throws when a pricing tier name is required but not provided.
     /// </summary>
     public static BadRequestException NameRequired()

@@ -14,4 +14,5 @@ public record AdminRemoveRoleFromUserCommand(Guid UserId, Guid RoleId) : IComman
 /// Result of the <see cref="AdminRemoveRoleFromUserCommand" /> containing the user's updated roles.
 /// </summary>
 /// <param name="Roles">The list of roles assigned to the user.</param>
-public record AdminRemoveRoleFromUserResult(IReadOnlyCollection<RoleDto> Roles);
+/// <param name="IsSuccess">Indicates whether the role was successfully removed from the user.</param>
+public record AdminRemoveRoleFromUserResult(IReadOnlyCollection<RoleDto> Roles, bool IsSuccess);

@@ -153,8 +153,15 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<TagEntity>> GetAllTagsAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TagEntity>> GetAllTagsAsync(
+        string? search = null,
+        CancellationToken cancellationToken = default
+    )
     {
-        return await context.Tags.OrderBy(x => x.Name).ToListAsync(cancellationToken);
+        IQueryable<TagEntity> query = string.IsNullOrWhiteSpace(search)
+            ? context.Tags
+            : context.Tags.ApplySpecification(new TagSearchSpecification(search: search));
+
+        return await query.OrderBy(x => x.Name).ToListAsync(cancellationToken);
     }
 }

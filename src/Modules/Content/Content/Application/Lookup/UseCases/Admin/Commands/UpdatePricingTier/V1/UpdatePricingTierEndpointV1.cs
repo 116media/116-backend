@@ -31,7 +31,11 @@ public record UpdatePricingTierResponse(PricingTierDto PricingTier);
 /// </summary>
 public class UpdatePricingTierEndpointV1 : ICarterModule
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Configures the pricing tier update route within the API pipeline.
+    /// Maps the <c>PUT /api/v1/admin/pricing-tiers/{id:guid}</c> endpoint to handle pricing tier update requests.
+    /// </summary>
+    /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapApiVersionGroup(1)

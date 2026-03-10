@@ -15,7 +15,8 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.RemoveRoleFromU
 /// Response model for successful role removal.
 /// </summary>
 /// <param name="Roles">The list of remaining roles assigned to the user.</param>
-public record AdminRemoveRoleFromUserResponse(IReadOnlyCollection<RoleDto> Roles);
+/// <param name="IsSuccess">Indicates whether the role was successfully removed from the user.</param>
+public record AdminRemoveRoleFromUserResponse(IReadOnlyCollection<RoleDto> Roles, bool IsSuccess);
 
 /// <summary>
 /// Defines the admin remove role from user endpoint.
@@ -43,7 +44,10 @@ public class AdminRemoveRoleFromUserEndpointV1 : ICarterModule
 
                     AdminRemoveRoleFromUserResult result = await dispatcher.Send(request: command);
 
-                    var response = new AdminRemoveRoleFromUserResponse(Roles: result.Roles);
+                    var response = new AdminRemoveRoleFromUserResponse(
+                        Roles: result.Roles,
+                        IsSuccess: result.IsSuccess
+                    );
                     return Results.Ok(value: response);
                 }
             )
