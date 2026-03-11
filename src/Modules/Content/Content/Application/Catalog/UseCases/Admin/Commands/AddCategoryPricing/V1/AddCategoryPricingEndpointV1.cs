@@ -45,8 +45,8 @@ public class AddCategoryPricingEndpointV1 : ICarterModule
 
         group
             .MapPost(
-                $"/{{id:guid}}/{CatalogRouteConstants.Pricing}",
-                async (Guid id, AddCategoryPricingRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                $"/{{id}}/{CatalogRouteConstants.Pricing}",
+                async (string id, AddCategoryPricingRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
                 {
                     var command = new AddCategoryPricingCommand(
                         CategoryId: id,
