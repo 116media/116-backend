@@ -20,7 +20,7 @@ public class AddPackageSlotValidatorTests
     {
         // Arrange
         var command = new AddPackageSlotCommand(
-            PackageId: Guid.NewGuid(),
+            PackageId: Guid.NewGuid().ToString(),
             CategoryId: Guid.NewGuid(),
             IsRequired: true,
             Quantity: TestConstants.Content.PackageSlot.ValidQuantity
@@ -39,7 +39,7 @@ public class AddPackageSlotValidatorTests
     {
         // Arrange
         var command = new AddPackageSlotCommand(
-            PackageId: Guid.NewGuid(),
+            PackageId: Guid.NewGuid().ToString(),
             CategoryId: null,
             IsRequired: false,
             Quantity: TestConstants.Content.PackageSlot.ValidQuantity
@@ -61,7 +61,7 @@ public class AddPackageSlotValidatorTests
     {
         // Arrange
         var command = new AddPackageSlotCommand(
-            PackageId: Guid.Empty,
+            PackageId: "",
             CategoryId: null,
             IsRequired: false,
             Quantity: TestConstants.Content.PackageSlot.ValidQuantity
@@ -88,7 +88,7 @@ public class AddPackageSlotValidatorTests
     {
         // Arrange
         var command = new AddPackageSlotCommand(
-            PackageId: Guid.NewGuid(),
+            PackageId: Guid.NewGuid().ToString(),
             CategoryId: null,
             IsRequired: false,
             Quantity: 0
@@ -112,7 +112,7 @@ public class AddPackageSlotValidatorTests
     {
         // Arrange
         var command = new AddPackageSlotCommand(
-            PackageId: Guid.NewGuid(),
+            PackageId: Guid.NewGuid().ToString(),
             CategoryId: null,
             IsRequired: false,
             Quantity: -1
