@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivatePac
 /// Command to deactivate a package, removing it from available bundles for new orders.
 /// </summary>
 /// <param name="Id">The unique identifier of the package to deactivate.</param>
-public record DeactivatePackageCommand(Guid Id) : ICommand<DeactivatePackageResult>;
+public record DeactivatePackageCommand(string Id) : ICommand<DeactivatePackageResult>;
 
 /// <summary>
 /// Result returned after successfully deactivating a package.
