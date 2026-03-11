@@ -32,7 +32,6 @@ public class CreateCategoryEndpointV1Tests
 
         // Act
         var request = new CreateCategoryRequest(
-            ContentTypeId: contentTypeId,
             Name: "Technology",
             Slug: "technology",
             Description: "Tech articles",
@@ -52,7 +51,6 @@ public class CreateCategoryEndpointV1Tests
 
         // Act
         var request = new CreateCategoryRequest(
-            ContentTypeId: contentTypeId,
             Name: "Technology",
             Slug: "technology",
             Description: null,
