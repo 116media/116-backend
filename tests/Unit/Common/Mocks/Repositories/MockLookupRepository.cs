@@ -20,8 +20,6 @@ public static class MockLookupRepository
         return mock;
     }
 
-    // ──── ContentType ────────────────────────────────────────────────────────
-
     public static Mock<ILookupRepository> SetupContentTypeExistsByName(
         this Mock<ILookupRepository> mock,
         string name,
@@ -77,8 +75,6 @@ public static class MockLookupRepository
         );
     }
 
-    // ──── PricingTier ────────────────────────────────────────────────────────
-
     public static Mock<ILookupRepository> SetupPricingTierExistsByName(
         this Mock<ILookupRepository> mock,
         string name,
@@ -133,8 +129,6 @@ public static class MockLookupRepository
             Times.Never
         );
     }
-
-    // ──── PromotionLevel ─────────────────────────────────────────────────────
 
     public static Mock<ILookupRepository> SetupPromotionLevelExistsByName(
         this Mock<ILookupRepository> mock,
@@ -200,8 +194,6 @@ public static class MockLookupRepository
         );
     }
 
-    // ──── Tag ────────────────────────────────────────────────────────────────
-
     public static Mock<ILookupRepository> SetupGetTagBySlug(
         this Mock<ILookupRepository> mock,
         string slug,
@@ -230,8 +222,6 @@ public static class MockLookupRepository
     {
         mock.Verify(x => x.AddTagAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()), Times.Never);
     }
-
-    // ──── Defaults ───────────────────────────────────────────────────────────
 
     private static void SetupDefaults(Mock<ILookupRepository> mock)
     {
