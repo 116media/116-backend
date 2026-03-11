@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Validators;
+using _116.Shared.Application.Extensions;
 using FluentValidation;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCustomer;
@@ -13,7 +14,7 @@ public class UpdateCustomerValidator : AbstractValidator<UpdateCustomerCommand>
     /// </summary>
     public UpdateCustomerValidator()
     {
-        RuleFor(x => x.Id).ValidCustomerId();
+        RuleFor(x => x.Id).IsValidGuid("Customer ID");
         RuleFor(x => x.FullName).ValidCustomerFullName();
         RuleFor(x => x.Phone).ValidCustomerPhone();
         RuleFor(x => x.Company).ValidCustomerCompany();
