@@ -9,7 +9,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPr
 /// <param name="CategoryId">The identifier of the category to configure pricing for.</param>
 /// <param name="PricingTierId">The identifier of the pricing tier to attach.</param>
 /// <param name="PriceUsd">The price in USD for this tier within the category.</param>
-public record AddCategoryPricingCommand(Guid CategoryId, Guid PricingTierId, decimal PriceUsd)
+public record AddCategoryPricingCommand(string CategoryId, Guid PricingTierId, decimal PriceUsd)
     : ICommand<AddCategoryPricingResult>;
 
 /// <summary>
