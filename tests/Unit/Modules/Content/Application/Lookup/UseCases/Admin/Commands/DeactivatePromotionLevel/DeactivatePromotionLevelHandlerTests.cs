@@ -36,7 +36,7 @@ public class DeactivatePromotionLevelHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PromotionLevelEntity active = PromotionLevelFactory.CreateDefault();
-        var command = new DeactivatePromotionLevelCommand(Id: active.Id);
+        var command = new DeactivatePromotionLevelCommand(Id: active.Id.ToString());
 
         _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(active);
 
@@ -58,7 +58,7 @@ public class DeactivatePromotionLevelHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PromotionLevelEntity inactive = PromotionLevelFactory.CreateInactive();
-        var command = new DeactivatePromotionLevelCommand(Id: inactive.Id);
+        var command = new DeactivatePromotionLevelCommand(Id: inactive.Id.ToString());
 
         _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(inactive);
 
@@ -74,7 +74,7 @@ public class DeactivatePromotionLevelHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PromotionLevelEntity inactive = PromotionLevelFactory.CreateInactive();
-        var command = new DeactivatePromotionLevelCommand(Id: inactive.Id);
+        var command = new DeactivatePromotionLevelCommand(Id: inactive.Id.ToString());
 
         _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(inactive);
 
@@ -96,8 +96,8 @@ public class DeactivatePromotionLevelHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
-        var command = new DeactivatePromotionLevelCommand(Id: nonExistentId);
+        var nonExistentId = Guid.NewGuid();
+        var command = new DeactivatePromotionLevelCommand(Id: nonExistentId.ToString());
 
         _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrowNotFound(nonExistentId);
 
