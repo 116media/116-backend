@@ -18,7 +18,7 @@ public class DeactivatePackageValidatorTests
     public async Task Validate_WithValidId_ShouldNotHaveErrors()
     {
         // Arrange
-        var command = new DeactivatePackageCommand(Id: Guid.NewGuid());
+        var command = new DeactivatePackageCommand(Id: Guid.NewGuid().ToString());
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -36,7 +36,7 @@ public class DeactivatePackageValidatorTests
     public async Task Validate_WithEmptyId_ShouldHaveError()
     {
         // Arrange
-        var command = new DeactivatePackageCommand(Id: Guid.Empty);
+        var command = new DeactivatePackageCommand(Id: "");
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
