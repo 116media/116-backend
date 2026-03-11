@@ -36,7 +36,7 @@ public class GetCategoryByIdHandlerTests : BaseContentHandlerTest
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
 
-        var query = new GetCategoryByIdQuery(Id: category.Id);
+        var query = new GetCategoryByIdQuery(Id: category.Id.ToString());
 
         // Act
         GetCategoryByIdResult result = await _handler.Handle(query, CancellationToken.None);
@@ -55,10 +55,10 @@ public class GetCategoryByIdHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenCategoryNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
         _categoryRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
-        var query = new GetCategoryByIdQuery(Id: nonExistentId);
+        var query = new GetCategoryByIdQuery(Id: nonExistentId.ToString());
 
         // Act
         Func<Task> act = async () => await _handler.Handle(query, CancellationToken.None);
