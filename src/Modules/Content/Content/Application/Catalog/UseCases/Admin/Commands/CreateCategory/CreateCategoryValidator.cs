@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Validators;
+using _116.Shared.Application.Extensions;
 using FluentValidation;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory;
@@ -13,7 +14,7 @@ public class CreateCategoryValidator : AbstractValidator<CreateCategoryCommand>
     /// </summary>
     public CreateCategoryValidator()
     {
-        RuleFor(x => x.ContentTypeId).ValidContentTypeId();
+        RuleFor(x => x.ContentTypeId).IsValidGuid("Content type ID");
         RuleFor(x => x.Name).ValidCategoryName();
         RuleFor(x => x.Slug).ValidCategorySlug();
         RuleFor(x => x.Description).ValidCategoryDescription();
