@@ -20,7 +20,7 @@ public class UpdateContentTypeValidatorTests
     {
         // Arrange
         var command = new UpdateContentTypeCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.ContentType.ValidName
         );
 
@@ -37,7 +37,7 @@ public class UpdateContentTypeValidatorTests
     {
         // Arrange
         var command = new UpdateContentTypeCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             Name: new string('a', TestConstants.Content.ContentType.NameMaxLength)
         );
 
@@ -56,7 +56,7 @@ public class UpdateContentTypeValidatorTests
     public async Task Validate_WithEmptyId_ShouldHaveError()
     {
         // Arrange
-        var command = new UpdateContentTypeCommand(Id: Guid.Empty, Name: TestConstants.Content.ContentType.ValidName);
+        var command = new UpdateContentTypeCommand(Id: "", Name: TestConstants.Content.ContentType.ValidName);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -79,7 +79,7 @@ public class UpdateContentTypeValidatorTests
     public async Task Validate_WithEmptyName_ShouldHaveError()
     {
         // Arrange
-        var command = new UpdateContentTypeCommand(Id: Guid.NewGuid(), Name: string.Empty);
+        var command = new UpdateContentTypeCommand(Id: Guid.NewGuid().ToString(), Name: string.Empty);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -99,7 +99,7 @@ public class UpdateContentTypeValidatorTests
     {
         // Arrange
         var command = new UpdateContentTypeCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             Name: new string('a', TestConstants.Content.ContentType.NameMaxLength + 1)
         );
 
@@ -121,7 +121,7 @@ public class UpdateContentTypeValidatorTests
     public async Task Validate_WithBothEmptyIdAndName_ShouldHaveTwoErrors()
     {
         // Arrange
-        var command = new UpdateContentTypeCommand(Id: Guid.Empty, Name: string.Empty);
+        var command = new UpdateContentTypeCommand(Id: "", Name: string.Empty);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
