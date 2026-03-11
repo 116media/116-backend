@@ -17,8 +17,10 @@ public class GetPackageByIdHandler(IPackageRepository packageRepository, IMapper
     /// <inheritdoc />
     public async Task<GetPackageByIdResult> Handle(GetPackageByIdQuery query, CancellationToken cancellationToken)
     {
+        Guid id = Guid.Parse(query.Id);
+
         PackageEntity package = await packageRepository.GetByIdWithSlotsOrThrowAsync(
-            id: query.Id,
+            id: id,
             cancellationToken: cancellationToken
         );
 
