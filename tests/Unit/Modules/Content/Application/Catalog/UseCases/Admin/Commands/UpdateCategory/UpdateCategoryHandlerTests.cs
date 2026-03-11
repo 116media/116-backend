@@ -42,7 +42,7 @@ public class UpdateCategoryHandlerTests : BaseContentHandlerTest
         string newSlug = TestConstants.Content.Category.AnotherValidSlug;
 
         var command = new UpdateCategoryCommand(
-            Id: category.Id,
+            Id: category.Id.ToString(),
             Name: newName,
             Slug: newSlug,
             Description: "Updated description"
@@ -78,7 +78,12 @@ public class UpdateCategoryHandlerTests : BaseContentHandlerTest
             slug
         );
 
-        var command = new UpdateCategoryCommand(Id: category.Id, Name: "Updated Name", Slug: slug, Description: null);
+        var command = new UpdateCategoryCommand(
+            Id: category.Id.ToString(),
+            Name: "Updated Name",
+            Slug: slug,
+            Description: null
+        );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
         // Slug belongs to the same entity — no conflict
@@ -99,10 +104,10 @@ public class UpdateCategoryHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenCategoryNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
 
         var command = new UpdateCategoryCommand(
-            Id: nonExistentId,
+            Id: nonExistentId.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: null
@@ -126,7 +131,7 @@ public class UpdateCategoryHandlerTests : BaseContentHandlerTest
         string conflictingSlug = TestConstants.Content.Category.AnotherValidSlug;
 
         var command = new UpdateCategoryCommand(
-            Id: category.Id,
+            Id: category.Id.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: conflictingSlug,
             Description: null
