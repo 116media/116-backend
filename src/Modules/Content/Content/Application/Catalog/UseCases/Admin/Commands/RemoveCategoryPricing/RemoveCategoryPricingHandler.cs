@@ -27,22 +27,24 @@ public class RemoveCategoryPricingHandler(
         CancellationToken cancellationToken
     )
     {
+        Guid categoryId = Guid.Parse(command.CategoryId);
+
         CategoryPricingEntity? pricing = await categoryRepository.GetPricingAsync(
-            categoryId: command.CategoryId,
+            categoryId: categoryId,
             pricingTierId: command.PricingTierId,
             cancellationToken: cancellationToken
         );
 
         if (pricing is null)
         {
-            throw CategoryErrors.PricingNotFound(categoryId: command.CategoryId, tierId: command.PricingTierId);
+            throw CategoryErrors.PricingNotFound(categoryId: categoryId, tierId: command.PricingTierId);
         }
 
         categoryRepository.RemovePricing(pricing: pricing);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         IReadOnlyList<CategoryPricingEntity> remaining = await categoryRepository.GetPricingByCategoryAsync(
-            categoryId: command.CategoryId,
+            categoryId: categoryId,
             cancellationToken: cancellationToken
         );
 
