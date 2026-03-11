@@ -20,7 +20,7 @@ public class UpdateCustomerValidatorTests
     {
         // Arrange
         var command = new UpdateCustomerCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             FullName: TestConstants.Content.Customer.ValidFullName,
             Phone: TestConstants.Content.Customer.ValidPhone,
             Company: TestConstants.Content.Customer.ValidCompany,
@@ -40,7 +40,7 @@ public class UpdateCustomerValidatorTests
     {
         // Arrange
         var command = new UpdateCustomerCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             FullName: TestConstants.Content.Customer.ValidFullName,
             Phone: null,
             Company: null,
@@ -63,7 +63,7 @@ public class UpdateCustomerValidatorTests
     {
         // Arrange
         var command = new UpdateCustomerCommand(
-            Id: Guid.Empty,
+            Id: "",
             FullName: TestConstants.Content.Customer.ValidFullName,
             Phone: null,
             Company: null,
@@ -91,7 +91,7 @@ public class UpdateCustomerValidatorTests
     {
         // Arrange
         var command = new UpdateCustomerCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             FullName: string.Empty,
             Phone: null,
             Company: null,
