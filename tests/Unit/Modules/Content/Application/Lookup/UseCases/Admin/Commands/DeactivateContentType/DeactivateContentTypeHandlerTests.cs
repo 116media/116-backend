@@ -36,7 +36,7 @@ public class DeactivateContentTypeHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity active = ContentTypeFactory.CreateDefault();
-        var command = new DeactivateContentTypeCommand(Id: active.Id);
+        var command = new DeactivateContentTypeCommand(Id: active.Id.ToString());
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(active);
 
@@ -58,7 +58,7 @@ public class DeactivateContentTypeHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity inactive = ContentTypeFactory.CreateInactive();
-        var command = new DeactivateContentTypeCommand(Id: inactive.Id);
+        var command = new DeactivateContentTypeCommand(Id: inactive.Id.ToString());
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(inactive);
 
@@ -73,8 +73,8 @@ public class DeactivateContentTypeHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
-        var command = new DeactivateContentTypeCommand(Id: nonExistentId);
+        var nonExistentId = Guid.NewGuid();
+        var command = new DeactivateContentTypeCommand(Id: nonExistentId.ToString());
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrowNotFound(nonExistentId);
 
