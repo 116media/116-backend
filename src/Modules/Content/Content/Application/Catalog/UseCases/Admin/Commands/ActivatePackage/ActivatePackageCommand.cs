@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.ActivatePacka
 /// Command to activate a package, making it available for new orders.
 /// </summary>
 /// <param name="Id">The unique identifier of the package to activate.</param>
-public record ActivatePackageCommand(Guid Id) : ICommand<ActivatePackageResult>;
+public record ActivatePackageCommand(string Id) : ICommand<ActivatePackageResult>;
 
 /// <summary>
 /// Result returned after successfully activating a package.
