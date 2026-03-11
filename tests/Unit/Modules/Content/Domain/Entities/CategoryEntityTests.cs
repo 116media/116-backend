@@ -19,13 +19,13 @@ public class CategoryEntityTests
     public void Create_WithValidValues_ShouldCreateCategory()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
-        string name = TestConstants.Content.Category.ValidName;
-        string slug = TestConstants.Content.Category.ValidSlug;
-        string description = TestConstants.Content.Category.ValidDescription;
+        var id = Guid.NewGuid();
+        const string name = TestConstants.Content.Category.ValidName;
+        const string slug = TestConstants.Content.Category.ValidSlug;
+        const string description = TestConstants.Content.Category.ValidDescription;
 
         // Act
-        CategoryEntity entity = CategoryEntity.Create(id, ContentTypeId, name, slug, description, isFree: false);
+        var entity = CategoryEntity.Create(id, ContentTypeId, name, slug, description, isFree: false);
 
         // Assert
         entity.Id.Should().Be(id);
@@ -41,7 +41,7 @@ public class CategoryEntityTests
     public void Create_WithNullDescription_ShouldSucceed()
     {
         // Act
-        CategoryEntity entity = CategoryEntity.Create(
+        var entity = CategoryEntity.Create(
             Guid.NewGuid(),
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
@@ -58,7 +58,7 @@ public class CategoryEntityTests
     public void Create_WithIsFreeTrue_ShouldMarkAsFree()
     {
         // Act
-        CategoryEntity entity = CategoryEntity.Create(
+        var entity = CategoryEntity.Create(
             Guid.NewGuid(),
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
@@ -121,7 +121,7 @@ public class CategoryEntityTests
     public void Update_WithValidValues_ShouldUpdate()
     {
         // Arrange
-        CategoryEntity entity = CategoryEntity.Create(
+        var entity = CategoryEntity.Create(
             Guid.NewGuid(),
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
@@ -150,7 +150,7 @@ public class CategoryEntityTests
     public void Update_WithInvalidName_ShouldThrowBadRequestException(string? invalidName)
     {
         // Arrange
-        CategoryEntity entity = CategoryEntity.Create(
+        var entity = CategoryEntity.Create(
             Guid.NewGuid(),
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
@@ -173,7 +173,7 @@ public class CategoryEntityTests
     public void Update_WithInvalidSlug_ShouldThrowBadRequestException(string? invalidSlug)
     {
         // Arrange
-        CategoryEntity entity = CategoryEntity.Create(
+        var entity = CategoryEntity.Create(
             Guid.NewGuid(),
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
@@ -197,7 +197,7 @@ public class CategoryEntityTests
     public void Activate_WhenInactive_ShouldReturnTrue()
     {
         // Arrange
-        CategoryEntity entity = CategoryEntity.Create(
+        var entity = CategoryEntity.Create(
             Guid.NewGuid(),
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
@@ -216,7 +216,7 @@ public class CategoryEntityTests
     public void Activate_WhenAlreadyActive_ShouldReturnFalse()
     {
         // Arrange
-        CategoryEntity entity = CategoryEntity.Create(
+        var entity = CategoryEntity.Create(
             Guid.NewGuid(),
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
@@ -233,7 +233,7 @@ public class CategoryEntityTests
     public void Deactivate_WhenActive_ShouldReturnTrue()
     {
         // Arrange
-        CategoryEntity entity = CategoryEntity.Create(
+        var entity = CategoryEntity.Create(
             Guid.NewGuid(),
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
@@ -251,7 +251,7 @@ public class CategoryEntityTests
     public void Deactivate_WhenAlreadyInactive_ShouldReturnFalse()
     {
         // Arrange
-        CategoryEntity entity = CategoryEntity.Create(
+        var entity = CategoryEntity.Create(
             Guid.NewGuid(),
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
