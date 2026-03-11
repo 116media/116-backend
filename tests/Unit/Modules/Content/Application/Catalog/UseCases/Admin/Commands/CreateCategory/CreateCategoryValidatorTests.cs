@@ -20,7 +20,7 @@ public class CreateCategoryValidatorTests
     {
         // Arrange
         var command = new CreateCategoryCommand(
-            ContentTypeId: Guid.NewGuid(),
+            ContentTypeId: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
@@ -40,7 +40,7 @@ public class CreateCategoryValidatorTests
     {
         // Arrange
         var command = new CreateCategoryCommand(
-            ContentTypeId: Guid.NewGuid(),
+            ContentTypeId: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: "artist-profile",
             Description: null,
@@ -63,7 +63,7 @@ public class CreateCategoryValidatorTests
     {
         // Arrange
         var command = new CreateCategoryCommand(
-            ContentTypeId: Guid.Empty,
+            ContentTypeId: string.Empty,
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: null,
@@ -92,7 +92,7 @@ public class CreateCategoryValidatorTests
     {
         // Arrange
         var command = new CreateCategoryCommand(
-            ContentTypeId: Guid.NewGuid(),
+            ContentTypeId: Guid.NewGuid().ToString(),
             Name: string.Empty,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: null,
@@ -116,7 +116,7 @@ public class CreateCategoryValidatorTests
     {
         // Arrange
         var command = new CreateCategoryCommand(
-            ContentTypeId: Guid.NewGuid(),
+            ContentTypeId: Guid.NewGuid().ToString(),
             Name: null!,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: null,
@@ -140,7 +140,7 @@ public class CreateCategoryValidatorTests
     {
         // Arrange
         var command = new CreateCategoryCommand(
-            ContentTypeId: Guid.NewGuid(),
+            ContentTypeId: Guid.NewGuid().ToString(),
             Name: new string('a', TestConstants.Content.Category.NameMaxLength + 1),
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: null,
@@ -169,7 +169,7 @@ public class CreateCategoryValidatorTests
     {
         // Arrange
         var command = new CreateCategoryCommand(
-            ContentTypeId: Guid.NewGuid(),
+            ContentTypeId: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: string.Empty,
             Description: null,
@@ -193,7 +193,7 @@ public class CreateCategoryValidatorTests
     {
         // Arrange
         var command = new CreateCategoryCommand(
-            ContentTypeId: Guid.NewGuid(),
+            ContentTypeId: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: new string('a', TestConstants.Content.Category.SlugMaxLength + 1),
             Description: null,
@@ -218,7 +218,7 @@ public class CreateCategoryValidatorTests
     {
         // Arrange
         var command = new CreateCategoryCommand(
-            ContentTypeId: Guid.NewGuid(),
+            ContentTypeId: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: "Artist Profile",
             Description: null,
@@ -247,7 +247,7 @@ public class CreateCategoryValidatorTests
     {
         // Arrange
         var command = new CreateCategoryCommand(
-            ContentTypeId: Guid.NewGuid(),
+            ContentTypeId: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: new string('d', TestConstants.Content.Category.DescriptionMaxLength + 1),
@@ -272,7 +272,7 @@ public class CreateCategoryValidatorTests
     {
         // Arrange
         var command = new CreateCategoryCommand(
-            ContentTypeId: Guid.NewGuid(),
+            ContentTypeId: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: null,
