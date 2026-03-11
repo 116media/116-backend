@@ -189,7 +189,7 @@ public class CatalogSpecificationsTests
     public void CategoryPricingByCategorySpecification_WithMatchingCategoryId_ShouldReturnTrue()
     {
         // Arrange
-        Guid categoryId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
         CategoryPricingEntity pricing = CategoryPricingFactory.Create(categoryId, Guid.NewGuid());
         var spec = new CategoryPricingByCategorySpecification(categoryId);
         Func<CategoryPricingEntity, bool> predicate = spec.ToExpression().Compile();
@@ -218,8 +218,8 @@ public class CatalogSpecificationsTests
     public void CategoryPricingByIdsSpecification_WithMatchingIds_ShouldReturnTrue()
     {
         // Arrange
-        Guid categoryId = Guid.NewGuid();
-        Guid tierId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        var tierId = Guid.NewGuid();
         CategoryPricingEntity pricing = CategoryPricingFactory.Create(categoryId, tierId);
         var spec = new CategoryPricingByIdsSpecification(categoryId, tierId);
         Func<CategoryPricingEntity, bool> predicate = spec.ToExpression().Compile();
@@ -232,7 +232,7 @@ public class CatalogSpecificationsTests
     public void CategoryPricingByIdsSpecification_WithDifferentTierId_ShouldReturnFalse()
     {
         // Arrange
-        Guid categoryId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
         CategoryPricingEntity pricing = CategoryPricingFactory.Create(categoryId, Guid.NewGuid());
         var spec = new CategoryPricingByIdsSpecification(categoryId, Guid.NewGuid());
         Func<CategoryPricingEntity, bool> predicate = spec.ToExpression().Compile();
