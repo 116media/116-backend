@@ -37,7 +37,7 @@ public class ActivateCategoryHandlerTests : BaseContentHandlerTest
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
         CategoryEntity inactive = CategoryFactory.CreateInactive(contentType.Id);
-        var command = new ActivateCategoryCommand(Id: inactive.Id);
+        var command = new ActivateCategoryCommand(Id: inactive.Id.ToString());
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(inactive);
 
@@ -56,7 +56,7 @@ public class ActivateCategoryHandlerTests : BaseContentHandlerTest
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
         CategoryEntity inactive = CategoryFactory.CreateInactive(contentType.Id);
-        var command = new ActivateCategoryCommand(Id: inactive.Id);
+        var command = new ActivateCategoryCommand(Id: inactive.Id.ToString());
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(inactive);
 
@@ -80,7 +80,7 @@ public class ActivateCategoryHandlerTests : BaseContentHandlerTest
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
         CategoryEntity active = CategoryFactory.Create(contentType.Id);
-        var command = new ActivateCategoryCommand(Id: active.Id);
+        var command = new ActivateCategoryCommand(Id: active.Id.ToString());
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(active);
 
@@ -97,7 +97,7 @@ public class ActivateCategoryHandlerTests : BaseContentHandlerTest
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
         CategoryEntity active = CategoryFactory.Create(contentType.Id);
-        var command = new ActivateCategoryCommand(Id: active.Id);
+        var command = new ActivateCategoryCommand(Id: active.Id.ToString());
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(active);
 
@@ -119,8 +119,8 @@ public class ActivateCategoryHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
-        var command = new ActivateCategoryCommand(Id: nonExistentId);
+        var nonExistentId = Guid.NewGuid();
+        var command = new ActivateCategoryCommand(Id: nonExistentId.ToString());
 
         _categoryRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
