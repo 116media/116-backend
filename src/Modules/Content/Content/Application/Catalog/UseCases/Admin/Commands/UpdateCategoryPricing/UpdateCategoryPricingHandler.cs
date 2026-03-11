@@ -26,15 +26,18 @@ public class UpdateCategoryPricingHandler(
         CancellationToken cancellationToken
     )
     {
+        Guid categoryId = Guid.Parse(command.CategoryId);
+        Guid pricingTierId = Guid.Parse(command.PricingTierId);
+
         CategoryPricingEntity? pricing = await categoryRepository.GetPricingAsync(
-            categoryId: command.CategoryId,
-            pricingTierId: command.PricingTierId,
+            categoryId: categoryId,
+            pricingTierId: pricingTierId,
             cancellationToken: cancellationToken
         );
 
         if (pricing is null)
         {
-            throw CategoryErrors.PricingNotFound(categoryId: command.CategoryId, tierId: command.PricingTierId);
+            throw CategoryErrors.PricingNotFound(categoryId: categoryId, tierId: pricingTierId);
         }
 
         pricing.UpdatePrice(priceUsd: command.PriceUsd);
