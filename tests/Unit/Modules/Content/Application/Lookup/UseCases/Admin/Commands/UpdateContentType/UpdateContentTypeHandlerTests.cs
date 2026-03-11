@@ -38,7 +38,7 @@ public class UpdateContentTypeHandlerTests : BaseContentHandlerTest
         // Arrange
         ContentTypeEntity existing = ContentTypeFactory.Create(TestConstants.Content.ContentType.ValidName);
         var command = new UpdateContentTypeCommand(
-            Id: existing.Id,
+            Id: existing.Id.ToString(),
             Name: TestConstants.Content.ContentType.AnotherValidName
         );
 
@@ -59,7 +59,10 @@ public class UpdateContentTypeHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity existing = ContentTypeFactory.Create(TestConstants.Content.ContentType.ValidName);
-        var command = new UpdateContentTypeCommand(Id: existing.Id, Name: TestConstants.Content.ContentType.ValidName);
+        var command = new UpdateContentTypeCommand(
+            Id: existing.Id.ToString(),
+            Name: TestConstants.Content.ContentType.ValidName
+        );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(existing);
         // Same name exists — but it belongs to the same entity so allowed
@@ -81,9 +84,9 @@ public class UpdateContentTypeHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
         var command = new UpdateContentTypeCommand(
-            Id: nonExistentId,
+            Id: nonExistentId.ToString(),
             Name: TestConstants.Content.ContentType.AnotherValidName
         );
 
@@ -102,7 +105,7 @@ public class UpdateContentTypeHandlerTests : BaseContentHandlerTest
         // Arrange
         ContentTypeEntity existing = ContentTypeFactory.Create(TestConstants.Content.ContentType.ValidName);
         string conflictingName = TestConstants.Content.ContentType.AnotherValidName;
-        var command = new UpdateContentTypeCommand(Id: existing.Id, Name: conflictingName);
+        var command = new UpdateContentTypeCommand(Id: existing.Id.ToString(), Name: conflictingName);
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(existing);
         _lookupRepositoryMock.SetupContentTypeExistsByName(conflictingName, true);
