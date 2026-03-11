@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.ActivatePackage.V1;
 
-/// <summary>Response model for a successful package activation.</summary>
+/// <summary>
+/// Response model for a successful package activation.
+/// </summary>
 /// <param name="Package">The updated package information.</param>
 public record ActivatePackageResponse(PackageDto Package);
 
@@ -23,7 +25,7 @@ public class ActivatePackageEndpointV1 : ICarterModule
 {
     /// <summary>
     /// Configures the package activation route within the API pipeline.
-    /// Maps the <c>PATCH /api/v1/admin/packages/{id:guid}/activate</c> endpoint to handle package activation requests.
+    /// Maps the <c>PATCH /api/v1/admin/packages/{id: guid}/activate</c> endpoint to handle package activation requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -34,8 +36,8 @@ public class ActivatePackageEndpointV1 : ICarterModule
 
         group
             .MapPatch(
-                $"/{{id:guid}}/{CatalogRouteConstants.Activate}",
-                async (Guid id, IDispatcher dispatcher) =>
+                $"/{{id}}/{CatalogRouteConstants.Activate}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new ActivatePackageCommand(Id: id);
                     ActivatePackageResult result = await dispatcher.Send(request: command);
