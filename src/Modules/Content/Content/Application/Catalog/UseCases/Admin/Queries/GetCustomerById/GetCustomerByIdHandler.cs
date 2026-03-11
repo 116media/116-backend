@@ -17,8 +17,10 @@ public class GetCustomerByIdHandler(ICustomerRepository customerRepository, IMap
     /// <inheritdoc />
     public async Task<GetCustomerByIdResult> Handle(GetCustomerByIdQuery query, CancellationToken cancellationToken)
     {
+        Guid id = Guid.Parse(query.Id);
+
         CustomerEntity customer = await customerRepository.GetByIdOrThrowAsync(
-            id: query.Id,
+            id: id,
             cancellationToken: cancellationToken
         );
 
