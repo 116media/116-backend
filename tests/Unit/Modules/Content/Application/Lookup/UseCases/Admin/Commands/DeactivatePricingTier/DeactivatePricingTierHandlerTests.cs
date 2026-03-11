@@ -36,7 +36,7 @@ public class DeactivatePricingTierHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PricingTierEntity active = PricingTierFactory.CreateDefault();
-        var command = new DeactivatePricingTierCommand(Id: active.Id);
+        var command = new DeactivatePricingTierCommand(Id: active.Id.ToString());
 
         _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(active);
 
@@ -58,7 +58,7 @@ public class DeactivatePricingTierHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PricingTierEntity inactive = PricingTierFactory.CreateInactive();
-        var command = new DeactivatePricingTierCommand(Id: inactive.Id);
+        var command = new DeactivatePricingTierCommand(Id: inactive.Id.ToString());
 
         _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(inactive);
 
@@ -74,7 +74,7 @@ public class DeactivatePricingTierHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PricingTierEntity inactive = PricingTierFactory.CreateInactive();
-        var command = new DeactivatePricingTierCommand(Id: inactive.Id);
+        var command = new DeactivatePricingTierCommand(Id: inactive.Id.ToString());
 
         _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(inactive);
 
@@ -96,8 +96,8 @@ public class DeactivatePricingTierHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
-        var command = new DeactivatePricingTierCommand(Id: nonExistentId);
+        var nonExistentId = Guid.NewGuid();
+        var command = new DeactivatePricingTierCommand(Id: nonExistentId.ToString());
 
         _lookupRepositoryMock.SetupGetPricingTierByIdOrThrowNotFound(nonExistentId);
 
