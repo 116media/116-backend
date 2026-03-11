@@ -50,7 +50,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
         CustomerEntity entity = CustomerFactory.CreateDefault();
 
         // Act
-        CustomerDto result = entity.ToCustomerDto(Mapper);
+        var result = entity.ToCustomerDto(Mapper);
 
         // Assert
         result.Should().NotBeNull();
@@ -70,7 +70,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
         PackageEntity entity = PackageFactory.Create();
 
         // Act
-        PackageDto result = entity.ToPackageDto(Mapper);
+        var result = entity.ToPackageDto(Mapper);
 
         // Assert
         result.Should().NotBeNull();
@@ -116,7 +116,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
         PackageSlotEntity entity = PackageSlotFactory.CreateOpen(Guid.NewGuid());
 
         // Act
-        PackageSlotDto result = entity.ToPackageSlotDto(Mapper);
+        var result = entity.ToPackageSlotDto(Mapper);
 
         // Assert
         result.Should().NotBeNull();
@@ -132,7 +132,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
     public void ToCategoryDtos_WithMultipleEntities_ShouldReturnMappedList()
     {
         // Arrange
-        Guid contentTypeId = Guid.NewGuid();
+        var contentTypeId = Guid.NewGuid();
         IReadOnlyList<CategoryEntity> entities = new List<CategoryEntity>
         {
             CategoryFactory.Create(contentTypeId),
