@@ -25,10 +25,9 @@ public class CreateCategoryHandler(
     /// <inheritdoc />
     public async Task<CreateCategoryResult> Handle(CreateCategoryCommand command, CancellationToken cancellationToken)
     {
-        await lookupRepository.GetContentTypeByIdOrThrowAsync(
-            id: command.ContentTypeId,
-            cancellationToken: cancellationToken
-        );
+        Guid contentTypeId = Guid.Parse(command.ContentTypeId);
+
+        await lookupRepository.GetContentTypeByIdOrThrowAsync(id: contentTypeId, cancellationToken: cancellationToken);
 
         CategoryEntity? existing = await categoryRepository.GetBySlugAsync(
             slug: command.Slug,
@@ -42,7 +41,7 @@ public class CreateCategoryHandler(
 
         var category = CategoryEntity.Create(
             id: Guid.NewGuid(),
-            contentTypeId: command.ContentTypeId,
+            contentTypeId: contentTypeId,
             name: command.Name,
             slug: command.Slug,
             description: command.Description,
