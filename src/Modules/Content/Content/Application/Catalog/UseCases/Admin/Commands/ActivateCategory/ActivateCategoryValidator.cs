@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Validators;
+using _116.Shared.Application.Extensions;
 using FluentValidation;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.ActivateCategory;
@@ -13,6 +13,6 @@ public class ActivateCategoryValidator : AbstractValidator<ActivateCategoryComma
     /// </summary>
     public ActivateCategoryValidator()
     {
-        RuleFor(x => x.Id).ValidCategoryId();
+        RuleFor(x => x.Id).IsValidGuid("Category ID");
     }
 }
