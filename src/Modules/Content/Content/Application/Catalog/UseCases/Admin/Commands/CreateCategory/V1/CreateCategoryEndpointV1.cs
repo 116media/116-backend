@@ -16,12 +16,11 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategor
 /// <summary>
 /// Request model for creating a category.
 /// </summary>
-/// <param name="ContentTypeId">The identifier of the content type this category belongs to.</param>
 /// <param name="Name">The display name of the category.</param>
 /// <param name="Slug">The URL-safe slug for the category.</param>
 /// <param name="Description">An optional description of the category.</param>
 /// <param name="IsFree">Whether content in this category requires no payment.</param>
-public record CreateCategoryRequest(Guid ContentTypeId, string Name, string Slug, string? Description, bool IsFree);
+public record CreateCategoryRequest(string Name, string Slug, string? Description, bool IsFree);
 
 /// <summary>
 /// Response model for successful category creation.
@@ -48,11 +47,16 @@ public class CreateCategoryEndpointV1 : ICarterModule
 
         group
             .MapPost(
-                "/",
-                async (CreateCategoryRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                "/{contentTypeId}",
+                async (
+                    string contentTypeId,
+                    CreateCategoryRequest request,
+                    IDispatcher dispatcher,
+                    HttpContext httpContext
+                ) =>
                 {
                     var command = new CreateCategoryCommand(
-                        ContentTypeId: request.ContentTypeId,
+                        ContentTypeId: contentTypeId,
                         Name: request.Name,
                         Slug: request.Slug,
                         Description: request.Description,
