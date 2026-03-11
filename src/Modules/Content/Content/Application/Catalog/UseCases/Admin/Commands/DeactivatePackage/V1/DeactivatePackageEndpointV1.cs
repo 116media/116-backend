@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivatePackage.V1;
 
-/// <summary>Response model for a successful package deactivation.</summary>
+/// <summary>
+/// Response model for a successful package deactivation.
+/// </summary>
 /// <param name="Package">The updated package information.</param>
 public record DeactivatePackageResponse(PackageDto Package);
 
@@ -34,8 +36,8 @@ public class DeactivatePackageEndpointV1 : ICarterModule
 
         group
             .MapPatch(
-                $"/{{id:guid}}/{CatalogRouteConstants.Deactivate}",
-                async (Guid id, IDispatcher dispatcher) =>
+                $"/{{id}}/{CatalogRouteConstants.Deactivate}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new DeactivatePackageCommand(Id: id);
                     DeactivatePackageResult result = await dispatcher.Send(request: command);
