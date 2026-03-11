@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivateCat
 /// Command to deactivate a category, preventing it from being used in new content or orders.
 /// </summary>
 /// <param name="Id">The unique identifier of the category to deactivate.</param>
-public record DeactivateCategoryCommand(Guid Id) : ICommand<DeactivateCategoryResult>;
+public record DeactivateCategoryCommand(string Id) : ICommand<DeactivateCategoryResult>;
 
 /// <summary>
 /// Result returned after successfully deactivating a category.
