@@ -34,7 +34,7 @@ public class GetPackageByIdHandlerTests : BaseContentHandlerTest
         PackageEntity package = PackageFactory.CreateDefault();
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
 
-        var query = new GetPackageByIdQuery(Id: package.Id);
+        var query = new GetPackageByIdQuery(Id: package.Id.ToString());
 
         // Act
         GetPackageByIdResult result = await _handler.Handle(query, CancellationToken.None);
@@ -53,10 +53,10 @@ public class GetPackageByIdHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenPackageNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrowNotFound(nonExistentId);
 
-        var query = new GetPackageByIdQuery(Id: nonExistentId);
+        var query = new GetPackageByIdQuery(Id: nonExistentId.ToString());
 
         // Act
         Func<Task> act = async () => await _handler.Handle(query, CancellationToken.None);
