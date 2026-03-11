@@ -18,7 +18,7 @@ public class DeactivatePromotionLevelValidatorTests
     public async Task Validate_WithValidGuid_ShouldNotHaveErrors()
     {
         // Arrange
-        var command = new DeactivatePromotionLevelCommand(Id: Guid.NewGuid());
+        var command = new DeactivatePromotionLevelCommand(Id: Guid.NewGuid().ToString());
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -36,7 +36,7 @@ public class DeactivatePromotionLevelValidatorTests
     public async Task Validate_WithEmptyGuid_ShouldHaveError()
     {
         // Arrange
-        var command = new DeactivatePromotionLevelCommand(Id: Guid.Empty);
+        var command = new DeactivatePromotionLevelCommand(Id: "");
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
