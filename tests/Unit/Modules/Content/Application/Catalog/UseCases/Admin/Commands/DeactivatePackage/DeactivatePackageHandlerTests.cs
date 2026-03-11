@@ -36,7 +36,7 @@ public class DeactivatePackageHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PackageEntity active = PackageFactory.Create();
-        var command = new DeactivatePackageCommand(Id: active.Id);
+        var command = new DeactivatePackageCommand(Id: active.Id.ToString());
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(active);
 
@@ -54,7 +54,7 @@ public class DeactivatePackageHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PackageEntity active = PackageFactory.Create();
-        var command = new DeactivatePackageCommand(Id: active.Id);
+        var command = new DeactivatePackageCommand(Id: active.Id.ToString());
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(active);
 
@@ -77,7 +77,7 @@ public class DeactivatePackageHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PackageEntity inactive = PackageFactory.CreateInactive();
-        var command = new DeactivatePackageCommand(Id: inactive.Id);
+        var command = new DeactivatePackageCommand(Id: inactive.Id.ToString());
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(inactive);
 
@@ -93,7 +93,7 @@ public class DeactivatePackageHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PackageEntity inactive = PackageFactory.CreateInactive();
-        var command = new DeactivatePackageCommand(Id: inactive.Id);
+        var command = new DeactivatePackageCommand(Id: inactive.Id.ToString());
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(inactive);
 
@@ -115,8 +115,8 @@ public class DeactivatePackageHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
-        var command = new DeactivatePackageCommand(Id: nonExistentId);
+        var nonExistentId = Guid.NewGuid();
+        var command = new DeactivatePackageCommand(Id: nonExistentId.ToString());
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrowNotFound(nonExistentId);
 
