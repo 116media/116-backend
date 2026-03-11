@@ -45,8 +45,8 @@ public class UpdateCategoryEndpointV1 : ICarterModule
 
         group
             .MapPut(
-                "/{id:guid}",
-                async (Guid id, UpdateCategoryRequest request, IDispatcher dispatcher) =>
+                "/{id}",
+                async (string id, UpdateCategoryRequest request, IDispatcher dispatcher) =>
                 {
                     var command = new UpdateCategoryCommand(
                         Id: id,
