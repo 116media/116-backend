@@ -12,7 +12,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCustome
 /// <param name="Phone">The new optional phone number.</param>
 /// <param name="Company">The new optional company or label name.</param>
 /// <param name="Notes">The new optional internal notes.</param>
-public record UpdateCustomerCommand(Guid Id, string FullName, string? Phone, string? Company, string? Notes)
+public record UpdateCustomerCommand(string Id, string FullName, string? Phone, string? Company, string? Notes)
     : ICommand<UpdateCustomerResult>;
 
 /// <summary>
