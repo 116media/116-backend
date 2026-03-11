@@ -14,7 +14,7 @@ public class PackageErrorsTests
     public void NotFound_WithId_ShouldReturnNotFoundException()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         NotFoundException exception = PackageErrors.NotFound(id);
@@ -83,7 +83,7 @@ public class PackageErrorsTests
     public void SlotNotFound_WithSlotId_ShouldReturnNotFoundException()
     {
         // Arrange
-        Guid slotId = Guid.NewGuid();
+        var slotId = Guid.NewGuid();
 
         // Act
         NotFoundException exception = PackageErrors.SlotNotFound(slotId);
