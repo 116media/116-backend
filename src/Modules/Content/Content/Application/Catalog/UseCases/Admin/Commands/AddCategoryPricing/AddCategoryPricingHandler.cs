@@ -28,7 +28,9 @@ public class AddCategoryPricingHandler(
         CancellationToken cancellationToken
     )
     {
-        await categoryRepository.GetByIdOrThrowAsync(id: command.CategoryId, cancellationToken: cancellationToken);
+        Guid categoryId = Guid.Parse(command.CategoryId);
+
+        await categoryRepository.GetByIdOrThrowAsync(id: categoryId, cancellationToken: cancellationToken);
 
         PricingTierEntity pricingTier = await lookupRepository.GetPricingTierByIdOrThrowAsync(
             id: command.PricingTierId,
@@ -41,7 +43,7 @@ public class AddCategoryPricingHandler(
         }
 
         CategoryPricingEntity? existing = await categoryRepository.GetPricingAsync(
-            categoryId: command.CategoryId,
+            categoryId: categoryId,
             pricingTierId: command.PricingTierId,
             cancellationToken: cancellationToken
         );
@@ -53,7 +55,7 @@ public class AddCategoryPricingHandler(
 
         var pricing = CategoryPricingEntity.Create(
             id: Guid.NewGuid(),
-            categoryId: command.CategoryId,
+            categoryId: categoryId,
             pricingTierId: command.PricingTierId,
             priceUsd: command.PriceUsd
         );
@@ -63,7 +65,7 @@ public class AddCategoryPricingHandler(
 
         CategoryPricingEntity created =
             await categoryRepository.GetPricingAsync(
-                categoryId: command.CategoryId,
+                categoryId: categoryId,
                 pricingTierId: command.PricingTierId,
                 cancellationToken: cancellationToken
             ) ?? pricing;
