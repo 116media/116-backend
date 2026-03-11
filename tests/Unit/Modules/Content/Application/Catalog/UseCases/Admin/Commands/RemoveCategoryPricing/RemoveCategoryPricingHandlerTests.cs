@@ -40,7 +40,10 @@ public class RemoveCategoryPricingHandlerTests : BaseContentHandlerTest
         PricingTierEntity pricingTier = PricingTierFactory.CreateDefault();
         CategoryPricingEntity pricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id);
 
-        var command = new RemoveCategoryPricingCommand(CategoryId: category.Id, PricingTierId: pricingTier.Id);
+        var command = new RemoveCategoryPricingCommand(
+            CategoryId: category.Id.ToString(),
+            PricingTierId: pricingTier.Id
+        );
 
         _categoryRepositoryMock.SetupGetPricing(category.Id, pricingTier.Id, pricing);
         _categoryRepositoryMock.SetupGetPricingByCategory(category.Id, new List<CategoryPricingEntity>());
@@ -69,7 +72,7 @@ public class RemoveCategoryPricingHandlerTests : BaseContentHandlerTest
         CategoryPricingEntity pricingToRemove = CategoryPricingFactory.Create(category.Id, tier1.Id);
         CategoryPricingEntity remaining = CategoryPricingFactory.Create(category.Id, tier2.Id);
 
-        var command = new RemoveCategoryPricingCommand(CategoryId: category.Id, PricingTierId: tier1.Id);
+        var command = new RemoveCategoryPricingCommand(CategoryId: category.Id.ToString(), PricingTierId: tier1.Id);
 
         _categoryRepositoryMock.SetupGetPricing(category.Id, tier1.Id, pricingToRemove);
         _categoryRepositoryMock.SetupGetPricingByCategory(category.Id, new List<CategoryPricingEntity> { remaining });
@@ -89,10 +92,10 @@ public class RemoveCategoryPricingHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenPricingNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid categoryId = Guid.NewGuid();
-        Guid tierId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        var tierId = Guid.NewGuid();
 
-        var command = new RemoveCategoryPricingCommand(CategoryId: categoryId, PricingTierId: tierId);
+        var command = new RemoveCategoryPricingCommand(CategoryId: categoryId.ToString(), PricingTierId: tierId);
 
         _categoryRepositoryMock.SetupGetPricing(categoryId, tierId, null);
 
