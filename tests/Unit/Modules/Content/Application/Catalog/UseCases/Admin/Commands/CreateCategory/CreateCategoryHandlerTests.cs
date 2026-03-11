@@ -48,7 +48,7 @@ public class CreateCategoryHandlerTests : BaseContentHandlerTest
         string slug = TestConstants.Content.Category.ValidSlug;
 
         var command = new CreateCategoryCommand(
-            ContentTypeId: contentType.Id,
+            ContentTypeId: contentType.Id.ToString(),
             Name: name,
             Slug: slug,
             Description: TestConstants.Content.Category.ValidDescription,
@@ -83,7 +83,7 @@ public class CreateCategoryHandlerTests : BaseContentHandlerTest
         string slug = TestConstants.Content.Category.ValidSlug;
 
         var command = new CreateCategoryCommand(
-            ContentTypeId: contentType.Id,
+            ContentTypeId: contentType.Id.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: slug,
             Description: null,
@@ -111,7 +111,7 @@ public class CreateCategoryHandlerTests : BaseContentHandlerTest
         string slug = TestConstants.Content.Category.ValidSlug;
 
         var command = new CreateCategoryCommand(
-            ContentTypeId: contentType.Id,
+            ContentTypeId: contentType.Id.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: slug,
             Description: null,
@@ -142,10 +142,10 @@ public class CreateCategoryHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenContentTypeNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
 
         var command = new CreateCategoryCommand(
-            ContentTypeId: nonExistentId,
+            ContentTypeId: nonExistentId.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: null,
@@ -166,10 +166,10 @@ public class CreateCategoryHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
-        string slug = TestConstants.Content.Category.ValidSlug;
+        const string slug = TestConstants.Content.Category.ValidSlug;
 
         var command = new CreateCategoryCommand(
-            ContentTypeId: contentType.Id,
+            ContentTypeId: contentType.Id.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: slug,
             Description: null,
@@ -196,7 +196,7 @@ public class CreateCategoryHandlerTests : BaseContentHandlerTest
         string slug = TestConstants.Content.Category.ValidSlug;
 
         var command = new CreateCategoryCommand(
-            ContentTypeId: contentType.Id,
+            ContentTypeId: contentType.Id.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: slug,
             Description: null,
