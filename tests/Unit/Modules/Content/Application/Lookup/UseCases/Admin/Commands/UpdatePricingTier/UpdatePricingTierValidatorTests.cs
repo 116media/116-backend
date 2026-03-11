@@ -20,7 +20,7 @@ public class UpdatePricingTierValidatorTests
     {
         // Arrange
         var command = new UpdatePricingTierCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.PricingTier.ValidName,
             Description: null
         );
@@ -38,7 +38,7 @@ public class UpdatePricingTierValidatorTests
     {
         // Arrange
         var command = new UpdatePricingTierCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.PricingTier.ValidName,
             Description: TestConstants.Content.PricingTier.ValidDescription
         );
@@ -60,7 +60,7 @@ public class UpdatePricingTierValidatorTests
     {
         // Arrange
         var command = new UpdatePricingTierCommand(
-            Id: Guid.Empty,
+            Id: "",
             Name: TestConstants.Content.PricingTier.ValidName,
             Description: null
         );
@@ -86,7 +86,11 @@ public class UpdatePricingTierValidatorTests
     public async Task Validate_WithEmptyName_ShouldHaveError()
     {
         // Arrange
-        var command = new UpdatePricingTierCommand(Id: Guid.NewGuid(), Name: string.Empty, Description: null);
+        var command = new UpdatePricingTierCommand(
+            Id: Guid.NewGuid().ToString(),
+            Name: string.Empty,
+            Description: null
+        );
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -106,7 +110,7 @@ public class UpdatePricingTierValidatorTests
     {
         // Arrange
         var command = new UpdatePricingTierCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             Name: new string('a', TestConstants.Content.PricingTier.NameMaxLength + 1),
             Description: null
         );
@@ -132,7 +136,7 @@ public class UpdatePricingTierValidatorTests
     public async Task Validate_WithEmptyIdAndName_ShouldHaveMultipleErrors()
     {
         // Arrange
-        var command = new UpdatePricingTierCommand(Id: Guid.Empty, Name: string.Empty, Description: null);
+        var command = new UpdatePricingTierCommand(Id: "", Name: string.Empty, Description: null);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
