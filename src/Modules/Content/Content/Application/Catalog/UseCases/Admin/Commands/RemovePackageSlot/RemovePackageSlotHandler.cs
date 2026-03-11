@@ -27,10 +27,9 @@ public class RemovePackageSlotHandler(
         CancellationToken cancellationToken
     )
     {
-        await packageRepository.GetByIdWithSlotsOrThrowAsync(
-            id: command.PackageId,
-            cancellationToken: cancellationToken
-        );
+        Guid packageId = Guid.Parse(command.PackageId);
+
+        await packageRepository.GetByIdWithSlotsOrThrowAsync(id: packageId, cancellationToken: cancellationToken);
 
         PackageSlotEntity? slot = await packageRepository.GetSlotByIdAsync(
             slotId: command.SlotId,
@@ -46,7 +45,7 @@ public class RemovePackageSlotHandler(
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         PackageEntity updatedPackage = await packageRepository.GetByIdWithSlotsOrThrowAsync(
-            id: command.PackageId,
+            id: packageId,
             cancellationToken: cancellationToken
         );
 
