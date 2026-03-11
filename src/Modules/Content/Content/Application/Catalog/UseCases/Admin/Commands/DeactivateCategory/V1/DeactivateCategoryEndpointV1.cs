@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivateCategory.V1;
 
-/// <summary>Response model for a successful category deactivation.</summary>
+/// <summary>
+/// Response model for a successful category deactivation.
+/// </summary>
 /// <param name="Category">The updated category information.</param>
 public record DeactivateCategoryResponse(CategoryDto Category);
 
@@ -34,8 +36,8 @@ public class DeactivateCategoryEndpointV1 : ICarterModule
 
         group
             .MapPatch(
-                $"/{{id:guid}}/{CatalogRouteConstants.Deactivate}",
-                async (Guid id, IDispatcher dispatcher) =>
+                $"/{{id}}/{CatalogRouteConstants.Deactivate}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new DeactivateCategoryCommand(Id: id);
                     DeactivateCategoryResult result = await dispatcher.Send(request: command);
