@@ -48,7 +48,7 @@ public class AddPackageSlotHandlerTests : BaseContentHandlerTest
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
 
         var command = new AddPackageSlotCommand(
-            PackageId: package.Id,
+            PackageId: package.Id.ToString(),
             CategoryId: category.Id,
             IsRequired: true,
             Quantity: TestConstants.Content.PackageSlot.ValidQuantity
@@ -75,7 +75,7 @@ public class AddPackageSlotHandlerTests : BaseContentHandlerTest
         PackageEntity package = PackageFactory.Create();
 
         var command = new AddPackageSlotCommand(
-            PackageId: package.Id,
+            PackageId: package.Id.ToString(),
             CategoryId: null,
             IsRequired: false,
             Quantity: TestConstants.Content.PackageSlot.ValidQuantity
@@ -108,10 +108,10 @@ public class AddPackageSlotHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenPackageNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentPackageId = Guid.NewGuid();
+        var nonExistentPackageId = Guid.NewGuid();
 
         var command = new AddPackageSlotCommand(
-            PackageId: nonExistentPackageId,
+            PackageId: nonExistentPackageId.ToString(),
             CategoryId: null,
             IsRequired: false,
             Quantity: TestConstants.Content.PackageSlot.ValidQuantity
@@ -131,10 +131,10 @@ public class AddPackageSlotHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PackageEntity package = PackageFactory.Create();
-        Guid nonExistentCategoryId = Guid.NewGuid();
+        var nonExistentCategoryId = Guid.NewGuid();
 
         var command = new AddPackageSlotCommand(
-            PackageId: package.Id,
+            PackageId: package.Id.ToString(),
             CategoryId: nonExistentCategoryId,
             IsRequired: true,
             Quantity: TestConstants.Content.PackageSlot.ValidQuantity
