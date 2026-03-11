@@ -20,7 +20,7 @@ public class UpdatePromotionLevelValidatorTests
     {
         // Arrange
         var command = new UpdatePromotionLevelCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
             PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd
@@ -39,7 +39,7 @@ public class UpdatePromotionLevelValidatorTests
     {
         // Arrange
         var command = new UpdatePromotionLevelCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
             PriceUsd: TestConstants.Content.PromotionLevel.ZeroPriceUsd
@@ -61,7 +61,7 @@ public class UpdatePromotionLevelValidatorTests
     {
         // Arrange
         var command = new UpdatePromotionLevelCommand(
-            Id: Guid.Empty,
+            Id: "",
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
             PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd
@@ -89,7 +89,7 @@ public class UpdatePromotionLevelValidatorTests
     {
         // Arrange
         var command = new UpdatePromotionLevelCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             Name: string.Empty,
             DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
             PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd
@@ -117,7 +117,7 @@ public class UpdatePromotionLevelValidatorTests
     {
         // Arrange
         var command = new UpdatePromotionLevelCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: 0,
             PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd
@@ -141,7 +141,7 @@ public class UpdatePromotionLevelValidatorTests
     {
         // Arrange
         var command = new UpdatePromotionLevelCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: -5,
             PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd
@@ -169,7 +169,7 @@ public class UpdatePromotionLevelValidatorTests
     {
         // Arrange
         var command = new UpdatePromotionLevelCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
             PriceUsd: -0.01m
