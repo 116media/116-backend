@@ -18,7 +18,7 @@ public class DeactivateContentTypeValidatorTests
     public async Task Validate_WithValidGuid_ShouldNotHaveErrors()
     {
         // Arrange
-        var command = new DeactivateContentTypeCommand(Id: Guid.NewGuid());
+        var command = new DeactivateContentTypeCommand(Id: Guid.NewGuid().ToString());
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -36,7 +36,7 @@ public class DeactivateContentTypeValidatorTests
     public async Task Validate_WithEmptyGuid_ShouldHaveError()
     {
         // Arrange
-        var command = new DeactivateContentTypeCommand(Id: Guid.Empty);
+        var command = new DeactivateContentTypeCommand(Id: "");
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
