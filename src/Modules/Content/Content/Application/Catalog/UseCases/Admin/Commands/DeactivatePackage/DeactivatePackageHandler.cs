@@ -26,8 +26,10 @@ public class DeactivatePackageHandler(
         CancellationToken cancellationToken
     )
     {
+        Guid id = Guid.Parse(command.Id);
+
         PackageEntity package = await packageRepository.GetByIdWithSlotsOrThrowAsync(
-            id: command.Id,
+            id: id,
             cancellationToken: cancellationToken
         );
 
@@ -41,7 +43,7 @@ public class DeactivatePackageHandler(
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         PackageEntity updated = await packageRepository.GetByIdWithSlotsOrThrowAsync(
-            id: command.Id,
+            id: id,
             cancellationToken: cancellationToken
         );
 
