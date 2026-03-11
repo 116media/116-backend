@@ -22,8 +22,10 @@ public class UpdateCustomerHandler(
     /// <inheritdoc />
     public async Task<UpdateCustomerResult> Handle(UpdateCustomerCommand command, CancellationToken cancellationToken)
     {
+        Guid id = Guid.Parse(command.Id);
+
         CustomerEntity customer = await customerRepository.GetByIdOrThrowAsync(
-            id: command.Id,
+            id: id,
             cancellationToken: cancellationToken
         );
 
