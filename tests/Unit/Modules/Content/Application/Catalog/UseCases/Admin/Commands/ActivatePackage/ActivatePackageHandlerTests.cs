@@ -36,7 +36,7 @@ public class ActivatePackageHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PackageEntity inactive = PackageFactory.CreateInactive();
-        var command = new ActivatePackageCommand(Id: inactive.Id);
+        var command = new ActivatePackageCommand(Id: inactive.Id.ToString());
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(inactive);
 
@@ -54,7 +54,7 @@ public class ActivatePackageHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PackageEntity inactive = PackageFactory.CreateInactive();
-        var command = new ActivatePackageCommand(Id: inactive.Id);
+        var command = new ActivatePackageCommand(Id: inactive.Id.ToString());
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(inactive);
 
@@ -77,7 +77,7 @@ public class ActivatePackageHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PackageEntity active = PackageFactory.Create();
-        var command = new ActivatePackageCommand(Id: active.Id);
+        var command = new ActivatePackageCommand(Id: active.Id.ToString());
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(active);
 
@@ -93,7 +93,7 @@ public class ActivatePackageHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PackageEntity active = PackageFactory.Create();
-        var command = new ActivatePackageCommand(Id: active.Id);
+        var command = new ActivatePackageCommand(Id: active.Id.ToString());
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(active);
 
@@ -115,8 +115,8 @@ public class ActivatePackageHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
-        var command = new ActivatePackageCommand(Id: nonExistentId);
+        var nonExistentId = Guid.NewGuid();
+        var command = new ActivatePackageCommand(Id: nonExistentId.ToString());
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrowNotFound(nonExistentId);
 
