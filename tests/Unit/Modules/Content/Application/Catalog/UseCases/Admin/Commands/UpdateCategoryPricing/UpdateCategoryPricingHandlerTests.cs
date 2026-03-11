@@ -46,8 +46,8 @@ public class UpdateCategoryPricingHandlerTests : BaseContentHandlerTest
         );
 
         var command = new UpdateCategoryPricingCommand(
-            CategoryId: category.Id,
-            PricingTierId: pricingTier.Id,
+            CategoryId: category.Id.ToString(),
+            PricingTierId: pricingTier.Id.ToString(),
             PriceUsd: TestConstants.Content.CategoryPricing.UpdatedPriceUsd
         );
 
@@ -70,12 +70,12 @@ public class UpdateCategoryPricingHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenPricingNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid categoryId = Guid.NewGuid();
-        Guid tierId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        var tierId = Guid.NewGuid();
 
         var command = new UpdateCategoryPricingCommand(
-            CategoryId: categoryId,
-            PricingTierId: tierId,
+            CategoryId: categoryId.ToString(),
+            PricingTierId: tierId.ToString(),
             PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
         );
 
