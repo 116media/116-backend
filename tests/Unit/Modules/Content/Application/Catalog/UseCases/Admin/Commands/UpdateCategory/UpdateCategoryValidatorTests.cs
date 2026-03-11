@@ -20,7 +20,7 @@ public class UpdateCategoryValidatorTests
     {
         // Arrange
         var command = new UpdateCategoryCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription
@@ -43,7 +43,7 @@ public class UpdateCategoryValidatorTests
     {
         // Arrange
         var command = new UpdateCategoryCommand(
-            Id: Guid.Empty,
+            Id: "",
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: null
@@ -70,7 +70,7 @@ public class UpdateCategoryValidatorTests
     {
         // Arrange
         var command = new UpdateCategoryCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             Name: string.Empty,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: null
@@ -93,7 +93,7 @@ public class UpdateCategoryValidatorTests
     {
         // Arrange
         var command = new UpdateCategoryCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             Name: new string('a', TestConstants.Content.Category.NameMaxLength + 1),
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: null
@@ -121,7 +121,7 @@ public class UpdateCategoryValidatorTests
     {
         // Arrange
         var command = new UpdateCategoryCommand(
-            Id: Guid.NewGuid(),
+            Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: "Invalid Slug",
             Description: null
