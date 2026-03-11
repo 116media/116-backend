@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.ActivateCategory.V1;
 
-/// <summary>Response model for a successful category activation.</summary>
+/// <summary>
+/// Response model for a successful category activation.
+/// </summary>
 /// <param name="Category">The updated category information.</param>
 public record ActivateCategoryResponse(CategoryDto Category);
 
@@ -34,8 +36,8 @@ public class ActivateCategoryEndpointV1 : ICarterModule
 
         group
             .MapPatch(
-                $"/{{id:guid}}/{CatalogRouteConstants.Activate}",
-                async (Guid id, IDispatcher dispatcher) =>
+                $"/{{id}}/{CatalogRouteConstants.Activate}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new ActivateCategoryCommand(Id: id);
                     ActivateCategoryResult result = await dispatcher.Send(request: command);
