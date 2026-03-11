@@ -26,8 +26,10 @@ public class DeactivateCategoryHandler(
         CancellationToken cancellationToken
     )
     {
+        Guid id = Guid.Parse(command.Id);
+
         CategoryEntity category = await categoryRepository.GetByIdOrThrowAsync(
-            id: command.Id,
+            id: id,
             cancellationToken: cancellationToken
         );
 
@@ -41,7 +43,7 @@ public class DeactivateCategoryHandler(
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         CategoryEntity updated = await categoryRepository.GetByIdOrThrowAsync(
-            id: command.Id,
+            id: id,
             cancellationToken: cancellationToken
         );
 
