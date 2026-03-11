@@ -41,7 +41,7 @@ public class UpdatePromotionLevelHandlerTests : BaseContentHandlerTest
         int newDuration = 14;
         decimal newPrice = 99.99m;
         var command = new UpdatePromotionLevelCommand(
-            Id: existing.Id,
+            Id: existing.Id.ToString(),
             Name: newName,
             DurationDays: newDuration,
             PriceUsd: newPrice
@@ -67,7 +67,12 @@ public class UpdatePromotionLevelHandlerTests : BaseContentHandlerTest
         // Arrange
         string sameName = TestConstants.Content.PromotionLevel.ValidName;
         PromotionLevelEntity existing = PromotionLevelFactory.Create(sameName, 7, 50m);
-        var command = new UpdatePromotionLevelCommand(Id: existing.Id, Name: sameName, DurationDays: 10, PriceUsd: 60m);
+        var command = new UpdatePromotionLevelCommand(
+            Id: existing.Id.ToString(),
+            Name: sameName,
+            DurationDays: 10,
+            PriceUsd: 60m
+        );
 
         _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(existing);
         _lookupRepositoryMock.SetupPromotionLevelExistsByName(sameName, true);
@@ -89,9 +94,9 @@ public class UpdatePromotionLevelHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
         var command = new UpdatePromotionLevelCommand(
-            Id: nonExistentId,
+            Id: nonExistentId.ToString(),
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: 7,
             PriceUsd: 50m
@@ -113,7 +118,7 @@ public class UpdatePromotionLevelHandlerTests : BaseContentHandlerTest
         PromotionLevelEntity existing = PromotionLevelFactory.CreateDefault();
         string conflictingName = TestConstants.Content.PromotionLevel.AnotherValidName;
         var command = new UpdatePromotionLevelCommand(
-            Id: existing.Id,
+            Id: existing.Id.ToString(),
             Name: conflictingName,
             DurationDays: 14,
             PriceUsd: 99.99m
@@ -136,7 +141,7 @@ public class UpdatePromotionLevelHandlerTests : BaseContentHandlerTest
         PromotionLevelEntity existing = PromotionLevelFactory.CreateDefault();
         string conflictingName = TestConstants.Content.PromotionLevel.AnotherValidName;
         var command = new UpdatePromotionLevelCommand(
-            Id: existing.Id,
+            Id: existing.Id.ToString(),
             Name: conflictingName,
             DurationDays: 14,
             PriceUsd: 99.99m
