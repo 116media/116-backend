@@ -38,7 +38,7 @@ public class RemovePackageSlotHandlerTests : BaseContentHandlerTest
         PackageEntity package = PackageFactory.Create();
         PackageSlotEntity slot = PackageSlotFactory.Create(package.Id);
 
-        var command = new RemovePackageSlotCommand(PackageId: package.Id, SlotId: slot.Id);
+        var command = new RemovePackageSlotCommand(PackageId: package.Id.ToString(), SlotId: slot.Id);
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
         _packageRepositoryMock.SetupGetSlotById(slot.Id, slot);
@@ -63,9 +63,9 @@ public class RemovePackageSlotHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenPackageNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentPackageId = Guid.NewGuid();
+        var nonExistentPackageId = Guid.NewGuid();
 
-        var command = new RemovePackageSlotCommand(PackageId: nonExistentPackageId, SlotId: Guid.NewGuid());
+        var command = new RemovePackageSlotCommand(PackageId: nonExistentPackageId.ToString(), SlotId: Guid.NewGuid());
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrowNotFound(nonExistentPackageId);
 
@@ -81,9 +81,9 @@ public class RemovePackageSlotHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         PackageEntity package = PackageFactory.Create();
-        Guid nonExistentSlotId = Guid.NewGuid();
+        var nonExistentSlotId = Guid.NewGuid();
 
-        var command = new RemovePackageSlotCommand(PackageId: package.Id, SlotId: nonExistentSlotId);
+        var command = new RemovePackageSlotCommand(PackageId: package.Id.ToString(), SlotId: nonExistentSlotId);
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
         _packageRepositoryMock.SetupGetSlotById(nonExistentSlotId, null);
