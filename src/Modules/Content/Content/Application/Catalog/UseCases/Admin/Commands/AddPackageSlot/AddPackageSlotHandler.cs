@@ -25,10 +25,9 @@ public class AddPackageSlotHandler(
     /// <inheritdoc />
     public async Task<AddPackageSlotResult> Handle(AddPackageSlotCommand command, CancellationToken cancellationToken)
     {
-        await packageRepository.GetByIdWithSlotsOrThrowAsync(
-            id: command.PackageId,
-            cancellationToken: cancellationToken
-        );
+        Guid packageId = Guid.Parse(command.PackageId);
+
+        await packageRepository.GetByIdWithSlotsOrThrowAsync(id: packageId, cancellationToken: cancellationToken);
 
         if (command.CategoryId.HasValue)
         {
@@ -45,7 +44,7 @@ public class AddPackageSlotHandler(
 
         var slot = PackageSlotEntity.Create(
             id: Guid.NewGuid(),
-            packageId: command.PackageId,
+            packageId: packageId,
             categoryId: command.CategoryId,
             isRequired: command.IsRequired,
             quantity: command.Quantity
@@ -55,7 +54,7 @@ public class AddPackageSlotHandler(
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         PackageEntity updated = await packageRepository.GetByIdWithSlotsOrThrowAsync(
-            id: command.PackageId,
+            id: packageId,
             cancellationToken: cancellationToken
         );
 
