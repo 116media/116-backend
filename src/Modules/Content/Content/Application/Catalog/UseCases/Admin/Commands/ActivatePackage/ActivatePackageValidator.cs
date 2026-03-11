@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Validators;
+using _116.Shared.Application.Extensions;
 using FluentValidation;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.ActivatePackage;
@@ -13,6 +13,6 @@ public class ActivatePackageValidator : AbstractValidator<ActivatePackageCommand
     /// </summary>
     public ActivatePackageValidator()
     {
-        RuleFor(x => x.Id).ValidPackageId();
+        RuleFor(x => x.Id).IsValidGuid("Package ID");
     }
 }
