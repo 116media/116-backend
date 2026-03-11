@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.ActivateCateg
 /// Command to activate a category, making it available for content creation and orders.
 /// </summary>
 /// <param name="Id">The unique identifier of the category to activate.</param>
-public record ActivateCategoryCommand(Guid Id) : ICommand<ActivateCategoryResult>;
+public record ActivateCategoryCommand(string Id) : ICommand<ActivateCategoryResult>;
 
 /// <summary>
 /// Result returned after successfully activating a category.
