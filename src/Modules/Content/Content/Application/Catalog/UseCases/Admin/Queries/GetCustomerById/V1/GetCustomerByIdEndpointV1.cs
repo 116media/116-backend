@@ -37,8 +37,8 @@ public class GetCustomerByIdEndpointV1 : ICarterModule
 
         group
             .MapGet(
-                "/{id:guid}",
-                async (Guid id, IDispatcher dispatcher) =>
+                "/{id}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var query = new GetCustomerByIdQuery(Id: id);
 
