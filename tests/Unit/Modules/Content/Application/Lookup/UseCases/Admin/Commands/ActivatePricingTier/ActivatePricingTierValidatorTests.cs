@@ -18,7 +18,7 @@ public class ActivatePricingTierValidatorTests
     public async Task Validate_WithValidGuid_ShouldNotHaveErrors()
     {
         // Arrange
-        var command = new ActivatePricingTierCommand(Id: Guid.NewGuid());
+        var command = new ActivatePricingTierCommand(Id: Guid.NewGuid().ToString());
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -36,7 +36,7 @@ public class ActivatePricingTierValidatorTests
     public async Task Validate_WithEmptyGuid_ShouldHaveError()
     {
         // Arrange
-        var command = new ActivatePricingTierCommand(Id: Guid.Empty);
+        var command = new ActivatePricingTierCommand(Id: "");
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
