@@ -38,8 +38,8 @@ public class RemoveCategoryPricingEndpointV1 : ICarterModule
 
         group
             .MapDelete(
-                $"/{{id:guid}}/{CatalogRouteConstants.Pricing}/{{tierId:guid}}",
-                async (Guid id, Guid tierId, IDispatcher dispatcher) =>
+                $"/{{id}}/{CatalogRouteConstants.Pricing}/{{tierId:guid}}",
+                async (string id, Guid tierId, IDispatcher dispatcher) =>
                 {
                     var command = new RemoveCategoryPricingCommand(CategoryId: id, PricingTierId: tierId);
 
