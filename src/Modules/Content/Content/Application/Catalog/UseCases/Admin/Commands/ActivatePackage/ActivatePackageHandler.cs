@@ -20,8 +20,10 @@ public class ActivatePackageHandler(IPackageRepository packageRepository, IConte
     /// <inheritdoc />
     public async Task<ActivatePackageResult> Handle(ActivatePackageCommand command, CancellationToken cancellationToken)
     {
+        Guid id = Guid.Parse(command.Id);
+
         PackageEntity package = await packageRepository.GetByIdWithSlotsOrThrowAsync(
-            id: command.Id,
+            id: id,
             cancellationToken: cancellationToken
         );
 
@@ -35,7 +37,7 @@ public class ActivatePackageHandler(IPackageRepository packageRepository, IConte
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         PackageEntity updated = await packageRepository.GetByIdWithSlotsOrThrowAsync(
-            id: command.Id,
+            id: id,
             cancellationToken: cancellationToken
         );
 
