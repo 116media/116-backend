@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Validators;
+using _116.Shared.Application.Extensions;
 using FluentValidation;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPricing;
@@ -13,7 +14,7 @@ public class AddCategoryPricingValidator : AbstractValidator<AddCategoryPricingC
     /// </summary>
     public AddCategoryPricingValidator()
     {
-        RuleFor(x => x.CategoryId).ValidCategoryId();
+        RuleFor(x => x.CategoryId).IsValidGuid("Category ID");
         RuleFor(x => x.PricingTierId).ValidPricingTierId();
         RuleFor(x => x.PriceUsd).ValidCategoryPriceUsd();
     }
