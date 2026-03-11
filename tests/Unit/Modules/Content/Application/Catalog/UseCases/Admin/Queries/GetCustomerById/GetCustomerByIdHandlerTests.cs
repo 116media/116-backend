@@ -34,7 +34,7 @@ public class GetCustomerByIdHandlerTests : BaseContentHandlerTest
         CustomerEntity customer = CustomerFactory.CreateDefault();
         _customerRepositoryMock.SetupGetByIdOrThrow(customer);
 
-        var query = new GetCustomerByIdQuery(Id: customer.Id);
+        var query = new GetCustomerByIdQuery(Id: customer.Id.ToString());
 
         // Act
         GetCustomerByIdResult result = await _handler.Handle(query, CancellationToken.None);
@@ -53,10 +53,10 @@ public class GetCustomerByIdHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenCustomerNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
         _customerRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
-        var query = new GetCustomerByIdQuery(Id: nonExistentId);
+        var query = new GetCustomerByIdQuery(Id: nonExistentId.ToString());
 
         // Act
         Func<Task> act = async () => await _handler.Handle(query, CancellationToken.None);
