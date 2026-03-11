@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Validators;
+using _116.Shared.Application.Extensions;
 using FluentValidation;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategory;
@@ -13,7 +14,7 @@ public class UpdateCategoryValidator : AbstractValidator<UpdateCategoryCommand>
     /// </summary>
     public UpdateCategoryValidator()
     {
-        RuleFor(x => x.Id).ValidCategoryId();
+        RuleFor(x => x.Id).IsValidGuid("Category ID");
         RuleFor(x => x.Name).ValidCategoryName();
         RuleFor(x => x.Slug).ValidCategorySlug();
         RuleFor(x => x.Description).ValidCategoryDescription();
