@@ -8,7 +8,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.RemovePackage
 /// </summary>
 /// <param name="PackageId">The identifier of the package.</param>
 /// <param name="SlotId">The identifier of the slot to remove.</param>
-public record RemovePackageSlotCommand(Guid PackageId, Guid SlotId) : ICommand<RemovePackageSlotResult>;
+public record RemovePackageSlotCommand(string PackageId, Guid SlotId) : ICommand<RemovePackageSlotResult>;
 
 /// <summary>
 /// Result of the <see cref="RemovePackageSlotCommand" /> containing the updated package.
