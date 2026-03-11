@@ -39,7 +39,7 @@ public class UpdateCustomerHandlerTests : BaseContentHandlerTest
         string newFullName = "Jane Smith";
 
         var command = new UpdateCustomerCommand(
-            Id: customer.Id,
+            Id: customer.Id.ToString(),
             FullName: newFullName,
             Phone: "+123456789",
             Company: "New Company",
@@ -65,10 +65,10 @@ public class UpdateCustomerHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenCustomerNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
 
         var command = new UpdateCustomerCommand(
-            Id: nonExistentId,
+            Id: nonExistentId.ToString(),
             FullName: TestConstants.Content.Customer.ValidFullName,
             Phone: null,
             Company: null,
