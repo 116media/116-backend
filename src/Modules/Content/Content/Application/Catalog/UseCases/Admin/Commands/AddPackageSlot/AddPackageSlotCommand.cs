@@ -10,7 +10,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.AddPackageSlo
 /// <param name="CategoryId">The optional category for this slot. Null means an open slot where the client may choose any category.</param>
 /// <param name="IsRequired">Whether this slot must be fulfilled for the package to be considered complete.</param>
 /// <param name="Quantity">The number of content pieces required for this slot (must be > 0).</param>
-public record AddPackageSlotCommand(Guid PackageId, Guid? CategoryId, bool IsRequired, int Quantity)
+public record AddPackageSlotCommand(string PackageId, Guid? CategoryId, bool IsRequired, int Quantity)
     : ICommand<AddPackageSlotResult>;
 
 /// <summary>
