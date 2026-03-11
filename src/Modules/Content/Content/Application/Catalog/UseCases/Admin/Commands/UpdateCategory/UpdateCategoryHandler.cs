@@ -23,8 +23,10 @@ public class UpdateCategoryHandler(
     /// <inheritdoc />
     public async Task<UpdateCategoryResult> Handle(UpdateCategoryCommand command, CancellationToken cancellationToken)
     {
+        Guid id = Guid.Parse(command.Id);
+
         CategoryEntity category = await categoryRepository.GetByIdOrThrowAsync(
-            id: command.Id,
+            id: id,
             cancellationToken: cancellationToken
         );
 
@@ -33,7 +35,7 @@ public class UpdateCategoryHandler(
             cancellationToken: cancellationToken
         );
 
-        if (slugConflict is not null && slugConflict.Id != command.Id)
+        if (slugConflict is not null && slugConflict.Id != id)
         {
             throw CategoryErrors.AlreadyExists(slug: command.Slug);
         }
@@ -43,7 +45,7 @@ public class UpdateCategoryHandler(
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         CategoryEntity updated = await categoryRepository.GetByIdOrThrowAsync(
-            id: command.Id,
+            id: id,
             cancellationToken: cancellationToken
         );
 
