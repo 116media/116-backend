@@ -28,7 +28,7 @@ public class TagErrorsTests
     public void NotFound_WithId_ShouldReturnNotFoundException()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         NotFoundException exception = TagErrors.NotFound(id);
