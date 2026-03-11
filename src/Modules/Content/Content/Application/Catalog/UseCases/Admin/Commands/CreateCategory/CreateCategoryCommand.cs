@@ -11,7 +11,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategor
 /// <param name="Slug">The URL-safe slug for the category.</param>
 /// <param name="Description">An optional description of the category.</param>
 /// <param name="IsFree">Whether content in this category requires no payment.</param>
-public record CreateCategoryCommand(Guid ContentTypeId, string Name, string Slug, string? Description, bool IsFree)
+public record CreateCategoryCommand(string ContentTypeId, string Name, string Slug, string? Description, bool IsFree)
     : ICommand<CreateCategoryResult>;
 
 /// <summary>
