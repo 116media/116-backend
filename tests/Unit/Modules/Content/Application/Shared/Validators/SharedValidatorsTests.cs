@@ -7,8 +7,6 @@ using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Application.Shared.Validators;
 
-// ─── Test-only records (property names must match what ValidationUtils.GetPropertyValue expects) ───
-
 internal record ContentTypeOptionalNameInput(string? Name);
 
 internal record PricingTierOptionalInput(string? Name, string? Description);
@@ -17,9 +15,7 @@ internal record PromotionLevelOptionalNameInput(string? Name);
 
 internal record TagOptionalInput(string? Name, string? Slug);
 
-internal record CategoryOptionalInput(string? Name, string? Slug, string? Description);
-
-// ─── Test-only validators that invoke the isRequired=false branch ───
+internal record CategoryOptionalInput(string? Name, string? Slug);
 
 internal class ContentTypeOptionalNameValidator : AbstractValidator<ContentTypeOptionalNameInput>
 {
@@ -289,9 +285,7 @@ public class SharedValidatorsTests
     public async Task ValidCategoryName_Optional_WithNull_ShouldNotHaveErrors()
     {
         var validator = new CategoryOptionalNameValidator();
-        ValidationResult result = await validator.ValidateAsync(
-            new CategoryOptionalInput(Name: null, Slug: null, Description: null)
-        );
+        ValidationResult result = await validator.ValidateAsync(new CategoryOptionalInput(Name: null, Slug: null));
         result.IsValid.Should().BeTrue();
     }
 
@@ -300,7 +294,7 @@ public class SharedValidatorsTests
     {
         var validator = new CategoryOptionalNameValidator();
         ValidationResult result = await validator.ValidateAsync(
-            new CategoryOptionalInput(Name: "Artist Profile", Slug: null, Description: null)
+            new CategoryOptionalInput(Name: "Artist Profile", Slug: null)
         );
         result.IsValid.Should().BeTrue();
     }
@@ -310,9 +304,7 @@ public class SharedValidatorsTests
     {
         var validator = new CategoryOptionalNameValidator();
         string tooLong = new string('a', ContentConstants.MaxCategoryNameLength + 1);
-        ValidationResult result = await validator.ValidateAsync(
-            new CategoryOptionalInput(Name: tooLong, Slug: null, Description: null)
-        );
+        ValidationResult result = await validator.ValidateAsync(new CategoryOptionalInput(Name: tooLong, Slug: null));
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == nameof(CategoryOptionalInput.Name));
     }
@@ -325,9 +317,7 @@ public class SharedValidatorsTests
     public async Task ValidCategorySlug_Optional_WithNull_ShouldNotHaveErrors()
     {
         var validator = new CategoryOptionalSlugValidator();
-        ValidationResult result = await validator.ValidateAsync(
-            new CategoryOptionalInput(Name: null, Slug: null, Description: null)
-        );
+        ValidationResult result = await validator.ValidateAsync(new CategoryOptionalInput(Name: null, Slug: null));
         result.IsValid.Should().BeTrue();
     }
 
@@ -336,7 +326,7 @@ public class SharedValidatorsTests
     {
         var validator = new CategoryOptionalSlugValidator();
         ValidationResult result = await validator.ValidateAsync(
-            new CategoryOptionalInput(Name: null, Slug: "artist-profile", Description: null)
+            new CategoryOptionalInput(Name: null, Slug: "artist-profile")
         );
         result.IsValid.Should().BeTrue();
     }
@@ -346,7 +336,7 @@ public class SharedValidatorsTests
     {
         var validator = new CategoryOptionalSlugValidator();
         ValidationResult result = await validator.ValidateAsync(
-            new CategoryOptionalInput(Name: null, Slug: "Artist-Profile", Description: null)
+            new CategoryOptionalInput(Name: null, Slug: "Artist-Profile")
         );
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == nameof(CategoryOptionalInput.Slug));
@@ -357,9 +347,7 @@ public class SharedValidatorsTests
     {
         var validator = new CategoryOptionalSlugValidator();
         string tooLong = new string('a', ContentConstants.MaxCategorySlugLength + 1);
-        ValidationResult result = await validator.ValidateAsync(
-            new CategoryOptionalInput(Name: null, Slug: tooLong, Description: null)
-        );
+        ValidationResult result = await validator.ValidateAsync(new CategoryOptionalInput(Name: null, Slug: tooLong));
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == nameof(CategoryOptionalInput.Slug));
     }
