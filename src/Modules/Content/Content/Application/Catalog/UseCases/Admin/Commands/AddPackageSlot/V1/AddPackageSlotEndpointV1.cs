@@ -46,8 +46,8 @@ public class AddPackageSlotEndpointV1 : ICarterModule
 
         group
             .MapPost(
-                $"/{{id:guid}}/{CatalogRouteConstants.Slots}",
-                async (Guid id, AddPackageSlotRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
+                $"/{{id}}/{CatalogRouteConstants.Slots}",
+                async (string id, AddPackageSlotRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
                 {
                     var command = new AddPackageSlotCommand(
                         PackageId: id,
