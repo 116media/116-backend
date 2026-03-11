@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Validators;
+using _116.Shared.Application.Extensions;
 using FluentValidation;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivateCategory;
@@ -13,6 +13,6 @@ public class DeactivateCategoryValidator : AbstractValidator<DeactivateCategoryC
     /// </summary>
     public DeactivateCategoryValidator()
     {
-        RuleFor(x => x.Id).ValidCategoryId();
+        RuleFor(x => x.Id).IsValidGuid("Category ID");
     }
 }
