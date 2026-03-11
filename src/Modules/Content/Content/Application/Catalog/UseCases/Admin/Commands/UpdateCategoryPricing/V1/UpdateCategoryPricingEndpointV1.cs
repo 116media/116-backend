@@ -43,8 +43,8 @@ public class UpdateCategoryPricingEndpointV1 : ICarterModule
 
         group
             .MapPut(
-                $"/{{id:guid}}/{CatalogRouteConstants.Pricing}/{{tierId:guid}}",
-                async (Guid id, Guid tierId, UpdateCategoryPricingRequest request, IDispatcher dispatcher) =>
+                $"/{{id}}/{CatalogRouteConstants.Pricing}/{{tierId}}",
+                async (string id, string tierId, UpdateCategoryPricingRequest request, IDispatcher dispatcher) =>
                 {
                     var command = new UpdateCategoryPricingCommand(
                         CategoryId: id,
