@@ -49,7 +49,7 @@ public class AddCategoryPricingHandlerTests : BaseContentHandlerTest
         decimal priceUsd = TestConstants.Content.CategoryPricing.ValidPriceUsd;
 
         var command = new AddCategoryPricingCommand(
-            CategoryId: category.Id,
+            CategoryId: category.Id.ToString(),
             PricingTierId: pricingTier.Id,
             PriceUsd: priceUsd
         );
@@ -83,10 +83,10 @@ public class AddCategoryPricingHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenCategoryNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentCategoryId = Guid.NewGuid();
+        var nonExistentCategoryId = Guid.NewGuid();
 
         var command = new AddCategoryPricingCommand(
-            CategoryId: nonExistentCategoryId,
+            CategoryId: nonExistentCategoryId.ToString(),
             PricingTierId: Guid.NewGuid(),
             PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
         );
@@ -106,10 +106,10 @@ public class AddCategoryPricingHandlerTests : BaseContentHandlerTest
         // Arrange
         ContentTypeEntity contentType = ContentTypeFactory.Create();
         CategoryEntity category = CategoryFactory.Create(contentType.Id);
-        Guid nonExistentTierId = Guid.NewGuid();
+        var nonExistentTierId = Guid.NewGuid();
 
         var command = new AddCategoryPricingCommand(
-            CategoryId: category.Id,
+            CategoryId: category.Id.ToString(),
             PricingTierId: nonExistentTierId,
             PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
         );
@@ -133,7 +133,7 @@ public class AddCategoryPricingHandlerTests : BaseContentHandlerTest
         PricingTierEntity inactiveTier = PricingTierFactory.CreateInactive();
 
         var command = new AddCategoryPricingCommand(
-            CategoryId: category.Id,
+            CategoryId: category.Id.ToString(),
             PricingTierId: inactiveTier.Id,
             PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
         );
@@ -157,7 +157,7 @@ public class AddCategoryPricingHandlerTests : BaseContentHandlerTest
         PricingTierEntity pricingTier = PricingTierFactory.CreateDefault();
 
         var command = new AddCategoryPricingCommand(
-            CategoryId: category.Id,
+            CategoryId: category.Id.ToString(),
             PricingTierId: pricingTier.Id,
             PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
         );
