@@ -9,7 +9,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategor
 /// <param name="CategoryId">The identifier of the category.</param>
 /// <param name="PricingTierId">The identifier of the pricing tier to update.</param>
 /// <param name="PriceUsd">The new price in USD.</param>
-public record UpdateCategoryPricingCommand(Guid CategoryId, Guid PricingTierId, decimal PriceUsd)
+public record UpdateCategoryPricingCommand(string CategoryId, string PricingTierId, decimal PriceUsd)
     : ICommand<UpdateCategoryPricingResult>;
 
 /// <summary>
