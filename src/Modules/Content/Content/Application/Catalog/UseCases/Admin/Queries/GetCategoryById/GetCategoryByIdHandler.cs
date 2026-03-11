@@ -17,8 +17,10 @@ public class GetCategoryByIdHandler(ICategoryRepository categoryRepository, IMap
     /// <inheritdoc />
     public async Task<GetCategoryByIdResult> Handle(GetCategoryByIdQuery query, CancellationToken cancellationToken)
     {
+        Guid id = Guid.Parse(query.Id);
+
         CategoryEntity category = await categoryRepository.GetByIdOrThrowAsync(
-            id: query.Id,
+            id: id,
             cancellationToken: cancellationToken
         );
 
