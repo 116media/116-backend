@@ -18,7 +18,7 @@ public class ActivateCategoryValidatorTests
     public async Task Validate_WithValidId_ShouldNotHaveErrors()
     {
         // Arrange
-        var command = new ActivateCategoryCommand(Id: Guid.NewGuid());
+        var command = new ActivateCategoryCommand(Id: Guid.NewGuid().ToString());
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -36,7 +36,7 @@ public class ActivateCategoryValidatorTests
     public async Task Validate_WithEmptyId_ShouldHaveError()
     {
         // Arrange
-        var command = new ActivateCategoryCommand(Id: Guid.Empty);
+        var command = new ActivateCategoryCommand(Id: "");
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
