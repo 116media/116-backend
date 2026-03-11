@@ -20,8 +20,8 @@ public class UpdateCategoryPricingValidatorTests
     {
         // Arrange
         var command = new UpdateCategoryPricingCommand(
-            CategoryId: Guid.NewGuid(),
-            PricingTierId: Guid.NewGuid(),
+            CategoryId: Guid.NewGuid().ToString(),
+            PricingTierId: Guid.NewGuid().ToString(),
             PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
         );
 
@@ -38,8 +38,8 @@ public class UpdateCategoryPricingValidatorTests
     {
         // Arrange
         var command = new UpdateCategoryPricingCommand(
-            CategoryId: Guid.NewGuid(),
-            PricingTierId: Guid.NewGuid(),
+            CategoryId: Guid.NewGuid().ToString(),
+            PricingTierId: Guid.NewGuid().ToString(),
             PriceUsd: TestConstants.Content.CategoryPricing.ZeroPriceUsd
         );
 
@@ -59,8 +59,8 @@ public class UpdateCategoryPricingValidatorTests
     {
         // Arrange
         var command = new UpdateCategoryPricingCommand(
-            CategoryId: Guid.Empty,
-            PricingTierId: Guid.NewGuid(),
+            CategoryId: "",
+            PricingTierId: Guid.NewGuid().ToString(),
             PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
         );
 
@@ -86,8 +86,8 @@ public class UpdateCategoryPricingValidatorTests
     {
         // Arrange
         var command = new UpdateCategoryPricingCommand(
-            CategoryId: Guid.NewGuid(),
-            PricingTierId: Guid.Empty,
+            CategoryId: Guid.NewGuid().ToString(),
+            PricingTierId: "",
             PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
         );
 
@@ -113,8 +113,8 @@ public class UpdateCategoryPricingValidatorTests
     {
         // Arrange
         var command = new UpdateCategoryPricingCommand(
-            CategoryId: Guid.NewGuid(),
-            PricingTierId: Guid.NewGuid(),
+            CategoryId: Guid.NewGuid().ToString(),
+            PricingTierId: Guid.NewGuid().ToString(),
             PriceUsd: -5m
         );
 
