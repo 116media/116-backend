@@ -20,7 +20,7 @@ public class AddCategoryPricingValidatorTests
     {
         // Arrange
         var command = new AddCategoryPricingCommand(
-            CategoryId: Guid.NewGuid(),
+            CategoryId: Guid.NewGuid().ToString(),
             PricingTierId: Guid.NewGuid(),
             PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
         );
@@ -38,7 +38,7 @@ public class AddCategoryPricingValidatorTests
     {
         // Arrange
         var command = new AddCategoryPricingCommand(
-            CategoryId: Guid.NewGuid(),
+            CategoryId: Guid.NewGuid().ToString(),
             PricingTierId: Guid.NewGuid(),
             PriceUsd: TestConstants.Content.CategoryPricing.ZeroPriceUsd
         );
@@ -59,7 +59,7 @@ public class AddCategoryPricingValidatorTests
     {
         // Arrange
         var command = new AddCategoryPricingCommand(
-            CategoryId: Guid.Empty,
+            CategoryId: "",
             PricingTierId: Guid.NewGuid(),
             PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
         );
@@ -86,7 +86,7 @@ public class AddCategoryPricingValidatorTests
     {
         // Arrange
         var command = new AddCategoryPricingCommand(
-            CategoryId: Guid.NewGuid(),
+            CategoryId: Guid.NewGuid().ToString(),
             PricingTierId: Guid.Empty,
             PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
         );
@@ -113,7 +113,7 @@ public class AddCategoryPricingValidatorTests
     {
         // Arrange
         var command = new AddCategoryPricingCommand(
-            CategoryId: Guid.NewGuid(),
+            CategoryId: Guid.NewGuid().ToString(),
             PricingTierId: Guid.NewGuid(),
             PriceUsd: -1m
         );
