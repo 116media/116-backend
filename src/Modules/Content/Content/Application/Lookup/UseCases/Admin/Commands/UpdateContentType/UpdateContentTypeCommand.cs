@@ -8,7 +8,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateContentT
 /// </summary>
 /// <param name="Id">The unique identifier of the content type to update.</param>
 /// <param name="Name">The new name for the content type.</param>
-public record UpdateContentTypeCommand(Guid Id, string Name) : ICommand<UpdateContentTypeResult>;
+public record UpdateContentTypeCommand(string Id, string Name) : ICommand<UpdateContentTypeResult>;
 
 /// <summary>
 /// Result of the <see cref="UpdateContentTypeCommand" /> containing the updated content type details.
