@@ -36,8 +36,8 @@ public class AdminHardDeletePermissionEndpointV1 : ICarterModule
 
         group
             .MapDelete(
-                $"{{id:guid}}/{PermissionRouteConstants.Hard}",
-                async (Guid id, IDispatcher dispatcher) =>
+                $"{{id}}/{PermissionRouteConstants.Hard}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new AdminHardDeletePermissionCommand(PermissionId: id);
 
