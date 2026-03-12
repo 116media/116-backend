@@ -227,7 +227,7 @@ public class UserRoleSpecificationsTests
     public void UserRoleByUserIdSpecification_WithMatchingUserId_ShouldReturnTrue()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         UserRoleEntity userRole = UserRoleFactory.CreateWithUserId(userId);
         UserRoleByUserIdSpecification spec = new(userId);
 
@@ -260,7 +260,7 @@ public class UserRoleSpecificationsTests
     public void UserRoleByRoleIdSpecification_WithMatchingRoleId_ShouldReturnTrue()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
         UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
         UserRoleByRoleIdSpecification spec = new(roleId);
 
@@ -293,8 +293,8 @@ public class UserRoleSpecificationsTests
     public void UserRoleByUserAndRoleSpecification_WithMatchingBoth_ShouldReturnTrue()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid roleId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
         UserRoleEntity userRole = UserRoleFactory.Create(userId, roleId);
         UserRoleByUserAndRoleSpecification spec = new(userId, roleId);
 
@@ -309,7 +309,7 @@ public class UserRoleSpecificationsTests
     public void UserRoleByUserAndRoleSpecification_WithDifferentUserId_ShouldReturnFalse()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
         UserRoleEntity userRole = UserRoleFactory.Create(Guid.NewGuid(), roleId);
         UserRoleByUserAndRoleSpecification spec = new(Guid.NewGuid(), roleId);
 
