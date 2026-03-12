@@ -17,28 +17,25 @@ public static partial class TagValidation
     /// <param name="isRequired">Whether the name is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidTagName<T>(
-        this IRuleBuilder<T, string?> ruleBuilder,
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
         bool isRequired = true
     )
     {
-        IRuleBuilderOptions<T, string?> builder;
         if (isRequired)
         {
-            builder = ruleBuilder
+            return ruleBuilder
+                .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
                 .WithMessage("Tag name is required.")
                 .MaximumLength(maximumLength: ContentConstants.MaxTagNameLength)
                 .WithMessage($"Tag name must not exceed {ContentConstants.MaxTagNameLength} characters.");
         }
-        else
-        {
-            builder = ruleBuilder
-                .MaximumLength(maximumLength: ContentConstants.MaxTagNameLength)
-                .WithMessage($"Tag name must not exceed {ContentConstants.MaxTagNameLength} characters.")
-                .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Name")));
-        }
 
-        return builder;
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .MaximumLength(maximumLength: ContentConstants.MaxTagNameLength)
+            .WithMessage($"Tag name must not exceed {ContentConstants.MaxTagNameLength} characters.")
+            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Name")));
     }
 
     /// <summary>
@@ -49,14 +46,14 @@ public static partial class TagValidation
     /// <param name="isRequired">Whether the slug is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidTagSlug<T>(
-        this IRuleBuilder<T, string?> ruleBuilder,
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
         bool isRequired = true
     )
     {
-        IRuleBuilderOptions<T, string?> builder;
         if (isRequired)
         {
-            builder = ruleBuilder
+            return ruleBuilder
+                .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
                 .WithMessage("Tag slug is required.")
                 .MaximumLength(maximumLength: ContentConstants.MaxTagSlugLength)
@@ -64,17 +61,14 @@ public static partial class TagValidation
                 .Matches(SlugRegex())
                 .WithMessage("Tag slug must be lowercase and contain only letters, numbers, and hyphens.");
         }
-        else
-        {
-            builder = ruleBuilder
-                .MaximumLength(maximumLength: ContentConstants.MaxTagSlugLength)
-                .WithMessage($"Tag slug must not exceed {ContentConstants.MaxTagSlugLength} characters.")
-                .Matches(SlugRegex())
-                .WithMessage("Tag slug must be lowercase and contain only letters, numbers, and hyphens.")
-                .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Slug")));
-        }
 
-        return builder;
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .MaximumLength(maximumLength: ContentConstants.MaxTagSlugLength)
+            .WithMessage($"Tag slug must not exceed {ContentConstants.MaxTagSlugLength} characters.")
+            .Matches(SlugRegex())
+            .WithMessage("Tag slug must be lowercase and contain only letters, numbers, and hyphens.")
+            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Slug")));
     }
 
     /// <summary>
