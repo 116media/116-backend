@@ -32,15 +32,17 @@ public class AdminBulkUpdateRolePermissionsHandler(
         CancellationToken cancellationToken
     )
     {
+        Guid roleId = Guid.Parse(input: command.RoleId);
+
         // Validate role exists
         await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(
-            roleId: command.RoleId,
+            roleId: roleId,
             cancellationToken: cancellationToken
         );
 
         // Get current permission IDs
         List<Guid> currentPermissionIds = await rolePermissionRepository.GetPermissionIdsByRoleIdAsync(
-            roleId: command.RoleId,
+            roleId: roleId,
             cancellationToken: cancellationToken
         );
 
@@ -55,7 +57,7 @@ public class AdminBulkUpdateRolePermissionsHandler(
         foreach (Guid permissionId in permissionsToRemove)
         {
             RolePermissionEntity? rolePermission = await rolePermissionRepository.GetByRoleAndPermissionAsync(
-                roleId: command.RoleId,
+                roleId: roleId,
                 permissionId: permissionId,
                 cancellationToken: cancellationToken
             );
@@ -69,7 +71,7 @@ public class AdminBulkUpdateRolePermissionsHandler(
         // Add new permissions
         foreach (
             RolePermissionEntity rolePermission in permissionsToAdd.Select(permissionId =>
-                RolePermissionEntity.Create(id: Guid.NewGuid(), roleId: command.RoleId, permissionId: permissionId)
+                RolePermissionEntity.Create(id: Guid.NewGuid(), roleId: roleId, permissionId: permissionId)
             )
         )
         {
@@ -80,7 +82,7 @@ public class AdminBulkUpdateRolePermissionsHandler(
 
         // Reload the role with permissions to return updated data
         RoleEntity? role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(
-            roleId: command.RoleId,
+            roleId: roleId,
             cancellationToken: cancellationToken
         );
 
