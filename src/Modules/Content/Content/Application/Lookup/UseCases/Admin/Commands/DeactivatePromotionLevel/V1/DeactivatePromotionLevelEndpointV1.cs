@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivatePromotionLevel.V1;
 
-/// <summary>Response model for a successful promotion level deactivation.</summary>
+/// <summary>
+/// Response model for a successful promotion level deactivation.
+/// </summary>
 /// <param name="PromotionLevel">The updated promotion level information.</param>
 public record DeactivatePromotionLevelResponse(PromotionLevelDto PromotionLevel);
 
@@ -34,8 +36,8 @@ public class DeactivatePromotionLevelEndpointV1 : ICarterModule
 
         group
             .MapPatch(
-                $"/{{id:guid}}/{LookupRouteConstants.Deactivate}",
-                async (Guid id, IDispatcher dispatcher) =>
+                $"/{{id}}/{LookupRouteConstants.Deactivate}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new DeactivatePromotionLevelCommand(Id: id);
                     DeactivatePromotionLevelResult result = await dispatcher.Send(request: command);
