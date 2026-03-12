@@ -17,7 +17,7 @@ public class RolePermissionSpecificationsTests
     public void RolePermissionByRoleIdSpecification_WithMatchingRoleId_ShouldReturnTrue()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
         RolePermissionEntity rolePermission = RolePermissionFactory.Create(roleId, Guid.NewGuid());
         RolePermissionByRoleIdSpecification spec = new(roleId);
 
@@ -50,7 +50,7 @@ public class RolePermissionSpecificationsTests
     public void RolePermissionByPermissionIdSpecification_WithMatchingPermissionId_ShouldReturnTrue()
     {
         // Arrange
-        Guid permissionId = Guid.NewGuid();
+        var permissionId = Guid.NewGuid();
         RolePermissionEntity rolePermission = RolePermissionFactory.Create(Guid.NewGuid(), permissionId);
         RolePermissionByPermissionIdSpecification spec = new(permissionId);
 
@@ -83,7 +83,7 @@ public class RolePermissionSpecificationsTests
     public void RolePermissionByIdSpecification_WithMatchingId_ShouldReturnTrue()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
         RolePermissionEntity rolePermission = RolePermissionFactory.CreateWithId(id);
         RolePermissionByIdSpecification spec = new(id);
 
@@ -116,8 +116,8 @@ public class RolePermissionSpecificationsTests
     public void RolePermissionByRoleAndPermissionSpecification_WithMatchingBoth_ShouldReturnTrue()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
-        Guid permissionId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        var permissionId = Guid.NewGuid();
         RolePermissionEntity rolePermission = RolePermissionFactory.Create(roleId, permissionId);
         RolePermissionByRoleAndPermissionSpecification spec = new(roleId, permissionId);
 
@@ -132,7 +132,7 @@ public class RolePermissionSpecificationsTests
     public void RolePermissionByRoleAndPermissionSpecification_WithDifferentRoleId_ShouldReturnFalse()
     {
         // Arrange
-        Guid permissionId = Guid.NewGuid();
+        var permissionId = Guid.NewGuid();
         RolePermissionEntity rolePermission = RolePermissionFactory.Create(Guid.NewGuid(), permissionId);
         RolePermissionByRoleAndPermissionSpecification spec = new(Guid.NewGuid(), permissionId);
 
@@ -147,7 +147,7 @@ public class RolePermissionSpecificationsTests
     public void RolePermissionByRoleAndPermissionSpecification_WithDifferentPermissionId_ShouldReturnFalse()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
         RolePermissionEntity rolePermission = RolePermissionFactory.Create(roleId, Guid.NewGuid());
         RolePermissionByRoleAndPermissionSpecification spec = new(roleId, Guid.NewGuid());
 
@@ -180,7 +180,7 @@ public class RolePermissionSpecificationsTests
     public void RolePermissionByRoleIdSpecification_WithLinq_ShouldFilterCorrectly()
     {
         // Arrange
-        Guid targetRoleId = Guid.NewGuid();
+        var targetRoleId = Guid.NewGuid();
         List<RolePermissionEntity> rolePermissions =
         [
             RolePermissionFactory.Create(targetRoleId, Guid.NewGuid()),
@@ -202,8 +202,8 @@ public class RolePermissionSpecificationsTests
     public void RolePermissionByRoleAndPermissionSpecification_WithLinq_ShouldFilterCorrectly()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
-        Guid permissionId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        var permissionId = Guid.NewGuid();
 
         List<RolePermissionEntity> rolePermissions =
         [
