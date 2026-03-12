@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Validators;
+using _116.Shared.Application.Extensions;
 using FluentValidation;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePricingTier;
@@ -13,7 +14,7 @@ public class UpdatePricingTierValidator : AbstractValidator<UpdatePricingTierCom
     /// </summary>
     public UpdatePricingTierValidator()
     {
-        RuleFor(x => x.Id).ValidPricingTierId();
+        RuleFor(x => x.Id).IsValidGuid("Pricing tier ID");
         RuleFor(x => x.Name).ValidPricingTierName();
         RuleFor(x => x.Description).ValidPricingTierDescription();
     }
