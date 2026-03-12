@@ -115,7 +115,7 @@ public class CategoryRepositoryTests : IDisposable
     public async Task GetByIdOrThrowAsync_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
 
         // Act
         Func<Task> act = async () => await _repository.GetByIdOrThrowAsync(nonExistentId);
