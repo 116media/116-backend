@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivatePricingTier.V1;
 
-/// <summary>Response model for a successful pricing tier deactivation.</summary>
+/// <summary>
+/// Response model for a successful pricing tier deactivation.
+/// </summary>
 /// <param name="PricingTier">The updated pricing tier information.</param>
 public record DeactivatePricingTierResponse(PricingTierDto PricingTier);
 
@@ -34,8 +36,8 @@ public class DeactivatePricingTierEndpointV1 : ICarterModule
 
         group
             .MapPatch(
-                $"/{{id:guid}}/{LookupRouteConstants.Deactivate}",
-                async (Guid id, IDispatcher dispatcher) =>
+                $"/{{id}}/{LookupRouteConstants.Deactivate}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new DeactivatePricingTierCommand(Id: id);
                     DeactivatePricingTierResult result = await dispatcher.Send(request: command);
