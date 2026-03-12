@@ -77,8 +77,8 @@ public class OtpServiceTests
     public void CreateOtp_WithValidParameters_ShouldReturnOtpEntity()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
 
         // Act
         OtpEntity otp = _sut.CreateOtp(userId, purpose);
@@ -94,8 +94,8 @@ public class OtpServiceTests
     public void CreateOtp_ShouldGenerateValidCode()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
 
         // Act
         OtpEntity otp = _sut.CreateOtp(userId, purpose);
@@ -109,8 +109,8 @@ public class OtpServiceTests
     public void CreateOtp_ShouldSetExpirationTime()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
         DateTime beforeCreation = DateTime.UtcNow;
 
         // Act
@@ -125,8 +125,8 @@ public class OtpServiceTests
     public void CreateOtp_WithPasswordResetPurpose_ShouldCreateOtp()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        EnumOtpPurpose purpose = EnumOtpPurpose.PasswordReset;
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.PasswordReset;
 
         // Act
         OtpEntity otp = _sut.CreateOtp(userId, purpose);
@@ -139,8 +139,8 @@ public class OtpServiceTests
     public void CreateOtp_ShouldGenerateUniqueIds()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
 
         // Act
         OtpEntity otp1 = _sut.CreateOtp(userId, purpose);
