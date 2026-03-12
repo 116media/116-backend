@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.ActivateContentType.V1;
 
-/// <summary>Response model for a successful content type activation.</summary>
+/// <summary>
+/// Response model for a successful content type activation.
+/// </summary>
 /// <param name="ContentType">The updated content type information.</param>
 public record ActivateContentTypeResponse(ContentTypeDto ContentType);
 
@@ -34,8 +36,8 @@ public class ActivateContentTypeEndpointV1 : ICarterModule
 
         group
             .MapPatch(
-                $"/{{id:guid}}/{LookupRouteConstants.Activate}",
-                async (Guid id, IDispatcher dispatcher) =>
+                $"/{{id}}/{LookupRouteConstants.Activate}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new ActivateContentTypeCommand(Id: id);
                     ActivateContentTypeResult result = await dispatcher.Send(request: command);
