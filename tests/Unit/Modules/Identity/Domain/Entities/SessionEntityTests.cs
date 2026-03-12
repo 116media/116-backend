@@ -18,20 +18,20 @@ public class SessionEntityTests
     public void Create_WithValidParameters_ShouldCreateSession()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
-        Guid userId = Guid.NewGuid();
+        var id = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         string deviceId = TestConstants.Session.ValidDeviceId;
         string refreshTokenHash = TestConstants.Session.DefaultRefreshTokenHash;
         DateTime expiresAt = DateTime.UtcNow.AddDays(TestConstants.Session.DefaultRefreshTokenExpirationDays);
-        EnumBrowser browser = EnumBrowser.Chrome;
-        EnumDevice device = EnumDevice.Desktop;
-        EnumPlatform platform = EnumPlatform.Windows;
-        EnumClient client = EnumClient.WebApp;
+        var browser = EnumBrowser.Chrome;
+        var device = EnumDevice.Desktop;
+        var platform = EnumPlatform.Windows;
+        var client = EnumClient.WebApp;
         string ipAddress = TestConstants.Session.ValidIpAddress;
         string userAgent = TestConstants.Session.ValidUserAgent;
 
         // Act
-        SessionEntity session = SessionEntity.Create(
+        var session = SessionEntity.Create(
             id,
             userId,
             deviceId,
@@ -65,14 +65,14 @@ public class SessionEntityTests
     public void Create_WithoutOptionalParameters_ShouldCreateSessionWithNulls()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
-        Guid userId = Guid.NewGuid();
+        var id = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         string deviceId = TestConstants.Session.ValidDeviceId;
         string refreshTokenHash = TestConstants.Session.DefaultRefreshTokenHash;
         DateTime expiresAt = DateTime.UtcNow.AddDays(30);
 
         // Act
-        SessionEntity session = SessionEntity.Create(
+        var session = SessionEntity.Create(
             id,
             userId,
             deviceId,
