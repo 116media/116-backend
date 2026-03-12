@@ -143,6 +143,15 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
     }
 
     /// <inheritdoc />
+    public async Task<TagEntity> GetTagByIdOrThrowAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var specification = new TagByIdSpecification(id: id);
+        return await context
+            .Tags.ApplySpecification(specification: specification)
+            .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<TagEntity?> GetTagBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
         var specification = new TagBySlugSpecification(slug: slug);
