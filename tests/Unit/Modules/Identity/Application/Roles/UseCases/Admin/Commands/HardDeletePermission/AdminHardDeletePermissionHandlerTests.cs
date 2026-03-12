@@ -40,7 +40,7 @@ public class AdminHardDeletePermissionHandlerTests
             TestConstants.Permission.ValidAction
         );
 
-        AdminHardDeletePermissionCommand command = new(PermissionId: permission.Id);
+        AdminHardDeletePermissionCommand command = new(PermissionId: permission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
 
@@ -64,7 +64,7 @@ public class AdminHardDeletePermissionHandlerTests
         );
         deletedPermission.SoftDelete();
 
-        AdminHardDeletePermissionCommand command = new(PermissionId: deletedPermission.Id);
+        AdminHardDeletePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(deletedPermission);
 
@@ -86,7 +86,7 @@ public class AdminHardDeletePermissionHandlerTests
         );
         inactivePermission.Deactivate();
 
-        AdminHardDeletePermissionCommand command = new(PermissionId: inactivePermission.Id);
+        AdminHardDeletePermissionCommand command = new(PermissionId: inactivePermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(inactivePermission);
 
@@ -106,8 +106,8 @@ public class AdminHardDeletePermissionHandlerTests
     public async Task Handle_WhenPermissionNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentPermissionId = Guid.NewGuid();
-        AdminHardDeletePermissionCommand command = new(PermissionId: nonExistentPermissionId);
+        var nonExistentPermissionId = Guid.NewGuid();
+        AdminHardDeletePermissionCommand command = new(PermissionId: nonExistentPermissionId.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPermissionId);
 
@@ -122,8 +122,8 @@ public class AdminHardDeletePermissionHandlerTests
     public async Task Handle_WhenPermissionNotFound_ShouldNotCommit()
     {
         // Arrange
-        Guid nonExistentPermissionId = Guid.NewGuid();
-        AdminHardDeletePermissionCommand command = new(PermissionId: nonExistentPermissionId);
+        var nonExistentPermissionId = Guid.NewGuid();
+        AdminHardDeletePermissionCommand command = new(PermissionId: nonExistentPermissionId.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPermissionId);
 
@@ -154,7 +154,7 @@ public class AdminHardDeletePermissionHandlerTests
             TestConstants.Permission.ValidAction
         );
 
-        AdminHardDeletePermissionCommand command = new(PermissionId: permission.Id);
+        AdminHardDeletePermissionCommand command = new(PermissionId: permission.Id.ToString());
 
         using CancellationTokenSource cts = new();
         _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
