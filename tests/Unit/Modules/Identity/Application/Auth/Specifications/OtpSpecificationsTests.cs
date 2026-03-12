@@ -18,7 +18,7 @@ public class OtpSpecificationsTests
     public void OtpByUserIdSpecification_WithMatchingUserId_ShouldReturnTrue()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         OtpEntity otp = OtpFactory.Create(userId);
         OtpByUserIdSpecification spec = new(userId);
 
@@ -51,7 +51,7 @@ public class OtpSpecificationsTests
     public void OtpByPurposeSpecification_WithMatchingPurpose_ShouldReturnTrue()
     {
         // Arrange
-        EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        var purpose = EnumOtpPurpose.EmailVerification;
         OtpEntity otp = OtpFactory.CreateWithPurpose(purpose);
         OtpByPurposeSpecification spec = new(purpose);
 
@@ -261,8 +261,8 @@ public class OtpSpecificationsTests
     public void OtpIsValidForUserAndPurposeSpecification_WithExpiredOtp_ShouldReturnFalse()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
         OtpEntity otp = OtpFactory.CreateExpired(userId, purpose);
         OtpIsValidForUserAndPurposeSpecification spec = new(userId, purpose);
 
@@ -277,8 +277,8 @@ public class OtpSpecificationsTests
     public void OtpIsValidForUserAndPurposeSpecification_WithUsedOtp_ShouldReturnFalse()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
         OtpEntity otp = OtpFactory.CreateUsed(userId, purpose);
         OtpIsValidForUserAndPurposeSpecification spec = new(userId, purpose);
 
@@ -297,9 +297,9 @@ public class OtpSpecificationsTests
     public void OtpForValidationSpecification_WithValidOtp_ShouldReturnTrue()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         string code = "123456";
-        EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        var purpose = EnumOtpPurpose.EmailVerification;
         OtpEntity otp = OtpFactory.Create(userId, code, purpose);
         OtpForValidationSpecification spec = new(userId, code, purpose);
 
@@ -314,9 +314,9 @@ public class OtpSpecificationsTests
     public void OtpForValidationSpecification_WithUsedOtp_ShouldReturnFalse()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         string code = "123456";
-        EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        var purpose = EnumOtpPurpose.EmailVerification;
         OtpEntity otp = OtpFactory.Create(userId, code, purpose);
         otp.MarkAsUsed();
         OtpForValidationSpecification spec = new(userId, code, purpose);
@@ -332,8 +332,8 @@ public class OtpSpecificationsTests
     public void OtpForValidationSpecification_WithWrongCode_ShouldReturnFalse()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
         OtpEntity otp = OtpFactory.Create(userId, "123456", purpose);
         OtpForValidationSpecification spec = new(userId, "654321", purpose);
 
@@ -352,8 +352,8 @@ public class OtpSpecificationsTests
     public void OtpForInvalidationSpecification_WithMatchingOtp_ShouldReturnTrue()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        EnumOtpPurpose purpose = EnumOtpPurpose.PasswordReset;
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.PasswordReset;
         OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
         OtpForInvalidationSpecification spec = new(userId, purpose);
 
@@ -368,8 +368,8 @@ public class OtpSpecificationsTests
     public void OtpForInvalidationSpecification_WithUsedOtp_ShouldReturnFalse()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        EnumOtpPurpose purpose = EnumOtpPurpose.PasswordReset;
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.PasswordReset;
         OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
         otp.MarkAsUsed();
         OtpForInvalidationSpecification spec = new(userId, purpose);
@@ -389,9 +389,9 @@ public class OtpSpecificationsTests
     public void OtpForUsedValidationSpecification_WithUsedOtp_ShouldReturnTrue()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         string code = "123456";
-        EnumOtpPurpose purpose = EnumOtpPurpose.TwoFactorAuthentication;
+        var purpose = EnumOtpPurpose.TwoFactorAuthentication;
         OtpEntity otp = OtpFactory.Create(userId, code, purpose);
         otp.MarkAsUsed();
         OtpForUsedValidationSpecification spec = new(userId, code, purpose);
@@ -407,9 +407,9 @@ public class OtpSpecificationsTests
     public void OtpForUsedValidationSpecification_WithUnusedOtp_ShouldReturnFalse()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         string code = "123456";
-        EnumOtpPurpose purpose = EnumOtpPurpose.TwoFactorAuthentication;
+        var purpose = EnumOtpPurpose.TwoFactorAuthentication;
         OtpEntity otp = OtpFactory.Create(userId, code, purpose);
         OtpForUsedValidationSpecification spec = new(userId, code, purpose);
 
@@ -428,7 +428,7 @@ public class OtpSpecificationsTests
     public void OtpByUserIdSpecification_WithLinq_ShouldFilterCorrectly()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         List<OtpEntity> otps =
         [
             OtpFactory.Create(userId),
@@ -450,8 +450,8 @@ public class OtpSpecificationsTests
     public void OtpIsValidForUserAndPurposeSpecification_WithLinq_ShouldFilterCorrectly()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
 
         OtpEntity validOtp = OtpFactory.Create(userId, purpose);
 
