@@ -17,12 +17,12 @@ public class CustomerEntityTests
     public void Create_WithValidValues_ShouldCreateCustomer()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
         string fullName = TestConstants.Content.Customer.ValidFullName;
         string email = TestConstants.Content.Customer.ValidEmail;
 
         // Act
-        CustomerEntity entity = CustomerEntity.Create(id, fullName, email, null, null, null);
+        var entity = CustomerEntity.Create(id, fullName, email, null, null, null);
 
         // Assert
         entity.Id.Should().Be(id);
@@ -37,7 +37,7 @@ public class CustomerEntityTests
     public void Create_WithAllOptionalFields_ShouldSetAllFields()
     {
         // Act
-        CustomerEntity entity = CustomerEntity.Create(
+        var entity = CustomerEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.Customer.ValidFullName,
             TestConstants.Content.Customer.ValidEmail,
@@ -102,7 +102,7 @@ public class CustomerEntityTests
     public void Update_WithValidValues_ShouldUpdateFields()
     {
         // Arrange
-        CustomerEntity entity = CustomerEntity.Create(
+        var entity = CustomerEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.Customer.ValidFullName,
             TestConstants.Content.Customer.ValidEmail,
@@ -125,7 +125,7 @@ public class CustomerEntityTests
     public void Update_ShouldNotChangeEmail()
     {
         // Arrange
-        CustomerEntity entity = CustomerEntity.Create(
+        var entity = CustomerEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.Customer.ValidFullName,
             TestConstants.Content.Customer.ValidEmail,
@@ -149,7 +149,7 @@ public class CustomerEntityTests
     public void Update_WithInvalidFullName_ShouldThrowBadRequestException(string? invalidFullName)
     {
         // Arrange
-        CustomerEntity entity = CustomerEntity.Create(
+        var entity = CustomerEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.Customer.ValidFullName,
             TestConstants.Content.Customer.ValidEmail,
