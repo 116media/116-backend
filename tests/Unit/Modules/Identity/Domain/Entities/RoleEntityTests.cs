@@ -18,12 +18,12 @@ public class RoleEntityTests
     public void Create_WithValidParameters_ShouldCreateRole()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
         string name = TestConstants.Role.ValidName;
         string description = TestConstants.Role.ValidDescription;
 
         // Act
-        RoleEntity role = RoleEntity.Create(id, name, description);
+        var role = RoleEntity.Create(id, name, description);
 
         // Assert
         role.Id.Should().Be(id);
@@ -41,7 +41,7 @@ public class RoleEntityTests
     public void Create_WithInvalidName_ShouldThrowBadRequestException(string? invalidName)
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
         string description = TestConstants.Role.ValidDescription;
 
         // Act
@@ -58,7 +58,7 @@ public class RoleEntityTests
     public void Create_WithInvalidDescription_ShouldThrowBadRequestException(string? invalidDescription)
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
         string name = TestConstants.Role.ValidName;
 
         // Act
