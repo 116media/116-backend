@@ -17,7 +17,7 @@ public class FileIdentificationSpecificationsTests
     public void FileByIdSpecification_WithMatchingId_ShouldReturnTrue()
     {
         // Arrange
-        Guid fileId = Guid.NewGuid();
+        var fileId = Guid.NewGuid();
         FileEntity file = FileFactory.CreateWithId(fileId);
         FileByIdSpecification spec = new(fileId);
 
@@ -191,7 +191,7 @@ public class FileIdentificationSpecificationsTests
     public void FileByIdNotDeletedSpecification_WithMatchingIdNotDeleted_ShouldReturnTrue()
     {
         // Arrange
-        Guid fileId = Guid.NewGuid();
+        var fileId = Guid.NewGuid();
         FileEntity file = FileFactory.CreateWithId(fileId);
         FileByIdNotDeletedSpecification spec = new(fileId);
 
@@ -206,7 +206,7 @@ public class FileIdentificationSpecificationsTests
     public void FileByIdNotDeletedSpecification_WithMatchingIdButDeleted_ShouldReturnFalse()
     {
         // Arrange
-        Guid fileId = Guid.NewGuid();
+        var fileId = Guid.NewGuid();
         FileEntity file = FileFactory.CreateDeletedWithId(fileId);
         FileByIdNotDeletedSpecification spec = new(fileId);
 
@@ -253,7 +253,7 @@ public class FileIdentificationSpecificationsTests
     public void FileByIdSpecification_WithLinq_ShouldFilterCorrectly()
     {
         // Arrange
-        Guid targetId = Guid.NewGuid();
+        var targetId = Guid.NewGuid();
         List<FileEntity> files =
         [
             FileFactory.CreateWithId(targetId),
@@ -297,7 +297,7 @@ public class FileIdentificationSpecificationsTests
     public void FileByIdNotDeletedSpecification_WithLinq_ShouldFilterCorrectly()
     {
         // Arrange
-        Guid targetId = Guid.NewGuid();
+        var targetId = Guid.NewGuid();
         List<FileEntity> files =
         [
             FileFactory.CreateWithId(targetId), // Match
