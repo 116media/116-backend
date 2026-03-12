@@ -18,7 +18,7 @@ public class FileEntityTests
     public void Create_WithValidParameters_ShouldCreateFile()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
         string fileName = TestConstants.File.ValidFileName;
         string originalFileName = TestConstants.File.ValidOriginalFileName;
         string mimeType = TestConstants.File.ValidMimeType;
@@ -26,7 +26,7 @@ public class FileEntityTests
         long sizeInBytes = TestConstants.File.ValidSizeInBytes;
 
         // Act
-        FileEntity file = FileEntity.Create(id, fileName, originalFileName, mimeType, storageUrl, sizeInBytes);
+        var file = FileEntity.Create(id, fileName, originalFileName, mimeType, storageUrl, sizeInBytes);
 
         // Assert
         file.Id.Should().Be(id);
@@ -46,7 +46,7 @@ public class FileEntityTests
     public void Create_WithInvalidFileName_ShouldThrowBadRequestException(string? invalidFileName)
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         Action act = () =>
@@ -70,7 +70,7 @@ public class FileEntityTests
     public void Create_WithInvalidOriginalFileName_ShouldThrowBadRequestException(string? invalidOriginalFileName)
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         Action act = () =>
@@ -94,7 +94,7 @@ public class FileEntityTests
     public void Create_WithInvalidMimeType_ShouldThrowBadRequestException(string? invalidMimeType)
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         Action act = () =>
@@ -118,7 +118,7 @@ public class FileEntityTests
     public void Create_WithInvalidStorageUrl_ShouldThrowBadRequestException(string? invalidStorageUrl)
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         Action act = () =>
@@ -142,7 +142,7 @@ public class FileEntityTests
     public void Create_WithInvalidSizeInBytes_ShouldThrowBadRequestException(long invalidSize)
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         Action act = () =>
@@ -249,7 +249,7 @@ public class FileEntityTests
     public void Factory_CreateWithId_ShouldCreateFileWithSpecifiedId()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         FileEntity file = FileFactory.CreateWithId(id);
