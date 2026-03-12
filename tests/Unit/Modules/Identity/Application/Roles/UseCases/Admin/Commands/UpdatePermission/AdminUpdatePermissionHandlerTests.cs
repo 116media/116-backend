@@ -163,7 +163,7 @@ public class AdminUpdatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentPermissionId = Guid.NewGuid();
+        var nonExistentPermissionId = Guid.NewGuid();
         AdminUpdatePermissionCommand command = CommandFactory.Permission.UpdateValidCommand(nonExistentPermissionId);
 
         _permissionRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPermissionId);
