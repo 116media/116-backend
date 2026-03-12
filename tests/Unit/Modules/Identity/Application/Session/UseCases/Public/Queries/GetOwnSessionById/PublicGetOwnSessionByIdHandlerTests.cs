@@ -32,7 +32,7 @@ public class PublicGetOwnSessionByIdHandlerTests : BaseHandlerTest
     public async Task Handle_WithValidSessionId_ShouldReturnSession()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.CreateWithId(Guid.NewGuid(), userId);
 
         PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: session.Id.ToString());
@@ -52,7 +52,7 @@ public class PublicGetOwnSessionByIdHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldFetchSessionById()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.CreateWithId(Guid.NewGuid(), userId);
 
         PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: session.Id.ToString());
@@ -70,7 +70,7 @@ public class PublicGetOwnSessionByIdHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldReturnSessionDto()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.CreateWithId(Guid.NewGuid(), userId);
 
         PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: session.Id.ToString());
@@ -92,8 +92,8 @@ public class PublicGetOwnSessionByIdHandlerTests : BaseHandlerTest
     public async Task Handle_WhenSessionNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
 
         PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: sessionId.ToString());
 
@@ -110,8 +110,8 @@ public class PublicGetOwnSessionByIdHandlerTests : BaseHandlerTest
     public async Task Handle_WhenSessionBelongsToDifferentUser_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid differentUserId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var differentUserId = Guid.NewGuid();
         SessionEntity session = SessionFactory.CreateWithId(Guid.NewGuid(), differentUserId);
 
         PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: session.Id.ToString());
@@ -133,7 +133,7 @@ public class PublicGetOwnSessionByIdHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToSessionRepository()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.CreateWithId(Guid.NewGuid(), userId);
         using CancellationTokenSource cts = new();
 
