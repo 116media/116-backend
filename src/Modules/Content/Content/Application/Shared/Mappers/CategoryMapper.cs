@@ -28,19 +28,25 @@ public static class CategoryMapper
             .Map(dest => dest.Pricing, src => src.Pricing);
     }
 
-    /// <summary>Maps a <see cref="CategoryEntity" /> to a <see cref="CategoryDto" />.</summary>
+    /// <summary>
+    /// Maps a <see cref="CategoryEntity" /> to a <see cref="CategoryDto" />.
+    /// </summary>
     public static CategoryDto ToCategoryDto(this CategoryEntity entity, IMapper mapper)
     {
         return mapper.Map<CategoryDto>(entity);
     }
 
-    /// <summary>Maps a collection of <see cref="CategoryEntity" /> to a list of <see cref="CategoryDto" />.</summary>
+    /// <summary>
+    /// Maps a collection of <see cref="CategoryEntity" /> to a list of <see cref="CategoryDto" />.
+    /// </summary>
     public static IReadOnlyList<CategoryDto> ToCategoryDtos(this IReadOnlyList<CategoryEntity> entities, IMapper mapper)
     {
         return mapper.Map<IReadOnlyList<CategoryDto>>(entities);
     }
 
-    /// <summary>Maps a <see cref="CategoryPricingEntity" /> to a <see cref="CategoryPricingDto" />.</summary>
+    /// <summary>
+    /// Maps a <see cref="CategoryPricingEntity" /> to a <see cref="CategoryPricingDto" />.
+    /// </summary>
     public static CategoryPricingDto ToCategoryPricingDto(this CategoryPricingEntity entity, IMapper mapper)
     {
         return mapper.Map<CategoryPricingDto>(entity);
