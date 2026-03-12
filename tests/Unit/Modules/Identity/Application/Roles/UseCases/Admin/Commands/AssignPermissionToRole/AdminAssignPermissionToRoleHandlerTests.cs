@@ -54,7 +54,7 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
 
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
-        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id, PermissionId: permission.Id);
+        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id.ToString(), PermissionId: permission.Id);
 
         _roleRepositoryMock.SetupGetByIdOrThrow(role);
         _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
@@ -83,7 +83,7 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
 
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
-        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id, PermissionId: permission.Id);
+        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id.ToString(), PermissionId: permission.Id);
 
         _roleRepositoryMock.SetupGetByIdOrThrow(role);
         _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
@@ -105,9 +105,12 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentRoleId = Guid.NewGuid();
-        Guid permissionId = Guid.NewGuid();
-        AdminAssignPermissionToRoleCommand command = new(RoleId: nonExistentRoleId, PermissionId: permissionId);
+        var nonExistentRoleId = Guid.NewGuid();
+        var permissionId = Guid.NewGuid();
+        AdminAssignPermissionToRoleCommand command = new(
+            RoleId: nonExistentRoleId.ToString(),
+            PermissionId: permissionId
+        );
 
         _roleRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentRoleId);
 
@@ -124,8 +127,11 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
-        Guid nonExistentPermissionId = Guid.NewGuid();
-        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id, PermissionId: nonExistentPermissionId);
+        var nonExistentPermissionId = Guid.NewGuid();
+        AdminAssignPermissionToRoleCommand command = new(
+            RoleId: role.Id.ToString(),
+            PermissionId: nonExistentPermissionId
+        );
 
         _roleRepositoryMock.SetupGetByIdOrThrow(role);
         _permissionRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPermissionId);
@@ -148,7 +154,10 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
 
         RoleEntity inactiveRole = RoleFactory.CreateInactive();
 
-        AdminAssignPermissionToRoleCommand command = new(RoleId: inactiveRole.Id, PermissionId: permission.Id);
+        AdminAssignPermissionToRoleCommand command = new(
+            RoleId: inactiveRole.Id.ToString(),
+            PermissionId: permission.Id
+        );
 
         _roleRepositoryMock.SetupGetByIdOrThrow(inactiveRole);
 
@@ -170,7 +179,10 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
 
         RoleEntity deletedRole = RoleFactory.CreateDeleted();
 
-        AdminAssignPermissionToRoleCommand command = new(RoleId: deletedRole.Id, PermissionId: permission.Id);
+        AdminAssignPermissionToRoleCommand command = new(
+            RoleId: deletedRole.Id.ToString(),
+            PermissionId: permission.Id
+        );
 
         _roleRepositoryMock.SetupGetByIdOrThrow(deletedRole);
 
@@ -193,7 +205,10 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
 
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
-        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id, PermissionId: inactivePermission.Id);
+        AdminAssignPermissionToRoleCommand command = new(
+            RoleId: role.Id.ToString(),
+            PermissionId: inactivePermission.Id
+        );
 
         _roleRepositoryMock.SetupGetByIdOrThrow(role);
         _permissionRepositoryMock.SetupGetByIdOrThrow(inactivePermission);
@@ -217,7 +232,10 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
 
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
-        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id, PermissionId: deletedPermission.Id);
+        AdminAssignPermissionToRoleCommand command = new(
+            RoleId: role.Id.ToString(),
+            PermissionId: deletedPermission.Id
+        );
 
         _roleRepositoryMock.SetupGetByIdOrThrow(role);
         _permissionRepositoryMock.SetupGetByIdOrThrow(deletedPermission);
@@ -240,7 +258,7 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
 
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
-        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id, PermissionId: permission.Id);
+        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id.ToString(), PermissionId: permission.Id);
 
         _roleRepositoryMock.SetupGetByIdOrThrow(role);
         _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
@@ -264,7 +282,7 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
 
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
-        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id, PermissionId: permission.Id);
+        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id.ToString(), PermissionId: permission.Id);
 
         _roleRepositoryMock.SetupGetByIdOrThrow(role);
         _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
@@ -299,7 +317,7 @@ public class AdminAssignPermissionToRoleHandlerTests : BaseHandlerTest
 
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
-        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id, PermissionId: permission.Id);
+        AdminAssignPermissionToRoleCommand command = new(RoleId: role.Id.ToString(), PermissionId: permission.Id);
 
         using CancellationTokenSource cts = new();
         _roleRepositoryMock.SetupGetByIdOrThrow(role);
