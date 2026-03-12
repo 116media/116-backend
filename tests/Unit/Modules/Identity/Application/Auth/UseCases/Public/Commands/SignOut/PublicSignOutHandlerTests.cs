@@ -123,7 +123,7 @@ public class PublicSignOutHandlerTests
     public async Task Handle_WhenUserNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         PublicSignOutCommand command = new(UserId: userId, RefreshToken: "token");
 
         _authRepositoryMock.SetupFindUserByIdOrThrowNotFound(userId);
@@ -139,7 +139,7 @@ public class PublicSignOutHandlerTests
     public async Task Handle_WhenUserNotFound_ShouldNotCallSessionFactory()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         PublicSignOutCommand command = new(UserId: userId, RefreshToken: "token");
 
         _authRepositoryMock.SetupFindUserByIdOrThrowNotFound(userId);
