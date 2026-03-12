@@ -311,7 +311,7 @@ public class PublicSocialLoginAuthFactoryTests
         string userName = "socialuser";
         string provider = "Google";
         string? avatarUrl = "https://avatar.url/image.jpg";
-        Guid avatarFileId = Guid.NewGuid();
+        var avatarFileId = Guid.NewGuid();
         UserEntity user = UserFactory.Create(email);
         FileEntity avatarFile = FileFactory.CreateWithId(avatarFileId);
 
