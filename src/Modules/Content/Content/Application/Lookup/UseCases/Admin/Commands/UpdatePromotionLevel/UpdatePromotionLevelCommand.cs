@@ -10,7 +10,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePromotio
 /// <param name="Name">The new display name for the promotion level.</param>
 /// <param name="DurationDays">The new promotion duration in days.</param>
 /// <param name="PriceUsd">The new price in US dollars.</param>
-public record UpdatePromotionLevelCommand(Guid Id, string Name, int DurationDays, decimal PriceUsd)
+public record UpdatePromotionLevelCommand(string Id, string Name, int DurationDays, decimal PriceUsd)
     : ICommand<UpdatePromotionLevelResult>;
 
 /// <summary>
