@@ -8,7 +8,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.BulkUpdateRole
 /// </summary>
 /// <param name="RoleId">The unique identifier of the role.</param>
 /// <param name="PermissionIds">The list of permission IDs to assign to the role.</param>
-public record AdminBulkUpdateRolePermissionsCommand(Guid RoleId, List<Guid> PermissionIds)
+public record AdminBulkUpdateRolePermissionsCommand(string RoleId, List<Guid> PermissionIds)
     : ICommand<AdminBulkUpdateRolePermissionsResult>;
 
 /// <summary>
