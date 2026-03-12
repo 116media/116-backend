@@ -26,8 +26,10 @@ public class DeactivatePromotionLevelHandler(
         CancellationToken cancellationToken
     )
     {
+        Guid id = Guid.Parse(command.Id);
+
         PromotionLevelEntity promotionLevel = await lookupRepository.GetPromotionLevelByIdOrThrowAsync(
-            id: command.Id,
+            id: id,
             cancellationToken: cancellationToken
         );
 
