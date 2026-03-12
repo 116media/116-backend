@@ -36,7 +36,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string newUserName = "newusername";
 
         PublicUpdateOwnProfileCommand command = new(
@@ -82,7 +82,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string newUserName = "newusername";
 
         PublicUpdateOwnProfileCommand command = new(
@@ -141,7 +141,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
 
         PublicUpdateOwnProfileCommand command = new(
             UserId: user.Id,
@@ -191,8 +191,8 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
     public async Task Handle_WhenUserNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         PublicUpdateOwnProfileCommand command = new(
             UserId: userId,
             SessionId: sessionId,
@@ -231,8 +231,8 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
     public async Task Handle_WhenEmailAlreadyExists_ShouldThrowConflictException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         PublicUpdateOwnProfileCommand command = new(
             UserId: userId,
             SessionId: sessionId,
@@ -271,8 +271,8 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
     public async Task Handle_WhenUserNameAlreadyExists_ShouldThrowConflictException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         PublicUpdateOwnProfileCommand command = new(
             UserId: userId,
             SessionId: sessionId,
@@ -316,7 +316,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         using CancellationTokenSource cts = new();
 
         PublicUpdateOwnProfileCommand command = new(
@@ -364,7 +364,7 @@ public class PublicUpdateOwnProfileHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         using CancellationTokenSource cts = new();
 
         PublicUpdateOwnProfileCommand command = new(
