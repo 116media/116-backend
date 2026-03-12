@@ -36,7 +36,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string newUserName = "newadminuser";
 
         AdminUpdateOwnProfileCommand command = new(
@@ -80,7 +80,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string newUserName = "newadminuser";
 
         AdminUpdateOwnProfileCommand command = new(
@@ -136,7 +136,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
 
         AdminUpdateOwnProfileCommand command = new(
             UserId: user.Id,
@@ -181,7 +181,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string newUserName = "newadminuser";
         string countryName = "United States";
         string countryIsoCode = "US";
@@ -244,8 +244,8 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
     public async Task Handle_WhenUserNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         AdminUpdateOwnProfileCommand command = new(
             UserId: userId,
             SessionId: sessionId,
@@ -282,8 +282,8 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
     public async Task Handle_WhenUserNameAlreadyExists_ShouldThrowConflictException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         AdminUpdateOwnProfileCommand command = new(
             UserId: userId,
             SessionId: sessionId,
@@ -325,7 +325,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         using CancellationTokenSource cts = new();
 
         AdminUpdateOwnProfileCommand command = new(
@@ -371,7 +371,7 @@ public class AdminUpdateOwnProfileHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         using CancellationTokenSource cts = new();
 
         AdminUpdateOwnProfileCommand command = new(
