@@ -17,13 +17,13 @@ public class PackageSlotEntityTests
     public void Create_WithValidValues_ShouldCreatePackageSlot()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
-        Guid packageId = Guid.NewGuid();
-        Guid categoryId = Guid.NewGuid();
+        var id = Guid.NewGuid();
+        var packageId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
         int quantity = TestConstants.Content.PackageSlot.ValidQuantity;
 
         // Act
-        PackageSlotEntity entity = PackageSlotEntity.Create(id, packageId, categoryId, isRequired: true, quantity);
+        var entity = PackageSlotEntity.Create(id, packageId, categoryId, isRequired: true, quantity);
 
         // Assert
         entity.Id.Should().Be(id);
@@ -37,7 +37,7 @@ public class PackageSlotEntityTests
     public void Create_WithNullCategoryId_ShouldCreateOpenSlot()
     {
         // Act
-        PackageSlotEntity entity = PackageSlotEntity.Create(
+        var entity = PackageSlotEntity.Create(
             Guid.NewGuid(),
             Guid.NewGuid(),
             null,
@@ -54,7 +54,7 @@ public class PackageSlotEntityTests
     public void Create_WithMultipleQuantity_ShouldSetQuantity()
     {
         // Act
-        PackageSlotEntity entity = PackageSlotEntity.Create(
+        var entity = PackageSlotEntity.Create(
             Guid.NewGuid(),
             Guid.NewGuid(),
             null,
