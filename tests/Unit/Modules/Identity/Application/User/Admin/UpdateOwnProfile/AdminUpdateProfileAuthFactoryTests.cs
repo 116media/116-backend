@@ -32,8 +32,8 @@ public class AdminUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_WithValidData_ShouldReturnAuthData()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string userName = "newusername";
         string countryName = "Rwanda";
         string countryIsoCode = "RW";
@@ -83,8 +83,8 @@ public class AdminUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_ShouldValidateUserIsActive()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
@@ -110,8 +110,8 @@ public class AdminUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_ShouldValidateSession()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
@@ -137,8 +137,8 @@ public class AdminUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_WithNewUsername_ShouldCheckUniqueness()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string newUserName = "newusername";
         UserEntity user = UserFactory.CreateWithId(userId);
         user.UpdateUserName("oldusername");
@@ -182,8 +182,8 @@ public class AdminUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_WithSameUsername_ShouldNotCheckUniqueness()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string userName = "sameusername";
         UserEntity user = UserFactory.CreateWithId(userId);
         user.UpdateUserName(userName);
@@ -214,8 +214,8 @@ public class AdminUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_WithPhoneNumber_ShouldCheckUniqueness()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string countryDialCode = "+250";
         string partialPhoneNumber = "788123456";
         string fullPhoneNumber = $"{countryDialCode}{partialPhoneNumber}";
@@ -261,8 +261,8 @@ public class AdminUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_WithPhoneUsedByCurrentUser_ShouldNotThrow()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string countryDialCode = "+250";
         string partialPhoneNumber = "788123456";
         string fullPhoneNumber = $"{countryDialCode}{partialPhoneNumber}";
@@ -303,8 +303,8 @@ public class AdminUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_ShouldCommitTransaction()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
@@ -330,8 +330,8 @@ public class AdminUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
         CancellationToken cancellationToken = new();
 
