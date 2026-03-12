@@ -39,7 +39,7 @@ public class AdminSoftDeleteRoleHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity activeRole = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
-        AdminSoftDeleteRoleCommand command = new(RoleId: activeRole.Id);
+        AdminSoftDeleteRoleCommand command = new(RoleId: activeRole.Id.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrow(activeRole);
 
@@ -60,7 +60,7 @@ public class AdminSoftDeleteRoleHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity activeRole = RoleFactory.Create(TestConstants.Role.ValidName);
 
-        AdminSoftDeleteRoleCommand command = new(RoleId: activeRole.Id);
+        AdminSoftDeleteRoleCommand command = new(RoleId: activeRole.Id.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrow(activeRole);
 
@@ -78,7 +78,7 @@ public class AdminSoftDeleteRoleHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity activeRole = RoleFactory.Create(TestConstants.Role.ValidName);
 
-        AdminSoftDeleteRoleCommand command = new(RoleId: activeRole.Id);
+        AdminSoftDeleteRoleCommand command = new(RoleId: activeRole.Id.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrow(activeRole);
 
@@ -97,8 +97,8 @@ public class AdminSoftDeleteRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentRoleId = Guid.NewGuid();
-        AdminSoftDeleteRoleCommand command = new(RoleId: nonExistentRoleId);
+        var nonExistentRoleId = Guid.NewGuid();
+        AdminSoftDeleteRoleCommand command = new(RoleId: nonExistentRoleId.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentRoleId);
 
@@ -113,8 +113,8 @@ public class AdminSoftDeleteRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleNotFound_ShouldNotCommit()
     {
         // Arrange
-        Guid nonExistentRoleId = Guid.NewGuid();
-        AdminSoftDeleteRoleCommand command = new(RoleId: nonExistentRoleId);
+        var nonExistentRoleId = Guid.NewGuid();
+        AdminSoftDeleteRoleCommand command = new(RoleId: nonExistentRoleId.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentRoleId);
 
@@ -142,7 +142,7 @@ public class AdminSoftDeleteRoleHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity deletedRole = RoleFactory.CreateDeleted();
 
-        AdminSoftDeleteRoleCommand command = new(RoleId: deletedRole.Id);
+        AdminSoftDeleteRoleCommand command = new(RoleId: deletedRole.Id.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrow(deletedRole);
 
@@ -159,7 +159,7 @@ public class AdminSoftDeleteRoleHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity deletedRole = RoleFactory.CreateDeleted();
 
-        AdminSoftDeleteRoleCommand command = new(RoleId: deletedRole.Id);
+        AdminSoftDeleteRoleCommand command = new(RoleId: deletedRole.Id.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrow(deletedRole);
 
@@ -187,7 +187,7 @@ public class AdminSoftDeleteRoleHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity activeRole = RoleFactory.Create(TestConstants.Role.ValidName);
 
-        AdminSoftDeleteRoleCommand command = new(RoleId: activeRole.Id);
+        AdminSoftDeleteRoleCommand command = new(RoleId: activeRole.Id.ToString());
 
         using CancellationTokenSource cts = new();
         _roleRepositoryMock.SetupGetByIdOrThrow(activeRole);
