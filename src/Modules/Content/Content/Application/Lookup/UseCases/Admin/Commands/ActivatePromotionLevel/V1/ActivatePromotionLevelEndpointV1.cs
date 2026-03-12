@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.ActivatePromotionLevel.V1;
 
-/// <summary>Response model for a successful promotion level activation.</summary>
+/// <summary>
+/// Response model for a successful promotion level activation.
+/// </summary>
 /// <param name="PromotionLevel">The updated promotion level information.</param>
 public record ActivatePromotionLevelResponse(PromotionLevelDto PromotionLevel);
 
@@ -34,8 +36,8 @@ public class ActivatePromotionLevelEndpointV1 : ICarterModule
 
         group
             .MapPatch(
-                $"/{{id:guid}}/{LookupRouteConstants.Activate}",
-                async (Guid id, IDispatcher dispatcher) =>
+                $"/{{id}}/{LookupRouteConstants.Activate}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new ActivatePromotionLevelCommand(Id: id);
                     ActivatePromotionLevelResult result = await dispatcher.Send(request: command);
