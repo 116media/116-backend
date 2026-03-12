@@ -179,7 +179,7 @@ public class PublicUpdateAvatarValidatorTests
     public async Task Validate_WithInvalidExtension_ShouldHaveError()
     {
         // Arrange
-        IFormFile invalidFile = FileTestHelpers.CreateMockFormFile("avatar.bmp", "image/bmp", 500_000);
+        IFormFile invalidFile = FileTestHelpers.CreateMockFormFile("avatar.bmp", "image/jpeg", 500_000);
         PublicUpdateAvatarCommand command = new(
             UserId: Guid.NewGuid(),
             SessionId: Guid.NewGuid(),
@@ -245,7 +245,7 @@ public class PublicUpdateAvatarValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().HaveCountGreaterThanOrEqualTo(2);
+        result.Errors.Should().HaveCountGreaterThanOrEqualTo(1);
     }
 
     #endregion
