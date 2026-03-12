@@ -128,7 +128,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentRoleId = Guid.NewGuid();
+        var nonExistentRoleId = Guid.NewGuid();
         AdminGetRoleByIdQuery query = new(RoleId: nonExistentRoleId.ToString());
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrowNotFound(nonExistentRoleId);
@@ -249,7 +249,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
     public async Task Handle_WithLowercaseGuid_ShouldParseCorrectly()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
         RoleEntity role = RoleFactory.CreateWithId(roleId, TestConstants.Role.ValidName);
 
         AdminGetRoleByIdQuery query = new(RoleId: roleId.ToString().ToLowerInvariant());
@@ -267,7 +267,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
     public async Task Handle_WithUppercaseGuid_ShouldParseCorrectly()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
         RoleEntity role = RoleFactory.CreateWithId(roleId, TestConstants.Role.ValidName);
 
         AdminGetRoleByIdQuery query = new(RoleId: roleId.ToString().ToUpperInvariant());
