@@ -17,7 +17,7 @@ public class SessionSpecificationsTests
     public void SessionByUserIdSpecification_WithMatchingUserId_ShouldReturnTrue()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.Create(userId);
         SessionByUserIdSpecification spec = new(userId);
 
@@ -83,7 +83,7 @@ public class SessionSpecificationsTests
     public void SessionByIdSpecification_WithMatchingId_ShouldReturnTrue()
     {
         // Arrange
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         SessionEntity session = SessionFactory.CreateWithId(sessionId);
         SessionByIdSpecification spec = new(sessionId);
 
@@ -149,7 +149,7 @@ public class SessionSpecificationsTests
     public void SessionByUserIdAndDeviceIdSpecification_WithMatchingBoth_ShouldReturnTrue()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         string deviceId = "device-123";
         SessionEntity session = SessionFactory.Create(userId, deviceId);
         session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
@@ -555,7 +555,7 @@ public class SessionSpecificationsTests
     public void ActiveSessionsByUserIdSpecification_WithActiveSession_ShouldReturnTrue()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.Create(userId);
         session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
         ActiveSessionsByUserIdSpecification spec = new(userId);
@@ -586,7 +586,7 @@ public class SessionSpecificationsTests
     public void ActiveSessionsByUserIdSpecification_WithRevokedSession_ShouldReturnFalse()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.Create(userId);
         session.GetType().GetProperty("IsRevoked")!.SetValue(session, true);
         ActiveSessionsByUserIdSpecification spec = new(userId);
@@ -602,7 +602,7 @@ public class SessionSpecificationsTests
     public void ActiveSessionsByUserIdSpecification_WithExpiredSession_ShouldReturnFalse()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.CreateExpired(userId);
         session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
         ActiveSessionsByUserIdSpecification spec = new(userId);
@@ -622,7 +622,7 @@ public class SessionSpecificationsTests
     public void SessionByUserIdSpecification_WithLinq_ShouldFilterCorrectly()
     {
         // Arrange
-        Guid targetUserId = Guid.NewGuid();
+        var targetUserId = Guid.NewGuid();
         List<SessionEntity> sessions =
         [
             SessionFactory.Create(targetUserId),
@@ -667,7 +667,7 @@ public class SessionSpecificationsTests
     public void ActiveSessionsByUserIdSpecification_WithLinq_ShouldFilterCorrectly()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
 
         SessionEntity validSession = SessionFactory.Create(userId);
         validSession.GetType().GetProperty("IsRevoked")!.SetValue(validSession, false);
