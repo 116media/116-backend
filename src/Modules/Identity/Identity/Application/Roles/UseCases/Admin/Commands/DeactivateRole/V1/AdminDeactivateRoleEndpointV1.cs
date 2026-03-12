@@ -37,8 +37,8 @@ public class AdminDeactivateRoleEndpointV1 : ICarterModule
 
         group
             .MapPatch(
-                $"{{id:guid}}/{RoleRouteConstants.Deactivate}",
-                async (Guid id, IDispatcher dispatcher) =>
+                $"{{id}}/{RoleRouteConstants.Deactivate}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new AdminDeactivateRoleCommand(RoleId: id);
 
