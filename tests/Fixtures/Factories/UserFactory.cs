@@ -83,6 +83,15 @@ public static class UserFactory
         new UserBuilder().WithAuthProvider(authProvider).AsVerified().Build();
 
     /// <summary>
+    /// Creates a user with a phone number set.
+    /// </summary>
+    /// <param name="fullPhoneNumber">The full international phone number (e.g. "+1234567890").</param>
+    /// <param name="partialPhoneNumber">The partial/local phone number.</param>
+    /// <returns>A new UserEntity with phone number fields populated.</returns>
+    public static UserEntity CreateWithPhoneNumber(string fullPhoneNumber, string partialPhoneNumber) =>
+        new UserBuilder().WithPhoneNumber(fullPhoneNumber, partialPhoneNumber).Build();
+
+    /// <summary>
     /// Creates a list of users with the specified count.
     /// </summary>
     /// <param name="count">The number of users to create.</param>

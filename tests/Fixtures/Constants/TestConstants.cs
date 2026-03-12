@@ -219,6 +219,8 @@ public static class TestConstants
             public const string RoleIdInvalid = "Role ID is invalid.";
             public const string PermissionIdRequired = "Permission ID is required.";
             public const string PermissionIdInvalid = "Permission ID is invalid.";
+            public const string UserIdRequired = "User ID is required.";
+            public const string UserIdInvalid = "User ID is invalid.";
         }
     }
 
@@ -321,6 +323,90 @@ public static class TestConstants
             public const decimal ValidPriceUsd = 25m;
             public const decimal ZeroPriceUsd = 0m;
             public const decimal UpdatedPriceUsd = 50m;
+        }
+
+        /// <summary>Constants for Editorial entity testing (Article, Video, ShortVideo, Lyrics).</summary>
+        public static class Editorial
+        {
+            /// <summary>Constants for Article entity testing.</summary>
+            public static class Article
+            {
+                public const int TitleMaxLength = 100;
+                public const int SlugMaxLength = 220;
+                public const int HeadlineMinLength = 100;
+                public const int HeadlineMaxLength = 300;
+                public const int RejectionReasonMaxLength = 500;
+
+                public const string ValidTitle = "Fally Ipupa — Portrait d'un Géant";
+                public const string ValidSlug = "fally-ipupa-portrait-dun-geant";
+                public const string ValidHeadline =
+                    "Retour sur la carrière époustouflante de Fally Ipupa, artiste congolais qui a conquis l'Afrique et le monde entier avec son style unique.";
+                public const string ValidBody = "<p>Corps de l'article complet ici.</p>";
+                public const string ValidRejectionReason = "Le contenu n'est pas conforme aux standards éditoriaux.";
+            }
+
+            /// <summary>Constants for Video entity testing.</summary>
+            public static class Video
+            {
+                public const int TitleMaxLength = 100;
+                public const int SlugMaxLength = 220;
+                public const int YoutubeVideoIdMaxLength = 20;
+                public const int RejectionReasonMaxLength = 500;
+
+                public const string ValidTitle = "116 Le Focus — Fally Ipupa";
+                public const string ValidSlug = "116-le-focus-fally-ipupa";
+                public const string ValidYoutubeVideoId = "dQw4w9WgXcQ";
+                public const string ValidDescription = "Épisode complet de 116 Le Focus avec Fally Ipupa.";
+                public const string ValidRejectionReason = "La qualité vidéo ne répond pas aux critères requis.";
+            }
+
+            /// <summary>Constants for ShortVideo entity testing.</summary>
+            public static class ShortVideo
+            {
+                public const int TitleMaxLength = 200;
+                public const int SlugMaxLength = 220;
+
+                public const string ValidTitle = "Teaser — Fally Ipupa Focus";
+                public const string ValidSlug = "teaser-fally-ipupa-focus";
+                public const string ValidVideoUrl = "https://res.cloudinary.com/test/video/upload/v1/test-short.mp4";
+                public const string ValidVideoStorageKey = "content/shorts/test-short";
+            }
+
+            /// <summary>Constants for Lyrics entity testing.</summary>
+            public static class Lyrics
+            {
+                public const int SongTitleMaxLength = 200;
+                public const int ArtistNameMaxLength = 100;
+                public const int LanguageMaxLength = 5;
+
+                public const string ValidSongTitle = "Eloko Oyo";
+                public const string ValidArtistName = "Fally Ipupa";
+                public const string ValidLyricsText =
+                    "Eloko oyo na lingi\nMpo na yo nde nazali\nSolola na ngai pamba te\nNa lingi yo koloba.";
+                public const string ValidLanguage = "fr";
+            }
+
+            /// <summary>Constants for ArticleImage entity testing.</summary>
+            public static class ArticleImage
+            {
+                public const string ValidStorageKey = "content/articles/test-image-key";
+                public const string ValidUrl = "https://res.cloudinary.com/test/image/upload/v1/test-image.jpg";
+                public const string AnotherStorageKey = "content/articles/another-image-key";
+                public const string AnotherUrl = "https://res.cloudinary.com/test/image/upload/v1/another-image.jpg";
+            }
+
+            /// <summary>Cloudinary test upload result values.</summary>
+            public static class Cloudinary
+            {
+                public const string ValidPublicId = "content/articles/uploaded-image";
+                public const string ValidSecureUrl =
+                    "https://res.cloudinary.com/test/image/upload/v1/uploaded-image.jpg";
+                public const string ValidFormat = "jpg";
+                public const int ValidWidth = 1200;
+                public const int ValidHeight = 630;
+                public const long ValidBytes = 102400L;
+                public const string ValidResourceType = "image";
+            }
         }
     }
 
