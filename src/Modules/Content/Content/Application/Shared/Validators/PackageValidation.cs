@@ -9,19 +9,12 @@ namespace _116.Content.Application.Shared.Validators;
 public static class PackageValidation
 {
     /// <summary>
-    /// Validates that a package ID is not empty.
-    /// </summary>
-    public static void ValidPackageId<T>(this IRuleBuilder<T, Guid> ruleBuilder)
-    {
-        ruleBuilder.NotEmpty().WithMessage("Package ID is required.");
-    }
-
-    /// <summary>
     /// Validates package name with length constraints.
     /// </summary>
-    public static IRuleBuilderOptions<T, string?> ValidPackageName<T>(this IRuleBuilder<T, string?> ruleBuilder)
+    public static IRuleBuilderOptions<T, string?> ValidPackageName<T>(this IRuleBuilderInitial<T, string?> ruleBuilder)
     {
         return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
             .WithMessage("Package name is required.")
             .MaximumLength(maximumLength: ContentConstants.MaxPackageNameLength)
