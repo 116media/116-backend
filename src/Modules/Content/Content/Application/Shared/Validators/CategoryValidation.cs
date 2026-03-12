@@ -10,24 +10,17 @@ namespace _116.Content.Application.Shared.Validators;
 public static partial class CategoryValidation
 {
     /// <summary>
-    /// Validates that a category ID is not empty.
-    /// </summary>
-    public static void ValidCategoryId<T>(this IRuleBuilder<T, Guid> ruleBuilder)
-    {
-        ruleBuilder.NotEmpty().WithMessage("Category ID is required.");
-    }
-
-    /// <summary>
     /// Validates category name with length constraints.
     /// </summary>
     public static IRuleBuilderOptions<T, string?> ValidCategoryName<T>(
-        this IRuleBuilder<T, string?> ruleBuilder,
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
         bool isRequired = true
     )
     {
         if (isRequired)
         {
             return ruleBuilder
+                .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
                 .WithMessage("Category name is required.")
                 .MaximumLength(maximumLength: ContentConstants.MaxCategoryNameLength)
@@ -35,6 +28,7 @@ public static partial class CategoryValidation
         }
 
         return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: ContentConstants.MaxCategoryNameLength)
             .WithMessage($"Category name must not exceed {ContentConstants.MaxCategoryNameLength} characters.")
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Name")));
@@ -44,13 +38,14 @@ public static partial class CategoryValidation
     /// Validates category slug with length and format constraints (lowercase, letters, numbers, hyphens).
     /// </summary>
     public static IRuleBuilderOptions<T, string?> ValidCategorySlug<T>(
-        this IRuleBuilder<T, string?> ruleBuilder,
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
         bool isRequired = true
     )
     {
         if (isRequired)
         {
             return ruleBuilder
+                .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
                 .WithMessage("Category slug is required.")
                 .MaximumLength(maximumLength: ContentConstants.MaxCategorySlugLength)
@@ -60,6 +55,7 @@ public static partial class CategoryValidation
         }
 
         return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: ContentConstants.MaxCategorySlugLength)
             .WithMessage($"Category slug must not exceed {ContentConstants.MaxCategorySlugLength} characters.")
             .Matches(SlugRegex())
