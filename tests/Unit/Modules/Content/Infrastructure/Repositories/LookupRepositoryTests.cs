@@ -71,7 +71,7 @@ public class LookupRepositoryTests : IDisposable
     public async Task GetContentTypeByIdOrThrowAsync_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
 
         // Act
         Func<Task> act = async () => await _repository.GetContentTypeByIdOrThrowAsync(nonExistentId);
@@ -141,7 +141,7 @@ public class LookupRepositoryTests : IDisposable
     public async Task GetPricingTierByIdOrThrowAsync_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
 
         // Act
         Func<Task> act = async () => await _repository.GetPricingTierByIdOrThrowAsync(nonExistentId);
@@ -208,7 +208,7 @@ public class LookupRepositoryTests : IDisposable
     public async Task GetPromotionLevelByIdOrThrowAsync_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
 
         // Act
         Func<Task> act = async () => await _repository.GetPromotionLevelByIdOrThrowAsync(nonExistentId);
