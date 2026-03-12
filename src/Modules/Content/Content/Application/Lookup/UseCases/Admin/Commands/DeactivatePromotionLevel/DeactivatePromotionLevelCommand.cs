@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivateProm
 /// Command to deactivate a promotion level, preventing it from being assigned to content.
 /// </summary>
 /// <param name="Id">The unique identifier of the promotion level to deactivate.</param>
-public record DeactivatePromotionLevelCommand(Guid Id) : ICommand<DeactivatePromotionLevelResult>;
+public record DeactivatePromotionLevelCommand(string Id) : ICommand<DeactivatePromotionLevelResult>;
 
 /// <summary>
 /// Result returned after successfully deactivating a promotion level.
