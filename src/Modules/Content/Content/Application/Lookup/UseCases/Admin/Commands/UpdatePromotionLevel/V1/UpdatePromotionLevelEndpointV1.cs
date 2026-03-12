@@ -45,8 +45,8 @@ public class UpdatePromotionLevelEndpointV1 : ICarterModule
 
         group
             .MapPut(
-                "/{id:guid}",
-                async (Guid id, UpdatePromotionLevelRequest request, IDispatcher dispatcher) =>
+                "/{id}",
+                async (string id, UpdatePromotionLevelRequest request, IDispatcher dispatcher) =>
                 {
                     var command = new UpdatePromotionLevelCommand(
                         Id: id,
