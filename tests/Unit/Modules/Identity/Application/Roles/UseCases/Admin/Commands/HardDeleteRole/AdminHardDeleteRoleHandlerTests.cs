@@ -36,7 +36,7 @@ public class AdminHardDeleteRoleHandlerTests
         // Arrange
         RoleEntity customRole = RoleFactory.Create("CustomRole", "A custom non-core role");
 
-        AdminHardDeleteRoleCommand command = new(RoleId: customRole.Id);
+        AdminHardDeleteRoleCommand command = new(RoleId: customRole.Id.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrow(customRole);
 
@@ -56,7 +56,7 @@ public class AdminHardDeleteRoleHandlerTests
         // Arrange
         RoleEntity deletedRole = RoleFactory.CreateDeleted();
 
-        AdminHardDeleteRoleCommand command = new(RoleId: deletedRole.Id);
+        AdminHardDeleteRoleCommand command = new(RoleId: deletedRole.Id.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrow(deletedRole);
 
@@ -76,8 +76,8 @@ public class AdminHardDeleteRoleHandlerTests
     public async Task Handle_WhenRoleNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentRoleId = Guid.NewGuid();
-        AdminHardDeleteRoleCommand command = new(RoleId: nonExistentRoleId);
+        var nonExistentRoleId = Guid.NewGuid();
+        AdminHardDeleteRoleCommand command = new(RoleId: nonExistentRoleId.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentRoleId);
 
@@ -92,8 +92,8 @@ public class AdminHardDeleteRoleHandlerTests
     public async Task Handle_WhenRoleNotFound_ShouldNotCommit()
     {
         // Arrange
-        Guid nonExistentRoleId = Guid.NewGuid();
-        AdminHardDeleteRoleCommand command = new(RoleId: nonExistentRoleId);
+        var nonExistentRoleId = Guid.NewGuid();
+        AdminHardDeleteRoleCommand command = new(RoleId: nonExistentRoleId.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentRoleId);
 
@@ -121,7 +121,7 @@ public class AdminHardDeleteRoleHandlerTests
         // Arrange
         RoleEntity superAdminRole = RoleFactory.CreateSuperAdmin();
 
-        AdminHardDeleteRoleCommand command = new(RoleId: superAdminRole.Id);
+        AdminHardDeleteRoleCommand command = new(RoleId: superAdminRole.Id.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrow(superAdminRole);
 
@@ -138,7 +138,7 @@ public class AdminHardDeleteRoleHandlerTests
         // Arrange
         RoleEntity adminRole = RoleFactory.CreateAdmin();
 
-        AdminHardDeleteRoleCommand command = new(RoleId: adminRole.Id);
+        AdminHardDeleteRoleCommand command = new(RoleId: adminRole.Id.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrow(adminRole);
 
@@ -155,7 +155,7 @@ public class AdminHardDeleteRoleHandlerTests
         // Arrange
         RoleEntity visitorRole = RoleFactory.CreateVisitor();
 
-        AdminHardDeleteRoleCommand command = new(RoleId: visitorRole.Id);
+        AdminHardDeleteRoleCommand command = new(RoleId: visitorRole.Id.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrow(visitorRole);
 
@@ -172,7 +172,7 @@ public class AdminHardDeleteRoleHandlerTests
         // Arrange
         RoleEntity superAdminRole = RoleFactory.CreateSuperAdmin();
 
-        AdminHardDeleteRoleCommand command = new(RoleId: superAdminRole.Id);
+        AdminHardDeleteRoleCommand command = new(RoleId: superAdminRole.Id.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrow(superAdminRole);
 
@@ -201,7 +201,7 @@ public class AdminHardDeleteRoleHandlerTests
         // Arrange
         RoleEntity customRole = RoleFactory.Create("CustomRole");
 
-        AdminHardDeleteRoleCommand command = new(RoleId: customRole.Id);
+        AdminHardDeleteRoleCommand command = new(RoleId: customRole.Id.ToString());
 
         using CancellationTokenSource cts = new();
         _roleRepositoryMock.SetupGetByIdOrThrow(customRole);
