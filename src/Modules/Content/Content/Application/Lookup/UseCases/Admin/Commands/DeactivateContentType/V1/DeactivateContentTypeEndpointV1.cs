@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivateContentType.V1;
 
-/// <summary>Response model for a successful content type deactivation.</summary>
+/// <summary>
+/// Response model for a successful content type deactivation.
+/// </summary>
 /// <param name="ContentType">The updated content type information.</param>
 public record DeactivateContentTypeResponse(ContentTypeDto ContentType);
 
@@ -34,8 +36,8 @@ public class DeactivateContentTypeEndpointV1 : ICarterModule
 
         group
             .MapPatch(
-                $"/{{id:guid}}/{LookupRouteConstants.Deactivate}",
-                async (Guid id, IDispatcher dispatcher) =>
+                $"/{{id}}/{LookupRouteConstants.Deactivate}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new DeactivateContentTypeCommand(Id: id);
                     DeactivateContentTypeResult result = await dispatcher.Send(request: command);
