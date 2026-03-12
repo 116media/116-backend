@@ -26,8 +26,10 @@ public class DeactivatePricingTierHandler(
         CancellationToken cancellationToken
     )
     {
+        Guid id = Guid.Parse(command.Id);
+
         PricingTierEntity pricingTier = await lookupRepository.GetPricingTierByIdOrThrowAsync(
-            id: command.Id,
+            id: id,
             cancellationToken: cancellationToken
         );
 
