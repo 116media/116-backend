@@ -23,8 +23,10 @@ public class UpdateContentTypeHandler(ILookupRepository lookupRepository, IConte
         CancellationToken cancellationToken
     )
     {
+        Guid id = Guid.Parse(command.Id);
+
         ContentTypeEntity contentType = await lookupRepository.GetContentTypeByIdOrThrowAsync(
-            id: command.Id,
+            id: id,
             cancellationToken: cancellationToken
         );
 
