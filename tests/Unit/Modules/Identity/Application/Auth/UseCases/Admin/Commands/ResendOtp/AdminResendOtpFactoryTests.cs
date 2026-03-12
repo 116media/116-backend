@@ -40,7 +40,7 @@ public class AdminResendOtpFactoryTests
     public async Task ResendOtpAsync_WithValidData_ShouldReturnNewOtp()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         OtpPurpose purpose = EnumOtpPurpose.PasswordReset;
         OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
 
@@ -58,7 +58,7 @@ public class AdminResendOtpFactoryTests
     public async Task ResendOtpAsync_ShouldInvalidateExistingOtps()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         OtpPurpose purpose = EnumOtpPurpose.EmailVerification;
         OtpEntity otp = OtpFactory.CreateForEmailVerification(userId);
 
@@ -78,7 +78,7 @@ public class AdminResendOtpFactoryTests
     public async Task ResendOtpAsync_ShouldCreateNewOtp()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         OtpPurpose purpose = EnumOtpPurpose.PasswordReset;
         OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
 
@@ -95,7 +95,7 @@ public class AdminResendOtpFactoryTests
     public async Task ResendOtpAsync_ShouldAddNewOtpToRepository()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         OtpPurpose purpose = EnumOtpPurpose.PasswordReset;
         OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
 
@@ -112,7 +112,7 @@ public class AdminResendOtpFactoryTests
     public async Task ResendOtpAsync_ShouldCommitTransaction()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         OtpPurpose purpose = EnumOtpPurpose.PasswordReset;
         OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
 
@@ -131,7 +131,7 @@ public class AdminResendOtpFactoryTests
     public async Task ResendOtpAsync_WithDifferentPurposes_ShouldWork(EnumOtpPurpose purposeEnum)
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         OtpPurpose purpose = purposeEnum;
         OtpEntity otp =
             purposeEnum == EnumOtpPurpose.EmailVerification
@@ -155,7 +155,7 @@ public class AdminResendOtpFactoryTests
     public async Task ResendOtpAsync_WithCancellationToken_ShouldPassToAllDependencies()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         OtpPurpose purpose = EnumOtpPurpose.PasswordReset;
         OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
         using CancellationTokenSource cts = new();
