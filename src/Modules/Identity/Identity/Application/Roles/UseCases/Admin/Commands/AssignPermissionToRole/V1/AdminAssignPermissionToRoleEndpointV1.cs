@@ -43,8 +43,8 @@ public class AdminAssignPermissionToRoleEndpointV1 : ICarterModule
 
         group
             .MapPost(
-                $"{{id:guid}}/{RoleRouteConstants.Permissions}",
-                async (Guid id, AdminAssignPermissionToRoleRequest request, IDispatcher dispatcher) =>
+                $"{{id}}/{RoleRouteConstants.Permissions}",
+                async (string id, AdminAssignPermissionToRoleRequest request, IDispatcher dispatcher) =>
                 {
                     var command = new AdminAssignPermissionToRoleCommand(
                         RoleId: id,
