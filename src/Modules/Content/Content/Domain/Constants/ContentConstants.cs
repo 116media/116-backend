@@ -127,4 +127,100 @@ public static class ContentConstants
     /// Used in entity validation and Entity Framework property configuration.
     /// </summary>
     public const int MaxPackageDescriptionLength = 500;
+
+    /// <summary>
+    /// Maximum allowed length for an article or video title.
+    /// </summary>
+    public const int MaxTitleLength = 200;
+
+    /// <summary>
+    /// Maximum allowed length for an article or video URL slug.
+    /// </summary>
+    public const int MaxSlugLength = 220;
+
+    /// <summary>
+    /// Maximum allowed length for the article headline (short teaser/aperçu).
+    /// Minimum length of 100 is enforced at the application layer only
+    /// (drafts start with an empty string and the min is checked on <c>PUT</c>).
+    /// </summary>
+    public const int MaxHeadlineLength = 300;
+
+    /// <summary>
+    /// Minimum allowed length for the article headline, enforced on PUT/update only.
+    /// </summary>
+    public const int MinHeadlineLength = 100;
+
+    /// <summary>
+    /// Maximum length for the <c>author_id</c> field.
+    /// Stores the JWT user UUID as a plain string — no FK to the identity schema by design.
+    /// UUID strings are 36 characters (e.g., "550e8400-e29b-41d4-a716-446655440000").
+    /// </summary>
+    public const int MaxAuthorIdLength = 36;
+
+    /// <summary>
+    /// Maximum allowed length for an article or video rejection reason.
+    /// </summary>
+    public const int MaxRejectionReasonLength = 500;
+
+    /// <summary>
+    /// Maximum allowed length for an SEO meta title (Google truncates at ~60–70 chars).
+    /// </summary>
+    public const int MaxMetaTitleLength = 70;
+
+    /// <summary>
+    /// Maximum allowed length for an SEO meta description (Google truncates at ~155–160 chars).
+    /// </summary>
+    public const int MaxMetaDescriptionLength = 160;
+
+    /// <summary>
+    /// Maximum allowed length for a cover image URL stored on an article.
+    /// </summary>
+    public const int MaxCoverImageUrlLength = 500;
+
+    /// <summary>
+    /// Maximum allowed length for a YouTube video ID (e.g., "dQw4w9WgXcQ" is 11 chars;
+    /// padded to 20 to accommodate future ID format changes).
+    /// </summary>
+    public const int MaxYoutubeVideoIdLength = 20;
+
+    /// <summary>
+    /// Maximum allowed length for a video thumbnail URL.
+    /// </summary>
+    public const int MaxThumbnailUrlLength = 500;
+
+    /// <summary>
+    /// Maximum allowed length for a short video title.
+    /// </summary>
+    public const int MaxShortVideoTitleLength = 200;
+
+    /// <summary>
+    /// Maximum allowed length for a short video URL (public CDN URL).
+    /// </summary>
+    public const int MaxShortVideoUrlLength = 500;
+
+    /// <summary>
+    /// Maximum allowed length for a song title on a lyrics page.
+    /// </summary>
+    public const int MaxSongTitleLength = 200;
+
+    /// <summary>
+    /// Maximum allowed length for an artist name on a lyrics page.
+    /// </summary>
+    public const int MaxArtistNameLength = 100;
+
+    /// <summary>
+    /// Maximum allowed length for the lyrics language code (ISO 639-1, e.g. "fr", "ln", "en").
+    /// Padded to 5 to accommodate BCP-47 subtags (e.g., "fr-CD").
+    /// </summary>
+    public const int MaxLyricsLanguageLength = 5;
+
+    /// <summary>
+    /// Default language for lyrics when none is specified.
+    /// </summary>
+    public const string DefaultLyricsLanguage = "fr";
+
+    /// <summary>
+    /// Maximum allowed length for SEO meta keywords on a lyrics page.
+    /// </summary>
+    public const int MaxMetaKeywordsLength = 300;
 }
