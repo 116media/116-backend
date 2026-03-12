@@ -248,8 +248,8 @@ public class SuperAdminEntityFactoryTests
     public void CreateUserRoleAssociation_ShouldCreateWithCorrectUserId()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid roleId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
 
         // Act
         UserRoleEntity result = SuperAdminEntityFactory.CreateUserRoleAssociation(userId, roleId);
@@ -263,8 +263,8 @@ public class SuperAdminEntityFactoryTests
     public void CreateUserRoleAssociation_ShouldCreateWithCorrectRoleId()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid roleId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
 
         // Act
         UserRoleEntity result = SuperAdminEntityFactory.CreateUserRoleAssociation(userId, roleId);
@@ -277,8 +277,8 @@ public class SuperAdminEntityFactoryTests
     public void CreateUserRoleAssociation_ShouldGenerateNewGuid()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid roleId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
 
         // Act
         UserRoleEntity result = SuperAdminEntityFactory.CreateUserRoleAssociation(userId, roleId);
@@ -291,8 +291,8 @@ public class SuperAdminEntityFactoryTests
     public void CreateUserRoleAssociation_MultipleInvocations_ShouldGenerateUniqueIds()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid roleId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
 
         // Act
         UserRoleEntity association1 = SuperAdminEntityFactory.CreateUserRoleAssociation(userId, roleId);
@@ -310,8 +310,8 @@ public class SuperAdminEntityFactoryTests
     public void CreateRolePermissionAssociation_ShouldCreateWithCorrectRoleId()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
-        Guid permissionId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        var permissionId = Guid.NewGuid();
 
         // Act
         RolePermissionEntity result = SuperAdminEntityFactory.CreateRolePermissionAssociation(roleId, permissionId);
@@ -325,8 +325,8 @@ public class SuperAdminEntityFactoryTests
     public void CreateRolePermissionAssociation_ShouldCreateWithCorrectPermissionId()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
-        Guid permissionId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        var permissionId = Guid.NewGuid();
 
         // Act
         RolePermissionEntity result = SuperAdminEntityFactory.CreateRolePermissionAssociation(roleId, permissionId);
@@ -339,8 +339,8 @@ public class SuperAdminEntityFactoryTests
     public void CreateRolePermissionAssociation_ShouldGenerateNewGuid()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
-        Guid permissionId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        var permissionId = Guid.NewGuid();
 
         // Act
         RolePermissionEntity result = SuperAdminEntityFactory.CreateRolePermissionAssociation(roleId, permissionId);
@@ -353,8 +353,8 @@ public class SuperAdminEntityFactoryTests
     public void CreateRolePermissionAssociation_MultipleInvocations_ShouldGenerateUniqueIds()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
-        Guid permissionId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        var permissionId = Guid.NewGuid();
 
         // Act
         RolePermissionEntity association1 = SuperAdminEntityFactory.CreateRolePermissionAssociation(
