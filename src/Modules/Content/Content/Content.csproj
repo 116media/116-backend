@@ -13,9 +13,6 @@
         <ProjectReference Include="../../../BuildingBlocks/BuildingBlocks.csproj" />
         <ProjectReference Include="../../../Shared/Shared/Shared.csproj" />
         <ProjectReference Include="../../../Shared/Shared.Contracts/Shared.Contracts.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="FluentValidation" Version="12.0.0" />
+        <ProjectReference Include="../../Core/Core/Core.csproj" />
     </ItemGroup>
 </Project>
