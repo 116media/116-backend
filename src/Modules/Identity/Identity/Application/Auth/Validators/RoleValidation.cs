@@ -16,28 +16,25 @@ public static class RoleValidation
     /// <param name="isRequired">Whether the role name is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidRoleName<T>(
-        this IRuleBuilder<T, string?> ruleBuilder,
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
         bool isRequired = true
     )
     {
-        IRuleBuilderOptions<T, string?> builder;
         if (isRequired)
         {
-            builder = ruleBuilder
+            return ruleBuilder
+                .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
                 .WithMessage("Role name is required")
                 .MaximumLength(maximumLength: RoleConstants.MaxRoleNameLength)
                 .WithMessage($"Role name cannot exceed {RoleConstants.MaxRoleNameLength} characters");
         }
-        else
-        {
-            builder = ruleBuilder
-                .MaximumLength(maximumLength: RoleConstants.MaxRoleNameLength)
-                .WithMessage($"Role name cannot exceed {RoleConstants.MaxRoleNameLength} characters")
-                .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Name")));
-        }
 
-        return builder;
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .MaximumLength(maximumLength: RoleConstants.MaxRoleNameLength)
+            .WithMessage($"Role name cannot exceed {RoleConstants.MaxRoleNameLength} characters")
+            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Name")));
     }
 
     /// <summary>
@@ -48,27 +45,24 @@ public static class RoleValidation
     /// <param name="isRequired">Whether the role description is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidRoleDescription<T>(
-        this IRuleBuilder<T, string?> ruleBuilder,
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
         bool isRequired = true
     )
     {
-        IRuleBuilderOptions<T, string?> builder;
         if (isRequired)
         {
-            builder = ruleBuilder
+            return ruleBuilder
+                .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
                 .WithMessage("Role description is required")
                 .MaximumLength(maximumLength: RoleConstants.MaxRoleDescriptionLength)
                 .WithMessage($"Role description cannot exceed {RoleConstants.MaxRoleDescriptionLength} characters");
         }
-        else
-        {
-            builder = ruleBuilder
-                .MaximumLength(maximumLength: RoleConstants.MaxRoleDescriptionLength)
-                .WithMessage($"Role description cannot exceed {RoleConstants.MaxRoleDescriptionLength} characters")
-                .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Description")));
-        }
 
-        return builder;
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .MaximumLength(maximumLength: RoleConstants.MaxRoleDescriptionLength)
+            .WithMessage($"Role description cannot exceed {RoleConstants.MaxRoleDescriptionLength} characters")
+            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Description")));
     }
 }
