@@ -23,6 +23,234 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AuthorId")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)")
+                        .HasColumnName("author_id");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("")
+                        .HasColumnName("body");
+
+                    b.Property<int>("BookmarkCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("bookmark_count");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
+
+                    b.Property<int>("CommentCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("comment_count");
+
+                    b.Property<string>("CoverImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("cover_image_url");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid?>("CustomerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
+
+                    b.Property<DateTimeOffset?>("FeaturedUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("featured_until");
+
+                    b.Property<string>("Headline")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasDefaultValue("")
+                        .HasColumnName("headline");
+
+                    b.Property<bool>("IsFeatured")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_featured");
+
+                    b.Property<int>("LikeCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("like_count");
+
+                    b.Property<string>("MetaDescription")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("meta_description");
+
+                    b.Property<string>("MetaTitle")
+                        .HasMaxLength(70)
+                        .HasColumnType("character varying(70)")
+                        .HasColumnName("meta_title");
+
+                    b.Property<Guid?>("OrderItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_item_id");
+
+                    b.Property<DateTimeOffset?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("rejection_reason");
+
+                    b.Property<int>("ShareCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("share_count");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(220)
+                        .HasColumnType("character varying(220)")
+                        .HasColumnName("slug");
+
+                    b.Property<bool>("SocialBoost")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("social_boost");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Draft")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_articles");
+
+                    b.HasIndex("CategoryId")
+                        .HasDatabaseName("ix_articles_category_id");
+
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("ix_articles_customer_id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_articles_slug");
+
+                    b.ToTable("articles", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleImageEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ArticleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("article_id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("ImageType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Body")
+                        .HasColumnName("image_type");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("storage_key");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("url");
+
+                    b.HasKey("Id")
+                        .HasName("pk_article_images");
+
+                    b.HasIndex("ArticleId")
+                        .HasDatabaseName("ix_article_images_article_id");
+
+                    b.ToTable("article_images", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleTagEntity", b =>
+                {
+                    b.Property<Guid>("ArticleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("article_id");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tag_id");
+
+                    b.HasKey("ArticleId", "TagId")
+                        .HasName("pk_article_tags");
+
+                    b.HasIndex("TagId")
+                        .HasDatabaseName("ix_article_tags_tag_id");
+
+                    b.ToTable("article_tags", "content");
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.CategoryEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -245,6 +473,93 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.ToTable("customers", "content");
                 });
 
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ArticleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("article_id");
+
+                    b.Property<string>("ArtistName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("artist_name");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)")
+                        .HasDefaultValue("fr")
+                        .HasColumnName("language");
+
+                    b.Property<string>("LyricsText")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("lyrics_text");
+
+                    b.Property<string>("MetaDescription")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("meta_description");
+
+                    b.Property<string>("MetaKeywords")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("meta_keywords");
+
+                    b.Property<string>("MetaTitle")
+                        .HasMaxLength(70)
+                        .HasColumnType("character varying(70)")
+                        .HasColumnName("meta_title");
+
+                    b.Property<string>("SongTitle")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("song_title");
+
+                    b.Property<string>("StructuredData")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("structured_data");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid?>("VideoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("video_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_lyrics");
+
+                    b.HasIndex("ArticleId")
+                        .HasDatabaseName("ix_lyrics_article_id");
+
+                    b.HasIndex("VideoId")
+                        .HasDatabaseName("ix_lyrics_video_id");
+
+                    b.ToTable("lyrics", "content");
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.PackageEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -450,6 +765,104 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.ToTable("promotion_levels", "content");
                 });
 
+            modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("BookmarkCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("bookmark_count");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<bool>("HasFullVideo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("has_full_video");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_active");
+
+                    b.Property<int>("LikeCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("like_count");
+
+                    b.Property<int>("ShareCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("share_count");
+
+                    b.Property<string>("ThumbnailStorageKey")
+                        .HasColumnType("text")
+                        .HasColumnName("thumbnail_storage_key");
+
+                    b.Property<string>("ThumbnailUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("thumbnail_url");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid?>("VideoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("video_id");
+
+                    b.Property<string>("VideoStorageKey")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("video_storage_key");
+
+                    b.Property<string>("VideoUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("video_url");
+
+                    b.Property<int>("ViewCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("view_count");
+
+                    b.HasKey("Id")
+                        .HasName("pk_short_videos");
+
+                    b.HasIndex("VideoId")
+                        .HasDatabaseName("ix_short_videos_video_id");
+
+                    b.ToTable("short_videos", "content");
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.TagEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -499,6 +912,236 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.ToTable("tags", "content");
                 });
 
+            modelBuilder.Entity("_116.Content.Domain.Entities.VideoEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AuthorId")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)")
+                        .HasColumnName("author_id");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid?>("CustomerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<DateTimeOffset?>("FeaturedUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("featured_until");
+
+                    b.Property<bool>("HasLyrics")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("has_lyrics");
+
+                    b.Property<bool>("IsFeatured")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_featured");
+
+                    b.Property<string>("MetaDescription")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("meta_description");
+
+                    b.Property<string>("MetaTitle")
+                        .HasMaxLength(70)
+                        .HasColumnType("character varying(70)")
+                        .HasColumnName("meta_title");
+
+                    b.Property<Guid?>("OrderItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_item_id");
+
+                    b.Property<DateTimeOffset?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<decimal>("RatingAverage")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(3, 2)
+                        .HasColumnType("numeric(3,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("rating_average");
+
+                    b.Property<int>("RatingCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("rating_count");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("rejection_reason");
+
+                    b.Property<int>("ShareCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("share_count");
+
+                    b.Property<DateTimeOffset?>("ShootingScheduledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("shooting_scheduled_at");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(220)
+                        .HasColumnType("character varying(220)")
+                        .HasColumnName("slug");
+
+                    b.Property<bool>("SocialBoost")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("social_boost");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Draft")
+                        .HasColumnName("status");
+
+                    b.Property<string>("ThumbnailStorageKey")
+                        .HasColumnType("text")
+                        .HasColumnName("thumbnail_storage_key");
+
+                    b.Property<string>("ThumbnailUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("thumbnail_url");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<string>("YoutubeVideoId")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("youtube_video_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_videos");
+
+                    b.HasIndex("CategoryId")
+                        .HasDatabaseName("ix_videos_category_id");
+
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("ix_videos_customer_id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_videos_slug");
+
+                    b.ToTable("videos", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.VideoTagEntity", b =>
+                {
+                    b.Property<Guid>("VideoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("video_id");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tag_id");
+
+                    b.HasKey("VideoId", "TagId")
+                        .HasName("pk_video_tags");
+
+                    b.HasIndex("TagId")
+                        .HasDatabaseName("ix_video_tags_tag_id");
+
+                    b.ToTable("video_tags", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_articles_categories_category_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.CustomerEntity", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_articles_customers_customer_id");
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleImageEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
+                        .WithMany("Images")
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_article_images_articles_article_id");
+
+                    b.Navigation("Article");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleTagEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
+                        .WithMany("Tags")
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_article_tags_articles_article_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.TagEntity", "Tag")
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_article_tags_tags_tag_id");
+
+                    b.Navigation("Article");
+
+                    b.Navigation("Tag");
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.CategoryEntity", b =>
                 {
                     b.HasOne("_116.Content.Domain.Entities.ContentTypeEntity", "ContentType")
@@ -532,6 +1175,25 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.Navigation("PricingTier");
                 });
 
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
+                        .WithMany()
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_lyrics_articles_article_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", "Video")
+                        .WithMany()
+                        .HasForeignKey("VideoId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_lyrics_videos_video_id");
+
+                    b.Navigation("Article");
+
+                    b.Navigation("Video");
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.PackageSlotEntity", b =>
                 {
                     b.HasOne("_116.Content.Domain.Entities.CategoryEntity", "Category")
@@ -552,6 +1214,65 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.Navigation("Package");
                 });
 
+            modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", "ParentVideo")
+                        .WithMany("Shorts")
+                        .HasForeignKey("VideoId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_short_videos_videos_video_id");
+
+                    b.Navigation("ParentVideo");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.VideoEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_videos_categories_category_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.CustomerEntity", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_videos_customers_customer_id");
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.VideoTagEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.TagEntity", "Tag")
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_video_tags_tags_tag_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", "Video")
+                        .WithMany("Tags")
+                        .HasForeignKey("VideoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_video_tags_videos_video_id");
+
+                    b.Navigation("Tag");
+
+                    b.Navigation("Video");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleEntity", b =>
+                {
+                    b.Navigation("Images");
+
+                    b.Navigation("Tags");
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.CategoryEntity", b =>
                 {
                     b.Navigation("PackageSlots");
@@ -562,6 +1283,13 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.PackageEntity", b =>
                 {
                     b.Navigation("Slots");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.VideoEntity", b =>
+                {
+                    b.Navigation("Shorts");
+
+                    b.Navigation("Tags");
                 });
 #pragma warning restore 612, 618
         }
