@@ -44,7 +44,7 @@ public class PublicChangePasswordHandlerTests
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string oldPassword = "OldPassword123!";
         string newPassword = "NewPassword456!";
         string newPasswordHash = "new-hashed-password";
@@ -78,7 +78,7 @@ public class PublicChangePasswordHandlerTests
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string oldPassword = "OldPassword123!";
         string newPassword = "NewPassword456!";
 
@@ -103,7 +103,7 @@ public class PublicChangePasswordHandlerTests
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string oldPassword = "OldPassword123!";
         string newPassword = "NewPassword456!";
 
@@ -128,7 +128,7 @@ public class PublicChangePasswordHandlerTests
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string oldPassword = "OldPassword123!";
         string newPassword = "NewPassword456!";
 
@@ -156,8 +156,8 @@ public class PublicChangePasswordHandlerTests
     public async Task Handle_WhenUserNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         PublicChangePasswordCommand command = new(
             UserId: userId,
             SessionId: sessionId,
@@ -179,7 +179,7 @@ public class PublicChangePasswordHandlerTests
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string oldPassword = "WrongPassword!";
         string newPassword = "NewPassword456!";
 
@@ -209,7 +209,7 @@ public class PublicChangePasswordHandlerTests
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string oldPassword = "SamePassword123!";
         string newPassword = "SamePassword123!";
 
@@ -240,7 +240,7 @@ public class PublicChangePasswordHandlerTests
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         PublicChangePasswordCommand command = new(
             UserId: user.Id,
             SessionId: sessionId,
@@ -277,7 +277,7 @@ public class PublicChangePasswordHandlerTests
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string oldPassword = "OldPassword123!";
         string newPassword = "NewPassword456!";
         using CancellationTokenSource cts = new();
@@ -303,7 +303,7 @@ public class PublicChangePasswordHandlerTests
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string oldPassword = "OldPassword123!";
         string newPassword = "NewPassword456!";
         using CancellationTokenSource cts = new();
