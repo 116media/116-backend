@@ -18,7 +18,7 @@ public class PermissionSpecificationsTests
     public void PermissionByIdSpecification_WithMatchingId_ShouldReturnTrue()
     {
         // Arrange
-        Guid permissionId = Guid.NewGuid();
+        var permissionId = Guid.NewGuid();
         PermissionEntity permission = PermissionFactory.CreateWithId(permissionId);
         PermissionByIdSpecification spec = new(permissionId);
 
