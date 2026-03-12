@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Validators;
+using _116.Shared.Application.Extensions;
 using FluentValidation;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.ActivateContentType;
@@ -13,6 +13,6 @@ public class ActivateContentTypeValidator : AbstractValidator<ActivateContentTyp
     /// </summary>
     public ActivateContentTypeValidator()
     {
-        RuleFor(x => x.Id).ValidContentTypeId();
+        RuleFor(x => x.Id).IsValidGuid("Content type ID");
     }
 }
