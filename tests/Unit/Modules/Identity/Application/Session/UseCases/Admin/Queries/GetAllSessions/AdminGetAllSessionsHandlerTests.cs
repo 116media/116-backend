@@ -86,7 +86,7 @@ public class AdminGetAllSessionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithUserIdFilter_ShouldCallRepositoryWithParsedGuid()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         PaginatedRequest paginatedRequest = new(PageIndex: 0, PageSize: 10);
         AdminGetAllSessionsQuery query = new(PaginatedRequest: paginatedRequest, UserId: userId.ToString());
         _sessionRepositoryMock.SetupGetAllWithPaginationEmpty();
@@ -171,7 +171,7 @@ public class AdminGetAllSessionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithAllFilters_ShouldPassFiltersToRepository()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         DateTime fromDate = DateTime.UtcNow.AddDays(-7);
         DateTime toDate = DateTime.UtcNow;
         string status = "Active";
