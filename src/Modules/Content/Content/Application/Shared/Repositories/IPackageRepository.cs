@@ -36,7 +36,9 @@ public interface IPackageRepository : IRepository<PackageEntity>
     /// <exception cref="_116.Shared.Application.Exceptions.NotFoundException">Thrown when the package is not found.</exception>
     Task<PackageEntity> GetByIdWithSlotsOrThrowAsync(Guid id, CancellationToken cancellationToken = default);
 
-    /// <summary>Adds a new package to the repository.</summary>
+    /// <summary>
+    /// Adds a new package to the repository.
+    /// </summary>
     Task AddAsync(PackageEntity package, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -45,9 +47,13 @@ public interface IPackageRepository : IRepository<PackageEntity>
     /// </summary>
     Task<PackageSlotEntity?> GetSlotByIdAsync(Guid slotId, CancellationToken cancellationToken = default);
 
-    /// <summary>Adds a new package slot to the repository.</summary>
+    /// <summary>
+    /// Adds a new package slot to the repository.
+    /// </summary>
     Task AddSlotAsync(PackageSlotEntity slot, CancellationToken cancellationToken = default);
 
-    /// <summary>Removes a package slot from the repository.</summary>
+    /// <summary>
+    /// Removes a package slot from the repository.
+    /// </summary>
     void RemoveSlot(PackageSlotEntity slot);
 }
