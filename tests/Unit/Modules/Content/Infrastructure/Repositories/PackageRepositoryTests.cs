@@ -109,7 +109,7 @@ public class PackageRepositoryTests : IDisposable
     public async Task GetByIdWithSlotsOrThrowAsync_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
 
         // Act
         Func<Task> act = async () => await _repository.GetByIdWithSlotsOrThrowAsync(nonExistentId);
