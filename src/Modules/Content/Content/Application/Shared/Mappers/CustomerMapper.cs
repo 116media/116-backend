@@ -19,13 +19,17 @@ public static class CustomerMapper
         config.NewConfig<CustomerEntity, CustomerDto>();
     }
 
-    /// <summary>Maps a <see cref="CustomerEntity" /> to a <see cref="CustomerDto" />.</summary>
+    /// <summary>
+    /// Maps a <see cref="CustomerEntity" /> to a <see cref="CustomerDto" />.
+    /// </summary>
     public static CustomerDto ToCustomerDto(this CustomerEntity entity, IMapper mapper)
     {
         return mapper.Map<CustomerDto>(entity);
     }
 
-    /// <summary>Maps a collection of <see cref="CustomerEntity" /> to a list of <see cref="CustomerDto" />.</summary>
+    /// <summary>
+    /// Maps a collection of <see cref="CustomerEntity" /> to a list of <see cref="CustomerDto" />.
+    /// </summary>
     public static IReadOnlyList<CustomerDto> ToCustomerDtos(this IReadOnlyList<CustomerEntity> entities, IMapper mapper)
     {
         return mapper.Map<IReadOnlyList<CustomerDto>>(entities);
