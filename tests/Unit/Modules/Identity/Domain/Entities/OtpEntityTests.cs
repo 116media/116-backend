@@ -18,14 +18,14 @@ public class OtpEntityTests
     public void Create_WithValidParameters_ShouldCreateOtp()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
-        Guid userId = Guid.NewGuid();
+        var id = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         string code = TestConstants.Otp.ValidCode;
-        EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        var purpose = EnumOtpPurpose.EmailVerification;
         DateTime expiresAt = DateTime.UtcNow.AddMinutes(TestConstants.Otp.ExpirationMinutes);
 
         // Act
-        OtpEntity otp = OtpEntity.Create(id, userId, code, purpose, expiresAt);
+        var otp = OtpEntity.Create(id, userId, code, purpose, expiresAt);
 
         // Assert
         otp.Id.Should().Be(id);
@@ -44,13 +44,13 @@ public class OtpEntityTests
     public void Create_WithDifferentPurposes_ShouldSetCorrectPurpose(EnumOtpPurpose purpose)
     {
         // Arrange
-        Guid id = Guid.NewGuid();
-        Guid userId = Guid.NewGuid();
+        var id = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         string code = TestConstants.Otp.ValidCode;
         DateTime expiresAt = DateTime.UtcNow.AddMinutes(10);
 
         // Act
-        OtpEntity otp = OtpEntity.Create(id, userId, code, purpose, expiresAt);
+        var otp = OtpEntity.Create(id, userId, code, purpose, expiresAt);
 
         // Assert
         otp.Purpose.Should().Be(purpose);
