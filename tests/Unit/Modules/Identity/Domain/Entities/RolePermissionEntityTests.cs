@@ -16,12 +16,12 @@ public class RolePermissionEntityTests
     public void Create_WithValidParameters_ShouldCreateRolePermission()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
-        Guid roleId = Guid.NewGuid();
-        Guid permissionId = Guid.NewGuid();
+        var id = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        var permissionId = Guid.NewGuid();
 
         // Act
-        RolePermissionEntity rolePermission = RolePermissionEntity.Create(id, roleId, permissionId);
+        var rolePermission = RolePermissionEntity.Create(id, roleId, permissionId);
 
         // Assert
         rolePermission.Id.Should().Be(id);
@@ -33,12 +33,12 @@ public class RolePermissionEntityTests
     public void Create_ShouldAllowEmptyGuids()
     {
         // Arrange
-        Guid id = Guid.Empty;
-        Guid roleId = Guid.Empty;
-        Guid permissionId = Guid.Empty;
+        var id = Guid.Empty;
+        var roleId = Guid.Empty;
+        var permissionId = Guid.Empty;
 
         // Act
-        RolePermissionEntity rolePermission = RolePermissionEntity.Create(id, roleId, permissionId);
+        var rolePermission = RolePermissionEntity.Create(id, roleId, permissionId);
 
         // Assert
         rolePermission.Id.Should().Be(Guid.Empty);
@@ -50,11 +50,7 @@ public class RolePermissionEntityTests
     public void Create_ShouldNotSetNavigationProperties()
     {
         // Arrange & Act
-        RolePermissionEntity rolePermission = RolePermissionEntity.Create(
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            Guid.NewGuid()
-        );
+        var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
 
         // Assert
         // Navigation properties should be null since they're not set in Create
@@ -70,12 +66,12 @@ public class RolePermissionEntityTests
     public void Builder_ShouldCreateRolePermissionWithSpecifiedValues()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
-        Guid roleId = Guid.NewGuid();
-        Guid permissionId = Guid.NewGuid();
+        var id = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        var permissionId = Guid.NewGuid();
 
         // Act
-        RolePermissionEntity rolePermission = RolePermissionEntity.Create(id, roleId, permissionId);
+        var rolePermission = RolePermissionEntity.Create(id, roleId, permissionId);
 
         // Assert
         rolePermission.Id.Should().Be(id);
@@ -103,9 +99,9 @@ public class RolePermissionEntityTests
     public void MultipleRolePermissions_WithSameRole_ShouldHaveDifferentPermissions()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
-        Guid permissionId1 = Guid.NewGuid();
-        Guid permissionId2 = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        var permissionId1 = Guid.NewGuid();
+        var permissionId2 = Guid.NewGuid();
 
         // Act
         RolePermissionEntity rolePermission1 = RolePermissionFactory.Create(roleId, permissionId1);
@@ -122,9 +118,9 @@ public class RolePermissionEntityTests
     public void MultipleRolePermissions_WithSamePermission_ShouldHaveDifferentRoles()
     {
         // Arrange
-        Guid permissionId = Guid.NewGuid();
-        Guid roleId1 = Guid.NewGuid();
-        Guid roleId2 = Guid.NewGuid();
+        var permissionId = Guid.NewGuid();
+        var roleId1 = Guid.NewGuid();
+        var roleId2 = Guid.NewGuid();
 
         // Act
         RolePermissionEntity rolePermission1 = RolePermissionFactory.Create(roleId1, permissionId);
