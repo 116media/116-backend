@@ -17,7 +17,7 @@ public class SessionStatusTests
     public void Constructor_WithValidEnumValue_ShouldCreateInstance()
     {
         // Arrange
-        EnumSessionStatus statusEnum = EnumSessionStatus.Active;
+        var statusEnum = EnumSessionStatus.Active;
 
         // Act
         SessionStatus status = new(statusEnum);
@@ -44,7 +44,7 @@ public class SessionStatusTests
     public void Constructor_WithInvalidEnumValue_ShouldThrowArgumentException()
     {
         // Arrange
-        EnumSessionStatus invalidEnum = (EnumSessionStatus)999;
+        var invalidEnum = (EnumSessionStatus)999;
 
         // Act & Assert
         Action act = () => new SessionStatus(invalidEnum);
@@ -156,7 +156,7 @@ public class SessionStatusTests
     public void ImplicitConversionFromEnum_ShouldCreateInstance()
     {
         // Arrange
-        EnumSessionStatus statusEnum = EnumSessionStatus.Active;
+        var statusEnum = EnumSessionStatus.Active;
 
         // Act
         SessionStatus status = statusEnum;
