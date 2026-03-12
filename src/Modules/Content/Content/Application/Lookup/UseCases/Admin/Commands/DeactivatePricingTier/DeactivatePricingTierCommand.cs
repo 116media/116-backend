@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivatePric
 /// Command to deactivate a pricing tier, preventing it from being assigned to content.
 /// </summary>
 /// <param name="Id">The unique identifier of the pricing tier to deactivate.</param>
-public record DeactivatePricingTierCommand(Guid Id) : ICommand<DeactivatePricingTierResult>;
+public record DeactivatePricingTierCommand(string Id) : ICommand<DeactivatePricingTierResult>;
 
 /// <summary>
 /// Result returned after successfully deactivating a pricing tier.
