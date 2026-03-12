@@ -39,7 +39,7 @@ public class AdminDeactivateRoleHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity activeRole = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
-        AdminDeactivateRoleCommand command = new(RoleId: activeRole.Id);
+        AdminDeactivateRoleCommand command = new(RoleId: activeRole.Id.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrow(activeRole);
 
@@ -60,7 +60,7 @@ public class AdminDeactivateRoleHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity activeRole = RoleFactory.Create(TestConstants.Role.ValidName);
 
-        AdminDeactivateRoleCommand command = new(RoleId: activeRole.Id);
+        AdminDeactivateRoleCommand command = new(RoleId: activeRole.Id.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrow(activeRole);
 
@@ -79,8 +79,8 @@ public class AdminDeactivateRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentRoleId = Guid.NewGuid();
-        AdminDeactivateRoleCommand command = new(RoleId: nonExistentRoleId);
+        var nonExistentRoleId = Guid.NewGuid();
+        AdminDeactivateRoleCommand command = new(RoleId: nonExistentRoleId.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentRoleId);
 
@@ -95,8 +95,8 @@ public class AdminDeactivateRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleNotFound_ShouldNotCommit()
     {
         // Arrange
-        Guid nonExistentRoleId = Guid.NewGuid();
-        AdminDeactivateRoleCommand command = new(RoleId: nonExistentRoleId);
+        var nonExistentRoleId = Guid.NewGuid();
+        AdminDeactivateRoleCommand command = new(RoleId: nonExistentRoleId.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentRoleId);
 
@@ -124,7 +124,7 @@ public class AdminDeactivateRoleHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity inactiveRole = RoleFactory.CreateInactive();
 
-        AdminDeactivateRoleCommand command = new(RoleId: inactiveRole.Id);
+        AdminDeactivateRoleCommand command = new(RoleId: inactiveRole.Id.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrow(inactiveRole);
 
@@ -141,7 +141,7 @@ public class AdminDeactivateRoleHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity inactiveRole = RoleFactory.CreateInactive();
 
-        AdminDeactivateRoleCommand command = new(RoleId: inactiveRole.Id);
+        AdminDeactivateRoleCommand command = new(RoleId: inactiveRole.Id.ToString());
 
         _roleRepositoryMock.SetupGetByIdOrThrow(inactiveRole);
 
@@ -169,7 +169,7 @@ public class AdminDeactivateRoleHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity activeRole = RoleFactory.Create(TestConstants.Role.ValidName);
 
-        AdminDeactivateRoleCommand command = new(RoleId: activeRole.Id);
+        AdminDeactivateRoleCommand command = new(RoleId: activeRole.Id.ToString());
 
         using CancellationTokenSource cts = new();
         _roleRepositoryMock.SetupGetByIdOrThrow(activeRole);
