@@ -202,8 +202,8 @@ public class SuperAdminRepositoryManagerTests
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
 
-        Guid roleId = Guid.NewGuid();
-        Guid permissionId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        var permissionId = Guid.NewGuid();
 
         var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), roleId, permissionId);
         await context.RolePermissions.AddAsync(rolePermission);
@@ -244,8 +244,8 @@ public class SuperAdminRepositoryManagerTests
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
 
-        Guid userId = Guid.NewGuid();
-        Guid roleId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
 
         var userRole = UserRoleEntity.Create(Guid.NewGuid(), userId, roleId);
         await context.UserRoles.AddAsync(userRole);
