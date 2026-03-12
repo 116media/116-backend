@@ -12,7 +12,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.ActivatePricingTier.V1;
 
-/// <summary>Response model for a successful pricing tier activation.</summary>
+/// <summary>
+/// Response model for a successful pricing tier activation.
+/// </summary>
 /// <param name="PricingTier">The updated pricing tier information.</param>
 public record ActivatePricingTierResponse(PricingTierDto PricingTier);
 
@@ -34,8 +36,8 @@ public class ActivatePricingTierEndpointV1 : ICarterModule
 
         group
             .MapPatch(
-                $"/{{id:guid}}/{LookupRouteConstants.Activate}",
-                async (Guid id, IDispatcher dispatcher) =>
+                $"/{{id}}/{LookupRouteConstants.Activate}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new ActivatePricingTierCommand(Id: id);
                     ActivatePricingTierResult result = await dispatcher.Send(request: command);
