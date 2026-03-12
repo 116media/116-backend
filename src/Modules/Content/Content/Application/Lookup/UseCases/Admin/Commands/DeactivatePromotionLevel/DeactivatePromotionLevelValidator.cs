@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Validators;
+using _116.Shared.Application.Extensions;
 using FluentValidation;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivatePromotionLevel;
@@ -13,6 +13,6 @@ public class DeactivatePromotionLevelValidator : AbstractValidator<DeactivatePro
     /// </summary>
     public DeactivatePromotionLevelValidator()
     {
-        RuleFor(x => x.Id).ValidPromotionLevelId();
+        RuleFor(x => x.Id).IsValidGuid("Promotion level ID");
     }
 }
