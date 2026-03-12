@@ -31,8 +31,8 @@ public class AdminGetUserRolesHandlerTests : BaseHandlerTest
     public async Task Handle_WithUserRoles_ShouldReturnRoleDtos()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        AdminGetUserRolesQuery query = new(UserId: userId);
+        var userId = Guid.NewGuid();
+        AdminGetUserRolesQuery query = new(UserId: userId.ToString());
 
         RoleEntity role1 = RoleFactory.Create("Admin", "Administrator role");
         RoleEntity role2 = RoleFactory.Create("User", "Regular user role");
@@ -57,8 +57,8 @@ public class AdminGetUserRolesHandlerTests : BaseHandlerTest
     public async Task Handle_WithNoRoles_ShouldReturnEmptyList()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        AdminGetUserRolesQuery query = new(UserId: userId);
+        var userId = Guid.NewGuid();
+        AdminGetUserRolesQuery query = new(UserId: userId.ToString());
 
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
 
@@ -73,8 +73,8 @@ public class AdminGetUserRolesHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldCallRepositoryWithCorrectUserId()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        AdminGetUserRolesQuery query = new(UserId: userId);
+        var userId = Guid.NewGuid();
+        AdminGetUserRolesQuery query = new(UserId: userId.ToString());
 
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
 
@@ -92,8 +92,8 @@ public class AdminGetUserRolesHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldMapRolesToDtos()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        AdminGetUserRolesQuery query = new(UserId: userId);
+        var userId = Guid.NewGuid();
+        AdminGetUserRolesQuery query = new(UserId: userId.ToString());
 
         RoleEntity role = RoleFactory.Create("TestRole", "Test role description");
         List<UserRoleEntity> userRoles = [UserRoleFactory.CreateWithRole(userId, role)];
@@ -117,8 +117,8 @@ public class AdminGetUserRolesHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        AdminGetUserRolesQuery query = new(UserId: userId);
+        var userId = Guid.NewGuid();
+        AdminGetUserRolesQuery query = new(UserId: userId.ToString());
         using CancellationTokenSource cts = new();
 
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
