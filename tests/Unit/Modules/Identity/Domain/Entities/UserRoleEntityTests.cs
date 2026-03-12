@@ -16,12 +16,12 @@ public class UserRoleEntityTests
     public void Create_WithValidParameters_ShouldCreateUserRole()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
-        Guid userId = Guid.NewGuid();
-        Guid roleId = Guid.NewGuid();
+        var id = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
 
         // Act
-        UserRoleEntity userRole = UserRoleEntity.Create(id, userId, roleId);
+        var userRole = UserRoleEntity.Create(id, userId, roleId);
 
         // Assert
         userRole.Id.Should().Be(id);
@@ -33,12 +33,12 @@ public class UserRoleEntityTests
     public void Create_ShouldAllowEmptyGuids()
     {
         // Arrange
-        Guid id = Guid.Empty;
-        Guid userId = Guid.Empty;
-        Guid roleId = Guid.Empty;
+        var id = Guid.Empty;
+        var userId = Guid.Empty;
+        var roleId = Guid.Empty;
 
         // Act
-        UserRoleEntity userRole = UserRoleEntity.Create(id, userId, roleId);
+        var userRole = UserRoleEntity.Create(id, userId, roleId);
 
         // Assert
         userRole.Id.Should().Be(Guid.Empty);
@@ -50,7 +50,7 @@ public class UserRoleEntityTests
     public void Create_ShouldNotSetNavigationProperties()
     {
         // Arrange & Act
-        UserRoleEntity userRole = UserRoleEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        var userRole = UserRoleEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
 
         // Assert
         // Navigation properties should be null since they're not set in Create
@@ -66,9 +66,9 @@ public class UserRoleEntityTests
     public void Builder_ShouldCreateUserRoleWithSpecifiedValues()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
-        Guid userId = Guid.NewGuid();
-        Guid roleId = Guid.NewGuid();
+        var id = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
 
         // Act
         UserRoleEntity userRole = UserRoleFactory.CreateWithId(id, userId, roleId);
@@ -99,9 +99,9 @@ public class UserRoleEntityTests
     public void MultipleUserRoles_WithSameUser_ShouldHaveDifferentRoles()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid roleId1 = Guid.NewGuid();
-        Guid roleId2 = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var roleId1 = Guid.NewGuid();
+        var roleId2 = Guid.NewGuid();
 
         // Act
         UserRoleEntity userRole1 = UserRoleFactory.Create(userId, roleId1);
@@ -118,9 +118,9 @@ public class UserRoleEntityTests
     public void MultipleUserRoles_WithSameRole_ShouldHaveDifferentUsers()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
-        Guid userId1 = Guid.NewGuid();
-        Guid userId2 = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        var userId1 = Guid.NewGuid();
+        var userId2 = Guid.NewGuid();
 
         // Act
         UserRoleEntity userRole1 = UserRoleFactory.Create(userId1, roleId);
