@@ -55,6 +55,25 @@ public class VideoByCategorySpecification(Guid categoryId) : Specification<Video
 }
 
 /// <summary>
+/// Specification for full-text search across video Title, Description,
+/// MetaTitle, and MetaDescription fields.
+/// Uses case-insensitive matching (ILIKE in PostgreSQL).
+/// </summary>
+public class VideoSearchSpecification(string search) : Specification<VideoEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<VideoEntity, bool>> ToExpression()
+    {
+        string pattern = $"%{search}%";
+        return video =>
+            EF.Functions.ILike(video.Title, pattern)
+            || (video.Description != null && EF.Functions.ILike(video.Description, pattern))
+            || (video.MetaTitle != null && EF.Functions.ILike(video.MetaTitle, pattern))
+            || (video.MetaDescription != null && EF.Functions.ILike(video.MetaDescription, pattern));
+    }
+}
+
+/// <summary>
 /// Specification that matches videos that are currently featured and published.
 /// Featured videos must have <c>IsFeatured = true</c>, a future or null <c>FeaturedUntil</c>,
 /// and <c>Status = Published</c>.

@@ -40,4 +40,12 @@ public static class ShortVideoErrors
     {
         return new BadRequestException(ShortVideoErrorMessage.TitleRequired());
     }
+
+    /// <summary>
+    /// Throws when a short video with the given slug already exists.
+    /// </summary>
+    public static ConflictException SlugAlreadyExists(string slug)
+    {
+        return new ConflictException(ShortVideoErrorMessage.SlugAlreadyExists(slug: slug));
+    }
 }

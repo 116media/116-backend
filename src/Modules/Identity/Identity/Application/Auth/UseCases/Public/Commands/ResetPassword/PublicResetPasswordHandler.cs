@@ -49,6 +49,6 @@ public class PublicResetPasswordHandler(IPublicResetPasswordAuthFactory authFact
             cancellationToken: cancellationToken
         );
 
-        return new PublicResetPasswordResult(true);
+        return new PublicResetPasswordResult(IsSuccess: true);
     }
 }

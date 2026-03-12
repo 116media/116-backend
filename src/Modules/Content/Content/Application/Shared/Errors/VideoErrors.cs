@@ -58,6 +58,54 @@ public static class VideoErrors
     }
 
     /// <summary>
+    /// Throws when a video is already pending payment.
+    /// </summary>
+    public static ConflictException AlreadySubmitted()
+    {
+        return new ConflictException(VideoErrorMessage.AlreadySubmitted());
+    }
+
+    /// <summary>
+    /// Throws when a video is already pending review.
+    /// </summary>
+    public static ConflictException AlreadyPendingReview()
+    {
+        return new ConflictException(VideoErrorMessage.AlreadyPendingReview());
+    }
+
+    /// <summary>
+    /// Throws when a video is already approved.
+    /// </summary>
+    public static ConflictException AlreadyApproved()
+    {
+        return new ConflictException(VideoErrorMessage.AlreadyApproved());
+    }
+
+    /// <summary>
+    /// Throws when a video is already published.
+    /// </summary>
+    public static ConflictException AlreadyPublished()
+    {
+        return new ConflictException(VideoErrorMessage.AlreadyPublished());
+    }
+
+    /// <summary>
+    /// Throws when a video is already rejected.
+    /// </summary>
+    public static ConflictException AlreadyRejected()
+    {
+        return new ConflictException(VideoErrorMessage.AlreadyRejected());
+    }
+
+    /// <summary>
+    /// Throws when a video is already archived.
+    /// </summary>
+    public static ConflictException AlreadyArchived()
+    {
+        return new ConflictException(VideoErrorMessage.AlreadyArchived());
+    }
+
+    /// <summary>
     /// Throws when an invalid status transition is attempted.
     /// </summary>
     public static BadRequestException InvalidStatusTransition(string from, string to)

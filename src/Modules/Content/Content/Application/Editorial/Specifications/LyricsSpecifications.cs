@@ -18,6 +18,23 @@ public class LyricsByIdSpecification(Guid id) : Specification<LyricsEntity>
 }
 
 /// <summary>
+/// Specification for full-text search across lyrics SongTitle, ArtistName, and Body fields.
+/// Uses case-insensitive matching (ILIKE in PostgreSQL).
+/// </summary>
+public class LyricsSearchSpecification(string search) : Specification<LyricsEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<LyricsEntity, bool>> ToExpression()
+    {
+        string pattern = $"%{search}%";
+        return lyrics =>
+            EF.Functions.ILike(lyrics.SongTitle, pattern)
+            || EF.Functions.ILike(lyrics.ArtistName, pattern)
+            || EF.Functions.ILike(lyrics.LyricsText, pattern);
+    }
+}
+
+/// <summary>
 /// Specification that matches a lyrics record by song title and artist name (case-insensitive).
 /// Used to enforce the uniqueness constraint at the application layer before insert.
 /// </summary>

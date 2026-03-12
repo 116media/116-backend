@@ -38,4 +38,16 @@ public static class ShortVideoErrorMessage
     {
         return "Short video is already inactive";
     }
+
+    /// <summary>
+    /// Gets an error message for when a short video with the given slug already exists.
+    /// </summary>
+    /// <param name="slug">The short video slug that caused the conflict.</param>
+    /// <returns>
+    /// A formatted error message indicating that a short video with the specified slug already exists.
+    /// </returns>
+    public static string SlugAlreadyExists(string slug)
+    {
+        return $"Short video with slug '{slug}' already exists";
+    }
 }

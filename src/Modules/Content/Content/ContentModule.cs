@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -6,6 +7,7 @@ using _116.Content.Infrastructure.BackgroundJobs;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 using _116.Content.Infrastructure.Repositories;
+using _116.Content.Infrastructure.Services;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Infrastructure;
 using Mapster;
@@ -60,6 +62,7 @@ public static class ContentModule
         services.AddScoped<IVideoRepository, VideoRepository>();
         services.AddScoped<IShortVideoRepository, ShortVideoRepository>();
         services.AddScoped<ILyricsRepository, LyricsRepository>();
+        services.AddHttpClient<IYoutubeThumbnailService, YoutubeThumbnailService>();
         services.AddScheduledJob<AbandonedDraftCleanupJob>(cronExpression: "0 0 * * * ?");
         services.AddScoped<ContentTypeSeeder>();
 

@@ -34,6 +34,6 @@ public class PublicSignOutFromAllDevicesHandler(
         await sessionRepository.DeleteAllByUserIdAsync(userId: user!.Id, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        return new PublicSignOutFromAllDevicesResult(true);
+        return new PublicSignOutFromAllDevicesResult(IsSuccess: true);
     }
 }

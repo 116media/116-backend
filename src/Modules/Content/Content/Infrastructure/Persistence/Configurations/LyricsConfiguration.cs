@@ -16,6 +16,8 @@ public class LyricsConfiguration : IEntityTypeConfiguration<LyricsEntity>
     {
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.AuthorId).IsRequired();
+
         builder.Property(x => x.SongTitle).HasMaxLength(ContentConstants.MaxSongTitleLength).IsRequired();
 
         builder.Property(x => x.ArtistName).HasMaxLength(ContentConstants.MaxArtistNameLength).IsRequired();

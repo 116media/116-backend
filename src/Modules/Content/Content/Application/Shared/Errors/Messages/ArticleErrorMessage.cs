@@ -59,6 +59,58 @@ public static class ArticleErrorMessage
     /// <returns>
     /// An error message indicating that only articles in Draft or Rejected status can be permanently deleted.
     /// </returns>
+    /// <summary>
+    /// Gets an error message for when an article is already archived.
+    /// </summary>
+    /// <returns>An error message indicating that the article is already archived.</returns>
+    /// <summary>
+    /// Gets an error message for when an article is already pending payment.
+    /// </summary>
+    public static string AlreadySubmitted()
+    {
+        return "Article is already pending payment";
+    }
+
+    /// <summary>
+    /// Gets an error message for when an article is already pending review.
+    /// </summary>
+    public static string AlreadyPendingReview()
+    {
+        return "Article is already pending review";
+    }
+
+    /// <summary>
+    /// Gets an error message for when an article is already approved.
+    /// </summary>
+    public static string AlreadyApproved()
+    {
+        return "Article is already approved";
+    }
+
+    /// <summary>
+    /// Gets an error message for when an article is already published.
+    /// </summary>
+    public static string AlreadyPublished()
+    {
+        return "Article is already published";
+    }
+
+    /// <summary>
+    /// Gets an error message for when an article is already rejected.
+    /// </summary>
+    public static string AlreadyRejected()
+    {
+        return "Article is already rejected";
+    }
+
+    /// <summary>
+    /// Gets an error message for when an article is already archived.
+    /// </summary>
+    public static string AlreadyArchived()
+    {
+        return "Article is already archived";
+    }
+
     public static string CannotDeletePublishedArticle()
     {
         return "Only articles in Draft or Rejected status can be permanently deleted. Archive published articles instead.";

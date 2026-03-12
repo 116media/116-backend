@@ -69,6 +69,6 @@ public class PublicVerifyOtpHandler(
         );
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        return new PublicVerifyOtpResult(true);
+        return new PublicVerifyOtpResult(IsSuccess: true);
     }
 }

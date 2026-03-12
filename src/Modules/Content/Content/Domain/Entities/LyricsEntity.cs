@@ -20,6 +20,12 @@ namespace _116.Content.Domain.Entities;
 public class LyricsEntity : Aggregate<Guid>
 {
     /// <summary>
+    /// The identity user UUID of the admin who created this lyrics page.
+    /// No FK to the identity schema by design.
+    /// </summary>
+    public Guid AuthorId { get; private set; }
+
+    /// <summary>
     /// Optional link to a parent video. <c>null</c> unless this lyrics page is
     /// associated with a lyric video or a "Behind the Lyrics" episode.
     /// </summary>
@@ -103,7 +109,8 @@ public class LyricsEntity : Aggregate<Guid>
         string songTitle,
         string artistName,
         string lyricsText,
-        string language
+        string language,
+        Guid authorId
     )
     {
         ValidateRequiredFields(songTitle: songTitle, artistName: artistName, lyricsText: lyricsText);
@@ -111,6 +118,7 @@ public class LyricsEntity : Aggregate<Guid>
         return new LyricsEntity
         {
             Id = id,
+            AuthorId = authorId,
             VideoId = videoId,
             SongTitle = songTitle,
             ArtistName = artistName,
@@ -128,7 +136,8 @@ public class LyricsEntity : Aggregate<Guid>
         string songTitle,
         string artistName,
         string lyricsText,
-        string language
+        string language,
+        Guid authorId
     )
     {
         ValidateRequiredFields(songTitle: songTitle, artistName: artistName, lyricsText: lyricsText);
@@ -136,6 +145,7 @@ public class LyricsEntity : Aggregate<Guid>
         return new LyricsEntity
         {
             Id = id,
+            AuthorId = authorId,
             ArticleId = articleId,
             SongTitle = songTitle,
             ArtistName = artistName,
@@ -152,7 +162,8 @@ public class LyricsEntity : Aggregate<Guid>
         string songTitle,
         string artistName,
         string lyricsText,
-        string language
+        string language,
+        Guid authorId
     )
     {
         ValidateRequiredFields(songTitle: songTitle, artistName: artistName, lyricsText: lyricsText);
@@ -160,6 +171,7 @@ public class LyricsEntity : Aggregate<Guid>
         return new LyricsEntity
         {
             Id = id,
+            AuthorId = authorId,
             SongTitle = songTitle,
             ArtistName = artistName,
             LyricsText = lyricsText,

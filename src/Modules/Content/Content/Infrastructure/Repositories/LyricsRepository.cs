@@ -1,7 +1,9 @@
+using _116.Content.Application.Editorial.Builders;
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,10 +19,18 @@ public class LyricsRepository(ContentDbContext context) : ILyricsRepository
     public async Task<(List<LyricsEntity> Lyrics, int TotalCount)> GetAllAsync(
         int page,
         int pageSize,
+        string? search,
         CancellationToken cancellationToken = default
     )
     {
         IQueryable<LyricsEntity> query = context.Lyrics;
+
+        Specification<LyricsEntity>? spec = new LyricsQueryBuilder().WithSearch(search: search).Build();
+
+        if (spec is not null)
+        {
+            query = query.ApplySpecification(specification: spec);
+        }
 
         int totalCount = await query.CountAsync(cancellationToken);
 

@@ -212,6 +212,26 @@ public static partial class EditorialValidation
     }
 
     /// <summary>
+    /// Validates short video slug with length and format constraints (lowercase, letters, numbers, hyphens).
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the slug property.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidShortVideoSlug<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage("Short video slug is required.")
+            .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
+            .WithMessage($"Short video slug must not exceed {ContentConstants.MaxSlugLength} characters.")
+            .Matches(SlugRegex())
+            .WithMessage("Short video slug must be lowercase and contain only letters, numbers, and hyphens.");
+    }
+
+    /// <summary>
     /// Validates short video title with length constraints.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>

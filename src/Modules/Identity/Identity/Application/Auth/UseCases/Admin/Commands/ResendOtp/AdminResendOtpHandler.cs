@@ -28,7 +28,7 @@ public class AdminResendOtpHandler(IAdminResendOtpFactory otpFactory, IAuthRepos
         var purpose = new OtpPurpose(value: command.Purpose);
         if (!await authRepository.ExistsByEmailAsync(email: email, cancellationToken: cancellationToken))
         {
-            return new AdminResendOtpResult(true);
+            return new AdminResendOtpResult(IsSuccess: true);
         }
 
         UserEntity? user = await authRepository.GetUserWithRolesByEmailOrThrow(
@@ -41,6 +41,6 @@ public class AdminResendOtpHandler(IAdminResendOtpFactory otpFactory, IAuthRepos
 
         await otpFactory.ResendOtpAsync(userId: user!.Id, purpose: purpose, cancellationToken: cancellationToken);
 
-        return new AdminResendOtpResult(true);
+        return new AdminResendOtpResult(IsSuccess: true);
     }
 }

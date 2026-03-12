@@ -30,10 +30,8 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("AuthorId")
-                        .IsRequired()
-                        .HasMaxLength(36)
-                        .HasColumnType("character varying(36)")
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid")
                         .HasColumnName("author_id");
 
                     b.Property<string>("Body")
@@ -150,8 +148,8 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("title");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -174,6 +172,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.HasIndex("Slug")
                         .IsUnique()
                         .HasDatabaseName("ix_articles_slug");
+
+                    b.HasIndex("Title")
+                        .IsUnique()
+                        .HasDatabaseName("ix_articles_title");
 
                     b.ToTable("articles", "content");
                 });
@@ -312,6 +314,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ContentTypeId")
                         .HasDatabaseName("ix_categories_content_type_id");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_categories_name");
 
                     b.HasIndex("Slug")
                         .IsUnique()
@@ -489,6 +495,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("artist_name");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("author_id");
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -772,6 +782,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("author_id");
+
                     b.Property<int>("BookmarkCount")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -809,6 +823,12 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(0)
                         .HasColumnName("share_count");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(220)
+                        .HasColumnType("character varying(220)")
+                        .HasColumnName("slug");
 
                     b.Property<string>("ThumbnailStorageKey")
                         .HasColumnType("text")
@@ -856,6 +876,14 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_short_videos");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_short_videos_slug");
+
+                    b.HasIndex("Title")
+                        .IsUnique()
+                        .HasDatabaseName("ix_short_videos_title");
 
                     b.HasIndex("VideoId")
                         .HasDatabaseName("ix_short_videos_video_id");
@@ -919,10 +947,8 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("AuthorId")
-                        .IsRequired()
-                        .HasMaxLength(36)
-                        .HasColumnType("character varying(36)")
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid")
                         .HasColumnName("author_id");
 
                     b.Property<Guid>("CategoryId")
@@ -1037,8 +1063,8 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("title");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -1066,6 +1092,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.HasIndex("Slug")
                         .IsUnique()
                         .HasDatabaseName("ix_videos_slug");
+
+                    b.HasIndex("Title")
+                        .IsUnique()
+                        .HasDatabaseName("ix_videos_title");
 
                     b.ToTable("videos", "content");
                 });

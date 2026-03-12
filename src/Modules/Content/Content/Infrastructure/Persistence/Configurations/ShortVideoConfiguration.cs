@@ -16,7 +16,11 @@ public class ShortVideoConfiguration : IEntityTypeConfiguration<ShortVideoEntity
     {
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.AuthorId).IsRequired();
+
         builder.Property(x => x.Title).HasMaxLength(ContentConstants.MaxShortVideoTitleLength).IsRequired();
+
+        builder.Property(x => x.Slug).HasMaxLength(ContentConstants.MaxSlugLength).IsRequired();
 
         builder.Property(x => x.VideoUrl).HasMaxLength(ContentConstants.MaxShortVideoUrlLength).IsRequired();
 
@@ -37,6 +41,9 @@ public class ShortVideoConfiguration : IEntityTypeConfiguration<ShortVideoEntity
         builder.Property(x => x.ShareCount).HasDefaultValue(0).IsRequired();
 
         builder.Property(x => x.BookmarkCount).HasDefaultValue(0).IsRequired();
+
+        builder.HasIndex(x => x.Slug).IsUnique();
+        builder.HasIndex(x => x.Title).IsUnique();
 
         builder
             .HasOne(x => x.ParentVideo)

@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Builders;
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -18,17 +19,20 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
     public async Task<(List<ShortVideoEntity> ShortVideos, int TotalCount)> GetAllAsync(
         int page,
         int pageSize,
+        string? search,
         bool? isActive,
         CancellationToken cancellationToken = default
     )
     {
         IQueryable<ShortVideoEntity> query = context.ShortVideos;
 
-        if (isActive.HasValue)
+        Specification<ShortVideoEntity>? spec = new ShortVideoQueryBuilder()
+            .WithSearch(search: search)
+            .WithIsActive(isActive: isActive)
+            .Build();
+
+        if (spec is not null)
         {
-            Specification<ShortVideoEntity> spec = isActive.Value
-                ? new ActiveShortVideoSpecification()
-                : new ActiveShortVideoSpecification().Not();
             query = query.ApplySpecification(specification: spec);
         }
 
@@ -41,6 +45,16 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
             .ToListAsync(cancellationToken);
 
         return (shortVideos, totalCount);
+    }
+
+    /// <inheritdoc />
+    public async Task<ShortVideoEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
+    {
+        var specification = new ShortVideoBySlugSpecification(slug: slug);
+        return await context.ShortVideos.FirstOrDefaultBySpecificationAsync(
+            specification: specification,
+            cancellationToken: cancellationToken
+        );
     }
 
     /// <inheritdoc />

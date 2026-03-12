@@ -61,6 +61,6 @@ public class AdminVerifyOtpHandler(
             cancellationToken: cancellationToken
         );
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-        return new AdminVerifyOtpResult(true);
+        return new AdminVerifyOtpResult(IsSuccess: true);
     }
 }

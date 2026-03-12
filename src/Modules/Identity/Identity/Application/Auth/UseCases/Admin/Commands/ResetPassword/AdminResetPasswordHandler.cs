@@ -1,6 +1,7 @@
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword.Contracts;
 using _116.Identity.Domain.Enums;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword;
@@ -48,6 +49,6 @@ public class AdminResetPasswordHandler(IAdminResetPasswordAuthFactory authFactor
             cancellationToken: cancellationToken
         );
 
-        return new AdminResetPasswordResult(true);
+        return new AdminResetPasswordResult(IsSuccess: true);
     }
 }

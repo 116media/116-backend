@@ -45,6 +45,6 @@ public class PublicSetPasswordHandler(
         authRepository.SetPasswordForExternalUser(user!, hashedPassword: hashedPassword);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        return new PublicSetPasswordResult(true);
+        return new PublicSetPasswordResult(IsSuccess: true);
     }
 }

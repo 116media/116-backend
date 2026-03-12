@@ -31,7 +31,7 @@ public class ArticleConfiguration : IEntityTypeConfiguration<ArticleEntity>
 
         builder.Property(x => x.CoverImageUrl).HasMaxLength(ContentConstants.MaxCoverImageUrlLength).IsRequired(false);
 
-        builder.Property(x => x.AuthorId).HasMaxLength(ContentConstants.MaxAuthorIdLength).IsRequired();
+        builder.Property(x => x.AuthorId).IsRequired();
 
         builder.Property(x => x.Status).HasConversion<string>().HasDefaultValue(EnumContentStatus.Draft).IsRequired();
 
@@ -60,6 +60,7 @@ public class ArticleConfiguration : IEntityTypeConfiguration<ArticleEntity>
         builder.Property(x => x.BookmarkCount).HasDefaultValue(0).IsRequired();
 
         builder.HasIndex(x => x.Slug).IsUnique();
+        builder.HasIndex(x => x.Title).IsUnique();
 
         builder.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
 

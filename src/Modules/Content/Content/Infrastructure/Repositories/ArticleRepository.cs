@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Builders;
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -19,6 +20,7 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     public async Task<(List<ArticleEntity> Articles, int TotalCount)> GetAllAsync(
         int page,
         int pageSize,
+        string? search,
         EnumContentStatus? status,
         Guid? categoryId,
         CancellationToken cancellationToken = default
@@ -26,14 +28,15 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     {
         IQueryable<ArticleEntity> query = context.Articles.Include(a => a.Category);
 
-        if (status.HasValue)
-        {
-            query = query.ApplySpecification(new ArticleByStatusSpecification(status: status.Value));
-        }
+        Specification<ArticleEntity>? spec = new ArticleQueryBuilder()
+            .WithSearch(search: search)
+            .WithStatus(status: status)
+            .WithCategory(categoryId: categoryId)
+            .Build();
 
-        if (categoryId.HasValue)
+        if (spec is not null)
         {
-            query = query.ApplySpecification(new ArticleByCategorySpecification(categoryId: categoryId.Value));
+            query = query.ApplySpecification(specification: spec);
         }
 
         int totalCount = await query.CountAsync(cancellationToken);
@@ -99,7 +102,7 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<ArticleEntity>> GetAbandonedDraftsAsync(
-        DateTimeOffset cutoff,
+        DateTime cutoff,
         CancellationToken cancellationToken = default
     )
     {

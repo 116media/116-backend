@@ -13,12 +13,14 @@ public interface IShortVideoRepository : IRepository<ShortVideoEntity>
     /// </summary>
     /// <param name="page">The 1-based page number.</param>
     /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="search">Optional search term to filter short videos by title.</param>
     /// <param name="isActive">Optional filter by active status.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>A tuple containing the list of short videos and the total count.</returns>
     Task<(List<ShortVideoEntity> ShortVideos, int TotalCount)> GetAllAsync(
         int page,
         int pageSize,
+        string? search,
         bool? isActive,
         CancellationToken cancellationToken = default
     );
@@ -31,6 +33,15 @@ public interface IShortVideoRepository : IRepository<ShortVideoEntity>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>The short video entity if found, otherwise null.</returns>
     Task<ShortVideoEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a short video by its URL slug.
+    /// Returns null if not found.
+    /// </summary>
+    /// <param name="slug">The URL slug of the short video.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The short video entity if found, otherwise null.</returns>
+    Task<ShortVideoEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a short video by its unique identifier.

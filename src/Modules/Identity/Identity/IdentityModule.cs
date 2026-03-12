@@ -45,6 +45,7 @@ using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar.Contracts;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
+using _116.Identity.Contracts.Application;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Infrastructure.Adapters.Wangkanai.Detection;
 using _116.Identity.Infrastructure.Persistence;
@@ -122,6 +123,7 @@ public static class IdentityModule
         services.AddScoped<IPasswordService, PasswordService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
         services.AddScoped<IAuthRepository, AuthRepository>();
+        services.AddScoped<IClaimsProvider, AuthRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();

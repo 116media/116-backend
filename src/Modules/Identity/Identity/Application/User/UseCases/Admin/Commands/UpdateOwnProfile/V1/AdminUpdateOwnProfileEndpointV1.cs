@@ -2,8 +2,8 @@ using System.Security.Claims;
 using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Shared.DTOs;
-using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.Constants;
+using _116.Identity.Contracts.Application;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -60,12 +60,12 @@ public class AdminUpdateOwnProfileEndpointV1 : ICarterModule
                 async (
                     AdminUpdateOwnProfileRequest request,
                     ClaimsPrincipal user,
-                    IAuthRepository authRepository,
+                    IClaimsProvider authProvider,
                     IDispatcher dispatcher
                 ) =>
                 {
-                    Guid userId = authRepository.GetUserIdFromClaims(user: user);
-                    Guid sessionId = authRepository.GetSessionIdFromClaims(user: user);
+                    Guid userId = authProvider.GetUserIdFromClaims(user: user);
+                    Guid sessionId = authProvider.GetSessionIdFromClaims(user: user);
 
                     var command = new AdminUpdateOwnProfileCommand(
                         UserId: userId,

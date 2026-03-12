@@ -44,7 +44,7 @@ public class ArticleEntity : Aggregate<Guid>
     public Guid CategoryId { get; private set; }
 
     /// <summary>
-    /// Display title of the article.
+    /// Display the title of the article.
     /// </summary>
     [MaxLength(length: ContentConstants.MaxTitleLength)]
     public string Title { get; private set; } = null!;
@@ -86,8 +86,7 @@ public class ArticleEntity : Aggregate<Guid>
     /// Distinguished from <c>CreatedBy</c> (system audit trail) — <c>AuthorId</c> is the
     /// public editorial byline ("Written by…").
     /// </summary>
-    [MaxLength(length: ContentConstants.MaxAuthorIdLength)]
-    public string AuthorId { get; private set; } = null!;
+    public Guid AuthorId { get; private set; }
 
     /// <summary>
     /// Whether the article has been flagged for manual Facebook &amp; Instagram promotion.
@@ -195,7 +194,7 @@ public class ArticleEntity : Aggregate<Guid>
     /// <param name="slug">The URL-safe slug.</param>
     /// <param name="authorId">The identity user UUID from JWT claims.</param>
     /// <returns>A new <see cref="ArticleEntity" /> in <c>Draft</c> status.</returns>
-    public static ArticleEntity CreateFree(Guid id, Guid categoryId, string title, string slug, string authorId)
+    public static ArticleEntity CreateFree(Guid id, Guid categoryId, string title, string slug, Guid authorId)
     {
         if (string.IsNullOrWhiteSpace(value: title))
         {
@@ -237,7 +236,7 @@ public class ArticleEntity : Aggregate<Guid>
         Guid categoryId,
         string title,
         string slug,
-        string authorId
+        Guid authorId
     )
     {
         if (string.IsNullOrWhiteSpace(value: title))
@@ -264,17 +263,66 @@ public class ArticleEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Saves the article content (step 2). Called by <c>UpdateArticleCommandHandler</c>
-    /// when the admin fills in the body and headline before clicking "Submit".
-    /// Also used when revising a <c>Rejected</c> article before resubmission.
+    /// Updates all editable fields of the article in a single call.
+    /// Allowed when status is <c>Draft</c>, <c>PendingPayment</c>, <c>PendingReview</c>, or
+    /// <c>Rejected</c>. The status gate, slug uniqueness, and category existence are enforced
+    /// at the application layer by <c>UpdateArticleHandler</c>, not here.
+    /// <para>
+    /// Fields intentionally excluded: <c>AuthorId</c> (JWT claim, immutable editorial byline),
+    /// <c>Status</c> (dedicated transition methods), <c>RejectionReason</c> (<c>Reject</c>),
+    /// <c>PublishedAt</c> (<c>Publish</c>), and interaction counters (event-driven).
+    /// </para>
     /// </summary>
+    /// <param name="categoryId">The category this article belongs to.</param>
+    /// <param name="title">The article title.</param>
+    /// <param name="slug">The URL-safe slug. Uniqueness enforced by handler.</param>
     /// <param name="headline">The short teaser text (100–300 chars; min enforced by validator).</param>
     /// <param name="body">The rich-text HTML body containing only Cloudinary URLs.</param>
     /// <param name="coverImageUrl">Optional URL of the cover image.</param>
-    public void UpdateContent(string headline, string body, string? coverImageUrl)
+    /// <param name="customerId">The B2B customer who commissioned this article. <c>null</c> for free content.</param>
+    /// <param name="orderItemId">The order item this article fulfils. <c>null</c> for free content.</param>
+    /// <param name="socialBoost">Whether this article is flagged for social media promotion.</param>
+    /// <param name="isFeatured">Whether this article has an active featured/À-la-Une placement.</param>
+    /// <param name="featuredUntil">When the featured placement expires. <c>null</c> if not featured.</param>
+    /// <param name="metaTitle">Optional SEO meta title (max 70 chars). Falls back to <c>Title</c> if null.</param>
+    /// <param name="metaDescription">Optional SEO meta description (max 160 chars).</param>
+    public void Update(
+        Guid categoryId,
+        string title,
+        string slug,
+        string headline,
+        string body,
+        string? coverImageUrl,
+        Guid? customerId,
+        Guid? orderItemId,
+        bool socialBoost,
+        bool isFeatured,
+        DateTimeOffset? featuredUntil,
+        string? metaTitle,
+        string? metaDescription
+    )
     {
+        CategoryId = categoryId;
+        Title = title;
+        Slug = slug;
         Headline = headline;
         Body = body;
+        CoverImageUrl = coverImageUrl;
+        CustomerId = customerId;
+        OrderItemId = orderItemId;
+        SocialBoost = socialBoost;
+        IsFeatured = isFeatured;
+        FeaturedUntil = featuredUntil;
+        MetaTitle = metaTitle;
+        MetaDescription = metaDescription;
+    }
+
+    /// <summary>
+    /// Sets the article's cover image URL. Called by <c>UploadArticleImageCommandHandler</c>
+    /// when a <c>Cover</c>-type image is uploaded.
+    /// </summary>
+    public void UpdateCoverImage(string? coverImageUrl)
+    {
         CoverImageUrl = coverImageUrl;
     }
 
@@ -291,26 +339,63 @@ public class ArticleEntity : Aggregate<Guid>
     /// Transitions a paid article from <c>Draft</c> → <c>PendingPayment</c>.
     /// Call <see cref="MarkPendingReview" /> instead for free articles.
     /// </summary>
-    public void Submit() => Status = EnumContentStatus.PendingPayment;
+    /// <returns><c>true</c> if submitted; <c>false</c> if already pending payment.</returns>
+    public bool Submit()
+    {
+        if (Status == EnumContentStatus.PendingPayment)
+        {
+            return false;
+        }
+
+        Status = EnumContentStatus.PendingPayment;
+        return true;
+    }
 
     /// <summary>
     /// Transitions a free article from <c>Draft</c> → <c>PendingReview</c>,
     /// or a paid article from <c>PendingPayment</c> → <c>PendingReview</c> after payment is verified.
     /// </summary>
-    public void MarkPendingReview() => Status = EnumContentStatus.PendingReview;
+    /// <returns><c>true</c> if moved to pending review; <c>false</c> if already pending review.</returns>
+    public bool MarkPendingReview()
+    {
+        if (Status == EnumContentStatus.PendingReview)
+        {
+            return false;
+        }
+
+        Status = EnumContentStatus.PendingReview;
+        return true;
+    }
 
     /// <summary>
     /// Marks the article as editorially approved (→ <c>Approved</c>).
     /// </summary>
-    public void Approve() => Status = EnumContentStatus.Approved;
+    /// <returns><c>true</c> if approved; <c>false</c> if already approved.</returns>
+    public bool Approve()
+    {
+        if (Status == EnumContentStatus.Approved)
+        {
+            return false;
+        }
+
+        Status = EnumContentStatus.Approved;
+        return true;
+    }
 
     /// <summary>
     /// Publishes the article and records the publication timestamp.
     /// </summary>
-    public void Publish()
+    /// <returns><c>true</c> if published; <c>false</c> if already published.</returns>
+    public bool Publish()
     {
+        if (Status == EnumContentStatus.Published)
+        {
+            return false;
+        }
+
         Status = EnumContentStatus.Published;
         PublishedAt = DateTimeOffset.UtcNow;
+        return true;
     }
 
     /// <summary>
@@ -318,17 +403,34 @@ public class ArticleEntity : Aggregate<Guid>
     /// The admin can revise the article and resubmit it.
     /// </summary>
     /// <param name="reason">The rejection reason visible to the editorial team.</param>
-    public void Reject(string reason)
+    /// <returns><c>true</c> if rejected; <c>false</c> if already rejected.</returns>
+    public bool Reject(string reason)
     {
+        if (Status == EnumContentStatus.Rejected)
+        {
+            return false;
+        }
+
         Status = EnumContentStatus.Rejected;
         RejectionReason = reason;
+        return true;
     }
 
     /// <summary>
     /// Archives the article, removing it from all public feeds without deleting it.
     /// Archiving is reversible — Cloudinary images are <b>not</b> deleted.
     /// </summary>
-    public void Archive() => Status = EnumContentStatus.Archived;
+    /// <returns><c>true</c> if archived; <c>false</c> if already archived.</returns>
+    public bool Archive()
+    {
+        if (Status == EnumContentStatus.Archived)
+        {
+            return false;
+        }
+
+        Status = EnumContentStatus.Archived;
+        return true;
+    }
 
     /// <summary>
     /// Flags the article for manual Facebook &amp; Instagram promotion.

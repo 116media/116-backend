@@ -55,7 +55,7 @@ public class AbandonedDraftCleanupJob(IServiceScopeFactory scopeFactory, ILogger
             var cloudinaryService = scope.ServiceProvider.GetRequiredService<ICloudinaryService>();
             var unitOfWork = scope.ServiceProvider.GetRequiredService<IContentUnitOfWork>();
 
-            DateTimeOffset cutoff = DateTimeOffset.UtcNow - AbandonedAfter;
+            DateTime cutoff = DateTime.UtcNow - AbandonedAfter;
 
             IReadOnlyList<ArticleEntity> drafts = await articleRepository.GetAbandonedDraftsAsync(
                 cutoff: cutoff,

@@ -28,6 +28,6 @@ public class AdminSignOutHandler(IAdminSignOutSessionFactory sessionFactory, IAu
 
         await sessionFactory.SignOutAsync(refreshToken: command.RefreshToken, cancellationToken: cancellationToken);
 
-        return new AdminSignOutResult(true);
+        return new AdminSignOutResult(IsSuccess: true);
     }
 }

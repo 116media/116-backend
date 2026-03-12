@@ -28,6 +28,6 @@ public class AdminForceLogoutUserHandler(ISessionRepository sessionRepository, I
         await sessionRepository.DeleteAllByUserIdAsync(userId: targetUserId, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        return new AdminForceLogoutUserResult(true);
+        return new AdminForceLogoutUserResult(IsSuccess: true);
     }
 }

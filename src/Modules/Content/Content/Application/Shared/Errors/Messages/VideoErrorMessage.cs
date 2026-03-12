@@ -70,6 +70,54 @@ public static class VideoErrorMessage
     /// <returns>
     /// A formatted error message indicating that the transition from the current status to the target status is not allowed.
     /// </returns>
+    /// <summary>
+    /// Gets an error message for when a video is already pending payment.
+    /// </summary>
+    public static string AlreadySubmitted()
+    {
+        return "Video is already pending payment";
+    }
+
+    /// <summary>
+    /// Gets an error message for when a video is already pending review.
+    /// </summary>
+    public static string AlreadyPendingReview()
+    {
+        return "Video is already pending review";
+    }
+
+    /// <summary>
+    /// Gets an error message for when a video is already approved.
+    /// </summary>
+    public static string AlreadyApproved()
+    {
+        return "Video is already approved";
+    }
+
+    /// <summary>
+    /// Gets an error message for when a video is already published.
+    /// </summary>
+    public static string AlreadyPublished()
+    {
+        return "Video is already published";
+    }
+
+    /// <summary>
+    /// Gets an error message for when a video is already rejected.
+    /// </summary>
+    public static string AlreadyRejected()
+    {
+        return "Video is already rejected";
+    }
+
+    /// <summary>
+    /// Gets an error message for when a video is already archived.
+    /// </summary>
+    public static string AlreadyArchived()
+    {
+        return "Video is already archived";
+    }
+
     public static string InvalidStatusTransition(string from, string to)
     {
         return $"Cannot transition video from '{from}' to '{to}'";

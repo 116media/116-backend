@@ -14,6 +14,7 @@ public interface IArticleRepository : IRepository<ArticleEntity>
     /// </summary>
     /// <param name="page">The 1-based page number.</param>
     /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="search">Optional search term to filter articles by title, description, or meta fields.</param>
     /// <param name="status">Optional filter by content status.</param>
     /// <param name="categoryId">Optional filter by category identifier.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
@@ -21,6 +22,7 @@ public interface IArticleRepository : IRepository<ArticleEntity>
     Task<(List<ArticleEntity> Articles, int TotalCount)> GetAllAsync(
         int page,
         int pageSize,
+        string? search,
         EnumContentStatus? status,
         Guid? categoryId,
         CancellationToken cancellationToken = default
@@ -68,7 +70,7 @@ public interface IArticleRepository : IRepository<ArticleEntity>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>A read-only list of abandoned draft article entities.</returns>
     Task<IReadOnlyList<ArticleEntity>> GetAbandonedDraftsAsync(
-        DateTimeOffset cutoff,
+        DateTime cutoff,
         CancellationToken cancellationToken = default
     );
 

@@ -131,7 +131,7 @@ public static class ContentConstants
     /// <summary>
     /// Maximum allowed length for an article or video title.
     /// </summary>
-    public const int MaxTitleLength = 200;
+    public const int MaxTitleLength = 100;
 
     /// <summary>
     /// Maximum allowed length for an article or video URL slug.
@@ -151,21 +151,24 @@ public static class ContentConstants
     public const int MinHeadlineLength = 100;
 
     /// <summary>
-    /// Maximum length for the <c>author_id</c> field.
-    /// Stores the JWT user UUID as a plain string — no FK to the identity schema by design.
-    /// UUID strings are 36 characters (e.g., "550e8400-e29b-41d4-a716-446655440000").
-    /// </summary>
-    public const int MaxAuthorIdLength = 36;
-
-    /// <summary>
     /// Maximum allowed length for an article or video rejection reason.
     /// </summary>
     public const int MaxRejectionReasonLength = 500;
 
     /// <summary>
-    /// Maximum allowed length for an SEO meta title (Google truncates at ~60–70 chars).
+    /// Minimum allowed length for the SEO meta title.
+    /// </summary>
+    public const int MinMetaTitleLength = 10;
+
+    /// <summary>
+    /// Maximum allowed length for the SEO meta title (Google truncates at ~60–70 chars).
     /// </summary>
     public const int MaxMetaTitleLength = 70;
+
+    /// <summary>
+    /// Minimum allowed length for an SEO meta description.
+    /// </summary>
+    public const int MinMetaDescriptionLength = 50;
 
     /// <summary>
     /// Maximum allowed length for an SEO meta description (Google truncates at ~155–160 chars).

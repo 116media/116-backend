@@ -17,7 +17,7 @@ public class VideoConfiguration : IEntityTypeConfiguration<VideoEntity>
     {
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.AuthorId).HasMaxLength(ContentConstants.MaxAuthorIdLength).IsRequired();
+        builder.Property(x => x.AuthorId).IsRequired();
 
         builder.Property(x => x.Title).HasMaxLength(ContentConstants.MaxTitleLength).IsRequired();
 
@@ -61,6 +61,7 @@ public class VideoConfiguration : IEntityTypeConfiguration<VideoEntity>
         builder.Property(x => x.ShareCount).HasDefaultValue(0).IsRequired();
 
         builder.HasIndex(x => x.Slug).IsUnique();
+        builder.HasIndex(x => x.Title).IsUnique();
 
         builder.HasOne(x => x.Category).WithMany().HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
 

@@ -55,6 +55,26 @@ public class ArticleByCategorySpecification(Guid categoryId) : Specification<Art
 }
 
 /// <summary>
+/// Specification for full-text search across article Title, Headline, Body,
+/// MetaTitle, and MetaDescription fields.
+/// Uses case-insensitive matching (ILIKE in PostgreSQL).
+/// </summary>
+public class ArticleSearchSpecification(string search) : Specification<ArticleEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleEntity, bool>> ToExpression()
+    {
+        string pattern = $"%{search}%";
+        return article =>
+            EF.Functions.ILike(article.Title, pattern)
+            || EF.Functions.ILike(article.Headline, pattern)
+            || EF.Functions.ILike(article.Body, pattern)
+            || (article.MetaTitle != null && EF.Functions.ILike(article.MetaTitle, pattern))
+            || (article.MetaDescription != null && EF.Functions.ILike(article.MetaDescription, pattern));
+    }
+}
+
+/// <summary>
 /// Specification that matches articles that are currently featured and published.
 /// Featured articles must have <c>IsFeatured = true</c>, a future or null <c>FeaturedUntil</c>,
 /// and <c>Status = Published</c>.
@@ -76,7 +96,7 @@ public class FeaturedArticleSpecification : Specification<ArticleEntity>
 /// Specification that matches draft articles with no content created before a given cutoff date.
 /// Used by the background abandoned-draft cleanup job.
 /// </summary>
-public class AbandonedDraftSpecification(DateTimeOffset cutoff) : Specification<ArticleEntity>
+public class AbandonedDraftSpecification(DateTime cutoff) : Specification<ArticleEntity>
 {
     /// <inheritdoc />
     public override Expression<Func<ArticleEntity, bool>> ToExpression()

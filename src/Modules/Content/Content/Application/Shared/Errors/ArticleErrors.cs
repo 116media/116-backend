@@ -42,6 +42,54 @@ public static class ArticleErrors
     }
 
     /// <summary>
+    /// Throws when an article is already pending payment.
+    /// </summary>
+    public static ConflictException AlreadySubmitted()
+    {
+        return new ConflictException(ArticleErrorMessage.AlreadySubmitted());
+    }
+
+    /// <summary>
+    /// Throws when an article is already pending review.
+    /// </summary>
+    public static ConflictException AlreadyPendingReview()
+    {
+        return new ConflictException(ArticleErrorMessage.AlreadyPendingReview());
+    }
+
+    /// <summary>
+    /// Throws when an article is already approved.
+    /// </summary>
+    public static ConflictException AlreadyApproved()
+    {
+        return new ConflictException(ArticleErrorMessage.AlreadyApproved());
+    }
+
+    /// <summary>
+    /// Throws when an article is already published.
+    /// </summary>
+    public static ConflictException AlreadyPublished()
+    {
+        return new ConflictException(ArticleErrorMessage.AlreadyPublished());
+    }
+
+    /// <summary>
+    /// Throws when an article is already rejected.
+    /// </summary>
+    public static ConflictException AlreadyRejected()
+    {
+        return new ConflictException(ArticleErrorMessage.AlreadyRejected());
+    }
+
+    /// <summary>
+    /// Throws when an article is already archived.
+    /// </summary>
+    public static ConflictException AlreadyArchived()
+    {
+        return new ConflictException(ArticleErrorMessage.AlreadyArchived());
+    }
+
+    /// <summary>
     /// Throws when an invalid status transition is attempted.
     /// </summary>
     public static BadRequestException InvalidStatusTransition(string from, string to)

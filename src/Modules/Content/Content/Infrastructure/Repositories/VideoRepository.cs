@@ -1,8 +1,10 @@
+using _116.Content.Application.Editorial.Builders;
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +20,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     public async Task<(List<VideoEntity> Videos, int TotalCount)> GetAllAsync(
         int page,
         int pageSize,
+        string? search,
         EnumContentStatus? status,
         Guid? categoryId,
         CancellationToken cancellationToken = default
@@ -25,14 +28,15 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     {
         IQueryable<VideoEntity> query = context.Videos.Include(v => v.Category);
 
-        if (status.HasValue)
-        {
-            query = query.ApplySpecification(new VideoByStatusSpecification(status: status.Value));
-        }
+        Specification<VideoEntity>? spec = new VideoQueryBuilder()
+            .WithSearch(search: search)
+            .WithStatus(status: status)
+            .WithCategory(categoryId: categoryId)
+            .Build();
 
-        if (categoryId.HasValue)
+        if (spec is not null)
         {
-            query = query.ApplySpecification(new VideoByCategorySpecification(categoryId: categoryId.Value));
+            query = query.ApplySpecification(specification: spec);
         }
 
         int totalCount = await query.CountAsync(cancellationToken);

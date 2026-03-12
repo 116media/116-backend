@@ -42,8 +42,7 @@ public class VideoEntity : Aggregate<Guid>
     /// Read from JWT <c>HttpContext.User</c> claims — never passed by the client.
     /// No FK to the identity schema by design (cross-schema FK-free for microservice extractability).
     /// </summary>
-    [MaxLength(length: ContentConstants.MaxAuthorIdLength)]
-    public string AuthorId { get; private set; } = null!;
+    public Guid AuthorId { get; private set; }
 
     /// <summary>
     /// Display the title of the video.
@@ -199,7 +198,7 @@ public class VideoEntity : Aggregate<Guid>
         Guid categoryId,
         string title,
         string slug,
-        string authorId,
+        Guid authorId,
         string? description = null
     )
     {
@@ -244,7 +243,7 @@ public class VideoEntity : Aggregate<Guid>
         Guid categoryId,
         string title,
         string slug,
-        string authorId,
+        Guid authorId,
         string? description = null
     )
     {
@@ -273,24 +272,34 @@ public class VideoEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Updates the video's editable metadata fields. Only permitted when status is
-    /// <c>Draft</c> or <c>Rejected</c>.
+    /// Updates all editable video fields in a single call. Permitted when status is
+    /// <c>Draft</c>, <c>PendingPayment</c>, <c>PendingReview</c>, or <c>Rejected</c>.
     /// </summary>
-    public void UpdateDetails(string title, string slug, string? description)
+    public void Update(
+        Guid categoryId,
+        string title,
+        string slug,
+        string? description,
+        Guid? customerId,
+        Guid? orderItemId,
+        bool socialBoost,
+        bool isFeatured,
+        DateTimeOffset? featuredUntil,
+        string? metaTitle,
+        string? metaDescription
+    )
     {
-        if (string.IsNullOrWhiteSpace(value: title))
-        {
-            throw VideoErrors.TitleRequired();
-        }
-
-        if (string.IsNullOrWhiteSpace(value: slug))
-        {
-            throw VideoErrors.SlugRequired();
-        }
-
+        CategoryId = categoryId;
         Title = title;
         Slug = slug;
         Description = description;
+        CustomerId = customerId;
+        OrderItemId = orderItemId;
+        SocialBoost = socialBoost;
+        IsFeatured = isFeatured;
+        FeaturedUntil = featuredUntil;
+        MetaTitle = metaTitle;
+        MetaDescription = metaDescription;
     }
 
     /// <summary>
@@ -341,26 +350,62 @@ public class VideoEntity : Aggregate<Guid>
     /// <summary>
     /// Transitions a paid video from <c>Draft</c> → <c>PendingPayment</c>.
     /// </summary>
-    public void Submit() => Status = EnumContentStatus.PendingPayment;
+    /// <returns><c>true</c> if submitted; <c>false</c> if already pending payment.</returns>
+    public bool Submit()
+    {
+        if (Status == EnumContentStatus.PendingPayment)
+        {
+            return false;
+        }
+
+        Status = EnumContentStatus.PendingPayment;
+        return true;
+    }
 
     /// <summary>
     /// Transitions a free video from <c>Draft</c> → <c>PendingReview</c>,
     /// or a paid video from <c>PendingPayment</c> → <c>PendingReview</c> after payment is verified.
     /// </summary>
-    public void MarkPendingReview() => Status = EnumContentStatus.PendingReview;
+    /// <returns><c>true</c> if moved to pending review; <c>false</c> if already pending review.</returns>
+    public bool MarkPendingReview()
+    {
+        if (Status == EnumContentStatus.PendingReview)
+        {
+            return false;
+        }
+
+        Status = EnumContentStatus.PendingReview;
+        return true;
+    }
 
     /// <summary>
     /// Marks the video as editorially approved (→ <c>Approved</c>).
     /// </summary>
-    public void Approve() => Status = EnumContentStatus.Approved;
+    /// <returns><c>true</c> if approved; <c>false</c> if already approved.</returns>
+    public bool Approve()
+    {
+        if (Status == EnumContentStatus.Approved)
+        {
+            return false;
+        }
+
+        Status = EnumContentStatus.Approved;
+        return true;
+    }
 
     /// <summary>
     /// Publishes the video. Throws if no YouTube ID has been attached —
     /// enforcing the YouTube gate at the domain level.
     /// </summary>
+    /// <returns><c>true</c> if published; <c>false</c> if already published.</returns>
     /// <exception cref="Exception">Thrown when <c>YoutubeVideoId</c> is null or empty.</exception>
-    public void Publish()
+    public bool Publish()
     {
+        if (Status == EnumContentStatus.Published)
+        {
+            return false;
+        }
+
         if (string.IsNullOrWhiteSpace(YoutubeVideoId))
         {
             throw VideoErrors.CannotPublishWithoutYoutubeId();
@@ -368,22 +413,40 @@ public class VideoEntity : Aggregate<Guid>
 
         Status = EnumContentStatus.Published;
         PublishedAt = DateTimeOffset.UtcNow;
+        return true;
     }
 
     /// <summary>
     /// Rejects the video with a mandatory reason.
     /// </summary>
-    public void Reject(string reason)
+    /// <returns><c>true</c> if rejected; <c>false</c> if already rejected.</returns>
+    public bool Reject(string reason)
     {
+        if (Status == EnumContentStatus.Rejected)
+        {
+            return false;
+        }
+
         Status = EnumContentStatus.Rejected;
         RejectionReason = reason;
+        return true;
     }
 
     /// <summary>
     /// Archives the video, removing it from all public feeds without deleting it.
     /// Archiving is reversible — Cloudinary thumbnail is <b>not</b> deleted.
     /// </summary>
-    public void Archive() => Status = EnumContentStatus.Archived;
+    /// <returns><c>true</c> if archived; <c>false</c> if already archived.</returns>
+    public bool Archive()
+    {
+        if (Status == EnumContentStatus.Archived)
+        {
+            return false;
+        }
+
+        Status = EnumContentStatus.Archived;
+        return true;
+    }
 
     /// <summary>
     /// Flags for manual social media promotion. Called by Commerce only.

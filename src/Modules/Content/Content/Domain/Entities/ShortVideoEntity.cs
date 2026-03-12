@@ -18,10 +18,17 @@ namespace _116.Content.Domain.Entities;
 public class ShortVideoEntity : Aggregate<Guid>
 {
     /// <summary>
-    /// Display title of the short video.
+    /// Display the title of the short video.
     /// </summary>
     [MaxLength(length: ContentConstants.MaxShortVideoTitleLength)]
     public string Title { get; private set; } = null!;
+
+    /// <summary>
+    /// URL-safe slug uniquely identifying this short video (e.g., "fally-ipupa-teaser-1").
+    /// Used as the public permalink on the short video page.
+    /// </summary>
+    [MaxLength(length: ContentConstants.MaxSlugLength)]
+    public string Slug { get; private set; } = null!;
 
     /// <summary>
     /// Publicly accessible CDN URL for the video file.
@@ -88,6 +95,13 @@ public class ShortVideoEntity : Aggregate<Guid>
     public int BookmarkCount { get; private set; }
 
     /// <summary>
+    /// The identity user UUID of the admin who uploaded this short video.
+    /// Distinguished from <c>CreatedBy</c> (system audit trail) — <c>AuthorId</c> is the
+    /// editorial owner shown in the CMS. No FK to the identity schema by design.
+    /// </summary>
+    public Guid AuthorId { get; private set; }
+
+    /// <summary>
     /// The parent full video this clip previews. <c>null</c> for standalone clips.
     /// </summary>
     public VideoEntity? ParentVideo { get; private set; }
@@ -102,46 +116,20 @@ public class ShortVideoEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="id">The unique identifier.</param>
     /// <param name="title">The display title.</param>
+    /// <param name="slug">The URL-safe slug for the short video permalink.</param>
     /// <param name="videoUrl">The CDN URL for the video file.</param>
     /// <param name="videoStorageKey">
     /// The provider-agnostic storage key used to delete the video file from media storage.
     /// </param>
+    /// <param name="authorId">The identity user UUID of the admin uploading this short video.</param>
     /// <returns>A new active <see cref="ShortVideoEntity" />.</returns>
-    public static ShortVideoEntity CreateStandalone(Guid id, string title, string videoUrl, string videoStorageKey)
-    {
-        if (string.IsNullOrWhiteSpace(value: title))
-        {
-            throw ShortVideoErrors.TitleRequired();
-        }
-
-        return new ShortVideoEntity
-        {
-            Id = id,
-            Title = title,
-            VideoUrl = videoUrl,
-            VideoStorageKey = videoStorageKey,
-            HasFullVideo = false,
-            IsActive = true,
-        };
-    }
-
-    /// <summary>
-    /// Creates a short video teaser linked to a parent full video.
-    /// </summary>
-    /// <param name="id">The unique identifier.</param>
-    /// <param name="title">The display title.</param>
-    /// <param name="videoUrl">The CDN URL for the video file.</param>
-    /// <param name="videoStorageKey">
-    /// The provider-agnostic storage key used to delete the video file from media storage.
-    /// </param>
-    /// <param name="videoId">The parent full video this clip previews.</param>
-    /// <returns>A new active <see cref="ShortVideoEntity" /> linked to a parent video.</returns>
-    public static ShortVideoEntity CreateTeaser(
+    public static ShortVideoEntity CreateStandalone(
         Guid id,
         string title,
+        string slug,
         string videoUrl,
         string videoStorageKey,
-        Guid videoId
+        Guid authorId
     )
     {
         if (string.IsNullOrWhiteSpace(value: title))
@@ -153,9 +141,52 @@ public class ShortVideoEntity : Aggregate<Guid>
         {
             Id = id,
             Title = title,
+            Slug = slug,
+            VideoUrl = videoUrl,
+            VideoStorageKey = videoStorageKey,
+            AuthorId = authorId,
+            HasFullVideo = false,
+            IsActive = true,
+        };
+    }
+
+    /// <summary>
+    /// Creates a short video teaser linked to a parent full video.
+    /// </summary>
+    /// <param name="id">The unique identifier.</param>
+    /// <param name="title">The display title.</param>
+    /// <param name="slug">The URL-safe slug for the short video permalink.</param>
+    /// <param name="videoUrl">The CDN URL for the video file.</param>
+    /// <param name="videoStorageKey">
+    /// The provider-agnostic storage key used to delete the video file from media storage.
+    /// </param>
+    /// <param name="videoId">The parent full video this clip previews.</param>
+    /// <param name="authorId">The identity user UUID of the admin uploading this short video.</param>
+    /// <returns>A new active <see cref="ShortVideoEntity" /> linked to a parent video.</returns>
+    public static ShortVideoEntity CreateTeaser(
+        Guid id,
+        string title,
+        string slug,
+        string videoUrl,
+        string videoStorageKey,
+        Guid videoId,
+        Guid authorId
+    )
+    {
+        if (string.IsNullOrWhiteSpace(value: title))
+        {
+            throw ShortVideoErrors.TitleRequired();
+        }
+
+        return new ShortVideoEntity
+        {
+            Id = id,
+            Title = title,
+            Slug = slug,
             VideoUrl = videoUrl,
             VideoStorageKey = videoStorageKey,
             VideoId = videoId,
+            AuthorId = authorId,
             HasFullVideo = true,
             IsActive = true,
         };
