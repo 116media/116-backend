@@ -44,8 +44,8 @@ public class UpdatePricingTierEndpointV1 : ICarterModule
 
         group
             .MapPut(
-                "/{id:guid}",
-                async (Guid id, UpdatePricingTierRequest request, IDispatcher dispatcher) =>
+                "/{id}",
+                async (string id, UpdatePricingTierRequest request, IDispatcher dispatcher) =>
                 {
                     var command = new UpdatePricingTierCommand(
                         Id: id,
