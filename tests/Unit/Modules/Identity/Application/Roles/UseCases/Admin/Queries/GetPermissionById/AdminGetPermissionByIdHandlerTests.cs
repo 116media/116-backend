@@ -63,7 +63,7 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentPermissionId = Guid.NewGuid();
+        var nonExistentPermissionId = Guid.NewGuid();
         AdminGetPermissionByIdQuery query = new(PermissionId: nonExistentPermissionId.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPermissionId);
@@ -171,7 +171,7 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
     public async Task Handle_WithLowercaseGuid_ShouldParseCorrectly()
     {
         // Arrange
-        Guid permissionId = Guid.NewGuid();
+        var permissionId = Guid.NewGuid();
         PermissionEntity permission = PermissionFactory.CreateWithId(
             permissionId,
             TestConstants.Permission.ValidResource,
@@ -193,7 +193,7 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
     public async Task Handle_WithUppercaseGuid_ShouldParseCorrectly()
     {
         // Arrange
-        Guid permissionId = Guid.NewGuid();
+        var permissionId = Guid.NewGuid();
         PermissionEntity permission = PermissionFactory.CreateWithId(
             permissionId,
             TestConstants.Permission.ValidResource,
