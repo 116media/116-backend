@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Validators;
+using _116.Shared.Application.Extensions;
 using FluentValidation;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePromotionLevel;
@@ -13,7 +14,7 @@ public class UpdatePromotionLevelValidator : AbstractValidator<UpdatePromotionLe
     /// </summary>
     public UpdatePromotionLevelValidator()
     {
-        RuleFor(x => x.Id).ValidPromotionLevelId();
+        RuleFor(x => x.Id).IsValidGuid("Promotion level ID");
         RuleFor(x => x.Name).ValidPromotionLevelName();
         RuleFor(x => x.DurationDays).ValidDurationDays();
         RuleFor(x => x.PriceUsd).ValidPriceUsd();
