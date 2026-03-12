@@ -23,8 +23,10 @@ public class UpdatePricingTierHandler(ILookupRepository lookupRepository, IConte
         CancellationToken cancellationToken
     )
     {
+        Guid id = Guid.Parse(command.Id);
+
         PricingTierEntity pricingTier = await lookupRepository.GetPricingTierByIdOrThrowAsync(
-            id: command.Id,
+            id: id,
             cancellationToken: cancellationToken
         );
 
