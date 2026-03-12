@@ -27,7 +27,7 @@ public class AccountStatusRequirementHandlerTests
     public async Task HandleRequirementAsync_WithActiveUser_ShouldSucceed()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
@@ -54,7 +54,7 @@ public class AccountStatusRequirementHandlerTests
     public async Task HandleRequirementAsync_WithVerifiedUser_ShouldSucceed()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
@@ -81,7 +81,7 @@ public class AccountStatusRequirementHandlerTests
     public async Task HandleRequirementAsync_WithInactiveUser_ShouldNotSucceed()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
@@ -147,7 +147,7 @@ public class AccountStatusRequirementHandlerTests
     public async Task HandleRequirementAsync_WithDbConnectivityError_ShouldFallbackToJwtClaims()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
@@ -172,7 +172,7 @@ public class AccountStatusRequirementHandlerTests
     public async Task HandleRequirementAsync_WithDbError_AndNonMatchingClaim_ShouldNotSucceed()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
@@ -197,7 +197,7 @@ public class AccountStatusRequirementHandlerTests
     public async Task HandleRequirementAsync_WithTaskCanceledException_ShouldFallbackToJwtClaims()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
@@ -222,7 +222,7 @@ public class AccountStatusRequirementHandlerTests
     public async Task HandleRequirementAsync_WithOperationCanceledException_ShouldFallbackToJwtClaims()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
@@ -250,7 +250,7 @@ public class AccountStatusRequirementHandlerTests
     public async Task HandleRequirementAsync_WithNonConnectivityException_ShouldNotFallback()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
@@ -273,7 +273,7 @@ public class AccountStatusRequirementHandlerTests
     public async Task HandleRequirementAsync_WithNullUser_ShouldNotSucceed()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
@@ -298,7 +298,7 @@ public class AccountStatusRequirementHandlerTests
     public async Task HandleRequirementAsync_WithUnknownClaimType_ShouldNotSucceed()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
@@ -324,7 +324,7 @@ public class AccountStatusRequirementHandlerTests
     public async Task HandleRequirementAsync_WithInvalidBooleanRequirementValue_ShouldNotSucceed()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
@@ -351,7 +351,7 @@ public class AccountStatusRequirementHandlerTests
     public async Task HandleRequirementAsync_WithDbError_AndMissingClaim_ShouldNotSucceed()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
@@ -376,7 +376,7 @@ public class AccountStatusRequirementHandlerTests
     public async Task HandleRequirementAsync_WithDbError_AndEmptyClaim_ShouldNotSucceed()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
@@ -401,7 +401,7 @@ public class AccountStatusRequirementHandlerTests
     public async Task HandleRequirementAsync_WithDbError_AndCaseInsensitiveMatch_ShouldSucceed()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
