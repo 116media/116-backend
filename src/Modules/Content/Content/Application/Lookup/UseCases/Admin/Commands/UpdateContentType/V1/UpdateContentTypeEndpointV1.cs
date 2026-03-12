@@ -43,8 +43,8 @@ public class UpdateContentTypeEndpointV1 : ICarterModule
 
         group
             .MapPut(
-                "/{id:guid}",
-                async (Guid id, UpdateContentTypeRequest request, IDispatcher dispatcher) =>
+                "/{id}",
+                async (string id, UpdateContentTypeRequest request, IDispatcher dispatcher) =>
                 {
                     var command = new UpdateContentTypeCommand(Id: id, Name: request.Name);
 
