@@ -68,7 +68,7 @@ public class UserMapperTests
         );
 
         // Act
-        UserResponseDto result = user.ToUserResponseDto(_mapper, roles, permissions, avatar);
+        var result = user.ToUserResponseDto(_mapper, roles, permissions, avatar);
 
         // Assert
         result.Id.Should().Be(user.Id);
@@ -114,7 +114,7 @@ public class UserMapperTests
         var permissions = new List<PermissionDto>();
 
         // Act
-        UserResponseDto result = user.ToUserResponseDto(_mapper, roles, permissions);
+        var result = user.ToUserResponseDto(_mapper, roles, permissions);
 
         // Assert
         result.Roles.Should().BeEmpty();
