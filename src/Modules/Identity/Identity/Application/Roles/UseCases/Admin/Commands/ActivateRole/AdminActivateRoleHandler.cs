@@ -28,8 +28,10 @@ public class AdminActivateRoleHandler(IRoleRepository roleRepository, IIdentityU
         CancellationToken cancellationToken
     )
     {
+        Guid roleId = Guid.Parse(input: command.RoleId);
+
         RoleEntity? role = await roleRepository.GetRoleByIdOrThrowAsync(
-            roleId: command.RoleId,
+            roleId: roleId,
             cancellationToken: cancellationToken
         );
 
