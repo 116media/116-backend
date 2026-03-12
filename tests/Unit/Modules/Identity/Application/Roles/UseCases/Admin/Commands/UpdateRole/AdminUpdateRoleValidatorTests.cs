@@ -84,7 +84,7 @@ public class AdminUpdateRoleValidatorTests
     {
         // Arrange
         AdminUpdateRoleCommand command = new(
-            RoleId: _validRoleId,
+            RoleId: _validRoleId.ToString(),
             Name: new string('a', TestConstants.Role.NameMaxLength),
             Description: new string('a', TestConstants.Role.DescriptionMaxLength)
         );
@@ -118,7 +118,7 @@ public class AdminUpdateRoleValidatorTests
     {
         // Arrange - Whitespace-only is treated as "not provided"
         AdminUpdateRoleCommand command = new(
-            RoleId: _validRoleId,
+            RoleId: _validRoleId.ToString(),
             Name: "   ",
             Description: TestConstants.Role.ValidDescription
         );
@@ -158,7 +158,7 @@ public class AdminUpdateRoleValidatorTests
     {
         // Arrange - Update commands treat empty as "not provided" (optional field)
         AdminUpdateRoleCommand command = new(
-            RoleId: _validRoleId,
+            RoleId: _validRoleId.ToString(),
             Name: TestConstants.Role.ValidName,
             Description: string.Empty
         );
@@ -175,7 +175,7 @@ public class AdminUpdateRoleValidatorTests
     {
         // Arrange - Whitespace-only is treated as "not provided"
         AdminUpdateRoleCommand command = new(
-            RoleId: _validRoleId,
+            RoleId: _validRoleId.ToString(),
             Name: TestConstants.Role.ValidName,
             Description: "   "
         );
@@ -192,7 +192,7 @@ public class AdminUpdateRoleValidatorTests
     {
         // Arrange
         AdminUpdateRoleCommand command = new(
-            RoleId: _validRoleId,
+            RoleId: _validRoleId.ToString(),
             Name: TestConstants.Role.ValidName,
             Description: new string('a', TestConstants.Role.DescriptionMaxLength + 1)
         );
@@ -219,7 +219,7 @@ public class AdminUpdateRoleValidatorTests
     {
         // Arrange
         AdminUpdateRoleCommand command = new(
-            RoleId: _validRoleId,
+            RoleId: _validRoleId.ToString(),
             Name: new string('a', TestConstants.Role.NameMaxLength + 1),
             Description: new string('a', TestConstants.Role.DescriptionMaxLength + 1)
         );
