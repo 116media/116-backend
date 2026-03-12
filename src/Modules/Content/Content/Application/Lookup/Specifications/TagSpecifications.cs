@@ -6,6 +6,18 @@ using Microsoft.EntityFrameworkCore;
 namespace _116.Content.Application.Lookup.Specifications;
 
 /// <summary>
+/// Specification that matches a tag by its unique identifier.
+/// </summary>
+public class TagByIdSpecification(Guid id) : Specification<TagEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<TagEntity, bool>> ToExpression()
+    {
+        return tag => tag.Id == id;
+    }
+}
+
+/// <summary>
 /// Specification that matches a tag by its URL-safe slug.
 /// </summary>
 public class TagBySlugSpecification(string slug) : Specification<TagEntity>
