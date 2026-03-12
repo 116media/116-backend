@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivateCont
 /// Command to deactivate a content type, preventing it from being used.
 /// </summary>
 /// <param name="Id">The unique identifier of the content type to deactivate.</param>
-public record DeactivateContentTypeCommand(Guid Id) : ICommand<DeactivateContentTypeResult>;
+public record DeactivateContentTypeCommand(string Id) : ICommand<DeactivateContentTypeResult>;
 
 /// <summary>
 /// Result returned after successfully deactivating a content type.
