@@ -13,6 +13,6 @@ public class PublicGetOwnSessionByIdValidator : AbstractValidator<PublicGetOwnSe
     /// </summary>
     public PublicGetOwnSessionByIdValidator()
     {
-        RuleFor(x => x.SessionId).Cascade(CascadeMode.Stop).IsValidGuid("Session ID");
+        RuleFor(x => x.SessionId).IsValidGuid("Session ID");
     }
 }
