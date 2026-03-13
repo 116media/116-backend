@@ -38,8 +38,8 @@ public class AdminSoftDeletePermissionEndpointV1 : ICarterModule
 
         group
             .MapDelete(
-                "{id:guid}",
-                async (Guid id, IDispatcher dispatcher) =>
+                "{id}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new AdminSoftDeletePermissionCommand(PermissionId: id);
 
