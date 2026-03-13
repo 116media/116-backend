@@ -1,4 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
+using _116.Shared.Application.Extensions;
 using FluentValidation;
 
 namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdatePermission;
@@ -13,6 +14,7 @@ public class AdminUpdatePermissionValidator : AbstractValidator<AdminUpdatePermi
     /// </summary>
     public AdminUpdatePermissionValidator()
     {
+        RuleFor(x => x.PermissionId).IsValidGuid("Permission ID");
         RuleFor(x => x.Action).ValidPermissionAction(false);
         RuleFor(x => x.Resource).ValidPermissionResource(false);
         RuleFor(x => x.Description).ValidPermissionDescription(false);
