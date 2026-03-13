@@ -13,6 +13,6 @@ public class PublicRevokeSessionValidator : AbstractValidator<PublicRevokeSessio
     /// </summary>
     public PublicRevokeSessionValidator()
     {
-        RuleFor(x => x.SessionId).Cascade(CascadeMode.Stop).IsValidGuid("Session ID");
+        RuleFor(x => x.SessionId).IsValidGuid("Session ID");
     }
 }
