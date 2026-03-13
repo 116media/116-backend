@@ -44,8 +44,8 @@ public class AdminUpdateRoleEndpointV1 : ICarterModule
 
         group
             .MapPut(
-                "{id:guid}",
-                async (Guid id, AdminUpdateRoleRequest request, IDispatcher dispatcher) =>
+                "{id}",
+                async (string id, AdminUpdateRoleRequest request, IDispatcher dispatcher) =>
                 {
                     var command = new AdminUpdateRoleCommand(
                         RoleId: id,
