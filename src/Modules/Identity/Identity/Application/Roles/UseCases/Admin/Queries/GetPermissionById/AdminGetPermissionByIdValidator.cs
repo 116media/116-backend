@@ -13,6 +13,6 @@ public class AdminGetPermissionByIdValidator : AbstractValidator<AdminGetPermiss
     /// </summary>
     public AdminGetPermissionByIdValidator()
     {
-        RuleFor(x => x.PermissionId).Cascade(CascadeMode.Stop).IsValidGuid("Permission ID");
+        RuleFor(x => x.PermissionId).IsValidGuid("Permission ID");
     }
 }
