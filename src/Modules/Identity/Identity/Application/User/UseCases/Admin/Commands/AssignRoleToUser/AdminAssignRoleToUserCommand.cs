@@ -8,7 +8,7 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUse
 /// </summary>
 /// <param name="UserId">The unique identifier of the user.</param>
 /// <param name="RoleId">The unique identifier of the role to assign.</param>
-public record AdminAssignRoleToUserCommand(Guid UserId, Guid RoleId) : ICommand<AdminAssignRoleToUserResult>;
+public record AdminAssignRoleToUserCommand(string UserId, Guid RoleId) : ICommand<AdminAssignRoleToUserResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminAssignRoleToUserCommand" /> containing the user's updated roles.
