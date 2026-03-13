@@ -1,7 +1,7 @@
 # 116-backend
 
-[![CI](https://github.com/coolbeatz71/116-backend/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/coolbeatz71/116-backend/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/github/coolbeatz71/116-backend/graph/badge.svg?token=100GLHYWH6)](https://codecov.io/github/coolbeatz71/116-backend)
+[![CI](https://github.com/116media/116-backend/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/116media/116-backend/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/github/116media/116-backend/graph/badge.svg?token=2U0DTBWF9D)](https://codecov.io/github/116media/116-backend)
 
 116 (Cent-Seize) is a bold digital platform that promotes music and hip-hop culture in DR and beyond. Through articles, video shows, and exclusive behind-the-scenes content, it connects fans with artists, highlights emerging talent, and tells the stories shaping the culture.
 
@@ -22,6 +22,7 @@ To get started with development, run the setup script:
 ```
 
 This script will:
+
 - 🔍 **Check for csharpier** and install it if needed
 - 🔧 **Configure git hooks** for automatic code quality checks
 - ✅ **Set up your development environment** with all necessary tools
@@ -42,10 +43,13 @@ This project follows a structured branching strategy designed for scalable devel
 ### Branch Structure
 
 #### Main Branch (`main`)
+
 The `main` branch contains the most up-to-date, production-ready code. All release branches are created from this branch, and it serves as the single source of truth for the application's current state.
 
 #### Release Branches (`x.y.z`)
+
 Release branches follow [Semantic Versioning (SemVer)](https://semver.org/) specification:
+
 - **Format**: `MAJOR.MINOR.PATCH` (e.g., `1.0.0`, `1.2.3`, `2.0.0`)
 - **MAJOR**: Breaking changes that are not backward compatible
 - **MINOR**: New features that are backward compatible
@@ -54,16 +58,19 @@ Release branches follow [Semantic Versioning (SemVer)](https://semver.org/) spec
 Release branches are created directly from `main` and represent stable versions of the application.
 
 #### Development Branch (`develop`)
+
 The `develop` branch is the integration branch where all feature development converges. It contains the latest development changes and serves as the staging area before merging into `main`.
 
 **Important**: The `develop` branch must always be rebased from the latest version branch to maintain a clean history and incorporate the most recent stable changes.
 
 #### Feature Branches
+
 All development work is done in feature branches that follow a strict naming convention:
 
 **Pattern**: `^(feat|chore|bug|fix|doc|docs|style|refactor|perf|test|build|ci|revert|)-[a-z]+(-[a-z]+)*$`
 
 **Branch Types**:
+
 - `feat-`: New features or functionality
 - `chore-`: Maintenance tasks, dependency updates
 - `bug-`: Bug fixes and issue resolution
@@ -78,6 +85,7 @@ All development work is done in feature branches that follow a strict naming con
 - `revert-`: Reverting previous changes
 
 **Examples**:
+
 - `feat-user-authentication`
 - `fix-api-response-validation`
 - `chore-update-dependencies`
@@ -107,13 +115,15 @@ This project uses .NET 9.0 and follows strict code formatting standards to ensur
 
 The project includes comprehensive formatting configuration that works automatically with both VS Code and Rider:
 
-#### Files Included:
+#### Files Included
+
 - `.editorconfig` - Universal formatting rules for all editors
 - `.vscode/settings.json` - VS Code specific settings with auto-format on save
 - `.vscode/extensions.json` - Recommended extensions for VS Code
 - `.idea/codeStyles/` - Rider/IntelliJ code style configuration
 
-#### VS Code Setup:
+#### VS Code Setup
+
 1. Install recommended extensions when prompted, or install manually:
    - `ms-dotnettools.csharp` - C# language support
    - `ms-dotnettools.csdevkit` - C# Dev Kit
@@ -126,7 +136,8 @@ The project includes comprehensive formatting configuration that works automatic
    - Organize imports on save
    - Fix all auto-fixable issues on save
 
-#### Rider Setup:
+#### Rider Setup
+
 1. Rider will automatically detect and apply the project's code style settings
 2. To enable "format on save" in Rider:
    - Go to **File > Settings > Tools > Actions on Save**
@@ -137,11 +148,13 @@ The project includes comprehensive formatting configuration that works automatic
 This project uses automated code quality checks to maintain consistent standards:
 
 #### 🎯 Pre-commit Hook
+
 - 🎨 **Automatic formatting** of staged C# files using `csharpier`
 - 📝 **Re-stages formatted files** automatically
 - ✅ **Ensures consistent code style** before commits
 
 #### 🔒 Pre-push Hook
+
 - 🛡️ **Branch name validation** enforcing naming conventions
 - 🚫 **Blocks direct pushes** to protected branches (`main`, `develop`, `master`)
 - 📏 **Code formatting verification** using `dotnet csharpier format --check`
@@ -166,6 +179,7 @@ dotnet csharpier format --check .
 ### 📋 Code Style Standards
 
 The project enforces:
+
 - 📏 **Indentation**: 4 spaces
 - 🔚 **Line endings**: LF (Unix-style)
 - 🌐 **Encoding**: UTF-8
@@ -174,4 +188,3 @@ The project enforces:
 - 🎯 **C# conventions**: Microsoft's recommended style guidelines
 - 🔧 **Braces**: Always required for control statements
 - 🛡️ **Null checking**: Prefer pattern matching and null coalescing
-
