@@ -8,7 +8,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.RemovePermissi
 /// </summary>
 /// <param name="RoleId">The unique identifier of the role.</param>
 /// <param name="PermissionId">The unique identifier of the permission to remove.</param>
-public record AdminRemovePermissionFromRoleCommand(Guid RoleId, Guid PermissionId)
+public record AdminRemovePermissionFromRoleCommand(string RoleId, Guid PermissionId)
     : ICommand<AdminRemovePermissionFromRoleResult>;
 
 /// <summary>
