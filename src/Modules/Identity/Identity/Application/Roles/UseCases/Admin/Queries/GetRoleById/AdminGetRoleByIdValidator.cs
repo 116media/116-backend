@@ -13,6 +13,6 @@ public class AdminGetRoleByIdValidator : AbstractValidator<AdminGetRoleByIdQuery
     /// </summary>
     public AdminGetRoleByIdValidator()
     {
-        RuleFor(x => x.RoleId).Cascade(CascadeMode.Stop).IsValidGuid("Role ID");
+        RuleFor(x => x.RoleId).IsValidGuid("Role ID");
     }
 }
