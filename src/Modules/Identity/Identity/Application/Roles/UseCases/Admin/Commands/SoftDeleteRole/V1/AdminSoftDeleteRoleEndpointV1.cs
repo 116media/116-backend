@@ -38,8 +38,8 @@ public class AdminSoftDeleteRoleEndpointV1 : ICarterModule
 
         group
             .MapDelete(
-                "{id:guid}",
-                async (Guid id, IDispatcher dispatcher) =>
+                "{id}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new AdminSoftDeleteRoleCommand(RoleId: id);
 
