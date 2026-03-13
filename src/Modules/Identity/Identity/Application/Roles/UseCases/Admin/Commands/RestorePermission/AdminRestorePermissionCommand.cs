@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.RestorePermiss
 /// Command for restoring a soft-deleted permission.
 /// </summary>
 /// <param name="PermissionId">The unique identifier of the permission to restore.</param>
-public record AdminRestorePermissionCommand(Guid PermissionId) : ICommand<AdminRestorePermissionResult>;
+public record AdminRestorePermissionCommand(string PermissionId) : ICommand<AdminRestorePermissionResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminRestorePermissionCommand" /> containing the restored permission details.
