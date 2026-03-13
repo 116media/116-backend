@@ -12,8 +12,8 @@ public static class ValidationExtension
     /// </summary>
     /// <typeparam name="T">The type of the object being validated.</typeparam>
     /// <param name="ruleBuilder">The FluentValidation rule builder for the property.</param>
-    /// <param name="fieldDisplayName">Optional display name used in validation messages (defaults to "Id").</param>
-    /// <param name="isRequired">Whether the GUID is required (defaults to true). If false, only validates format when provided.</param>
+    /// <param name="fieldDisplayName">Optional display name used in validation messages (defaults to "ID").</param>
+    /// <param name="isRequired">Whether the GUID is required (defaults to true). If false, only validates the format when provided.</param>
     /// <example>
     /// <code>
     /// // Required GUID validation
@@ -24,27 +24,23 @@ public static class ValidationExtension
     /// </code>
     /// </example>
     public static IRuleBuilderOptions<T, string?> IsValidGuid<T>(
-        this IRuleBuilder<T, string?> ruleBuilder,
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
         string fieldDisplayName = "Id",
         bool isRequired = true
     )
     {
-        IRuleBuilderOptions<T, string?> builder;
         if (isRequired)
         {
-            builder = ruleBuilder
+            return ruleBuilder
+                .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
                 .WithMessage($"{fieldDisplayName} is required.")
                 .Must(id => Guid.TryParse(input: id, result: out _))
                 .WithMessage($"{fieldDisplayName} is invalid.");
         }
-        else
-        {
-            builder = ruleBuilder
-                .Must(id => string.IsNullOrWhiteSpace(value: id) || Guid.TryParse(input: id, result: out _))
-                .WithMessage($"{fieldDisplayName} is invalid.");
-        }
 
-        return builder;
+        return ruleBuilder
+            .Must(id => string.IsNullOrWhiteSpace(value: id) || Guid.TryParse(input: id, result: out _))
+            .WithMessage($"{fieldDisplayName} is invalid.");
     }
 }
