@@ -1,4 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
+using _116.Shared.Application.Extensions;
 using FluentValidation;
 
 namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdateRole;
@@ -13,6 +14,7 @@ public class AdminUpdateRoleValidator : AbstractValidator<AdminUpdateRoleCommand
     /// </summary>
     public AdminUpdateRoleValidator()
     {
+        RuleFor(x => x.RoleId).IsValidGuid("Role ID");
         RuleFor(x => x.Name).ValidRoleName(false);
         RuleFor(x => x.Description).ValidRoleDescription(false);
     }
