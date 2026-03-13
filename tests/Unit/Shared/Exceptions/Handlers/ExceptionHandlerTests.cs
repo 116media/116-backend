@@ -116,7 +116,7 @@ public class ExceptionHandlerTests
         context.Response.Body.Position = 0;
         using StreamReader reader = new(context.Response.Body);
         string responseBody = await reader.ReadToEndAsync();
-        ProblemDetails? problemDetails = JsonSerializer.Deserialize<ProblemDetails>(responseBody);
+        var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(responseBody);
 
         problemDetails.Should().NotBeNull();
         problemDetails!.Extensions.Should().ContainKey("traceId");
@@ -137,7 +137,7 @@ public class ExceptionHandlerTests
         context.Response.Body.Position = 0;
         using StreamReader reader = new(context.Response.Body);
         string responseBody = await reader.ReadToEndAsync();
-        ProblemDetails? problemDetails = JsonSerializer.Deserialize<ProblemDetails>(responseBody);
+        var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(responseBody);
 
         problemDetails.Should().NotBeNull();
         problemDetails!.Extensions.Should().ContainKey("timestamp");
@@ -172,7 +172,7 @@ public class ExceptionHandlerTests
         responseBody.Should().NotBeEmpty();
 
         // Verify it's valid JSON
-        ProblemDetails? deserializedProblem = JsonSerializer.Deserialize<ProblemDetails>(responseBody);
+        var deserializedProblem = JsonSerializer.Deserialize<ProblemDetails>(responseBody);
         deserializedProblem.Should().NotBeNull();
     }
 
