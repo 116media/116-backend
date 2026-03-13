@@ -34,6 +34,8 @@ public class AdminAssignRoleToUserHandler(
         CancellationToken cancellationToken
     )
     {
+        Guid userId = Guid.Parse(input: command.UserId);
+
         // Validate role exists
         RoleEntity? role = await roleRepository.GetRoleByIdOrThrowAsync(
             roleId: command.RoleId,
@@ -54,7 +56,7 @@ public class AdminAssignRoleToUserHandler(
 
         // Check if role is already assigned to user
         bool alreadyAssigned = await userRoleRepository.ExistsByUserAndRoleAsync(
-            userId: command.UserId,
+            userId: userId,
             roleId: command.RoleId,
             cancellationToken: cancellationToken
         );
@@ -65,14 +67,14 @@ public class AdminAssignRoleToUserHandler(
         }
 
         // Create the user-role association
-        var userRole = UserRoleEntity.Create(id: Guid.NewGuid(), userId: command.UserId, roleId: command.RoleId);
+        var userRole = UserRoleEntity.Create(id: Guid.NewGuid(), userId: userId, roleId: command.RoleId);
 
         await userRoleRepository.AddAsync(entity: userRole, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         // Get updated user roles
         List<UserRoleEntity> userRoles = await userRoleRepository.GetUserRolesWithRoleAsync(
-            userId: command.UserId,
+            userId: userId,
             cancellationToken: cancellationToken
         );
 
