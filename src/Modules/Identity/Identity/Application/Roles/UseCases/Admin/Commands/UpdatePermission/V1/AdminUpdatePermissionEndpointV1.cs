@@ -45,8 +45,8 @@ public class AdminUpdatePermissionEndpointV1 : ICarterModule
 
         group
             .MapPut(
-                "{id:guid}",
-                async (Guid id, AdminUpdatePermissionRequest request, IDispatcher dispatcher) =>
+                "{id}",
+                async (string id, AdminUpdatePermissionRequest request, IDispatcher dispatcher) =>
                 {
                     var command = new AdminUpdatePermissionCommand(
                         PermissionId: id,
