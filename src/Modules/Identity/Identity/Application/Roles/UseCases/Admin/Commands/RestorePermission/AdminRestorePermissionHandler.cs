@@ -31,8 +31,10 @@ public class AdminRestorePermissionHandler(
         CancellationToken cancellationToken
     )
     {
+        Guid permissionId = Guid.Parse(input: command.PermissionId);
+
         PermissionEntity? permission = await permissionRepository.GetPermissionByIdOrThrowAsync(
-            permissionId: command.PermissionId,
+            permissionId: permissionId,
             cancellationToken: cancellationToken
         );
 
