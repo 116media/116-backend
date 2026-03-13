@@ -37,8 +37,8 @@ public class AdminRestoreRoleEndpointV1 : ICarterModule
 
         group
             .MapPatch(
-                $"{{id:guid}}/{RoleRouteConstants.Restore}",
-                async (Guid id, IDispatcher dispatcher) =>
+                $"{{id}}/{RoleRouteConstants.Restore}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new AdminRestoreRoleCommand(RoleId: id);
 
