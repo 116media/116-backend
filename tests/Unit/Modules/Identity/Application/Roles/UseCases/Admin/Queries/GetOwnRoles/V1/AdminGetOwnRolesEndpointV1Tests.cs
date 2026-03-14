@@ -24,6 +24,6 @@ public class AdminGetOwnRolesEndpointV1Tests
 
         // Assert
         response.Should().NotBeNull();
-        response.Roles.Should().HaveCount(1);
+        response.Roles.Should().ContainSingle();
     }
 }
