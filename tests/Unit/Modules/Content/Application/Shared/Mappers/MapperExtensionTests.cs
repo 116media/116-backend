@@ -161,4 +161,66 @@ public class MapperExtensionTests : BaseContentHandlerTest
     }
 
     #endregion
+
+    #region LyricsMapper Extensions
+
+    [Fact]
+    public void ToLyricsDtos_WithMultipleEntities_ShouldReturnMappedList()
+    {
+        // Arrange
+        IReadOnlyList<LyricsEntity> entities = LyricsFactory.CreateMany(3).AsReadOnly();
+
+        // Act
+        IReadOnlyList<LyricsDto> result = entities.ToLyricsDtos(Mapper);
+
+        // Assert
+        result.Should().HaveCount(3);
+        result.Should().AllSatisfy(dto => dto.Should().NotBeNull());
+    }
+
+    [Fact]
+    public void ToLyricsDtos_WithEmptyList_ShouldReturnEmptyList()
+    {
+        // Arrange
+        IReadOnlyList<LyricsEntity> entities = new List<LyricsEntity>().AsReadOnly();
+
+        // Act
+        IReadOnlyList<LyricsDto> result = entities.ToLyricsDtos(Mapper);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region ShortVideoMapper Extensions
+
+    [Fact]
+    public void ToShortVideoDtos_WithMultipleEntities_ShouldReturnMappedList()
+    {
+        // Arrange
+        IReadOnlyList<ShortVideoEntity> entities = ShortVideoFactory.CreateMany(3).AsReadOnly();
+
+        // Act
+        IReadOnlyList<ShortVideoDto> result = entities.ToShortVideoDtos(Mapper);
+
+        // Assert
+        result.Should().HaveCount(3);
+        result.Should().AllSatisfy(dto => dto.Should().NotBeNull());
+    }
+
+    [Fact]
+    public void ToShortVideoDtos_WithEmptyList_ShouldReturnEmptyList()
+    {
+        // Arrange
+        IReadOnlyList<ShortVideoEntity> entities = new List<ShortVideoEntity>().AsReadOnly();
+
+        // Act
+        IReadOnlyList<ShortVideoDto> result = entities.ToShortVideoDtos(Mapper);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    #endregion
 }
