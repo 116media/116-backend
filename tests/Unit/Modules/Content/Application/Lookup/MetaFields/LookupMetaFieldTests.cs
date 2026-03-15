@@ -33,28 +33,28 @@ public class LookupMetaFieldTests
     [Fact]
     public void ActivateContentTypeMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = ActivateContentTypeMetaField.ActivateContentType;
+        RouteMetadata metadata = AdminActivateContentTypeMetaField.ActivateContentType;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
     public void DeactivateContentTypeMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = DeactivateContentTypeMetaField.DeactivateContentType;
+        RouteMetadata metadata = AdminDeactivateContentTypeMetaField.AdminDeactivateContentType;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
     public void CreateContentTypeMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = CreateContentTypeMetaField.CreateContentType;
+        RouteMetadata metadata = AdminCreateContentTypeMetaField.CreateContentType;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
     public void UpdateContentTypeMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = UpdateContentTypeMetaField.UpdateContentType;
+        RouteMetadata metadata = AdminUpdateContentTypeMetaField.AdminUpdateContentType;
         metadata.Should().NotBeNull();
     }
 
@@ -65,28 +65,28 @@ public class LookupMetaFieldTests
     [Fact]
     public void ActivatePricingTierMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = ActivatePricingTierMetaField.ActivatePricingTier;
+        RouteMetadata metadata = AdminActivatePricingTierMetaField.ActivatePricingTier;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
     public void DeactivatePricingTierMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = DeactivatePricingTierMetaField.DeactivatePricingTier;
+        RouteMetadata metadata = AdminDeactivatePricingTierMetaField.AdminDeactivatePricingTier;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
     public void CreatePricingTierMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = CreatePricingTierMetaField.CreatePricingTier;
+        RouteMetadata metadata = AdminCreatePricingTierMetaField.CreatePricingTier;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
     public void UpdatePricingTierMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = UpdatePricingTierMetaField.UpdatePricingTier;
+        RouteMetadata metadata = AdminUpdatePricingTierMetaField.AdminUpdatePricingTier;
         metadata.Should().NotBeNull();
     }
 
@@ -97,28 +97,28 @@ public class LookupMetaFieldTests
     [Fact]
     public void ActivatePromotionLevelMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = ActivatePromotionLevelMetaField.ActivatePromotionLevel;
+        RouteMetadata metadata = AdminActivatePromotionLevelMetaField.ActivatePromotionLevel;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
     public void DeactivatePromotionLevelMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = DeactivatePromotionLevelMetaField.DeactivatePromotionLevel;
+        RouteMetadata metadata = AdminDeactivatePromotionLevelMetaField.AdminDeactivatePromotionLevel;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
     public void CreatePromotionLevelMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = CreatePromotionLevelMetaField.CreatePromotionLevel;
+        RouteMetadata metadata = AdminCreatePromotionLevelMetaField.AdminCreatePromotionLevel;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
     public void UpdatePromotionLevelMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = UpdatePromotionLevelMetaField.UpdatePromotionLevel;
+        RouteMetadata metadata = AdminUpdatePromotionLevelMetaField.AdminUpdatePromotionLevel;
         metadata.Should().NotBeNull();
     }
 
@@ -129,7 +129,7 @@ public class LookupMetaFieldTests
     [Fact]
     public void CreateTagMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = CreateTagMetaField.CreateTag;
+        RouteMetadata metadata = AdminCreateTagMetaField.AdminCreateTag;
         metadata.Should().NotBeNull();
     }
 
@@ -140,21 +140,21 @@ public class LookupMetaFieldTests
     [Fact]
     public void GetAllContentTypesMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = GetAllContentTypesMetaField.GetAllContentTypes;
+        RouteMetadata metadata = AdminGetAllContentTypesMetaField.AdminGetAllContentTypes;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
     public void GetAllPricingTiersMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = GetAllPricingTiersMetaField.GetAllPricingTiers;
+        RouteMetadata metadata = AdminGetAllPricingTiersMetaField.AdminGetAllPricingTiers;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
     public void GetAllPromotionLevelsMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = GetAllPromotionLevelsMetaField.GetAllPromotionLevels;
+        RouteMetadata metadata = AdminGetAllPromotionLevelsMetaField.AdminGetAllPromotionLevels;
         metadata.Should().NotBeNull();
     }
 
@@ -165,14 +165,14 @@ public class LookupMetaFieldTests
     [Fact]
     public void GetActivePromotionLevelsMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = GetActivePromotionLevelsMetaField.GetActivePromotionLevels;
+        RouteMetadata metadata = PublicGetActivePromotionLevelsMetaField.PublicGetActivePromotionLevels;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
     public void GetAllTagsMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = GetAllTagsMetaField.GetAllTags;
+        RouteMetadata metadata = PublicGetAllTagsMetaField.PublicGetAllTags;
         metadata.Should().NotBeNull();
     }
 
