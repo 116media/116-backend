@@ -36,6 +36,7 @@ public class AuthRepositoryTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     #region FindUserByIdOrThrow Tests
@@ -53,7 +54,7 @@ public class AuthRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(user.Id);
+        result.Id.Should().Be(user.Id);
     }
 
     [Fact]
@@ -91,7 +92,7 @@ public class AuthRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Email.Should().Be("test@example.com");
+        result.Email.Should().Be("test@example.com");
         result.UserRoles.Should().ContainSingle();
     }
 
@@ -134,7 +135,7 @@ public class AuthRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(user.Id);
+        result.Id.Should().Be(user.Id);
         result.UserRoles.Should().ContainSingle();
     }
 
@@ -211,8 +212,6 @@ public class AuthRepositoryTests : IDisposable
 
     #endregion
 
-    // Note: GetUserByPhoneNumberAsync tests skipped as UserEntity doesn't have PhoneNumber property in current implementation
-
     #region AddAsync Tests
 
     [Fact]
@@ -228,7 +227,7 @@ public class AuthRepositoryTests : IDisposable
         // Assert
         UserEntity? savedUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == "new@example.com");
         savedUser.Should().NotBeNull();
-        savedUser!.Email.Should().Be("new@example.com");
+        savedUser.Email.Should().Be("new@example.com");
     }
 
     #endregion
@@ -313,7 +312,7 @@ public class AuthRepositoryTests : IDisposable
     {
         // Arrange
         var sessionId = Guid.NewGuid();
-        var claims = new List<Claim> { new Claim("ref", sessionId.ToString()) };
+        var claims = new List<Claim> { new("ref", sessionId.ToString()) };
         var identity = new ClaimsIdentity(claims, "TestAuth");
         var claimsPrincipal = new ClaimsPrincipal(identity);
 
@@ -328,8 +327,7 @@ public class AuthRepositoryTests : IDisposable
     public void GetSessionIdFromClaims_WhenSessionIdClaimMissing_ShouldThrowAuthenticationException()
     {
         // Arrange
-        var claims = new List<Claim>();
-        var identity = new ClaimsIdentity(claims, "TestAuth");
+        var identity = new ClaimsIdentity(new List<Claim>(), "TestAuth");
         var claimsPrincipal = new ClaimsPrincipal(identity);
 
         // Act
@@ -343,7 +341,7 @@ public class AuthRepositoryTests : IDisposable
     public void GetSessionIdFromClaims_WhenSessionIdClaimInvalid_ShouldThrowAuthenticationException()
     {
         // Arrange
-        var claims = new List<Claim> { new Claim("ref", "invalid-guid") };
+        var claims = new List<Claim> { new("ref", "invalid-guid") };
         var identity = new ClaimsIdentity(claims, "TestAuth");
         var claimsPrincipal = new ClaimsPrincipal(identity);
 
@@ -363,7 +361,7 @@ public class AuthRepositoryTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) };
+        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, userId.ToString()) };
         var identity = new ClaimsIdentity(claims, "TestAuth");
         var claimsPrincipal = new ClaimsPrincipal(identity);
 
@@ -378,8 +376,7 @@ public class AuthRepositoryTests : IDisposable
     public void GetUserIdFromClaims_WhenUserIdClaimMissing_ShouldThrowAuthenticationException()
     {
         // Arrange
-        var claims = new List<Claim>();
-        var identity = new ClaimsIdentity(claims, "TestAuth");
+        var identity = new ClaimsIdentity(new List<Claim>(), "TestAuth");
         var claimsPrincipal = new ClaimsPrincipal(identity);
 
         // Act
@@ -393,7 +390,7 @@ public class AuthRepositoryTests : IDisposable
     public void GetUserIdFromClaims_WhenUserIdClaimInvalid_ShouldThrowAuthenticationException()
     {
         // Arrange
-        var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, "invalid-guid") };
+        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "invalid-guid") };
         var identity = new ClaimsIdentity(claims, "TestAuth");
         var claimsPrincipal = new ClaimsPrincipal(identity);
 
@@ -493,7 +490,7 @@ public class AuthRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Email.Should().Be("test@example.com");
+        result.Email.Should().Be("test@example.com");
         result.UserRoles.Should().ContainSingle();
     }
 
@@ -534,7 +531,7 @@ public class AuthRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Email.Should().Be("credentials@example.com");
+        result.Email.Should().Be("credentials@example.com");
     }
 
     [Fact]
@@ -555,7 +552,7 @@ public class AuthRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.UserName.Should().Be("testusername");
+        result.UserName.Should().Be("testusername");
     }
 
     [Fact]
@@ -591,7 +588,7 @@ public class AuthRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(user.Id);
+        result.Id.Should().Be(user.Id);
         result.Sessions.Should().ContainSingle();
     }
 
@@ -675,10 +672,7 @@ public class AuthRepositoryTests : IDisposable
     public async Task GetUserByPhoneNumberAsync_WhenUserExistsWithFullPhoneNumber_ShouldReturnUser()
     {
         // Arrange
-        UserEntity user = UserFactory.Create();
-        // Set phone number using reflection since UserBuilder doesn't have WithPhoneNumber
-        PropertyInfo? fullPhoneProperty = typeof(UserEntity).GetProperty("FullPhoneNumber");
-        fullPhoneProperty!.SetValue(user, "+1234567890");
+        UserEntity user = UserFactory.CreateWithPhoneNumber("+1234567890", "1234567890");
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
@@ -688,7 +682,23 @@ public class AuthRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(user.Id);
+        result.Id.Should().Be(user.Id);
+    }
+
+    [Fact]
+    public async Task GetUserByPhoneNumberAsync_WhenPartialPhoneNumberMatches_ShouldReturnNull()
+    {
+        // Arrange — spec matches on FullPhoneNumber only, not partial
+        UserEntity user = UserFactory.CreateWithPhoneNumber("+1234567890", "1234567890");
+
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        // Act
+        UserEntity? result = await _repository.GetUserByPhoneNumberAsync("1234567890");
+
+        // Assert
+        result.Should().BeNull();
     }
 
     [Fact]
@@ -815,7 +825,7 @@ public class AuthRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Email.Should().Be("external@example.com");
+        result.Email.Should().Be("external@example.com");
         result.UserName.Should().Be("externaluser");
         result.AuthProvider.Should().Be(EnumAuthProvider.Google);
     }
@@ -845,7 +855,7 @@ public class AuthRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(existingUser.Id);
+        result.Id.Should().Be(existingUser.Id);
         result.Email.Should().Be("external@example.com");
     }
 
@@ -895,7 +905,7 @@ public class AuthRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.UserName.Should().Be("newusername");
+        result.UserName.Should().Be("newusername");
     }
 
     [Fact]
@@ -952,7 +962,7 @@ public class AuthRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.UserName.Should().Be("originalusername");
+        result.UserName.Should().Be("originalusername");
     }
 
     #endregion
