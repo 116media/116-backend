@@ -15,7 +15,6 @@ namespace _116.Unit.Tests.Modules.Content.Infrastructure.Seeds;
 public class ContentTypeSeederTests : IDisposable
 {
     private readonly ContentDbContext _context;
-    private readonly Mock<ILogger<ContentTypeSeeder>> _loggerMock;
     private readonly ContentTypeSeeder _seeder;
 
     public ContentTypeSeederTests()
@@ -25,14 +24,15 @@ public class ContentTypeSeederTests : IDisposable
             .Options;
 
         _context = new ContentDbContext(options);
-        _loggerMock = new Mock<ILogger<ContentTypeSeeder>>();
-        _seeder = new ContentTypeSeeder(_context, _loggerMock.Object);
+        var loggerMock = new Mock<ILogger<ContentTypeSeeder>>();
+        _seeder = new ContentTypeSeeder(_context, loggerMock.Object);
     }
 
     public void Dispose()
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     #region SeedAllAsync — Empty Database
