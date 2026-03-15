@@ -35,6 +35,7 @@ public class FileRepositoryTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     #region GetByIdAsync Tests
