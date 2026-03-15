@@ -50,7 +50,7 @@ public class RouteMetadataTests
         // Arrange
         const string name = "ComplexRoute";
         const string summary = "A complex route with extensive functionality";
-        string description = new string('x', 5000); // Very long description
+        string description = new('x', 5000); // Very long description
 
         // Act
         var metadata = new RouteMetadata(name, summary, description);
@@ -58,7 +58,7 @@ public class RouteMetadataTests
         // Assert
         metadata.Name.Should().Be(name);
         metadata.Summary.Should().Be(summary);
-        metadata.Description.Length.Should().Be(5000);
+        metadata.Description.Should().HaveLength(5000);
     }
 
     [Fact]
