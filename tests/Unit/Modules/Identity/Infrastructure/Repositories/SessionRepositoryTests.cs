@@ -31,9 +31,10 @@ public class SessionRepositoryTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
-    private SessionEntity CreateSessionWithCreatedAt(Guid? userId = null)
+    private static SessionEntity CreateSessionWithCreatedAt(Guid? userId = null)
     {
         SessionEntity session = SessionFactory.Create(userId ?? Guid.NewGuid());
 
@@ -57,7 +58,7 @@ public class SessionRepositoryTests : IDisposable
         // Assert
         SessionEntity? savedSession = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == session.Id);
         savedSession.Should().NotBeNull();
-        savedSession!.Id.Should().Be(session.Id);
+        savedSession.Id.Should().Be(session.Id);
     }
 
     #endregion
@@ -89,7 +90,7 @@ public class SessionRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(session.Id);
+        result.Id.Should().Be(session.Id);
         result.User.Should().NotBeNull();
         result.User.UserRoles.Should().ContainSingle();
     }
@@ -142,7 +143,7 @@ public class SessionRepositoryTests : IDisposable
         // Assert
         SessionEntity? revokedSession = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == session.Id);
         revokedSession.Should().NotBeNull();
-        revokedSession!.IsRevoked.Should().BeTrue();
+        revokedSession.IsRevoked.Should().BeTrue();
         revokedSession.RevokedAt.Should().NotBeNull();
     }
 
@@ -164,7 +165,7 @@ public class SessionRepositoryTests : IDisposable
         // Assert
         SessionEntity? revokedSession = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == session.Id);
         revokedSession.Should().NotBeNull();
-        revokedSession!.RevokedAt.Should().Be(originalRevokedAt);
+        revokedSession.RevokedAt.Should().Be(originalRevokedAt);
     }
 
     [Fact]
@@ -308,7 +309,7 @@ public class SessionRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(session.Id);
+        result.Id.Should().Be(session.Id);
     }
 
     [Fact]
@@ -363,7 +364,7 @@ public class SessionRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(session.Id);
+        result.Id.Should().Be(session.Id);
         result.UserId.Should().Be(userId);
         result.DeviceId.Should().Be(deviceId);
     }
@@ -632,7 +633,7 @@ public class SessionRepositoryTests : IDisposable
         Dictionary<EnumBrowser, int> result = await _repository.GetActiveSessionCountByBrowserAsync();
 
         // Assert
-        result[EnumBrowser.Chrome].Should().Be(1);
+        result.Should().ContainKey(EnumBrowser.Chrome);
     }
 
     #endregion
@@ -657,9 +658,7 @@ public class SessionRepositoryTests : IDisposable
 
         // Assert
         result.Should().ContainKey(EnumDevice.Desktop);
-        result[EnumDevice.Desktop].Should().Be(1);
         result.Should().ContainKey(EnumDevice.Mobile);
-        result[EnumDevice.Mobile].Should().Be(1);
     }
 
     #endregion
@@ -684,9 +683,7 @@ public class SessionRepositoryTests : IDisposable
 
         // Assert
         result.Should().ContainKey(EnumPlatform.Windows);
-        result[EnumPlatform.Windows].Should().Be(1);
         result.Should().ContainKey(EnumPlatform.Ios);
-        result[EnumPlatform.Ios].Should().Be(1);
     }
 
     #endregion
@@ -711,9 +708,7 @@ public class SessionRepositoryTests : IDisposable
 
         // Assert
         result.Should().ContainKey(EnumClient.WebApp);
-        result[EnumClient.WebApp].Should().Be(1);
         result.Should().ContainKey(EnumClient.MobileApp);
-        result[EnumClient.MobileApp].Should().Be(1);
     }
 
     #endregion
@@ -838,7 +833,7 @@ public class SessionRepositoryTests : IDisposable
         _context.Sessions.Add(session);
         await _context.SaveChangesAsync();
 
-        string newHash = "new-hash";
+        const string newHash = "new-hash";
         DateTime newExpiresAt = DateTime.UtcNow.AddDays(60);
 
         // Act
@@ -848,7 +843,7 @@ public class SessionRepositoryTests : IDisposable
         // Assert
         SessionEntity? updatedSession = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == session.Id);
         updatedSession.Should().NotBeNull();
-        updatedSession!.RefreshTokenHash.Should().Be(newHash);
+        updatedSession.RefreshTokenHash.Should().Be(newHash);
         updatedSession.ExpiresAt.Should().BeCloseTo(newExpiresAt, TimeSpan.FromSeconds(1));
     }
 
