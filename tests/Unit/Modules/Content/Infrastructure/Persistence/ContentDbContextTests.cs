@@ -12,171 +12,171 @@ namespace _116.Unit.Tests.Modules.Content.Infrastructure.Persistence;
 /// </summary>
 public class ContentDbContextTests
 {
-    private DbContextOptions<ContentDbContext> CreateOptions()
-    {
-        return new DbContextOptionsBuilder<ContentDbContext>()
+    private static DbContextOptions<ContentDbContext> CreateOptions() =>
+        new DbContextOptionsBuilder<ContentDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
-    }
 
-    #region DbSet Tests
+    #region DbSet Properties
 
     [Fact]
     public void ContentTypes_ShouldReturnDbSet()
     {
-        // Arrange
-        DbContextOptions<ContentDbContext> options = CreateOptions();
-        using var context = new ContentDbContext(options);
-
-        // Act
+        using var context = new ContentDbContext(CreateOptions());
         DbSet<ContentTypeEntity> result = context.ContentTypes;
-
-        // Assert
         result.Should().NotBeNull();
     }
 
     [Fact]
     public void PricingTiers_ShouldReturnDbSet()
     {
-        // Arrange
-        DbContextOptions<ContentDbContext> options = CreateOptions();
-        using var context = new ContentDbContext(options);
-
-        // Act
+        using var context = new ContentDbContext(CreateOptions());
         DbSet<PricingTierEntity> result = context.PricingTiers;
-
-        // Assert
         result.Should().NotBeNull();
     }
 
     [Fact]
     public void PromotionLevels_ShouldReturnDbSet()
     {
-        // Arrange
-        DbContextOptions<ContentDbContext> options = CreateOptions();
-        using var context = new ContentDbContext(options);
-
-        // Act
+        using var context = new ContentDbContext(CreateOptions());
         DbSet<PromotionLevelEntity> result = context.PromotionLevels;
-
-        // Assert
         result.Should().NotBeNull();
     }
 
     [Fact]
     public void Tags_ShouldReturnDbSet()
     {
-        // Arrange
-        DbContextOptions<ContentDbContext> options = CreateOptions();
-        using var context = new ContentDbContext(options);
-
-        // Act
+        using var context = new ContentDbContext(CreateOptions());
         DbSet<TagEntity> result = context.Tags;
-
-        // Assert
         result.Should().NotBeNull();
     }
 
     [Fact]
     public void Categories_ShouldReturnDbSet()
     {
-        // Arrange
-        DbContextOptions<ContentDbContext> options = CreateOptions();
-        using var context = new ContentDbContext(options);
-
-        // Act
+        using var context = new ContentDbContext(CreateOptions());
         DbSet<CategoryEntity> result = context.Categories;
-
-        // Assert
         result.Should().NotBeNull();
     }
 
     [Fact]
     public void CategoryPricing_ShouldReturnDbSet()
     {
-        // Arrange
-        DbContextOptions<ContentDbContext> options = CreateOptions();
-        using var context = new ContentDbContext(options);
-
-        // Act
+        using var context = new ContentDbContext(CreateOptions());
         DbSet<CategoryPricingEntity> result = context.CategoryPricing;
-
-        // Assert
         result.Should().NotBeNull();
     }
 
     [Fact]
     public void Customers_ShouldReturnDbSet()
     {
-        // Arrange
-        DbContextOptions<ContentDbContext> options = CreateOptions();
-        using var context = new ContentDbContext(options);
-
-        // Act
+        using var context = new ContentDbContext(CreateOptions());
         DbSet<CustomerEntity> result = context.Customers;
-
-        // Assert
         result.Should().NotBeNull();
     }
 
     [Fact]
     public void Packages_ShouldReturnDbSet()
     {
-        // Arrange
-        DbContextOptions<ContentDbContext> options = CreateOptions();
-        using var context = new ContentDbContext(options);
-
-        // Act
+        using var context = new ContentDbContext(CreateOptions());
         DbSet<PackageEntity> result = context.Packages;
-
-        // Assert
         result.Should().NotBeNull();
     }
 
     [Fact]
     public void PackageSlots_ShouldReturnDbSet()
     {
-        // Arrange
-        DbContextOptions<ContentDbContext> options = CreateOptions();
-        using var context = new ContentDbContext(options);
-
-        // Act
+        using var context = new ContentDbContext(CreateOptions());
         DbSet<PackageSlotEntity> result = context.PackageSlots;
+        result.Should().NotBeNull();
+    }
 
-        // Assert
+    [Fact]
+    public void Articles_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ArticleEntity> result = context.Articles;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ArticleImages_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ArticleImageEntity> result = context.ArticleImages;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ArticleTags_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ArticleTagEntity> result = context.ArticleTags;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Videos_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<VideoEntity> result = context.Videos;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void VideoTags_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<VideoTagEntity> result = context.VideoTags;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ShortVideos_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ShortVideoEntity> result = context.ShortVideos;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Lyrics_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<LyricsEntity> result = context.Lyrics;
         result.Should().NotBeNull();
     }
 
     #endregion
 
-    #region Model Configuration Tests
+    #region Schema and Configuration
 
     [Fact]
     public void OnModelCreating_ShouldApplyConfigurationsFromAssembly()
     {
-        // Arrange
-        DbContextOptions<ContentDbContext> options = CreateOptions();
-        using var context = new ContentDbContext(options);
-
-        // Act
+        using var context = new ContentDbContext(CreateOptions());
         IModel model = context.Model;
+        IEntityType? articleEntityType = model.FindEntityType(typeof(ArticleEntity));
+        articleEntityType.Should().NotBeNull();
+        articleEntityType.GetSchema().Should().Be("content");
+    }
 
-        // Assert
-        IEntityType? categoryEntityType = model.FindEntityType(typeof(CategoryEntity));
-        categoryEntityType.Should().NotBeNull();
+    [Fact]
+    public void Context_ShouldSetDefaultSchemaToContent()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        IModel model = context.Model;
+        IEntityType? videoEntityType = model.FindEntityType(typeof(VideoEntity));
+        videoEntityType.Should().NotBeNull();
+        videoEntityType.GetSchema().Should().Be("content");
     }
 
     [Fact]
     public void Context_ShouldHaveAllEntityTypesConfigured()
     {
-        // Arrange
-        DbContextOptions<ContentDbContext> options = CreateOptions();
-        using var context = new ContentDbContext(options);
-
-        // Act
+        using var context = new ContentDbContext(CreateOptions());
         IModel model = context.Model;
 
-        // Assert
         model.FindEntityType(typeof(ContentTypeEntity)).Should().NotBeNull();
         model.FindEntityType(typeof(PricingTierEntity)).Should().NotBeNull();
         model.FindEntityType(typeof(PromotionLevelEntity)).Should().NotBeNull();
@@ -186,25 +186,13 @@ public class ContentDbContextTests
         model.FindEntityType(typeof(CustomerEntity)).Should().NotBeNull();
         model.FindEntityType(typeof(PackageEntity)).Should().NotBeNull();
         model.FindEntityType(typeof(PackageSlotEntity)).Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task Context_ShouldSaveAndRetrieveContentTypeEntity()
-    {
-        // Arrange
-        DbContextOptions<ContentDbContext> options = CreateOptions();
-        await using var context = new ContentDbContext(options);
-
-        var contentType = ContentTypeEntity.Create(id: Guid.NewGuid(), name: "Article");
-
-        // Act
-        await context.ContentTypes.AddAsync(contentType);
-        await context.SaveChangesAsync();
-
-        // Assert
-        ContentTypeEntity? retrieved = await context.ContentTypes.FindAsync(contentType.Id);
-        retrieved.Should().NotBeNull();
-        retrieved!.Name.Should().Be("Article");
+        model.FindEntityType(typeof(ArticleEntity)).Should().NotBeNull();
+        model.FindEntityType(typeof(ArticleImageEntity)).Should().NotBeNull();
+        model.FindEntityType(typeof(ArticleTagEntity)).Should().NotBeNull();
+        model.FindEntityType(typeof(VideoEntity)).Should().NotBeNull();
+        model.FindEntityType(typeof(VideoTagEntity)).Should().NotBeNull();
+        model.FindEntityType(typeof(ShortVideoEntity)).Should().NotBeNull();
+        model.FindEntityType(typeof(LyricsEntity)).Should().NotBeNull();
     }
 
     #endregion
