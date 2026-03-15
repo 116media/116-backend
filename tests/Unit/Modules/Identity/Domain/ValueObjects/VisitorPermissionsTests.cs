@@ -20,7 +20,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        permissions.Length.Should().Be(3);
+        permissions.Should().HaveCount(3);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        permissions.Length.Should().Be(2);
+        permissions.Should().HaveCount(2);
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        permissions.Length.Should().Be(3);
+        permissions.Should().HaveCount(3);
     }
 
     #endregion
@@ -115,7 +115,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        permissions.Length.Should().Be(4);
+        permissions.Should().HaveCount(4);
     }
 
     #endregion
@@ -130,7 +130,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        permissions.Length.Should().Be(4);
+        permissions.Should().HaveCount(4);
     }
 
     #endregion
@@ -145,7 +145,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        permissions.Length.Should().Be(2);
+        permissions.Should().HaveCount(2);
     }
 
     [Fact]
@@ -180,7 +180,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        permissions.Length.Should().Be(4);
+        permissions.Should().HaveCount(4);
     }
 
     #endregion
@@ -195,7 +195,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        permissions.Length.Should().Be(2);
+        permissions.Should().HaveCount(2);
     }
 
     #endregion
@@ -210,7 +210,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        permissions.Length.Should().Be(2);
+        permissions.Should().HaveCount(2);
     }
 
     #endregion
@@ -225,7 +225,7 @@ public class VisitorPermissionsTests
 
         // Assert
         permissions.Should().NotBeNull();
-        permissions.Length.Should().Be(3);
+        permissions.Should().HaveCount(3);
     }
 
     #endregion
@@ -240,7 +240,7 @@ public class VisitorPermissionsTests
 
         // Assert
         allPermissions.Should().NotBeNull();
-        allPermissions.Length.Should().Be(29);
+        allPermissions.Should().HaveCount(29);
     }
 
     [Fact]
