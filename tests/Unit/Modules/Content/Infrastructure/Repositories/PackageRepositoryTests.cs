@@ -31,6 +31,7 @@ public class PackageRepositoryTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     #region AddAsync Tests
@@ -48,7 +49,7 @@ public class PackageRepositoryTests : IDisposable
         // Assert
         PackageEntity? retrieved = await _context.Packages.FindAsync(package.Id);
         retrieved.Should().NotBeNull();
-        retrieved!.Name.Should().Be(package.Name);
+        retrieved.Name.Should().Be(package.Name);
     }
 
     #endregion
@@ -71,8 +72,8 @@ public class PackageRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(package.Id);
-        result.Slots.Should().HaveCount(1);
+        result.Id.Should().Be(package.Id);
+        result.Slots.Should().ContainSingle();
     }
 
     [Fact]
@@ -202,7 +203,7 @@ public class PackageRepositoryTests : IDisposable
         // Assert
         PackageSlotEntity? retrieved = await _context.PackageSlots.FindAsync(slot.Id);
         retrieved.Should().NotBeNull();
-        retrieved!.PackageId.Should().Be(package.Id);
+        retrieved.PackageId.Should().Be(package.Id);
     }
 
     [Fact]
@@ -221,7 +222,7 @@ public class PackageRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(slot.Id);
+        result.Id.Should().Be(slot.Id);
     }
 
     [Fact]
