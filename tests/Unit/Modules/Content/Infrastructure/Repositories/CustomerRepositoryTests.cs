@@ -32,6 +32,7 @@ public class CustomerRepositoryTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     #region AddAsync Tests
@@ -49,7 +50,7 @@ public class CustomerRepositoryTests : IDisposable
         // Assert
         CustomerEntity? retrieved = await _context.Customers.FindAsync(customer.Id);
         retrieved.Should().NotBeNull();
-        retrieved!.Email.Should().Be(customer.Email);
+        retrieved.Email.Should().Be(customer.Email);
     }
 
     #endregion
@@ -69,7 +70,7 @@ public class CustomerRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(customer.Id);
+        result.Id.Should().Be(customer.Id);
     }
 
     [Fact]
@@ -135,7 +136,7 @@ public class CustomerRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Email.Should().Be(email);
+        result.Email.Should().Be(email);
     }
 
     [Fact]
