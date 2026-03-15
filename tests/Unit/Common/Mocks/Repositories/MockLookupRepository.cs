@@ -194,6 +194,19 @@ public static class MockLookupRepository
         );
     }
 
+    public static Mock<ILookupRepository> SetupGetTagByIdOrThrow(this Mock<ILookupRepository> mock, TagEntity entity)
+    {
+        mock.Setup(x => x.GetTagByIdOrThrowAsync(entity.Id, It.IsAny<CancellationToken>())).ReturnsAsync(entity);
+        return mock;
+    }
+
+    public static Mock<ILookupRepository> SetupGetTagByIdOrThrowNotFound(this Mock<ILookupRepository> mock, Guid id)
+    {
+        mock.Setup(x => x.GetTagByIdOrThrowAsync(id, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new NotFoundException($"Tag with id '{id}' was not found."));
+        return mock;
+    }
+
     public static Mock<ILookupRepository> SetupGetTagBySlug(
         this Mock<ILookupRepository> mock,
         string slug,
@@ -252,6 +265,8 @@ public static class MockLookupRepository
             .ReturnsAsync(new List<PromotionLevelEntity>());
 
         // Tag
+        mock.Setup(x => x.GetTagByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new NotFoundException("Tag not found."));
         mock.Setup(x => x.GetTagBySlugAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((TagEntity?)null);
         mock.Setup(x => x.AddTagAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()))
