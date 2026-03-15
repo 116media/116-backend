@@ -187,7 +187,7 @@ public class UserMapperTests
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(fileEntity.Id);
+        result.Id.Should().Be(fileEntity.Id);
         result.FileName.Should().Be(fileEntity.FileName);
         result.OriginalFileName.Should().Be(fileEntity.OriginalFileName);
         result.MimeType.Should().Be(fileEntity.MimeType);
