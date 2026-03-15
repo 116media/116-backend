@@ -31,6 +31,7 @@ public class PermissionRepositoryTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     #region GetPermissionByIdOrThrowAsync Tests
@@ -49,7 +50,7 @@ public class PermissionRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(permission.Id);
+        result.Id.Should().Be(permission.Id);
         result.Resource.Should().Be("article");
         result.Action.Should().Be("read");
     }
@@ -146,7 +147,7 @@ public class PermissionRepositoryTests : IDisposable
         // Assert
         PermissionEntity? savedPermission = await _context.Permissions.FirstOrDefaultAsync(p => p.Id == permission.Id);
         savedPermission.Should().NotBeNull();
-        savedPermission!.Resource.Should().Be("comment");
+        savedPermission.Resource.Should().Be("comment");
         savedPermission.Action.Should().Be("delete");
     }
 
