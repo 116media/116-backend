@@ -33,6 +33,7 @@ public class OtpRepositoryTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private static OtpEntity CreateOtpWithCreatedAt(OtpEntity otp)
@@ -57,7 +58,7 @@ public class OtpRepositoryTests : IDisposable
         // Assert
         OtpEntity? savedOtp = await _context.Otps.FirstOrDefaultAsync(o => o.Id == otp.Id);
         savedOtp.Should().NotBeNull();
-        savedOtp!.Id.Should().Be(otp.Id);
+        savedOtp.Id.Should().Be(otp.Id);
     }
 
     #endregion
