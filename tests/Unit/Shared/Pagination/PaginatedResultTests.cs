@@ -28,11 +28,7 @@ public class PaginatedResultTests
         int pageIndex = 2;
         int pageSize = 20;
         long count = 100;
-        List<TestEntity> items =
-        [
-            new TestEntity { Id = 1, Name = "Item 1" },
-            new TestEntity { Id = 2, Name = "Item 2" },
-        ];
+        List<TestEntity> items = [new() { Id = 1, Name = "Item 1" }, new() { Id = 2, Name = "Item 2" }];
 
         // Act
         PaginatedResult<TestEntity> result = new(pageIndex, pageSize, count, items);
@@ -48,7 +44,7 @@ public class PaginatedResultTests
     public void Constructor_WithZeroPageIndex_ShouldAcceptValue()
     {
         // Arrange
-        List<TestEntity> items = [new TestEntity { Id = 1, Name = "Item 1" }];
+        List<TestEntity> items = [new() { Id = 1, Name = "Item 1" }];
 
         // Act
         PaginatedResult<TestEntity> result = new(0, 10, 1, items);
@@ -123,9 +119,9 @@ public class PaginatedResultTests
         // Arrange
         List<TestEntity> expectedItems =
         [
-            new TestEntity { Id = 1, Name = "Item 1" },
-            new TestEntity { Id = 2, Name = "Item 2" },
-            new TestEntity { Id = 3, Name = "Item 3" },
+            new() { Id = 1, Name = "Item 1" },
+            new() { Id = 2, Name = "Item 2" },
+            new() { Id = 3, Name = "Item 3" },
         ];
         PaginatedResult<TestEntity> result = new(0, 10, 3, expectedItems);
 
@@ -144,7 +140,7 @@ public class PaginatedResultTests
     public void Constructor_FirstPage_ShouldHavePageIndexZero()
     {
         // Arrange
-        List<TestEntity> items = [new TestEntity { Id = 1, Name = "Item 1" }];
+        List<TestEntity> items = [new() { Id = 1, Name = "Item 1" }];
 
         // Act
         PaginatedResult<TestEntity> result = new(0, 10, 100, items);
@@ -281,7 +277,7 @@ public class PaginatedResultTests
     public void Constructor_WithRecordEntity_ShouldWork()
     {
         // Arrange
-        List<TestRecord> items = [new TestRecord(1, "Record 1"), new TestRecord(2, "Record 2")];
+        List<TestRecord> items = [new(1, "Record 1"), new(2, "Record 2")];
 
         // Act
         PaginatedResult<TestRecord> result = new(0, 10, 2, items);
