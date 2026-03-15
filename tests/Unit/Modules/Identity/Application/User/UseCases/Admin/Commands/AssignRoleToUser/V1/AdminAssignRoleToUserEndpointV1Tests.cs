@@ -17,6 +17,6 @@ public class AdminAssignRoleToUserEndpointV1Tests
         var response = new AdminAssignRoleToUserResponse(Roles: roles);
 
         response.Should().NotBeNull();
-        response.Roles.Should().HaveCount(1);
+        response.Roles.Should().ContainSingle();
     }
 }
