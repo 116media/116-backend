@@ -119,7 +119,7 @@ public class ExceptionHandlerTests
         var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(responseBody);
 
         problemDetails.Should().NotBeNull();
-        problemDetails!.Extensions.Should().ContainKey("traceId");
+        problemDetails.Extensions.Should().ContainKey("traceId");
         problemDetails.Extensions["traceId"]!.ToString().Should().Be(traceId);
     }
 
@@ -140,7 +140,7 @@ public class ExceptionHandlerTests
         var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(responseBody);
 
         problemDetails.Should().NotBeNull();
-        problemDetails!.Extensions.Should().ContainKey("timestamp");
+        problemDetails.Extensions.Should().ContainKey("timestamp");
 
         // Verify the timestamp can be parsed as a valid DateTime
         string timestampStr = problemDetails.Extensions["timestamp"]!.ToString()!;
