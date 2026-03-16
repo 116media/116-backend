@@ -163,7 +163,7 @@ public class AdminSignOutFromAllDevicesHandlerTests
     public async Task Handle_WhenUserNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         AdminSignOutFromAllDevicesCommand command = new(UserId: userId);
 
         _authRepositoryMock.SetupFindUserByIdOrThrowNotFound(userId);
@@ -179,7 +179,7 @@ public class AdminSignOutFromAllDevicesHandlerTests
     public async Task Handle_WhenUserNotFound_ShouldNotDeleteSessions()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         AdminSignOutFromAllDevicesCommand command = new(UserId: userId);
 
         _authRepositoryMock.SetupFindUserByIdOrThrowNotFound(userId);
@@ -205,7 +205,7 @@ public class AdminSignOutFromAllDevicesHandlerTests
     public async Task Handle_WhenUserNotFound_ShouldNotCommit()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         AdminSignOutFromAllDevicesCommand command = new(UserId: userId);
 
         _authRepositoryMock.SetupFindUserByIdOrThrowNotFound(userId);

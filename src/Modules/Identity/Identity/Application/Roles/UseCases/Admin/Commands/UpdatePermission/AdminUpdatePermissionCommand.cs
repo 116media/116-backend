@@ -10,7 +10,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdatePermissi
 /// <param name="Resource">The new resource name (optional).</param>
 /// <param name="Action">The new action name (optional).</param>
 /// <param name="Description">The new description (optional).</param>
-public record AdminUpdatePermissionCommand(Guid PermissionId, string? Resource, string? Action, string? Description)
+public record AdminUpdatePermissionCommand(string PermissionId, string? Resource, string? Action, string? Description)
     : ICommand<AdminUpdatePermissionResult>;
 
 /// <summary>

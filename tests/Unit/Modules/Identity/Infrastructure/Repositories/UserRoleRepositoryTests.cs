@@ -30,6 +30,7 @@ public class UserRoleRepositoryTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     #region ExistsByUserAndRoleAsync Tests
@@ -90,7 +91,7 @@ public class UserRoleRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.UserId.Should().Be(user.Id);
+        result.UserId.Should().Be(user.Id);
         result.RoleId.Should().Be(role.Id);
     }
 
@@ -175,7 +176,7 @@ public class UserRoleRepositoryTests : IDisposable
             ur.UserId == user.Id && ur.RoleId == role.Id
         );
         savedUserRole.Should().NotBeNull();
-        savedUserRole!.UserId.Should().Be(user.Id);
+        savedUserRole.UserId.Should().Be(user.Id);
         savedUserRole.RoleId.Should().Be(role.Id);
     }
 

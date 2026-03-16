@@ -61,6 +61,6 @@ public class AdminChangePasswordHandler(
         user.UpdatePassword(newPasswordHash: hashedNewPassword);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        return new AdminChangePasswordResult(true);
+        return new AdminChangePasswordResult(IsSuccess: true);
     }
 }

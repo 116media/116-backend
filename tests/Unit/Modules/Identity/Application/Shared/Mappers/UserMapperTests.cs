@@ -68,7 +68,7 @@ public class UserMapperTests
         );
 
         // Act
-        UserResponseDto result = user.ToUserResponseDto(_mapper, roles, permissions, avatar);
+        var result = user.ToUserResponseDto(_mapper, roles, permissions, avatar);
 
         // Assert
         result.Id.Should().Be(user.Id);
@@ -114,7 +114,7 @@ public class UserMapperTests
         var permissions = new List<PermissionDto>();
 
         // Act
-        UserResponseDto result = user.ToUserResponseDto(_mapper, roles, permissions);
+        var result = user.ToUserResponseDto(_mapper, roles, permissions);
 
         // Assert
         result.Roles.Should().BeEmpty();
@@ -187,7 +187,7 @@ public class UserMapperTests
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(fileEntity.Id);
+        result.Id.Should().Be(fileEntity.Id);
         result.FileName.Should().Be(fileEntity.FileName);
         result.OriginalFileName.Should().Be(fileEntity.OriginalFileName);
         result.MimeType.Should().Be(fileEntity.MimeType);

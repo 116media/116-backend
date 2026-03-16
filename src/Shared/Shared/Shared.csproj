@@ -41,6 +41,7 @@
         />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.4" />
+        <PackageReference Include="Quartz.AspNetCore" Version="3.16.1" />
         <PackageReference Include="Scrutor" Version="6.1.0" />
         <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.3" />
     </ItemGroup>

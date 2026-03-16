@@ -231,7 +231,7 @@ public class ValidationDecoratorTests
         // Assert
         ExceptionAssertions<ValidationException> exception = await act.Should()
             .ThrowExactlyAsync<ValidationException>();
-        exception.Which.Errors.Should().HaveCount(1);
+        exception.Which.Errors.Should().ContainSingle();
         exception.Which.Errors.First().ErrorMessage.Should().Be("Always fails");
     }
 
@@ -355,11 +355,7 @@ public class ValidationDecoratorTests
         Mock<IValidator<TestRequest>> failingValidator = new();
         failingValidator
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<TestRequest>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(
-                new ValidationResult(
-                    new List<ValidationFailure> { new ValidationFailure("Value", "Validation failed") }
-                )
-            );
+            .ReturnsAsync(new ValidationResult(new List<ValidationFailure> { new("Value", "Validation failed") }));
 
         IEnumerable<IValidator<TestRequest>> validators = [passingValidator.Object, failingValidator.Object];
         ValidationDecorator<TestRequest, TestResponse> decorator = new(handlerMock.Object, validators);

@@ -31,6 +31,7 @@ public class RoleRepositoryTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     #region GetRoleByIdWithPermissionsOrThrowAsync Tests
@@ -55,7 +56,7 @@ public class RoleRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(role.Id);
+        result.Id.Should().Be(role.Id);
         result.RolePermissions.Should().HaveCount(2);
         result.RolePermissions.Should().AllSatisfy(rp => rp.Permission.Should().NotBeNull());
     }
@@ -86,7 +87,7 @@ public class RoleRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(role.Id);
+        result.Id.Should().Be(role.Id);
         result.RolePermissions.Should().BeEmpty();
     }
 
@@ -107,7 +108,7 @@ public class RoleRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(role.Id);
+        result.Id.Should().Be(role.Id);
         result.Name.Should().Be("TestRole");
     }
 
@@ -170,7 +171,7 @@ public class RoleRepositoryTests : IDisposable
         // Assert
         RoleEntity? savedRole = await _context.Roles.FirstOrDefaultAsync(r => r.Id == role.Id);
         savedRole.Should().NotBeNull();
-        savedRole!.Name.Should().Be("NewRole");
+        savedRole.Name.Should().Be("NewRole");
     }
 
     #endregion

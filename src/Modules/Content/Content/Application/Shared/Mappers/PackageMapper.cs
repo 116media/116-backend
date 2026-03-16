@@ -23,19 +23,25 @@ public static class PackageMapper
         config.NewConfig<PackageEntity, PackageDto>().Map(dest => dest.Slots, src => src.Slots);
     }
 
-    /// <summary>Maps a <see cref="PackageEntity" /> to a <see cref="PackageDto" />.</summary>
+    /// <summary>
+    /// Maps a <see cref="PackageEntity" /> to a <see cref="PackageDto" />.
+    /// </summary>
     public static PackageDto ToPackageDto(this PackageEntity entity, IMapper mapper)
     {
         return mapper.Map<PackageDto>(entity);
     }
 
-    /// <summary>Maps a collection of <see cref="PackageEntity" /> to a list of <see cref="PackageDto" />.</summary>
+    /// <summary>
+    /// Maps a collection of <see cref="PackageEntity" /> to a list of <see cref="PackageDto" />.
+    /// </summary>
     public static IReadOnlyList<PackageDto> ToPackageDtos(this IReadOnlyList<PackageEntity> entities, IMapper mapper)
     {
         return mapper.Map<IReadOnlyList<PackageDto>>(entities);
     }
 
-    /// <summary>Maps a <see cref="PackageSlotEntity" /> to a <see cref="PackageSlotDto" />.</summary>
+    /// <summary>
+    /// Maps a <see cref="PackageSlotEntity" /> to a <see cref="PackageSlotDto" />.
+    /// </summary>
     public static PackageSlotDto ToPackageSlotDto(this PackageSlotEntity entity, IMapper mapper)
     {
         return mapper.Map<PackageSlotDto>(entity);

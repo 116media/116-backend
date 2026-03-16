@@ -50,7 +50,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
         CustomerEntity entity = CustomerFactory.CreateDefault();
 
         // Act
-        CustomerDto result = entity.ToCustomerDto(Mapper);
+        var result = entity.ToCustomerDto(Mapper);
 
         // Assert
         result.Should().NotBeNull();
@@ -70,7 +70,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
         PackageEntity entity = PackageFactory.Create();
 
         // Act
-        PackageDto result = entity.ToPackageDto(Mapper);
+        var result = entity.ToPackageDto(Mapper);
 
         // Assert
         result.Should().NotBeNull();
@@ -116,7 +116,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
         PackageSlotEntity entity = PackageSlotFactory.CreateOpen(Guid.NewGuid());
 
         // Act
-        PackageSlotDto result = entity.ToPackageSlotDto(Mapper);
+        var result = entity.ToPackageSlotDto(Mapper);
 
         // Assert
         result.Should().NotBeNull();
@@ -132,7 +132,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
     public void ToCategoryDtos_WithMultipleEntities_ShouldReturnMappedList()
     {
         // Arrange
-        Guid contentTypeId = Guid.NewGuid();
+        var contentTypeId = Guid.NewGuid();
         IReadOnlyList<CategoryEntity> entities = new List<CategoryEntity>
         {
             CategoryFactory.Create(contentTypeId),
@@ -155,6 +155,68 @@ public class MapperExtensionTests : BaseContentHandlerTest
 
         // Act
         IReadOnlyList<CategoryDto> result = entities.ToCategoryDtos(Mapper);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region LyricsMapper Extensions
+
+    [Fact]
+    public void ToLyricsDtos_WithMultipleEntities_ShouldReturnMappedList()
+    {
+        // Arrange
+        IReadOnlyList<LyricsEntity> entities = LyricsFactory.CreateMany(3).AsReadOnly();
+
+        // Act
+        IReadOnlyList<LyricsDto> result = entities.ToLyricsDtos(Mapper);
+
+        // Assert
+        result.Should().HaveCount(3);
+        result.Should().AllSatisfy(dto => dto.Should().NotBeNull());
+    }
+
+    [Fact]
+    public void ToLyricsDtos_WithEmptyList_ShouldReturnEmptyList()
+    {
+        // Arrange
+        IReadOnlyList<LyricsEntity> entities = new List<LyricsEntity>().AsReadOnly();
+
+        // Act
+        IReadOnlyList<LyricsDto> result = entities.ToLyricsDtos(Mapper);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region ShortVideoMapper Extensions
+
+    [Fact]
+    public void ToShortVideoDtos_WithMultipleEntities_ShouldReturnMappedList()
+    {
+        // Arrange
+        IReadOnlyList<ShortVideoEntity> entities = ShortVideoFactory.CreateMany(3).AsReadOnly();
+
+        // Act
+        IReadOnlyList<ShortVideoDto> result = entities.ToShortVideoDtos(Mapper);
+
+        // Assert
+        result.Should().HaveCount(3);
+        result.Should().AllSatisfy(dto => dto.Should().NotBeNull());
+    }
+
+    [Fact]
+    public void ToShortVideoDtos_WithEmptyList_ShouldReturnEmptyList()
+    {
+        // Arrange
+        IReadOnlyList<ShortVideoEntity> entities = new List<ShortVideoEntity>().AsReadOnly();
+
+        // Act
+        IReadOnlyList<ShortVideoDto> result = entities.ToShortVideoDtos(Mapper);
 
         // Assert
         result.Should().BeEmpty();

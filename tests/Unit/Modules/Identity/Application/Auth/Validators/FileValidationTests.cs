@@ -1,3 +1,4 @@
+using System.Reflection;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using AwesomeAssertions;
@@ -24,6 +25,21 @@ public class FileValidationTests
         public TestCommandValidator(bool isRequired = false)
         {
             RuleFor(x => x.AvatarFile).ValidAvatar(isRequired);
+        }
+    }
+
+    // Used to exercise the GetAvatarFileValue null-reflection path:
+    // typeof(T).GetProperty("AvatarFile") returns null when T has no such property.
+    private class TestCommandNoAvatarProperty
+    {
+        public IFormFile? OtherFile { get; set; }
+    }
+
+    private class TestCommandNoAvatarPropertyValidator : AbstractValidator<TestCommandNoAvatarProperty>
+    {
+        public TestCommandNoAvatarPropertyValidator()
+        {
+            RuleFor(x => x.OtherFile).ValidAvatar(isRequired: false);
         }
     }
 
@@ -339,5 +355,62 @@ public class FileValidationTests
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.AvatarFile);
+    }
+
+    // The three private predicate methods contain defensive null guards that are unreachable
+    // through ValidAvatar (CascadeMode.Stop + When guard both prevent null reaching them).
+    // Reflection is the only way to exercise those branches without changing the source.
+
+    [Fact]
+    public void BeValidFileSize_WithNullFile_ShouldReturnFalse()
+    {
+        MethodInfo method = typeof(FileValidation).GetMethod(
+            "BeValidFileSize",
+            BindingFlags.NonPublic | BindingFlags.Static
+        )!;
+
+        bool result = (bool)method.Invoke(null, [null])!;
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void BeValidImageType_WithNullFile_ShouldReturnFalse()
+    {
+        MethodInfo method = typeof(FileValidation).GetMethod(
+            "BeValidImageType",
+            BindingFlags.NonPublic | BindingFlags.Static
+        )!;
+
+        bool result = (bool)method.Invoke(null, [null])!;
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void BeValidFileExtension_WithNullFile_ShouldReturnFalse()
+    {
+        MethodInfo method = typeof(FileValidation).GetMethod(
+            "BeValidFileExtension",
+            BindingFlags.NonPublic | BindingFlags.Static
+        )!;
+
+        bool result = (bool)method.Invoke(null, [null])!;
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ValidAvatar_WhenTypeHasNoAvatarFileProperty_ShouldSkipValidation()
+    {
+        // GetAvatarFileValue<T> uses reflection to find "AvatarFile" on T.
+        // When T has no such property, property?.GetValue(...) returns null and
+        // the When(...) guard evaluates to false, skipping all Must rules.
+        var validator = new TestCommandNoAvatarPropertyValidator();
+        var command = new TestCommandNoAvatarProperty { OtherFile = CreateMockFile("bad.exe", "application/exe", 1) };
+
+        TestValidationResult<TestCommandNoAvatarProperty>? result = validator.TestValidate(command);
+
+        result.ShouldNotHaveValidationErrorFor(x => x.OtherFile);
     }
 }

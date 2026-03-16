@@ -284,8 +284,8 @@ public class SessionExportBaseTests
     public void GetFilteredColumns_ShouldPreservePropertyValues()
     {
         // Arrange
-        Guid sessionId = Guid.NewGuid();
-        Guid userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         DateTime createdAt = DateTime.UtcNow;
 
         var sessions = new List<SessionExportDto>

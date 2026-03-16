@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.DeactivatePerm
 /// Command for deactivating a permission.
 /// </summary>
 /// <param name="PermissionId">The unique identifier of the permission to deactivate.</param>
-public record AdminDeactivatePermissionCommand(Guid PermissionId) : ICommand<AdminDeactivatePermissionResult>;
+public record AdminDeactivatePermissionCommand(string PermissionId) : ICommand<AdminDeactivatePermissionResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminDeactivatePermissionCommand" /> containing the deactivated permission details.

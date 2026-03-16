@@ -63,7 +63,9 @@ public interface ICategoryRepository : IRepository<CategoryEntity>
         CancellationToken cancellationToken = default
     );
 
-    /// <summary>Adds a new category to the repository.</summary>
+    /// <summary>
+    /// Adds a new category to the repository.
+    /// </summary>
     Task AddAsync(CategoryEntity category, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -87,9 +89,13 @@ public interface ICategoryRepository : IRepository<CategoryEntity>
         CancellationToken cancellationToken = default
     );
 
-    /// <summary>Adds a new category pricing row to the repository.</summary>
+    /// <summary>
+    /// Adds a new category pricing row to the repository.
+    /// </summary>
     Task AddPricingAsync(CategoryPricingEntity pricing, CancellationToken cancellationToken = default);
 
-    /// <summary>Removes a category pricing row from the repository.</summary>
+    /// <summary>
+    /// Removes a category pricing row from the repository.
+    /// </summary>
     void RemovePricing(CategoryPricingEntity pricing);
 }

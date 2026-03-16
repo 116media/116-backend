@@ -37,8 +37,8 @@ public class AdminDeactivatePermissionEndpointV1 : ICarterModule
 
         group
             .MapPatch(
-                $"{{id:guid}}/{PermissionRouteConstants.Deactivate}",
-                async (Guid id, IDispatcher dispatcher) =>
+                $"{{id}}/{PermissionRouteConstants.Deactivate}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new AdminDeactivatePermissionCommand(PermissionId: id);
 

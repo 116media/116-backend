@@ -62,8 +62,8 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_WithValidParameters_ShouldReturnJwtGenerationResult()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string email = "test@example.com";
         string userName = "testuser";
         ICollection<UserRoleEntity> userRoles = [];
@@ -92,8 +92,8 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_ShouldReturnValidJwtToken()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string email = "test@example.com";
         string userName = "testuser";
         ICollection<UserRoleEntity> userRoles = [];
@@ -122,8 +122,8 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_ShouldContainUserIdClaim()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string email = "test@example.com";
         string userName = "testuser";
 
@@ -152,8 +152,8 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_ShouldContainEmailClaim()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string email = "test@example.com";
         string userName = "testuser";
 
@@ -182,8 +182,8 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_ShouldContainUserNameClaim()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string email = "test@example.com";
         string userName = "testuser";
 
@@ -212,8 +212,8 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_ShouldContainSessionIdClaim()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string email = "test@example.com";
         string userName = "testuser";
 
@@ -241,9 +241,9 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_ShouldContainAuthProviderClaim()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
-        EnumAuthProvider authProvider = EnumAuthProvider.Google;
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var authProvider = EnumAuthProvider.Google;
 
         // Act
         JwtGenerationResult result = _sut.GenerateToken(
@@ -273,8 +273,8 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_ShouldContainAccountStatusClaims(bool isVerified, bool isActive)
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
 
         // Act
         JwtGenerationResult result = _sut.GenerateToken(
@@ -304,8 +304,8 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_WithEmptyRoles_ShouldNotContainRoleClaims()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
 
         // Act
         JwtGenerationResult result = _sut.GenerateToken(
@@ -332,8 +332,8 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_WithNoPermissions_ShouldNotContainPermissionsClaim()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
 
         // Act
         JwtGenerationResult result = _sut.GenerateToken(
@@ -360,8 +360,8 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_WithPermissions_ShouldContainPermissionsClaimAsJsonArray()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
 
         PermissionEntity permission1 = PermissionFactory.Create("articles", "read");
 
@@ -412,8 +412,8 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_WithDuplicatePermissions_ShouldDeduplicateInClaim()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
 
         PermissionEntity permission1 = PermissionFactory.Create("articles", "read");
 
@@ -458,8 +458,8 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_ShouldSetCorrectExpiration()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         DateTime beforeGeneration = DateTime.UtcNow;
 
         // Act
@@ -484,8 +484,8 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_ShouldSetCorrectIssuer()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
 
         // Act
         JwtGenerationResult result = _sut.GenerateToken(
@@ -510,8 +510,8 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_ShouldSetCorrectAudience()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
 
         // Act
         JwtGenerationResult result = _sut.GenerateToken(
@@ -536,8 +536,8 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_ShouldBeValidatable()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
 
         // Act
         JwtGenerationResult result = _sut.GenerateToken(
@@ -580,8 +580,8 @@ public class JwtServiceTests : IDisposable
         // Arrange
         Environment.SetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION_IN_MINUTES", "invalid");
         JwtService service = new();
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         DateTime beforeGeneration = DateTime.UtcNow;
 
         // Act
@@ -609,9 +609,9 @@ public class JwtServiceTests : IDisposable
     public void GenerateToken_WithFacebookProvider_ShouldContainCorrectAuthProviderClaim()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
-        EnumAuthProvider authProvider = EnumAuthProvider.Facebook;
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var authProvider = EnumAuthProvider.Facebook;
 
         // Act
         JwtGenerationResult result = _sut.GenerateToken(
@@ -643,8 +643,8 @@ public class JwtServiceTests : IDisposable
         // Arrange
         Environment.SetEnvironmentVariable("JWT_SECRET", "");
         JwtService service = new();
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
 
         // Act
         Action act = () =>
@@ -673,8 +673,8 @@ public class JwtServiceTests : IDisposable
         // Arrange
         Environment.SetEnvironmentVariable("JWT_SECRET", "   ");
         JwtService service = new();
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
 
         // Act
         Action act = () =>

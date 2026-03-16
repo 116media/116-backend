@@ -31,6 +31,7 @@ public class CategoryRepositoryTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private async Task<ContentTypeEntity> AddContentTypeAsync(string name = "Article")
@@ -77,7 +78,7 @@ public class CategoryRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Id.Should().Be(category.Id);
+        result.Id.Should().Be(category.Id);
     }
 
     [Fact]
@@ -115,7 +116,7 @@ public class CategoryRepositoryTests : IDisposable
     public async Task GetByIdOrThrowAsync_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
 
         // Act
         Func<Task> act = async () => await _repository.GetByIdOrThrowAsync(nonExistentId);
@@ -144,7 +145,7 @@ public class CategoryRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Slug.Should().Be("artist-profile");
+        result.Slug.Should().Be("artist-profile");
     }
 
     [Fact]
@@ -223,7 +224,7 @@ public class CategoryRepositoryTests : IDisposable
         );
 
         // Assert
-        free.Should().HaveCount(1);
+        free.Should().ContainSingle();
         free[0].IsFree.Should().BeTrue();
     }
 
@@ -286,7 +287,7 @@ public class CategoryRepositoryTests : IDisposable
         IReadOnlyList<CategoryEntity> result = await _repository.GetActiveByContentTypeAsync(contentType1.Id);
 
         // Assert
-        result.Should().HaveCount(1);
+        result.Should().ContainSingle();
         result[0].ContentTypeId.Should().Be(contentType1.Id);
     }
 
@@ -336,7 +337,7 @@ public class CategoryRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.CategoryId.Should().Be(category.Id);
+        result.CategoryId.Should().Be(category.Id);
         result.PricingTierId.Should().Be(pricingTier.Id);
     }
 

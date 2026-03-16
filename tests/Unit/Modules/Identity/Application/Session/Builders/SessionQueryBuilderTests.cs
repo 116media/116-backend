@@ -600,8 +600,8 @@ public class SessionQueryBuilderTests
     {
         // Arrange
         SessionQueryBuilder builder = new();
-        Guid userId1 = Guid.NewGuid();
-        Guid userId2 = Guid.NewGuid();
+        var userId1 = Guid.NewGuid();
+        var userId2 = Guid.NewGuid();
 
         // Act
         Specification<SessionEntity>? specification = builder.WithUserId(userId1).WithUserId(userId2).Build();

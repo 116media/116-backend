@@ -26,7 +26,7 @@ public class PublicForgotPasswordHandler(IPublicForgotPasswordOtpFactory otpFact
         var email = new Email(value: command.Email);
         if (!await authRepository.ExistsByEmailAsync(email: email, cancellationToken: cancellationToken))
         {
-            return new PublicForgotPasswordResult(true, Email: command.Email);
+            return new PublicForgotPasswordResult(IsSuccess: true, Email: command.Email);
         }
 
         UserEntity? user = await authRepository.GetUserWithRolesByEmailOrThrow(
@@ -39,6 +39,6 @@ public class PublicForgotPasswordHandler(IPublicForgotPasswordOtpFactory otpFact
 
         await otpFactory.CreatePasswordResetOtpAsync(userId: user!.Id, cancellationToken: cancellationToken);
 
-        return new PublicForgotPasswordResult(true, Email: command.Email);
+        return new PublicForgotPasswordResult(IsSuccess: true, Email: command.Email);
     }
 }

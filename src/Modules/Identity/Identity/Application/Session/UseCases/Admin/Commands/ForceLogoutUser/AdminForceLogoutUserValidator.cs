@@ -13,6 +13,6 @@ public class AdminForceLogoutUserValidator : AbstractValidator<AdminForceLogoutU
     /// </summary>
     public AdminForceLogoutUserValidator()
     {
-        RuleFor(x => x.UserId).Cascade(CascadeMode.Stop).IsValidGuid("User ID");
+        RuleFor(x => x.UserId).IsValidGuid("User ID");
     }
 }

@@ -31,7 +31,7 @@ public class AdminForceLogoutUserHandlerTests
     public async Task Handle_WithValidUserId_ShouldReturnSuccess()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         AdminForceLogoutUserCommand command = new(UserId: userId.ToString());
 
         // Act
@@ -46,7 +46,7 @@ public class AdminForceLogoutUserHandlerTests
     public async Task Handle_ShouldCallDeleteAllByUserIdAsync()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         AdminForceLogoutUserCommand command = new(UserId: userId.ToString());
 
         // Act
@@ -60,7 +60,7 @@ public class AdminForceLogoutUserHandlerTests
     public async Task Handle_ShouldCommitUnitOfWork()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         AdminForceLogoutUserCommand command = new(UserId: userId.ToString());
 
         // Act
@@ -74,7 +74,7 @@ public class AdminForceLogoutUserHandlerTests
     public async Task Handle_ShouldCallDeleteBeforeCommit()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         AdminForceLogoutUserCommand command = new(UserId: userId.ToString());
         int callOrder = 0;
         int deleteCallOrder = 0;
@@ -136,7 +136,7 @@ public class AdminForceLogoutUserHandlerTests
     public async Task Handle_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         AdminForceLogoutUserCommand command = new(UserId: userId.ToString());
         using CancellationTokenSource cts = new();
 
@@ -151,7 +151,7 @@ public class AdminForceLogoutUserHandlerTests
     public async Task Handle_WithCancellationToken_ShouldPassToUnitOfWork()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         AdminForceLogoutUserCommand command = new(UserId: userId.ToString());
         using CancellationTokenSource cts = new();
 

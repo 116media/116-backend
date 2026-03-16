@@ -108,7 +108,7 @@ public class AdminUpdatePermissionValidatorTests
     {
         // Arrange
         AdminUpdatePermissionCommand command = new(
-            PermissionId: _validPermissionId,
+            PermissionId: _validPermissionId.ToString(),
             Resource: new string('R', TestConstants.Permission.ResourceMaxLength),
             Action: new string('A', TestConstants.Permission.ActionMaxLength),
             Description: new string('D', TestConstants.Permission.DescriptionMaxLength)
@@ -130,7 +130,7 @@ public class AdminUpdatePermissionValidatorTests
     {
         // Arrange - Update commands allow empty/null for optional updates
         AdminUpdatePermissionCommand command = new(
-            PermissionId: _validPermissionId,
+            PermissionId: _validPermissionId.ToString(),
             Resource: string.Empty,
             Action: TestConstants.Permission.ValidAction,
             Description: TestConstants.Permission.ValidDescription
@@ -148,7 +148,7 @@ public class AdminUpdatePermissionValidatorTests
     {
         // Arrange - Whitespace-only is treated as "not provided"
         AdminUpdatePermissionCommand command = new(
-            PermissionId: _validPermissionId,
+            PermissionId: _validPermissionId.ToString(),
             Resource: "   ",
             Action: TestConstants.Permission.ValidAction,
             Description: TestConstants.Permission.ValidDescription
@@ -166,7 +166,7 @@ public class AdminUpdatePermissionValidatorTests
     {
         // Arrange
         AdminUpdatePermissionCommand command = new(
-            PermissionId: _validPermissionId,
+            PermissionId: _validPermissionId.ToString(),
             Resource: new string('R', TestConstants.Permission.ResourceMaxLength + 1),
             Action: TestConstants.Permission.ValidAction,
             Description: TestConstants.Permission.ValidDescription
@@ -194,7 +194,7 @@ public class AdminUpdatePermissionValidatorTests
     {
         // Arrange - Update commands allow empty/null for optional updates
         AdminUpdatePermissionCommand command = new(
-            PermissionId: _validPermissionId,
+            PermissionId: _validPermissionId.ToString(),
             Resource: TestConstants.Permission.ValidResource,
             Action: string.Empty,
             Description: TestConstants.Permission.ValidDescription
@@ -212,7 +212,7 @@ public class AdminUpdatePermissionValidatorTests
     {
         // Arrange - Whitespace-only is treated as "not provided"
         AdminUpdatePermissionCommand command = new(
-            PermissionId: _validPermissionId,
+            PermissionId: _validPermissionId.ToString(),
             Resource: TestConstants.Permission.ValidResource,
             Action: "   ",
             Description: TestConstants.Permission.ValidDescription
@@ -230,7 +230,7 @@ public class AdminUpdatePermissionValidatorTests
     {
         // Arrange
         AdminUpdatePermissionCommand command = new(
-            PermissionId: _validPermissionId,
+            PermissionId: _validPermissionId.ToString(),
             Resource: TestConstants.Permission.ValidResource,
             Action: new string('A', TestConstants.Permission.ActionMaxLength + 1),
             Description: TestConstants.Permission.ValidDescription
@@ -258,7 +258,7 @@ public class AdminUpdatePermissionValidatorTests
     {
         // Arrange - Update commands allow empty/null for optional updates
         AdminUpdatePermissionCommand command = new(
-            PermissionId: _validPermissionId,
+            PermissionId: _validPermissionId.ToString(),
             Resource: TestConstants.Permission.ValidResource,
             Action: TestConstants.Permission.ValidAction,
             Description: string.Empty
@@ -276,7 +276,7 @@ public class AdminUpdatePermissionValidatorTests
     {
         // Arrange - Whitespace-only is treated as "not provided"
         AdminUpdatePermissionCommand command = new(
-            PermissionId: _validPermissionId,
+            PermissionId: _validPermissionId.ToString(),
             Resource: TestConstants.Permission.ValidResource,
             Action: TestConstants.Permission.ValidAction,
             Description: "   "
@@ -294,7 +294,7 @@ public class AdminUpdatePermissionValidatorTests
     {
         // Arrange
         AdminUpdatePermissionCommand command = new(
-            PermissionId: _validPermissionId,
+            PermissionId: _validPermissionId.ToString(),
             Resource: TestConstants.Permission.ValidResource,
             Action: TestConstants.Permission.ValidAction,
             Description: new string('D', TestConstants.Permission.DescriptionMaxLength + 1)
@@ -322,7 +322,7 @@ public class AdminUpdatePermissionValidatorTests
     {
         // Arrange
         AdminUpdatePermissionCommand command = new(
-            PermissionId: _validPermissionId,
+            PermissionId: _validPermissionId.ToString(),
             Resource: new string('R', TestConstants.Permission.ResourceMaxLength + 1),
             Action: new string('A', TestConstants.Permission.ActionMaxLength + 1),
             Description: new string('D', TestConstants.Permission.DescriptionMaxLength + 1)

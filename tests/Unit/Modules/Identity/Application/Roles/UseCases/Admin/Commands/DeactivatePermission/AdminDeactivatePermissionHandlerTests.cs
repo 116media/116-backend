@@ -46,7 +46,7 @@ public class AdminDeactivatePermissionHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidAction
         );
 
-        AdminDeactivatePermissionCommand command = new(PermissionId: activePermission.Id);
+        AdminDeactivatePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(activePermission);
 
@@ -69,7 +69,7 @@ public class AdminDeactivatePermissionHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidAction
         );
 
-        AdminDeactivatePermissionCommand command = new(PermissionId: activePermission.Id);
+        AdminDeactivatePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(activePermission);
 
@@ -88,8 +88,8 @@ public class AdminDeactivatePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentPermissionId = Guid.NewGuid();
-        AdminDeactivatePermissionCommand command = new(PermissionId: nonExistentPermissionId);
+        var nonExistentPermissionId = Guid.NewGuid();
+        AdminDeactivatePermissionCommand command = new(PermissionId: nonExistentPermissionId.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPermissionId);
 
@@ -110,7 +110,7 @@ public class AdminDeactivatePermissionHandlerTests : BaseHandlerTest
         );
         inactivePermission.Deactivate();
 
-        AdminDeactivatePermissionCommand command = new(PermissionId: inactivePermission.Id);
+        AdminDeactivatePermissionCommand command = new(PermissionId: inactivePermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(inactivePermission);
 
@@ -131,7 +131,7 @@ public class AdminDeactivatePermissionHandlerTests : BaseHandlerTest
         );
         inactivePermission.Deactivate();
 
-        AdminDeactivatePermissionCommand command = new(PermissionId: inactivePermission.Id);
+        AdminDeactivatePermissionCommand command = new(PermissionId: inactivePermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(inactivePermission);
 
@@ -162,7 +162,7 @@ public class AdminDeactivatePermissionHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidAction
         );
 
-        AdminDeactivatePermissionCommand command = new(PermissionId: activePermission.Id);
+        AdminDeactivatePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
 
         using CancellationTokenSource cts = new();
         _permissionRepositoryMock.SetupGetByIdOrThrow(activePermission);

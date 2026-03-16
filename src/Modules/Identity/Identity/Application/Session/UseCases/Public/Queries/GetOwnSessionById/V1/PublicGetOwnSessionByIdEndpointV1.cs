@@ -3,7 +3,7 @@ using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Shared.DTOs;
-using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Contracts.Application;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -40,9 +40,9 @@ public class PublicGetOwnSessionByIdEndpointV1 : ICarterModule
         group
             .MapGet(
                 "{id}",
-                async (string id, ClaimsPrincipal user, IAuthRepository authRepository, IDispatcher dispatcher) =>
+                async (string id, ClaimsPrincipal user, IClaimsProvider authProvider, IDispatcher dispatcher) =>
                 {
-                    Guid userId = authRepository.GetUserIdFromClaims(user: user);
+                    Guid userId = authProvider.GetUserIdFromClaims(user: user);
 
                     var query = new PublicGetOwnSessionByIdQuery(UserId: userId, SessionId: id);
                     PublicGetOwnSessionByIdResult result = await dispatcher.Send(request: query);

@@ -29,7 +29,7 @@ public class PublicResendOtpHandler(IPublicResendOtpFactory otpFactory, IAuthRep
         var purpose = new OtpPurpose(value: command.Purpose);
         if (!await authRepository.ExistsByEmailAsync(email: email, cancellationToken: cancellationToken))
         {
-            return new PublicResendOtpResult(true);
+            return new PublicResendOtpResult(IsSuccess: true);
         }
 
         UserEntity? user = await authRepository.GetUserWithRolesByEmailOrThrow(
@@ -40,6 +40,6 @@ public class PublicResendOtpHandler(IPublicResendOtpFactory otpFactory, IAuthRep
 
         await otpFactory.ResendOtpAsync(userId: user!.Id, purpose: purpose, cancellationToken: cancellationToken);
 
-        return new PublicResendOtpResult(true);
+        return new PublicResendOtpResult(IsSuccess: true);
     }
 }

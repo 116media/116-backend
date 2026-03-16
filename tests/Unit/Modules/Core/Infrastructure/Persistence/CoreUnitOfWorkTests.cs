@@ -29,6 +29,7 @@ public class CoreUnitOfWorkTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
@@ -97,7 +98,7 @@ public class CoreUnitOfWorkTests : IDisposable
 
         FileEntity? updatedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == file.Id);
         updatedFile.Should().NotBeNull();
-        updatedFile!.StorageUrl.Should().Be(newUrl);
+        updatedFile.StorageUrl.Should().Be(newUrl);
     }
 
     [Fact]

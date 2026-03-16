@@ -86,7 +86,7 @@ public class AdminGetOwnRolesHandlerTests : BaseHandlerTest
     public async Task Handle_WhenUserNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         AdminGetOwnRolesQuery query = new(UserId: userId);
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsByIdNotFound(userId);

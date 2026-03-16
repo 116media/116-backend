@@ -35,9 +35,11 @@ public class AdminAssignPermissionToRoleHandler(
         CancellationToken cancellationToken
     )
     {
+        Guid roleId = Guid.Parse(input: command.RoleId);
+
         // Validate role exists
         RoleEntity? role = await roleRepository.GetRoleByIdOrThrowAsync(
-            roleId: command.RoleId,
+            roleId: roleId,
             cancellationToken: cancellationToken
         );
 
@@ -71,7 +73,7 @@ public class AdminAssignPermissionToRoleHandler(
 
         // Check if permission is already assigned to the role
         bool alreadyAssigned = await rolePermissionRepository.ExistsByRoleAndPermissionAsync(
-            roleId: command.RoleId,
+            roleId: roleId,
             permissionId: command.PermissionId,
             cancellationToken: cancellationToken
         );
@@ -84,7 +86,7 @@ public class AdminAssignPermissionToRoleHandler(
         // Create the role-permission association
         var rolePermission = RolePermissionEntity.Create(
             id: Guid.NewGuid(),
-            roleId: command.RoleId,
+            roleId: roleId,
             permissionId: command.PermissionId
         );
 
@@ -93,7 +95,7 @@ public class AdminAssignPermissionToRoleHandler(
 
         // Reload the role with permissions to return updated data
         role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(
-            roleId: command.RoleId,
+            roleId: roleId,
             cancellationToken: cancellationToken
         );
 

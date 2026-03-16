@@ -29,6 +29,6 @@ public class PublicGetOwnSessionsEndpointV1Tests
         var response = new PublicGetOwnSessionsResponse(Sessions: sessions);
 
         response.Should().NotBeNull();
-        response.Sessions.Should().HaveCount(1);
+        response.Sessions.Should().ContainSingle();
     }
 }

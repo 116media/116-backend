@@ -33,8 +33,8 @@ public class AdminUpdateAvatarAuthFactoryTests
     public async Task GetUserForAvatarUpdateAsync_WithValidUser_ShouldReturnAuthData()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
@@ -145,8 +145,8 @@ public class AdminUpdateAvatarAuthFactoryTests
     public async Task UpdateAvatarAsync_WithValidData_ShouldReturnAuthData()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid avatarFileId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var avatarFileId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);

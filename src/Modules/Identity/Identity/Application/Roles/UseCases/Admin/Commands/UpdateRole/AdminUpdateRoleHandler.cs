@@ -25,8 +25,10 @@ public class AdminUpdateRoleHandler(IRoleRepository roleRepository, IIdentityUni
     /// <returns>A <see cref="AdminUpdateRoleResult" /> containing the updated role.</returns>
     public async Task<AdminUpdateRoleResult> Handle(AdminUpdateRoleCommand command, CancellationToken cancellationToken)
     {
+        Guid roleId = Guid.Parse(input: command.RoleId);
+
         RoleEntity? role = await roleRepository.GetRoleByIdOrThrowAsync(
-            roleId: command.RoleId,
+            roleId: roleId,
             cancellationToken: cancellationToken
         );
 

@@ -128,6 +128,17 @@ public interface ILookupRepository : IRepository<ContentTypeEntity>
     Task AddTagAsync(TagEntity tag, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a tag by its unique identifier, throwing if not found.
+    /// </summary>
+    /// <param name="id">The unique identifier of the tag.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The tag entity if found.</returns>
+    /// <exception cref="_116.Shared.Application.Exceptions.NotFoundException">
+    /// Thrown when no tag is found with the specified ID.
+    /// </exception>
+    Task<TagEntity> GetTagByIdOrThrowAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves a tag by its slug, or returns null if not found.
     /// </summary>
     /// <param name="slug">The URL-safe slug to look up.</param>

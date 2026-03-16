@@ -36,8 +36,8 @@ public class AdminHardDeleteRoleEndpointV1 : ICarterModule
 
         group
             .MapDelete(
-                $"{{id:guid}}/{RoleRouteConstants.Hard}",
-                async (Guid id, IDispatcher dispatcher) =>
+                $"{{id}}/{RoleRouteConstants.Hard}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new AdminHardDeleteRoleCommand(RoleId: id);
 

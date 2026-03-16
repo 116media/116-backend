@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.ActivatePermis
 /// Command for activating a permission.
 /// </summary>
 /// <param name="PermissionId">The unique identifier of the permission to activate.</param>
-public record AdminActivatePermissionCommand(Guid PermissionId) : ICommand<AdminActivatePermissionResult>;
+public record AdminActivatePermissionCommand(string PermissionId) : ICommand<AdminActivatePermissionResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminActivatePermissionCommand" /> containing the activated permission details.

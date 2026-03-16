@@ -29,6 +29,6 @@ public class AdminGetRoleByIdEndpointV1Tests
         response.Should().NotBeNull();
         response.Role.Should().NotBeNull();
         response.Role.Should().Be(roleDto);
-        response.Permissions.Should().HaveCount(1);
+        response.Permissions.Should().ContainSingle();
     }
 }

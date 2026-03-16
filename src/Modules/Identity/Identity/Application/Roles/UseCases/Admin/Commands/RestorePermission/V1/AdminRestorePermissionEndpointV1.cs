@@ -37,8 +37,8 @@ public class AdminRestorePermissionEndpointV1 : ICarterModule
 
         group
             .MapPatch(
-                $"{{id:guid}}/{PermissionRouteConstants.Restore}",
-                async (Guid id, IDispatcher dispatcher) =>
+                $"{{id}}/{PermissionRouteConstants.Restore}",
+                async (string id, IDispatcher dispatcher) =>
                 {
                     var command = new AdminRestorePermissionCommand(PermissionId: id);
 

@@ -64,7 +64,7 @@ public class RoleSpecificationsTests
     public void RoleByIdSpecification_WithMatchingId_ShouldReturnTrue()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
         RoleEntity role = RoleFactory.CreateWithId(roleId);
         RoleByIdSpecification spec = new(roleId);
 

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 namespace _116.Core.Application.Shared.Services;
 
 /// <summary>
-/// Service for managing file uploads to Cloudinary cloud storage.
+/// Service for managing file uploads and deletions in Cloudinary cloud storage.
 /// </summary>
 public interface ICloudinaryService
 {
@@ -24,6 +24,27 @@ public interface ICloudinaryService
         string? folder = null,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Deletes a single image from Cloudinary by its storage key (public ID).
+    /// Named <c>storageKey</c> rather than <c>cloudinaryPublicId</c> to remain CDN-agnostic:
+    /// if the storage provider changes (e.g. S3, Bunny CDN), the call site does not need to change.
+    /// </summary>
+    /// <param name="storageKey">The provider-agnostic storage key (Cloudinary public ID).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns><c>true</c> if the resource was deleted; <c>false</c> if it was not found.</returns>
+    Task<bool> DeleteImageAsync(string storageKey, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes multiple images from Cloudinary in a single batch request.
+    /// Named <c>storageKeys</c> rather than <c>cloudinaryPublicIds</c> to remain CDN-agnostic.
+    /// Cloudinary batch delete supports a maximum of 100 keys per call; this implementation
+    /// automatically splits larger collections into batches of 100.
+    /// </summary>
+    /// <param name="storageKeys">The provider-agnostic storage keys (Cloudinary public IDs) to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns><c>true</c> if all deletions succeeded; <c>false</c> if any resource was not found.</returns>
+    Task<bool> DeleteImagesAsync(IEnumerable<string> storageKeys, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

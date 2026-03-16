@@ -9,7 +9,8 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdateRole;
 /// <param name="RoleId">The unique identifier of the role to update.</param>
 /// <param name="Name">The new name for the role (optional).</param>
 /// <param name="Description">The new description for the role (optional).</param>
-public record AdminUpdateRoleCommand(Guid RoleId, string? Name, string? Description) : ICommand<AdminUpdateRoleResult>;
+public record AdminUpdateRoleCommand(string RoleId, string? Name, string? Description)
+    : ICommand<AdminUpdateRoleResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminUpdateRoleCommand" /> containing the updated role details.

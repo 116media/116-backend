@@ -25,6 +25,10 @@ public static class MappingRegistration
         CategoryMapper.Register(config);
         CustomerMapper.Register(config);
         PackageMapper.Register(config);
+        ArticleMapper.Register(config);
+        VideoMapper.Register(config);
+        ShortVideoMapper.Register(config);
+        LyricsMapper.Register(config);
 
         // Compile once for performance
         config.Compile();

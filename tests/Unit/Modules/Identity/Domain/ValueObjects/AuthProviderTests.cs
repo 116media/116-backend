@@ -17,7 +17,7 @@ public class AuthProviderTests
     public void Constructor_WithValidEnumValue_ShouldCreateInstance()
     {
         // Arrange
-        EnumAuthProvider providerEnum = EnumAuthProvider.Local;
+        var providerEnum = EnumAuthProvider.Local;
 
         // Act
         AuthProvider provider = new(providerEnum);
@@ -45,7 +45,7 @@ public class AuthProviderTests
     public void Constructor_WithInvalidEnumValue_ShouldThrowArgumentException()
     {
         // Arrange
-        EnumAuthProvider invalidEnum = (EnumAuthProvider)999;
+        var invalidEnum = (EnumAuthProvider)999;
 
         // Act & Assert
         Action act = () => new AuthProvider(invalidEnum);
@@ -158,7 +158,7 @@ public class AuthProviderTests
     public void ImplicitConversionFromEnum_ShouldCreateInstance()
     {
         // Arrange
-        EnumAuthProvider providerEnum = EnumAuthProvider.Facebook;
+        var providerEnum = EnumAuthProvider.Facebook;
 
         // Act
         AuthProvider provider = providerEnum;

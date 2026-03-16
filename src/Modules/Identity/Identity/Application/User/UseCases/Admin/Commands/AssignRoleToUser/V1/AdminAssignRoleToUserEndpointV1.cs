@@ -42,8 +42,8 @@ public class AdminAssignRoleToUserEndpointV1 : ICarterModule
 
         group
             .MapPost(
-                "{id:guid}/roles",
-                async (Guid id, AdminAssignRoleToUserRequest request, IDispatcher dispatcher) =>
+                "{id}/roles",
+                async (string id, AdminAssignRoleToUserRequest request, IDispatcher dispatcher) =>
                 {
                     var command = new AdminAssignRoleToUserCommand(UserId: id, RoleId: request.RoleId);
 

@@ -17,11 +17,11 @@ public class ContentTypeEntityTests
     public void Create_WithValidName_ShouldCreateContentType()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
         string name = TestConstants.Content.ContentType.ValidName;
 
         // Act
-        ContentTypeEntity entity = ContentTypeEntity.Create(id, name);
+        var entity = ContentTypeEntity.Create(id, name);
 
         // Assert
         entity.Id.Should().Be(id);
@@ -50,10 +50,7 @@ public class ContentTypeEntityTests
     public void Update_WithValidName_ShouldUpdateName()
     {
         // Arrange
-        ContentTypeEntity entity = ContentTypeEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.ContentType.ValidName
-        );
+        var entity = ContentTypeEntity.Create(Guid.NewGuid(), TestConstants.Content.ContentType.ValidName);
         string newName = TestConstants.Content.ContentType.AnotherValidName;
 
         // Act
@@ -70,10 +67,7 @@ public class ContentTypeEntityTests
     public void Update_WithInvalidName_ShouldThrowBadRequestException(string? invalidName)
     {
         // Arrange
-        ContentTypeEntity entity = ContentTypeEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.ContentType.ValidName
-        );
+        var entity = ContentTypeEntity.Create(Guid.NewGuid(), TestConstants.Content.ContentType.ValidName);
 
         // Act
         Action act = () => entity.Update(invalidName!);
@@ -90,10 +84,7 @@ public class ContentTypeEntityTests
     public void Activate_WhenInactive_ShouldReturnTrueAndSetIsActiveTrue()
     {
         // Arrange
-        ContentTypeEntity entity = ContentTypeEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.ContentType.ValidName
-        );
+        var entity = ContentTypeEntity.Create(Guid.NewGuid(), TestConstants.Content.ContentType.ValidName);
         entity.Deactivate();
 
         // Act
@@ -108,10 +99,7 @@ public class ContentTypeEntityTests
     public void Activate_WhenAlreadyActive_ShouldReturnFalse()
     {
         // Arrange
-        ContentTypeEntity entity = ContentTypeEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.ContentType.ValidName
-        );
+        var entity = ContentTypeEntity.Create(Guid.NewGuid(), TestConstants.Content.ContentType.ValidName);
 
         // Act
         bool result = entity.Activate();
@@ -129,10 +117,7 @@ public class ContentTypeEntityTests
     public void Deactivate_WhenActive_ShouldReturnTrueAndSetIsActiveFalse()
     {
         // Arrange
-        ContentTypeEntity entity = ContentTypeEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.ContentType.ValidName
-        );
+        var entity = ContentTypeEntity.Create(Guid.NewGuid(), TestConstants.Content.ContentType.ValidName);
 
         // Act
         bool result = entity.Deactivate();
@@ -146,10 +131,7 @@ public class ContentTypeEntityTests
     public void Deactivate_WhenAlreadyInactive_ShouldReturnFalse()
     {
         // Arrange
-        ContentTypeEntity entity = ContentTypeEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.ContentType.ValidName
-        );
+        var entity = ContentTypeEntity.Create(Guid.NewGuid(), TestConstants.Content.ContentType.ValidName);
         entity.Deactivate();
 
         // Act

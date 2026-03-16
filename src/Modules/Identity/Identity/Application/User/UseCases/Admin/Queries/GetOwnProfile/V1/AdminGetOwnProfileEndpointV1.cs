@@ -2,8 +2,8 @@ using System.Security.Claims;
 using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Shared.DTOs;
-using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.Constants;
+using _116.Identity.Contracts.Application;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -40,9 +40,9 @@ public class AdminGetOwnProfileEndpointV1 : ICarterModule
         group
             .MapGet(
                 pattern: UserRouteConstants.Profile,
-                async (ClaimsPrincipal user, IAuthRepository authRepository, IDispatcher dispatcher) =>
+                async (ClaimsPrincipal user, IClaimsProvider authProvider, IDispatcher dispatcher) =>
                 {
-                    Guid userId = authRepository.GetUserIdFromClaims(user: user);
+                    Guid userId = authProvider.GetUserIdFromClaims(user: user);
 
                     var query = new AdminGetOwnProfileQuery(UserId: userId);
                     AdminGetOwnProfileResult result = await dispatcher.Send(request: query);

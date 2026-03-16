@@ -43,7 +43,7 @@ public class AdminForgotPasswordOtpFactoryTests
     public async Task CreatePasswordResetOtpAsync_WithValidUserId_ShouldReturnOtp()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
 
         _otpServiceMock.SetupCreateOtpReturns(otp);
@@ -61,7 +61,7 @@ public class AdminForgotPasswordOtpFactoryTests
     public async Task CreatePasswordResetOtpAsync_ShouldCallOtpService()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
 
         _otpServiceMock.SetupCreateOtpReturns(otp);
@@ -77,7 +77,7 @@ public class AdminForgotPasswordOtpFactoryTests
     public async Task CreatePasswordResetOtpAsync_ShouldAddOtpToRepository()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
 
         _otpServiceMock.SetupCreateOtpReturns(otp);
@@ -93,7 +93,7 @@ public class AdminForgotPasswordOtpFactoryTests
     public async Task CreatePasswordResetOtpAsync_ShouldCommitTransaction()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
 
         _otpServiceMock.SetupCreateOtpReturns(otp);
@@ -113,7 +113,7 @@ public class AdminForgotPasswordOtpFactoryTests
     public async Task CreatePasswordResetOtpAsync_WithCancellationToken_ShouldPassToAllDependencies()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
         using CancellationTokenSource cts = new();
 

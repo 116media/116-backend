@@ -28,7 +28,7 @@ public class CustomerErrorsTests
     public void NotFound_WithId_ShouldReturnNotFoundException()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         NotFoundException exception = CustomerErrors.NotFound(id);

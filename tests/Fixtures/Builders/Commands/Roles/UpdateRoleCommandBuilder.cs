@@ -116,6 +116,6 @@ public class UpdateRoleCommandBuilder
     /// <returns>A configured AdminUpdateRoleCommand instance.</returns>
     public AdminUpdateRoleCommand Build()
     {
-        return new AdminUpdateRoleCommand(_roleId, _name, _description);
+        return new AdminUpdateRoleCommand(_roleId.ToString(), _name, _description);
     }
 }

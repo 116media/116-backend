@@ -177,7 +177,7 @@ public class AdminUpdateRoleHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentRoleId = Guid.NewGuid();
+        var nonExistentRoleId = Guid.NewGuid();
         AdminUpdateRoleCommand command = CommandFactory.Role.UpdateValidCommand(nonExistentRoleId);
 
         _roleRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentRoleId);

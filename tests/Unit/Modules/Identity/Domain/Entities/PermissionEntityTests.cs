@@ -18,13 +18,13 @@ public class PermissionEntityTests
     public void Create_WithValidParameters_ShouldCreatePermission()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
         string resource = TestConstants.Permission.ValidResource;
         string action = TestConstants.Permission.ValidAction;
         string description = TestConstants.Permission.ValidDescription;
 
         // Act
-        PermissionEntity permission = PermissionEntity.Create(id, resource, action, description);
+        var permission = PermissionEntity.Create(id, resource, action, description);
 
         // Assert
         permission.Id.Should().Be(id);
@@ -43,7 +43,7 @@ public class PermissionEntityTests
     public void Create_WithInvalidResource_ShouldThrowBadRequestException(string? invalidResource)
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         Action act = () =>
@@ -65,7 +65,7 @@ public class PermissionEntityTests
     public void Create_WithInvalidAction_ShouldThrowBadRequestException(string? invalidAction)
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         Action act = () =>
@@ -87,7 +87,7 @@ public class PermissionEntityTests
     public void Create_WithInvalidDescription_ShouldThrowBadRequestException(string? invalidDescription)
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         Action act = () =>

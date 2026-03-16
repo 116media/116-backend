@@ -46,7 +46,7 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidAction
         );
 
-        AdminSoftDeletePermissionCommand command = new(PermissionId: activePermission.Id);
+        AdminSoftDeletePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(activePermission);
 
@@ -69,7 +69,7 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidAction
         );
 
-        AdminSoftDeletePermissionCommand command = new(PermissionId: activePermission.Id);
+        AdminSoftDeletePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(activePermission);
 
@@ -90,7 +90,7 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidAction
         );
 
-        AdminSoftDeletePermissionCommand command = new(PermissionId: activePermission.Id);
+        AdminSoftDeletePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(activePermission);
 
@@ -109,8 +109,8 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentPermissionId = Guid.NewGuid();
-        AdminSoftDeletePermissionCommand command = new(PermissionId: nonExistentPermissionId);
+        var nonExistentPermissionId = Guid.NewGuid();
+        AdminSoftDeletePermissionCommand command = new(PermissionId: nonExistentPermissionId.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPermissionId);
 
@@ -131,7 +131,7 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
         );
         deletedPermission.SoftDelete();
 
-        AdminSoftDeletePermissionCommand command = new(PermissionId: deletedPermission.Id);
+        AdminSoftDeletePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(deletedPermission);
 
@@ -152,7 +152,7 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
         );
         deletedPermission.SoftDelete();
 
-        AdminSoftDeletePermissionCommand command = new(PermissionId: deletedPermission.Id);
+        AdminSoftDeletePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(deletedPermission);
 
@@ -183,7 +183,7 @@ public class AdminSoftDeletePermissionHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidAction
         );
 
-        AdminSoftDeletePermissionCommand command = new(PermissionId: activePermission.Id);
+        AdminSoftDeletePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
 
         using CancellationTokenSource cts = new();
         _permissionRepositoryMock.SetupGetByIdOrThrow(activePermission);

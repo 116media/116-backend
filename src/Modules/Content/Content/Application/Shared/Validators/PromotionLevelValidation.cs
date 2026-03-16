@@ -9,17 +9,6 @@ namespace _116.Content.Application.Shared.Validators;
 public static class PromotionLevelValidation
 {
     /// <summary>
-    /// Validates that a promotion level ID is not empty.
-    /// </summary>
-    /// <typeparam name="T">The type being validated.</typeparam>
-    /// <param name="ruleBuilder">The rule builder for the ID property.</param>
-    /// <returns>The configured rule builder.</returns>
-    public static void ValidPromotionLevelId<T>(this IRuleBuilder<T, Guid> ruleBuilder)
-    {
-        ruleBuilder.NotEmpty().WithMessage("Promotion level ID is required.");
-    }
-
-    /// <summary>
     /// Validates promotion level name with length constraints.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
@@ -27,14 +16,14 @@ public static class PromotionLevelValidation
     /// <param name="isRequired">Whether the name is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidPromotionLevelName<T>(
-        this IRuleBuilder<T, string?> ruleBuilder,
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
         bool isRequired = true
     )
     {
-        IRuleBuilderOptions<T, string?> builder;
         if (isRequired)
         {
-            builder = ruleBuilder
+            return ruleBuilder
+                .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
                 .WithMessage("Promotion level name is required.")
                 .MaximumLength(maximumLength: ContentConstants.MaxPromotionLevelNameLength)
@@ -42,17 +31,14 @@ public static class PromotionLevelValidation
                     $"Promotion level name must not exceed {ContentConstants.MaxPromotionLevelNameLength} characters."
                 );
         }
-        else
-        {
-            builder = ruleBuilder
-                .MaximumLength(maximumLength: ContentConstants.MaxPromotionLevelNameLength)
-                .WithMessage(
-                    $"Promotion level name must not exceed {ContentConstants.MaxPromotionLevelNameLength} characters."
-                )
-                .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Name")));
-        }
 
-        return builder;
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .MaximumLength(maximumLength: ContentConstants.MaxPromotionLevelNameLength)
+            .WithMessage(
+                $"Promotion level name must not exceed {ContentConstants.MaxPromotionLevelNameLength} characters."
+            )
+            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Name")));
     }
 
     /// <summary>

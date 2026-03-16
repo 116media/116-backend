@@ -120,6 +120,6 @@ public class UpdatePermissionCommandBuilder
     /// <returns>A configured AdminUpdatePermissionCommand instance.</returns>
     public AdminUpdatePermissionCommand Build()
     {
-        return new AdminUpdatePermissionCommand(_permissionId, _resource, _action, _description);
+        return new AdminUpdatePermissionCommand(_permissionId.ToString(), _resource, _action, _description);
     }
 }

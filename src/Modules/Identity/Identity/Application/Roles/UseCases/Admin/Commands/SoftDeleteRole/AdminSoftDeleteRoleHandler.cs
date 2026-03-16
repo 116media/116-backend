@@ -28,8 +28,10 @@ public class AdminSoftDeleteRoleHandler(IRoleRepository roleRepository, IIdentit
         CancellationToken cancellationToken
     )
     {
+        Guid roleId = Guid.Parse(input: command.RoleId);
+
         RoleEntity? role = await roleRepository.GetRoleByIdOrThrowAsync(
-            roleId: command.RoleId,
+            roleId: roleId,
             cancellationToken: cancellationToken
         );
 

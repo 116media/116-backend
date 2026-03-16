@@ -28,6 +28,6 @@ public class PublicSignOutHandler(IPublicSignOutSessionFactory sessionFactory, I
 
         await sessionFactory.SignOutAsync(refreshToken: command.RefreshToken, cancellationToken: cancellationToken);
 
-        return new PublicSignOutResult(true);
+        return new PublicSignOutResult(IsSuccess: true);
     }
 }

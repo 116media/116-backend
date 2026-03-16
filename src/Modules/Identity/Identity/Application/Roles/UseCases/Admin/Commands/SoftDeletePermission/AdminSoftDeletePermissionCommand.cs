@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeletePerm
 /// Command for soft deleting a permission.
 /// </summary>
 /// <param name="PermissionId">The unique identifier of the permission to soft-delete.</param>
-public record AdminSoftDeletePermissionCommand(Guid PermissionId) : ICommand<AdminSoftDeletePermissionResult>;
+public record AdminSoftDeletePermissionCommand(string PermissionId) : ICommand<AdminSoftDeletePermissionResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminSoftDeletePermissionCommand" /> containing the soft deleted permission details.

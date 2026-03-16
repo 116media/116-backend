@@ -83,7 +83,7 @@ public class CredentialValidationTests
     {
         var validator = new TestEmailCommandValidator();
         // Build a valid email at exactly MaxEmailLength (254) chars
-        string local = new string('a', UserConstants.MaxEmailLength - "@example.com".Length);
+        string local = new('a', UserConstants.MaxEmailLength - "@example.com".Length);
         var command = new TestEmailCommand { Email = $"{local}@example.com" };
 
         TestValidationResult<TestEmailCommand> result = validator.TestValidate(command);
@@ -128,7 +128,7 @@ public class CredentialValidationTests
     public void ValidEmail_WithEmailExceedingMaxLength_ShouldFail()
     {
         var validator = new TestEmailCommandValidator();
-        string local = new string('a', UserConstants.MaxEmailLength);
+        string local = new('a', UserConstants.MaxEmailLength);
         var command = new TestEmailCommand { Email = $"{local}@example.com" };
 
         TestValidationResult<TestEmailCommand> result = validator.TestValidate(command);

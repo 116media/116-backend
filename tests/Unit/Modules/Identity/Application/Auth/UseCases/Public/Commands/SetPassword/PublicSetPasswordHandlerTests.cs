@@ -153,7 +153,7 @@ public class PublicSetPasswordHandlerTests
     public async Task Handle_WhenUserNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         PublicSetPasswordCommand command = new(UserId: userId, Password: "Password123!");
 
         _authRepositoryMock.SetupFindUserByIdOrThrowNotFound(userId);
@@ -169,7 +169,7 @@ public class PublicSetPasswordHandlerTests
     public async Task Handle_WhenUserNotFound_ShouldNotCommit()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         PublicSetPasswordCommand command = new(UserId: userId, Password: "Password123!");
 
         _authRepositoryMock.SetupFindUserByIdOrThrowNotFound(userId);

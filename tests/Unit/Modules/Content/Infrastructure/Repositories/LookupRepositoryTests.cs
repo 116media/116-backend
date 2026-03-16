@@ -31,6 +31,7 @@ public class LookupRepositoryTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     #region ContentType Tests
@@ -48,7 +49,7 @@ public class LookupRepositoryTests : IDisposable
         // Assert
         ContentTypeEntity? retrieved = await _context.ContentTypes.FindAsync(contentType.Id);
         retrieved.Should().NotBeNull();
-        retrieved!.Name.Should().Be("Article");
+        retrieved.Name.Should().Be("Article");
     }
 
     [Fact]
@@ -71,7 +72,7 @@ public class LookupRepositoryTests : IDisposable
     public async Task GetContentTypeByIdOrThrowAsync_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
 
         // Act
         Func<Task> act = async () => await _repository.GetContentTypeByIdOrThrowAsync(nonExistentId);
@@ -141,7 +142,7 @@ public class LookupRepositoryTests : IDisposable
     public async Task GetPricingTierByIdOrThrowAsync_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
 
         // Act
         Func<Task> act = async () => await _repository.GetPricingTierByIdOrThrowAsync(nonExistentId);
@@ -208,7 +209,7 @@ public class LookupRepositoryTests : IDisposable
     public async Task GetPromotionLevelByIdOrThrowAsync_WhenNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
 
         // Act
         Func<Task> act = async () => await _repository.GetPromotionLevelByIdOrThrowAsync(nonExistentId);
@@ -244,7 +245,7 @@ public class LookupRepositoryTests : IDisposable
         IReadOnlyList<PromotionLevelEntity> result = await _repository.GetActivePromotionLevelsAsync();
 
         // Assert
-        result.Should().HaveCount(1);
+        result.Should().ContainSingle();
         result[0].IsActive.Should().BeTrue();
     }
 
@@ -282,7 +283,7 @@ public class LookupRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.Slug.Should().Be(tag.Slug);
+        result.Slug.Should().Be(tag.Slug);
     }
 
     [Fact]

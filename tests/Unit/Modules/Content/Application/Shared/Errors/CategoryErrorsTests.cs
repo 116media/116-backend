@@ -28,7 +28,7 @@ public class CategoryErrorsTests
     public void NotFound_WithId_ShouldReturnNotFoundException()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         NotFoundException exception = CategoryErrors.NotFound(id);
@@ -97,8 +97,8 @@ public class CategoryErrorsTests
     public void PricingNotFound_WithIds_ShouldReturnNotFoundException()
     {
         // Arrange
-        Guid categoryId = Guid.NewGuid();
-        Guid tierId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        var tierId = Guid.NewGuid();
 
         // Act
         NotFoundException exception = CategoryErrors.PricingNotFound(categoryId, tierId);

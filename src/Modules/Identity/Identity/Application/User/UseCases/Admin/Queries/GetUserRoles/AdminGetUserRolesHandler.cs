@@ -23,8 +23,10 @@ public class AdminGetUserRolesHandler(IUserRoleRepository userRoleRepository, IM
     /// <returns>A <see cref="AdminGetUserRolesResult" /> containing the user's roles.</returns>
     public async Task<AdminGetUserRolesResult> Handle(AdminGetUserRolesQuery query, CancellationToken cancellationToken)
     {
+        Guid userId = Guid.Parse(input: query.UserId);
+
         List<UserRoleEntity> userRoles = await userRoleRepository.GetUserRolesWithRoleAsync(
-            userId: query.UserId,
+            userId: userId,
             cancellationToken: cancellationToken
         );
 

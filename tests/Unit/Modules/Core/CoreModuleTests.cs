@@ -36,7 +36,7 @@ public class CoreModuleTests : IDisposable
 
     public void Dispose()
     {
-        // Cleanup if needed
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
@@ -198,7 +198,7 @@ public class CoreModuleTests : IDisposable
         var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
         httpClientFactory.Should().NotBeNull();
 
-        HttpClient httpClient = httpClientFactory!.CreateClient(nameof(FileService));
+        HttpClient httpClient = httpClientFactory.CreateClient(nameof(FileService));
         httpClient.Should().NotBeNull();
     }
 

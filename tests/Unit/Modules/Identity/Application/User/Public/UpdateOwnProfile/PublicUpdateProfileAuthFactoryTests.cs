@@ -33,8 +33,8 @@ public class PublicUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_WithValidData_ShouldReturnAuthData()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string email = "newemail@example.com";
         string userName = "newusername";
         string countryName = "Rwanda";
@@ -92,8 +92,8 @@ public class PublicUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_ShouldValidateUserIsActive()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
@@ -131,8 +131,8 @@ public class PublicUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_ShouldValidateUserIsVerified()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
@@ -170,8 +170,8 @@ public class PublicUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_ShouldValidateSession()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
@@ -209,8 +209,8 @@ public class PublicUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_WithNewEmail_ShouldCheckUniqueness()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string newEmail = "newemail@example.com";
         UserEntity user = UserFactory.CreateWithId(userId, "oldemail@example.com");
 
@@ -256,8 +256,8 @@ public class PublicUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_WithSameEmailDifferentCase_ShouldNotCheckUniqueness()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string existingEmail = "user@example.com";
         string newEmailDifferentCase = "USER@EXAMPLE.COM";
         UserEntity user = UserFactory.CreateWithId(userId, existingEmail);
@@ -300,8 +300,8 @@ public class PublicUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_WithNewUsername_ShouldCheckUniqueness()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string newUserName = "newusername";
         UserEntity user = UserFactory.Create("default@example.com", "oldusername");
         typeof(UserEntity).GetProperty("Id")!.SetValue(user, userId);
@@ -348,8 +348,8 @@ public class PublicUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_WithSameUsername_ShouldNotCheckUniqueness()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string userName = "sameusername";
         UserEntity user = UserFactory.Create("default@example.com", userName);
         typeof(UserEntity).GetProperty("Id")!.SetValue(user, userId);
@@ -392,8 +392,8 @@ public class PublicUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_WithPhoneNumber_ShouldCheckUniqueness()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string countryDialCode = "+250";
         string partialPhoneNumber = "788123456";
         string fullPhoneNumber = $"{countryDialCode}{partialPhoneNumber}";
@@ -442,8 +442,8 @@ public class PublicUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_WithPhoneUsedByCurrentUser_ShouldNotThrow()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         string countryDialCode = "+250";
         string partialPhoneNumber = "788123456";
         string fullPhoneNumber = $"{countryDialCode}{partialPhoneNumber}";
@@ -487,8 +487,8 @@ public class PublicUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_ShouldCommitTransaction()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
@@ -526,8 +526,8 @@ public class PublicUpdateProfileAuthFactoryTests
     public async Task UpdateProfileAsync_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
         CancellationToken cancellationToken = new();
 

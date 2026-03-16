@@ -8,7 +8,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissi
 /// </summary>
 /// <param name="RoleId">The unique identifier of the role.</param>
 /// <param name="PermissionId">The unique identifier of the permission to assign.</param>
-public record AdminAssignPermissionToRoleCommand(Guid RoleId, Guid PermissionId)
+public record AdminAssignPermissionToRoleCommand(string RoleId, Guid PermissionId)
     : ICommand<AdminAssignPermissionToRoleResult>;
 
 /// <summary>

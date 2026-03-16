@@ -43,9 +43,9 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
     public async Task Handle_WithValidRequest_ShouldReturnRoles()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
 
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
 
@@ -66,9 +66,9 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldValidateRoleExists()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
 
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
 
@@ -87,9 +87,9 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldCheckIfRoleAlreadyAssigned()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
 
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
 
@@ -111,9 +111,9 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldAddUserRole()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
 
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
 
@@ -135,9 +135,9 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldCommitUnitOfWork()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
 
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
 
@@ -160,9 +160,9 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid roleId = Guid.NewGuid();
-        AdminAssignRoleToUserCommand command = new(UserId: userId, RoleId: roleId);
+        var userId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: roleId);
 
         _roleRepositoryMock.SetupGetByIdOrThrowNotFound(roleId);
 
@@ -177,9 +177,9 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleIsInactive_ShouldThrowBadRequestException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.CreateInactive();
-        AdminAssignRoleToUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
 
         _roleRepositoryMock.SetupGetByIdOrThrow(role);
 
@@ -194,9 +194,9 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleIsDeleted_ShouldThrowBadRequestException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.CreateDeleted();
-        AdminAssignRoleToUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
 
         _roleRepositoryMock.SetupGetByIdOrThrow(role);
 
@@ -211,9 +211,9 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleAlreadyAssigned_ShouldThrowConflictException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
 
         _roleRepositoryMock.SetupGetByIdOrThrow(role);
         _userRoleRepositoryMock.SetupExistsByUserAndRole(userId, role.Id, true);
@@ -229,9 +229,9 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleAlreadyAssigned_ShouldNotAddUserRole()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
 
         _roleRepositoryMock.SetupGetByIdOrThrow(role);
         _userRoleRepositoryMock.SetupExistsByUserAndRole(userId, role.Id, true);
@@ -261,9 +261,9 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRoleRepository()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
         using CancellationTokenSource cts = new();
 
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
@@ -283,9 +283,9 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToUnitOfWork()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
-        AdminAssignRoleToUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
         using CancellationTokenSource cts = new();
 
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);

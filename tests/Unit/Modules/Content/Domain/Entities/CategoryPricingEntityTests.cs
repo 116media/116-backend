@@ -17,13 +17,13 @@ public class CategoryPricingEntityTests
     public void Create_WithValidValues_ShouldCreateCategoryPricing()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
-        Guid categoryId = Guid.NewGuid();
-        Guid tierId = Guid.NewGuid();
+        var id = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        var tierId = Guid.NewGuid();
         decimal price = TestConstants.Content.CategoryPricing.ValidPriceUsd;
 
         // Act
-        CategoryPricingEntity entity = CategoryPricingEntity.Create(id, categoryId, tierId, price);
+        var entity = CategoryPricingEntity.Create(id, categoryId, tierId, price);
 
         // Assert
         entity.Id.Should().Be(id);
@@ -36,7 +36,7 @@ public class CategoryPricingEntityTests
     public void Create_WithZeroPrice_ShouldSucceed()
     {
         // Act
-        CategoryPricingEntity entity = CategoryPricingEntity.Create(
+        var entity = CategoryPricingEntity.Create(
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -67,7 +67,7 @@ public class CategoryPricingEntityTests
     public void UpdatePrice_WithValidPrice_ShouldUpdatePrice()
     {
         // Arrange
-        CategoryPricingEntity entity = CategoryPricingEntity.Create(
+        var entity = CategoryPricingEntity.Create(
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -85,7 +85,7 @@ public class CategoryPricingEntityTests
     public void UpdatePrice_WithZeroPrice_ShouldSucceed()
     {
         // Arrange
-        CategoryPricingEntity entity = CategoryPricingEntity.Create(
+        var entity = CategoryPricingEntity.Create(
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -105,7 +105,7 @@ public class CategoryPricingEntityTests
     public void UpdatePrice_WithNegativePrice_ShouldThrowBadRequestException(decimal invalidPrice)
     {
         // Arrange
-        CategoryPricingEntity entity = CategoryPricingEntity.Create(
+        var entity = CategoryPricingEntity.Create(
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),

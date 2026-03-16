@@ -9,19 +9,14 @@ namespace _116.Content.Application.Shared.Validators;
 public static class CustomerValidation
 {
     /// <summary>
-    /// Validates that a customer ID is not empty.
-    /// </summary>
-    public static void ValidCustomerId<T>(this IRuleBuilder<T, Guid> ruleBuilder)
-    {
-        ruleBuilder.NotEmpty().WithMessage("Customer ID is required.");
-    }
-
-    /// <summary>
     /// Validates customer full name with length constraints.
     /// </summary>
-    public static IRuleBuilderOptions<T, string?> ValidCustomerFullName<T>(this IRuleBuilder<T, string?> ruleBuilder)
+    public static IRuleBuilderOptions<T, string?> ValidCustomerFullName<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder
+    )
     {
         return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
             .WithMessage("Customer full name is required.")
             .MaximumLength(maximumLength: ContentConstants.MaxCustomerFullNameLength)
@@ -33,9 +28,12 @@ public static class CustomerValidation
     /// <summary>
     /// Validates customer email with format and length constraints.
     /// </summary>
-    public static IRuleBuilderOptions<T, string?> ValidCustomerEmail<T>(this IRuleBuilder<T, string?> ruleBuilder)
+    public static IRuleBuilderOptions<T, string?> ValidCustomerEmail<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder
+    )
     {
         return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
             .WithMessage("Customer email is required.")
             .EmailAddress()

@@ -11,21 +11,21 @@ namespace _116.Identity.Application.Auth.Validators;
 public static class FileValidation
 {
     /// <summary>
-    /// Validates avatar file with size, type, and extension constraints.
+    /// Validates the avatar file with size, type, and extension constraints.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the avatar file property.</param>
     /// <param name="isRequired">Whether the avatar file is required (default: false).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, IFormFile?> ValidAvatar<T>(
-        this IRuleBuilder<T, IFormFile?> ruleBuilder,
+        this IRuleBuilderInitial<T, IFormFile?> ruleBuilder,
         bool isRequired = false
     )
     {
-        IRuleBuilderOptions<T, IFormFile?> builder;
         if (isRequired)
         {
-            builder = ruleBuilder
+            return ruleBuilder
+                .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotNull()
                 .WithMessage("Avatar file is required")
                 .Must(predicate: BeValidFileSize)
@@ -39,23 +39,20 @@ public static class FileValidation
                     $"Only these extensions are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarExtensions)}"
                 );
         }
-        else
-        {
-            builder = ruleBuilder
-                .Must(predicate: BeValidFileSize)
-                .WithMessage($"File size must not exceed {FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)}MB")
-                .Must(predicate: BeValidImageType)
-                .WithMessage(
-                    $"Only image files are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarMimeTypes)}"
-                )
-                .Must(predicate: BeValidFileExtension)
-                .WithMessage(
-                    $"Only these extensions are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarExtensions)}"
-                )
-                .When(x => GetAvatarFileValue(instance: x) != null);
-        }
 
-        return builder;
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .Must(predicate: BeValidFileSize)
+            .WithMessage($"File size must not exceed {FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)}MB")
+            .Must(predicate: BeValidImageType)
+            .WithMessage(
+                $"Only image files are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarMimeTypes)}"
+            )
+            .Must(predicate: BeValidFileExtension)
+            .WithMessage(
+                $"Only these extensions are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarExtensions)}"
+            )
+            .When(x => GetAvatarFileValue(instance: x) != null);
     }
 
     /// <summary>
@@ -81,7 +78,8 @@ public static class FileValidation
         }
 
         // Extract content type without parameters (e.g., "image/jpeg" from "image/jpeg; boundary=...")
-        string contentType = file.ContentType?.Split(';')[0].Trim().ToLowerInvariant() ?? string.Empty;
+        string contentType = (file.ContentType ?? string.Empty).Split(';')[0].Trim().ToLowerInvariant();
+
         // Accept if content type is in the allowed list
         if (FileConstants.AllowedAvatarMimeTypes.Contains(value: contentType))
         {

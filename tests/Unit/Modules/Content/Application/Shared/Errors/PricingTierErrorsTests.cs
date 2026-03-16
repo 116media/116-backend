@@ -28,7 +28,7 @@ public class PricingTierErrorsTests
     public void NotFound_WithId_ShouldReturnNotFoundException()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         NotFoundException exception = PricingTierErrors.NotFound(id);

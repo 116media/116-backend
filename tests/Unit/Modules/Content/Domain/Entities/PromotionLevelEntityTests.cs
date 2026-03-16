@@ -17,13 +17,13 @@ public class PromotionLevelEntityTests
     public void Create_WithValidValues_ShouldCreatePromotionLevel()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
         string name = TestConstants.Content.PromotionLevel.ValidName;
         int durationDays = TestConstants.Content.PromotionLevel.ValidDurationDays;
         decimal priceUsd = TestConstants.Content.PromotionLevel.ValidPriceUsd;
 
         // Act
-        PromotionLevelEntity entity = PromotionLevelEntity.Create(id, name, durationDays, priceUsd);
+        var entity = PromotionLevelEntity.Create(id, name, durationDays, priceUsd);
 
         // Assert
         entity.Id.Should().Be(id);
@@ -37,7 +37,7 @@ public class PromotionLevelEntityTests
     public void Create_WithZeroPriceUsd_ShouldSucceed()
     {
         // Act
-        PromotionLevelEntity entity = PromotionLevelEntity.Create(
+        var entity = PromotionLevelEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
@@ -112,7 +112,7 @@ public class PromotionLevelEntityTests
     public void Update_WithValidValues_ShouldUpdate()
     {
         // Arrange
-        PromotionLevelEntity entity = PromotionLevelEntity.Create(
+        var entity = PromotionLevelEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
@@ -135,7 +135,7 @@ public class PromotionLevelEntityTests
     public void Update_WithInvalidName_ShouldThrowBadRequestException(string? invalidName)
     {
         // Arrange
-        PromotionLevelEntity entity = PromotionLevelEntity.Create(
+        var entity = PromotionLevelEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
@@ -155,7 +155,7 @@ public class PromotionLevelEntityTests
     public void Update_WithInvalidDuration_ShouldThrowBadRequestException(int invalidDuration)
     {
         // Arrange
-        PromotionLevelEntity entity = PromotionLevelEntity.Create(
+        var entity = PromotionLevelEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
@@ -175,7 +175,7 @@ public class PromotionLevelEntityTests
     public void Update_WithNegativePriceUsd_ShouldThrowBadRequestException(decimal invalidPrice)
     {
         // Arrange
-        PromotionLevelEntity entity = PromotionLevelEntity.Create(
+        var entity = PromotionLevelEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
@@ -202,7 +202,7 @@ public class PromotionLevelEntityTests
     public void Activate_WhenInactive_ShouldReturnTrue()
     {
         // Arrange
-        PromotionLevelEntity entity = PromotionLevelEntity.Create(
+        var entity = PromotionLevelEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
@@ -219,7 +219,7 @@ public class PromotionLevelEntityTests
     public void Activate_WhenAlreadyActive_ShouldReturnFalse()
     {
         // Arrange
-        PromotionLevelEntity entity = PromotionLevelEntity.Create(
+        var entity = PromotionLevelEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
@@ -234,7 +234,7 @@ public class PromotionLevelEntityTests
     public void Deactivate_WhenActive_ShouldReturnTrue()
     {
         // Arrange
-        PromotionLevelEntity entity = PromotionLevelEntity.Create(
+        var entity = PromotionLevelEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
@@ -250,7 +250,7 @@ public class PromotionLevelEntityTests
     public void Deactivate_WhenAlreadyInactive_ShouldReturnFalse()
     {
         // Arrange
-        PromotionLevelEntity entity = PromotionLevelEntity.Create(
+        var entity = PromotionLevelEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,

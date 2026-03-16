@@ -14,12 +14,12 @@
         <ProjectReference Include="../../../Shared/Shared/Shared.csproj" />
         <ProjectReference Include="../../../Shared/Shared.Contracts/Shared.Contracts.csproj" />
         <ProjectReference Include="../../Core/Core/Core.csproj" />
+        <ProjectReference Include="../Identity.Contracts/Identity.Contracts.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="ClosedXML" Version="0.105.0" />
         <PackageReference Include="CsvHelper" Version="33.1.0" />
-        <PackageReference Include="FluentValidation" Version="12.0.0" />
         <PackageReference
             Include="Microsoft.AspNetCore.Authentication.JwtBearer"
             Version="8.0.11"

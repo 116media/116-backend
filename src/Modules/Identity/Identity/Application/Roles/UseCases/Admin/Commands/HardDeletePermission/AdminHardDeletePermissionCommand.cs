@@ -6,7 +6,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.HardDeletePerm
 /// Command for permanently deleting a permission.
 /// </summary>
 /// <param name="PermissionId">The unique identifier of the permission to permanently delete.</param>
-public record AdminHardDeletePermissionCommand(Guid PermissionId) : ICommand<AdminHardDeletePermissionResult>;
+public record AdminHardDeletePermissionCommand(string PermissionId) : ICommand<AdminHardDeletePermissionResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminHardDeletePermissionCommand" />.

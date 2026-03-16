@@ -31,7 +31,7 @@ public class PublicGetOwnSessionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithSessions_ShouldReturnSessionDtos()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         PublicGetOwnSessionsQuery query = new(UserId: userId);
 
         List<SessionEntity> sessions = SessionFactory.CreateMany(3);
@@ -49,7 +49,7 @@ public class PublicGetOwnSessionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithNoSessions_ShouldReturnEmptyList()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         PublicGetOwnSessionsQuery query = new(UserId: userId);
         _sessionRepositoryMock.SetupGetUserSessionsEmpty(userId);
 
@@ -64,7 +64,7 @@ public class PublicGetOwnSessionsHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldCallRepositoryWithCorrectUserId()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         PublicGetOwnSessionsQuery query = new(UserId: userId);
         _sessionRepositoryMock.SetupGetUserSessionsEmpty(userId);
 
@@ -82,7 +82,7 @@ public class PublicGetOwnSessionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithActiveFilter_ShouldPassFilterToRepository()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         PublicGetOwnSessionsQuery query = new(UserId: userId, IsActive: true);
         _sessionRepositoryMock.SetupGetUserSessionsEmpty(userId);
 
@@ -100,7 +100,7 @@ public class PublicGetOwnSessionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithInactiveFilter_ShouldPassFilterToRepository()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         PublicGetOwnSessionsQuery query = new(UserId: userId, IsActive: false);
         _sessionRepositoryMock.SetupGetUserSessionsEmpty(userId);
 
@@ -118,7 +118,7 @@ public class PublicGetOwnSessionsHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldReturnReadOnlyCollection()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         PublicGetOwnSessionsQuery query = new(UserId: userId);
 
         List<SessionEntity> sessions = SessionFactory.CreateMany(2);
@@ -141,7 +141,7 @@ public class PublicGetOwnSessionsHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         PublicGetOwnSessionsQuery query = new(UserId: userId);
         using CancellationTokenSource cts = new();
         _sessionRepositoryMock.SetupGetUserSessionsEmpty(userId);

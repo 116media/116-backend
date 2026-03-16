@@ -43,7 +43,7 @@ public class AdminRestorePermissionHandlerTests : BaseHandlerTest
         );
         deletedPermission.SoftDelete();
 
-        AdminRestorePermissionCommand command = new(PermissionId: deletedPermission.Id);
+        AdminRestorePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(deletedPermission);
 
@@ -67,7 +67,7 @@ public class AdminRestorePermissionHandlerTests : BaseHandlerTest
         );
         deletedPermission.SoftDelete();
 
-        AdminRestorePermissionCommand command = new(PermissionId: deletedPermission.Id);
+        AdminRestorePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(deletedPermission);
 
@@ -89,7 +89,7 @@ public class AdminRestorePermissionHandlerTests : BaseHandlerTest
         );
         deletedPermission.SoftDelete();
 
-        AdminRestorePermissionCommand command = new(PermissionId: deletedPermission.Id);
+        AdminRestorePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(deletedPermission);
 
@@ -109,8 +109,8 @@ public class AdminRestorePermissionHandlerTests : BaseHandlerTest
     public async Task Handle_WhenPermissionNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid nonExistentPermissionId = Guid.NewGuid();
-        AdminRestorePermissionCommand command = new(PermissionId: nonExistentPermissionId);
+        var nonExistentPermissionId = Guid.NewGuid();
+        AdminRestorePermissionCommand command = new(PermissionId: nonExistentPermissionId.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPermissionId);
 
@@ -130,7 +130,7 @@ public class AdminRestorePermissionHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidAction
         );
 
-        AdminRestorePermissionCommand command = new(PermissionId: activePermission.Id);
+        AdminRestorePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(activePermission);
 
@@ -150,7 +150,7 @@ public class AdminRestorePermissionHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidAction
         );
 
-        AdminRestorePermissionCommand command = new(PermissionId: activePermission.Id);
+        AdminRestorePermissionCommand command = new(PermissionId: activePermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(activePermission);
 
@@ -178,7 +178,7 @@ public class AdminRestorePermissionHandlerTests : BaseHandlerTest
         );
         inactivePermission.Deactivate();
 
-        AdminRestorePermissionCommand command = new(PermissionId: inactivePermission.Id);
+        AdminRestorePermissionCommand command = new(PermissionId: inactivePermission.Id.ToString());
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(inactivePermission);
 
@@ -203,7 +203,7 @@ public class AdminRestorePermissionHandlerTests : BaseHandlerTest
         );
         deletedPermission.SoftDelete();
 
-        AdminRestorePermissionCommand command = new(PermissionId: deletedPermission.Id);
+        AdminRestorePermissionCommand command = new(PermissionId: deletedPermission.Id.ToString());
 
         using CancellationTokenSource cts = new();
         _permissionRepositoryMock.SetupGetByIdOrThrow(deletedPermission);

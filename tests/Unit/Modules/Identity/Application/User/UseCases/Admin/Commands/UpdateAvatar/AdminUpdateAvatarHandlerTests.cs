@@ -39,8 +39,8 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
-        Guid newAvatarFileId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var newAvatarFileId = Guid.NewGuid();
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
         FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
 
@@ -80,8 +80,8 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
-        Guid newAvatarFileId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var newAvatarFileId = Guid.NewGuid();
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
         FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
 
@@ -123,8 +123,8 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
-        Guid newAvatarFileId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var newAvatarFileId = Guid.NewGuid();
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
         FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
 
@@ -174,8 +174,8 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
-        Guid newAvatarFileId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var newAvatarFileId = Guid.NewGuid();
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
         FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
 
@@ -217,8 +217,8 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
-        Guid newAvatarFileId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var newAvatarFileId = Guid.NewGuid();
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
         FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
 
@@ -263,8 +263,8 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
     public async Task Handle_WhenUserNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
 
         AdminUpdateAvatarCommand command = new(UserId: userId, SessionId: sessionId, AvatarFile: avatarFile);
@@ -284,8 +284,8 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
     public async Task Handle_WhenUserNotFound_ShouldNotUploadFile()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
 
         AdminUpdateAvatarCommand command = new(UserId: userId, SessionId: sessionId, AvatarFile: avatarFile);
@@ -328,8 +328,8 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
-        Guid newAvatarFileId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var newAvatarFileId = Guid.NewGuid();
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
         FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
         using CancellationTokenSource cts = new();
@@ -369,8 +369,8 @@ public class AdminUpdateAvatarHandlerTests : BaseHandlerTest
     {
         // Arrange
         UserEntity user = UserFactory.CreateVerifiedActive();
-        Guid sessionId = Guid.NewGuid();
-        Guid newAvatarFileId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var newAvatarFileId = Guid.NewGuid();
         IFormFile avatarFile = FileTestHelpers.CreateMockFormFile();
         FileEntity fileEntity = FileFactory.CreateWithId(newAvatarFileId);
         using CancellationTokenSource cts = new();

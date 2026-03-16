@@ -2,7 +2,7 @@ using System.Security.Claims;
 using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
-using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Contracts.Application;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -25,8 +25,8 @@ public record PublicSignOutFromAllDevicesResponse(bool IsSuccess);
 public class PublicSignOutFromAllDevicesEndpointV1 : ICarterModule
 {
     /// <summary>
-    /// Configures the sign-out from all devices route within the API pipeline.
-    /// Maps the <c>POST /api/v1/public/auth/sign-out-all</c> endpoint to handle sign-out from all devices requests.
+    /// Configures the "sign-out from all devices" route within the API pipeline.
+    /// Maps the <c>POST /api/v1/public/auth/sign-out-all</c> endpoint to handle sign-out from all device requests.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -38,9 +38,9 @@ public class PublicSignOutFromAllDevicesEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: AuthRouteConstants.SignOutAll,
-                async (ClaimsPrincipal user, IAuthRepository authRepository, IDispatcher dispatcher) =>
+                async (ClaimsPrincipal user, IClaimsProvider authProvider, IDispatcher dispatcher) =>
                 {
-                    Guid userId = authRepository.GetUserIdFromClaims(user: user);
+                    Guid userId = authProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicSignOutFromAllDevicesCommand(UserId: userId);
                     PublicSignOutFromAllDevicesResult result = await dispatcher.Send(request: command);

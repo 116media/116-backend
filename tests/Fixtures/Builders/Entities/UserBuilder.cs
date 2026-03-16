@@ -21,6 +21,8 @@ internal class UserBuilder
     private bool _isVerified;
     private bool _isActive = true;
     private readonly List<RoleEntity> _roles = [];
+    private string? _fullPhoneNumber;
+    private string? _partialPhoneNumber;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserBuilder"/> class with random default values.
@@ -146,6 +148,19 @@ internal class UserBuilder
     }
 
     /// <summary>
+    /// Sets the phone number fields on the user.
+    /// </summary>
+    /// <param name="fullPhoneNumber">The full international phone number (e.g. "+1234567890").</param>
+    /// <param name="partialPhoneNumber">The partial/local phone number.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public UserBuilder WithPhoneNumber(string fullPhoneNumber, string partialPhoneNumber)
+    {
+        _fullPhoneNumber = fullPhoneNumber;
+        _partialPhoneNumber = partialPhoneNumber;
+        return this;
+    }
+
+    /// <summary>
     /// Builds the <see cref="UserEntity"/> instance for local authentication.
     /// </summary>
     /// <returns>A configured UserEntity instance.</returns>
@@ -168,6 +183,17 @@ internal class UserBuilder
         else
         {
             user.Deactivate();
+        }
+
+        if (_fullPhoneNumber is not null && _partialPhoneNumber is not null)
+        {
+            user.UpdatePhoneNumber(
+                countryName: null,
+                countryIsoCode: null,
+                countryDialCode: null,
+                fullPhoneNumber: _fullPhoneNumber,
+                partialPhoneNumber: _partialPhoneNumber
+            );
         }
 
         foreach (RoleEntity role in _roles)

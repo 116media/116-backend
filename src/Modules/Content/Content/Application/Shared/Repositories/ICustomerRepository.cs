@@ -39,6 +39,8 @@ public interface ICustomerRepository : IRepository<CustomerEntity>
     /// </summary>
     Task<CustomerEntity?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
 
-    /// <summary>Adds a new customer to the repository.</summary>
+    /// <summary>
+    /// Adds a new customer to the repository.
+    /// </summary>
     Task AddAsync(CustomerEntity customer, CancellationToken cancellationToken = default);
 }

@@ -33,12 +33,14 @@ public class AdminRemovePermissionFromRoleHandler(
         CancellationToken cancellationToken
     )
     {
+        Guid roleId = Guid.Parse(input: command.RoleId);
+
         // Validate role exists
-        await roleRepository.GetRoleByIdOrThrowAsync(roleId: command.RoleId, cancellationToken: cancellationToken);
+        await roleRepository.GetRoleByIdOrThrowAsync(roleId: roleId, cancellationToken: cancellationToken);
 
         // Get the role-permission association
         RolePermissionEntity? rolePermission = await rolePermissionRepository.GetByRoleAndPermissionAsync(
-            roleId: command.RoleId,
+            roleId: roleId,
             permissionId: command.PermissionId,
             cancellationToken: cancellationToken
         );
@@ -54,7 +56,7 @@ public class AdminRemovePermissionFromRoleHandler(
 
         // Reload role with permissions to return updated data
         RoleEntity? role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(
-            roleId: command.RoleId,
+            roleId: roleId,
             cancellationToken: cancellationToken
         );
 

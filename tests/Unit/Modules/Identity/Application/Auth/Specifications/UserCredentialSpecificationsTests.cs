@@ -134,7 +134,7 @@ public class UserCredentialSpecificationsTests
     public void UserByIdSpecification_WithMatchingId_ShouldReturnTrue()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
         UserByIdSpecification spec = new(userId);
 

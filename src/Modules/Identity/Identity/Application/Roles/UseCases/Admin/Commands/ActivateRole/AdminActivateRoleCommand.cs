@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.ActivateRole;
 /// Command for activating a role.
 /// </summary>
 /// <param name="RoleId">The unique identifier of the role to activate.</param>
-public record AdminActivateRoleCommand(Guid RoleId) : ICommand<AdminActivateRoleResult>;
+public record AdminActivateRoleCommand(string RoleId) : ICommand<AdminActivateRoleResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminActivateRoleCommand" /> containing the activated role details.

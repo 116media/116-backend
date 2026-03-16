@@ -2,22 +2,61 @@ using _116.Shared.Infrastructure.Extensions;
 using _116.Shared.Infrastructure.Seed;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
 namespace _116.Unit.Tests.Shared.Infrastructure.Extensions;
 
+// Minimal DbContext used only to exercise UseMigration<T> — no entities, no migration files.
+// MigrateAsync() on SQLite in-memory with an empty context simply creates __EFMigrationsHistory.
+file sealed class TestMigrationDbContext(DbContextOptions<TestMigrationDbContext> options) : DbContext(options);
+
 /// <summary>
 /// Unit tests for <see cref="ApplicationBuilderExtension"/>.
 /// </summary>
-/// <remarks>
-/// Note: UseMigration method requires a relational database provider and is primarily
-/// tested through integration tests when the application starts up and applies migrations.
-/// Unit testing this method would require adding SQLite dependencies or mocking EF Core internals.
-/// </remarks>
 public class ApplicationBuilderExtensionTests
 {
+    [Fact]
+    public void UseMigration_ShouldReturnSameApplicationBuilder()
+    {
+        // Arrange — SQLite in-memory is a relational provider, so MigrateAsync() is supported.
+        using var connection = new SqliteConnection("Data Source=:memory:");
+        connection.Open();
+
+        var services = new ServiceCollection();
+        services.AddDbContext<TestMigrationDbContext>(o => o.UseSqlite(connection));
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
+        var app = new ApplicationBuilder(serviceProvider);
+
+        // Act
+        IApplicationBuilder result = app.UseMigration<TestMigrationDbContext>();
+
+        // Assert
+        result.Should().BeSameAs(app);
+    }
+
+    [Fact]
+    public void UseMigration_ShouldNotThrow()
+    {
+        // Arrange
+        using var connection = new SqliteConnection("Data Source=:memory:");
+        connection.Open();
+
+        var services = new ServiceCollection();
+        services.AddDbContext<TestMigrationDbContext>(o => o.UseSqlite(connection));
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
+        var app = new ApplicationBuilder(serviceProvider);
+
+        // Act
+        Action act = () => app.UseMigration<TestMigrationDbContext>();
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
     [Fact]
     public void UseSeed_WithNoRegisteredSeeders_ShouldNotThrow()
     {
@@ -81,10 +120,22 @@ public class ApplicationBuilderExtensionTests
         var executionOrder = new List<int>();
 
         var seeder1Mock = new Mock<IDataSeeder>();
-        seeder1Mock.Setup(s => s.SeedAllAsync()).Returns(Task.Run(() => executionOrder.Add(1)));
+        seeder1Mock
+            .Setup(s => s.SeedAllAsync())
+            .Returns(() =>
+            {
+                executionOrder.Add(1);
+                return Task.CompletedTask;
+            });
 
         var seeder2Mock = new Mock<IDataSeeder>();
-        seeder2Mock.Setup(s => s.SeedAllAsync()).Returns(Task.Run(() => executionOrder.Add(2)));
+        seeder2Mock
+            .Setup(s => s.SeedAllAsync())
+            .Returns(() =>
+            {
+                executionOrder.Add(2);
+                return Task.CompletedTask;
+            });
 
         services.AddSingleton(seeder1Mock.Object);
         services.AddSingleton(seeder2Mock.Object);

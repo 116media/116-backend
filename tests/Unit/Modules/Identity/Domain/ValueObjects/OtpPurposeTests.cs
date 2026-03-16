@@ -17,7 +17,7 @@ public class OtpPurposeTests
     public void Constructor_WithValidEnumValue_ShouldCreateInstance()
     {
         // Arrange
-        EnumOtpPurpose purposeEnum = EnumOtpPurpose.EmailVerification;
+        var purposeEnum = EnumOtpPurpose.EmailVerification;
 
         // Act
         OtpPurpose purpose = new(purposeEnum);
@@ -44,7 +44,7 @@ public class OtpPurposeTests
     public void Constructor_WithInvalidEnumValue_ShouldThrowArgumentException()
     {
         // Arrange
-        EnumOtpPurpose invalidEnum = (EnumOtpPurpose)999;
+        var invalidEnum = (EnumOtpPurpose)999;
 
         // Act & Assert
         Action act = () => new OtpPurpose(invalidEnum);
@@ -156,7 +156,7 @@ public class OtpPurposeTests
     public void ImplicitConversionFromEnum_ShouldCreateInstance()
     {
         // Arrange
-        EnumOtpPurpose purposeEnum = EnumOtpPurpose.EmailVerification;
+        var purposeEnum = EnumOtpPurpose.EmailVerification;
 
         // Act
         OtpPurpose purpose = purposeEnum;

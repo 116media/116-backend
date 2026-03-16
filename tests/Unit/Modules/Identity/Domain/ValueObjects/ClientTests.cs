@@ -17,7 +17,7 @@ public class ClientTests
     public void Constructor_WithValidEnumValue_ShouldCreateInstance()
     {
         // Arrange
-        EnumClient clientEnum = EnumClient.WebApp;
+        var clientEnum = EnumClient.WebApp;
 
         // Act
         Client client = new(clientEnum);
@@ -44,7 +44,7 @@ public class ClientTests
     public void Constructor_WithInvalidEnumValue_ShouldThrowArgumentException()
     {
         // Arrange
-        EnumClient invalidEnum = (EnumClient)999;
+        var invalidEnum = (EnumClient)999;
 
         // Act & Assert
         Action act = () => new Client(invalidEnum);
@@ -156,7 +156,7 @@ public class ClientTests
     public void ImplicitConversionFromEnum_ShouldCreateInstance()
     {
         // Arrange
-        EnumClient clientEnum = EnumClient.WebApp;
+        var clientEnum = EnumClient.WebApp;
 
         // Act
         Client client = clientEnum;

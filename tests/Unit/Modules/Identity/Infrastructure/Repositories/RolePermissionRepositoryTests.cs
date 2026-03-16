@@ -30,6 +30,7 @@ public class RolePermissionRepositoryTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     #region ExistsByRoleAndPermissionAsync Tests
@@ -90,7 +91,7 @@ public class RolePermissionRepositoryTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
-        result!.RoleId.Should().Be(role.Id);
+        result.RoleId.Should().Be(role.Id);
         result.PermissionId.Should().Be(permission.Id);
     }
 
@@ -174,7 +175,7 @@ public class RolePermissionRepositoryTests : IDisposable
             rp.RoleId == role.Id && rp.PermissionId == permission.Id
         );
         saved.Should().NotBeNull();
-        saved!.RoleId.Should().Be(role.Id);
+        saved.RoleId.Should().Be(role.Id);
         saved.PermissionId.Should().Be(permission.Id);
     }
 

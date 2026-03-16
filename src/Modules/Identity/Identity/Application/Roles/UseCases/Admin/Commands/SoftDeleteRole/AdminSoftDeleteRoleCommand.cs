@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeleteRole
 /// Command for soft deleting a role.
 /// </summary>
 /// <param name="RoleId">The unique identifier of the role to soft-delete.</param>
-public record AdminSoftDeleteRoleCommand(Guid RoleId) : ICommand<AdminSoftDeleteRoleResult>;
+public record AdminSoftDeleteRoleCommand(string RoleId) : ICommand<AdminSoftDeleteRoleResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminSoftDeleteRoleCommand" /> containing the soft deleted role details.

@@ -31,7 +31,7 @@ public class ContentModuleTests : IDisposable
 
     public void Dispose()
     {
-        // Cleanup if needed
+        GC.SuppressFinalize(this);
     }
 
     [Fact]

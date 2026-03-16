@@ -303,7 +303,7 @@ public class SessionMetadataServiceTests
     public void ExtractDeviceId_WithGuidDeviceId_ShouldReturnGuidString()
     {
         // Arrange
-        Guid deviceId = Guid.NewGuid();
+        var deviceId = Guid.NewGuid();
         SetupHttpContextWithDeviceIdHeader(deviceId.ToString());
 
         // Act

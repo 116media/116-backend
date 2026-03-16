@@ -33,8 +33,8 @@ public class PublicUpdateAvatarAuthFactoryTests
     public async Task GetUserForAvatarUpdateAsync_WithValidUser_ShouldReturnAuthData()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
@@ -65,8 +65,8 @@ public class PublicUpdateAvatarAuthFactoryTests
     public async Task GetUserForAvatarUpdateAsync_ShouldValidateUserIsActive()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
@@ -92,8 +92,8 @@ public class PublicUpdateAvatarAuthFactoryTests
     public async Task GetUserForAvatarUpdateAsync_ShouldValidateUserIsVerified()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
@@ -119,8 +119,8 @@ public class PublicUpdateAvatarAuthFactoryTests
     public async Task GetUserForAvatarUpdateAsync_ShouldValidateSession()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
         _authRepositoryMock
@@ -146,8 +146,8 @@ public class PublicUpdateAvatarAuthFactoryTests
     public async Task GetUserForAvatarUpdateAsync_WithCancellationToken_ShouldPassToRepository()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
         CancellationToken cancellationToken = new();
 
@@ -180,8 +180,8 @@ public class PublicUpdateAvatarAuthFactoryTests
     public async Task UpdateAvatarAsync_WithValidData_ShouldReturnAuthData()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid avatarFileId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var avatarFileId = Guid.NewGuid();
         UserEntity user = UserFactory.CreateWithId(userId);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
@@ -202,7 +202,7 @@ public class PublicUpdateAvatarAuthFactoryTests
     public async Task UpdateAvatarAsync_ShouldSetAvatarSourceToManual()
     {
         // Arrange
-        Guid avatarFileId = Guid.NewGuid();
+        var avatarFileId = Guid.NewGuid();
         UserEntity user = UserFactory.Create();
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
@@ -219,7 +219,7 @@ public class PublicUpdateAvatarAuthFactoryTests
     public async Task UpdateAvatarAsync_ShouldCommitTransaction()
     {
         // Arrange
-        Guid avatarFileId = Guid.NewGuid();
+        var avatarFileId = Guid.NewGuid();
         UserEntity user = UserFactory.Create();
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
@@ -235,7 +235,7 @@ public class PublicUpdateAvatarAuthFactoryTests
     public async Task UpdateAvatarAsync_WithCancellationToken_ShouldPassToCommit()
     {
         // Arrange
-        Guid avatarFileId = Guid.NewGuid();
+        var avatarFileId = Guid.NewGuid();
         UserEntity user = UserFactory.Create();
         CancellationToken cancellationToken = new();
 

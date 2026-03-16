@@ -34,6 +34,6 @@ public class AdminSignOutFromAllDevicesHandler(
         await sessionRepository.DeleteAllByUserIdAsync(userId: user!.Id, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        return new AdminSignOutFromAllDevicesResult(true);
+        return new AdminSignOutFromAllDevicesResult(IsSuccess: true);
     }
 }

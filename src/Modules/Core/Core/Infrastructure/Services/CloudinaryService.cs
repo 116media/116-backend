@@ -85,6 +85,109 @@ public class CloudinaryService : ICloudinaryService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<bool> DeleteImageAsync(string storageKey, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var deletionParams = new DeletionParams(storageKey);
+            DeletionResult result = await _cloudinary.DestroyAsync(deletionParams);
+
+            if (result.Error != null)
+            {
+                _logger.LogWarning(
+                    "Cloudinary deletion warning for key {StorageKey}: {ErrorMessage}",
+                    storageKey,
+                    result.Error.Message
+                );
+                return false;
+            }
+
+            bool deleted = result.Result == "ok";
+            _logger.LogInformation(
+                "Cloudinary deletion result for key {StorageKey}: {Result}",
+                storageKey,
+                result.Result
+            );
+            return deleted;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error deleting Cloudinary resource {StorageKey}", storageKey);
+            return false;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> DeleteImagesAsync(
+        IEnumerable<string> storageKeys,
+        CancellationToken cancellationToken = default
+    )
+    {
+        List<string> keys = storageKeys.ToList();
+        if (keys.Count == 0)
+        {
+            return true;
+        }
+
+        // Cloudinary batch delete supports a maximum of 100 public IDs per request.
+        // All batches are dispatched concurrently via Task.WhenAll — same approach as
+        // firing Promise.all() in JavaScript — so a 500-item list sends 5 requests in parallel
+        // instead of 5 sequential round trips.
+        const int batchSize = 100;
+
+        IEnumerable<Task<bool>> batchTasks = Enumerable
+            .Range(0, (keys.Count + batchSize - 1) / batchSize)
+            .Select(batchIndex =>
+            {
+                List<string> batch = keys.Skip(batchIndex * batchSize).Take(batchSize).ToList();
+                return DeleteBatchAsync(batch, batchIndex);
+            });
+
+        bool[] results = await Task.WhenAll(batchTasks);
+        return results.All(r => r);
+    }
+
+    /// <summary>
+    /// Sends a single Cloudinary batch-delete request for up to 100 public IDs.
+    /// </summary>
+    private async Task<bool> DeleteBatchAsync(List<string> batch, int batchIndex)
+    {
+        try
+        {
+            var delParams = new DelResParams
+            {
+                PublicIds = batch,
+                Type = "upload",
+                ResourceType = ResourceType.Image,
+            };
+
+            DelResResult result = await _cloudinary.DeleteResourcesAsync(delParams);
+
+            if (result.Error != null)
+            {
+                _logger.LogWarning(
+                    "Cloudinary batch deletion warning (batch {BatchIndex}): {ErrorMessage}",
+                    batchIndex,
+                    result.Error.Message
+                );
+                return false;
+            }
+
+            _logger.LogInformation(
+                "Successfully deleted {Count} Cloudinary resources in batch {BatchIndex}",
+                batch.Count,
+                batchIndex
+            );
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error during Cloudinary batch deletion (batch {BatchIndex})", batchIndex);
+            return false;
+        }
+    }
+
     /// <summary>
     /// Validates the uploaded file for size and type constraints.
     /// </summary>

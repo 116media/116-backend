@@ -18,7 +18,7 @@ using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetAllPackages;
 using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetCategoryById;
 using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetCustomerById;
 using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetPackageById;
-using _116.Content.Application.Catalog.UseCases.Public.Queries.GetPublicCategories;
+using _116.Content.Application.Catalog.UseCases.Public.Queries.GetActiveCategories;
 using _116.Shared.Application.Metadata;
 using AwesomeAssertions;
 using Xunit;
@@ -34,44 +34,44 @@ public class CatalogMetaFieldTests
     #region Category MetaFields
 
     [Fact]
-    public void CreateCategoryMetaField_ShouldBeInitialized()
+    public void AdminCreateCategoryMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = CreateCategoryMetaField.CreateCategory;
+        RouteMetadata metadata = AdminCreateCategoryMetaField.AdminCreateCategory;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
-    public void UpdateCategoryMetaField_ShouldBeInitialized()
+    public void AdminUpdateCategoryMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = UpdateCategoryMetaField.UpdateCategory;
+        RouteMetadata metadata = AdminUpdateCategoryMetaField.AdminUpdateCategory;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
-    public void ActivateCategoryMetaField_ShouldBeInitialized()
+    public void AdminActivateCategoryMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = ActivateCategoryMetaField.ActivateCategory;
+        RouteMetadata metadata = AdminActivateCategoryMetaField.AdminActivateCategory;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
-    public void DeactivateCategoryMetaField_ShouldBeInitialized()
+    public void AdminDeactivateCategoryMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = DeactivateCategoryMetaField.DeactivateCategory;
+        RouteMetadata metadata = AdminDeactivateCategoryMetaField.AdminDeactivateCategory;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
-    public void GetAllCategoriesMetaField_ShouldBeInitialized()
+    public void AdminGetAllCategoriesMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = GetAllCategoriesMetaField.GetAllCategories;
+        RouteMetadata metadata = AdminGetAllCategoriesMetaField.AdminGetAllCategories;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
-    public void GetCategoryByIdMetaField_ShouldBeInitialized()
+    public void AdminGetCategoryByIdMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = GetCategoryByIdMetaField.GetCategoryById;
+        RouteMetadata metadata = AdminGetCategoryByIdMetaField.AdminGetCategoryById;
         metadata.Should().NotBeNull();
     }
 
@@ -80,23 +80,23 @@ public class CatalogMetaFieldTests
     #region CategoryPricing MetaFields
 
     [Fact]
-    public void AddCategoryPricingMetaField_ShouldBeInitialized()
+    public void AdminAddCategoryPricingMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = AddCategoryPricingMetaField.AddCategoryPricing;
+        RouteMetadata metadata = AdminAddCategoryPricingMetaField.AdminAddCategoryPricing;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
-    public void UpdateCategoryPricingMetaField_ShouldBeInitialized()
+    public void AdminUpdateCategoryPricingMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = UpdateCategoryPricingMetaField.UpdateCategoryPricing;
+        RouteMetadata metadata = AdminUpdateCategoryPricingMetaField.AdminUpdateCategoryPricing;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
-    public void RemoveCategoryPricingMetaField_ShouldBeInitialized()
+    public void AdminRemoveCategoryPricingMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = RemoveCategoryPricingMetaField.RemoveCategoryPricing;
+        RouteMetadata metadata = AdminRemoveCategoryPricingMetaField.AdminRemoveCategoryPricing;
         metadata.Should().NotBeNull();
     }
 
@@ -105,30 +105,30 @@ public class CatalogMetaFieldTests
     #region Customer MetaFields
 
     [Fact]
-    public void CreateCustomerMetaField_ShouldBeInitialized()
+    public void AdminCreateCustomerMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = CreateCustomerMetaField.CreateCustomer;
+        RouteMetadata metadata = AdminCreateCustomerMetaField.AdminCreateCustomer;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
-    public void UpdateCustomerMetaField_ShouldBeInitialized()
+    public void AdminUpdateCustomerMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = UpdateCustomerMetaField.UpdateCustomer;
+        RouteMetadata metadata = AdminUpdateCustomerMetaField.AdminUpdateCustomer;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
-    public void GetAllCustomersMetaField_ShouldBeInitialized()
+    public void AdminGetAllCustomersMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = GetAllCustomersMetaField.GetAllCustomers;
+        RouteMetadata metadata = AdminGetAllCustomersMetaField.AdminGetAllCustomers;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
-    public void GetCustomerByIdMetaField_ShouldBeInitialized()
+    public void AdminGetCustomerByIdMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = GetCustomerByIdMetaField.GetCustomerById;
+        RouteMetadata metadata = AdminGetCustomerByIdMetaField.AdminGetCustomerById;
         metadata.Should().NotBeNull();
     }
 
@@ -137,37 +137,37 @@ public class CatalogMetaFieldTests
     #region Package MetaFields
 
     [Fact]
-    public void CreatePackageMetaField_ShouldBeInitialized()
+    public void AdminCreatePackageMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = CreatePackageMetaField.CreatePackage;
+        RouteMetadata metadata = AdminCreatePackageMetaField.AdminCreatePackage;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
-    public void ActivatePackageMetaField_ShouldBeInitialized()
+    public void AdminActivatePackageMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = ActivatePackageMetaField.ActivatePackage;
+        RouteMetadata metadata = AdminActivatePackageMetaField.AdminActivatePackage;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
-    public void DeactivatePackageMetaField_ShouldBeInitialized()
+    public void AdminDeactivatePackageMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = DeactivatePackageMetaField.DeactivatePackage;
+        RouteMetadata metadata = AdminDeactivatePackageMetaField.AdminDeactivatePackage;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
-    public void GetAllPackagesMetaField_ShouldBeInitialized()
+    public void AdminGetAllPackagesMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = GetAllPackagesMetaField.GetAllPackages;
+        RouteMetadata metadata = AdminGetAllPackagesMetaField.AdminGetAllPackages;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
-    public void GetPackageByIdMetaField_ShouldBeInitialized()
+    public void AdminGetPackageByIdMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = GetPackageByIdMetaField.GetPackageById;
+        RouteMetadata metadata = AdminGetPackageByIdMetaField.AdminGetPackageById;
         metadata.Should().NotBeNull();
     }
 
@@ -176,16 +176,16 @@ public class CatalogMetaFieldTests
     #region PackageSlot MetaFields
 
     [Fact]
-    public void AddPackageSlotMetaField_ShouldBeInitialized()
+    public void AdminAddPackageSlotMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = AddPackageSlotMetaField.AddPackageSlot;
+        RouteMetadata metadata = AdminAddPackageSlotMetaField.AdminAddPackageSlot;
         metadata.Should().NotBeNull();
     }
 
     [Fact]
-    public void RemovePackageSlotMetaField_ShouldBeInitialized()
+    public void AdminRemovePackageSlotMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = RemovePackageSlotMetaField.RemovePackageSlot;
+        RouteMetadata metadata = AdminRemovePackageSlotMetaField.AdminRemovePackageSlot;
         metadata.Should().NotBeNull();
     }
 
@@ -194,9 +194,9 @@ public class CatalogMetaFieldTests
     #region Public Query MetaFields
 
     [Fact]
-    public void GetPublicCategoriesMetaField_ShouldBeInitialized()
+    public void PublicGetActiveCategoriesMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = GetPublicCategoriesMetaField.GetPublicCategories;
+        RouteMetadata metadata = PublicGetActiveCategoriesMetaField.PublicGetActiveCategories;
         metadata.Should().NotBeNull();
     }
 

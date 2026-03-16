@@ -127,6 +127,34 @@ public class LookupSpecificationsTests
 
     #endregion
 
+    #region TagByIdSpecification
+
+    [Fact]
+    public void TagByIdSpecification_WithMatchingId_ShouldReturnTrue()
+    {
+        // Arrange
+        TagEntity tag = TagFactory.CreateDefault();
+        var spec = new TagByIdSpecification(tag.Id);
+        Func<TagEntity, bool> predicate = spec.ToExpression().Compile();
+
+        // Act & Assert
+        predicate(tag).Should().BeTrue();
+    }
+
+    [Fact]
+    public void TagByIdSpecification_WithDifferentId_ShouldReturnFalse()
+    {
+        // Arrange
+        TagEntity tag = TagFactory.CreateDefault();
+        var spec = new TagByIdSpecification(Guid.NewGuid());
+        Func<TagEntity, bool> predicate = spec.ToExpression().Compile();
+
+        // Act & Assert
+        predicate(tag).Should().BeFalse();
+    }
+
+    #endregion
+
     #region TagBySlugSpecification
 
     [Fact]

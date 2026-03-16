@@ -17,12 +17,12 @@ public class PackageEntityTests
     public void Create_WithValidValues_ShouldCreatePackage()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
         string name = TestConstants.Content.Package.ValidName;
         decimal price = TestConstants.Content.Package.ValidFlatPriceUsd;
 
         // Act
-        PackageEntity entity = PackageEntity.Create(id, name, null, price);
+        var entity = PackageEntity.Create(id, name, null, price);
 
         // Assert
         entity.Id.Should().Be(id);
@@ -36,7 +36,7 @@ public class PackageEntityTests
     public void Create_WithDescription_ShouldSetDescription()
     {
         // Act
-        PackageEntity entity = PackageEntity.Create(
+        var entity = PackageEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.Package.ValidName,
             TestConstants.Content.Package.ValidDescription,
@@ -51,7 +51,7 @@ public class PackageEntityTests
     public void Create_WithZeroPrice_ShouldSucceed()
     {
         // Act
-        PackageEntity entity = PackageEntity.Create(
+        var entity = PackageEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.Package.ValidName,
             null,
@@ -96,12 +96,7 @@ public class PackageEntityTests
     public void Activate_WhenInactive_ShouldReturnTrue()
     {
         // Arrange
-        PackageEntity entity = PackageEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.Package.ValidName,
-            null,
-            100m
-        );
+        var entity = PackageEntity.Create(Guid.NewGuid(), TestConstants.Content.Package.ValidName, null, 100m);
         entity.Deactivate();
 
         // Act & Assert
@@ -113,12 +108,7 @@ public class PackageEntityTests
     public void Activate_WhenAlreadyActive_ShouldReturnFalse()
     {
         // Arrange
-        PackageEntity entity = PackageEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.Package.ValidName,
-            null,
-            100m
-        );
+        var entity = PackageEntity.Create(Guid.NewGuid(), TestConstants.Content.Package.ValidName, null, 100m);
 
         // Act & Assert
         entity.Activate().Should().BeFalse();
@@ -128,12 +118,7 @@ public class PackageEntityTests
     public void Deactivate_WhenActive_ShouldReturnTrue()
     {
         // Arrange
-        PackageEntity entity = PackageEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.Package.ValidName,
-            null,
-            100m
-        );
+        var entity = PackageEntity.Create(Guid.NewGuid(), TestConstants.Content.Package.ValidName, null, 100m);
 
         // Act & Assert
         entity.Deactivate().Should().BeTrue();
@@ -144,12 +129,7 @@ public class PackageEntityTests
     public void Deactivate_WhenAlreadyInactive_ShouldReturnFalse()
     {
         // Arrange
-        PackageEntity entity = PackageEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.Package.ValidName,
-            null,
-            100m
-        );
+        var entity = PackageEntity.Create(Guid.NewGuid(), TestConstants.Content.Package.ValidName, null, 100m);
         entity.Deactivate();
 
         // Act & Assert

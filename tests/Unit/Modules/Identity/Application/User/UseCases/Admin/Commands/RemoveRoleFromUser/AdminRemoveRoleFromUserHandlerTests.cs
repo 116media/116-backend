@@ -36,13 +36,13 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
     public async Task Handle_WithValidRequest_ShouldReturnRemainingRoles()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity roleToRemove = RoleFactory.Create("Admin", "Administrator role");
         RoleEntity remainingRole = RoleFactory.Create("User", "User role");
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, roleToRemove);
         UserRoleEntity remainingUserRole = UserRoleFactory.CreateWithRole(userId, remainingRole);
 
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId, RoleId: roleToRemove.Id);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: roleToRemove.Id);
 
         _userRoleRepositoryMock.SetupGetByUserAndRole(userRole);
         _userRoleRepositoryMock.SetupGetUserRolesWithRole(userId, [remainingUserRole]);
@@ -60,11 +60,11 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldGetUserRoleAssociation()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
 
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
 
         _userRoleRepositoryMock.SetupGetByUserAndRole(userRole);
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
@@ -83,11 +83,11 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldDeleteUserRole()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
 
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
 
         _userRoleRepositoryMock.SetupGetByUserAndRole(userRole);
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
@@ -103,11 +103,11 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
     public async Task Handle_ShouldCommitUnitOfWork()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
 
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
 
         _userRoleRepositoryMock.SetupGetByUserAndRole(userRole);
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
@@ -123,11 +123,11 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
     public async Task Handle_WhenNoRemainingRoles_ShouldReturnEmptyList()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
 
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
 
         _userRoleRepositoryMock.SetupGetByUserAndRole(userRole);
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
@@ -147,9 +147,9 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleNotAssignedToUser_ShouldThrowBadRequestException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid roleId = Guid.NewGuid();
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId, RoleId: roleId);
+        var userId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: roleId);
 
         _userRoleRepositoryMock.SetupGetByUserAndRoleReturnsNull(userId, roleId);
 
@@ -164,9 +164,9 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleNotAssigned_ShouldNotDeleteAnything()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid roleId = Guid.NewGuid();
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId, RoleId: roleId);
+        var userId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: roleId);
 
         _userRoleRepositoryMock.SetupGetByUserAndRoleReturnsNull(userId, roleId);
 
@@ -188,9 +188,9 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
     public async Task Handle_WhenRoleNotAssigned_ShouldNotCommit()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid roleId = Guid.NewGuid();
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId, RoleId: roleId);
+        var userId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: roleId);
 
         _userRoleRepositoryMock.SetupGetByUserAndRoleReturnsNull(userId, roleId);
 
@@ -216,12 +216,12 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToUserRoleRepository()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
         using CancellationTokenSource cts = new();
 
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
 
         _userRoleRepositoryMock.SetupGetByUserAndRole(userRole);
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
@@ -237,12 +237,12 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
     public async Task Handle_WithCancellationToken_ShouldPassToUnitOfWork()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
         using CancellationTokenSource cts = new();
 
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId, RoleId: role.Id);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
 
         _userRoleRepositoryMock.SetupGetByUserAndRole(userRole);
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);

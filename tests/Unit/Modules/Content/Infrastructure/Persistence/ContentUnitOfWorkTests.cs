@@ -112,6 +112,6 @@ public class ContentUnitOfWorkTests
         int result = await unitOfWork.CommitAsync();
 
         // Assert
-        result.Should().BeGreaterThan(0);
+        result.Should().BePositive();
     }
 }

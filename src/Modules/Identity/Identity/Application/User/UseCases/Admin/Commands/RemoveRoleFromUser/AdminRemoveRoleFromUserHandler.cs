@@ -32,9 +32,11 @@ public class AdminRemoveRoleFromUserHandler(
         CancellationToken cancellationToken
     )
     {
+        Guid userId = Guid.Parse(input: command.UserId);
+
         // Get the user-role association
         UserRoleEntity? userRole = await userRoleRepository.GetByUserAndRoleAsync(
-            userId: command.UserId,
+            userId: userId,
             roleId: command.RoleId,
             cancellationToken: cancellationToken
         );
@@ -50,7 +52,7 @@ public class AdminRemoveRoleFromUserHandler(
 
         // Get updated user roles
         List<UserRoleEntity> userRoles = await userRoleRepository.GetUserRolesWithRoleAsync(
-            userId: command.UserId,
+            userId: userId,
             cancellationToken: cancellationToken
         );
 

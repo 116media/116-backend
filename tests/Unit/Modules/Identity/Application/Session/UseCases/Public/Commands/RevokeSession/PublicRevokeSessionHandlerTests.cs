@@ -34,7 +34,7 @@ public class PublicRevokeSessionHandlerTests
     public async Task Handle_WithValidSessionBelongingToUser_ShouldReturnSuccess()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.Create(userId);
         PublicRevokeSessionCommand command = new(UserId: userId, SessionId: session.Id.ToString());
 
@@ -52,7 +52,7 @@ public class PublicRevokeSessionHandlerTests
     public async Task Handle_ShouldCallRevokeAsync()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.Create(userId);
         PublicRevokeSessionCommand command = new(UserId: userId, SessionId: session.Id.ToString());
 
@@ -69,7 +69,7 @@ public class PublicRevokeSessionHandlerTests
     public async Task Handle_ShouldCommitUnitOfWork()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.Create(userId);
         PublicRevokeSessionCommand command = new(UserId: userId, SessionId: session.Id.ToString());
 
@@ -90,8 +90,8 @@ public class PublicRevokeSessionHandlerTests
     public async Task Handle_WhenSessionNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         PublicRevokeSessionCommand command = new(UserId: userId, SessionId: sessionId.ToString());
 
         _sessionRepositoryMock.SetupGetByIdReturnsNull(sessionId);
@@ -107,8 +107,8 @@ public class PublicRevokeSessionHandlerTests
     public async Task Handle_WhenSessionBelongsToAnotherUser_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid anotherUserId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var anotherUserId = Guid.NewGuid();
         SessionEntity session = SessionFactory.Create(anotherUserId);
         PublicRevokeSessionCommand command = new(UserId: userId, SessionId: session.Id.ToString());
 
@@ -125,8 +125,8 @@ public class PublicRevokeSessionHandlerTests
     public async Task Handle_WhenSessionNotFound_ShouldNotCallRevoke()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         PublicRevokeSessionCommand command = new(UserId: userId, SessionId: sessionId.ToString());
 
         _sessionRepositoryMock.SetupGetByIdReturnsNull(sessionId);
@@ -149,8 +149,8 @@ public class PublicRevokeSessionHandlerTests
     public async Task Handle_WhenSessionNotFound_ShouldNotCommit()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
-        Guid sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         PublicRevokeSessionCommand command = new(UserId: userId, SessionId: sessionId.ToString());
 
         _sessionRepositoryMock.SetupGetByIdReturnsNull(sessionId);
@@ -173,7 +173,7 @@ public class PublicRevokeSessionHandlerTests
     public async Task Handle_WithInvalidGuid_ShouldThrowFormatException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         PublicRevokeSessionCommand command = new(UserId: userId, SessionId: "invalid-guid");
 
         // Act
@@ -191,7 +191,7 @@ public class PublicRevokeSessionHandlerTests
     public async Task Handle_WithCancellationToken_ShouldPassToGetByIdAsync()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.Create(userId);
         PublicRevokeSessionCommand command = new(UserId: userId, SessionId: session.Id.ToString());
         using CancellationTokenSource cts = new();
@@ -209,7 +209,7 @@ public class PublicRevokeSessionHandlerTests
     public async Task Handle_WithCancellationToken_ShouldPassToRevokeAsync()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.Create(userId);
         PublicRevokeSessionCommand command = new(UserId: userId, SessionId: session.Id.ToString());
         using CancellationTokenSource cts = new();
@@ -227,7 +227,7 @@ public class PublicRevokeSessionHandlerTests
     public async Task Handle_WithCancellationToken_ShouldPassToUnitOfWork()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.Create(userId);
         PublicRevokeSessionCommand command = new(UserId: userId, SessionId: session.Id.ToString());
         using CancellationTokenSource cts = new();

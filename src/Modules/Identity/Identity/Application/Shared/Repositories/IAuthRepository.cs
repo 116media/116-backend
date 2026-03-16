@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using _116.Identity.Contracts.Application;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
 using _116.Shared.Application.Exceptions;
@@ -12,7 +13,7 @@ namespace _116.Identity.Application.Shared.Repositories;
 /// This repository handles auth flows like login, signup, password management, and OTP verification.
 /// For admin user CRUD operations, use I UserRepository instead.
 /// </summary>
-public interface IAuthRepository : IRepository<UserEntity>
+public interface IAuthRepository : IRepository<UserEntity>, IClaimsProvider
 {
     /// <summary>
     /// Retrieves a user by their unique identifier.
@@ -222,20 +223,6 @@ public interface IAuthRepository : IRepository<UserEntity>
     Task<bool> IsSessionValidAsync(Guid sessionId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Extracts the session ID from JWT claims and validates it exists.
-    /// </summary>
-    /// <param name="user">The claims principal from the authenticated user.</param>
-    /// <returns>The extracted session ID as a Guid.</returns>
-    /// <exception cref="AuthenticationException">
-    /// Thrown when session ID claim is missing or invalid.
-    /// </exception>
-    /// <remarks>
-    /// This method centralizes the logic for extracting session IDs from JWT tokens
-    /// and provides consistent error handling across all endpoints.
-    /// </remarks>
-    Guid GetSessionIdFromClaims(ClaimsPrincipal user);
-
-    /// <summary>
     /// Validates that a user has administrative privileges (Admin or SuperAdmin role).
     /// </summary>
     /// <param name="user">The user entity to validate.</param>
@@ -248,20 +235,6 @@ public interface IAuthRepository : IRepository<UserEntity>
     /// Should be called after authentication to validate admin access.
     /// </remarks>
     bool IsUserAdmin(UserEntity user);
-
-    /// <summary>
-    /// Extracts the user ID from JWT claims and validates authentication.
-    /// </summary>
-    /// <param name="user">The claims principal from the authenticated user.</param>
-    /// <returns>The extracted user ID as a Guid.</returns>
-    /// <exception cref="AuthenticationException">
-    /// Thrown when user authentication is invalid or user ID cannot be parsed.
-    /// </exception>
-    /// <remarks>
-    /// This method centralizes the logic for extracting user IDs from JWT tokens
-    /// and provides consistent error handling across all endpoints.
-    /// </remarks>
-    Guid GetUserIdFromClaims(ClaimsPrincipal user);
 
     /// <summary>
     /// Gets the existing external user or creates a new one for social authentication.

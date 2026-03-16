@@ -102,8 +102,8 @@ public class FileServiceTests
             )
             .ReturnsAsync(uploadResult);
 
-        string publicId = "test-public-id";
-        string folder = "avatars";
+        const string folder = "avatars";
+        const string publicId = "test-public-id";
 
         // Act
         await _service.UploadFileAsync(fileMock.Object, publicId, folder);
@@ -389,7 +389,7 @@ public class FileServiceTests
     public async Task DownloadFileAsync_WithNoContentType_ShouldResolveFromExtension()
     {
         // Arrange
-        string fileUrl = "https://example.com/image.webp";
+        const string fileUrl = "https://example.com/image.webp";
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("") };
         // Explicitly clear content type header
         responseMessage.Content.Headers.ContentType = null;
@@ -419,7 +419,7 @@ public class FileServiceTests
     public async Task DownloadFileAsync_WithUnknownExtension_ShouldUseOctetStream()
     {
         // Arrange
-        string fileUrl = "https://example.com/file.xyz";
+        const string fileUrl = "https://example.com/file.xyz";
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("") };
         // Explicitly clear content type header
         responseMessage.Content.Headers.ContentType = null;
@@ -449,7 +449,7 @@ public class FileServiceTests
     public async Task DownloadFileAsync_WithGifContentType_ShouldResolveGifExtension()
     {
         // Arrange
-        string fileUrl = "https://example.com/animation";
+        const string fileUrl = "https://example.com/animation";
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("") };
         responseMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/gif");
         responseMessage.Content.Headers.ContentLength = 2048;
@@ -478,7 +478,7 @@ public class FileServiceTests
     public async Task DownloadFileAsync_WithWebpContentType_ShouldResolveWebpExtension()
     {
         // Arrange
-        string fileUrl = "https://example.com/image";
+        const string fileUrl = "https://example.com/image";
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("") };
         responseMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/webp");
         responseMessage.Content.Headers.ContentLength = 1536;
@@ -507,7 +507,7 @@ public class FileServiceTests
     public async Task DownloadFileAsync_WithJpegExtension_ShouldResolveJpegContentType()
     {
         // Arrange
-        string fileUrl = "https://example.com/photo.jpeg";
+        const string fileUrl = "https://example.com/photo.jpeg";
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("") };
         // Explicitly clear content type header
         responseMessage.Content.Headers.ContentType = null;
@@ -537,7 +537,7 @@ public class FileServiceTests
     public async Task DownloadFileAsync_WithGifExtension_ShouldResolveGifContentType()
     {
         // Arrange
-        string fileUrl = "https://example.com/animation.gif";
+        const string fileUrl = "https://example.com/animation.gif";
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("") };
         // Explicitly clear content type header
         responseMessage.Content.Headers.ContentType = null;
@@ -567,7 +567,7 @@ public class FileServiceTests
     public async Task DownloadFileAsync_WithHttpCompletionOptionResponseHeadersRead_ShouldWork()
     {
         // Arrange
-        string fileUrl = "https://example.com/file.jpg";
+        const string fileUrl = "https://example.com/file.jpg";
 
         // HEAD request returns 0 content length
         var headResponse = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("") };
@@ -604,7 +604,7 @@ public class FileServiceTests
     public async Task DownloadFileAsync_WithSuccessfulHeadRequest_ShouldNotUseFallbacks()
     {
         // Arrange
-        string fileUrl = "https://example.com/image.png";
+        const string fileUrl = "https://example.com/image.png";
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("") };
         responseMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
         responseMessage.Content.Headers.ContentLength = 5120;
@@ -686,7 +686,7 @@ public class FileServiceTests
     public async Task DownloadFileAsync_WithNoExtensionAndJpegContentType_ShouldResolveJpgExtension()
     {
         // Arrange
-        string fileUrl = "https://example.com/image";
+        const string fileUrl = "https://example.com/image";
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("") };
         responseMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
         responseMessage.Content.Headers.ContentLength = 1024;
@@ -715,7 +715,7 @@ public class FileServiceTests
     public async Task DownloadFileAsync_WithPngExtension_ShouldResolvePngContentType()
     {
         // Arrange
-        string fileUrl = "https://example.com/image.png";
+        const string fileUrl = "https://example.com/image.png";
         var responseMessage = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("") };
         // Explicitly clear content type header
         responseMessage.Content.Headers.ContentType = null;

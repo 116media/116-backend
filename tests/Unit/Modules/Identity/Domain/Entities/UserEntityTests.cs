@@ -19,13 +19,13 @@ public class UserEntityTests
     public void Create_WithValidParameters_ShouldCreateUser()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
         string email = TestConstants.User.ValidEmail;
         string userName = TestConstants.User.ValidUserName;
         string passwordHash = TestConstants.User.DefaultPasswordHash;
 
         // Act
-        UserEntity user = UserEntity.Create(id, email, userName, passwordHash);
+        var user = UserEntity.Create(id, email, userName, passwordHash);
 
         // Assert
         user.Id.Should().Be(id);
@@ -44,7 +44,7 @@ public class UserEntityTests
     public void Create_WithInvalidEmail_ShouldThrowException(string? invalidEmail)
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         Action act = () =>
@@ -66,7 +66,7 @@ public class UserEntityTests
     public void Create_WithInvalidUserName_ShouldThrowException(string? invalidUserName)
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         Action act = () =>
@@ -88,7 +88,7 @@ public class UserEntityTests
     public void Create_WithInvalidPasswordHash_ShouldThrowException(string? invalidPasswordHash)
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         Action act = () =>
@@ -111,12 +111,12 @@ public class UserEntityTests
     public void CreateExternal_WithValidParameters_ShouldCreateExternalUser()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
         string userName = TestConstants.User.ValidUserName;
         string email = TestConstants.User.ValidEmail;
 
         // Act
-        UserEntity user = UserEntity.CreateExternal(id, userName, EnumAuthProvider.Google, email);
+        var user = UserEntity.CreateExternal(id, userName, EnumAuthProvider.Google, email);
 
         // Assert
         user.Id.Should().Be(id);
@@ -131,11 +131,11 @@ public class UserEntityTests
     public void CreateExternal_WithoutEmail_ShouldCreateExternalUser()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
         string userName = TestConstants.User.ValidUserName;
 
         // Act
-        UserEntity user = UserEntity.CreateExternal(id, userName, EnumAuthProvider.Facebook);
+        var user = UserEntity.CreateExternal(id, userName, EnumAuthProvider.Facebook);
 
         // Assert
         user.Id.Should().Be(id);
@@ -151,7 +151,7 @@ public class UserEntityTests
     public void CreateExternal_WithInvalidUserName_ShouldThrowException(string? invalidUserName)
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
         // Act
         Action act = () => UserEntity.CreateExternal(id, invalidUserName!, EnumAuthProvider.Google);
@@ -429,7 +429,7 @@ public class UserEntityTests
     public void HasRole_WhenUserHasRole_ShouldReturnTrue()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
         UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
         UserEntity user = UserFactory.Create();
         user.AssignRole(userRole);
@@ -459,7 +459,7 @@ public class UserEntityTests
     {
         // Arrange
         UserEntity user = UserFactory.Create();
-        Guid roleId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
         UserRoleEntity userRole = UserRoleFactory.Create(user.Id, roleId);
 
         // Act
@@ -474,7 +474,7 @@ public class UserEntityTests
     public void AssignRole_WhenRoleAlreadyAssigned_ShouldThrowException()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
         UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
         UserEntity user = UserFactory.Create();
         user.AssignRole(userRole);
@@ -492,7 +492,7 @@ public class UserEntityTests
     public void RemoveRole_WhenRoleAssigned_ShouldRemoveAndReturnTrue()
     {
         // Arrange
-        Guid roleId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
         UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
         UserEntity user = UserFactory.Create();
         user.AssignRole(userRole);
@@ -527,7 +527,7 @@ public class UserEntityTests
     {
         // Arrange
         UserEntity user = UserFactory.Create();
-        Guid avatarFileId = Guid.NewGuid();
+        var avatarFileId = Guid.NewGuid();
 
         // Act
         user.UpdateAvatar(avatarFileId, EnumAvatarSource.Manual);

@@ -139,7 +139,7 @@ public class AdminGetOwnProfileHandlerTests : BaseHandlerTest
     public async Task Handle_WhenUserNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        Guid userId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         AdminGetOwnProfileQuery query = new(UserId: userId);
 
         _authRepositoryMock.SetupGetUserWithRolesAndPermissionsByIdNotFound(userId);

@@ -17,7 +17,7 @@ public class ExportFormatTests
     public void Constructor_WithValidEnumValue_ShouldCreateInstance()
     {
         // Arrange
-        SessionExportFormat formatEnum = SessionExportFormat.Csv;
+        var formatEnum = SessionExportFormat.Csv;
 
         // Act
         ExportFormat format = new(formatEnum);
@@ -44,7 +44,7 @@ public class ExportFormatTests
     public void Constructor_WithInvalidEnumValue_ShouldThrowArgumentException()
     {
         // Arrange
-        SessionExportFormat invalidEnum = (SessionExportFormat)999;
+        var invalidEnum = (SessionExportFormat)999;
 
         // Act & Assert
         Action act = () => new ExportFormat(invalidEnum);
@@ -156,7 +156,7 @@ public class ExportFormatTests
     public void ImplicitConversionFromEnum_ShouldCreateInstance()
     {
         // Arrange
-        SessionExportFormat formatEnum = SessionExportFormat.Csv;
+        var formatEnum = SessionExportFormat.Csv;
 
         // Act
         ExportFormat format = formatEnum;

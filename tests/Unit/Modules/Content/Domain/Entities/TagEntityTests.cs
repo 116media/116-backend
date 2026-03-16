@@ -17,12 +17,12 @@ public class TagEntityTests
     public void Create_WithValidValues_ShouldCreateTag()
     {
         // Arrange
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
         string name = TestConstants.Content.Tag.ValidName;
         string slug = TestConstants.Content.Tag.ValidSlug;
 
         // Act
-        TagEntity entity = TagEntity.Create(id, name, slug);
+        var entity = TagEntity.Create(id, name, slug);
 
         // Assert
         entity.Id.Should().Be(id);

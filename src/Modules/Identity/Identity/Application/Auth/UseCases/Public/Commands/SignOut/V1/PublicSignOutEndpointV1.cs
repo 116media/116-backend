@@ -2,7 +2,7 @@ using System.Security.Claims;
 using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
-using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Contracts.Application;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -47,11 +47,11 @@ public class PublicSignOutEndpointV1 : ICarterModule
                 async (
                     PublicSignOutRequest request,
                     ClaimsPrincipal user,
-                    IAuthRepository authRepository,
+                    IClaimsProvider authProvider,
                     IDispatcher dispatcher
                 ) =>
                 {
-                    Guid userId = authRepository.GetUserIdFromClaims(user: user);
+                    Guid userId = authProvider.GetUserIdFromClaims(user: user);
 
                     var command = new PublicSignOutCommand(UserId: userId, RefreshToken: request.RefreshToken);
                     PublicSignOutResult result = await dispatcher.Send(request: command);
