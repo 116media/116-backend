@@ -44,6 +44,16 @@ public static class MockVideoRepository
         return mock;
     }
 
+    public static Mock<IVideoRepository> SetupGetByOrderItemIdAsync(
+        this Mock<IVideoRepository> mock,
+        Guid orderItemId,
+        VideoEntity? entity
+    )
+    {
+        mock.Setup(x => x.GetByOrderItemIdAsync(orderItemId, It.IsAny<CancellationToken>())).ReturnsAsync(entity);
+        return mock;
+    }
+
     public static Mock<IVideoRepository> SetupGetBySlug(
         this Mock<IVideoRepository> mock,
         string slug,
@@ -123,6 +133,8 @@ public static class MockVideoRepository
         mock.Setup(x => x.AddAsync(It.IsAny<VideoEntity>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         mock.Setup(x => x.AddTagAsync(It.IsAny<VideoTagEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        mock.Setup(x => x.GetByOrderItemIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((VideoEntity?)null);
         mock.Setup(x => x.GetBySlugAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((VideoEntity?)null);
         mock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
