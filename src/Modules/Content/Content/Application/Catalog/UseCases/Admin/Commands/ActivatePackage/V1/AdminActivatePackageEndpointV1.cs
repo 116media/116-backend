@@ -41,7 +41,9 @@ public class AdminActivatePackageEndpointV1 : ICarterModule
                 {
                     var command = new AdminActivatePackageCommand(Id: id);
                     AdminActivatePackageResult result = await dispatcher.Send(request: command);
-                    return Results.Ok(new AdminActivatePackageResponse(Package: result.Package));
+
+                    var response = new AdminActivatePackageResponse(Package: result.Package);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: AdminActivatePackageMetaField.AdminActivatePackage.Name)

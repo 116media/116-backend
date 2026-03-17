@@ -29,6 +29,7 @@ public static class MappingRegistration
         VideoMapper.Register(config);
         ShortVideoMapper.Register(config);
         LyricsMapper.Register(config);
+        ContentOrderMapper.Register(config);
 
         // Compile once for performance
         config.Compile();

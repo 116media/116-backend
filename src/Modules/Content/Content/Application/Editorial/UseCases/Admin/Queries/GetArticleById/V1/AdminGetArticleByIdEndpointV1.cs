@@ -42,7 +42,9 @@ public class AdminGetArticleByIdEndpointV1 : ICarterModule
                 {
                     var query = new AdminGetArticleByIdQuery(Id: id);
                     AdminGetArticleByIdResult result = await dispatcher.Send(request: query);
-                    return Results.Ok(new AdminGetArticleByIdResponse(Article: result.Article));
+
+                    var response = new AdminGetArticleByIdResponse(Article: result.Article);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: AdminGetArticleByIdMetaField.AdminGetArticleById.Name)

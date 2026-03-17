@@ -325,6 +325,16 @@ public static class TestConstants
             public const decimal UpdatedPriceUsd = 50m;
         }
 
+        /// <summary>Constants for Commerce entity testing (orders, payments, items, tiers).</summary>
+        public static class Commerce
+        {
+            public const decimal ValidTierPriceUsd = 100.00m;
+            public const decimal ValidPromoPriceUsd = 50.00m;
+            public const decimal ValidTotalAmountUsd = 150.00m;
+            public const string ValidReceiptUrl = "https://receipts.example.com/pay-123.pdf";
+            public const string ValidRejectionNotes = "Payment proof is not legible, please resubmit.";
+        }
+
         /// <summary>Constants for Editorial entity testing (Article, Video, ShortVideo, Lyrics).</summary>
         public static class Editorial
         {

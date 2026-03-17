@@ -51,4 +51,27 @@ public static class FileConstants
     /// Allowed file extensions for avatar uploads.
     /// </summary>
     public static readonly string[] AllowedAvatarExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+
+    /// <summary>
+    /// Maximum file size for raw file uploads, e.g. document attachments (5MB).
+    /// </summary>
+    public const long MaxRawFileSizeBytes = 5 * 1024 * 1024;
+
+    /// <summary>
+    /// Allowed MIME types for raw file uploads (images and PDF).
+    /// </summary>
+    public static readonly string[] AllowedRawFileMimeTypes =
+    [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        "application/pdf",
+    ];
+
+    /// <summary>
+    /// Allowed file extensions for raw file uploads.
+    /// </summary>
+    public static readonly string[] AllowedRawFileExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf"];
 }

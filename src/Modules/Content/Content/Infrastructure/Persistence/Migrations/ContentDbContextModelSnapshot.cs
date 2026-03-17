@@ -203,7 +203,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text")
-                        .HasDefaultValue("Body")
+                        .HasDefaultValue("Cover")
                         .HasColumnName("image_type");
 
                     b.Property<string>("StorageKey")
@@ -372,6 +372,241 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("uq_category_pricing_category_tier");
 
                     b.ToTable("category_pricing", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ContentItemTierEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("OrderItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_item_id");
+
+                    b.Property<decimal>("PriceSnapshotUsd")
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("price_snapshot_usd");
+
+                    b.Property<Guid>("PricingTierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("pricing_tier_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_content_item_tiers");
+
+                    b.HasIndex("OrderItemId")
+                        .HasDatabaseName("ix_content_item_tiers_order_item_id");
+
+                    b.HasIndex("PricingTierId")
+                        .HasDatabaseName("ix_content_item_tiers_pricing_tier_id");
+
+                    b.ToTable("content_item_tiers", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ContentOrderEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
+
+                    b.Property<Guid?>("PackageId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("package_id");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<decimal>("TotalAmountUsd")
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("total_amount_usd");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_content_orders");
+
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("ix_content_orders_customer_id");
+
+                    b.HasIndex("PackageId")
+                        .HasDatabaseName("ix_content_orders_package_id");
+
+                    b.ToTable("content_orders", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ContentOrderItemEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
+
+                    b.Property<int>("ContentKind")
+                        .HasColumnType("integer")
+                        .HasColumnName("content_kind");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<bool>("IsBonus")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_bonus");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<decimal?>("PromoPriceSnapshotUsd")
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("promo_price_snapshot_usd");
+
+                    b.Property<Guid?>("PromotionLevelId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("promotion_level_id");
+
+                    b.Property<bool>("SocialBoost")
+                        .HasColumnType("boolean")
+                        .HasColumnName("social_boost");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_content_order_items");
+
+                    b.HasIndex("CategoryId")
+                        .HasDatabaseName("ix_content_order_items_category_id");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("ix_content_order_items_order_id");
+
+                    b.HasIndex("PromotionLevelId")
+                        .HasDatabaseName("ix_content_order_items_promotion_level_id");
+
+                    b.ToTable("content_order_items", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ContentPaymentEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("AmountUsd")
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("amount_usd");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<int?>("PaymentMethod")
+                        .HasColumnType("integer")
+                        .HasColumnName("payment_method");
+
+                    b.Property<Guid?>("PaymentProofFileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("payment_proof_file_id");
+
+                    b.Property<string>("ReceiptUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("receipt_url");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<DateTimeOffset?>("VerifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("verified_at");
+
+                    b.Property<Guid?>("VerifiedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("verified_by_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_content_payments");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_content_payments_order_id");
+
+                    b.ToTable("content_payments", "content");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ContentTypeEntity", b =>
@@ -1205,6 +1440,88 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.Navigation("PricingTier");
                 });
 
+            modelBuilder.Entity("_116.Content.Domain.Entities.ContentItemTierEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.ContentOrderItemEntity", "OrderItem")
+                        .WithMany("Tiers")
+                        .HasForeignKey("OrderItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_content_item_tiers_content_order_items_order_item_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.PricingTierEntity", "PricingTier")
+                        .WithMany()
+                        .HasForeignKey("PricingTierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_content_item_tiers_pricing_tiers_pricing_tier_id");
+
+                    b.Navigation("OrderItem");
+
+                    b.Navigation("PricingTier");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ContentOrderEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.CustomerEntity", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_content_orders_customers_customer_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.PackageEntity", "Package")
+                        .WithMany()
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_content_orders_packages_package_id");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Package");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ContentOrderItemEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_content_order_items_categories_category_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.ContentOrderEntity", "Order")
+                        .WithMany("Items")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_content_order_items_content_orders_order_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.PromotionLevelEntity", "PromotionLevel")
+                        .WithMany()
+                        .HasForeignKey("PromotionLevelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_content_order_items_promotion_levels_promotion_level_id");
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Order");
+
+                    b.Navigation("PromotionLevel");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ContentPaymentEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.ContentOrderEntity", "Order")
+                        .WithOne("Payment")
+                        .HasForeignKey("_116.Content.Domain.Entities.ContentPaymentEntity", "OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_content_payments_content_orders_order_id");
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsEntity", b =>
                 {
                     b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
@@ -1308,6 +1625,18 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.Navigation("PackageSlots");
 
                     b.Navigation("Pricing");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ContentOrderEntity", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("Payment");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ContentOrderItemEntity", b =>
+                {
+                    b.Navigation("Tiers");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.PackageEntity", b =>

@@ -132,6 +132,21 @@ public class CategoryEntity : Aggregate<Guid>
     }
 
     /// <summary>
+    /// Guards that this category is eligible for use on a commissioned order item.
+    /// A category is commissionable when it is active and not free.
+    /// </summary>
+    /// <exception cref="_116.Shared.Application.Exceptions.NotFoundException">
+    /// Thrown when the category is inactive or free, surfaced as a not-found error to avoid leaking state.
+    /// </exception>
+    public void EnsureCommissionable()
+    {
+        if (!IsActive || IsFree)
+        {
+            throw CategoryErrors.NotFound(id: Id);
+        }
+    }
+
+    /// <summary>
     /// Activates the category, making it selectable for content creation and orders.
     /// </summary>
     /// <returns>True if the category was activated, false if already active.</returns>

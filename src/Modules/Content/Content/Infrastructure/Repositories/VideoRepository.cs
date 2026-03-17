@@ -98,6 +98,15 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     }
 
     /// <inheritdoc />
+    public async Task<VideoEntity?> GetByOrderItemIdAsync(
+        Guid orderItemId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await context.Videos.FirstOrDefaultAsync(v => v.OrderItemId == orderItemId, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task AddAsync(VideoEntity video, CancellationToken cancellationToken = default)
     {
         await context.Videos.AddAsync(video, cancellationToken);

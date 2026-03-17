@@ -66,7 +66,7 @@ public class AdminAttachYoutubeIdHandler(
         if (oldThumbnailStorageKey is not null)
         {
             await cloudinaryService.DeleteImageAsync(
-                storageKey: oldThumbnailStorageKey,
+                publicId: oldThumbnailStorageKey,
                 cancellationToken: cancellationToken
             );
         }

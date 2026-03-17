@@ -41,7 +41,9 @@ public class AdminActivateContentTypeEndpointV1 : ICarterModule
                 {
                     var command = new AdminActivateContentTypeCommand(Id: id);
                     AdminActivateContentTypeResult result = await dispatcher.Send(request: command);
-                    return Results.Ok(new AdminActivateContentTypeResponse(ContentType: result.ContentType));
+
+                    var response = new AdminActivateContentTypeResponse(ContentType: result.ContentType);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: AdminActivateContentTypeMetaField.ActivateContentType.Name)

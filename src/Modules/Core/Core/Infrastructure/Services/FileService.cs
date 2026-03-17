@@ -43,6 +43,33 @@ public class FileService(HttpClient httpClient, ICloudinaryService cloudinarySer
     }
 
     /// <inheritdoc />
+    public async Task<FileUploadResult> UploadRawFileAsync(
+        IFormFile file,
+        string publicId,
+        string? folder = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        CloudinaryUploadResult uploadResult = await cloudinaryService.UploadRawAsync(
+            file,
+            publicId,
+            folder,
+            cancellationToken
+        );
+
+        var fileId = Guid.NewGuid();
+
+        return new FileUploadResult(
+            FileId: fileId,
+            SecureUrl: uploadResult.SecureUrl,
+            Format: uploadResult.Format,
+            Width: uploadResult.Width,
+            Height: uploadResult.Height,
+            Bytes: uploadResult.Bytes
+        );
+    }
+
+    /// <inheritdoc />
     public async Task<FileDownloadResult> DownloadFileAsync(
         string fileUrl,
         CancellationToken cancellationToken = default

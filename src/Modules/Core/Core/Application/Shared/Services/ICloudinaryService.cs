@@ -26,25 +26,39 @@ public interface ICloudinaryService
     );
 
     /// <summary>
-    /// Deletes a single image from Cloudinary by its storage key (public ID).
-    /// Named <c>storageKey</c> rather than <c>cloudinaryPublicId</c> to remain CDN-agnostic:
-    /// if the storage provider changes (e.g. S3, Bunny CDN), the call site does not need to change.
+    /// Uploads a raw file (image or PDF) to Cloudinary using signed upload with Overwrite enabled.
+    /// Images are uploaded as <c>image</c> resource type; PDFs as <c>raw</c>.
+    /// Validates against raw-file constraints: 5 MB limit, images and PDF allowed.
     /// </summary>
-    /// <param name="storageKey">The provider-agnostic storage key (Cloudinary public ID).</param>
+    /// <param name="file">The file to upload.</param>
+    /// <param name="publicId">The public ID for the file.</param>
+    /// <param name="folder">Optional folder path in Cloudinary.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns><c>true</c> if the resource was deleted; <c>false</c> if it was not found.</returns>
-    Task<bool> DeleteImageAsync(string storageKey, CancellationToken cancellationToken = default);
+    /// <returns>Upload result containing the public URL, public ID, and metadata.</returns>
+    Task<CloudinaryUploadResult> UploadRawAsync(
+        IFormFile file,
+        string publicId,
+        string? folder = null,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
-    /// Deletes multiple images from Cloudinary in a single batch request.
-    /// Named <c>storageKeys</c> rather than <c>cloudinaryPublicIds</c> to remain CDN-agnostic.
-    /// Cloudinary batch delete supports a maximum of 100 keys per call; this implementation
+    /// Deletes a single file from Cloudinary by its public ID.
+    /// </summary>
+    /// <param name="publicId">The Cloudinary public ID of the file to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns><c>true</c> if the resource was deleted; <c>false</c> if it was not found.</returns>
+    Task<bool> DeleteImageAsync(string publicId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes multiple files from Cloudinary in a single batch request.
+    /// Cloudinary batch delete supports a maximum of 100 public IDs per call; this implementation
     /// automatically splits larger collections into batches of 100.
     /// </summary>
-    /// <param name="storageKeys">The provider-agnostic storage keys (Cloudinary public IDs) to delete.</param>
+    /// <param name="publicIds">The Cloudinary public IDs of the files to delete.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns><c>true</c> if all deletions succeeded; <c>false</c> if any resource was not found.</returns>
-    Task<bool> DeleteImagesAsync(IEnumerable<string> storageKeys, CancellationToken cancellationToken = default);
+    Task<bool> DeleteImagesAsync(IEnumerable<string> publicIds, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

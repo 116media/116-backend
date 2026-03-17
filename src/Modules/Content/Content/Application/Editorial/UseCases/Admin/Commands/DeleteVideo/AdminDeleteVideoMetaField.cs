@@ -28,7 +28,7 @@ public static class AdminDeleteVideoMetaField
             - User must have SuperAdmin role\n
             \n
             **Response Codes:**\n
-            - Returns 204 No Content on success\n
+            - Returns 200 OK on success\n
             - Returns 400 Bad Request if the video is not in Draft or Rejected status\n
             - Returns 401 Unauthorized if access token is invalid or expired\n
             - Returns 403 Forbidden if user lacks SuperAdmin role\n

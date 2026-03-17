@@ -48,7 +48,7 @@ public class AdminDeleteArticleHandler(
 
         if (storageKeys.Count > 0)
         {
-            await cloudinaryService.DeleteImagesAsync(storageKeys: storageKeys, cancellationToken: cancellationToken);
+            await cloudinaryService.DeleteImagesAsync(publicIds: storageKeys, cancellationToken: cancellationToken);
         }
 
         articleRepository.Remove(article: article);

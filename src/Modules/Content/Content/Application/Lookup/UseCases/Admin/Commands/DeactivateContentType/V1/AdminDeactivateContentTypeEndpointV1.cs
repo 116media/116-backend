@@ -41,7 +41,9 @@ public class AdminDeactivateContentTypeEndpointV1 : ICarterModule
                 {
                     var command = new AdminDeactivateContentTypeCommand(Id: id);
                     AdminDeactivateContentTypeResult result = await dispatcher.Send(request: command);
-                    return Results.Ok(new AdminDeactivateContentTypeResponse(ContentType: result.ContentType));
+
+                    var response = new AdminDeactivateContentTypeResponse(ContentType: result.ContentType);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: AdminDeactivateContentTypeMetaField.AdminDeactivateContentType.Name)

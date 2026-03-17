@@ -79,4 +79,20 @@ public interface IFileService
     /// a FileEntity that references the external URL.
     /// </remarks>
     Task<FileDownloadResult> DownloadFileAsync(string fileUrl, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Uploads a raw file (image or PDF) to cloud storage.
+    /// Routes to the appropriate Cloudinary upload type based on file extension.
+    /// </summary>
+    /// <param name="file">The file to upload.</param>
+    /// <param name="publicId">The public ID for the file.</param>
+    /// <param name="folder">Optional folder path in cloud storage.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Upload result containing public URL, metadata, and generated file ID.</returns>
+    Task<FileUploadResult> UploadRawFileAsync(
+        IFormFile file,
+        string publicId,
+        string? folder = null,
+        CancellationToken cancellationToken = default
+    );
 }

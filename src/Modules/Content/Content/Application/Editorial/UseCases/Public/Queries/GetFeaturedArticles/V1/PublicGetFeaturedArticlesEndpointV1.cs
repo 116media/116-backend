@@ -41,7 +41,9 @@ public class PublicGetFeaturedArticlesEndpointV1 : ICarterModule
                 {
                     var query = new PublicGetFeaturedArticlesQuery();
                     PublicGetFeaturedArticlesResult result = await dispatcher.Send(request: query);
-                    return Results.Ok(new PublicGetFeaturedArticlesResponse(Articles: result.Articles));
+
+                    var response = new PublicGetFeaturedArticlesResponse(Articles: result.Articles);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: PublicGetFeaturedArticlesMetaField.PublicGetFeaturedArticles.Name)

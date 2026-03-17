@@ -44,6 +44,16 @@ public static class MockArticleRepository
         return mock;
     }
 
+    public static Mock<IArticleRepository> SetupGetByOrderItemIdAsync(
+        this Mock<IArticleRepository> mock,
+        Guid orderItemId,
+        ArticleEntity? entity
+    )
+    {
+        mock.Setup(x => x.GetByOrderItemIdAsync(orderItemId, It.IsAny<CancellationToken>())).ReturnsAsync(entity);
+        return mock;
+    }
+
     public static Mock<IArticleRepository> SetupGetBySlug(
         this Mock<IArticleRepository> mock,
         string slug,
@@ -156,6 +166,8 @@ public static class MockArticleRepository
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.AddTagAsync(It.IsAny<ArticleTagEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        mock.Setup(x => x.GetByOrderItemIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ArticleEntity?)null);
         mock.Setup(x => x.GetBySlugAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((ArticleEntity?)null);
         mock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))

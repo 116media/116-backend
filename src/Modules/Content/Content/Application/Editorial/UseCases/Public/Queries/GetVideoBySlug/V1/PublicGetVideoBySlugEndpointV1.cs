@@ -41,7 +41,9 @@ public class PublicGetVideoBySlugEndpointV1 : ICarterModule
                 {
                     var query = new PublicGetVideoBySlugQuery(Slug: slug);
                     PublicGetVideoBySlugResult result = await dispatcher.Send(request: query);
-                    return Results.Ok(new PublicGetVideoBySlugResponse(Video: result.Video));
+
+                    var response = new PublicGetVideoBySlugResponse(Video: result.Video);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: PublicGetVideoBySlugMetaField.PublicGetVideoBySlug.Name)

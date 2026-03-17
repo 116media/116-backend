@@ -114,6 +114,15 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     }
 
     /// <inheritdoc />
+    public async Task<ArticleEntity?> GetByOrderItemIdAsync(
+        Guid orderItemId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await context.Articles.FirstOrDefaultAsync(a => a.OrderItemId == orderItemId, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task AddAsync(ArticleEntity article, CancellationToken cancellationToken = default)
     {
         await context.Articles.AddAsync(article, cancellationToken);
