@@ -18,7 +18,7 @@ public static class AdminCancelOrderMetaField
             - User must have Admin or SuperAdmin role\n
             \n
             **Response Codes:**\n
-            - Returns 204 No Content on success\n
+            - Returns 200 OK on success\n
             - Returns 400 Bad Request if the order is Paid and cannot be cancelled\n
             - Returns 401 Unauthorized if access token is invalid or expired\n
             - Returns 403 Forbidden if user lacks Admin role\n
