@@ -1,5 +1,5 @@
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder.Contracts;
 using _116.Content.Application.Shared.Errors;
-using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
@@ -10,9 +10,11 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 /// Handles the <see cref="AdminSubmitOrderCommand" /> to submit a Draft order for payment.
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
-/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminSubmitOrderHandler(IContentOrderRepository contentOrderRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<AdminSubmitOrderCommand, AdminSubmitOrderResult>
+/// <param name="submitOrderFactory">Factory for the order submission flow.</param>
+public class AdminSubmitOrderHandler(
+    IContentOrderRepository contentOrderRepository,
+    ISubmitOrderFactory submitOrderFactory
+) : ICommandHandler<AdminSubmitOrderCommand, AdminSubmitOrderResult>
 {
     /// <inheritdoc />
     public async Task<AdminSubmitOrderResult> Handle(
@@ -32,24 +34,7 @@ public class AdminSubmitOrderHandler(IContentOrderRepository contentOrderReposit
             throw ContentOrderErrors.NotFound(id: orderId);
         }
 
-        bool hasItemWithTier = order.Items.Any(i => i.Tiers.Count > 0);
-
-        if (!hasItemWithTier || order.Items.Count == 0)
-        {
-            throw ContentOrderErrors.MustHaveAtLeastOneItemWithTier();
-        }
-
-        order.Submit();
-
-        var payment = ContentPaymentEntity.Create(
-            id: Guid.NewGuid(),
-            orderId: orderId,
-            amountUsd: order.TotalAmountUsd
-        );
-
-        await contentOrderRepository.AddPaymentAsync(payment: payment, ct: cancellationToken);
-        await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+        await submitOrderFactory.SubmitAsync(order: order, ct: cancellationToken);
 
         return new AdminSubmitOrderResult(IsSuccess: true);
     }
