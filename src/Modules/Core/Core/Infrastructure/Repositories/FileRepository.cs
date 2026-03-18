@@ -212,4 +212,36 @@ public class FileRepository(CoreDbContext context, IFileService fileService) : I
 
         return await UpdateAvatarFromUrlAsync(currentAvatarFileId, avatarUrl!, userId, cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<FileEntity> UploadAndStoreRawFileAsync(
+        IFormFile file,
+        string publicId,
+        string folder,
+        string originalFileName,
+        string mimeType,
+        CancellationToken cancellationToken = default
+    )
+    {
+        FileUploadResult uploadResult = await fileService.UploadRawFileAsync(
+            file: file,
+            publicId: publicId,
+            folder: folder,
+            cancellationToken: cancellationToken
+        );
+
+        var fileEntity = FileEntity.Create(
+            id: uploadResult.FileId,
+            fileName: publicId,
+            originalFileName: originalFileName,
+            mimeType: mimeType,
+            storageUrl: uploadResult.SecureUrl,
+            sizeInBytes: uploadResult.Bytes
+        );
+
+        await AddAsync(fileEntity, cancellationToken);
+        await SaveChangesAsync(cancellationToken);
+
+        return fileEntity;
+    }
 }
