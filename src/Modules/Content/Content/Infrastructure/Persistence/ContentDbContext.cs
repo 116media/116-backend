@@ -92,6 +92,26 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options) : DbCo
     /// </summary>
     public DbSet<LyricsEntity> Lyrics => Set<LyricsEntity>();
 
+    /// <summary>
+    /// Gets the DbSet for content order entities.
+    /// </summary>
+    public DbSet<ContentOrderEntity> ContentOrders => Set<ContentOrderEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for content order item entities.
+    /// </summary>
+    public DbSet<ContentOrderItemEntity> ContentOrderItems => Set<ContentOrderItemEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for content item tier snapshot entities.
+    /// </summary>
+    public DbSet<ContentItemTierEntity> ContentItemTiers => Set<ContentItemTierEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for content payment entities.
+    /// </summary>
+    public DbSet<ContentPaymentEntity> ContentPayments => Set<ContentPaymentEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
