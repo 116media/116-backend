@@ -1,6 +1,5 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Commerce.Factories;
 using _116.Content.Application.Shared.Mappers;
-using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
@@ -12,11 +11,11 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderPayme
 /// <summary>
 /// Handles the <see cref="AdminGetOrderPaymentQuery" /> to retrieve the payment record for an order.
 /// </summary>
-/// <param name="contentOrderRepository">Repository for content order data access operations.</param>
+/// <param name="orderPaymentFactory">Shared factory for fetching and validating payment records.</param>
 /// <param name="fileRepository">Repository for resolving payment proof file metadata.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminGetOrderPaymentHandler(
-    IContentOrderRepository contentOrderRepository,
+    IOrderPaymentFactory orderPaymentFactory,
     IFileRepository fileRepository,
     IMapper mapper
 ) : IQueryHandler<AdminGetOrderPaymentQuery, AdminGetOrderPaymentResult>
@@ -29,15 +28,10 @@ public class AdminGetOrderPaymentHandler(
     {
         Guid orderId = Guid.Parse(query.OrderId);
 
-        ContentPaymentEntity? payment = await contentOrderRepository.GetPaymentByOrderIdAsync(
+        ContentPaymentEntity payment = await orderPaymentFactory.GetByOrderIdOrThrowAsync(
             orderId: orderId,
             ct: cancellationToken
         );
-
-        if (payment is null)
-        {
-            throw ContentOrderErrors.PaymentNotFound(orderId: orderId);
-        }
 
         FileEntity? proofFile = payment.PaymentProofFileId.HasValue
             ? await fileRepository.GetByIdAsync(payment.PaymentProofFileId.Value, cancellationToken)
