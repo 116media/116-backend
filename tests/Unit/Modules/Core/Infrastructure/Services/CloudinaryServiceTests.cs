@@ -326,6 +326,136 @@ public class CloudinaryServiceTests
 
     #endregion
 
+    #region UploadRawAsync Tests
+
+    [Fact]
+    public async Task UploadRawAsync_WithNullFile_ShouldThrowBadRequestException()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+
+        Func<Task> act = async () => await service.UploadRawAsync(null!, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadRequestException>();
+    }
+
+    [Fact]
+    public async Task UploadRawAsync_WithEmptyFile_ShouldThrowBadRequestException()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(0);
+        fileMock.Setup(f => f.FileName).Returns("test.pdf");
+
+        Func<Task> act = async () => await service.UploadRawAsync(fileMock.Object, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadRequestException>();
+    }
+
+    [Fact]
+    public async Task UploadRawAsync_WithTooLargeFile_ShouldThrowBadRequestException()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(6 * 1024 * 1024); // 6 MB, over the 5 MB limit
+        fileMock.Setup(f => f.FileName).Returns("proof.pdf");
+
+        Func<Task> act = async () => await service.UploadRawAsync(fileMock.Object, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadRequestException>();
+    }
+
+    [Fact]
+    public async Task UploadRawAsync_WithInvalidExtension_ShouldThrowBadRequestException()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(1024);
+        fileMock.Setup(f => f.FileName).Returns("proof.exe");
+        fileMock.Setup(f => f.ContentType).Returns("application/x-msdownload");
+
+        Func<Task> act = async () => await service.UploadRawAsync(fileMock.Object, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadRequestException>();
+    }
+
+    [Fact]
+    public async Task UploadRawAsync_WithInvalidContentType_ShouldThrowBadRequestException()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(1024);
+        fileMock.Setup(f => f.FileName).Returns("proof.jpg");
+        fileMock.Setup(f => f.ContentType).Returns("video/mp4");
+
+        Func<Task> act = async () => await service.UploadRawAsync(fileMock.Object, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadRequestException>();
+    }
+
+    [Fact]
+    public async Task UploadRawAsync_WithValidPdfFile_ShouldPassValidation()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(1024);
+        fileMock.Setup(f => f.FileName).Returns("proof.pdf");
+        fileMock.Setup(f => f.ContentType).Returns("application/pdf");
+        fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
+
+        // Validation passes, upload fails because there's no real Cloudinary connection
+        Func<Task> act = async () => await service.UploadRawAsync(fileMock.Object, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
+    }
+
+    [Fact]
+    public async Task UploadRawAsync_WithValidImageFile_ShouldPassValidation()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(1024);
+        fileMock.Setup(f => f.FileName).Returns("proof.jpg");
+        fileMock.Setup(f => f.ContentType).Returns("image/jpeg");
+        fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
+
+        // Validation passes, upload fails because there's no real Cloudinary connection
+        Func<Task> act = async () => await service.UploadRawAsync(fileMock.Object, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
+    }
+
+    [Fact]
+    public async Task UploadRawAsync_WithNullContentType_ShouldPassValidation()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(1024);
+        fileMock.Setup(f => f.FileName).Returns("proof.png");
+        fileMock.Setup(f => f.ContentType).Returns((Func<string>)null!);
+        fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
+
+        Func<Task> act = async () => await service.UploadRawAsync(fileMock.Object, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
+    }
+
+    [Fact]
+    public async Task UploadRawAsync_WithOctetStreamContentType_ShouldPassValidation()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(1024);
+        fileMock.Setup(f => f.FileName).Returns("proof.jpg");
+        fileMock.Setup(f => f.ContentType).Returns("application/octet-stream");
+        fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
+
+        Func<Task> act = async () => await service.UploadRawAsync(fileMock.Object, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
+    }
+
+    #endregion
+
     #region DeleteImageAsync Tests
 
     // Note: DeleteImageAsync would also require integration testing or complex mocking
