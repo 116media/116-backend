@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
+using _116.Core.Application.Shared.DTOs;
 using _116.Core.Domain.Entities;
 using _116.Tests.Fixtures.Factories;
 using _116.Tests.Fixtures.Factories.Content;
@@ -88,10 +89,12 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
         ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
         var proofFile = new FileDto(
             Guid.NewGuid(),
-            "https://example.com/proof.pdf",
-            "application/pdf",
             "proof.pdf",
-            10240
+            "proof.pdf",
+            "application/pdf",
+            "https://example.com/proof.pdf",
+            10240,
+            false
         );
 
         PaymentDto result = payment.ToPaymentDto(Mapper, proofFile: proofFile);
