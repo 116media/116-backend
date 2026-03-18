@@ -50,6 +50,18 @@ public class LyricsQueryBuilderTests
         builder.Build().Should().NotBeNull();
     }
 
+    [Fact]
+    public void WithSearch_CalledTwice_ShouldCombineSpecificationsWithAnd()
+    {
+        var builder = new LyricsQueryBuilder();
+        builder.WithSearch("first");
+        builder.WithSearch("second");
+
+        Specification<LyricsEntity>? spec = builder.Build();
+
+        spec.Should().NotBeNull();
+    }
+
     #endregion
 
     #region Fluent chaining — returns self
