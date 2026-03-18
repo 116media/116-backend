@@ -116,7 +116,7 @@ public partial class AdminUpdateArticleHandler(
         if (imagesToRemove.Count > 0)
         {
             IEnumerable<string> storageKeys = imagesToRemove.Select(img => img.StorageKey);
-            await cloudinaryService.DeleteImagesAsync(storageKeys: storageKeys, cancellationToken: cancellationToken);
+            await cloudinaryService.DeleteImagesAsync(publicIds: storageKeys, cancellationToken: cancellationToken);
 
             articleRepository.RemoveImages(images: imagesToRemove);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

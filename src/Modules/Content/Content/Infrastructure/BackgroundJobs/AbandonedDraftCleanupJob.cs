@@ -79,7 +79,7 @@ public class AbandonedDraftCleanupJob(IServiceScopeFactory scopeFactory, ILogger
                     if (storageKeys.Count > 0)
                     {
                         bool deleted = await cloudinaryService.DeleteImagesAsync(
-                            storageKeys: storageKeys,
+                            publicIds: storageKeys,
                             cancellationToken: context.CancellationToken
                         );
 

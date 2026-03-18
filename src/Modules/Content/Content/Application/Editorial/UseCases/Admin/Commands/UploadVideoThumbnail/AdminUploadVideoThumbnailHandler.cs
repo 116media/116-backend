@@ -32,13 +32,13 @@ public class AdminUploadVideoThumbnailHandler(
             cancellationToken: cancellationToken
         );
 
-        string? oldKey = video.ThumbnailStorageKey;
+        string? oldStorageKey = video.ThumbnailStorageKey;
 
-        string storageKey = videoId.ToString();
+        string newStorageKey = videoId.ToString();
 
         CloudinaryUploadResult result = await cloudinaryService.UploadImageAsync(
             file: command.File,
-            publicId: storageKey,
+            publicId: newStorageKey,
             folder: "content/video-thumbnails",
             cancellationToken: cancellationToken
         );
@@ -48,9 +48,9 @@ public class AdminUploadVideoThumbnailHandler(
         videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        if (oldKey is not null)
+        if (oldStorageKey is not null)
         {
-            await cloudinaryService.DeleteImageAsync(storageKey: oldKey, cancellationToken: cancellationToken);
+            await cloudinaryService.DeleteImageAsync(publicId: oldStorageKey, cancellationToken: cancellationToken);
         }
 
         return new AdminUploadVideoThumbnailResult(

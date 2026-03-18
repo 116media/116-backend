@@ -35,13 +35,13 @@ public class AdminDeleteShortVideoHandler(
         if (shortVideo.ThumbnailStorageKey is not null)
         {
             await cloudinaryService.DeleteImageAsync(
-                storageKey: shortVideo.ThumbnailStorageKey,
+                publicId: shortVideo.ThumbnailStorageKey,
                 cancellationToken: cancellationToken
             );
         }
 
         await cloudinaryService.DeleteImageAsync(
-            storageKey: shortVideo.VideoStorageKey,
+            publicId: shortVideo.VideoStorageKey,
             cancellationToken: cancellationToken
         );
 
