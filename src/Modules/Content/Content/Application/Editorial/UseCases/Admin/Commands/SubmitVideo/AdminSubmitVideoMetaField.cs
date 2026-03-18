@@ -22,7 +22,7 @@ public static class AdminSubmitVideoMetaField
             - User must have SuperAdmin role\n
             \n
             **Response Codes:**\n
-            - Returns 204 No Content on success\n
+            - Returns 200 OK on success\n
             - Returns 401 Unauthorized if access token is invalid or expired\n
             - Returns 403 Forbidden if user lacks SuperAdmin role\n
             - Returns 404 Not Found if the video does not exist\n
