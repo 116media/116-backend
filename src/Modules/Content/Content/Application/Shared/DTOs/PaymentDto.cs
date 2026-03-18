@@ -1,3 +1,5 @@
+using _116.Core.Application.Shared.DTOs;
+
 namespace _116.Content.Application.Shared.DTOs;
 
 /// <summary>

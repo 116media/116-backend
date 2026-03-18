@@ -1,9 +1,9 @@
 using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Commerce.Constants;
-using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
+using _116.Core.Application.Shared.DTOs;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
 using Carter;

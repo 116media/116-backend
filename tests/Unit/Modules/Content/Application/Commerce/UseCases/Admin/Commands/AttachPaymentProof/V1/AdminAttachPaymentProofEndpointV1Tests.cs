@@ -1,5 +1,5 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymentProof.V1;
-using _116.Content.Application.Shared.DTOs;
+using _116.Core.Application.Shared.DTOs;
 using AwesomeAssertions;
 using Xunit;
 
@@ -14,7 +14,15 @@ public class AdminAttachPaymentProofEndpointV1Tests
     public void AdminAttachPaymentProofResponse_ShouldConstructCorrectly()
     {
         // Arrange
-        var proof = new FileDto(Guid.NewGuid(), "https://cdn.example.com/proof.jpg", "image/jpeg", "proof.jpg", 12345);
+        var proof = new FileDto(
+            Guid.NewGuid(),
+            "proof.jpg",
+            "proof.jpg",
+            "image/jpeg",
+            "https://cdn.example.com/proof.jpg",
+            12345,
+            false
+        );
 
         // Act
         var response = new AdminAttachPaymentProofResponse(Proof: proof);
