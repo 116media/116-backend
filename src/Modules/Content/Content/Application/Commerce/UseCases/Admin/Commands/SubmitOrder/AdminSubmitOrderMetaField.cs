@@ -3,7 +3,7 @@ using _116.Shared.Application.Metadata;
 namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 
 /// <summary>
-/// Contains metadata information for the submit order route.
+/// Contains metadata information for the "submit order" route.
 /// </summary>
 public static class AdminSubmitOrderMetaField
 {
@@ -21,7 +21,7 @@ public static class AdminSubmitOrderMetaField
             - User must have Admin or SuperAdmin role\n
             \n
             **Response Codes:**\n
-            - Returns 204 No Content on success\n
+            - Returns 200 OK on success\n
             - Returns 400 Bad Request if the order is not in Draft status, or has no items with tiers\n
             - Returns 401 Unauthorized if access token is invalid or expired\n
             - Returns 403 Forbidden if user lacks Admin role\n
