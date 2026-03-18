@@ -93,4 +93,84 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
     {
         context.ShortVideos.Remove(shortVideo);
     }
+
+    /// <inheritdoc />
+    public async Task<bool> HasLikedAsync(Guid userId, Guid shortVideoId, CancellationToken cancellationToken = default)
+    {
+        var specification = new ShortVideoLikeByUserAndShortVideoSpecification(
+            userId: userId,
+            shortVideoId: shortVideoId
+        );
+        return await context
+            .ShortVideoLikes.ApplySpecification(specification: specification)
+            .AnyAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task AddLikeAsync(ShortVideoLikeEntity like, CancellationToken cancellationToken = default)
+    {
+        await context.ShortVideoLikes.AddAsync(like, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveLikeAsync(Guid userId, Guid shortVideoId, CancellationToken cancellationToken = default)
+    {
+        var specification = new ShortVideoLikeByUserAndShortVideoSpecification(
+            userId: userId,
+            shortVideoId: shortVideoId
+        );
+        ShortVideoLikeEntity? like = await context
+            .ShortVideoLikes.ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (like is not null)
+        {
+            context.ShortVideoLikes.Remove(like);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> HasBookmarkedAsync(
+        Guid userId,
+        Guid shortVideoId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ShortVideoBookmarkByUserAndShortVideoSpecification(
+            userId: userId,
+            shortVideoId: shortVideoId
+        );
+        return await context
+            .ShortVideoBookmarks.ApplySpecification(specification: specification)
+            .AnyAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task AddBookmarkAsync(ShortVideoBookmarkEntity bookmark, CancellationToken cancellationToken = default)
+    {
+        await context.ShortVideoBookmarks.AddAsync(bookmark, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveBookmarkAsync(Guid userId, Guid shortVideoId, CancellationToken cancellationToken = default)
+    {
+        var specification = new ShortVideoBookmarkByUserAndShortVideoSpecification(
+            userId: userId,
+            shortVideoId: shortVideoId
+        );
+        ShortVideoBookmarkEntity? bookmark = await context
+            .ShortVideoBookmarks.ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (bookmark is not null)
+        {
+            context.ShortVideoBookmarks.Remove(bookmark);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task AddShareAsync(ShortVideoShareEntity share, CancellationToken cancellationToken = default)
+    {
+        await context.ShortVideoShares.AddAsync(share, cancellationToken);
+    }
 }

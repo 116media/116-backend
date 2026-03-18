@@ -137,4 +137,74 @@ public interface IArticleRepository : IRepository<ArticleEntity>
         Guid articleId,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Returns true if the user has already liked the given article.
+    /// </summary>
+    Task<bool> HasLikedAsync(Guid userId, Guid articleId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a like record to the repository.
+    /// </summary>
+    Task AddLikeAsync(ArticleLikeEntity like, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes the like record for the given user and article.
+    /// </summary>
+    Task RemoveLikeAsync(Guid userId, Guid articleId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns true if the user has already bookmarked the given article.
+    /// </summary>
+    Task<bool> HasBookmarkedAsync(Guid userId, Guid articleId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a bookmark record to the repository.
+    /// </summary>
+    Task AddBookmarkAsync(ArticleBookmarkEntity bookmark, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes the bookmark record for the given user and article.
+    /// </summary>
+    Task RemoveBookmarkAsync(Guid userId, Guid articleId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a share record to the repository.
+    /// </summary>
+    Task AddShareAsync(ArticleShareEntity share, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a comment record to the repository.
+    /// </summary>
+    Task AddCommentAsync(ArticleCommentEntity comment, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns a paginated list of non-deleted comments for an article, along with total count.
+    /// </summary>
+    Task<(List<ArticleCommentEntity> Comments, int TotalCount)> GetCommentsAsync(
+        Guid articleId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Returns a single comment by its ID, or null if not found.
+    /// </summary>
+    Task<ArticleCommentEntity?> GetCommentByIdAsync(Guid commentId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Marks an existing comment as modified.
+    /// </summary>
+    void UpdateComment(ArticleCommentEntity comment);
+
+    /// <summary>
+    /// Returns a paginated list of articles bookmarked by the given user, along with total count.
+    /// </summary>
+    Task<(List<ArticleEntity> Articles, int TotalCount)> GetBookmarkedArticlesAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    );
 }

@@ -1,6 +1,7 @@
 using _116.Content.Application.Commerce.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using AwesomeAssertions;
 using Xunit;
@@ -17,7 +18,7 @@ public class ContentOrderSpecificationTests
     [Fact]
     public void ByIdSpec_WhenIdMatches_ShouldReturnTrue()
     {
-        Guid id = Guid.NewGuid();
+        var id = Guid.NewGuid();
         ContentOrderEntity order = ContentOrderFactory.CreateWithId(id);
         var spec = new ContentOrderByIdSpecification(id);
 
@@ -70,7 +71,7 @@ public class ContentOrderSpecificationTests
     [Fact]
     public void ByCustomerIdSpec_WhenCustomerIdMatches_ShouldReturnTrue()
     {
-        Guid customerId = Guid.NewGuid();
+        var customerId = Guid.NewGuid();
         ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customerId);
         var spec = new ContentOrderByCustomerIdSpecification(customerId);
 
@@ -86,6 +87,72 @@ public class ContentOrderSpecificationTests
         var spec = new ContentOrderByCustomerIdSpecification(Guid.NewGuid());
 
         bool result = spec.ToExpression().Compile()(order);
+
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region ContentPaymentByOrderIdSpecification
+
+    [Fact]
+    public void ContentPaymentByOrderIdSpec_WhenOrderIdMatches_ShouldReturnTrue()
+    {
+        var orderId = Guid.NewGuid();
+        ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
+        var spec = new ContentPaymentByOrderIdSpecification(orderId);
+
+        bool result = spec.ToExpression().Compile()(payment);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ContentPaymentByOrderIdSpec_WhenOrderIdDoesNotMatch_ShouldReturnFalse()
+    {
+        ContentPaymentEntity payment = ContentPaymentFactory.Create(Guid.NewGuid());
+        var spec = new ContentPaymentByOrderIdSpecification(Guid.NewGuid());
+
+        bool result = spec.ToExpression().Compile()(payment);
+
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region ContentOrderItemByIdAndOrderIdSpecification
+
+    [Fact]
+    public void ContentOrderItemByIdAndOrderIdSpec_WhenBothMatch_ShouldReturnTrue()
+    {
+        var orderId = Guid.NewGuid();
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(orderId, Guid.NewGuid());
+        var spec = new ContentOrderItemByIdAndOrderIdSpecification(orderId, item.Id);
+
+        bool result = spec.ToExpression().Compile()(item);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ContentOrderItemByIdAndOrderIdSpec_WhenItemIdDoesNotMatch_ShouldReturnFalse()
+    {
+        var orderId = Guid.NewGuid();
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(orderId, Guid.NewGuid());
+        var spec = new ContentOrderItemByIdAndOrderIdSpecification(orderId, Guid.NewGuid());
+
+        bool result = spec.ToExpression().Compile()(item);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ContentOrderItemByIdAndOrderIdSpec_WhenOrderIdDoesNotMatch_ShouldReturnFalse()
+    {
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(Guid.NewGuid(), Guid.NewGuid());
+        var spec = new ContentOrderItemByIdAndOrderIdSpecification(Guid.NewGuid(), item.Id);
+
+        bool result = spec.ToExpression().Compile()(item);
 
         result.Should().BeFalse();
     }

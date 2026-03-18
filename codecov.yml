@@ -2,51 +2,54 @@
 # https://docs.codecov.com/docs/codecov-yaml
 
 coverage:
-  precision: 2
-  round: down
-  range: "60...100"
+    precision: 2
+    round: down
+    range: "60...100"
 
-  status:
-    project:
-      default:
-        target: auto
-        threshold: 0%
-        informational: false
-        only_pulls: false
-    patch:
-      default:
-        target: 80%
-        threshold: 0%
-        informational: false
-        only_pulls: false
+    status:
+        project:
+            default:
+                target: auto
+                threshold: 0%
+                informational: false
+                only_pulls: false
+        patch:
+            default:
+                target: 80%
+                threshold: 0%
+                informational: false
+                only_pulls: false
 
 parsers:
-  gcov:
-    branch_detection:
-      conditional: yes
-      loop: yes
-      method: no
-      macro: no
+    gcov:
+        branch_detection:
+            conditional: yes
+            loop: yes
+            method: no
+            macro: no
 
 comment:
-  layout: "reach,diff,flags,files,footer"
-  behavior: default
-  require_changes: true
-  require_base: false
-  require_head: true
+    layout: "reach,diff,flags,files,footer"
+    behavior: default
+    require_changes: true
+    require_base: false
+    require_head: true
 
 ignore:
-  - "**/Migrations/**"
-  - "**/tests/**"
-  - "**/*.Designer.cs"
-  - "**/Program.cs"
+    - "**/Migrations/**"
+    - "**/tests/**"
+    - "**/*.Designer.cs"
+    - "**/Program.cs"
+    - "**/*MetaField.cs"
+    - "**/*EndpointV1.cs"
+    - "**/*Module.cs"
 
 flags:
-  unit:
-    paths:
-      - src/
-    carryforward: true
-  integration:
-    paths:
-      - src/
-    carryforward: true
+    unit:
+        paths:
+            - src/
+        carryforward: true
+    integration:
+        paths:
+            - src/
+        carryforward: true

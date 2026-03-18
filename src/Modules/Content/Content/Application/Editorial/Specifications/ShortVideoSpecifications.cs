@@ -54,3 +54,29 @@ public class ActiveShortVideoSpecification : Specification<ShortVideoEntity>
         return shortVideo => shortVideo.IsActive;
     }
 }
+
+/// <summary>
+/// Specification that matches a short video like by user and short video identifiers.
+/// </summary>
+public class ShortVideoLikeByUserAndShortVideoSpecification(Guid userId, Guid shortVideoId)
+    : Specification<ShortVideoLikeEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ShortVideoLikeEntity, bool>> ToExpression()
+    {
+        return like => like.UserId == userId && like.ShortVideoId == shortVideoId;
+    }
+}
+
+/// <summary>
+/// Specification that matches a short video bookmark by user and short video identifiers.
+/// </summary>
+public class ShortVideoBookmarkByUserAndShortVideoSpecification(Guid userId, Guid shortVideoId)
+    : Specification<ShortVideoBookmarkEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ShortVideoBookmarkEntity, bool>> ToExpression()
+    {
+        return bookmark => bookmark.UserId == userId && bookmark.ShortVideoId == shortVideoId;
+    }
+}

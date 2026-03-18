@@ -315,6 +315,30 @@ public class VideoRepositoryTests : IDisposable
 
     #endregion
 
+    #region UpdateRating Tests
+
+    [Fact]
+    public async Task UpdateRating_ShouldMarkRatingAsModified()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        VideoEntity video = VideoFactory.Create(categoryId);
+        _context.Videos.Add(video);
+        await _context.SaveChangesAsync();
+
+        VideoRatingEntity rating = VideoRatingFactory.Create(video.Id, Guid.NewGuid(), stars: 4);
+        _context.VideoRatings.Add(rating);
+        await _context.SaveChangesAsync();
+
+        // Act
+        _repository.UpdateRating(rating);
+
+        // Assert
+        _context.Entry(rating).State.Should().Be(EntityState.Modified);
+    }
+
+    #endregion
+
     #region Remove Tests
 
     [Fact]
@@ -337,6 +361,123 @@ public class VideoRepositoryTests : IDisposable
 
     #endregion
 
+    #region GetRatingAsync Tests
+
+    [Fact]
+    public async Task GetRatingAsync_WhenRatingExists_ShouldReturnRating()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        VideoEntity video = VideoFactory.Create(categoryId);
+        _context.Videos.Add(video);
+        VideoRatingEntity rating = VideoRatingFactory.Create(video.Id, userId, stars: 4);
+        _context.VideoRatings.Add(rating);
+        await _context.SaveChangesAsync();
+
+        // Act
+        VideoRatingEntity? result = await _repository.GetRatingAsync(userId, video.Id);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.UserId.Should().Be(userId);
+    }
+
+    [Fact]
+    public async Task GetRatingAsync_WhenRatingDoesNotExist_ShouldReturnNull()
+    {
+        // Act
+        VideoRatingEntity? result = await _repository.GetRatingAsync(Guid.NewGuid(), Guid.NewGuid());
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
+    #region AddRatingAsync Tests
+
+    [Fact]
+    public async Task AddRatingAsync_ShouldAddRatingToContext()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        VideoEntity video = VideoFactory.Create(categoryId);
+        _context.Videos.Add(video);
+        await _context.SaveChangesAsync();
+
+        VideoRatingEntity rating = VideoRatingFactory.Create(video.Id, userId, stars: 5);
+
+        // Act
+        await _repository.AddRatingAsync(rating);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        bool exists = await _context.VideoRatings.AnyAsync(r => r.UserId == userId && r.VideoId == video.Id);
+        exists.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region GetAllRatingsForVideoAsync Tests
+
+    [Fact]
+    public async Task GetAllRatingsForVideoAsync_WhenRatingsExist_ShouldReturnAll()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        VideoEntity video = VideoFactory.Create(categoryId);
+        _context.Videos.Add(video);
+        _context.VideoRatings.AddRange(
+            VideoRatingFactory.Create(video.Id, Guid.NewGuid(), stars: 3),
+            VideoRatingFactory.Create(video.Id, Guid.NewGuid(), stars: 5)
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        List<VideoRatingEntity> result = await _repository.GetAllRatingsForVideoAsync(video.Id);
+
+        // Assert
+        result.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task GetAllRatingsForVideoAsync_WhenNoRatings_ShouldReturnEmpty()
+    {
+        // Act
+        List<VideoRatingEntity> result = await _repository.GetAllRatingsForVideoAsync(Guid.NewGuid());
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region AddShareAsync Tests
+
+    [Fact]
+    public async Task AddShareAsync_ShouldAddShareToContext()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        VideoEntity video = VideoFactory.Create(categoryId);
+        _context.Videos.Add(video);
+        await _context.SaveChangesAsync();
+
+        VideoShareEntity share = VideoShareEntity.Create(Guid.NewGuid(), null, video.Id);
+
+        // Act
+        await _repository.AddShareAsync(share);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        bool exists = await _context.VideoShares.AnyAsync(s => s.VideoId == video.Id);
+        exists.Should().BeTrue();
+    }
+
+    #endregion
+
     #region AddTagAsync / GetTagsByVideoIdAsync / RemoveTag Tests
 
     [Fact]
@@ -351,7 +492,7 @@ public class VideoRepositoryTests : IDisposable
         _context.Tags.Add(tag);
         await _context.SaveChangesAsync();
 
-        var videoTag = new VideoTagEntity { VideoId = video.Id, TagId = tag.Id };
+        var videoTag = VideoTagEntity.Create(id: Guid.NewGuid(), videoId: video.Id, tagId: tag.Id);
 
         // Act
         await _repository.AddTagAsync(videoTag);
@@ -390,7 +531,7 @@ public class VideoRepositoryTests : IDisposable
         TagEntity tag = TagFactory.CreateDefault();
         _context.Tags.Add(tag);
 
-        var videoTag = new VideoTagEntity { VideoId = video.Id, TagId = tag.Id };
+        var videoTag = VideoTagEntity.Create(id: Guid.NewGuid(), videoId: video.Id, tagId: tag.Id);
         _context.VideoTags.Add(videoTag);
         await _context.SaveChangesAsync();
 

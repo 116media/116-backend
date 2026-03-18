@@ -108,3 +108,100 @@ public class AbandonedDraftSpecification(DateTime cutoff) : Specification<Articl
             && article.CreatedAt < cutoff;
     }
 }
+
+/// <summary>
+/// Specification that matches an article by its associated order item identifier.
+/// </summary>
+public class ArticleByOrderItemIdSpecification(Guid orderItemId) : Specification<ArticleEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleEntity, bool>> ToExpression()
+    {
+        return article => article.OrderItemId == orderItemId;
+    }
+}
+
+/// <summary>
+/// Specification that matches article images belonging to a specific article.
+/// </summary>
+public class ArticleImageByArticleIdSpecification(Guid articleId) : Specification<ArticleImageEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleImageEntity, bool>> ToExpression()
+    {
+        return image => image.ArticleId == articleId;
+    }
+}
+
+/// <summary>
+/// Specification that matches article tags belonging to a specific article.
+/// </summary>
+public class ArticleTagByArticleIdSpecification(Guid articleId) : Specification<ArticleTagEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleTagEntity, bool>> ToExpression()
+    {
+        return tag => tag.ArticleId == articleId;
+    }
+}
+
+/// <summary>
+/// Specification that matches an article like by user and article identifiers.
+/// </summary>
+public class ArticleLikeByUserAndArticleSpecification(Guid userId, Guid articleId) : Specification<ArticleLikeEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleLikeEntity, bool>> ToExpression()
+    {
+        return like => like.UserId == userId && like.ArticleId == articleId;
+    }
+}
+
+/// <summary>
+/// Specification that matches an article bookmark by user and article identifiers.
+/// </summary>
+public class ArticleBookmarkByUserAndArticleSpecification(Guid userId, Guid articleId)
+    : Specification<ArticleBookmarkEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleBookmarkEntity, bool>> ToExpression()
+    {
+        return bookmark => bookmark.UserId == userId && bookmark.ArticleId == articleId;
+    }
+}
+
+/// <summary>
+/// Specification that matches all article bookmarks belonging to a specific user.
+/// </summary>
+public class ArticleBookmarkByUserIdSpecification(Guid userId) : Specification<ArticleBookmarkEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleBookmarkEntity, bool>> ToExpression()
+    {
+        return bookmark => bookmark.UserId == userId;
+    }
+}
+
+/// <summary>
+/// Specification that matches article comments belonging to a specific article.
+/// </summary>
+public class ArticleCommentByArticleIdSpecification(Guid articleId) : Specification<ArticleCommentEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleCommentEntity, bool>> ToExpression()
+    {
+        return comment => comment.ArticleId == articleId;
+    }
+}
+
+/// <summary>
+/// Specification that matches an article comment by its unique identifier.
+/// </summary>
+public class ArticleCommentByIdSpecification(Guid commentId) : Specification<ArticleCommentEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleCommentEntity, bool>> ToExpression()
+    {
+        return comment => comment.Id == commentId;
+    }
+}

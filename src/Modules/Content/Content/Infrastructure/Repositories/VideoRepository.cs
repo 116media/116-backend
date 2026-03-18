@@ -103,7 +103,10 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
         CancellationToken cancellationToken = default
     )
     {
-        return await context.Videos.FirstOrDefaultAsync(v => v.OrderItemId == orderItemId, cancellationToken);
+        var specification = new VideoByOrderItemIdSpecification(orderItemId: orderItemId);
+        return await context
+            .Videos.ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -142,6 +145,50 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
         CancellationToken cancellationToken = default
     )
     {
-        return await context.VideoTags.Where(t => t.VideoId == videoId).ToListAsync(cancellationToken);
+        var specification = new VideoTagByVideoIdSpecification(videoId: videoId);
+        return await context.VideoTags.ApplySpecification(specification: specification).ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<VideoRatingEntity?> GetRatingAsync(
+        Guid userId,
+        Guid videoId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new VideoRatingByUserAndVideoSpecification(userId: userId, videoId: videoId);
+        return await context
+            .VideoRatings.ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task AddRatingAsync(VideoRatingEntity rating, CancellationToken cancellationToken = default)
+    {
+        await context.VideoRatings.AddAsync(rating, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public void UpdateRating(VideoRatingEntity rating)
+    {
+        context.VideoRatings.Update(rating);
+    }
+
+    /// <inheritdoc />
+    public async Task<List<VideoRatingEntity>> GetAllRatingsForVideoAsync(
+        Guid videoId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new VideoRatingByVideoIdSpecification(videoId: videoId);
+        return await context
+            .VideoRatings.ApplySpecification(specification: specification)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task AddShareAsync(VideoShareEntity share, CancellationToken cancellationToken = default)
+    {
+        await context.VideoShares.AddAsync(share, cancellationToken);
     }
 }

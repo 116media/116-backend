@@ -45,6 +45,10 @@ public static class ArticleMapper
                         (int)Math.Ceiling(src.Body.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length / 200.0)
                     )
             );
+
+        config
+            .NewConfig<ArticleCommentEntity, ArticleCommentDto>()
+            .Map(dest => dest.Body, src => src.IsDeleted ? null : src.Body);
     }
 
     /// <summary>
@@ -72,5 +76,24 @@ public static class ArticleMapper
     )
     {
         return mapper.Map<IReadOnlyList<ArticleSummaryDto>>(entities);
+    }
+
+    /// <summary>
+    /// Maps an <see cref="ArticleCommentEntity" /> to an <see cref="ArticleCommentDto" />.
+    /// </summary>
+    public static ArticleCommentDto ToArticleCommentDto(this ArticleCommentEntity entity, IMapper mapper)
+    {
+        return mapper.Map<ArticleCommentDto>(entity);
+    }
+
+    /// <summary>
+    /// Maps a list of <see cref="ArticleCommentEntity" /> to a list of <see cref="ArticleCommentDto" />.
+    /// </summary>
+    public static IReadOnlyList<ArticleCommentDto> ToArticleCommentDtos(
+        this IReadOnlyList<ArticleCommentEntity> entities,
+        IMapper mapper
+    )
+    {
+        return mapper.Map<IReadOnlyList<ArticleCommentDto>>(entities);
     }
 }

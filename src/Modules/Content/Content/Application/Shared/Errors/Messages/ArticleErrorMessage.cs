@@ -54,16 +54,6 @@ public static class ArticleErrorMessage
     }
 
     /// <summary>
-    /// Gets an error message for when a published or approved article is hard-deleted.
-    /// </summary>
-    /// <returns>
-    /// An error message indicating that only articles in Draft or Rejected status can be permanently deleted.
-    /// </returns>
-    /// <summary>
-    /// Gets an error message for when an article is already archived.
-    /// </summary>
-    /// <returns>An error message indicating that the article is already archived.</returns>
-    /// <summary>
     /// Gets an error message for when an article is already pending payment.
     /// </summary>
     public static string AlreadySubmitted()
@@ -111,6 +101,12 @@ public static class ArticleErrorMessage
         return "Article is already archived";
     }
 
+    /// <summary>
+    /// Gets an error message for when a hard delete is attempted on a published or approved article.
+    /// </summary>
+    /// <returns>
+    /// An error message indicating that only articles in Draft or Rejected status can be permanently deleted.
+    /// </returns>
     public static string CannotDeletePublishedArticle()
     {
         return "Only articles in Draft or Rejected status can be permanently deleted. Archive published articles instead.";

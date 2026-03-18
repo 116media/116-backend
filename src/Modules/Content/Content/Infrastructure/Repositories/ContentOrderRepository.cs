@@ -55,8 +55,10 @@ public class ContentOrderRepository(ContentDbContext context) : IContentOrderRep
     /// <inheritdoc />
     public async Task<ContentOrderEntity?> GetByIdWithItemsAsync(Guid id, CancellationToken ct = default)
     {
+        var specification = new ContentOrderByIdSpecification(id: id);
         return await context
-            .ContentOrders.Include(o => o.Customer)
+            .ContentOrders.ApplySpecification(specification: specification)
+            .Include(o => o.Customer)
             .Include(o => o.Items)
                 .ThenInclude(i => i.Category)
             .Include(o => o.Items)
@@ -65,7 +67,7 @@ public class ContentOrderRepository(ContentDbContext context) : IContentOrderRep
                 .ThenInclude(i => i.Tiers)
                     .ThenInclude(t => t.PricingTier)
             .Include(o => o.Payment)
-            .FirstOrDefaultAsync(o => o.Id == id, ct);
+            .FirstOrDefaultAsync(ct);
     }
 
     /// <inheritdoc />
@@ -94,12 +96,12 @@ public class ContentOrderRepository(ContentDbContext context) : IContentOrderRep
 
         if (status.HasValue)
         {
-            query = query.Where(o => o.Status == status.Value);
+            query = query.ApplySpecification(new ContentOrderByStatusSpecification(status: status.Value));
         }
 
         if (customerId.HasValue)
         {
-            query = query.Where(o => o.CustomerId == customerId.Value);
+            query = query.ApplySpecification(new ContentOrderByCustomerIdSpecification(customerId: customerId.Value));
         }
 
         int totalCount = await query.CountAsync(ct);
@@ -114,7 +116,8 @@ public class ContentOrderRepository(ContentDbContext context) : IContentOrderRep
     /// <inheritdoc />
     public async Task<ContentPaymentEntity?> GetPaymentByOrderIdAsync(Guid orderId, CancellationToken ct = default)
     {
-        return await context.ContentPayments.FirstOrDefaultAsync(p => p.OrderId == orderId, ct);
+        var specification = new ContentPaymentByOrderIdSpecification(orderId: orderId);
+        return await context.ContentPayments.ApplySpecification(specification: specification).FirstOrDefaultAsync(ct);
     }
 
     /// <inheritdoc />
@@ -124,6 +127,7 @@ public class ContentOrderRepository(ContentDbContext context) : IContentOrderRep
         CancellationToken ct = default
     )
     {
-        return await context.ContentOrderItems.FirstOrDefaultAsync(i => i.Id == itemId && i.OrderId == orderId, ct);
+        var specification = new ContentOrderItemByIdAndOrderIdSpecification(orderId: orderId, itemId: itemId);
+        return await context.ContentOrderItems.ApplySpecification(specification: specification).FirstOrDefaultAsync(ct);
     }
 }

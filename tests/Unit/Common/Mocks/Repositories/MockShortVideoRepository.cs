@@ -93,6 +93,51 @@ public static class MockShortVideoRepository
         mock.Verify(x => x.Remove(shortVideo), Times.Once);
     }
 
+    public static Mock<IShortVideoRepository> SetupHasLikedAsync(this Mock<IShortVideoRepository> mock, bool result)
+    {
+        mock.Setup(x => x.HasLikedAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+        return mock;
+    }
+
+    public static Mock<IShortVideoRepository> SetupHasBookmarkedAsync(
+        this Mock<IShortVideoRepository> mock,
+        bool result
+    )
+    {
+        mock.Setup(x => x.HasBookmarkedAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+        return mock;
+    }
+
+    public static void VerifyAddLikeCalled(this Mock<IShortVideoRepository> mock)
+    {
+        mock.Verify(x => x.AddLikeAsync(It.IsAny<ShortVideoLikeEntity>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    public static void VerifyRemoveLikeCalled(this Mock<IShortVideoRepository> mock, Guid userId, Guid shortVideoId)
+    {
+        mock.Verify(x => x.RemoveLikeAsync(userId, shortVideoId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    public static void VerifyAddBookmarkCalled(this Mock<IShortVideoRepository> mock)
+    {
+        mock.Verify(
+            x => x.AddBookmarkAsync(It.IsAny<ShortVideoBookmarkEntity>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    public static void VerifyRemoveBookmarkCalled(this Mock<IShortVideoRepository> mock, Guid userId, Guid shortVideoId)
+    {
+        mock.Verify(x => x.RemoveBookmarkAsync(userId, shortVideoId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    public static void VerifyAddShareCalled(this Mock<IShortVideoRepository> mock)
+    {
+        mock.Verify(x => x.AddShareAsync(It.IsAny<ShortVideoShareEntity>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     private static void SetupDefaults(Mock<IShortVideoRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<ShortVideoEntity>(), It.IsAny<CancellationToken>()))
@@ -111,5 +156,19 @@ public static class MockShortVideoRepository
                 )
             )
             .ReturnsAsync((new List<ShortVideoEntity>(), 0));
+        mock.Setup(x => x.HasLikedAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        mock.Setup(x => x.HasBookmarkedAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        mock.Setup(x => x.AddLikeAsync(It.IsAny<ShortVideoLikeEntity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x => x.RemoveLikeAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x => x.AddBookmarkAsync(It.IsAny<ShortVideoBookmarkEntity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x => x.RemoveBookmarkAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x => x.AddShareAsync(It.IsAny<ShortVideoShareEntity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
     }
 }

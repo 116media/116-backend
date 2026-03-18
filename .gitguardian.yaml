@@ -2,6 +2,6 @@
 # Exclude test files from secret scanning
 
 paths-ignore:
-  - tests/**
-  - "**/obj/**"
-  - "**/bin/**"
+    - tests/**
+    - "**/obj/**"
+    - "**/bin/**"

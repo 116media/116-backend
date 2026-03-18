@@ -119,7 +119,10 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
         CancellationToken cancellationToken = default
     )
     {
-        return await context.Articles.FirstOrDefaultAsync(a => a.OrderItemId == orderItemId, cancellationToken);
+        var specification = new ArticleByOrderItemIdSpecification(orderItemId: orderItemId);
+        return await context
+            .Articles.ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -152,7 +155,10 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
         CancellationToken cancellationToken = default
     )
     {
-        return await context.ArticleImages.Where(i => i.ArticleId == articleId).ToListAsync(cancellationToken);
+        var specification = new ArticleImageByArticleIdSpecification(articleId: articleId);
+        return await context
+            .ArticleImages.ApplySpecification(specification: specification)
+            .ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -179,6 +185,148 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
         CancellationToken cancellationToken = default
     )
     {
-        return await context.ArticleTags.Where(t => t.ArticleId == articleId).ToListAsync(cancellationToken);
+        var specification = new ArticleTagByArticleIdSpecification(articleId: articleId);
+        return await context
+            .ArticleTags.ApplySpecification(specification: specification)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> HasLikedAsync(Guid userId, Guid articleId, CancellationToken cancellationToken = default)
+    {
+        var specification = new ArticleLikeByUserAndArticleSpecification(userId: userId, articleId: articleId);
+        return await context.ArticleLikes.ApplySpecification(specification: specification).AnyAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task AddLikeAsync(ArticleLikeEntity like, CancellationToken cancellationToken = default)
+    {
+        await context.ArticleLikes.AddAsync(like, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveLikeAsync(Guid userId, Guid articleId, CancellationToken cancellationToken = default)
+    {
+        var specification = new ArticleLikeByUserAndArticleSpecification(userId: userId, articleId: articleId);
+        ArticleLikeEntity? like = await context
+            .ArticleLikes.ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (like is not null)
+        {
+            context.ArticleLikes.Remove(like);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> HasBookmarkedAsync(
+        Guid userId,
+        Guid articleId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ArticleBookmarkByUserAndArticleSpecification(userId: userId, articleId: articleId);
+        return await context
+            .ArticleBookmarks.ApplySpecification(specification: specification)
+            .AnyAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task AddBookmarkAsync(ArticleBookmarkEntity bookmark, CancellationToken cancellationToken = default)
+    {
+        await context.ArticleBookmarks.AddAsync(bookmark, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveBookmarkAsync(Guid userId, Guid articleId, CancellationToken cancellationToken = default)
+    {
+        var specification = new ArticleBookmarkByUserAndArticleSpecification(userId: userId, articleId: articleId);
+        ArticleBookmarkEntity? bookmark = await context
+            .ArticleBookmarks.ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (bookmark is not null)
+        {
+            context.ArticleBookmarks.Remove(bookmark);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task AddShareAsync(ArticleShareEntity share, CancellationToken cancellationToken = default)
+    {
+        await context.ArticleShares.AddAsync(share, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task AddCommentAsync(ArticleCommentEntity comment, CancellationToken cancellationToken = default)
+    {
+        await context.ArticleComments.AddAsync(comment, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<(List<ArticleCommentEntity> Comments, int TotalCount)> GetCommentsAsync(
+        Guid articleId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ArticleCommentByArticleIdSpecification(articleId: articleId);
+        IQueryable<ArticleCommentEntity> query = context.ArticleComments.ApplySpecification(
+            specification: specification
+        );
+
+        int totalCount = await query.CountAsync(cancellationToken);
+
+        List<ArticleCommentEntity> comments = await query
+            .OrderBy(c => c.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (comments, totalCount);
+    }
+
+    /// <inheritdoc />
+    public async Task<ArticleCommentEntity?> GetCommentByIdAsync(
+        Guid commentId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ArticleCommentByIdSpecification(commentId: commentId);
+        return await context
+            .ArticleComments.ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public void UpdateComment(ArticleCommentEntity comment)
+    {
+        context.ArticleComments.Update(comment);
+    }
+
+    /// <inheritdoc />
+    public async Task<(List<ArticleEntity> Articles, int TotalCount)> GetBookmarkedArticlesAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ArticleBookmarkByUserIdSpecification(userId: userId);
+        IQueryable<ArticleEntity> query = context
+            .ArticleBookmarks.ApplySpecification(specification: specification)
+            .OrderByDescending(b => b.CreatedAt)
+            .Select(b => b.Article)
+            .Include(a => a.Category);
+
+        int totalCount = await query.CountAsync(cancellationToken);
+
+        List<ArticleEntity> articles = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (articles, totalCount);
     }
 }

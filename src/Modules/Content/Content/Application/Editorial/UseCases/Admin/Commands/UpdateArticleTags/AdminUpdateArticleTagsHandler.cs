@@ -45,10 +45,8 @@ public class AdminUpdateArticleTagsHandler(
 
         foreach (Guid tagId in command.TagIds)
         {
-            await articleRepository.AddTagAsync(
-                tag: new ArticleTagEntity { ArticleId = articleId, TagId = tagId },
-                cancellationToken: cancellationToken
-            );
+            var tag = ArticleTagEntity.Create(id: Guid.NewGuid(), articleId: articleId, tagId: tagId);
+            await articleRepository.AddTagAsync(tag: tag, cancellationToken: cancellationToken);
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

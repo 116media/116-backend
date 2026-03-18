@@ -112,6 +112,61 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options) : DbCo
     /// </summary>
     public DbSet<ContentPaymentEntity> ContentPayments => Set<ContentPaymentEntity>();
 
+    /// <summary>
+    /// Gets the DbSet for article like entities.
+    /// </summary>
+    public DbSet<ArticleLikeEntity> ArticleLikes => Set<ArticleLikeEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for article bookmark entities.
+    /// </summary>
+    public DbSet<ArticleBookmarkEntity> ArticleBookmarks => Set<ArticleBookmarkEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for article share entities.
+    /// </summary>
+    public DbSet<ArticleShareEntity> ArticleShares => Set<ArticleShareEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for article comment entities.
+    /// </summary>
+    public DbSet<ArticleCommentEntity> ArticleComments => Set<ArticleCommentEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for video rating entities.
+    /// </summary>
+    public DbSet<VideoRatingEntity> VideoRatings => Set<VideoRatingEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for video share entities.
+    /// </summary>
+    public DbSet<VideoShareEntity> VideoShares => Set<VideoShareEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for playlist entities.
+    /// </summary>
+    public DbSet<PlaylistEntity> Playlists => Set<PlaylistEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for playlist video junction entities.
+    /// </summary>
+    public DbSet<PlaylistVideoEntity> PlaylistVideos => Set<PlaylistVideoEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for short video like entities.
+    /// </summary>
+    public DbSet<ShortVideoLikeEntity> ShortVideoLikes => Set<ShortVideoLikeEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for short video bookmark entities.
+    /// </summary>
+    public DbSet<ShortVideoBookmarkEntity> ShortVideoBookmarks => Set<ShortVideoBookmarkEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for short video share entities.
+    /// </summary>
+    public DbSet<ShortVideoShareEntity> ShortVideoShares => Set<ShortVideoShareEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

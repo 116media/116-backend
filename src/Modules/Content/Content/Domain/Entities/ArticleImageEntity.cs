@@ -7,12 +7,8 @@ namespace _116.Content.Domain.Entities;
 /// Tracks every image asset associated with an article — both cover images and inline body images.
 /// Created when the rich-text editor uploads an image during article authoring (step 2).
 /// Deleted by the update handler (image diff) and by the background abandoned-draft cleanup job.
-/// <para>
-/// Uses <see cref="Entity{T}" /> instead of <see cref="Aggregate{T}" /> because images are
-/// never updated — they are only created and deleted. Domain events are not needed here.
-/// </para>
 /// </summary>
-public class ArticleImageEntity : Entity<Guid>
+public class ArticleImageEntity : Aggregate<Guid>
 {
     /// <summary>
     /// The identifier of the article this image belongs to.

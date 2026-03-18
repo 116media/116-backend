@@ -362,6 +362,35 @@ public class ArticleRepositoryTests : IDisposable
 
     #endregion
 
+    #region UpdateComment Tests
+
+    [Fact]
+    public async Task UpdateComment_ShouldMarkCommentAsModified()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+        await _context.SaveChangesAsync();
+
+        ArticleCommentEntity comment = ArticleCommentEntity.Create(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            article.Id,
+            "Test comment body"
+        );
+        _context.ArticleComments.Add(comment);
+        await _context.SaveChangesAsync();
+
+        // Act
+        _repository.UpdateComment(comment);
+
+        // Assert
+        _context.Entry(comment).State.Should().Be(EntityState.Modified);
+    }
+
+    #endregion
+
     #region Remove Tests
 
     [Fact]
@@ -453,6 +482,310 @@ public class ArticleRepositoryTests : IDisposable
 
     #endregion
 
+    #region HasLikedAsync Tests
+
+    [Fact]
+    public async Task HasLikedAsync_WhenLikeExists_ShouldReturnTrue()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+        ArticleLikeEntity like = ArticleLikeEntity.Create(Guid.NewGuid(), userId, article.Id);
+        _context.ArticleLikes.Add(like);
+        await _context.SaveChangesAsync();
+
+        // Act
+        bool result = await _repository.HasLikedAsync(userId, article.Id);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task HasLikedAsync_WhenLikeDoesNotExist_ShouldReturnFalse()
+    {
+        // Act
+        bool result = await _repository.HasLikedAsync(Guid.NewGuid(), Guid.NewGuid());
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region AddLikeAsync Tests
+
+    [Fact]
+    public async Task AddLikeAsync_ShouldAddLikeToContext()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+        await _context.SaveChangesAsync();
+
+        ArticleLikeEntity like = ArticleLikeEntity.Create(Guid.NewGuid(), userId, article.Id);
+
+        // Act
+        await _repository.AddLikeAsync(like);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        bool exists = await _context.ArticleLikes.AnyAsync(l => l.UserId == userId && l.ArticleId == article.Id);
+        exists.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region RemoveLikeAsync Tests
+
+    [Fact]
+    public async Task RemoveLikeAsync_WhenLikeExists_ShouldRemoveIt()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+        ArticleLikeEntity like = ArticleLikeEntity.Create(Guid.NewGuid(), userId, article.Id);
+        _context.ArticleLikes.Add(like);
+        await _context.SaveChangesAsync();
+
+        // Act
+        await _repository.RemoveLikeAsync(userId, article.Id);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        bool exists = await _context.ArticleLikes.AnyAsync(l => l.UserId == userId && l.ArticleId == article.Id);
+        exists.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RemoveLikeAsync_WhenLikeDoesNotExist_ShouldNotThrow()
+    {
+        // Act
+        Func<Task> act = async () => await _repository.RemoveLikeAsync(Guid.NewGuid(), Guid.NewGuid());
+
+        // Assert
+        await act.Should().NotThrowAsync();
+    }
+
+    #endregion
+
+    #region HasBookmarkedAsync Tests
+
+    [Fact]
+    public async Task HasBookmarkedAsync_WhenBookmarkExists_ShouldReturnTrue()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+        ArticleBookmarkEntity bookmark = ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, article.Id);
+        _context.ArticleBookmarks.Add(bookmark);
+        await _context.SaveChangesAsync();
+
+        // Act
+        bool result = await _repository.HasBookmarkedAsync(userId, article.Id);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task HasBookmarkedAsync_WhenBookmarkDoesNotExist_ShouldReturnFalse()
+    {
+        // Act
+        bool result = await _repository.HasBookmarkedAsync(Guid.NewGuid(), Guid.NewGuid());
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region AddBookmarkAsync Tests
+
+    [Fact]
+    public async Task AddBookmarkAsync_ShouldAddBookmarkToContext()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+        await _context.SaveChangesAsync();
+
+        ArticleBookmarkEntity bookmark = ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, article.Id);
+
+        // Act
+        await _repository.AddBookmarkAsync(bookmark);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        bool exists = await _context.ArticleBookmarks.AnyAsync(b => b.UserId == userId && b.ArticleId == article.Id);
+        exists.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region RemoveBookmarkAsync Tests
+
+    [Fact]
+    public async Task RemoveBookmarkAsync_WhenBookmarkExists_ShouldRemoveIt()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+        ArticleBookmarkEntity bookmark = ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, article.Id);
+        _context.ArticleBookmarks.Add(bookmark);
+        await _context.SaveChangesAsync();
+
+        // Act
+        await _repository.RemoveBookmarkAsync(userId, article.Id);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        bool exists = await _context.ArticleBookmarks.AnyAsync(b => b.UserId == userId && b.ArticleId == article.Id);
+        exists.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RemoveBookmarkAsync_WhenBookmarkDoesNotExist_ShouldNotThrow()
+    {
+        // Act
+        Func<Task> act = async () => await _repository.RemoveBookmarkAsync(Guid.NewGuid(), Guid.NewGuid());
+
+        // Assert
+        await act.Should().NotThrowAsync();
+    }
+
+    #endregion
+
+    #region AddShareAsync Tests
+
+    [Fact]
+    public async Task AddShareAsync_ShouldAddShareToContext()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+        await _context.SaveChangesAsync();
+
+        ArticleShareEntity share = ArticleShareEntity.Create(Guid.NewGuid(), null, article.Id);
+
+        // Act
+        await _repository.AddShareAsync(share);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        bool exists = await _context.ArticleShares.AnyAsync(s => s.ArticleId == article.Id);
+        exists.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region AddCommentAsync Tests
+
+    [Fact]
+    public async Task AddCommentAsync_ShouldAddCommentToContext()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+        await _context.SaveChangesAsync();
+
+        ArticleCommentEntity comment = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "Hello");
+
+        // Act
+        await _repository.AddCommentAsync(comment);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        bool exists = await _context.ArticleComments.AnyAsync(c => c.Id == comment.Id);
+        exists.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region GetCommentsAsync Tests
+
+    [Fact]
+    public async Task GetCommentsAsync_WhenCommentsExist_ShouldReturnPaginatedComments()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+
+        _context.ArticleComments.AddRange(
+            ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "Comment 1"),
+            ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "Comment 2")
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        var (comments, totalCount) = await _repository.GetCommentsAsync(article.Id, page: 1, pageSize: 10);
+
+        // Assert
+        comments.Should().HaveCount(2);
+        totalCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task GetCommentsAsync_WhenNoComments_ShouldReturnEmpty()
+    {
+        // Act
+        var (comments, totalCount) = await _repository.GetCommentsAsync(Guid.NewGuid(), page: 1, pageSize: 10);
+
+        // Assert
+        comments.Should().BeEmpty();
+        totalCount.Should().Be(0);
+    }
+
+    #endregion
+
+    #region GetCommentByIdAsync Tests
+
+    [Fact]
+    public async Task GetCommentByIdAsync_WhenCommentExists_ShouldReturnComment()
+    {
+        // Arrange
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+        ArticleCommentEntity comment = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "Test");
+        _context.ArticleComments.Add(comment);
+        await _context.SaveChangesAsync();
+
+        // Act
+        ArticleCommentEntity? result = await _repository.GetCommentByIdAsync(comment.Id);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Id.Should().Be(comment.Id);
+    }
+
+    [Fact]
+    public async Task GetCommentByIdAsync_WhenCommentDoesNotExist_ShouldReturnNull()
+    {
+        // Act
+        ArticleCommentEntity? result = await _repository.GetCommentByIdAsync(Guid.NewGuid());
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
     #region AddTagAsync / GetTagsByArticleIdAsync / RemoveTag Tests
 
     [Fact]
@@ -467,7 +800,7 @@ public class ArticleRepositoryTests : IDisposable
         _context.Tags.Add(tag);
         await _context.SaveChangesAsync();
 
-        var articleTag = new ArticleTagEntity { ArticleId = article.Id, TagId = tag.Id };
+        var articleTag = ArticleTagEntity.Create(id: Guid.NewGuid(), articleId: article.Id, tagId: tag.Id);
 
         // Act
         await _repository.AddTagAsync(articleTag);
@@ -506,7 +839,7 @@ public class ArticleRepositoryTests : IDisposable
         TagEntity tag = TagFactory.CreateDefault();
         _context.Tags.Add(tag);
 
-        var articleTag = new ArticleTagEntity { ArticleId = article.Id, TagId = tag.Id };
+        var articleTag = ArticleTagEntity.Create(id: Guid.NewGuid(), articleId: article.Id, tagId: tag.Id);
         _context.ArticleTags.Add(articleTag);
         await _context.SaveChangesAsync();
 

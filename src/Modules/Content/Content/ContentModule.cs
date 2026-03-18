@@ -8,6 +8,7 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder.Cont
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.Contracts;
 using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Interactions.Persistence;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -72,6 +73,7 @@ public static class ContentModule
         services.AddScoped<IShortVideoRepository, ShortVideoRepository>();
         services.AddScoped<ILyricsRepository, LyricsRepository>();
         services.AddScoped<IContentOrderRepository, ContentOrderRepository>();
+        services.AddScoped<IPlaylistRepository, PlaylistRepository>();
 
         // Commerce factories
         services.AddScoped<IOrderPaymentFactory, OrderPaymentFactory>();

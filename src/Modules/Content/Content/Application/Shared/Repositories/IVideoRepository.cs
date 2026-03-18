@@ -104,4 +104,32 @@ public interface IVideoRepository : IRepository<VideoEntity>
         Guid videoId,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Returns the user's existing rating for a video, or null if none exists.
+    /// </summary>
+    Task<VideoRatingEntity?> GetRatingAsync(Guid userId, Guid videoId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a rating record to the repository.
+    /// </summary>
+    Task AddRatingAsync(VideoRatingEntity rating, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Marks an existing rating as modified.
+    /// </summary>
+    void UpdateRating(VideoRatingEntity rating);
+
+    /// <summary>
+    /// Returns all ratings for a given video (used for average/count recomputation).
+    /// </summary>
+    Task<List<VideoRatingEntity>> GetAllRatingsForVideoAsync(
+        Guid videoId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Adds a share record to the repository.
+    /// </summary>
+    Task AddShareAsync(VideoShareEntity share, CancellationToken cancellationToken = default);
 }

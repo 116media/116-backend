@@ -118,6 +118,14 @@ public static class VideoErrorMessage
         return "Video is already archived";
     }
 
+    /// <summary>
+    /// Gets an error message for when an invalid status transition is attempted.
+    /// </summary>
+    /// <param name="from">The current status of the video.</param>
+    /// <param name="to">The target status that the transition was attempted towards.</param>
+    /// <returns>
+    /// A formatted error message indicating that the transition from the current status to the target status is not allowed.
+    /// </returns>
     public static string InvalidStatusTransition(string from, string to)
     {
         return $"Cannot transition video from '{from}' to '{to}'";

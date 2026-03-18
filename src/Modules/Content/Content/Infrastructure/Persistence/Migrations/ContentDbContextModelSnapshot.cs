@@ -23,6 +23,106 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleBookmarkEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ArticleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("article_id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_article_bookmarks");
+
+                    b.HasIndex("ArticleId")
+                        .HasDatabaseName("ix_article_bookmarks_article_id");
+
+                    b.HasIndex("UserId", "ArticleId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_article_bookmarks_user_id_article_id");
+
+                    b.ToTable("article_bookmarks", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleCommentEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ArticleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("article_id");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("body");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_article_comments");
+
+                    b.HasIndex("ArticleId")
+                        .HasDatabaseName("ix_article_comments_article");
+
+                    b.ToTable("article_comments", "content");
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -234,21 +334,130 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.ToTable("article_images", "content");
                 });
 
-            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleTagEntity", b =>
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleLikeEntity", b =>
                 {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
                     b.Property<Guid>("ArticleId")
                         .HasColumnType("uuid")
                         .HasColumnName("article_id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_article_likes");
+
+                    b.HasIndex("ArticleId")
+                        .HasDatabaseName("ix_article_likes_article_id");
+
+                    b.HasIndex("UserId", "ArticleId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_article_likes_user_id_article_id");
+
+                    b.ToTable("article_likes", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleShareEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ArticleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("article_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_article_shares");
+
+                    b.HasIndex("ArticleId")
+                        .HasDatabaseName("ix_article_shares_article_id");
+
+                    b.ToTable("article_shares", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleTagEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ArticleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("article_id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
 
                     b.Property<Guid>("TagId")
                         .HasColumnType("uuid")
                         .HasColumnName("tag_id");
 
-                    b.HasKey("ArticleId", "TagId")
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
                         .HasName("pk_article_tags");
 
                     b.HasIndex("TagId")
                         .HasDatabaseName("ix_article_tags_tag_id");
+
+                    b.HasIndex("ArticleId", "TagId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_article_tags_article_id_tag_id");
 
                     b.ToTable("article_tags", "content");
                 });
@@ -906,6 +1115,96 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.ToTable("package_slots", "content");
                 });
 
+            modelBuilder.Entity("_116.Content.Domain.Entities.PlaylistEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_playlists");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_playlists_user");
+
+                    b.ToTable("playlists", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.PlaylistVideoEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("PlaylistId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("playlist_id");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("VideoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("video_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_playlist_videos");
+
+                    b.HasIndex("VideoId")
+                        .HasDatabaseName("ix_playlist_videos_video_id");
+
+                    b.HasIndex("PlaylistId", "VideoId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_playlist_videos_playlist_id_video_id");
+
+                    b.ToTable("playlist_videos", "content");
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.PricingTierEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1008,6 +1307,50 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_promotion_levels_name");
 
                     b.ToTable("promotion_levels", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoBookmarkEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("ShortVideoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("short_video_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_short_video_bookmarks");
+
+                    b.HasIndex("ShortVideoId")
+                        .HasDatabaseName("ix_short_video_bookmarks_short_video_id");
+
+                    b.HasIndex("UserId", "ShortVideoId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_short_video_bookmarks_user_id_short_video_id");
+
+                    b.ToTable("short_video_bookmarks", "content");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoEntity", b =>
@@ -1124,6 +1467,90 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_short_videos_video_id");
 
                     b.ToTable("short_videos", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoLikeEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("ShortVideoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("short_video_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_short_video_likes");
+
+                    b.HasIndex("ShortVideoId")
+                        .HasDatabaseName("ix_short_video_likes_short_video_id");
+
+                    b.HasIndex("UserId", "ShortVideoId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_short_video_likes_user_id_short_video_id");
+
+                    b.ToTable("short_video_likes", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoShareEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("ShortVideoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("short_video_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_short_video_shares");
+
+                    b.HasIndex("ShortVideoId")
+                        .HasDatabaseName("ix_short_video_shares_short_video_id");
+
+                    b.ToTable("short_video_shares", "content");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.TagEntity", b =>
@@ -1335,23 +1762,161 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.ToTable("videos", "content");
                 });
 
-            modelBuilder.Entity("_116.Content.Domain.Entities.VideoTagEntity", b =>
+            modelBuilder.Entity("_116.Content.Domain.Entities.VideoRatingEntity", b =>
                 {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<short>("Stars")
+                        .HasColumnType("smallint")
+                        .HasColumnName("stars")
+                        .HasAnnotation("CheckConstraint:stars_range", "stars >= 1 AND stars <= 5");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
                     b.Property<Guid>("VideoId")
                         .HasColumnType("uuid")
                         .HasColumnName("video_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_video_ratings");
+
+                    b.HasIndex("VideoId")
+                        .HasDatabaseName("ix_video_ratings_video_id");
+
+                    b.HasIndex("UserId", "VideoId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_video_ratings_user_video");
+
+                    b.ToTable("video_ratings", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.VideoShareEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<Guid>("VideoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("video_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_video_shares");
+
+                    b.HasIndex("VideoId")
+                        .HasDatabaseName("ix_video_shares_video_id");
+
+                    b.ToTable("video_shares", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.VideoTagEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
 
                     b.Property<Guid>("TagId")
                         .HasColumnType("uuid")
                         .HasColumnName("tag_id");
 
-                    b.HasKey("VideoId", "TagId")
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("VideoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("video_id");
+
+                    b.HasKey("Id")
                         .HasName("pk_video_tags");
 
                     b.HasIndex("TagId")
                         .HasDatabaseName("ix_video_tags_tag_id");
 
+                    b.HasIndex("VideoId", "TagId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_video_tags_video_id_tag_id");
+
                     b.ToTable("video_tags", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleBookmarkEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
+                        .WithMany()
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_article_bookmarks_articles_article_id");
+
+                    b.Navigation("Article");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleCommentEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
+                        .WithMany()
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_article_comments_articles_article_id");
+
+                    b.Navigation("Article");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleEntity", b =>
@@ -1382,6 +1947,30 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_article_images_articles_article_id");
+
+                    b.Navigation("Article");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleLikeEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
+                        .WithMany()
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_article_likes_articles_article_id");
+
+                    b.Navigation("Article");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleShareEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
+                        .WithMany()
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_article_shares_articles_article_id");
 
                     b.Navigation("Article");
                 });
@@ -1561,6 +2150,39 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.Navigation("Package");
                 });
 
+            modelBuilder.Entity("_116.Content.Domain.Entities.PlaylistVideoEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.PlaylistEntity", "Playlist")
+                        .WithMany("Videos")
+                        .HasForeignKey("PlaylistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_playlist_videos_playlists_playlist_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", "Video")
+                        .WithMany()
+                        .HasForeignKey("VideoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_playlist_videos_videos_video_id");
+
+                    b.Navigation("Playlist");
+
+                    b.Navigation("Video");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoBookmarkEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.ShortVideoEntity", "ShortVideo")
+                        .WithMany()
+                        .HasForeignKey("ShortVideoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_short_video_bookmarks_short_videos_short_video_id");
+
+                    b.Navigation("ShortVideo");
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoEntity", b =>
                 {
                     b.HasOne("_116.Content.Domain.Entities.VideoEntity", "ParentVideo")
@@ -1570,6 +2192,30 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_short_videos_videos_video_id");
 
                     b.Navigation("ParentVideo");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoLikeEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.ShortVideoEntity", "ShortVideo")
+                        .WithMany()
+                        .HasForeignKey("ShortVideoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_short_video_likes_short_videos_short_video_id");
+
+                    b.Navigation("ShortVideo");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoShareEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.ShortVideoEntity", "ShortVideo")
+                        .WithMany()
+                        .HasForeignKey("ShortVideoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_short_video_shares_short_videos_short_video_id");
+
+                    b.Navigation("ShortVideo");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.VideoEntity", b =>
@@ -1590,6 +2236,30 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.VideoRatingEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", "Video")
+                        .WithMany()
+                        .HasForeignKey("VideoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_video_ratings_videos_video_id");
+
+                    b.Navigation("Video");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.VideoShareEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.VideoEntity", "Video")
+                        .WithMany()
+                        .HasForeignKey("VideoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_video_shares_videos_video_id");
+
+                    b.Navigation("Video");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.VideoTagEntity", b =>
@@ -1642,6 +2312,11 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.PackageEntity", b =>
                 {
                     b.Navigation("Slots");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.PlaylistEntity", b =>
+                {
+                    b.Navigation("Videos");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.VideoEntity", b =>
