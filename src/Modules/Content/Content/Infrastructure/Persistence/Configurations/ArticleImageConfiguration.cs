@@ -23,7 +23,7 @@ public class ArticleImageConfiguration : IEntityTypeConfiguration<ArticleImageEn
         builder
             .Property(x => x.ImageType)
             .HasConversion<string>()
-            .HasDefaultValue(EnumArticleImageType.Body)
+            .HasDefaultValue(EnumArticleImageType.Cover)
             .IsRequired();
 
         builder.HasIndex(x => x.ArticleId);
