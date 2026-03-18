@@ -75,6 +75,13 @@ public interface IArticleRepository : IRepository<ArticleEntity>
     );
 
     /// <summary>
+    /// Retrieves an article linked to the given order item identifier. Returns null if not found.
+    /// </summary>
+    /// <param name="orderItemId">The order item identifier.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    Task<ArticleEntity?> GetByOrderItemIdAsync(Guid orderItemId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Adds a new article to the repository.
     /// </summary>
     Task AddAsync(ArticleEntity article, CancellationToken cancellationToken = default);
