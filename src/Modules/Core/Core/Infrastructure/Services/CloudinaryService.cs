@@ -86,18 +86,18 @@ public class CloudinaryService : ICloudinaryService
     }
 
     /// <inheritdoc />
-    public async Task<bool> DeleteImageAsync(string storageKey, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteImageAsync(string publicId, CancellationToken cancellationToken = default)
     {
         try
         {
-            var deletionParams = new DeletionParams(storageKey);
+            var deletionParams = new DeletionParams(publicId);
             DeletionResult result = await _cloudinary.DestroyAsync(deletionParams);
 
             if (result.Error != null)
             {
                 _logger.LogWarning(
-                    "Cloudinary deletion warning for key {StorageKey}: {ErrorMessage}",
-                    storageKey,
+                    "Cloudinary deletion warning for publicId {PublicId}: {ErrorMessage}",
+                    publicId,
                     result.Error.Message
                 );
                 return false;
@@ -105,26 +105,26 @@ public class CloudinaryService : ICloudinaryService
 
             bool deleted = result.Result == "ok";
             _logger.LogInformation(
-                "Cloudinary deletion result for key {StorageKey}: {Result}",
-                storageKey,
+                "Cloudinary deletion result for publicId {PublicId}: {Result}",
+                publicId,
                 result.Result
             );
             return deleted;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error deleting Cloudinary resource {StorageKey}", storageKey);
+            _logger.LogError(ex, "Unexpected error deleting Cloudinary resource {PublicId}", publicId);
             return false;
         }
     }
 
     /// <inheritdoc />
     public async Task<bool> DeleteImagesAsync(
-        IEnumerable<string> storageKeys,
+        IEnumerable<string> publicIds,
         CancellationToken cancellationToken = default
     )
     {
-        List<string> keys = storageKeys.ToList();
+        List<string> keys = publicIds.ToList();
         if (keys.Count == 0)
         {
             return true;
@@ -188,6 +188,101 @@ public class CloudinaryService : ICloudinaryService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<CloudinaryUploadResult> UploadRawAsync(
+        IFormFile file,
+        string publicId,
+        string? folder = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ValidateRawFile(file);
+
+        string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        bool isPdf = extension == ".pdf";
+
+        try
+        {
+            if (isPdf)
+            {
+                var uploadParams = new RawUploadParams
+                {
+                    File = new FileDescription(file.FileName, file.OpenReadStream()),
+                    PublicId = publicId,
+                    Folder = folder,
+                    Overwrite = true,
+                    UniqueFilename = false,
+                    UseFilename = false,
+                };
+
+                RawUploadResult result = await Task.Run(() => _cloudinary.Upload(uploadParams), cancellationToken);
+
+                if (result.Error != null)
+                {
+                    _logger.LogError("Cloudinary upload failed: {ErrorMessage}", result.Error.Message);
+                    throw CoreErrors.FileUploadFailed(result.Error.Message);
+                }
+
+                _logger.LogInformation(
+                    "Successfully uploaded raw PDF to Cloudinary: {PublicId}, Size: {Bytes} bytes",
+                    result.PublicId,
+                    result.Bytes
+                );
+
+                return new CloudinaryUploadResult(
+                    PublicId: result.PublicId,
+                    SecureUrl: result.SecureUrl.ToString(),
+                    Format: result.Format,
+                    Width: 0,
+                    Height: 0,
+                    Bytes: result.Bytes,
+                    ResourceType: result.ResourceType
+                );
+            }
+            else
+            {
+                var uploadParams = new ImageUploadParams
+                {
+                    File = new FileDescription(file.FileName, file.OpenReadStream()),
+                    PublicId = publicId,
+                    Folder = folder,
+                    Overwrite = true,
+                    UniqueFilename = false,
+                    UseFilename = false,
+                };
+
+                ImageUploadResult result = await _cloudinary.UploadAsync(uploadParams, cancellationToken);
+
+                if (result.Error != null)
+                {
+                    _logger.LogError("Cloudinary upload failed: {ErrorMessage}", result.Error.Message);
+                    throw CoreErrors.FileUploadFailed(result.Error.Message);
+                }
+
+                _logger.LogInformation(
+                    "Successfully uploaded raw image to Cloudinary: {PublicId}, Size: {Bytes} bytes",
+                    result.PublicId,
+                    result.Bytes
+                );
+
+                return new CloudinaryUploadResult(
+                    PublicId: result.PublicId,
+                    SecureUrl: result.SecureUrl.ToString(),
+                    Format: result.Format,
+                    Width: result.Width,
+                    Height: result.Height,
+                    Bytes: result.Bytes,
+                    ResourceType: result.ResourceType
+                );
+            }
+        }
+        catch (Exception ex) when (ex is not BadRequestException)
+        {
+            _logger.LogError(ex, "Unexpected error during Cloudinary raw file upload");
+            throw CoreErrors.FileUploadFailed(ex.Message);
+        }
+    }
+
     /// <summary>
     /// Validates the uploaded file for size and type constraints.
     /// </summary>
@@ -225,6 +320,42 @@ public class CloudinaryService : ICloudinaryService
         if (!isValidContentType)
         {
             throw CoreErrors.InvalidFileType(contentType, string.Join(", ", FileConstants.AllowedAvatarMimeTypes));
+        }
+    }
+
+    /// <summary>
+    /// Validates a raw file against size (5 MB) and type (images + PDF) constraints.
+    /// </summary>
+    private static void ValidateRawFile(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            throw CoreErrors.FileRequired();
+        }
+
+        if (file.Length > FileConstants.MaxRawFileSizeBytes)
+        {
+            const long maxSizeMb = FileConstants.MaxRawFileSizeBytes / (1024 * 1024);
+            throw CoreErrors.FileTooLarge(file.Length, FileConstants.MaxRawFileSizeBytes, maxSizeMb);
+        }
+
+        string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (!FileConstants.AllowedRawFileExtensions.Contains(extension))
+        {
+            throw CoreErrors.InvalidFileExtension(extension, string.Join(", ", FileConstants.AllowedRawFileExtensions));
+        }
+
+        string contentType = (file.ContentType?.Split(';')[0] ?? string.Empty).Trim().ToLowerInvariant();
+
+        bool isValidContentType =
+            FileConstants.AllowedRawFileMimeTypes.Contains(contentType)
+            || string.IsNullOrEmpty(contentType)
+            || contentType == "application/octet-stream"
+            || contentType == "multipart/form-data";
+
+        if (!isValidContentType)
+        {
+            throw CoreErrors.InvalidFileType(contentType, string.Join(", ", FileConstants.AllowedRawFileMimeTypes));
         }
     }
 }
