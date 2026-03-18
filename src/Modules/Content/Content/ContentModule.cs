@@ -62,6 +62,7 @@ public static class ContentModule
         services.AddScoped<IVideoRepository, VideoRepository>();
         services.AddScoped<IShortVideoRepository, ShortVideoRepository>();
         services.AddScoped<ILyricsRepository, LyricsRepository>();
+        services.AddScoped<IContentOrderRepository, ContentOrderRepository>();
         services.AddHttpClient<IYoutubeThumbnailService, YoutubeThumbnailService>();
         services.AddScheduledJob<AbandonedDraftCleanupJob>(cronExpression: "0 0 * * * ?");
         services.AddScoped<ContentTypeSeeder>();
