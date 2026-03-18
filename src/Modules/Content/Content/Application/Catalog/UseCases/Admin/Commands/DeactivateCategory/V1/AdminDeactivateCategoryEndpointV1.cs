@@ -41,7 +41,9 @@ public class AdminDeactivateCategoryEndpointV1 : ICarterModule
                 {
                     var command = new AdminDeactivateCategoryCommand(Id: id);
                     AdminDeactivateCategoryResult result = await dispatcher.Send(request: command);
-                    return Results.Ok(new AdminDeactivateCategoryResponse(Category: result.Category));
+
+                    var response = new AdminDeactivateCategoryResponse(Category: result.Category);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: AdminDeactivateCategoryMetaField.AdminDeactivateCategory.Name)

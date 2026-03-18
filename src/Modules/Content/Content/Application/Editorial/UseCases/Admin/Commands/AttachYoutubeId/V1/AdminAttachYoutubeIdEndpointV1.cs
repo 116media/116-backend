@@ -49,7 +49,9 @@ public class AdminAttachYoutubeIdEndpointV1 : ICarterModule
                     var command = new AdminAttachYoutubeIdCommand(VideoId: id, YoutubeVideoId: request.YoutubeVideoId);
 
                     AdminAttachYoutubeIdResult result = await dispatcher.Send(request: command);
-                    return Results.Ok(new AdminAttachYoutubeIdResponse(Video: result.Video));
+
+                    var response = new AdminAttachYoutubeIdResponse(Video: result.Video);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: AdminAttachYoutubeIdMetaField.AdminAttachYoutubeId.Name)

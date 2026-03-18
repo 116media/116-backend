@@ -41,7 +41,9 @@ public class AdminDeactivatePromotionLevelEndpointV1 : ICarterModule
                 {
                     var command = new AdminDeactivatePromotionLevelCommand(Id: id);
                     AdminDeactivatePromotionLevelResult result = await dispatcher.Send(request: command);
-                    return Results.Ok(new AdminDeactivatePromotionLevelResponse(PromotionLevel: result.PromotionLevel));
+
+                    var response = new AdminDeactivatePromotionLevelResponse(PromotionLevel: result.PromotionLevel);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: AdminDeactivatePromotionLevelMetaField.AdminDeactivatePromotionLevel.Name)

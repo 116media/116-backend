@@ -41,7 +41,9 @@ public class AdminActivatePricingTierEndpointV1 : ICarterModule
                 {
                     var command = new AdminActivatePricingTierCommand(Id: id);
                     AdminActivatePricingTierResult result = await dispatcher.Send(request: command);
-                    return Results.Ok(new AdminActivatePricingTierResponse(PricingTier: result.PricingTier));
+
+                    var response = new AdminActivatePricingTierResponse(PricingTier: result.PricingTier);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: AdminActivatePricingTierMetaField.ActivatePricingTier.Name)

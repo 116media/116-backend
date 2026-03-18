@@ -41,7 +41,9 @@ public class PublicGetArticleBySlugEndpointV1 : ICarterModule
                 {
                     var query = new PublicGetArticleBySlugQuery(Slug: slug);
                     PublicGetArticleBySlugResult result = await dispatcher.Send(request: query);
-                    return Results.Ok(new PublicGetArticleBySlugResponse(Article: result.Article));
+
+                    var response = new PublicGetArticleBySlugResponse(Article: result.Article);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: PublicGetArticleBySlugMetaField.PublicGetArticleBySlug.Name)

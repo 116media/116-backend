@@ -41,7 +41,9 @@ public class AdminActivatePromotionLevelEndpointV1 : ICarterModule
                 {
                     var command = new AdminActivatePromotionLevelCommand(Id: id);
                     AdminActivatePromotionLevelResult result = await dispatcher.Send(request: command);
-                    return Results.Ok(new AdminActivatePromotionLevelResponse(PromotionLevel: result.PromotionLevel));
+
+                    var response = new AdminActivatePromotionLevelResponse(PromotionLevel: result.PromotionLevel);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: AdminActivatePromotionLevelMetaField.ActivatePromotionLevel.Name)

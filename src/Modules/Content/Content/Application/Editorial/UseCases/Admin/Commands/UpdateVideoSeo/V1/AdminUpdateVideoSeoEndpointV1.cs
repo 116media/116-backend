@@ -54,7 +54,9 @@ public class AdminUpdateVideoSeoEndpointV1 : ICarterModule
                     );
 
                     AdminUpdateVideoSeoResult result = await dispatcher.Send(request: command);
-                    return Results.Ok(new AdminUpdateVideoSeoResponse(Video: result.Video));
+
+                    var response = new AdminUpdateVideoSeoResponse(Video: result.Video);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: AdminUpdateVideoSeoMetaField.AdminUpdateVideoSeo.Name)

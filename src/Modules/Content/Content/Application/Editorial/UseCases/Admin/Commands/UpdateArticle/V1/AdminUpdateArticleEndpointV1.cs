@@ -91,7 +91,9 @@ public class AdminUpdateArticleEndpointV1 : ICarterModule
                     );
 
                     AdminUpdateArticleResult result = await dispatcher.Send(request: command);
-                    return Results.Ok(new AdminUpdateArticleResponse(Article: result.Article));
+
+                    var response = new AdminUpdateArticleResponse(Article: result.Article);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: AdminUpdateArticleMetaField.AdminUpdateArticle.Name)

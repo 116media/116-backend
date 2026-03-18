@@ -42,7 +42,9 @@ public class AdminGetVideoByIdEndpointV1 : ICarterModule
                 {
                     var query = new AdminGetVideoByIdQuery(Id: id);
                     AdminGetVideoByIdResult result = await dispatcher.Send(request: query);
-                    return Results.Ok(new AdminGetVideoByIdResponse(Video: result.Video));
+
+                    var response = new AdminGetVideoByIdResponse(Video: result.Video);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: AdminGetVideoByIdMetaField.AdminGetVideoById.Name)

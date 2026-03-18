@@ -41,7 +41,9 @@ public class PublicGetFeaturedVideosEndpointV1 : ICarterModule
                 {
                     var query = new PublicGetFeaturedVideosQuery();
                     PublicGetFeaturedVideosResult result = await dispatcher.Send(request: query);
-                    return Results.Ok(new PublicGetFeaturedVideosResponse(Videos: result.Videos));
+
+                    var response = new PublicGetFeaturedVideosResponse(Videos: result.Videos);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: PublicGetFeaturedVideosMetaField.PublicGetFeaturedVideos.Name)

@@ -41,7 +41,9 @@ public class AdminActivateCategoryEndpointV1 : ICarterModule
                 {
                     var command = new AdminActivateCategoryCommand(Id: id);
                     AdminActivateCategoryResult result = await dispatcher.Send(request: command);
-                    return Results.Ok(new AdminActivateCategoryResponse(Category: result.Category));
+
+                    var response = new AdminActivateCategoryResponse(Category: result.Category);
+                    return Results.Ok(response);
                 }
             )
             .WithName(endpointName: AdminActivateCategoryMetaField.AdminActivateCategory.Name)
