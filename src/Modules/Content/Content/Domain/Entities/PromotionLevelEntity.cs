@@ -101,6 +101,20 @@ public class PromotionLevelEntity : Aggregate<Guid>
     }
 
     /// <summary>
+    /// Guards that this promotion level is active and available for selection on new orders.
+    /// </summary>
+    /// <exception cref="_116.Shared.Application.Exceptions.NotFoundException">
+    /// Thrown when the promotion level is inactive, surfaced as a not-found error to avoid leaking state.
+    /// </exception>
+    public void EnsureActive()
+    {
+        if (!IsActive)
+        {
+            throw PromotionLevelErrors.NotFound(id: Id);
+        }
+    }
+
+    /// <summary>
     /// Activates the promotion level, making it available for selection on new orders.
     /// </summary>
     /// <returns>True if the promotion level was activated, false if already active.</returns>
