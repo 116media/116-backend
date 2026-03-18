@@ -147,6 +147,38 @@ public class ContentDbContextTests
         result.Should().NotBeNull();
     }
 
+    [Fact]
+    public void ContentOrders_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ContentOrderEntity> result = context.ContentOrders;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ContentOrderItems_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ContentOrderItemEntity> result = context.ContentOrderItems;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ContentItemTiers_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ContentItemTierEntity> result = context.ContentItemTiers;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ContentPayments_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ContentPaymentEntity> result = context.ContentPayments;
+        result.Should().NotBeNull();
+    }
+
     #endregion
 
     #region Schema and Configuration
