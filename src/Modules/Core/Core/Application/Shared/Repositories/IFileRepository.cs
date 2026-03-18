@@ -147,4 +147,23 @@ public interface IFileRepository : IRepository<FileEntity>
         bool isAvatarSourceManual,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Uploads a raw file (image or PDF) to cloud storage and persists file metadata to the database.
+    /// </summary>
+    /// <param name="file">The file to upload.</param>
+    /// <param name="publicId">The public ID used in cloud storage.</param>
+    /// <param name="folder">The destination folder in cloud storage.</param>
+    /// <param name="originalFileName">The original filename as submitted by the client.</param>
+    /// <param name="mimeType">The MIME type of the file (e.g., "image/jpeg", "application/pdf").</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The created <see cref="FileEntity" /> with persisted metadata.</returns>
+    Task<FileEntity> UploadAndStoreRawFileAsync(
+        IFormFile file,
+        string publicId,
+        string folder,
+        string originalFileName,
+        string mimeType,
+        CancellationToken cancellationToken = default
+    );
 }
