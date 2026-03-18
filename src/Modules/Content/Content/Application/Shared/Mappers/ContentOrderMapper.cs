@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.DTOs;
 using _116.Core.Domain.Entities;
 using Mapster;
 using MapsterMapper;
