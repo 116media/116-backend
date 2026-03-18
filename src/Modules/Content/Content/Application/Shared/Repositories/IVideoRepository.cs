@@ -63,6 +63,13 @@ public interface IVideoRepository : IRepository<VideoEntity>
     Task<IReadOnlyList<VideoEntity>> GetFeaturedAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a video linked to the given order item identifier. Returns null if not found.
+    /// </summary>
+    /// <param name="orderItemId">The order item identifier.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    Task<VideoEntity?> GetByOrderItemIdAsync(Guid orderItemId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Adds a new video to the repository.
     /// </summary>
     Task AddAsync(VideoEntity video, CancellationToken cancellationToken = default);
