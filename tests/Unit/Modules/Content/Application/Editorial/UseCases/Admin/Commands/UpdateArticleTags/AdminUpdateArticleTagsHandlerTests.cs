@@ -51,7 +51,7 @@ public class AdminUpdateArticleTagsHandlerTests
             article.Id,
             new List<ArticleTagEntity>
             {
-                new() { ArticleId = article.Id, TagId = existingTag.Id },
+                ArticleTagEntity.Create(id: Guid.NewGuid(), articleId: article.Id, tagId: existingTag.Id),
             }
         );
 
