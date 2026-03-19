@@ -1,3 +1,12 @@
+using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier.Contracts;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem.Contracts;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder.Contracts;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.Contracts;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
@@ -63,6 +72,14 @@ public static class ContentModule
         services.AddScoped<IShortVideoRepository, ShortVideoRepository>();
         services.AddScoped<ILyricsRepository, LyricsRepository>();
         services.AddScoped<IContentOrderRepository, ContentOrderRepository>();
+
+        // Commerce factories
+        services.AddScoped<IOrderPaymentFactory, OrderPaymentFactory>();
+        services.AddScoped<IVerifyPaymentFactory, AdminVerifyPaymentFactory>();
+        services.AddScoped<ISubmitOrderFactory, AdminSubmitOrderFactory>();
+        services.AddScoped<IAddOrderItemFactory, AdminAddOrderItemFactory>();
+        services.AddScoped<IAddItemTierFactory, AdminAddItemTierFactory>();
+
         services.AddHttpClient<IYoutubeThumbnailService, YoutubeThumbnailService>();
         services.AddScheduledJob<AbandonedDraftCleanupJob>(cronExpression: "0 0 * * * ?");
         services.AddScoped<ContentTypeSeeder>();
