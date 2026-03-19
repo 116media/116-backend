@@ -128,6 +128,41 @@ public static class MockVideoRepository
         mock.Verify(x => x.RemoveTag(It.IsAny<VideoTagEntity>()), Times.Once);
     }
 
+    public static Mock<IVideoRepository> SetupGetRatingAsync(
+        this Mock<IVideoRepository> mock,
+        VideoRatingEntity? rating
+    )
+    {
+        mock.Setup(x => x.GetRatingAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(rating);
+        return mock;
+    }
+
+    public static Mock<IVideoRepository> SetupGetAllRatingsForVideoAsync(
+        this Mock<IVideoRepository> mock,
+        List<VideoRatingEntity> ratings
+    )
+    {
+        mock.Setup(x => x.GetAllRatingsForVideoAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ratings);
+        return mock;
+    }
+
+    public static void VerifyAddRatingCalled(this Mock<IVideoRepository> mock)
+    {
+        mock.Verify(x => x.AddRatingAsync(It.IsAny<VideoRatingEntity>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    public static void VerifyUpdateRatingCalled(this Mock<IVideoRepository> mock)
+    {
+        mock.Verify(x => x.UpdateRating(It.IsAny<VideoRatingEntity>()), Times.Once);
+    }
+
+    public static void VerifyAddShareCalled(this Mock<IVideoRepository> mock)
+    {
+        mock.Verify(x => x.AddShareAsync(It.IsAny<VideoShareEntity>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     private static void SetupDefaults(Mock<IVideoRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<VideoEntity>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
@@ -153,5 +188,13 @@ public static class MockVideoRepository
         mock.Setup(x => x.GetFeaturedAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<VideoEntity>());
         mock.Setup(x => x.GetTagsByVideoIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<VideoTagEntity>());
+        mock.Setup(x => x.GetRatingAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((VideoRatingEntity?)null);
+        mock.Setup(x => x.GetAllRatingsForVideoAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<VideoRatingEntity>());
+        mock.Setup(x => x.AddRatingAsync(It.IsAny<VideoRatingEntity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x => x.AddShareAsync(It.IsAny<VideoShareEntity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
     }
 }
