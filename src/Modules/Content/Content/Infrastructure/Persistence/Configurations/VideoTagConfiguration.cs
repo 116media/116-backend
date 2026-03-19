@@ -6,14 +6,19 @@ namespace _116.Content.Infrastructure.Persistence.Configurations;
 
 /// <summary>
 /// Entity Framework Core configuration for the <see cref="VideoTagEntity" /> junction table.
-/// Uses a composite primary key (VideoId, TagId).
 /// </summary>
 public class VideoTagConfiguration : IEntityTypeConfiguration<VideoTagEntity>
 {
     /// <inheritdoc />
     public void Configure(EntityTypeBuilder<VideoTagEntity> builder)
     {
-        builder.HasKey(x => new { x.VideoId, x.TagId });
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.VideoId).IsRequired();
+
+        builder.Property(x => x.TagId).IsRequired();
+
+        builder.HasIndex(x => new { x.VideoId, x.TagId }).IsUnique();
 
         builder
             .HasOne(x => x.Video)
