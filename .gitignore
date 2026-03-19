@@ -71,3 +71,4 @@ nunit-*.xml
 CLAUDE.md
 coverage/
 projects/
+.claude/
