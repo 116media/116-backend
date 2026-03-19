@@ -418,6 +418,16 @@ public static class TestConstants
                 public const string ValidResourceType = "image";
             }
         }
+
+        /// <summary>Constants for Interactions entity testing (likes, bookmarks, comments, playlists, ratings, shares).</summary>
+        public static class Interactions
+        {
+            public const string ValidCommentBody = "This is a valid test comment body.";
+            public const string ValidPlaylistName = "My Test Playlist";
+            public const short ValidStarRating = 4;
+            public const short InvalidStarRatingAboveMax = 6;
+            public const short InvalidStarRatingBelowMin = 0;
+        }
     }
 
     /// <summary>
