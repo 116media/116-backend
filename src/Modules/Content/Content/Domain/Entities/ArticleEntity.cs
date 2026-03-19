@@ -21,7 +21,7 @@ namespace _116.Content.Domain.Entities;
 /// </para>
 /// <para>
 /// <c>social_boost</c>, <c>is_featured</c>, and <c>featured_until</c> are stamped
-/// automatically by the Commerce payment verification flow — never through article endpoints.
+/// automatically by the Commerce payment verification flow — never through article endpoints.thin k
 /// </para>
 /// </summary>
 public class ArticleEntity : Aggregate<Guid>
