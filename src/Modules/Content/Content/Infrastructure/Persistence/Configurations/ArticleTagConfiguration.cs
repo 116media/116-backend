@@ -6,14 +6,19 @@ namespace _116.Content.Infrastructure.Persistence.Configurations;
 
 /// <summary>
 /// Entity Framework Core configuration for the <see cref="ArticleTagEntity" /> junction table.
-/// Uses a composite primary key (ArticleId, TagId).
 /// </summary>
 public class ArticleTagConfiguration : IEntityTypeConfiguration<ArticleTagEntity>
 {
     /// <inheritdoc />
     public void Configure(EntityTypeBuilder<ArticleTagEntity> builder)
     {
-        builder.HasKey(x => new { x.ArticleId, x.TagId });
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.ArticleId).IsRequired();
+
+        builder.Property(x => x.TagId).IsRequired();
+
+        builder.HasIndex(x => new { x.ArticleId, x.TagId }).IsUnique();
 
         builder
             .HasOne(x => x.Article)
