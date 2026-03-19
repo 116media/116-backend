@@ -226,4 +226,14 @@ public static class ContentConstants
     /// Maximum allowed length for SEO meta keywords on a lyrics page.
     /// </summary>
     public const int MaxMetaKeywordsLength = 300;
+
+    /// <summary>
+    /// Maximum allowed length for an article comment body.
+    /// </summary>
+    public const int MaxCommentBodyLength = 1000;
+
+    /// <summary>
+    /// Maximum allowed length for a user playlist name.
+    /// </summary>
+    public const int MaxPlaylistNameLength = 100;
 }
