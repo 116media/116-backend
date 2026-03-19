@@ -179,6 +179,78 @@ public class ContentDbContextTests
         result.Should().NotBeNull();
     }
 
+    [Fact]
+    public void ArticleLikes_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ArticleLikeEntity> result = context.ArticleLikes;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ArticleBookmarks_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ArticleBookmarkEntity> result = context.ArticleBookmarks;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ArticleShares_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ArticleShareEntity> result = context.ArticleShares;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ArticleComments_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ArticleCommentEntity> result = context.ArticleComments;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void VideoRatings_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<VideoRatingEntity> result = context.VideoRatings;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void VideoShares_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<VideoShareEntity> result = context.VideoShares;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ShortVideoLikes_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ShortVideoLikeEntity> result = context.ShortVideoLikes;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ShortVideoBookmarks_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ShortVideoBookmarkEntity> result = context.ShortVideoBookmarks;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ShortVideoShares_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ShortVideoShareEntity> result = context.ShortVideoShares;
+        result.Should().NotBeNull();
+    }
+
     #endregion
 
     #region Schema and Configuration
