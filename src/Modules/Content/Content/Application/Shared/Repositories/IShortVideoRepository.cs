@@ -67,4 +67,39 @@ public interface IShortVideoRepository : IRepository<ShortVideoEntity>
     /// Marks a short video for deletion from the repository.
     /// </summary>
     void Remove(ShortVideoEntity shortVideo);
+
+    /// <summary>
+    /// Returns true if the user has already liked the given short video.
+    /// </summary>
+    Task<bool> HasLikedAsync(Guid userId, Guid shortVideoId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a like record to the repository.
+    /// </summary>
+    Task AddLikeAsync(ShortVideoLikeEntity like, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes the like record for the given user and short video.
+    /// </summary>
+    Task RemoveLikeAsync(Guid userId, Guid shortVideoId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns true if the user has already bookmarked the given short video.
+    /// </summary>
+    Task<bool> HasBookmarkedAsync(Guid userId, Guid shortVideoId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a bookmark record to the repository.
+    /// </summary>
+    Task AddBookmarkAsync(ShortVideoBookmarkEntity bookmark, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes the bookmark record for the given user and short video.
+    /// </summary>
+    Task RemoveBookmarkAsync(Guid userId, Guid shortVideoId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a share record to the repository.
+    /// </summary>
+    Task AddShareAsync(ShortVideoShareEntity share, CancellationToken cancellationToken = default);
 }
