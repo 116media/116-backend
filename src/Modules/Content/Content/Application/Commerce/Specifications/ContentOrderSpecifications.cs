@@ -40,3 +40,28 @@ public class ContentOrderByCustomerIdSpecification(Guid customerId) : Specificat
         return order => order.CustomerId == customerId;
     }
 }
+
+/// <summary>
+/// Specification that matches a content payment by its associated order identifier.
+/// </summary>
+public class ContentPaymentByOrderIdSpecification(Guid orderId) : Specification<ContentPaymentEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ContentPaymentEntity, bool>> ToExpression()
+    {
+        return payment => payment.OrderId == orderId;
+    }
+}
+
+/// <summary>
+/// Specification that matches a content order item by its identifier within a specific order.
+/// </summary>
+public class ContentOrderItemByIdAndOrderIdSpecification(Guid orderId, Guid itemId)
+    : Specification<ContentOrderItemEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ContentOrderItemEntity, bool>> ToExpression()
+    {
+        return item => item.Id == itemId && item.OrderId == orderId;
+    }
+}
