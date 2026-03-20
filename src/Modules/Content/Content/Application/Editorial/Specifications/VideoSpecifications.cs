@@ -90,3 +90,51 @@ public class FeaturedVideoSpecification : Specification<VideoEntity>
             && (video.FeaturedUntil == null || video.FeaturedUntil > now);
     }
 }
+
+/// <summary>
+/// Specification that matches a video by its associated order item identifier.
+/// </summary>
+public class VideoByOrderItemIdSpecification(Guid orderItemId) : Specification<VideoEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<VideoEntity, bool>> ToExpression()
+    {
+        return video => video.OrderItemId == orderItemId;
+    }
+}
+
+/// <summary>
+/// Specification that matches video tags belonging to a specific video.
+/// </summary>
+public class VideoTagByVideoIdSpecification(Guid videoId) : Specification<VideoTagEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<VideoTagEntity, bool>> ToExpression()
+    {
+        return tag => tag.VideoId == videoId;
+    }
+}
+
+/// <summary>
+/// Specification that matches a video rating by user and video identifiers.
+/// </summary>
+public class VideoRatingByUserAndVideoSpecification(Guid userId, Guid videoId) : Specification<VideoRatingEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<VideoRatingEntity, bool>> ToExpression()
+    {
+        return rating => rating.UserId == userId && rating.VideoId == videoId;
+    }
+}
+
+/// <summary>
+/// Specification that matches all video ratings belonging to a specific video.
+/// </summary>
+public class VideoRatingByVideoIdSpecification(Guid videoId) : Specification<VideoRatingEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<VideoRatingEntity, bool>> ToExpression()
+    {
+        return rating => rating.VideoId == videoId;
+    }
+}
