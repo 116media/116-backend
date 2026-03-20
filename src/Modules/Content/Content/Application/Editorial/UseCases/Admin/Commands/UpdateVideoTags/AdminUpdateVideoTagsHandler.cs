@@ -45,10 +45,8 @@ public class AdminUpdateVideoTagsHandler(
 
         foreach (Guid tagId in command.TagIds)
         {
-            await videoRepository.AddTagAsync(
-                tag: new VideoTagEntity { VideoId = videoId, TagId = tagId },
-                cancellationToken: cancellationToken
-            );
+            var tag = VideoTagEntity.Create(id: Guid.NewGuid(), videoId: videoId, tagId: tagId);
+            await videoRepository.AddTagAsync(tag: tag, cancellationToken: cancellationToken);
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
