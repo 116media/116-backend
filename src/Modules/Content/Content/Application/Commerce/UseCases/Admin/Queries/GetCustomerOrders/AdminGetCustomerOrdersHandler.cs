@@ -22,8 +22,6 @@ public class AdminGetCustomerOrdersHandler(IContentOrderRepository contentOrderR
         CancellationToken cancellationToken
     )
     {
-        Guid customerId = Guid.Parse(query.CustomerId);
-
         int pageSize = query.PaginatedRequest.PageSize;
         int pageIndex = query.PaginatedRequest.PageIndex;
 
@@ -31,7 +29,7 @@ public class AdminGetCustomerOrdersHandler(IContentOrderRepository contentOrderR
             page: pageIndex + 1,
             pageSize: pageSize,
             status: null,
-            customerId: customerId,
+            customerId: query.CustomerId,
             orderByAscending: false,
             ct: cancellationToken
         );
