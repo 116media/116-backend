@@ -1,8 +1,10 @@
+using _116.Content.Application.Commerce.Builders;
 using _116.Content.Application.Commerce.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Specifications;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -89,20 +91,16 @@ public class ContentOrderRepository(ContentDbContext context) : IContentOrderRep
         CancellationToken ct = default
     )
     {
-        IQueryable<ContentOrderEntity> query = context
-            .ContentOrders.Include(o => o.Customer)
-            .Include(o => o.Items)
-            .AsQueryable();
+        Specification<ContentOrderEntity>? spec = new ContentOrderQueryBuilder()
+            .WithStatus(status: status)
+            .WithCustomerId(customerId: customerId)
+            .Build();
 
-        if (status.HasValue)
-        {
-            query = query.ApplySpecification(new ContentOrderByStatusSpecification(status: status.Value));
-        }
+        IQueryable<ContentOrderEntity> query = spec is not null
+            ? context.ContentOrders.ApplySpecification(specification: spec)
+            : context.ContentOrders;
 
-        if (customerId.HasValue)
-        {
-            query = query.ApplySpecification(new ContentOrderByCustomerIdSpecification(customerId: customerId.Value));
-        }
+        query = query.Include(o => o.Customer).Include(o => o.Items);
 
         int totalCount = await query.CountAsync(ct);
 
