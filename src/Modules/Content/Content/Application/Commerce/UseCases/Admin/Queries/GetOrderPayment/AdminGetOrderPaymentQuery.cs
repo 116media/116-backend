@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderPayme
 /// Query for retrieving the payment record of a specific order.
 /// </summary>
 /// <param name="OrderId">The identifier of the order.</param>
-public record AdminGetOrderPaymentQuery(string OrderId) : IQuery<AdminGetOrderPaymentResult>;
+public record AdminGetOrderPaymentQuery(Guid OrderId) : IQuery<AdminGetOrderPaymentResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminGetOrderPaymentQuery" /> containing the payment details.
