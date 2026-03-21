@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetShortById
 /// Query for retrieving the full details of a short video by its unique identifier.
 /// </summary>
 /// <param name="Id">The unique identifier of the short video to retrieve.</param>
-public record AdminGetShortByIdQuery(string Id) : IQuery<AdminGetShortByIdResult>;
+public record AdminGetShortByIdQuery(Guid Id) : IQuery<AdminGetShortByIdResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminGetShortByIdQuery" /> containing the short video details.
