@@ -33,8 +33,8 @@ public class AdminGetCustomerOrdersEndpointV1 : ICarterModule
 
         group
             .MapGet(
-                $"/{{id}}/{CommerceRouteConstants.Orders}",
-                async (string id, IDispatcher dispatcher, int pageIndex = 0, int pageSize = 10) =>
+                $"/{{id:guid}}/{CommerceRouteConstants.Orders}",
+                async (Guid id, IDispatcher dispatcher, int pageIndex = 0, int pageSize = 10) =>
                 {
                     var paginatedRequest = new PaginatedRequest(pageIndex, pageSize);
                     var query = new AdminGetCustomerOrdersQuery(CustomerId: id, PaginatedRequest: paginatedRequest);
