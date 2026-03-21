@@ -95,6 +95,7 @@ public sealed class ExceptionHandler(ILogger<ExceptionHandler> logger, Exception
             ConflictException => LogLevel.Warning,
             AuthenticationException => LogLevel.Warning,
             AuthorizationException => LogLevel.Warning,
+            FormatException => LogLevel.Warning,
             _ => LogLevel.Error,
         };
     }
