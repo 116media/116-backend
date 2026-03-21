@@ -9,7 +9,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetCustomerOr
 /// </summary>
 /// <param name="CustomerId">The identifier of the customer.</param>
 /// <param name="PaginatedRequest">Pagination parameters.</param>
-public record AdminGetCustomerOrdersQuery(string CustomerId, PaginatedRequest PaginatedRequest)
+public record AdminGetCustomerOrdersQuery(Guid CustomerId, PaginatedRequest PaginatedRequest)
     : IQuery<AdminGetCustomerOrdersResult>;
 
 /// <summary>
