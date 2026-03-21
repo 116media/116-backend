@@ -24,13 +24,14 @@ public class AdminGetOrderByIdHandler(
     /// <inheritdoc />
     public async Task<AdminGetOrderByIdResult> Handle(AdminGetOrderByIdQuery query, CancellationToken cancellationToken)
     {
-        Guid id = Guid.Parse(query.Id);
-
-        ContentOrderEntity? order = await contentOrderRepository.GetByIdWithItemsAsync(id: id, ct: cancellationToken);
+        ContentOrderEntity? order = await contentOrderRepository.GetByIdWithItemsAsync(
+            id: query.Id,
+            ct: cancellationToken
+        );
 
         if (order is null)
         {
-            throw ContentOrderErrors.NotFound(id: id);
+            throw ContentOrderErrors.NotFound(id: query.Id);
         }
 
         var dto = order.ToContentOrderDetailDto(mapper);
