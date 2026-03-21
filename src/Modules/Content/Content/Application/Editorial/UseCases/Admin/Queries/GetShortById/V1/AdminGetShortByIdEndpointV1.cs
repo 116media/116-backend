@@ -37,8 +37,8 @@ public class AdminGetShortByIdEndpointV1 : ICarterModule
 
         group
             .MapGet(
-                "/{id}",
-                async (string id, IDispatcher dispatcher) =>
+                "/{id:guid}",
+                async (Guid id, IDispatcher dispatcher) =>
                 {
                     var query = new AdminGetShortByIdQuery(Id: id);
                     AdminGetShortByIdResult result = await dispatcher.Send(request: query);
