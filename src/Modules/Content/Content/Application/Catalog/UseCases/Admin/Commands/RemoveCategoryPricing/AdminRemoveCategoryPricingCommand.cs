@@ -8,7 +8,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.RemoveCategor
 /// </summary>
 /// <param name="CategoryId">The identifier of the category.</param>
 /// <param name="PricingTierId">The identifier of the pricing tier to remove.</param>
-public record AdminRemoveCategoryPricingCommand(string CategoryId, Guid PricingTierId)
+public record AdminRemoveCategoryPricingCommand(string CategoryId, string PricingTierId)
     : ICommand<AdminRemoveCategoryPricingResult>;
 
 /// <summary>
