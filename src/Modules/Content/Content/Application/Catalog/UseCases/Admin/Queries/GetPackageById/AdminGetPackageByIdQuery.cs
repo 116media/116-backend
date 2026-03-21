@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetPackageById
 /// Query for retrieving a single package by its identifier, including its slot composition.
 /// </summary>
 /// <param name="Id">The unique identifier of the package.</param>
-public record AdminGetPackageByIdQuery(string Id) : IQuery<AdminGetPackageByIdResult>;
+public record AdminGetPackageByIdQuery(Guid Id) : IQuery<AdminGetPackageByIdResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminGetPackageByIdQuery" /> containing the package details.
