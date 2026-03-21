@@ -28,17 +28,18 @@ public class AdminRemovePackageSlotHandler(
     )
     {
         Guid packageId = Guid.Parse(command.PackageId);
+        Guid slotId = Guid.Parse(command.SlotId);
 
         await packageRepository.GetByIdWithSlotsOrThrowAsync(id: packageId, cancellationToken: cancellationToken);
 
         PackageSlotEntity? slot = await packageRepository.GetSlotByIdAsync(
-            slotId: command.SlotId,
+            slotId: slotId,
             cancellationToken: cancellationToken
         );
 
         if (slot is null)
         {
-            throw PackageErrors.SlotNotFound(slotId: command.SlotId);
+            throw PackageErrors.SlotNotFound(slotId: slotId);
         }
 
         packageRepository.RemoveSlot(slot: slot);
