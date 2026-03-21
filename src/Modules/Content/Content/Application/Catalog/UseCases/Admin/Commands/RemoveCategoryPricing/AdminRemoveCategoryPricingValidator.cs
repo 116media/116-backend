@@ -14,5 +14,6 @@ public class AdminRemoveCategoryPricingValidator : AbstractValidator<AdminRemove
     public AdminRemoveCategoryPricingValidator()
     {
         RuleFor(x => x.CategoryId).IsValidGuid("Category ID");
+        RuleFor(x => x.PricingTierId).IsValidGuid("Pricing Tier ID");
     }
 }
