@@ -35,13 +35,13 @@ public class JwtServiceTests : IDisposable
         _originalSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? "";
         _originalIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "";
         _originalAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "";
-        _originalExpiration = Environment.GetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION_IN_MINUTES") ?? "";
+        _originalExpiration = Environment.GetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION") ?? "";
 
         // Set test environment variables
         Environment.SetEnvironmentVariable("JWT_SECRET", TestSecret);
         Environment.SetEnvironmentVariable("JWT_ISSUER", TestIssuer);
         Environment.SetEnvironmentVariable("JWT_AUDIENCE", TestAudience);
-        Environment.SetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION_IN_MINUTES", TestExpiration);
+        Environment.SetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION", TestExpiration);
 
         _sut = new JwtService();
     }
@@ -52,7 +52,7 @@ public class JwtServiceTests : IDisposable
         Environment.SetEnvironmentVariable("JWT_SECRET", _originalSecret);
         Environment.SetEnvironmentVariable("JWT_ISSUER", _originalIssuer);
         Environment.SetEnvironmentVariable("JWT_AUDIENCE", _originalAudience);
-        Environment.SetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION_IN_MINUTES", _originalExpiration);
+        Environment.SetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION", _originalExpiration);
         GC.SuppressFinalize(this);
     }
 
@@ -575,10 +575,41 @@ public class JwtServiceTests : IDisposable
     // These scenarios are better tested in integration tests.
 
     [Fact]
+    public void GenerateToken_WithNullExpirationSetting_ShouldUseDefaultExpiration()
+    {
+        // Arrange — covers TryParse(null, ...) false branch
+        Environment.SetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION", null);
+        JwtService service = new();
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        DateTime beforeGeneration = DateTime.UtcNow;
+
+        // Act
+        JwtGenerationResult result = service.GenerateToken(
+            userId,
+            sessionId,
+            "test@example.com",
+            "testuser",
+            [],
+            [],
+            isVerified: true,
+            isActive: true,
+            EnumAuthProvider.Local
+        );
+
+        // Assert
+        DateTime expectedExpiration = beforeGeneration.AddMinutes(JwtClaimsConstants.DefaultExpiration);
+        result.ExpiresAt.Should().BeCloseTo(expectedExpiration, TimeSpan.FromSeconds(5));
+
+        // Restore
+        Environment.SetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION", TestExpiration);
+    }
+
+    [Fact]
     public void GenerateToken_WithInvalidExpirationSetting_ShouldUseDefaultExpiration()
     {
         // Arrange
-        Environment.SetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION_IN_MINUTES", "invalid");
+        Environment.SetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION", "invalid");
         JwtService service = new();
         var userId = Guid.NewGuid();
         var sessionId = Guid.NewGuid();
@@ -602,7 +633,7 @@ public class JwtServiceTests : IDisposable
         result.ExpiresAt.Should().BeCloseTo(expectedExpiration, TimeSpan.FromSeconds(5));
 
         // Restore
-        Environment.SetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION_IN_MINUTES", TestExpiration);
+        Environment.SetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION", TestExpiration);
     }
 
     [Fact]
