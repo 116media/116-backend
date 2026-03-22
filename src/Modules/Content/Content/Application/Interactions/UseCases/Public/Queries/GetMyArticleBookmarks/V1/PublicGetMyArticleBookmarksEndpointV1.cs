@@ -31,11 +31,11 @@ public class PublicGetMyArticleBookmarksEndpointV1 : ICarterModule
             .MapGet(
                 $"/{InteractionsRouteConstants.Bookmarks}",
                 async (
-                    int pageIndex,
-                    int pageSize,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    int pageIndex = 0,
+                    int pageSize = 10
                 ) =>
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
