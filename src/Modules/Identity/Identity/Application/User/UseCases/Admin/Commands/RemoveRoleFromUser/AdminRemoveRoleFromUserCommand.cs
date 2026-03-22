@@ -8,7 +8,7 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.RemoveRoleFromU
 /// </summary>
 /// <param name="UserId">The unique identifier of the user.</param>
 /// <param name="RoleId">The unique identifier of the role to remove.</param>
-public record AdminRemoveRoleFromUserCommand(string UserId, Guid RoleId) : ICommand<AdminRemoveRoleFromUserResult>;
+public record AdminRemoveRoleFromUserCommand(string UserId, string RoleId) : ICommand<AdminRemoveRoleFromUserResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminRemoveRoleFromUserCommand" /> containing the user's updated roles.
