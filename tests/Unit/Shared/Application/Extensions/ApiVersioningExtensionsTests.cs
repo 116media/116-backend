@@ -1,3 +1,4 @@
+using System.Reflection;
 using _116.Shared.Application.Extensions;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Builder;
@@ -102,6 +103,34 @@ public class ApiVersioningExtensionsTests
 
         // Assert
         result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void MapApiVersionGroup_WithoutUseApiVersioning_ShouldThrowInvalidOperationException()
+    {
+        // Covers the _rootVersionedGroup ?? throw branch.
+        // Reset the static field to null via reflection, test, then restore.
+        FieldInfo? field = typeof(ApiVersioningExtensions).GetField(
+            "_rootVersionedGroup",
+            BindingFlags.NonPublic | BindingFlags.Static
+        );
+
+        object? original = field?.GetValue(null);
+        try
+        {
+            field?.SetValue(null, null);
+
+            WebApplicationBuilder builder = WebApplication.CreateBuilder();
+            WebApplication app = builder.Build();
+
+            Action act = () => app.MapApiVersionGroup(1);
+
+            act.Should().Throw<InvalidOperationException>().WithMessage("*app.UseApiVersioning()*");
+        }
+        finally
+        {
+            field?.SetValue(null, original);
+        }
     }
 
     // Note: Removed tests for static state checking as they interfere with other tests
