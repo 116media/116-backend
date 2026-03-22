@@ -28,12 +28,11 @@ public class PublicGetPlaylistByIdEndpointV1 : ICarterModule
 
         group
             .MapGet(
-                "/{id}",
-                async (string id, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                "/{id:guid}",
+                async (Guid id, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
                 {
-                    Guid playlistId = Guid.Parse(id);
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
-                    var query = new PublicGetPlaylistByIdQuery(Id: playlistId, UserId: userId);
+                    var query = new PublicGetPlaylistByIdQuery(Id: id, UserId: userId);
 
                     PublicGetPlaylistByIdResult result = await dispatcher.Send(request: query);
                     return Results.Ok(result.Playlist);
