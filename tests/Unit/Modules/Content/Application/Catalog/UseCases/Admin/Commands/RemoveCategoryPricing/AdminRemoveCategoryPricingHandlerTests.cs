@@ -46,7 +46,7 @@ public class AdminRemoveCategoryPricingHandlerTests : BaseContentHandlerTest
 
         var command = new AdminRemoveCategoryPricingCommand(
             CategoryId: category.Id.ToString(),
-            PricingTierId: pricingTier.Id
+            PricingTierId: pricingTier.Id.ToString()
         );
 
         _categoryRepositoryMock.SetupGetPricing(category.Id, pricingTier.Id, pricing);
@@ -78,7 +78,7 @@ public class AdminRemoveCategoryPricingHandlerTests : BaseContentHandlerTest
 
         var command = new AdminRemoveCategoryPricingCommand(
             CategoryId: category.Id.ToString(),
-            PricingTierId: tier1.Id
+            PricingTierId: tier1.Id.ToString()
         );
 
         _categoryRepositoryMock.SetupGetPricing(category.Id, tier1.Id, pricingToRemove);
@@ -102,7 +102,10 @@ public class AdminRemoveCategoryPricingHandlerTests : BaseContentHandlerTest
         var categoryId = Guid.NewGuid();
         var tierId = Guid.NewGuid();
 
-        var command = new AdminRemoveCategoryPricingCommand(CategoryId: categoryId.ToString(), PricingTierId: tierId);
+        var command = new AdminRemoveCategoryPricingCommand(
+            CategoryId: categoryId.ToString(),
+            PricingTierId: tierId.ToString()
+        );
 
         _categoryRepositoryMock.SetupGetPricing(categoryId, tierId, null);
 
