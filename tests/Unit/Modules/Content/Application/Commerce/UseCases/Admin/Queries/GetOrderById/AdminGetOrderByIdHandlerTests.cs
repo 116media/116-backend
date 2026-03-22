@@ -37,7 +37,7 @@ public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
         ContentOrderEntity order = ContentOrderFactory.Create();
         _orderRepositoryMock.SetupGetByIdWithItems(order);
 
-        var query = new AdminGetOrderByIdQuery(Id: order.Id.ToString());
+        var query = new AdminGetOrderByIdQuery(Id: order.Id);
 
         // Act
         AdminGetOrderByIdResult result = await _handler.Handle(query, CancellationToken.None);
@@ -59,7 +59,7 @@ public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
         // Arrange
         _orderRepositoryMock.SetupGetByIdWithItems(null);
 
-        var query = new AdminGetOrderByIdQuery(Id: Guid.NewGuid().ToString());
+        var query = new AdminGetOrderByIdQuery(Id: Guid.NewGuid());
 
         // Act
         Func<Task> act = async () => await _handler.Handle(query, CancellationToken.None);
