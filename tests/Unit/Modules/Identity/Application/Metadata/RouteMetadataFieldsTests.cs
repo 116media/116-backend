@@ -41,8 +41,11 @@ using _116.Identity.Application.Roles.UseCases.Admin.Queries.GetPermissionById;
 using _116.Identity.Application.Roles.UseCases.Admin.Queries.GetRoleById;
 using _116.Identity.Application.Session.UseCases.Admin.Commands.CleanupExpiredSessions;
 using _116.Identity.Application.Session.UseCases.Admin.Commands.ForceLogoutUser;
+using _116.Identity.Application.Session.UseCases.Admin.Commands.RevokeSession;
 using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
 using _116.Identity.Application.Session.UseCases.Admin.Queries.GetAllSessions;
+using _116.Identity.Application.Session.UseCases.Admin.Queries.GetOwnSessionById;
+using _116.Identity.Application.Session.UseCases.Admin.Queries.GetOwnSessions;
 using _116.Identity.Application.Session.UseCases.Admin.Queries.GetSessionMetrics;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RevokeSession;
@@ -134,6 +137,9 @@ public class RouteMetadataFieldsTests
         "AdminCleanupExpiredSessions"
     )]
     [InlineData(typeof(AdminForceLogoutUserMetaField), "AdminForceLogoutUser", "AdminForceLogoutUser")]
+    [InlineData(typeof(AdminRevokeSessionMetaField), "AdminRevokeSession", "AdminRevokeSession")]
+    [InlineData(typeof(AdminGetOwnSessionByIdMetaField), "AdminGetOwnSessionById", "AdminGetOwnSessionById")]
+    [InlineData(typeof(AdminGetOwnSessionsMetaField), "AdminGetOwnSessions", "AdminGetOwnSessions")]
     [InlineData(typeof(PublicRefreshTokenMetaField), "PublicRefreshToken", "PublicRefreshToken")]
     [InlineData(typeof(PublicRevokeSessionMetaField), "PublicRevokeSession", "PublicRevokeSession")]
     [InlineData(typeof(PublicGetOwnSessionsMetaField), "PublicGetOwnSessions", "PublicGetOwnSessions")]
