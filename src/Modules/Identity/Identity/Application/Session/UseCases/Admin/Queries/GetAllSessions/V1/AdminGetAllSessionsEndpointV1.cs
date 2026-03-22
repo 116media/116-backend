@@ -41,8 +41,8 @@ public class AdminGetAllSessionsEndpointV1 : ICarterModule
                 "/",
                 async (
                     IDispatcher dispatcher,
-                    int pageIndex,
-                    int pageSize,
+                    int pageIndex = 0,
+                    int pageSize = 10,
                     string? status = null,
                     string? userId = null,
                     string? ipAddress = null,
