@@ -36,7 +36,7 @@ public class AdminGetCategoryByIdHandlerTests : BaseContentHandlerTest
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
 
-        var query = new AdminGetCategoryByIdQuery(Id: category.Id.ToString());
+        var query = new AdminGetCategoryByIdQuery(Id: category.Id);
 
         // Act
         AdminGetCategoryByIdResult result = await _handler.Handle(query, CancellationToken.None);
@@ -58,7 +58,7 @@ public class AdminGetCategoryByIdHandlerTests : BaseContentHandlerTest
         var nonExistentId = Guid.NewGuid();
         _categoryRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
-        var query = new AdminGetCategoryByIdQuery(Id: nonExistentId.ToString());
+        var query = new AdminGetCategoryByIdQuery(Id: nonExistentId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(query, CancellationToken.None);
