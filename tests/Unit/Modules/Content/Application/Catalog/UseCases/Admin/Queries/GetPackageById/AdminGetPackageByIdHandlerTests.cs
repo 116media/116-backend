@@ -34,7 +34,7 @@ public class AdminGetPackageByIdHandlerTests : BaseContentHandlerTest
         PackageEntity package = PackageFactory.CreateDefault();
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
 
-        var query = new AdminGetPackageByIdQuery(Id: package.Id.ToString());
+        var query = new AdminGetPackageByIdQuery(Id: package.Id);
 
         // Act
         AdminGetPackageByIdResult result = await _handler.Handle(query, CancellationToken.None);
@@ -56,7 +56,7 @@ public class AdminGetPackageByIdHandlerTests : BaseContentHandlerTest
         var nonExistentId = Guid.NewGuid();
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrowNotFound(nonExistentId);
 
-        var query = new AdminGetPackageByIdQuery(Id: nonExistentId.ToString());
+        var query = new AdminGetPackageByIdQuery(Id: nonExistentId);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(query, CancellationToken.None);
