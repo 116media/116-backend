@@ -33,7 +33,7 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
         // Arrange
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         VideoEntity video = VideoFactory.CreateWithCategory(CategoryId, category);
-        var query = new AdminGetVideoByIdQuery(Id: video.Id.ToString());
+        var query = new AdminGetVideoByIdQuery(Id: video.Id);
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
         // Act
@@ -50,7 +50,7 @@ public class AdminGetVideoByIdHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         Guid nonExistentId = Guid.NewGuid();
-        var query = new AdminGetVideoByIdQuery(Id: nonExistentId.ToString());
+        var query = new AdminGetVideoByIdQuery(Id: nonExistentId);
         _videoRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
         // Act
