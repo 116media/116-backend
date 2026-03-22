@@ -2,6 +2,7 @@ using System.Security.Claims;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Specifications;
 using _116.Identity.Application.Roles.Specifications;
+using _116.Identity.Application.Session.Specifications;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Contracts.Application;
@@ -181,9 +182,11 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     /// <inheritdoc />
     public async Task<bool> IsSessionValidAsync(Guid sessionId, CancellationToken cancellationToken = default)
     {
+        var specification = new SessionByIdSpecification(sessionId: sessionId);
         SessionEntity? session = await context
             .Sessions.AsNoTracking()
-            .FirstOrDefaultAsync(s => s.Id == sessionId, cancellationToken);
+            .ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (session is null || !session.IsActive())
         {
