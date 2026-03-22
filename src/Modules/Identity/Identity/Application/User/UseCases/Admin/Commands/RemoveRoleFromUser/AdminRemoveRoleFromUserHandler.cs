@@ -33,11 +33,12 @@ public class AdminRemoveRoleFromUserHandler(
     )
     {
         Guid userId = Guid.Parse(input: command.UserId);
+        Guid roleId = Guid.Parse(input: command.RoleId);
 
         // Get the user-role association
         UserRoleEntity? userRole = await userRoleRepository.GetByUserAndRoleAsync(
             userId: userId,
-            roleId: command.RoleId,
+            roleId: roleId,
             cancellationToken: cancellationToken
         );
 
