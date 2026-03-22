@@ -30,7 +30,7 @@ public class AdminGetShortByIdHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
-        var query = new AdminGetShortByIdQuery(Id: shortVideo.Id.ToString());
+        var query = new AdminGetShortByIdQuery(Id: shortVideo.Id);
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
 
         // Act
@@ -47,7 +47,7 @@ public class AdminGetShortByIdHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         Guid nonExistentId = Guid.NewGuid();
-        var query = new AdminGetShortByIdQuery(Id: nonExistentId.ToString());
+        var query = new AdminGetShortByIdQuery(Id: nonExistentId);
         _shortVideoRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
         // Act
