@@ -7,7 +7,7 @@ namespace _116.Identity.Application.User.UseCases.Admin.Queries.GetUserRoles;
 /// Query for getting all roles assigned to a user.
 /// </summary>
 /// <param name="UserId">The unique identifier of the user.</param>
-public record AdminGetUserRolesQuery(string UserId) : IQuery<AdminGetUserRolesResult>;
+public record AdminGetUserRolesQuery(Guid UserId) : IQuery<AdminGetUserRolesResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminGetUserRolesQuery" /> containing the user's roles.

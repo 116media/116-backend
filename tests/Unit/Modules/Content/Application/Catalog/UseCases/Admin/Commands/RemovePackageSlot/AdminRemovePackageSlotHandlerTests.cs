@@ -38,7 +38,7 @@ public class AdminRemovePackageSlotHandlerTests : BaseContentHandlerTest
         PackageEntity package = PackageFactory.Create();
         PackageSlotEntity slot = PackageSlotFactory.Create(package.Id);
 
-        var command = new AdminRemovePackageSlotCommand(PackageId: package.Id.ToString(), SlotId: slot.Id);
+        var command = new AdminRemovePackageSlotCommand(PackageId: package.Id.ToString(), SlotId: slot.Id.ToString());
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
         _packageRepositoryMock.SetupGetSlotById(slot.Id, slot);
@@ -67,7 +67,7 @@ public class AdminRemovePackageSlotHandlerTests : BaseContentHandlerTest
 
         var command = new AdminRemovePackageSlotCommand(
             PackageId: nonExistentPackageId.ToString(),
-            SlotId: Guid.NewGuid()
+            SlotId: Guid.NewGuid().ToString()
         );
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrowNotFound(nonExistentPackageId);
@@ -86,7 +86,10 @@ public class AdminRemovePackageSlotHandlerTests : BaseContentHandlerTest
         PackageEntity package = PackageFactory.Create();
         var nonExistentSlotId = Guid.NewGuid();
 
-        var command = new AdminRemovePackageSlotCommand(PackageId: package.Id.ToString(), SlotId: nonExistentSlotId);
+        var command = new AdminRemovePackageSlotCommand(
+            PackageId: package.Id.ToString(),
+            SlotId: nonExistentSlotId.ToString()
+        );
 
         _packageRepositoryMock.SetupGetByIdWithSlotsOrThrow(package);
         _packageRepositoryMock.SetupGetSlotById(nonExistentSlotId, null);

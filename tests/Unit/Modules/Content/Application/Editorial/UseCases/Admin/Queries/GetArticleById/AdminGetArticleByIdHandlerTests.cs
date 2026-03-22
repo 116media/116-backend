@@ -32,7 +32,7 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
-        var query = new AdminGetArticleByIdQuery(Id: article.Id.ToString());
+        var query = new AdminGetArticleByIdQuery(Id: article.Id);
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
 
         // Act
@@ -49,7 +49,7 @@ public class AdminGetArticleByIdHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         Guid nonExistentId = Guid.NewGuid();
-        var query = new AdminGetArticleByIdQuery(Id: nonExistentId.ToString());
+        var query = new AdminGetArticleByIdQuery(Id: nonExistentId);
         _articleRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
         // Act

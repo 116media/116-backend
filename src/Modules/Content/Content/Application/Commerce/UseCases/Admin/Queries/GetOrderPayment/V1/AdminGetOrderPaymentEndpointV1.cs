@@ -32,8 +32,8 @@ public class AdminGetOrderPaymentEndpointV1 : ICarterModule
 
         group
             .MapGet(
-                $"/{{id}}/{CommerceRouteConstants.Payment}",
-                async (string id, IDispatcher dispatcher) =>
+                $"/{{id:guid}}/{CommerceRouteConstants.Payment}",
+                async (Guid id, IDispatcher dispatcher) =>
                 {
                     var query = new AdminGetOrderPaymentQuery(OrderId: id);
 

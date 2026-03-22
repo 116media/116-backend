@@ -14,5 +14,6 @@ public class AdminRemovePackageSlotValidator : AbstractValidator<AdminRemovePack
     public AdminRemovePackageSlotValidator()
     {
         RuleFor(x => x.PackageId).IsValidGuid("Package ID");
+        RuleFor(x => x.SlotId).IsValidGuid("Slot ID");
     }
 }

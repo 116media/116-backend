@@ -36,8 +36,8 @@ public class AdminGetUserRolesEndpointV1 : ICarterModule
 
         group
             .MapGet(
-                "{id}/roles",
-                async (string id, IDispatcher dispatcher) =>
+                "{id:guid}/roles",
+                async (Guid id, IDispatcher dispatcher) =>
                 {
                     var query = new AdminGetUserRolesQuery(UserId: id);
 

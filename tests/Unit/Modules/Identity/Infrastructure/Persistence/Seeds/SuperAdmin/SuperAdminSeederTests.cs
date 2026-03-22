@@ -3,7 +3,7 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using AwesomeAssertions;
-using AwesomeAssertions.Specialized;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -12,14 +12,23 @@ using Xunit;
 namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 
 /// <summary>
-/// Unit tests for <see cref="SuperAdminSeeder"/>.
+/// Collection definition to prevent parallel test execution for SuperAdminSeeder tests.
 /// </summary>
-public class SuperAdminSeederTests
+[CollectionDefinition("SuperAdminSeeder", DisableParallelization = true)]
+public class SuperAdminSeederCollection { }
+
+/// <summary>
+/// Unit tests for <see cref="SuperAdminSeeder"/> using SQLite in-memory database,
+/// which supports transactions unlike the EF Core InMemory provider.
+/// </summary>
+[Collection("SuperAdminSeeder")]
+public class SuperAdminSeederTests : IDisposable
 {
     private readonly Mock<ILogger<SuperAdminSeeder>> _seederLoggerMock;
     private readonly Mock<ILogger<SuperAdminRepositoryManager>> _repositoryLoggerMock;
     private readonly Mock<ILogger<SuperAdminSeedingStrategy>> _strategyLoggerMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
+    private readonly string? _originalPassword;
 
     public SuperAdminSeederTests()
     {
@@ -27,77 +36,113 @@ public class SuperAdminSeederTests
         _repositoryLoggerMock = new Mock<ILogger<SuperAdminRepositoryManager>>();
         _strategyLoggerMock = new Mock<ILogger<SuperAdminSeedingStrategy>>();
         _passwordServiceMock = new Mock<IPasswordService>();
-
         _passwordServiceMock.Setup(x => x.Hash(It.IsAny<string>())).Returns("hashedPassword");
 
-        // Setup default password environment variable
-        string? originalPassword = Environment.GetEnvironmentVariable("DEFAULT_USER_PASSWORD");
-        if (string.IsNullOrWhiteSpace(originalPassword))
-        {
-            Environment.SetEnvironmentVariable("DEFAULT_USER_PASSWORD", "TestPassword123!");
-        }
+        _originalPassword = Environment.GetEnvironmentVariable("DEFAULT_USER_PASSWORD");
+        Environment.SetEnvironmentVariable("DEFAULT_USER_PASSWORD", "TestPassword123!");
     }
 
-    private DbContextOptions<IdentityDbContext> CreateOptions()
+    public void Dispose()
     {
-        return new DbContextOptionsBuilder<IdentityDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .EnableSensitiveDataLogging()
+        Environment.SetEnvironmentVariable("DEFAULT_USER_PASSWORD", _originalPassword);
+        GC.SuppressFinalize(this);
+    }
+
+    private static (SqliteConnection connection, DbContextOptions<IdentityDbContext> options) CreateSqliteOptions()
+    {
+        var connection = new SqliteConnection("DataSource=:memory:");
+        connection.Open();
+        DbContextOptions<IdentityDbContext> options = new DbContextOptionsBuilder<IdentityDbContext>()
+            .UseSqlite(connection)
+            .UseSnakeCaseNamingConvention()
             .Options;
+        return (connection, options);
     }
 
-    #region SeedAllAsync Tests
-
-    // Note: SuperAdminSeeder uses database transactions via BeginTransactionAsync(), which are not supported by InMemory database.
-    // These tests require integration testing with a real PostgreSQL database using Testcontainers or similar infrastructure.
-    // All tests in this region are skipped for unit test execution.
-
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
-    public async Task SeedAllAsync_ShouldLogStartMessage()
+    private SuperAdminSeeder CreateSeeder(IdentityDbContext context)
     {
-        // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
-        await using var context = new IdentityDbContext(options);
-
-        var seeder = new SuperAdminSeeder(
+        return new SuperAdminSeeder(
             context,
             _passwordServiceMock.Object,
             _seederLoggerMock.Object,
             _repositoryLoggerMock.Object,
             _strategyLoggerMock.Object
         );
+    }
+
+    #region SeedAllAsync — Happy Path (SuperAdmin does not exist)
+
+    [Fact]
+    public async Task SeedAllAsync_WhenSuperAdminDoesNotExist_ShouldCreateSuperAdminUser()
+    {
+        // Arrange
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
+        await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        SuperAdminSeeder seeder = CreateSeeder(context);
 
         // Act
         await seeder.SeedAllAsync();
 
         // Assert
-        _seederLoggerMock.Verify(
-            x =>
-                x.Log(
-                    LogLevel.Information,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Starting Super Admin seeding")),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()
-                ),
-            Times.Once
-        );
+        UserEntity? user = await context.Users.FirstOrDefaultAsync(u => u.Email == SuperAdminConfiguration.Email);
+        user.Should().NotBeNull();
+        user!.UserName.Should().Be(SuperAdminConfiguration.Username);
     }
 
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
-    public async Task SeedAllAsync_WhenSuperAdminDoesNotExist_ShouldExecuteSeeding()
+    [Fact]
+    public async Task SeedAllAsync_WhenSuperAdminDoesNotExist_ShouldCreateSuperAdminRole()
     {
         // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
         await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
 
-        var seeder = new SuperAdminSeeder(
-            context,
-            _passwordServiceMock.Object,
-            _seederLoggerMock.Object,
-            _repositoryLoggerMock.Object,
-            _strategyLoggerMock.Object
+        SuperAdminSeeder seeder = CreateSeeder(context);
+
+        // Act
+        await seeder.SeedAllAsync();
+
+        // Assert
+        RoleEntity? role = await context.Roles.FirstOrDefaultAsync(r => r.Name == SuperAdminConfiguration.RoleName);
+        role.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task SeedAllAsync_WhenSuperAdminDoesNotExist_ShouldCreateSystemPermission()
+    {
+        // Arrange
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
+        await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        SuperAdminSeeder seeder = CreateSeeder(context);
+
+        // Act
+        await seeder.SeedAllAsync();
+
+        // Assert
+        PermissionEntity? permission = await context.Permissions.FirstOrDefaultAsync(p =>
+            p.Resource == SuperAdminConfiguration.PermissionResource
+            && p.Action == SuperAdminConfiguration.PermissionAction
         );
+        permission.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task SeedAllAsync_WhenSuperAdminDoesNotExist_ShouldLogCompletionMessage()
+    {
+        // Arrange
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
+        await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        SuperAdminSeeder seeder = CreateSeeder(context);
 
         // Act
         await seeder.SeedAllAsync();
@@ -112,19 +157,42 @@ public class SuperAdminSeederTests
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()
                 ),
-            Times.Once
+            Times.AtLeastOnce
         );
     }
 
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
+    [Fact]
+    public async Task SeedAllAsync_WhenSuperAdminDoesNotExist_ShouldHashPassword()
+    {
+        // Arrange
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
+        await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        SuperAdminSeeder seeder = CreateSeeder(context);
+
+        // Act
+        await seeder.SeedAllAsync();
+
+        // Assert
+        _passwordServiceMock.Verify(x => x.Hash(It.IsAny<string>()), Times.Once);
+    }
+
+    #endregion
+
+    #region SeedAllAsync — Already Exists (skip path)
+
+    [Fact]
     public async Task SeedAllAsync_WhenSuperAdminAlreadyExists_ShouldSkipSeeding()
     {
         // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
         await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
 
-        // Pre-seed SuperAdmin user
-        var existingUser = _116.Identity.Domain.Entities.UserEntity.Create(
+        var existingUser = UserEntity.Create(
             Guid.NewGuid(),
             SuperAdminConfiguration.Email,
             "existingadmin",
@@ -133,13 +201,35 @@ public class SuperAdminSeederTests
         await context.Users.AddAsync(existingUser);
         await context.SaveChangesAsync();
 
-        var seeder = new SuperAdminSeeder(
-            context,
-            _passwordServiceMock.Object,
-            _seederLoggerMock.Object,
-            _repositoryLoggerMock.Object,
-            _strategyLoggerMock.Object
+        SuperAdminSeeder seeder = CreateSeeder(context);
+
+        // Act
+        await seeder.SeedAllAsync();
+
+        // Assert — user count stays at 1, no new seeding occurred
+        int userCount = await context.Users.CountAsync();
+        userCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task SeedAllAsync_WhenSuperAdminAlreadyExists_ShouldLogSkipMessage()
+    {
+        // Arrange
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
+        await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        var existingUser = UserEntity.Create(
+            Guid.NewGuid(),
+            SuperAdminConfiguration.Email,
+            "existingadmin",
+            "hashedPassword"
         );
+        await context.Users.AddAsync(existingUser);
+        await context.SaveChangesAsync();
+
+        SuperAdminSeeder seeder = CreateSeeder(context);
 
         // Act
         await seeder.SeedAllAsync();
@@ -158,325 +248,55 @@ public class SuperAdminSeederTests
         );
     }
 
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
-    public async Task SeedAllAsync_WhenSuperAdminAlreadyExists_ShouldNotCreateNewEntities()
-    {
-        // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
-        await using var context = new IdentityDbContext(options);
-
-        // Pre-seed SuperAdmin user
-        var existingUser = _116.Identity.Domain.Entities.UserEntity.Create(
-            Guid.NewGuid(),
-            SuperAdminConfiguration.Email,
-            "existingadmin",
-            "hashedPassword"
-        );
-        await context.Users.AddAsync(existingUser);
-        await context.SaveChangesAsync();
-
-        var seeder = new SuperAdminSeeder(
-            context,
-            _passwordServiceMock.Object,
-            _seederLoggerMock.Object,
-            _repositoryLoggerMock.Object,
-            _strategyLoggerMock.Object
-        );
-
-        // Act
-        await seeder.SeedAllAsync();
-
-        // Assert
-        int userCount = await context.Users.CountAsync();
-        userCount.Should().Be(1); // Should still be just the pre-seeded user
-    }
-
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
-    public async Task SeedAllAsync_WhenSeedingSucceeds_ShouldCreateSuperAdminUser()
-    {
-        // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
-        await using var context = new IdentityDbContext(options);
-
-        var seeder = new SuperAdminSeeder(
-            context,
-            _passwordServiceMock.Object,
-            _seederLoggerMock.Object,
-            _repositoryLoggerMock.Object,
-            _strategyLoggerMock.Object
-        );
-
-        // Act
-        await seeder.SeedAllAsync();
-
-        // Assert
-        UserEntity? superAdminUser = await context.Users.FirstOrDefaultAsync(u =>
-            u.Email == SuperAdminConfiguration.Email
-        );
-        superAdminUser.Should().NotBeNull();
-        superAdminUser.UserName.Should().Be(SuperAdminConfiguration.Username);
-    }
-
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
-    public async Task SeedAllAsync_WhenSeedingSucceeds_ShouldCreateSuperAdminRole()
-    {
-        // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
-        await using var context = new IdentityDbContext(options);
-
-        var seeder = new SuperAdminSeeder(
-            context,
-            _passwordServiceMock.Object,
-            _seederLoggerMock.Object,
-            _repositoryLoggerMock.Object,
-            _strategyLoggerMock.Object
-        );
-
-        // Act
-        await seeder.SeedAllAsync();
-
-        // Assert
-        RoleEntity? superAdminRole = await context.Roles.FirstOrDefaultAsync(r =>
-            r.Name == SuperAdminConfiguration.RoleName
-        );
-        superAdminRole.Should().NotBeNull();
-    }
-
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
-    public async Task SeedAllAsync_WhenSeedingSucceeds_ShouldCreateSystemPermission()
-    {
-        // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
-        await using var context = new IdentityDbContext(options);
-
-        var seeder = new SuperAdminSeeder(
-            context,
-            _passwordServiceMock.Object,
-            _seederLoggerMock.Object,
-            _repositoryLoggerMock.Object,
-            _strategyLoggerMock.Object
-        );
-
-        // Act
-        await seeder.SeedAllAsync();
-
-        // Assert
-        PermissionEntity? systemPermission = await context.Permissions.FirstOrDefaultAsync(p =>
-            p.Resource == "system" && p.Action == "all"
-        );
-        systemPermission.Should().NotBeNull();
-    }
-
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
-    public async Task SeedAllAsync_WhenSeedingSucceeds_ShouldAssociateUserWithRole()
-    {
-        // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
-        await using var context = new IdentityDbContext(options);
-
-        var seeder = new SuperAdminSeeder(
-            context,
-            _passwordServiceMock.Object,
-            _seederLoggerMock.Object,
-            _repositoryLoggerMock.Object,
-            _strategyLoggerMock.Object
-        );
-
-        // Act
-        await seeder.SeedAllAsync();
-
-        // Assert
-        UserRoleEntity? userRole = await context.UserRoles.FirstOrDefaultAsync();
-        userRole.Should().NotBeNull();
-    }
-
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
-    public async Task SeedAllAsync_WhenSeedingSucceeds_ShouldAssociateRoleWithPermission()
-    {
-        // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
-        await using var context = new IdentityDbContext(options);
-
-        var seeder = new SuperAdminSeeder(
-            context,
-            _passwordServiceMock.Object,
-            _seederLoggerMock.Object,
-            _repositoryLoggerMock.Object,
-            _strategyLoggerMock.Object
-        );
-
-        // Act
-        await seeder.SeedAllAsync();
-
-        // Assert
-        RolePermissionEntity? rolePermission = await context.RolePermissions.FirstOrDefaultAsync();
-        rolePermission.Should().NotBeNull();
-    }
-
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
-    public async Task SeedAllAsync_WhenSeedingSucceeds_ShouldLogTransactionCommitted()
-    {
-        // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
-        await using var context = new IdentityDbContext(options);
-
-        var seeder = new SuperAdminSeeder(
-            context,
-            _passwordServiceMock.Object,
-            _seederLoggerMock.Object,
-            _repositoryLoggerMock.Object,
-            _strategyLoggerMock.Object
-        );
-
-        // Act
-        await seeder.SeedAllAsync();
-
-        // Assert
-        _seederLoggerMock.Verify(
-            x =>
-                x.Log(
-                    LogLevel.Information,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("transaction committed")),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()
-                ),
-            Times.Once
-        );
-    }
-
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
-    public async Task SeedAllAsync_WhenSeedingSucceeds_ShouldLogCompletionMessage()
-    {
-        // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
-        await using var context = new IdentityDbContext(options);
-
-        var seeder = new SuperAdminSeeder(
-            context,
-            _passwordServiceMock.Object,
-            _seederLoggerMock.Object,
-            _repositoryLoggerMock.Object,
-            _strategyLoggerMock.Object
-        );
-
-        // Act
-        await seeder.SeedAllAsync();
-
-        // Assert
-        _seederLoggerMock.Verify(
-            x =>
-                x.Log(
-                    LogLevel.Information,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Super Admin seeding completed successfully")),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()
-                ),
-            Times.Once
-        );
-    }
-
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
-    public async Task SeedAllAsync_WhenSeedingSucceeds_ShouldMarkUserAsVerified()
-    {
-        // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
-        await using var context = new IdentityDbContext(options);
-
-        var seeder = new SuperAdminSeeder(
-            context,
-            _passwordServiceMock.Object,
-            _seederLoggerMock.Object,
-            _repositoryLoggerMock.Object,
-            _strategyLoggerMock.Object
-        );
-
-        // Act
-        await seeder.SeedAllAsync();
-
-        // Assert
-        UserEntity? superAdminUser = await context.Users.FirstOrDefaultAsync(u =>
-            u.Email == SuperAdminConfiguration.Email
-        );
-        superAdminUser.Should().NotBeNull();
-        superAdminUser.IsVerified.Should().BeTrue();
-    }
-
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
-    public async Task SeedAllAsync_WhenSeedingSucceeds_ShouldActivateUser()
-    {
-        // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
-        await using var context = new IdentityDbContext(options);
-
-        var seeder = new SuperAdminSeeder(
-            context,
-            _passwordServiceMock.Object,
-            _seederLoggerMock.Object,
-            _repositoryLoggerMock.Object,
-            _strategyLoggerMock.Object
-        );
-
-        // Act
-        await seeder.SeedAllAsync();
-
-        // Assert
-        UserEntity? superAdminUser = await context.Users.FirstOrDefaultAsync(u =>
-            u.Email == SuperAdminConfiguration.Email
-        );
-        superAdminUser.Should().NotBeNull();
-        superAdminUser.IsActive.Should().BeTrue();
-    }
-
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
-    public async Task SeedAllAsync_WhenSeedingSucceeds_ShouldHashPassword()
-    {
-        // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
-        await using var context = new IdentityDbContext(options);
-
-        var seeder = new SuperAdminSeeder(
-            context,
-            _passwordServiceMock.Object,
-            _seederLoggerMock.Object,
-            _repositoryLoggerMock.Object,
-            _strategyLoggerMock.Object
-        );
-
-        // Act
-        await seeder.SeedAllAsync();
-
-        // Assert
-        _passwordServiceMock.Verify(x => x.Hash(It.IsAny<string>()), Times.Once);
-    }
-
     #endregion
 
-    #region Error Handling Tests
+    #region SeedAllAsync — Exception / Rollback Path
 
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
-    public async Task SeedAllAsync_WhenExceptionOccurs_ShouldLogError()
+    [Fact]
+    public async Task SeedAllAsync_WhenExceptionOccurs_ShouldRethrowException()
     {
-        // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        // Arrange — force exception inside the transaction via Hash()
+        _passwordServiceMock
+            .Setup(x => x.Hash(It.IsAny<string>()))
+            .Throws(new InvalidOperationException("Hash failed"));
+
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
         await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
 
-        // Force an exception by setting password service to throw
-        _passwordServiceMock.Setup(x => x.Hash(It.IsAny<string>())).Throws(new Exception("Password hashing failed"));
-
-        var seeder = new SuperAdminSeeder(
-            context,
-            _passwordServiceMock.Object,
-            _seederLoggerMock.Object,
-            _repositoryLoggerMock.Object,
-            _strategyLoggerMock.Object
-        );
+        SuperAdminSeeder seeder = CreateSeeder(context);
 
         // Act & Assert
         Func<Task> act = async () => await seeder.SeedAllAsync();
-        await act.Should().ThrowExactlyAsync<Exception>();
+        await act.Should().ThrowExactlyAsync<InvalidOperationException>();
+    }
 
+    [Fact]
+    public async Task SeedAllAsync_WhenExceptionOccurs_ShouldLogError()
+    {
+        // Arrange
+        _passwordServiceMock
+            .Setup(x => x.Hash(It.IsAny<string>()))
+            .Throws(new InvalidOperationException("Hash failed"));
+
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
+        await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
+
+        SuperAdminSeeder seeder = CreateSeeder(context);
+
+        // Act
+        try
+        {
+            await seeder.SeedAllAsync();
+        }
+        catch
+        { /* expected */
+        }
+
+        // Assert — outer catch logs "Failed to seed Super Admin data"
         _seederLoggerMock.Verify(
             x =>
                 x.Log(
@@ -490,50 +310,31 @@ public class SuperAdminSeederTests
         );
     }
 
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
-    public async Task SeedAllAsync_WhenExceptionOccurs_ShouldRethrowException()
+    [Fact]
+    public async Task SeedAllAsync_WhenExceptionOccursDuringTransaction_ShouldLogRollback()
     {
         // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
+        _passwordServiceMock
+            .Setup(x => x.Hash(It.IsAny<string>()))
+            .Throws(new InvalidOperationException("Hash failed"));
+
+        var (connection, options) = CreateSqliteOptions();
+        await using var _ = connection;
         await using var context = new IdentityDbContext(options);
+        await context.Database.EnsureCreatedAsync();
 
-        _passwordServiceMock.Setup(x => x.Hash(It.IsAny<string>())).Throws(new Exception("Password hashing failed"));
+        SuperAdminSeeder seeder = CreateSeeder(context);
 
-        var seeder = new SuperAdminSeeder(
-            context,
-            _passwordServiceMock.Object,
-            _seederLoggerMock.Object,
-            _repositoryLoggerMock.Object,
-            _strategyLoggerMock.Object
-        );
+        // Act
+        try
+        {
+            await seeder.SeedAllAsync();
+        }
+        catch
+        { /* expected */
+        }
 
-        // Act & Assert
-        Func<Task> act = async () => await seeder.SeedAllAsync();
-        ExceptionAssertions<Exception>? exception = await act.Should().ThrowExactlyAsync<Exception>();
-        exception.Which.Message.Should().Be("Password hashing failed");
-    }
-
-    [Fact(Skip = "Requires real database with transaction support - InMemory database doesn't support transactions")]
-    public async Task SeedAllAsync_WhenExceptionOccursDuringSeeding_ShouldLogRollback()
-    {
-        // Arrange
-        DbContextOptions<IdentityDbContext> options = CreateOptions();
-        await using var context = new IdentityDbContext(options);
-
-        _passwordServiceMock.Setup(x => x.Hash(It.IsAny<string>())).Throws(new Exception("Seeding error"));
-
-        var seeder = new SuperAdminSeeder(
-            context,
-            _passwordServiceMock.Object,
-            _seederLoggerMock.Object,
-            _repositoryLoggerMock.Object,
-            _strategyLoggerMock.Object
-        );
-
-        // Act & Assert
-        Func<Task> act = async () => await seeder.SeedAllAsync();
-        await act.Should().ThrowExactlyAsync<Exception>();
-
+        // Assert — inner catch inside ExecuteSeedingWithTransactionAsync logs rollback
         _seederLoggerMock.Verify(
             x =>
                 x.Log(

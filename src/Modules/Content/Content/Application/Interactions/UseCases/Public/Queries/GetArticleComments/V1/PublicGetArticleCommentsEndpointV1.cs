@@ -26,15 +26,11 @@ public class PublicGetArticleCommentsEndpointV1 : ICarterModule
 
         group
             .MapGet(
-                $"/{{id}}/{InteractionsRouteConstants.Comments}",
-                async (string id, int pageIndex, int pageSize, IDispatcher dispatcher) =>
+                $"/{{id:guid}}/{InteractionsRouteConstants.Comments}",
+                async (Guid id, IDispatcher dispatcher, int pageIndex = 0, int pageSize = 10) =>
                 {
-                    Guid articleId = Guid.Parse(id);
                     var paginatedRequest = new PaginatedRequest(PageIndex: pageIndex, PageSize: pageSize);
-                    var query = new PublicGetArticleCommentsQuery(
-                        ArticleId: articleId,
-                        PaginatedRequest: paginatedRequest
-                    );
+                    var query = new PublicGetArticleCommentsQuery(ArticleId: id, PaginatedRequest: paginatedRequest);
 
                     PublicGetArticleCommentsResult result = await dispatcher.Send(request: query);
                     return Results.Ok(result.Comments);

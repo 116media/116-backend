@@ -15,6 +15,7 @@
 
     <ItemGroup>
         <!-- Test Framework -->
+        <PackageReference Include="EFCore.NamingConventions" Version="9.0.0" />
         <PackageReference Include="xunit.v3" Version="1.1.0" />
         <PackageReference Include="xunit.runner.visualstudio" Version="3.0.2">
             <PrivateAssets>all</PrivateAssets>

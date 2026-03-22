@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetCustomerByI
 /// Query for retrieving a single customer by its identifier.
 /// </summary>
 /// <param name="Id">The unique identifier of the customer.</param>
-public record AdminGetCustomerByIdQuery(string Id) : IQuery<AdminGetCustomerByIdResult>;
+public record AdminGetCustomerByIdQuery(Guid Id) : IQuery<AdminGetCustomerByIdResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminGetCustomerByIdQuery" /> containing the customer details.

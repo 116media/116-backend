@@ -26,10 +26,8 @@ public class AdminGetOrderPaymentHandler(
         CancellationToken cancellationToken
     )
     {
-        Guid orderId = Guid.Parse(query.OrderId);
-
         ContentPaymentEntity payment = await orderPaymentFactory.GetByOrderIdOrThrowAsync(
-            orderId: orderId,
+            orderId: query.OrderId,
             ct: cancellationToken
         );
 

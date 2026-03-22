@@ -38,8 +38,8 @@ public class AdminRemovePackageSlotEndpointV1 : ICarterModule
 
         group
             .MapDelete(
-                $"/{{id}}/{CatalogRouteConstants.Slots}/{{slotId:guid}}",
-                async (string id, Guid slotId, IDispatcher dispatcher) =>
+                $"/{{id}}/{CatalogRouteConstants.Slots}/{{slotId}}",
+                async (string id, string slotId, IDispatcher dispatcher) =>
                 {
                     var command = new AdminRemovePackageSlotCommand(PackageId: id, SlotId: slotId);
 

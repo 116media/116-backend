@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Queries.GetRoleById;
 /// Query to retrieve a role by its unique identifier along with its permissions.
 /// </summary>
 /// <param name="RoleId">The unique identifier of the role to retrieve.</param>
-public record AdminGetRoleByIdQuery(string RoleId) : IQuery<AdminGetRoleByIdResult>;
+public record AdminGetRoleByIdQuery(Guid RoleId) : IQuery<AdminGetRoleByIdResult>;
 
 /// <summary>
 /// The result of executing an <see cref="AdminGetRoleByIdQuery" />.

@@ -28,16 +28,17 @@ public class AdminRemoveCategoryPricingHandler(
     )
     {
         Guid categoryId = Guid.Parse(command.CategoryId);
+        Guid pricingTierId = Guid.Parse(command.PricingTierId);
 
         CategoryPricingEntity? pricing = await categoryRepository.GetPricingAsync(
             categoryId: categoryId,
-            pricingTierId: command.PricingTierId,
+            pricingTierId: pricingTierId,
             cancellationToken: cancellationToken
         );
 
         if (pricing is null)
         {
-            throw CategoryErrors.PricingNotFound(categoryId: categoryId, tierId: command.PricingTierId);
+            throw CategoryErrors.PricingNotFound(categoryId: categoryId, tierId: pricingTierId);
         }
 
         categoryRepository.RemovePricing(pricing: pricing);

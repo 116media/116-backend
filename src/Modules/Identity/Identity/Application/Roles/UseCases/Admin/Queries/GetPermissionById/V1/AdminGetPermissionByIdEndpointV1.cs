@@ -37,8 +37,8 @@ public class AdminGetPermissionByIdEndpointV1 : ICarterModule
 
         group
             .MapGet(
-                "{id}",
-                async (string id, IDispatcher dispatcher) =>
+                "{id:guid}",
+                async (Guid id, IDispatcher dispatcher) =>
                 {
                     var query = new AdminGetPermissionByIdQuery(PermissionId: id);
                     AdminGetPermissionByIdResult result = await dispatcher.Send(request: query);

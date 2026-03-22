@@ -20,10 +20,8 @@ public class AdminGetCustomerByIdHandler(ICustomerRepository customerRepository,
         CancellationToken cancellationToken
     )
     {
-        Guid id = Guid.Parse(query.Id);
-
         CustomerEntity customer = await customerRepository.GetByIdOrThrowAsync(
-            id: id,
+            id: query.Id,
             cancellationToken: cancellationToken
         );
 

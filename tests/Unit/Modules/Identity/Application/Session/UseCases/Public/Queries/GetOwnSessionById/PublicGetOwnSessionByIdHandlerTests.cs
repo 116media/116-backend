@@ -35,7 +35,7 @@ public class PublicGetOwnSessionByIdHandlerTests : BaseHandlerTest
         var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.CreateWithId(Guid.NewGuid(), userId);
 
-        PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: session.Id.ToString());
+        PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: session.Id);
 
         _sessionRepositoryMock.SetupGetById(session);
 
@@ -55,7 +55,7 @@ public class PublicGetOwnSessionByIdHandlerTests : BaseHandlerTest
         var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.CreateWithId(Guid.NewGuid(), userId);
 
-        PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: session.Id.ToString());
+        PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: session.Id);
 
         _sessionRepositoryMock.SetupGetById(session);
 
@@ -73,7 +73,7 @@ public class PublicGetOwnSessionByIdHandlerTests : BaseHandlerTest
         var userId = Guid.NewGuid();
         SessionEntity session = SessionFactory.CreateWithId(Guid.NewGuid(), userId);
 
-        PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: session.Id.ToString());
+        PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: session.Id);
 
         _sessionRepositoryMock.SetupGetById(session);
 
@@ -95,7 +95,7 @@ public class PublicGetOwnSessionByIdHandlerTests : BaseHandlerTest
         var userId = Guid.NewGuid();
         var sessionId = Guid.NewGuid();
 
-        PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: sessionId.ToString());
+        PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: sessionId);
 
         _sessionRepositoryMock.SetupGetByIdReturnsNull(sessionId);
 
@@ -114,7 +114,7 @@ public class PublicGetOwnSessionByIdHandlerTests : BaseHandlerTest
         var differentUserId = Guid.NewGuid();
         SessionEntity session = SessionFactory.CreateWithId(Guid.NewGuid(), differentUserId);
 
-        PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: session.Id.ToString());
+        PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: session.Id);
 
         _sessionRepositoryMock.SetupGetById(session);
 
@@ -137,7 +137,7 @@ public class PublicGetOwnSessionByIdHandlerTests : BaseHandlerTest
         SessionEntity session = SessionFactory.CreateWithId(Guid.NewGuid(), userId);
         using CancellationTokenSource cts = new();
 
-        PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: session.Id.ToString());
+        PublicGetOwnSessionByIdQuery query = new(UserId: userId, SessionId: session.Id);
 
         _sessionRepositoryMock.SetupGetById(session);
 

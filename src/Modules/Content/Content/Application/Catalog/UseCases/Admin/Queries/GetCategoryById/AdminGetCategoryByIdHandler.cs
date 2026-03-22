@@ -20,10 +20,8 @@ public class AdminGetCategoryByIdHandler(ICategoryRepository categoryRepository,
         CancellationToken cancellationToken
     )
     {
-        Guid id = Guid.Parse(query.Id);
-
         CategoryEntity category = await categoryRepository.GetByIdOrThrowAsync(
-            id: id,
+            id: query.Id,
             cancellationToken: cancellationToken
         );
 

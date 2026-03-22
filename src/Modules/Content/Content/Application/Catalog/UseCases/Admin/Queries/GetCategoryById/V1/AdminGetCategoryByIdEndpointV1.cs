@@ -37,8 +37,8 @@ public class AdminGetCategoryByIdEndpointV1 : ICarterModule
 
         group
             .MapGet(
-                "/{id}",
-                async (string id, IDispatcher dispatcher) =>
+                "/{id:guid}",
+                async (Guid id, IDispatcher dispatcher) =>
                 {
                     var query = new AdminGetCategoryByIdQuery(Id: id);
 

@@ -20,10 +20,8 @@ public class AdminGetPackageByIdHandler(IPackageRepository packageRepository, IM
         CancellationToken cancellationToken
     )
     {
-        Guid id = Guid.Parse(query.Id);
-
         PackageEntity package = await packageRepository.GetByIdWithSlotsOrThrowAsync(
-            id: id,
+            id: query.Id,
             cancellationToken: cancellationToken
         );
 

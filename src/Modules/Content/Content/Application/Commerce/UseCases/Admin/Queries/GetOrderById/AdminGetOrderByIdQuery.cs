@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderById;
 /// Query for retrieving a single order with its items, tiers, and payment by identifier.
 /// </summary>
 /// <param name="Id">The unique identifier of the order.</param>
-public record AdminGetOrderByIdQuery(string Id) : IQuery<AdminGetOrderByIdResult>;
+public record AdminGetOrderByIdQuery(Guid Id) : IQuery<AdminGetOrderByIdResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminGetOrderByIdQuery" /> containing the full order detail.

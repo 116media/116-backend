@@ -26,17 +26,15 @@ public class PublicGetOwnSessionByIdHandler(ISessionRepository sessionRepository
         CancellationToken cancellationToken
     )
     {
-        Guid sessionId = Guid.Parse(input: query.SessionId);
-
         SessionEntity? session = await sessionRepository.GetByIdAsync(
-            sessionId: sessionId,
+            sessionId: query.SessionId,
             cancellationToken: cancellationToken
         );
 
         // Verify the session belongs to the user
         if (session is null || session.UserId != query.UserId)
         {
-            throw SessionErrors.SessionNotFound(sessionId: sessionId);
+            throw SessionErrors.SessionNotFound(sessionId: query.SessionId);
         }
 
         var sessionDto = session.ToSessionDto(mapper);

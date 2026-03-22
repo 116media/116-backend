@@ -14,5 +14,6 @@ public class AdminRemovePermissionFromRoleValidator : AbstractValidator<AdminRem
     public AdminRemovePermissionFromRoleValidator()
     {
         RuleFor(x => x.RoleId).IsValidGuid("Role ID");
+        RuleFor(x => x.PermissionId).IsValidGuid("Permission ID");
     }
 }

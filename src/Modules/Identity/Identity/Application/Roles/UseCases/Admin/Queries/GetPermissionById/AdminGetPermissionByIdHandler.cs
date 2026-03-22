@@ -26,10 +26,8 @@ public class AdminGetPermissionByIdHandler(IPermissionRepository permissionRepos
         CancellationToken cancellationToken
     )
     {
-        Guid permissionId = Guid.Parse(input: query.PermissionId);
-
         PermissionEntity? permission = await permissionRepository.GetPermissionByIdOrThrowAsync(
-            permissionId: permissionId,
+            permissionId: query.PermissionId,
             cancellationToken: cancellationToken
         );
 

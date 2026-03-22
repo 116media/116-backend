@@ -39,8 +39,8 @@ public class PublicGetOwnSessionByIdEndpointV1 : ICarterModule
 
         group
             .MapGet(
-                "{id}",
-                async (string id, ClaimsPrincipal user, IClaimsProvider authProvider, IDispatcher dispatcher) =>
+                "{id:guid}",
+                async (Guid id, ClaimsPrincipal user, IClaimsProvider authProvider, IDispatcher dispatcher) =>
                 {
                     Guid userId = authProvider.GetUserIdFromClaims(user: user);
 

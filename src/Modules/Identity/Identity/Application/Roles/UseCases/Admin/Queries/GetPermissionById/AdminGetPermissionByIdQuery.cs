@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Queries.GetPermissionBy
 /// Query to retrieve a permission by its unique identifier.
 /// </summary>
 /// <param name="PermissionId">The unique identifier of the permission to retrieve.</param>
-public record AdminGetPermissionByIdQuery(string PermissionId) : IQuery<AdminGetPermissionByIdResult>;
+public record AdminGetPermissionByIdQuery(Guid PermissionId) : IQuery<AdminGetPermissionByIdResult>;
 
 /// <summary>
 /// The result of executing an <see cref="AdminGetPermissionByIdQuery" />.

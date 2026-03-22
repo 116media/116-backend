@@ -17,9 +17,10 @@ public class AdminGetVideoByIdHandler(IVideoRepository videoRepository, IMapper 
     /// <inheritdoc />
     public async Task<AdminGetVideoByIdResult> Handle(AdminGetVideoByIdQuery query, CancellationToken cancellationToken)
     {
-        Guid id = Guid.Parse(query.Id);
-
-        VideoEntity video = await videoRepository.GetByIdOrThrowAsync(id: id, cancellationToken: cancellationToken);
+        VideoEntity video = await videoRepository.GetByIdOrThrowAsync(
+            id: query.Id,
+            cancellationToken: cancellationToken
+        );
 
         var dto = video.ToVideoDetailDto(mapper);
         return new AdminGetVideoByIdResult(Video: dto);

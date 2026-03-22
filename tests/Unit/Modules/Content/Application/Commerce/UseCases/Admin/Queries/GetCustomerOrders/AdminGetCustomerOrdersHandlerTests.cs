@@ -36,7 +36,7 @@ public class AdminGetCustomerOrdersHandlerTests : BaseContentHandlerTest
         _orderRepositoryMock.SetupGetAllAsync(orders, orders.Count);
 
         var query = new AdminGetCustomerOrdersQuery(
-            CustomerId: customerId.ToString(),
+            CustomerId: customerId,
             PaginatedRequest: new PaginatedRequest(0, 10)
         );
 

@@ -37,8 +37,8 @@ public class AdminGetArticleByIdEndpointV1 : ICarterModule
 
         group
             .MapGet(
-                "/{id}",
-                async (string id, IDispatcher dispatcher) =>
+                "/{id:guid}",
+                async (Guid id, IDispatcher dispatcher) =>
                 {
                     var query = new AdminGetArticleByIdQuery(Id: id);
                     AdminGetArticleByIdResult result = await dispatcher.Send(request: query);

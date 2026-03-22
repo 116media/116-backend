@@ -7,8 +7,8 @@ namespace _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessio
 /// Query used to retrieve a specific session by ID for the current user.
 /// </summary>
 /// <param name="UserId">The ID of the user requesting the session (extracted from JWT claims).</param>
-/// <param name="SessionId">The unique identifier of the session to retrieve (as string, validated and parsed in handler).</param>
-public record PublicGetOwnSessionByIdQuery(Guid UserId, string SessionId) : IQuery<PublicGetOwnSessionByIdResult>;
+/// <param name="SessionId">The unique identifier of the session to retrieve.</param>
+public record PublicGetOwnSessionByIdQuery(Guid UserId, Guid SessionId) : IQuery<PublicGetOwnSessionByIdResult>;
 
 /// <summary>
 /// The result of executing a <see cref="PublicGetOwnSessionByIdQuery" />.

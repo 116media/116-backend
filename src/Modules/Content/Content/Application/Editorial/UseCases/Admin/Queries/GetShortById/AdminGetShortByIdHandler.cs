@@ -17,10 +17,8 @@ public class AdminGetShortByIdHandler(IShortVideoRepository shortVideoRepository
     /// <inheritdoc />
     public async Task<AdminGetShortByIdResult> Handle(AdminGetShortByIdQuery query, CancellationToken cancellationToken)
     {
-        Guid id = Guid.Parse(query.Id);
-
         ShortVideoEntity? shortVideo = await shortVideoRepository.GetByIdOrThrowAsync(
-            id: id,
+            id: query.Id,
             cancellationToken: cancellationToken
         );
 

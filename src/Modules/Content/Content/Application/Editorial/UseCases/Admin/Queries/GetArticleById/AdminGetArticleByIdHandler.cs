@@ -20,10 +20,8 @@ public class AdminGetArticleByIdHandler(IArticleRepository articleRepository, IM
         CancellationToken cancellationToken
     )
     {
-        Guid id = Guid.Parse(query.Id);
-
         ArticleEntity article = await articleRepository.GetByIdOrThrowAsync(
-            id: id,
+            id: query.Id,
             cancellationToken: cancellationToken
         );
 

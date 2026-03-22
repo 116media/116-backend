@@ -40,9 +40,7 @@ ignore:
     - "**/tests/**"
     - "**/*.Designer.cs"
     - "**/Program.cs"
-    - "**/*MetaField.cs"
     - "**/*EndpointV1.cs"
-    - "**/*Module.cs"
 
 flags:
     unit:
