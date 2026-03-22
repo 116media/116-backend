@@ -37,8 +37,8 @@ public class AdminRemoveRoleFromUserEndpointV1 : ICarterModule
 
         group
             .MapDelete(
-                "{id}/roles/{roleId:guid}",
-                async (string id, Guid roleId, IDispatcher dispatcher) =>
+                "{id}/roles/{roleId}",
+                async (string id, string roleId, IDispatcher dispatcher) =>
                 {
                     var command = new AdminRemoveRoleFromUserCommand(UserId: id, RoleId: roleId);
 
