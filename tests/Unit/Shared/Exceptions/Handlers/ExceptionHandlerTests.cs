@@ -33,6 +33,7 @@ public class ExceptionHandlerTests
         AuthenticationExceptionHandler authenticationStrategy = new();
         AuthorizationExceptionHandler authorizationStrategy = new();
         InternalServerExceptionHandler internalServerStrategy = new();
+        FormatExceptionStrategy formatExceptionStrategy = new();
 
         List<_116.Shared.Application.Exceptions.Handlers.Contracts.IExceptionStrategy> strategies =
         [
@@ -43,6 +44,7 @@ public class ExceptionHandlerTests
             authenticationStrategy,
             authorizationStrategy,
             internalServerStrategy,
+            formatExceptionStrategy,
         ];
 
         _strategyRegistry = new ExceptionStrategyRegistry(strategies, defaultStrategy);
@@ -377,6 +379,30 @@ public class ExceptionHandlerTests
     }
 
     [Fact]
+    public async Task TryHandleAsync_WithFormatException_ShouldLogWarning()
+    {
+        // Arrange
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
+        FormatException exception = new("Invalid format");
+
+        // Act
+        await _handler.TryHandleAsync(context, exception, CancellationToken.None);
+
+        // Assert
+        _loggerMock.Verify(
+            x =>
+                x.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => true),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+                ),
+            Times.Once
+        );
+    }
+
+    [Fact]
     public async Task TryHandleAsync_WithUnknownException_ShouldLogError()
     {
         // Arrange
@@ -427,6 +453,32 @@ public class ExceptionHandlerTests
 
         // Assert
         result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithIdentityButNoNameClaim_ShouldLogAnonymous()
+    {
+        // Arrange — covers Identity?.Name null branch: Identity not null but Name claim absent
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
+        context.User = new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity());
+
+        Exception exception = new("Test error");
+
+        // Act
+        await _handler.TryHandleAsync(context, exception, CancellationToken.None);
+
+        // Assert
+        _loggerMock.Verify(
+            x =>
+                x.Log(
+                    It.IsAny<LogLevel>(),
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => true),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+                ),
+            Times.Once
+        );
     }
 
     [Fact]
