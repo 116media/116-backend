@@ -19,7 +19,7 @@ public class AdminRemoveCategoryPricingValidatorTests
     {
         var command = new AdminRemoveCategoryPricingCommand(
             CategoryId: Guid.NewGuid().ToString(),
-            PricingTierId: Guid.NewGuid()
+            PricingTierId: Guid.NewGuid().ToString()
         );
         ValidationResult result = await _validator.ValidateAsync(command);
         result.IsValid.Should().BeTrue();
@@ -33,7 +33,7 @@ public class AdminRemoveCategoryPricingValidatorTests
     [Fact]
     public async Task Validate_WithEmptyCategoryId_ShouldHaveError()
     {
-        var command = new AdminRemoveCategoryPricingCommand(CategoryId: "", PricingTierId: Guid.NewGuid());
+        var command = new AdminRemoveCategoryPricingCommand(CategoryId: "", PricingTierId: Guid.NewGuid().ToString());
         ValidationResult result = await _validator.ValidateAsync(command);
         result.IsValid.Should().BeFalse();
         result
@@ -47,7 +47,10 @@ public class AdminRemoveCategoryPricingValidatorTests
     [Fact]
     public async Task Validate_WithInvalidCategoryIdFormat_ShouldHaveError()
     {
-        var command = new AdminRemoveCategoryPricingCommand(CategoryId: "not-a-guid", PricingTierId: Guid.NewGuid());
+        var command = new AdminRemoveCategoryPricingCommand(
+            CategoryId: "not-a-guid",
+            PricingTierId: Guid.NewGuid().ToString()
+        );
         ValidationResult result = await _validator.ValidateAsync(command);
         result.IsValid.Should().BeFalse();
         result
@@ -55,6 +58,61 @@ public class AdminRemoveCategoryPricingValidatorTests
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminRemoveCategoryPricingCommand.CategoryId)
                 && e.ErrorMessage == "Category ID is invalid."
+            );
+    }
+
+    #endregion
+
+    #region PricingTierId Validation Tests
+
+    [Fact]
+    public async Task Validate_WithNullPricingTierId_ShouldHaveError()
+    {
+        var command = new AdminRemoveCategoryPricingCommand(
+            CategoryId: Guid.NewGuid().ToString(),
+            PricingTierId: null!
+        );
+        ValidationResult result = await _validator.ValidateAsync(command);
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .ContainSingle(e =>
+                e.PropertyName == nameof(AdminRemoveCategoryPricingCommand.PricingTierId)
+                && e.ErrorMessage == "Pricing Tier ID is required."
+            );
+    }
+
+    [Fact]
+    public async Task Validate_WithEmptyPricingTierId_ShouldHaveError()
+    {
+        var command = new AdminRemoveCategoryPricingCommand(
+            CategoryId: Guid.NewGuid().ToString(),
+            PricingTierId: string.Empty
+        );
+        ValidationResult result = await _validator.ValidateAsync(command);
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .ContainSingle(e =>
+                e.PropertyName == nameof(AdminRemoveCategoryPricingCommand.PricingTierId)
+                && e.ErrorMessage == "Pricing Tier ID is required."
+            );
+    }
+
+    [Fact]
+    public async Task Validate_WithInvalidPricingTierIdFormat_ShouldHaveError()
+    {
+        var command = new AdminRemoveCategoryPricingCommand(
+            CategoryId: Guid.NewGuid().ToString(),
+            PricingTierId: "not-a-guid"
+        );
+        ValidationResult result = await _validator.ValidateAsync(command);
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .ContainSingle(e =>
+                e.PropertyName == nameof(AdminRemoveCategoryPricingCommand.PricingTierId)
+                && e.ErrorMessage == "Pricing Tier ID is invalid."
             );
     }
 
