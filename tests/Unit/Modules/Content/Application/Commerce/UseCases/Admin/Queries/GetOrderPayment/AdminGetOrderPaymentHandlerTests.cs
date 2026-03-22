@@ -44,7 +44,7 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
         _orderPaymentFactoryMock.SetupGetByOrderId(orderId, payment);
         _fileRepositoryMock.SetupGetById(proofFile);
 
-        var query = new AdminGetOrderPaymentQuery(OrderId: orderId.ToString());
+        var query = new AdminGetOrderPaymentQuery(OrderId: orderId);
 
         // Act
         AdminGetOrderPaymentResult result = await _handler.Handle(query, CancellationToken.None);
@@ -64,7 +64,7 @@ public class AdminGetOrderPaymentHandlerTests : BaseContentHandlerTest
 
         _orderPaymentFactoryMock.SetupGetByOrderId(orderId, payment);
 
-        var query = new AdminGetOrderPaymentQuery(OrderId: orderId.ToString());
+        var query = new AdminGetOrderPaymentQuery(OrderId: orderId);
 
         // Act
         AdminGetOrderPaymentResult result = await _handler.Handle(query, CancellationToken.None);
