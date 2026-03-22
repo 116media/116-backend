@@ -27,7 +27,7 @@ public class PublicGetArticleCommentsEndpointV1 : ICarterModule
         group
             .MapGet(
                 $"/{{id:guid}}/{InteractionsRouteConstants.Comments}",
-                async (Guid id, int pageIndex, int pageSize, IDispatcher dispatcher) =>
+                async (Guid id, IDispatcher dispatcher, int pageIndex = 0, int pageSize = 10) =>
                 {
                     var paginatedRequest = new PaginatedRequest(PageIndex: pageIndex, PageSize: pageSize);
                     var query = new PublicGetArticleCommentsQuery(ArticleId: id, PaginatedRequest: paginatedRequest);
