@@ -23,10 +23,8 @@ public class AdminGetRoleByIdHandler(IRoleRepository roleRepository, IMapper map
     /// <returns>A <see cref="AdminGetRoleByIdResult" /> containing the role and its permissions.</returns>
     public async Task<AdminGetRoleByIdResult> Handle(AdminGetRoleByIdQuery query, CancellationToken cancellationToken)
     {
-        Guid roleId = Guid.Parse(input: query.RoleId);
-
         RoleEntity? role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(
-            roleId: roleId,
+            roleId: query.RoleId,
             cancellationToken: cancellationToken
         );
 
