@@ -167,8 +167,15 @@ public class ValidationExceptionHandlerTests
     [Fact]
     public void CreateProblemDetails_WithNullErrors_ShouldNotIncludeErrorsExtension()
     {
-        // Arrange
+        // Arrange — FluentValidation never sets Errors to null; force it via reflection
+        // to cover the null-conditional branch in the handler.
         ValidationException exception = new("Validation failed");
+        typeof(ValidationException)
+            .GetField(
+                "<Errors>k__BackingField",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance
+            )
+            ?.SetValue(exception, null);
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
