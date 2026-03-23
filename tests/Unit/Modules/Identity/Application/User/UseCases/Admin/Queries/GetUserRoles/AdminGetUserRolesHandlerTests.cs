@@ -32,7 +32,7 @@ public class AdminGetUserRolesHandlerTests : BaseHandlerTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        AdminGetUserRolesQuery query = new(UserId: userId.ToString());
+        AdminGetUserRolesQuery query = new(UserId: userId);
 
         RoleEntity role1 = RoleFactory.Create("Admin", "Administrator role");
         RoleEntity role2 = RoleFactory.Create("User", "Regular user role");
@@ -58,7 +58,7 @@ public class AdminGetUserRolesHandlerTests : BaseHandlerTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        AdminGetUserRolesQuery query = new(UserId: userId.ToString());
+        AdminGetUserRolesQuery query = new(UserId: userId);
 
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
 
@@ -74,7 +74,7 @@ public class AdminGetUserRolesHandlerTests : BaseHandlerTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        AdminGetUserRolesQuery query = new(UserId: userId.ToString());
+        AdminGetUserRolesQuery query = new(UserId: userId);
 
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
 
@@ -93,7 +93,7 @@ public class AdminGetUserRolesHandlerTests : BaseHandlerTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        AdminGetUserRolesQuery query = new(UserId: userId.ToString());
+        AdminGetUserRolesQuery query = new(UserId: userId);
 
         RoleEntity role = RoleFactory.Create("TestRole", "Test role description");
         List<UserRoleEntity> userRoles = [UserRoleFactory.CreateWithRole(userId, role)];
@@ -118,7 +118,7 @@ public class AdminGetUserRolesHandlerTests : BaseHandlerTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        AdminGetUserRolesQuery query = new(UserId: userId.ToString());
+        AdminGetUserRolesQuery query = new(UserId: userId);
         using CancellationTokenSource cts = new();
 
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
