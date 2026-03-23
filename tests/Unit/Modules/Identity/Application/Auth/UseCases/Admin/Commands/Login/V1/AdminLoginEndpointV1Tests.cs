@@ -22,8 +22,6 @@ public class AdminLoginEndpointV1Tests
             null,
             null,
             null,
-            null,
-            null,
             null
         );
 

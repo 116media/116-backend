@@ -22,8 +22,6 @@ public class PublicSignUpEndpointV1Tests
             null,
             null,
             null,
-            null,
-            null,
             null
         );
 
