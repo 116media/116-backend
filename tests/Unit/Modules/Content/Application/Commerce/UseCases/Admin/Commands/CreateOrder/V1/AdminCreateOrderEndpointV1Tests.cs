@@ -14,7 +14,7 @@ public class AdminCreateOrderEndpointV1Tests
     public void AdminCreateOrderResponse_ShouldConstructCorrectly()
     {
         // Arrange
-        var order = new ContentOrderSummaryDto(Guid.NewGuid(), "Acme Corp", "Draft", 0m, null, 0);
+        var order = new ContentOrderSummaryDto(Guid.NewGuid(), "Acme Corp", "Draft", 0m, 0);
 
         // Act
         var response = new AdminCreateOrderResponse(Order: order);

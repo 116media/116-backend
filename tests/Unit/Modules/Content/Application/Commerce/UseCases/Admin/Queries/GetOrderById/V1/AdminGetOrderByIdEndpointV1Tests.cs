@@ -14,7 +14,7 @@ public class AdminGetOrderByIdEndpointV1Tests
     public void AdminGetOrderByIdResponse_ShouldConstructCorrectly()
     {
         // Arrange
-        var order = new ContentOrderDetailDto(Guid.NewGuid(), "Acme Corp", "Draft", 0m, null, [], null);
+        var order = new ContentOrderDetailDto(Guid.NewGuid(), "Acme Corp", "Draft", 0m, [], null);
 
         // Act
         var response = new AdminGetOrderByIdResponse(Order: order);
