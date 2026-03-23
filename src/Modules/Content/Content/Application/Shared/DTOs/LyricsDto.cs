@@ -1,3 +1,5 @@
+using _116.Shared.Application.DTOs;
+
 namespace _116.Content.Application.Shared.DTOs;
 
 /// <summary>
@@ -13,8 +15,6 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="MetaTitle">Custom SEO meta title, or null.</param>
 /// <param name="MetaDescription">Custom SEO meta description, or null.</param>
 /// <param name="MetaKeywords">Custom SEO meta keywords, or null.</param>
-/// <param name="CreatedAt">When the lyrics record was created.</param>
-/// <param name="UpdatedAt">When the lyrics record was last updated.</param>
 public record LyricsDto(
     Guid Id,
     string SongTitle,
@@ -25,7 +25,5 @@ public record LyricsDto(
     Guid? ArticleId,
     string? MetaTitle,
     string? MetaDescription,
-    string? MetaKeywords,
-    DateTime? CreatedAt,
-    DateTime? UpdatedAt
-);
+    string? MetaKeywords
+) : AuditableDto;
