@@ -40,7 +40,6 @@ ignore:
     - "**/tests/**"
     - "**/*.Designer.cs"
     - "**/Program.cs"
-    - "**/*EndpointV1.cs"
 
 flags:
     unit:
