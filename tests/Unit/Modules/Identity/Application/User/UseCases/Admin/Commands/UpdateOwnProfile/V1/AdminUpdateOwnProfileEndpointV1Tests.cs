@@ -22,8 +22,6 @@ public class AdminUpdateOwnProfileEndpointV1Tests
             null,
             null,
             null,
-            null,
-            null,
             null
         );
 

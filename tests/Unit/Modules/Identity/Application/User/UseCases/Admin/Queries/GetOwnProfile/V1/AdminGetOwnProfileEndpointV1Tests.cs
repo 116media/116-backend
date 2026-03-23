@@ -22,8 +22,6 @@ public class AdminGetOwnProfileEndpointV1Tests
             null,
             null,
             null,
-            null,
-            null,
             null
         );
 

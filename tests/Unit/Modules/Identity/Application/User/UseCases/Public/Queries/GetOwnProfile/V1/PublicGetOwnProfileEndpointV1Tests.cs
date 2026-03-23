@@ -22,8 +22,6 @@ public class PublicGetOwnProfileEndpointV1Tests
             null,
             null,
             null,
-            null,
-            null,
             null
         );
 
