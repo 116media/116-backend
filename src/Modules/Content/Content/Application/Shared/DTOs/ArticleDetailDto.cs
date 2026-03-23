@@ -1,3 +1,5 @@
+using _116.Shared.Application.DTOs;
+
 namespace _116.Content.Application.Shared.DTOs;
 
 /// <summary>
@@ -23,8 +25,6 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="Images">All image assets associated with this article.</param>
 /// <param name="Tags">Tags applied to this article for discovery and SEO.</param>
 /// <param name="ReadTimeInMinutes">Estimated reading time in minutes, computed from the body word count.</param>
-/// <param name="CreatedAt">When the article was created.</param>
-/// <param name="UpdatedAt">When the article was last updated.</param>
 public record ArticleDetailDto(
     Guid Id,
     Guid CategoryId,
@@ -44,7 +44,5 @@ public record ArticleDetailDto(
     string? MetaDescription,
     IReadOnlyList<ArticleImageDto> Images,
     IReadOnlyList<TagDto> Tags,
-    int ReadTimeInMinutes,
-    DateTime? CreatedAt,
-    DateTime? UpdatedAt
-);
+    int ReadTimeInMinutes
+) : AuditableDto;
