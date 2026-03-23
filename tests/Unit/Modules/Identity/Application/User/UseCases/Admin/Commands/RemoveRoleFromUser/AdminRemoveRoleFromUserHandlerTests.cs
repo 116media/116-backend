@@ -42,7 +42,7 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, roleToRemove);
         UserRoleEntity remainingUserRole = UserRoleFactory.CreateWithRole(userId, remainingRole);
 
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: roleToRemove.Id);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: roleToRemove.Id.ToString());
 
         _userRoleRepositoryMock.SetupGetByUserAndRole(userRole);
         _userRoleRepositoryMock.SetupGetUserRolesWithRole(userId, [remainingUserRole]);
@@ -64,7 +64,7 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
 
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id.ToString());
 
         _userRoleRepositoryMock.SetupGetByUserAndRole(userRole);
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
@@ -87,7 +87,7 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
 
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id.ToString());
 
         _userRoleRepositoryMock.SetupGetByUserAndRole(userRole);
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
@@ -107,7 +107,7 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
 
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id.ToString());
 
         _userRoleRepositoryMock.SetupGetByUserAndRole(userRole);
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
@@ -127,7 +127,7 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
         RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
 
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id.ToString());
 
         _userRoleRepositoryMock.SetupGetByUserAndRole(userRole);
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
@@ -149,7 +149,7 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
         // Arrange
         var userId = Guid.NewGuid();
         var roleId = Guid.NewGuid();
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: roleId);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: roleId.ToString());
 
         _userRoleRepositoryMock.SetupGetByUserAndRoleReturnsNull(userId, roleId);
 
@@ -166,7 +166,7 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
         // Arrange
         var userId = Guid.NewGuid();
         var roleId = Guid.NewGuid();
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: roleId);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: roleId.ToString());
 
         _userRoleRepositoryMock.SetupGetByUserAndRoleReturnsNull(userId, roleId);
 
@@ -190,7 +190,7 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
         // Arrange
         var userId = Guid.NewGuid();
         var roleId = Guid.NewGuid();
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: roleId);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: roleId.ToString());
 
         _userRoleRepositoryMock.SetupGetByUserAndRoleReturnsNull(userId, roleId);
 
@@ -221,7 +221,7 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
         using CancellationTokenSource cts = new();
 
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id.ToString());
 
         _userRoleRepositoryMock.SetupGetByUserAndRole(userRole);
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
@@ -242,7 +242,7 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
         UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
         using CancellationTokenSource cts = new();
 
-        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
+        AdminRemoveRoleFromUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id.ToString());
 
         _userRoleRepositoryMock.SetupGetByUserAndRole(userRole);
         _userRoleRepositoryMock.SetupGetUserRolesWithRoleEmpty(userId);
