@@ -1,3 +1,5 @@
+using _116.Shared.Application.DTOs;
+
 namespace _116.Identity.Application.Shared.DTOs;
 
 /// <summary>
@@ -18,4 +20,4 @@ public record PermissionDto(
     bool IsActive,
     bool IsDeleted,
     DateTime? DeletedAt
-);
+) : AuditableDto;
