@@ -38,7 +38,6 @@ public class SessionExportBaseTests
                 EnumDevice.Desktop,
                 EnumPlatform.Windows,
                 EnumClient.WebApp,
-                DateTime.UtcNow,
                 DateTime.UtcNow.AddDays(1),
                 true,
                 null
@@ -88,7 +87,6 @@ public class SessionExportBaseTests
                 EnumDevice.Desktop,
                 EnumPlatform.Windows,
                 EnumClient.WebApp,
-                DateTime.UtcNow,
                 DateTime.UtcNow.AddDays(1),
                 true,
                 null
@@ -126,7 +124,6 @@ public class SessionExportBaseTests
                 EnumDevice.Desktop,
                 EnumPlatform.Windows,
                 EnumClient.WebApp,
-                DateTime.UtcNow,
                 DateTime.UtcNow.AddDays(1),
                 true,
                 null
@@ -162,7 +159,6 @@ public class SessionExportBaseTests
                 EnumDevice.Desktop,
                 EnumPlatform.Windows,
                 EnumClient.WebApp,
-                DateTime.UtcNow,
                 DateTime.UtcNow.AddDays(1),
                 true,
                 null
@@ -176,7 +172,6 @@ public class SessionExportBaseTests
                 EnumDevice.Mobile,
                 EnumPlatform.Android,
                 EnumClient.MobileApp,
-                DateTime.UtcNow,
                 DateTime.UtcNow.AddDays(1),
                 false,
                 DateTime.UtcNow
@@ -226,7 +221,6 @@ public class SessionExportBaseTests
                 EnumDevice.Desktop,
                 EnumPlatform.Windows,
                 EnumClient.WebApp,
-                DateTime.UtcNow,
                 DateTime.UtcNow.AddDays(1),
                 true,
                 null
@@ -259,7 +253,6 @@ public class SessionExportBaseTests
                 EnumDevice.Desktop,
                 EnumPlatform.Windows,
                 EnumClient.WebApp,
-                DateTime.UtcNow,
                 DateTime.UtcNow.AddDays(1),
                 true,
                 null
@@ -290,7 +283,7 @@ public class SessionExportBaseTests
 
         var sessions = new List<SessionExportDto>
         {
-            new(
+            new SessionExportDto(
                 sessionId,
                 userId,
                 "192.168.1.1",
@@ -299,11 +292,13 @@ public class SessionExportBaseTests
                 EnumDevice.Desktop,
                 EnumPlatform.Windows,
                 EnumClient.WebApp,
-                createdAt,
                 DateTime.UtcNow.AddDays(1),
                 true,
                 null
-            ),
+            ) with
+            {
+                CreatedAt = createdAt,
+            },
         };
 
         var columns = new List<string> { "Id", "UserId", "CreatedAt", "IsActive" };
