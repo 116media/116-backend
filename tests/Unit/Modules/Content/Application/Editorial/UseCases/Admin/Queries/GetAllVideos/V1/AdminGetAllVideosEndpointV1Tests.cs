@@ -38,7 +38,6 @@ public class AdminGetAllVideosEndpointV1Tests
             YoutubeVideoId: null,
             IsFeatured: false,
             HasLyrics: false,
-            PublishedAt: null,
-            CreatedAt: null
+            PublishedAt: null
         );
 }
