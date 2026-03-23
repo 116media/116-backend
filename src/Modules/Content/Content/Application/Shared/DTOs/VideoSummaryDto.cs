@@ -1,3 +1,5 @@
+using _116.Shared.Application.DTOs;
+
 namespace _116.Content.Application.Shared.DTOs;
 
 /// <summary>
@@ -16,7 +18,6 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="IsFeatured">Whether the video has an active featured placement.</param>
 /// <param name="HasLyrics">Whether a lyrics page is linked to this video.</param>
 /// <param name="PublishedAt">When the video was published, or null if not yet published.</param>
-/// <param name="CreatedAt">When the video was created.</param>
 public record VideoSummaryDto(
     Guid Id,
     Guid CategoryId,
@@ -29,6 +30,5 @@ public record VideoSummaryDto(
     string? YoutubeVideoId,
     bool IsFeatured,
     bool HasLyrics,
-    DateTimeOffset? PublishedAt,
-    DateTime? CreatedAt
-);
+    DateTimeOffset? PublishedAt
+) : AuditableDto;
