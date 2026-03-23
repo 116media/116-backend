@@ -1,3 +1,5 @@
+using _116.Shared.Application.DTOs;
+
 namespace _116.Content.Application.Shared.DTOs;
 
 /// <summary>
@@ -26,6 +28,5 @@ public record ShortVideoDto(
     int ViewCount,
     int LikeCount,
     int ShareCount,
-    int BookmarkCount,
-    DateTime? CreatedAt
-);
+    int BookmarkCount
+) : AuditableDto;
