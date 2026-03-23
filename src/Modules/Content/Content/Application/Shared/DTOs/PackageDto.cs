@@ -1,3 +1,5 @@
+using _116.Shared.Application.DTOs;
+
 namespace _116.Content.Application.Shared.DTOs;
 
 /// <summary>
@@ -16,4 +18,4 @@ public record PackageDto(
     decimal FlatPriceUsd,
     bool IsActive,
     IReadOnlyList<PackageSlotDto> Slots
-);
+) : AuditableDto;
