@@ -44,8 +44,6 @@ public class AdminUpdateArticleSeoEndpointV1Tests
             MetaDescription: null,
             Images: [],
             Tags: [],
-            ReadTimeInMinutes: 0,
-            CreatedAt: null,
-            UpdatedAt: null
+            ReadTimeInMinutes: 0
         );
 }

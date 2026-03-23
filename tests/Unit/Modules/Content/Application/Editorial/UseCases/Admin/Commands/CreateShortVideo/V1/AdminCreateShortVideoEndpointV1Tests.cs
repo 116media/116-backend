@@ -36,7 +36,6 @@ public class AdminCreateShortVideoEndpointV1Tests
             ViewCount: 0,
             LikeCount: 0,
             ShareCount: 0,
-            BookmarkCount: 0,
-            CreatedAt: null
+            BookmarkCount: 0
         );
 }
