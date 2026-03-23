@@ -22,8 +22,6 @@ public class PublicRefreshTokenEndpointV1Tests
             null,
             null,
             null,
-            null,
-            null,
             null
         );
 
