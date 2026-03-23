@@ -39,7 +39,7 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidDescription
         );
 
-        AdminGetPermissionByIdQuery query = new(PermissionId: permission.Id.ToString());
+        AdminGetPermissionByIdQuery query = new(PermissionId: permission.Id);
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
 
@@ -64,7 +64,7 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
     {
         // Arrange
         var nonExistentPermissionId = Guid.NewGuid();
-        AdminGetPermissionByIdQuery query = new(PermissionId: nonExistentPermissionId.ToString());
+        AdminGetPermissionByIdQuery query = new(PermissionId: nonExistentPermissionId);
 
         _permissionRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentPermissionId);
 
@@ -88,7 +88,7 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidAction
         );
 
-        AdminGetPermissionByIdQuery query = new(PermissionId: permission.Id.ToString());
+        AdminGetPermissionByIdQuery query = new(PermissionId: permission.Id);
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
 
@@ -109,7 +109,7 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
         );
         permission.Deactivate();
 
-        AdminGetPermissionByIdQuery query = new(PermissionId: permission.Id.ToString());
+        AdminGetPermissionByIdQuery query = new(PermissionId: permission.Id);
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
 
@@ -130,7 +130,7 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
         );
         permission.SoftDelete();
 
-        AdminGetPermissionByIdQuery query = new(PermissionId: permission.Id.ToString());
+        AdminGetPermissionByIdQuery query = new(PermissionId: permission.Id);
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
 
@@ -155,7 +155,7 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidAction
         );
 
-        AdminGetPermissionByIdQuery query = new(PermissionId: permission.Id.ToString());
+        AdminGetPermissionByIdQuery query = new(PermissionId: permission.Id);
 
         using CancellationTokenSource cts = new();
         _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
@@ -178,7 +178,7 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidAction
         );
 
-        AdminGetPermissionByIdQuery query = new(PermissionId: permissionId.ToString().ToLowerInvariant());
+        AdminGetPermissionByIdQuery query = new(PermissionId: permissionId);
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
 
@@ -200,7 +200,7 @@ public class AdminGetPermissionByIdHandlerTests : BaseHandlerTest
             TestConstants.Permission.ValidAction
         );
 
-        AdminGetPermissionByIdQuery query = new(PermissionId: permissionId.ToString().ToUpperInvariant());
+        AdminGetPermissionByIdQuery query = new(PermissionId: permissionId);
 
         _permissionRepositoryMock.SetupGetByIdOrThrow(permission);
 
