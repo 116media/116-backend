@@ -1,3 +1,5 @@
+using _116.Shared.Application.DTOs;
+
 namespace _116.Identity.Application.Shared.DTOs;
 
 /// <summary>
@@ -9,4 +11,5 @@ namespace _116.Identity.Application.Shared.DTOs;
 /// <param name="IsActive">Indicates whether the role is active and can be assigned</param>
 /// <param name="IsDeleted">Indicates whether the role has been soft-deleted</param>
 /// <param name="DeletedAt">Date and time when the role was soft-deleted</param>
-public record RoleDto(Guid Id, string Name, string Description, bool IsActive, bool IsDeleted, DateTime? DeletedAt);
+public record RoleDto(Guid Id, string Name, string Description, bool IsActive, bool IsDeleted, DateTime? DeletedAt)
+    : AuditableDto;
