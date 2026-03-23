@@ -36,7 +36,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, TestConstants.Role.ValidDescription);
 
-        AdminGetRoleByIdQuery query = new(RoleId: role.Id.ToString());
+        AdminGetRoleByIdQuery query = new(RoleId: role.Id);
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
 
@@ -57,7 +57,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName);
 
-        AdminGetRoleByIdQuery query = new(RoleId: role.Id.ToString());
+        AdminGetRoleByIdQuery query = new(RoleId: role.Id);
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
 
@@ -82,7 +82,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
 
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, [permission1, permission2]);
 
-        AdminGetRoleByIdQuery query = new(RoleId: role.Id.ToString());
+        AdminGetRoleByIdQuery query = new(RoleId: role.Id);
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
 
@@ -108,7 +108,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
 
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, permissions);
 
-        AdminGetRoleByIdQuery query = new(RoleId: role.Id.ToString());
+        AdminGetRoleByIdQuery query = new(RoleId: role.Id);
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
 
@@ -129,7 +129,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
     {
         // Arrange
         var nonExistentRoleId = Guid.NewGuid();
-        AdminGetRoleByIdQuery query = new(RoleId: nonExistentRoleId.ToString());
+        AdminGetRoleByIdQuery query = new(RoleId: nonExistentRoleId);
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrowNotFound(nonExistentRoleId);
 
@@ -150,7 +150,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName);
 
-        AdminGetRoleByIdQuery query = new(RoleId: role.Id.ToString());
+        AdminGetRoleByIdQuery query = new(RoleId: role.Id);
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
 
@@ -167,7 +167,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity role = RoleFactory.CreateInactive();
 
-        AdminGetRoleByIdQuery query = new(RoleId: role.Id.ToString());
+        AdminGetRoleByIdQuery query = new(RoleId: role.Id);
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
 
@@ -184,7 +184,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity role = RoleFactory.CreateDeleted();
 
-        AdminGetRoleByIdQuery query = new(RoleId: role.Id.ToString());
+        AdminGetRoleByIdQuery query = new(RoleId: role.Id);
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
 
@@ -208,7 +208,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
 
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName, [permission]);
 
-        AdminGetRoleByIdQuery query = new(RoleId: role.Id.ToString());
+        AdminGetRoleByIdQuery query = new(RoleId: role.Id);
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
 
@@ -233,7 +233,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
         // Arrange
         RoleEntity role = RoleFactory.Create(TestConstants.Role.ValidName);
 
-        AdminGetRoleByIdQuery query = new(RoleId: role.Id.ToString());
+        AdminGetRoleByIdQuery query = new(RoleId: role.Id);
 
         using CancellationTokenSource cts = new();
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
@@ -252,7 +252,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
         var roleId = Guid.NewGuid();
         RoleEntity role = RoleFactory.CreateWithId(roleId, TestConstants.Role.ValidName);
 
-        AdminGetRoleByIdQuery query = new(RoleId: roleId.ToString().ToLowerInvariant());
+        AdminGetRoleByIdQuery query = new(RoleId: roleId);
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
 
@@ -270,7 +270,7 @@ public class AdminGetRoleByIdHandlerTests : BaseHandlerTest
         var roleId = Guid.NewGuid();
         RoleEntity role = RoleFactory.CreateWithId(roleId, TestConstants.Role.ValidName);
 
-        AdminGetRoleByIdQuery query = new(RoleId: roleId.ToString().ToUpperInvariant());
+        AdminGetRoleByIdQuery query = new(RoleId: roleId);
 
         _roleRepositoryMock.SetupGetByIdWithPermissionsOrThrow(role);
 
