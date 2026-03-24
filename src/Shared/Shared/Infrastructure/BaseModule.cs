@@ -1,10 +1,13 @@
 using _116.Shared.Application.Configurations;
+using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure.Extensions;
 using _116.Shared.Infrastructure.interceptors;
+using _116.Shared.Infrastructure.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace _116.Shared.Infrastructure;
 
@@ -113,6 +116,9 @@ public static class BaseModule
     /// <param name="services">The service collection</param>
     private static void RegisterInterceptorsIfNotExists(IServiceCollection services)
     {
+        services.AddHttpContextAccessor();
+        services.TryAddSingleton<ICurrentActor, HttpCurrentActor>();
+
         // Check if interceptors are already registered to avoid duplicates
         bool auditInterceptorExists = services.Any(s =>
             s.ServiceType == typeof(ISaveChangesInterceptor)
