@@ -57,7 +57,7 @@ public class SessionMapperTests
     }
 
     [Fact]
-    public void ToSessionDto_ShouldMapBrowserDevicePlatformClientAsStrings()
+    public void ToSessionDto_ShouldMapBrowserDevicePlatformClientAsEnums()
     {
         // Arrange
         var session = SessionFactory.CreateWithBrowser(EnumBrowser.Chrome);
@@ -66,10 +66,10 @@ public class SessionMapperTests
         var dto = session.ToSessionDto(_mapper);
 
         // Assert
-        dto.Browser.Should().Be(session.Browser.ToString());
-        dto.Device.Should().Be(session.Device.ToString());
-        dto.Platform.Should().Be(session.Platform.ToString());
-        dto.Client.Should().Be(session.Client.ToString());
+        dto.Browser.Should().Be(session.Browser);
+        dto.Device.Should().Be(session.Device);
+        dto.Platform.Should().Be(session.Platform);
+        dto.Client.Should().Be(session.Client);
     }
 
     [Fact]
@@ -308,10 +308,10 @@ public class SessionMapperTests
             Guid.NewGuid(),
             "127.0.0.1",
             "Mozilla/5.0",
-            "Chrome",
-            "Desktop",
-            "Windows",
-            "WebApp",
+            EnumBrowser.Chrome,
+            EnumDevice.Desktop,
+            EnumPlatform.Windows,
+            EnumClient.WebApp,
             DateTime.UtcNow.AddDays(1),
             true
         );
