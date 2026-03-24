@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArticle.V1;
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
@@ -78,7 +79,7 @@ public class AdminCreateArticleEndpointV1Tests
             Body: "Test",
             CoverImageUrl: null,
             AuthorId: "Test",
-            Status: "Draft",
+            Status: EnumContentStatus.Draft,
             RejectionReason: null,
             IsFeatured: false,
             FeaturedUntil: null,
