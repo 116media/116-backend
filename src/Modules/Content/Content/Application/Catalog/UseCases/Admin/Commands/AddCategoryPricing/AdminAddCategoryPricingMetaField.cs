@@ -12,7 +12,7 @@ public static class AdminAddCategoryPricingMetaField
         "Add a pricing tier to a category",
         """
             Attaches a pricing tier to a category and sets the price for that add-on
-            (e.g. "Artist Profile + base_upload = $25").
+            (e.g. "Artist Profile + base_upload = USD25").
             \n
             A paid category can only accept orders once it has at least one pricing tier configured.
             The pricing tier must be active at the time of assignment.
