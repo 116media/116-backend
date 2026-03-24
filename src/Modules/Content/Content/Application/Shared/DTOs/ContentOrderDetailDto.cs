@@ -1,3 +1,4 @@
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.DTOs;
 
 namespace _116.Content.Application.Shared.DTOs;
@@ -15,7 +16,7 @@ namespace _116.Content.Application.Shared.DTOs;
 public record ContentOrderDetailDto(
     Guid Id,
     string CustomerName,
-    string Status,
+    EnumOrderStatus Status,
     decimal TotalAmountUsd,
     IReadOnlyList<OrderItemDto> Items,
     PaymentDto? Payment
