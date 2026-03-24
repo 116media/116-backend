@@ -76,7 +76,7 @@ public class UserMapperTests
         result.UserName.Should().Be(user.UserName);
         result.IsActive.Should().Be(user.IsActive);
         result.IsVerified.Should().Be(user.IsVerified);
-        result.AuthProvider.Should().Be(user.AuthProvider.ToString());
+        result.AuthProvider.Should().Be(user.AuthProvider);
         result.Roles.Should().HaveCount(2);
         result.Permissions.Should().HaveCount(2);
         result.Avatar.Should().NotBeNull();
@@ -135,7 +135,7 @@ public class UserMapperTests
         var result = user.ToUserResponseDto(_mapper, roles, permissions);
 
         // Assert
-        result.AuthProvider.Should().Be("Google");
+        result.AuthProvider.Should().Be(EnumAuthProvider.Google);
     }
 
     [Fact]
