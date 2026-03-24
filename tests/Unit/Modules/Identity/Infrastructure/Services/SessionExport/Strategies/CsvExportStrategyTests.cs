@@ -123,7 +123,6 @@ public class CsvExportStrategyTests
             EnumDevice.Desktop,
             EnumPlatform.Windows,
             EnumClient.WebApp,
-            DateTime.UtcNow,
             DateTime.UtcNow.AddDays(1),
             true,
             null

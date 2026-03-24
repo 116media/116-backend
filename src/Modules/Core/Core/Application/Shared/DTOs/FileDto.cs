@@ -1,3 +1,5 @@
+using _116.Shared.Application.DTOs;
+
 namespace _116.Core.Application.Shared.DTOs;
 
 /// <summary>
@@ -18,4 +20,4 @@ public record FileDto(
     string StorageUrl,
     long SizeInBytes,
     bool IsDeleted
-);
+) : AuditableDto;

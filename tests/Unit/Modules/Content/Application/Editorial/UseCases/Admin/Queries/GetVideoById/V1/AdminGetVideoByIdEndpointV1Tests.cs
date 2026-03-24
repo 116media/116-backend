@@ -45,8 +45,6 @@ public class AdminGetVideoByIdEndpointV1Tests
             PublishedAt: null,
             MetaTitle: null,
             MetaDescription: null,
-            Tags: [],
-            CreatedAt: null,
-            UpdatedAt: null
+            Tags: []
         );
 }

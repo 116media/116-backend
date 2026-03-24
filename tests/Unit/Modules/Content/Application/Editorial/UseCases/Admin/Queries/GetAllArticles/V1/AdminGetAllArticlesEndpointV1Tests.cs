@@ -37,7 +37,6 @@ public class AdminGetAllArticlesEndpointV1Tests
             AuthorId: "Test",
             Status: "Draft",
             IsFeatured: false,
-            PublishedAt: null,
-            CreatedAt: null
+            PublishedAt: null
         );
 }

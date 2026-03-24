@@ -72,8 +72,6 @@ public class AdminUpdateLyricsSeoEndpointV1Tests
             ArticleId: null,
             MetaTitle: null,
             MetaDescription: null,
-            MetaKeywords: null,
-            CreatedAt: null,
-            UpdatedAt: null
+            MetaKeywords: null
         );
 }

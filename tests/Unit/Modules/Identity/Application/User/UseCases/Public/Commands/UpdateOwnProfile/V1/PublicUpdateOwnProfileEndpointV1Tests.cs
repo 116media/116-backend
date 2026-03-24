@@ -22,8 +22,6 @@ public class PublicUpdateOwnProfileEndpointV1Tests
             null,
             null,
             null,
-            null,
-            null,
             null
         );
 

@@ -1,4 +1,5 @@
 using _116.Core.Application.Shared.DTOs;
+using _116.Shared.Application.DTOs;
 
 namespace _116.Identity.Application.Shared.DTOs;
 
@@ -20,8 +21,6 @@ namespace _116.Identity.Application.Shared.DTOs;
 /// <param name="CountryDialCode">Country dialing code (e.g., "+1", "+250")</param>
 /// <param name="PartialPhoneNumber">Partial (masked) phone number for privacy display</param>
 /// <param name="FullPhoneNumber">Full phone number including country code (sensitive data)</param>
-/// <param name="CreatedAt">Date and time when the user account was created</param>
-/// <param name="UpdatedAt">Date and time when the user account was last updated</param>
 public record UserResponseDto(
     Guid Id,
     string? Email,
@@ -36,7 +35,5 @@ public record UserResponseDto(
     string? CountryIsoCode,
     string? CountryDialCode,
     string? PartialPhoneNumber,
-    string? FullPhoneNumber,
-    DateTime? CreatedAt,
-    DateTime? UpdatedAt
-);
+    string? FullPhoneNumber
+) : AuditableDto;

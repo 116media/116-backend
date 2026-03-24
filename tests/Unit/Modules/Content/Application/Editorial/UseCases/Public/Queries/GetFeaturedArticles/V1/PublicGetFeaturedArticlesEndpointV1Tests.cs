@@ -36,7 +36,6 @@ public class PublicGetFeaturedArticlesEndpointV1Tests
             AuthorId: "Test",
             Status: "Published",
             IsFeatured: false,
-            PublishedAt: null,
-            CreatedAt: null
+            PublishedAt: null
         );
 }

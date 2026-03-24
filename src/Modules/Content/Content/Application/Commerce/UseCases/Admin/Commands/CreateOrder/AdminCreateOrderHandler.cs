@@ -62,7 +62,6 @@ public class AdminCreateOrderHandler(
             CustomerName: customer.FullName,
             Status: order.Status.ToString(),
             TotalAmountUsd: order.TotalAmountUsd,
-            CreatedAt: order.CreatedAt,
             ItemCount: 0
         );
 

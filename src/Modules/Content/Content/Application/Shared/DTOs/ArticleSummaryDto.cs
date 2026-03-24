@@ -1,3 +1,5 @@
+using _116.Shared.Application.DTOs;
+
 namespace _116.Content.Application.Shared.DTOs;
 
 /// <summary>
@@ -15,7 +17,6 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="Status">The current editorial workflow status.</param>
 /// <param name="IsFeatured">Whether the article has an active featured placement.</param>
 /// <param name="PublishedAt">When the article was published, or null if not yet published.</param>
-/// <param name="CreatedAt">When the article was created.</param>
 public record ArticleSummaryDto(
     Guid Id,
     Guid CategoryId,
@@ -27,6 +28,5 @@ public record ArticleSummaryDto(
     string AuthorId,
     string Status,
     bool IsFeatured,
-    DateTimeOffset? PublishedAt,
-    DateTime? CreatedAt
-);
+    DateTimeOffset? PublishedAt
+) : AuditableDto;

@@ -16,7 +16,6 @@ public class PublicGetOwnSessionsEndpointV1Tests
             "Desktop",
             "Windows",
             "WebApp",
-            DateTime.UtcNow,
             DateTime.UtcNow.AddDays(1),
             true
         );

@@ -20,6 +20,15 @@ public static class RoleMapper
     {
         config.NewConfig<RoleEntity, RoleDto>();
         config.NewConfig<PermissionEntity, PermissionDto>();
+        config
+            .NewConfig<RoleEntity, RoleWithPermissionsDto>()
+            .Map(
+                dest => dest.Permissions,
+                src =>
+                    src.RolePermissions.Select(rp => rp.Permission)
+                        .ToList()
+                        .Adapt<IReadOnlyCollection<PermissionDto>>(config)
+            );
     }
 
     /// <summary>
@@ -95,14 +104,6 @@ public static class RoleMapper
     /// <returns>A RoleWithPermissionsDto containing role and permission information.</returns>
     public static RoleWithPermissionsDto ToRoleWithPermissionsDto(this RoleEntity role, IMapper mapper)
     {
-        return new RoleWithPermissionsDto(
-            Id: role.Id,
-            Name: role.Name,
-            Description: role.Description,
-            IsActive: role.IsActive,
-            IsDeleted: role.IsDeleted,
-            DeletedAt: role.DeletedAt,
-            Permissions: role.RolePermissions.ToPermissionDtos(mapper)
-        );
+        return mapper.Map<RoleWithPermissionsDto>(role);
     }
 }

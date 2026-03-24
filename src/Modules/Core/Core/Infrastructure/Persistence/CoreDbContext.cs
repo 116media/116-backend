@@ -27,7 +27,7 @@ public class CoreDbContext(DbContextOptions<CoreDbContext> options) : DbContext(
     /// </summary>
     /// <param name="modelBuilder">The builder used to construct the model for the context.</param>
     /// <remarks>
-    /// Sets the default schema to "system" and applies all entity configurations from the current assembly.
+    /// Sets the default schema to "System" and applies all entity configurations from the current assembly.
     /// </remarks>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

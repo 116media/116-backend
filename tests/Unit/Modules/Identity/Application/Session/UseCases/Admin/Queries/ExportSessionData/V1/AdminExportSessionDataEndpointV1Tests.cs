@@ -22,7 +22,6 @@ public class AdminExportSessionDataEndpointV1Tests
                 default,
                 default,
                 default,
-                DateTime.UtcNow,
                 DateTime.UtcNow.AddDays(1),
                 true,
                 null

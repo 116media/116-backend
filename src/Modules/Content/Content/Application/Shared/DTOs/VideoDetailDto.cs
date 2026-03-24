@@ -1,3 +1,5 @@
+using _116.Shared.Application.DTOs;
+
 namespace _116.Content.Application.Shared.DTOs;
 
 /// <summary>
@@ -24,8 +26,6 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="MetaTitle">Custom SEO meta title, or null.</param>
 /// <param name="MetaDescription">Custom SEO meta description, or null.</param>
 /// <param name="Tags">Tags applied to this video for discovery and SEO.</param>
-/// <param name="CreatedAt">When the video was created.</param>
-/// <param name="UpdatedAt">When the video was last updated.</param>
 public record VideoDetailDto(
     Guid Id,
     Guid CategoryId,
@@ -46,7 +46,5 @@ public record VideoDetailDto(
     DateTimeOffset? PublishedAt,
     string? MetaTitle,
     string? MetaDescription,
-    IReadOnlyList<TagDto> Tags,
-    DateTime? CreatedAt,
-    DateTime? UpdatedAt
-);
+    IReadOnlyList<TagDto> Tags
+) : AuditableDto;

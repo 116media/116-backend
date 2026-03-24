@@ -1,3 +1,5 @@
+using _116.Shared.Application.DTOs;
+
 namespace _116.Content.Application.Shared.DTOs;
 
 /// <summary>
@@ -9,4 +11,5 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="Phone">The optional phone number of the customer.</param>
 /// <param name="Company">The optional company or label name.</param>
 /// <param name="Notes">Optional internal notes about the customer.</param>
-public record CustomerDto(Guid Id, string FullName, string Email, string? Phone, string? Company, string? Notes);
+public record CustomerDto(Guid Id, string FullName, string Email, string? Phone, string? Company, string? Notes)
+    : AuditableDto;

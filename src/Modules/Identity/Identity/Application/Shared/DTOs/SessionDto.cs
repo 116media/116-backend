@@ -1,3 +1,5 @@
+using _116.Shared.Application.DTOs;
+
 namespace _116.Identity.Application.Shared.DTOs;
 
 /// <summary>
@@ -10,7 +12,6 @@ namespace _116.Identity.Application.Shared.DTOs;
 /// <param name="Device">Device type detected from the user agent.</param>
 /// <param name="Platform">Platform/OS detected from the user agent.</param>
 /// <param name="Client">Client application type that initiated the session.</param>
-/// <param name="CreatedAt">When this session was created (login time).</param>
 /// <param name="ExpiresAt">When this session expires.</param>
 /// <param name="IsActive">Whether this session is currently active (not deleted and not expired).</param>
 public record SessionDto(
@@ -21,7 +22,6 @@ public record SessionDto(
     string Device,
     string Platform,
     string Client,
-    DateTime CreatedAt,
     DateTime ExpiresAt,
     bool IsActive
-);
+) : AuditableDto;

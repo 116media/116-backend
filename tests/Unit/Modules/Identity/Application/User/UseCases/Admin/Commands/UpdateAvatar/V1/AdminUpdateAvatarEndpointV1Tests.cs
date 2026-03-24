@@ -22,8 +22,6 @@ public class AdminUpdateAvatarEndpointV1Tests
             null,
             null,
             null,
-            null,
-            null,
             null
         );
 

@@ -30,7 +30,6 @@ public class SessionExportServiceTests
                 Device: EnumDevice.Desktop,
                 Platform: EnumPlatform.Windows,
                 Client: EnumClient.WebApp,
-                CreatedAt: DateTime.UtcNow,
                 ExpiresAt: DateTime.UtcNow.AddDays(30),
                 IsActive: true,
                 DeletedAt: null
@@ -60,7 +59,6 @@ public class SessionExportServiceTests
                 Device: EnumDevice.Mobile,
                 Platform: EnumPlatform.Android,
                 Client: EnumClient.MobileApp,
-                CreatedAt: DateTime.UtcNow,
                 ExpiresAt: DateTime.UtcNow.AddDays(30),
                 IsActive: true,
                 DeletedAt: null
@@ -103,7 +101,6 @@ public class SessionExportServiceTests
                 Device: EnumDevice.Desktop,
                 Platform: EnumPlatform.Windows,
                 Client: EnumClient.WebApp,
-                CreatedAt: DateTime.UtcNow,
                 ExpiresAt: DateTime.UtcNow.AddDays(30),
                 IsActive: true,
                 DeletedAt: null
