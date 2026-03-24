@@ -70,7 +70,7 @@ public class AdminExportSessionDataValidator : AbstractValidator<AdminExportSess
     private static bool BeValidExportFormat(string? format)
     {
         return !string.IsNullOrWhiteSpace(value: format)
-            && Enum.TryParse<SessionExportFormat>(value: format, true, result: out _);
+            && Enum.TryParse<EnumSessionExportFormat>(value: format, true, result: out _);
     }
 
     /// <summary>
