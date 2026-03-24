@@ -96,7 +96,7 @@ public class AdminExportSessionDataEndpointV1 : ICarterModule
         string? columns
     )
     {
-        SessionExportFormat exportFormat = new ExportFormat(value: format).Value;
+        EnumSessionExportFormat exportFormat = new ExportFormat(value: format).Value;
 
         List<string>? columnList = columns
             ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
