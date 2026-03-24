@@ -37,7 +37,7 @@ public class SessionExportServiceTests
         };
 
         // Act
-        byte[] result = _service.Export(sessions, SessionExportFormat.Csv);
+        byte[] result = _service.Export(sessions, EnumSessionExportFormat.Csv);
 
         // Assert
         result.Should().NotBeNull();
@@ -66,7 +66,7 @@ public class SessionExportServiceTests
         };
 
         // Act
-        byte[] result = _service.Export(sessions, SessionExportFormat.Xlsx);
+        byte[] result = _service.Export(sessions, EnumSessionExportFormat.Xlsx);
 
         // Assert
         result.Should().NotBeNull();
@@ -80,7 +80,7 @@ public class SessionExportServiceTests
         var emptySessions = new List<SessionExportDto>();
 
         // Act
-        byte[] result = _service.Export(emptySessions, SessionExportFormat.Csv);
+        byte[] result = _service.Export(emptySessions, EnumSessionExportFormat.Csv);
 
         // Assert
         result.Should().NotBeNull();
@@ -108,7 +108,7 @@ public class SessionExportServiceTests
         };
 
         // Act
-        Func<byte[]> act = () => _service.Export(sessions, (SessionExportFormat)999);
+        Func<byte[]> act = () => _service.Export(sessions, (EnumSessionExportFormat)999);
 
         // Assert
         act.Should().Throw<ArgumentException>().WithMessage("*No export strategy found for format*");
@@ -124,7 +124,7 @@ public class SessionExportServiceTests
     public void GetContentType_WithCsvFormat_ShouldReturnCsvContentType()
     {
         // Act
-        string contentType = _service.GetContentType(SessionExportFormat.Csv);
+        string contentType = _service.GetContentType(EnumSessionExportFormat.Csv);
 
         // Assert
         contentType.Should().Be("text/csv");
@@ -134,7 +134,7 @@ public class SessionExportServiceTests
     public void GetContentType_WithXlsxFormat_ShouldReturnXlsxContentType()
     {
         // Act
-        string contentType = _service.GetContentType(SessionExportFormat.Xlsx);
+        string contentType = _service.GetContentType(EnumSessionExportFormat.Xlsx);
 
         // Assert
         contentType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -144,7 +144,7 @@ public class SessionExportServiceTests
     public void GetContentType_WithUnsupportedFormat_ShouldThrowArgumentException()
     {
         // Act
-        Func<string> act = () => _service.GetContentType((SessionExportFormat)999);
+        Func<string> act = () => _service.GetContentType((EnumSessionExportFormat)999);
 
         // Assert
         act.Should().Throw<ArgumentException>().WithMessage("*Unsupported export format*");
@@ -158,7 +158,7 @@ public class SessionExportServiceTests
     public void GenerateFileName_WithCsvFormat_ShouldReturnFileNameWithCsvExtension()
     {
         // Act
-        string fileName = _service.GenerateFileName(SessionExportFormat.Csv);
+        string fileName = _service.GenerateFileName(EnumSessionExportFormat.Csv);
 
         // Assert
         fileName.Should().Contain(".csv");
@@ -169,7 +169,7 @@ public class SessionExportServiceTests
     public void GenerateFileName_WithXlsxFormat_ShouldReturnFileNameWithXlsxExtension()
     {
         // Act
-        string fileName = _service.GenerateFileName(SessionExportFormat.Xlsx);
+        string fileName = _service.GenerateFileName(EnumSessionExportFormat.Xlsx);
 
         // Assert
         fileName.Should().Contain(".xlsx");
@@ -180,7 +180,7 @@ public class SessionExportServiceTests
     public void GenerateFileName_WithCustomBaseFileName_ShouldUseCustomBaseName()
     {
         // Act
-        string fileName = _service.GenerateFileName(SessionExportFormat.Csv, "custom-export");
+        string fileName = _service.GenerateFileName(EnumSessionExportFormat.Csv, "custom-export");
 
         // Assert
         fileName.Should().Contain("custom-export");
@@ -191,7 +191,7 @@ public class SessionExportServiceTests
     public void GenerateFileName_ShouldIncludeTimestamp()
     {
         // Act
-        string fileName = _service.GenerateFileName(SessionExportFormat.Csv);
+        string fileName = _service.GenerateFileName(EnumSessionExportFormat.Csv);
 
         // Assert - should contain datetime pattern
         fileName.Should().MatchRegex(@"\d{14}"); // yyyyMMddHHmmss
@@ -201,7 +201,7 @@ public class SessionExportServiceTests
     public void GenerateFileName_WithUnsupportedFormat_ShouldThrowArgumentException()
     {
         // Act
-        Func<string> act = () => _service.GenerateFileName((SessionExportFormat)999);
+        Func<string> act = () => _service.GenerateFileName((EnumSessionExportFormat)999);
 
         // Assert
         act.Should().Throw<ArgumentException>().WithMessage("*Unsupported export format*");
