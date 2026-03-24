@@ -1,3 +1,4 @@
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.DTOs;
 
 namespace _116.Content.Application.Shared.DTOs;
@@ -35,7 +36,7 @@ public record ArticleDetailDto(
     string Body,
     string? CoverImageUrl,
     string AuthorId,
-    string Status,
+    EnumContentStatus Status,
     string? RejectionReason,
     bool IsFeatured,
     DateTimeOffset? FeaturedUntil,
