@@ -1,6 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.DTOs;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
@@ -123,7 +124,7 @@ public class VideoMapperTests : BaseContentHandlerTest
         // Assert
         dto.Id.Should().Be(video.Id);
         dto.AuthorId.Should().Be(video.AuthorId.ToString());
-        dto.Status.Should().Be(video.Status.ToString());
+        dto.Status.Should().Be(video.Status);
         dto.Title.Should().Be(video.Title);
         dto.Slug.Should().Be(video.Slug);
     }
