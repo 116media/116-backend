@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishedVideos.V1;
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Pagination;
 using AwesomeAssertions;
 using Xunit;
@@ -34,7 +35,7 @@ public class PublicGetPublishedVideosEndpointV1Tests
             Slug: "test",
             ThumbnailUrl: null,
             AuthorId: "Test",
-            Status: "Published",
+            Status: EnumContentStatus.Published,
             YoutubeVideoId: null,
             IsFeatured: false,
             HasLyrics: false,
