@@ -5,7 +5,7 @@ namespace _116.Content.Domain.Entities;
 
 /// <summary>
 /// Represents a pricing tier assignment for a category, recording the price for a specific
-/// add-on service (e.g., "Artist Profile + base_upload = $25").
+/// add-on service (e.g., "Artist Profile + base_upload = USD25").
 /// </summary>
 public class CategoryPricingEntity : Aggregate<Guid>
 {
