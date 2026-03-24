@@ -1,5 +1,6 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder.V1;
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
@@ -14,7 +15,7 @@ public class AdminCreateOrderEndpointV1Tests
     public void AdminCreateOrderResponse_ShouldConstructCorrectly()
     {
         // Arrange
-        var order = new ContentOrderSummaryDto(Guid.NewGuid(), "Acme Corp", "Draft", 0m, 0);
+        var order = new ContentOrderSummaryDto(Guid.NewGuid(), "Acme Corp", EnumOrderStatus.Draft, 0m, 0);
 
         // Act
         var response = new AdminCreateOrderResponse(Order: order);
