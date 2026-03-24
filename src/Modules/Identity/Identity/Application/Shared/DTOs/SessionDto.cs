@@ -1,3 +1,4 @@
+using _116.Identity.Domain.Enums;
 using _116.Shared.Application.DTOs;
 
 namespace _116.Identity.Application.Shared.DTOs;
@@ -18,10 +19,10 @@ public record SessionDto(
     Guid Id,
     string? IpAddress,
     string? UserAgent,
-    string Browser,
-    string Device,
-    string Platform,
-    string Client,
+    EnumBrowser Browser,
+    EnumDevice Device,
+    EnumPlatform Platform,
+    EnumClient Client,
     DateTime ExpiresAt,
     bool IsActive
 ) : AuditableDto;
