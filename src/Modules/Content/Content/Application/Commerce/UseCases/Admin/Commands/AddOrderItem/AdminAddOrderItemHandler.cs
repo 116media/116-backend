@@ -40,7 +40,7 @@ public class AdminAddOrderItemHandler(
 
         var dto = new OrderItemDto(
             Id: item.Id,
-            ContentKind: item.ContentKind.ToString(),
+            ContentKind: item.ContentKind,
             CategoryName: categoryName,
             PromotionLevelName: promotionLevelName,
             PromoPriceUsd: item.PromoPriceSnapshotUsd,
