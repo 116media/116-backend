@@ -22,15 +22,11 @@ public static class VideoMapper
             .Map(dest => dest.Name, src => src.Tag.Name)
             .Map(dest => dest.Slug, src => src.Tag.Slug);
 
-        config
-            .NewConfig<VideoEntity, VideoSummaryDto>()
-            .Map(dest => dest.CategoryName, src => src.Category.Name)
-            .Map(dest => dest.Status, src => src.Status.ToString());
+        config.NewConfig<VideoEntity, VideoSummaryDto>().Map(dest => dest.CategoryName, src => src.Category.Name);
 
         config
             .NewConfig<VideoEntity, VideoDetailDto>()
             .Map(dest => dest.CategoryName, src => src.Category.Name)
-            .Map(dest => dest.Status, src => src.Status.ToString())
             .Map(dest => dest.Tags, src => src.Tags);
     }
 
