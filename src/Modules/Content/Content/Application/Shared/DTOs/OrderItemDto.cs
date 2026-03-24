@@ -1,3 +1,5 @@
+using _116.Content.Domain.Enums;
+
 namespace _116.Content.Application.Shared.DTOs;
 
 /// <summary>
@@ -13,7 +15,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="Tiers">The pricing tier snapshots attached to this item.</param>
 public record OrderItemDto(
     Guid Id,
-    string ContentKind,
+    EnumCoreContentType ContentKind,
     string CategoryName,
     string? PromotionLevelName,
     decimal? PromoPriceUsd,
