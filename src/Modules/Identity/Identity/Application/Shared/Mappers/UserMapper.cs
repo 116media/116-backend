@@ -25,8 +25,7 @@ public static class UserMapper
             .NewConfig<UserEntity, UserResponseDto>()
             .Map(dest => dest.Roles, _ => new List<RoleDto>())
             .Map(dest => dest.Permissions, _ => new List<PermissionDto>())
-            .Map(dest => dest.Avatar, _ => (FileDto?)null)
-            .Map(dest => dest.AuthProvider, src => src.AuthProvider.ToString());
+            .Map(dest => dest.Avatar, _ => (FileDto?)null);
     }
 
     /// <summary>
