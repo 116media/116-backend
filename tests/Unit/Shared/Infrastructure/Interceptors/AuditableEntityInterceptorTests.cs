@@ -1,7 +1,9 @@
+using _116.Shared.Application.Services;
 using _116.Shared.Domain;
 using _116.Shared.Infrastructure.interceptors;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Xunit;
 
 namespace _116.Unit.Tests.Shared.Infrastructure.Interceptors;
@@ -36,11 +38,15 @@ public class AuditableEntityInterceptorTests
         }
     }
 
-    private TestDbContext CreateInMemoryContext()
+    private static TestDbContext CreateInMemoryContext(ICurrentActor? actor = null)
     {
+        ICurrentActor currentActor =
+            actor
+            ?? Mock.Of<ICurrentActor>(a => a.UserId == null && a.IsAuthenticated == false && a.HasHttpContext == false);
+
         DbContextOptions<TestDbContext> options = new DbContextOptionsBuilder<TestDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .AddInterceptors(new AuditableEntityInterceptor())
+            .AddInterceptors(new AuditableEntityInterceptor(currentActor))
             .Options;
 
         return new TestDbContext(options);
@@ -60,7 +66,7 @@ public class AuditableEntityInterceptorTests
 
         // Assert
         DateTime afterSave = DateTime.UtcNow;
-        entity.CreatedBy.Should().Be("system");
+        entity.CreatedBy.Should().Be("System");
         entity.CreatedAt.Should().NotBeNull();
         entity.CreatedAt!.Value.Should().BeOnOrAfter(beforeSave);
         entity.CreatedAt!.Value.Should().BeOnOrBefore(afterSave);
@@ -80,7 +86,7 @@ public class AuditableEntityInterceptorTests
 
         // Assert
         DateTime afterSave = DateTime.UtcNow;
-        entity.UpdatedBy.Should().Be("system");
+        entity.UpdatedBy.Should().Be("System");
         entity.UpdatedAt.Should().NotBeNull();
         entity.UpdatedAt!.Value.Should().BeOnOrAfter(beforeSave);
         entity.UpdatedAt!.Value.Should().BeOnOrBefore(afterSave);
@@ -105,7 +111,7 @@ public class AuditableEntityInterceptorTests
 
         // Assert
         DateTime afterUpdate = DateTime.UtcNow;
-        entity.UpdatedBy.Should().Be("system");
+        entity.UpdatedBy.Should().Be("System");
         entity.UpdatedAt.Should().NotBeNull();
         entity.UpdatedAt.Should().BeAfter(originalUpdatedAt);
         entity.UpdatedAt!.Value.Should().BeOnOrAfter(beforeUpdate);
@@ -147,7 +153,7 @@ public class AuditableEntityInterceptorTests
 
         // Assert
         DateTime afterSave = DateTime.UtcNow;
-        entity.CreatedBy.Should().Be("system");
+        entity.CreatedBy.Should().Be("System");
         entity.CreatedAt.Should().NotBeNull();
         entity.CreatedAt!.Value.Should().BeOnOrAfter(beforeSave);
         entity.CreatedAt!.Value.Should().BeOnOrBefore(afterSave);
@@ -172,7 +178,7 @@ public class AuditableEntityInterceptorTests
 
         // Assert
         DateTime afterUpdate = DateTime.UtcNow;
-        entity.UpdatedBy.Should().Be("system");
+        entity.UpdatedBy.Should().Be("System");
         entity.UpdatedAt.Should().NotBeNull();
         entity.UpdatedAt.Should().BeAfter(originalUpdatedAt);
         entity.UpdatedAt!.Value.Should().BeOnOrAfter(beforeUpdate);
@@ -215,9 +221,9 @@ public class AuditableEntityInterceptorTests
 
         // Assert
         DateTime afterSave = DateTime.UtcNow;
-        entity1.CreatedBy.Should().Be("system");
+        entity1.CreatedBy.Should().Be("System");
         entity1.CreatedAt.Should().BeOnOrAfter(beforeSave).And.BeOnOrBefore(afterSave);
-        entity2.CreatedBy.Should().Be("system");
+        entity2.CreatedBy.Should().Be("System");
         entity2.CreatedAt.Should().BeOnOrAfter(beforeSave).And.BeOnOrBefore(afterSave);
     }
 
@@ -273,7 +279,7 @@ public class AuditableEntityInterceptorTests
 
         // Assert - UpdatedBy and UpdatedAt should be set even though parent is Unchanged
         DateTime afterSave = DateTime.UtcNow;
-        entity.UpdatedBy.Should().Be("system");
+        entity.UpdatedBy.Should().Be("System");
         entity.UpdatedAt.Should().NotBeNull();
         if (originalUpdatedAt.HasValue)
         {
@@ -282,4 +288,84 @@ public class AuditableEntityInterceptorTests
         entity.UpdatedAt!.Value.Should().BeOnOrAfter(beforeSave);
         entity.UpdatedAt!.Value.Should().BeOnOrBefore(afterSave);
     }
+
+    #region ResolveActor
+
+    [Fact]
+    public void SavingChanges_WhenAuthenticated_ShouldSetUserIdAsActor()
+    {
+        // Arrange
+        var actor = Mock.Of<ICurrentActor>(a =>
+            a.UserId == "user-abc" && a.IsAuthenticated == true && a.HasHttpContext == true
+        );
+        using TestDbContext context = CreateInMemoryContext(actor);
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
+
+        // Act
+        context.TestEntities.Add(entity);
+        context.SaveChanges();
+
+        // Assert
+        entity.CreatedBy.Should().Be("user-abc");
+        entity.UpdatedBy.Should().Be("user-abc");
+    }
+
+    [Fact]
+    public void SavingChanges_WhenAnonymousRequest_ShouldSetAnonymousAsActor()
+    {
+        // Arrange
+        var actor = Mock.Of<ICurrentActor>(a =>
+            a.UserId == null && a.IsAuthenticated == false && a.HasHttpContext == true
+        );
+        using TestDbContext context = CreateInMemoryContext(actor);
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
+
+        // Act
+        context.TestEntities.Add(entity);
+        context.SaveChanges();
+
+        // Assert
+        entity.CreatedBy.Should().Be(nameof(EnumAuditActor.Anonymous));
+        entity.UpdatedBy.Should().Be(nameof(EnumAuditActor.Anonymous));
+    }
+
+    [Fact]
+    public void SavingChanges_WhenNoHttpContext_ShouldSetSystemAsActor()
+    {
+        // Arrange
+        var actor = Mock.Of<ICurrentActor>(a =>
+            a.UserId == null && a.IsAuthenticated == false && a.HasHttpContext == false
+        );
+        using TestDbContext context = CreateInMemoryContext(actor);
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
+
+        // Act
+        context.TestEntities.Add(entity);
+        context.SaveChanges();
+
+        // Assert
+        entity.CreatedBy.Should().Be(nameof(EnumAuditActor.System));
+        entity.UpdatedBy.Should().Be(nameof(EnumAuditActor.System));
+    }
+
+    [Fact]
+    public async Task SavingChangesAsync_WhenAuthenticated_ShouldSetUserIdAsActor()
+    {
+        // Arrange
+        var actor = Mock.Of<ICurrentActor>(a =>
+            a.UserId == "user-xyz" && a.IsAuthenticated == true && a.HasHttpContext == true
+        );
+        using TestDbContext context = CreateInMemoryContext(actor);
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
+
+        // Act
+        context.TestEntities.Add(entity);
+        await context.SaveChangesAsync();
+
+        // Assert
+        entity.CreatedBy.Should().Be("user-xyz");
+        entity.UpdatedBy.Should().Be("user-xyz");
+    }
+
+    #endregion
 }
