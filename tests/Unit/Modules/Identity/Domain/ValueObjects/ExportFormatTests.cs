@@ -17,20 +17,20 @@ public class ExportFormatTests
     public void Constructor_WithValidEnumValue_ShouldCreateInstance()
     {
         // Arrange
-        var formatEnum = SessionExportFormat.Csv;
+        var formatEnum = EnumSessionExportFormat.Csv;
 
         // Act
         ExportFormat format = new(formatEnum);
 
         // Assert
         format.Should().NotBeNull();
-        format.Value.Should().Be(SessionExportFormat.Csv);
+        format.Value.Should().Be(EnumSessionExportFormat.Csv);
     }
 
     [Theory]
-    [InlineData(SessionExportFormat.Csv)]
-    [InlineData(SessionExportFormat.Xlsx)]
-    public void Constructor_WithAllValidEnumValues_ShouldNotThrow(SessionExportFormat formatEnum)
+    [InlineData(EnumSessionExportFormat.Csv)]
+    [InlineData(EnumSessionExportFormat.Xlsx)]
+    public void Constructor_WithAllValidEnumValues_ShouldNotThrow(EnumSessionExportFormat formatEnum)
     {
         // Act
         ExportFormat format = new(formatEnum);
@@ -44,7 +44,7 @@ public class ExportFormatTests
     public void Constructor_WithInvalidEnumValue_ShouldThrowArgumentException()
     {
         // Arrange
-        var invalidEnum = (SessionExportFormat)999;
+        var invalidEnum = (EnumSessionExportFormat)999;
 
         // Act & Assert
         Action act = () => new ExportFormat(invalidEnum);
@@ -67,13 +67,13 @@ public class ExportFormatTests
 
         // Assert
         format.Should().NotBeNull();
-        format.Value.Should().Be(SessionExportFormat.Csv);
+        format.Value.Should().Be(EnumSessionExportFormat.Csv);
     }
 
     [Theory]
-    [InlineData("Csv", SessionExportFormat.Csv)]
-    [InlineData("Xlsx", SessionExportFormat.Xlsx)]
-    public void Constructor_WithValidStringValues_ShouldParseCorrectly(string input, SessionExportFormat expected)
+    [InlineData("Csv", EnumSessionExportFormat.Csv)]
+    [InlineData("Xlsx", EnumSessionExportFormat.Xlsx)]
+    public void Constructor_WithValidStringValues_ShouldParseCorrectly(string input, EnumSessionExportFormat expected)
     {
         // Act
         ExportFormat format = new(input);
@@ -92,7 +92,7 @@ public class ExportFormatTests
         ExportFormat format = new(input);
 
         // Assert
-        format.Value.Should().Be(SessionExportFormat.Csv);
+        format.Value.Should().Be(EnumSessionExportFormat.Csv);
     }
 
     [Fact]
@@ -130,20 +130,20 @@ public class ExportFormatTests
     public void ImplicitConversionToEnum_ShouldReturnValue()
     {
         // Arrange
-        ExportFormat format = new(SessionExportFormat.Xlsx);
+        ExportFormat format = new(EnumSessionExportFormat.Xlsx);
 
         // Act
-        SessionExportFormat result = format;
+        EnumSessionExportFormat result = format;
 
         // Assert
-        result.Should().Be(SessionExportFormat.Xlsx);
+        result.Should().Be(EnumSessionExportFormat.Xlsx);
     }
 
     [Fact]
     public void ImplicitConversionToString_ShouldReturnEnumName()
     {
         // Arrange
-        ExportFormat format = new(SessionExportFormat.Xlsx);
+        ExportFormat format = new(EnumSessionExportFormat.Xlsx);
 
         // Act
         string result = format;
@@ -156,14 +156,14 @@ public class ExportFormatTests
     public void ImplicitConversionFromEnum_ShouldCreateInstance()
     {
         // Arrange
-        var formatEnum = SessionExportFormat.Csv;
+        var formatEnum = EnumSessionExportFormat.Csv;
 
         // Act
         ExportFormat format = formatEnum;
 
         // Assert
         format.Should().NotBeNull();
-        format.Value.Should().Be(SessionExportFormat.Csv);
+        format.Value.Should().Be(EnumSessionExportFormat.Csv);
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public class ExportFormatTests
 
         // Assert
         format.Should().NotBeNull();
-        format.Value.Should().Be(SessionExportFormat.Xlsx);
+        format.Value.Should().Be(EnumSessionExportFormat.Xlsx);
     }
 
     [Fact]
@@ -202,8 +202,8 @@ public class ExportFormatTests
     public void Equals_WithSameValue_ShouldBeEqual()
     {
         // Arrange
-        ExportFormat format1 = new(SessionExportFormat.Csv);
-        ExportFormat format2 = new(SessionExportFormat.Csv);
+        ExportFormat format1 = new(EnumSessionExportFormat.Csv);
+        ExportFormat format2 = new(EnumSessionExportFormat.Csv);
 
         // Act & Assert
         format1.Should().Be(format2);
@@ -213,8 +213,8 @@ public class ExportFormatTests
     public void Equals_WithDifferentValue_ShouldNotBeEqual()
     {
         // Arrange
-        ExportFormat format1 = new(SessionExportFormat.Csv);
-        ExportFormat format2 = new(SessionExportFormat.Xlsx);
+        ExportFormat format1 = new(EnumSessionExportFormat.Csv);
+        ExportFormat format2 = new(EnumSessionExportFormat.Xlsx);
 
         // Act & Assert
         format1.Should().NotBe(format2);
@@ -224,8 +224,8 @@ public class ExportFormatTests
     public void GetHashCode_WithSameValue_ShouldReturnSameHashCode()
     {
         // Arrange
-        ExportFormat format1 = new(SessionExportFormat.Csv);
-        ExportFormat format2 = new(SessionExportFormat.Csv);
+        ExportFormat format1 = new(EnumSessionExportFormat.Csv);
+        ExportFormat format2 = new(EnumSessionExportFormat.Csv);
 
         // Act
         int hash1 = format1.GetHashCode();
