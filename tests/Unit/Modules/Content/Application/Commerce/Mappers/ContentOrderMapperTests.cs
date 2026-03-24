@@ -1,6 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Core.Application.Shared.DTOs;
@@ -132,7 +133,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
         dto.Should().NotBeNull();
         dto.Id.Should().Be(order.Id);
         dto.CustomerName.Should().Be(customer.FullName);
-        dto.Status.Should().Be(order.Status.ToString());
+        dto.Status.Should().Be(order.Status);
         dto.ItemCount.Should().Be(0);
     }
 
