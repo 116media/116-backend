@@ -1,6 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.DTOs;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
@@ -112,7 +113,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Assert
         dto.Id.Should().Be(article.Id);
         dto.AuthorId.Should().Be(article.AuthorId.ToString());
-        dto.Status.Should().Be(article.Status.ToString());
+        dto.Status.Should().Be(article.Status);
         dto.Title.Should().Be(article.Title);
         dto.Slug.Should().Be(article.Slug);
     }
