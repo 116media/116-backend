@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArticleImage.V1;
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
@@ -25,5 +26,5 @@ public class AdminUploadArticleImageEndpointV1Tests
     }
 
     private static ArticleImageDto CreateArticleImageDto() =>
-        new(Id: Guid.NewGuid(), Url: "Test", StorageKey: "Test", ImageType: "Cover");
+        new(Id: Guid.NewGuid(), Url: "Test", StorageKey: "Test", ImageType: EnumArticleImageType.Cover);
 }
