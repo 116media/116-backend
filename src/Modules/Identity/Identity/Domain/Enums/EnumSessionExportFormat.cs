@@ -3,7 +3,7 @@ namespace _116.Identity.Domain.Enums;
 /// <summary>
 /// Defines the supported file export formats for session data.
 /// </summary>
-public enum SessionExportFormat
+public enum EnumSessionExportFormat
 {
     /// <summary>
     /// CSV (Comma-Separated Values) format.
