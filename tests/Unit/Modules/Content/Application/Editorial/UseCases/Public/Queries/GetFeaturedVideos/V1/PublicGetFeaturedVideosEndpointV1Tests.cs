@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetFeaturedVideos.V1;
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
@@ -33,7 +34,7 @@ public class PublicGetFeaturedVideosEndpointV1Tests
             Slug: "test",
             ThumbnailUrl: null,
             AuthorId: "Test",
-            Status: "Published",
+            Status: EnumContentStatus.Published,
             YoutubeVideoId: null,
             IsFeatured: false,
             HasLyrics: false,
