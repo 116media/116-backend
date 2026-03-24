@@ -60,7 +60,7 @@ public class AdminCreateOrderHandler(
         var dto = new ContentOrderSummaryDto(
             Id: order.Id,
             CustomerName: customer.FullName,
-            Status: order.Status.ToString(),
+            Status: order.Status,
             TotalAmountUsd: order.TotalAmountUsd,
             ItemCount: 0
         );
