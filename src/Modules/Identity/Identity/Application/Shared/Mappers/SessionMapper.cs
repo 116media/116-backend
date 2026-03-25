@@ -35,7 +35,8 @@ public static class SessionMapper
     /// <returns>A SessionDto containing session information.</returns>
     public static SessionDto ToSessionDto(this SessionEntity session, IMapper mapper)
     {
-        return mapper.Map<SessionDto>(session);
+        var dto = mapper.Map<SessionDto>(session);
+        return dto with { IsActive = session.IsActive() };
     }
 
     /// <summary>
@@ -46,6 +47,12 @@ public static class SessionMapper
     /// <returns>A list of SessionExportDto containing session export data.</returns>
     public static List<SessionExportDto> ToSessionExportDtos(this List<SessionEntity> sessions, IMapper mapper)
     {
-        return mapper.Map<List<SessionExportDto>>(sessions);
+        return sessions
+            .Select(s =>
+            {
+                var dto = mapper.Map<SessionExportDto>(s);
+                return dto with { IsActive = s.IsActive() };
+            })
+            .ToList();
     }
 }
