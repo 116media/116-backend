@@ -1,5 +1,6 @@
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.V1;
+using _116.Identity.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
@@ -14,7 +15,7 @@ public class PublicUpdateOwnProfileEndpointV1Tests
             "testuser",
             [],
             [],
-            "Local",
+            EnumAuthProvider.Local,
             true,
             true,
             null,
