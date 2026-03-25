@@ -10,24 +10,16 @@ namespace _116.Tests.Fixtures.Builders.Entities.Content;
 /// </summary>
 internal class ContentPaymentBuilder
 {
-    private Guid _id;
-    private Guid _orderId;
-    private decimal _amountUsd;
+    private Guid _id = Guid.NewGuid();
+    private Guid _orderId = Guid.NewGuid();
+    private decimal _amountUsd = TestConstants.Content.Commerce.ValidTotalAmountUsd;
     private Guid? _proofFileId;
     private EnumPaymentMethod? _paymentMethod;
     private bool _verified;
-    private Guid _verifiedByAdminId;
+    private Guid _verifiedByAdminId = Guid.NewGuid();
     private string _receiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl;
     private bool _rejected;
     private string? _rejectionNotes;
-
-    public ContentPaymentBuilder()
-    {
-        _id = Guid.NewGuid();
-        _orderId = Guid.NewGuid();
-        _amountUsd = TestConstants.Content.Commerce.ValidTotalAmountUsd;
-        _verifiedByAdminId = Guid.NewGuid();
-    }
 
     public ContentPaymentBuilder WithId(Guid id)
     {
@@ -71,7 +63,7 @@ internal class ContentPaymentBuilder
 
     public ContentPaymentEntity Build()
     {
-        ContentPaymentEntity payment = ContentPaymentEntity.Create(_id, _orderId, _amountUsd);
+        var payment = ContentPaymentEntity.Create(_id, _orderId, _amountUsd);
 
         if (_proofFileId.HasValue && _paymentMethod.HasValue)
         {
