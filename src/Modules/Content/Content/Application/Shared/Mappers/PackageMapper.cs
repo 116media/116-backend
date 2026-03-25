@@ -28,7 +28,8 @@ public static class PackageMapper
     /// </summary>
     public static PackageDto ToPackageDto(this PackageEntity entity, IMapper mapper)
     {
-        return mapper.Map<PackageDto>(entity);
+        var dto = mapper.Map<PackageDto>(entity);
+        return dto with { Slots = mapper.Map<IReadOnlyList<PackageSlotDto>>(entity.Slots) };
     }
 
     /// <summary>
@@ -36,7 +37,7 @@ public static class PackageMapper
     /// </summary>
     public static IReadOnlyList<PackageDto> ToPackageDtos(this IReadOnlyList<PackageEntity> entities, IMapper mapper)
     {
-        return mapper.Map<IReadOnlyList<PackageDto>>(entities);
+        return entities.Select(e => e.ToPackageDto(mapper)).ToList();
     }
 
     /// <summary>
