@@ -122,7 +122,9 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         _categoryRepositoryMock.SetupGetBySlug(slug, null);
 
         CategoryEntity reloaded = CategoryFactory.Create(contentType.Id);
-        _categoryRepositoryMock.SetupGetByIdOrThrow(reloaded);
+        _categoryRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(reloaded);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
