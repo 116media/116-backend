@@ -32,9 +32,15 @@ public class AdminGetPendingPaymentOrdersHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         List<ContentOrderEntity> orders = ContentOrderFactory.CreateMany(2);
+        CustomerEntity customer = CustomerFactory.Create();
+        foreach (ContentOrderEntity order in orders)
+        {
+            typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Customer))!.SetValue(order, customer);
+        }
+
         _orderRepositoryMock.SetupGetAllAsync(orders, orders.Count);
 
-        var query = new AdminGetPendingPaymentOrdersQuery(PaginatedRequest: new PaginatedRequest(0, 10));
+        var query = new AdminGetPendingPaymentOrdersQuery(PaginatedRequest: new PaginatedRequest());
 
         // Act
         AdminGetPendingPaymentOrdersResult result = await _handler.Handle(query, CancellationToken.None);
