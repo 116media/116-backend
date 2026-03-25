@@ -32,6 +32,12 @@ public class AdminGetAllOrdersHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         List<ContentOrderEntity> orders = ContentOrderFactory.CreateMany(3);
+        CustomerEntity customer = CustomerFactory.Create();
+        foreach (ContentOrderEntity order in orders)
+        {
+            typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Customer))!.SetValue(order, customer);
+        }
+
         _orderRepositoryMock.SetupGetAllAsync(orders, orders.Count);
 
         var query = new AdminGetAllOrdersQuery(
