@@ -33,7 +33,8 @@ public static class CategoryMapper
     /// </summary>
     public static CategoryDto ToCategoryDto(this CategoryEntity entity, IMapper mapper)
     {
-        return mapper.Map<CategoryDto>(entity);
+        var dto = mapper.Map<CategoryDto>(entity);
+        return dto with { Pricing = mapper.Map<IReadOnlyList<CategoryPricingDto>>(entity.Pricing) };
     }
 
     /// <summary>
@@ -41,7 +42,7 @@ public static class CategoryMapper
     /// </summary>
     public static IReadOnlyList<CategoryDto> ToCategoryDtos(this IReadOnlyList<CategoryEntity> entities, IMapper mapper)
     {
-        return mapper.Map<IReadOnlyList<CategoryDto>>(entities);
+        return entities.Select(e => e.ToCategoryDto(mapper)).ToList();
     }
 
     /// <summary>
