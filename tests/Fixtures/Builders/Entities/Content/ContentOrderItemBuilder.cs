@@ -9,21 +9,14 @@ namespace _116.Tests.Fixtures.Builders.Entities.Content;
 /// </summary>
 internal class ContentOrderItemBuilder
 {
-    private Guid _id;
-    private Guid _orderId;
+    private Guid _id = Guid.NewGuid();
+    private Guid _orderId = Guid.NewGuid();
     private EnumCoreContentType _contentKind = EnumCoreContentType.Article;
-    private Guid _categoryId;
+    private Guid _categoryId = Guid.NewGuid();
     private Guid? _promotionLevelId;
     private decimal? _promoPriceSnapshotUsd;
     private bool _socialBoost;
     private bool _isBonus;
-
-    public ContentOrderItemBuilder()
-    {
-        _id = Guid.NewGuid();
-        _orderId = Guid.NewGuid();
-        _categoryId = Guid.NewGuid();
-    }
 
     public ContentOrderItemBuilder WithId(Guid id)
     {
