@@ -196,6 +196,10 @@ internal class ArticleBuilder
                 entity.Publish();
                 entity.Archive();
                 break;
+            case EnumContentStatus.Draft:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
 }
