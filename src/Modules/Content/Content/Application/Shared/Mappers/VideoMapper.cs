@@ -43,7 +43,8 @@ public static class VideoMapper
     /// </summary>
     public static VideoDetailDto ToVideoDetailDto(this VideoEntity entity, IMapper mapper)
     {
-        return mapper.Map<VideoDetailDto>(entity);
+        var dto = mapper.Map<VideoDetailDto>(entity);
+        return dto with { Tags = mapper.Map<IReadOnlyList<TagDto>>(entity.Tags) };
     }
 
     /// <summary>
