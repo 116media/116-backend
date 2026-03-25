@@ -8,18 +8,12 @@ namespace _116.Tests.Fixtures.Builders.Entities.Content;
 /// </summary>
 internal class ContentOrderBuilder
 {
-    private Guid _id;
-    private Guid _customerId;
+    private Guid _id = Guid.NewGuid();
+    private Guid _customerId = Guid.NewGuid();
     private Guid? _packageId;
     private bool _submitted;
     private bool _paid;
     private bool _cancelled;
-
-    public ContentOrderBuilder()
-    {
-        _id = Guid.NewGuid();
-        _customerId = Guid.NewGuid();
-    }
 
     public ContentOrderBuilder WithId(Guid id)
     {
@@ -60,7 +54,7 @@ internal class ContentOrderBuilder
 
     public ContentOrderEntity Build()
     {
-        ContentOrderEntity order = ContentOrderEntity.Create(_id, _customerId, _packageId);
+        var order = ContentOrderEntity.Create(_id, _customerId, _packageId);
 
         if (_submitted)
         {
