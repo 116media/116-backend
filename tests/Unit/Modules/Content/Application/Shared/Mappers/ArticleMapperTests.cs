@@ -170,4 +170,65 @@ public class ArticleMapperTests : BaseContentHandlerTest
     }
 
     #endregion
+
+    #region ToArticleCommentDto — body nulling on deleted comments
+
+    [Fact]
+    public void ToArticleCommentDto_WhenNotDeleted_ShouldReturnBody()
+    {
+        // Arrange
+        Guid articleId = Guid.NewGuid();
+        Guid userId = Guid.NewGuid();
+        ArticleCommentEntity comment = ArticleCommentFactory.Create(articleId, userId);
+
+        // Act
+        ArticleCommentDto dto = comment.ToArticleCommentDto(Mapper);
+
+        // Assert
+        dto.Body.Should().NotBeNull();
+        dto.IsDeleted.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ToArticleCommentDto_WhenDeleted_ShouldReturnNullBody()
+    {
+        // Arrange
+        Guid articleId = Guid.NewGuid();
+        Guid userId = Guid.NewGuid();
+        ArticleCommentEntity comment = ArticleCommentFactory.CreateDeleted(articleId, userId);
+
+        // Act
+        ArticleCommentDto dto = comment.ToArticleCommentDto(Mapper);
+
+        // Assert
+        dto.Body.Should().BeNull();
+        dto.IsDeleted.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region ToArticleCommentDtos — list mapping
+
+    [Fact]
+    public void ToArticleCommentDtos_ShouldMapEachComment()
+    {
+        // Arrange
+        Guid articleId = Guid.NewGuid();
+        Guid userId = Guid.NewGuid();
+        List<ArticleCommentEntity> comments =
+        [
+            ArticleCommentFactory.Create(articleId, userId),
+            ArticleCommentFactory.CreateDeleted(articleId, userId),
+        ];
+
+        // Act
+        IReadOnlyList<ArticleCommentDto> dtos = comments.ToArticleCommentDtos(Mapper);
+
+        // Assert
+        dtos.Should().HaveCount(2);
+        dtos[0].Body.Should().NotBeNull();
+        dtos[1].Body.Should().BeNull();
+    }
+
+    #endregion
 }
