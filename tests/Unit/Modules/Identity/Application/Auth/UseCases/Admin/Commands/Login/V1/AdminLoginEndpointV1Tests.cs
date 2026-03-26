@@ -30,19 +30,10 @@ public class AdminLoginEndpointV1Tests
     public void AdminLoginResponse_ShouldConstructCorrectly()
     {
         UserResponseDto user = CreateUserResponseDto();
-        const string tokenType = "Bearer";
 
-        var response = new AdminLoginResponse(
-            User: user,
-            AccessToken: "access-token",
-            AccessTokenExpiresAt: DateTime.UtcNow.AddMinutes(60),
-            RefreshToken: "refresh-token",
-            RefreshTokenExpiresAt: DateTime.UtcNow.AddDays(30),
-            TokenType: tokenType
-        );
+        var response = new AdminLoginResponse(User: user);
 
         response.Should().NotBeNull();
         response.User.Should().Be(user);
-        response.TokenType.Should().Be(tokenType);
     }
 }
