@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -21,7 +22,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.V1
 public record PublicSocialLoginRequest(string Email, string UserName, string? AvatarUrl, string Provider);
 
 /// <summary>
-/// Response model for successful social login.
+/// Response model for mobile client social login (tokens delivered in the body).
 /// </summary>
 /// <param name="User">The authenticated user information.</param>
 /// <param name="AccessToken">The JWT access token.</param>
@@ -29,7 +30,7 @@ public record PublicSocialLoginRequest(string Email, string UserName, string? Av
 /// <param name="RefreshToken">Refresh token for obtaining new access tokens.</param>
 /// <param name="RefreshTokenExpiresAt">Date and time when the refresh token expires in UTC.</param>
 /// <param name="TokenType">Type of token (typically "Bearer").</param>
-public record PublicSocialLoginResponse(
+public record PublicSocialLoginMobileResponse(
     UserResponseDto User,
     string AccessToken,
     DateTime AccessTokenExpiresAt,
@@ -37,6 +38,12 @@ public record PublicSocialLoginResponse(
     DateTime RefreshTokenExpiresAt,
     string TokenType
 );
+
+/// <summary>
+/// Response model for web client social login (tokens delivered via HttpOnly cookies).
+/// </summary>
+/// <param name="User">The authenticated user information.</param>
+public record PublicSocialLoginWebResponse(UserResponseDto User);
 
 /// <summary>
 /// Defines the social login endpoint for external provider authentication.
@@ -58,7 +65,7 @@ public class PublicSocialLoginEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: AuthRouteConstants.SocialLogin,
-                async (PublicSocialLoginRequest request, IDispatcher dispatcher) =>
+                async (PublicSocialLoginRequest request, IDispatcher dispatcher, ITokenDeliveryService tokenDelivery) =>
                 {
                     var command = new PublicSocialLoginCommand(
                         Email: request.Email,
@@ -68,7 +75,14 @@ public class PublicSocialLoginEndpointV1 : ICarterModule
                     );
                     PublicSocialLoginResult result = await dispatcher.Send(request: command);
 
-                    var response = new PublicSocialLoginResponse(
+                    if (tokenDelivery.IsWebClient())
+                    {
+                        tokenDelivery.SetTokenCookies(authResult: result.AuthenticationResult);
+                        var webResponse = new PublicSocialLoginWebResponse(User: result.AuthenticationResult.User);
+                        return Results.Ok(value: webResponse);
+                    }
+
+                    var mobileResponse = new PublicSocialLoginMobileResponse(
                         User: result.AuthenticationResult.User,
                         AccessToken: result.AuthenticationResult.AccessToken,
                         AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
@@ -77,7 +91,7 @@ public class PublicSocialLoginEndpointV1 : ICarterModule
                         TokenType: result.AuthenticationResult.TokenType
                     );
 
-                    return Results.Ok(value: response);
+                    return Results.Ok(value: mobileResponse);
                 }
             )
             .WithName(endpointName: PublicSocialLoginMetaField.SocialLogin.Name)
@@ -86,7 +100,8 @@ public class PublicSocialLoginEndpointV1 : ICarterModule
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.Authentication)
             .ProducesValidationProblem()
-            .Produces<PublicSocialLoginResponse>()
+            .Produces<PublicSocialLoginMobileResponse>()
+            .Produces<PublicSocialLoginWebResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status409Conflict)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
