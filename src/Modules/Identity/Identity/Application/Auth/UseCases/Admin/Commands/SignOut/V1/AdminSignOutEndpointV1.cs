@@ -15,10 +15,14 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut.V1;
 
 /// <summary>
-/// Request model for admin sign-out (RFC 7009 compliant).
+/// Request model for sign-out (RFC 7009 compliant).
 /// </summary>
-/// <param name="RefreshToken">The refresh token to revoke.</param>
-public record AdminSignOutRequest(string RefreshToken);
+/// <param name="RefreshToken">
+/// Optional refresh token to revoke.
+/// Web clients send the token via HttpOnly cookies, while mobile clients
+/// include it in the request body.
+/// </param>
+public record AdminSignOutRequest(string? RefreshToken);
 
 /// <summary>
 /// Response model for admin sign-out.
