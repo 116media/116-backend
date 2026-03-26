@@ -1,7 +1,7 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts;
-using _116.Identity.Application.Session.Factories;
+using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
