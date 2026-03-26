@@ -1,6 +1,7 @@
 using _116.Identity.Application.Adapters.Wangkanai.Detection;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Session.Factories;
+using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Persistence;
