@@ -1,7 +1,7 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Auth.Services;
-using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken.Contracts;
+using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Results;
 using _116.Shared.Contracts.Application.CQRS;
@@ -17,7 +17,7 @@ namespace _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToke
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicRefreshTokenHandler(
-    IPublicRefreshTokenFactory refreshTokenFactory,
+    IRefreshTokenFactory refreshTokenFactory,
     IJwtService jwtService,
     IFileRepository fileRepository,
     IMapper mapper
@@ -34,7 +34,7 @@ public class PublicRefreshTokenHandler(
         CancellationToken cancellationToken
     )
     {
-        PublicRefreshTokenData authData = await refreshTokenFactory.RefreshTokenAsync(
+        RefreshTokenData authData = await refreshTokenFactory.RefreshTokenAsync(
             refreshToken: command.RefreshToken,
             cancellationToken: cancellationToken
         );
