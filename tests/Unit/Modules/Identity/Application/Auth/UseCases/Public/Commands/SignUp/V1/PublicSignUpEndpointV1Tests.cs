@@ -27,12 +27,12 @@ public class PublicSignUpEndpointV1Tests
         );
 
     [Fact]
-    public void PublicSignUpResponse_ShouldConstructCorrectly()
+    public void PublicSignUpMobileResponse_ShouldConstructCorrectly()
     {
         UserResponseDto user = CreateUserResponseDto();
         const string tokenType = "Bearer";
 
-        var response = new PublicSignUpResponse(
+        var response = new PublicSignUpMobileResponse(
             User: user,
             AccessToken: "access-token",
             AccessTokenExpiresAt: DateTime.UtcNow.AddMinutes(60),
@@ -46,5 +46,17 @@ public class PublicSignUpEndpointV1Tests
         response.User.Should().Be(user);
         response.TokenType.Should().Be(tokenType);
         response.VerificationRequired.Should().BeFalse();
+    }
+
+    [Fact]
+    public void PublicSignUpWebResponse_ShouldConstructCorrectly()
+    {
+        UserResponseDto user = CreateUserResponseDto();
+
+        var response = new PublicSignUpWebResponse(User: user, VerificationRequired: true);
+
+        response.Should().NotBeNull();
+        response.User.Should().Be(user);
+        response.VerificationRequired.Should().BeTrue();
     }
 }
