@@ -43,21 +43,31 @@ public static partial class CredentialValidation
     }
 
     /// <summary>
-    /// Validates password with strength requirements (lowercase, uppercase, number, minimum length).
+    /// Validates password with optional complexity requirements (lowercase, uppercase, number, minimum length).
+    /// When <paramref name="isStrong"/> is false, only presence is validated (used for login flows).
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the password property.</param>
     /// <param name="fieldName">The name of the field for error messages (default: "Password").</param>
+    /// <param name="isStrong">Whether to enforce complexity rules (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string> ValidPassword<T>(
         this IRuleBuilderInitial<T, string> ruleBuilder,
-        string fieldName = "Password"
+        string fieldName = "Password",
+        bool isStrong = true
     )
     {
-        return ruleBuilder
+        IRuleBuilderOptions<T, string> builder = ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage($"{fieldName} is required")
+            .WithMessage($"{fieldName} is required");
+
+        if (!isStrong)
+        {
+            return builder;
+        }
+
+        return builder
             .MinimumLength(minimumLength: UserConstants.MinPasswordLength)
             .WithMessage($"{fieldName} must be at least {UserConstants.MinPasswordLength} characters long")
             .Matches(PasswordRegex())
@@ -121,6 +131,18 @@ public static partial class CredentialValidation
     )
     {
         return ruleBuilder.NotEmpty().WithMessage($"{fieldName} is required");
+    }
+
+    /// <summary>
+    /// Validates login credentials presence (email or username, no format checks).
+    /// Used for login flows where either email or username is accepted.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the credentials property.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string> ValidCredentials<T>(this IRuleBuilderInitial<T, string> ruleBuilder)
+    {
+        return ruleBuilder.NotEmpty().WithMessage("Email or username is required.");
     }
 
     /// <summary>
