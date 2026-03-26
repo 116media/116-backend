@@ -2,6 +2,7 @@ using System.Security.Claims;
 using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Contracts.Application;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -45,16 +46,23 @@ public class PublicSignOutEndpointV1 : ICarterModule
             .MapPost(
                 pattern: AuthRouteConstants.SignOut,
                 async (
-                    PublicSignOutRequest request,
+                    PublicSignOutRequest? request,
                     ClaimsPrincipal user,
                     IClaimsProvider authProvider,
-                    IDispatcher dispatcher
+                    IDispatcher dispatcher,
+                    ITokenDeliveryService tokenDelivery
                 ) =>
                 {
                     Guid userId = authProvider.GetUserIdFromClaims(user: user);
+                    string? refreshToken = tokenDelivery.ReadRefreshToken(bodyRefreshToken: request?.RefreshToken);
 
-                    var command = new PublicSignOutCommand(UserId: userId, RefreshToken: request.RefreshToken);
+                    var command = new PublicSignOutCommand(UserId: userId, RefreshToken: refreshToken!);
                     PublicSignOutResult result = await dispatcher.Send(request: command);
+
+                    if (tokenDelivery.IsWebClient())
+                    {
+                        tokenDelivery.ClearTokenCookies();
+                    }
 
                     var response = new PublicSignOutResponse(IsSuccess: result.IsSuccess);
 
