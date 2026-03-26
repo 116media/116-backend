@@ -17,6 +17,6 @@ public class AdminLoginValidator : AbstractValidator<AdminLoginCommand>
     public AdminLoginValidator()
     {
         RuleFor(x => x.Email).ValidEmail();
-        RuleFor(x => x.Password).NotEmpty().WithMessage("Password cannot be empty.");
+        RuleFor(x => x.Password).ValidPassword(isStrong: false);
     }
 }
