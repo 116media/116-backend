@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -19,7 +20,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
 public record PublicLoginRequest(string Credentials, string Password);
 
 /// <summary>
-/// Response model for successful public user authentication.
+/// Response model for mobile client authentication (tokens delivered to the body).
 /// </summary>
 /// <param name="User">The authenticated user information.</param>
 /// <param name="AccessToken">The JWT access token.</param>
@@ -27,7 +28,7 @@ public record PublicLoginRequest(string Credentials, string Password);
 /// <param name="RefreshToken">Refresh token for obtaining new access tokens.</param>
 /// <param name="RefreshTokenExpiresAt">Date and time when the refresh token expires in UTC.</param>
 /// <param name="TokenType">Type of token (typically "Bearer").</param>
-public record PublicLoginResponse(
+public record PublicLoginMobileResponse(
     UserResponseDto User,
     string AccessToken,
     DateTime AccessTokenExpiresAt,
@@ -35,6 +36,12 @@ public record PublicLoginResponse(
     DateTime RefreshTokenExpiresAt,
     string TokenType
 );
+
+/// <summary>
+/// Response model for web client authentication (tokens delivered via HttpOnly cookies).
+/// </summary>
+/// <param name="User">The authenticated user information.</param>
+public record PublicLoginWebResponse(UserResponseDto User);
 
 /// <summary>
 /// Defines the public login endpoint for user authentication.
@@ -57,12 +64,19 @@ public class PublicLoginEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: AuthRouteConstants.Login,
-                async (PublicLoginRequest request, IDispatcher dispatcher) =>
+                async (PublicLoginRequest request, IDispatcher dispatcher, ITokenDeliveryService tokenDelivery) =>
                 {
                     var command = new PublicLoginCommand(Credentials: request.Credentials, Password: request.Password);
                     PublicLoginResult result = await dispatcher.Send(request: command);
 
-                    var response = new PublicLoginResponse(
+                    if (tokenDelivery.IsWebClient())
+                    {
+                        tokenDelivery.SetTokenCookies(authResult: result.AuthenticationResult);
+                        var webResponse = new PublicLoginWebResponse(User: result.AuthenticationResult.User);
+                        return Results.Ok(value: webResponse);
+                    }
+
+                    var mobileResponse = new PublicLoginMobileResponse(
                         User: result.AuthenticationResult.User,
                         AccessToken: result.AuthenticationResult.AccessToken,
                         AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
@@ -71,7 +85,7 @@ public class PublicLoginEndpointV1 : ICarterModule
                         TokenType: result.AuthenticationResult.TokenType
                     );
 
-                    return Results.Ok(value: response);
+                    return Results.Ok(value: mobileResponse);
                 }
             )
             .WithName(endpointName: PublicLoginMetaField.PublicLogin.Name)
@@ -80,7 +94,8 @@ public class PublicLoginEndpointV1 : ICarterModule
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.Authentication)
             .ProducesValidationProblem()
-            .Produces<PublicLoginResponse>()
+            .Produces<PublicLoginMobileResponse>()
+            .Produces<PublicLoginWebResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
