@@ -27,12 +27,12 @@ public class PublicLoginEndpointV1Tests
         );
 
     [Fact]
-    public void PublicLoginResponse_ShouldConstructCorrectly()
+    public void PublicLoginMobileResponse_ShouldConstructCorrectly()
     {
         UserResponseDto user = CreateUserResponseDto();
         const string tokenType = "Bearer";
 
-        var response = new PublicLoginResponse(
+        var response = new PublicLoginMobileResponse(
             User: user,
             AccessToken: "access-token",
             AccessTokenExpiresAt: DateTime.UtcNow.AddMinutes(60),
@@ -44,5 +44,16 @@ public class PublicLoginEndpointV1Tests
         response.Should().NotBeNull();
         response.User.Should().Be(user);
         response.TokenType.Should().Be(tokenType);
+    }
+
+    [Fact]
+    public void PublicLoginWebResponse_ShouldConstructCorrectly()
+    {
+        UserResponseDto user = CreateUserResponseDto();
+
+        var response = new PublicLoginWebResponse(User: user);
+
+        response.Should().NotBeNull();
+        response.User.Should().Be(user);
     }
 }
