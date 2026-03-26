@@ -33,6 +33,11 @@ public class CredentialValidationTests
         public string? OldPassword { get; set; }
     }
 
+    private class TestCredentialsCommand
+    {
+        public string Credentials { get; set; } = string.Empty;
+    }
+
     private class TestEmailCommandValidator : AbstractValidator<TestEmailCommand>
     {
         public TestEmailCommandValidator(bool isRequired = true)
@@ -54,6 +59,22 @@ public class CredentialValidationTests
         public TestUsernameCommandValidator(bool isRequired = true)
         {
             RuleFor(x => x.UserName).ValidUsername(isRequired);
+        }
+    }
+
+    private class TestPasswordNotStrongCommandValidator : AbstractValidator<TestPasswordCommand>
+    {
+        public TestPasswordNotStrongCommandValidator(string fieldName = "Password")
+        {
+            RuleFor(x => x.Password).ValidPassword(fieldName, isStrong: false);
+        }
+    }
+
+    private class TestCredentialsCommandValidator : AbstractValidator<TestCredentialsCommand>
+    {
+        public TestCredentialsCommandValidator()
+        {
+            RuleFor(x => x.Credentials).ValidCredentials();
         }
     }
 
@@ -494,6 +515,135 @@ public class CredentialValidationTests
         result
             .ShouldHaveValidationErrorFor(x => x.UserName)
             .WithErrorMessage($"Username cannot exceed {UserConstants.MaxUserNameLength} characters");
+    }
+
+    #endregion
+
+    #region ValidPassword — not strong (isStrong = false)
+
+    [Fact]
+    public void ValidPassword_NotStrong_WithValidPassword_ShouldPass()
+    {
+        var validator = new TestPasswordNotStrongCommandValidator();
+        var command = new TestPasswordCommand { Password = "anypassword" };
+
+        TestValidationResult<TestPasswordCommand> result = validator.TestValidate(command);
+
+        result.ShouldNotHaveValidationErrorFor(x => x.Password);
+    }
+
+    [Fact]
+    public void ValidPassword_NotStrong_WithShortPassword_ShouldPass()
+    {
+        var validator = new TestPasswordNotStrongCommandValidator();
+        var command = new TestPasswordCommand { Password = "ab" };
+
+        TestValidationResult<TestPasswordCommand> result = validator.TestValidate(command);
+
+        result.ShouldNotHaveValidationErrorFor(x => x.Password);
+    }
+
+    [Fact]
+    public void ValidPassword_NotStrong_WithNoUppercase_ShouldPass()
+    {
+        var validator = new TestPasswordNotStrongCommandValidator();
+        var command = new TestPasswordCommand { Password = "nouppercase123" };
+
+        TestValidationResult<TestPasswordCommand> result = validator.TestValidate(command);
+
+        result.ShouldNotHaveValidationErrorFor(x => x.Password);
+    }
+
+    [Fact]
+    public void ValidPassword_NotStrong_WithEmptyPassword_ShouldFail()
+    {
+        var validator = new TestPasswordNotStrongCommandValidator();
+        var command = new TestPasswordCommand { Password = string.Empty };
+
+        TestValidationResult<TestPasswordCommand> result = validator.TestValidate(command);
+
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required");
+    }
+
+    [Fact]
+    public void ValidPassword_NotStrong_WithEmptyPassword_ShouldStopCascading()
+    {
+        var validator = new TestPasswordNotStrongCommandValidator();
+        var command = new TestPasswordCommand { Password = string.Empty };
+
+        TestValidationResult<TestPasswordCommand> result = validator.TestValidate(command);
+
+        result.Errors.Should().ContainSingle(e => e.PropertyName == nameof(TestPasswordCommand.Password));
+    }
+
+    [Fact]
+    public void ValidPassword_NotStrong_WithCustomFieldName_ShouldUseFieldNameInMessage()
+    {
+        var validator = new TestPasswordNotStrongCommandValidator(fieldName: "Login password");
+        var command = new TestPasswordCommand { Password = string.Empty };
+
+        TestValidationResult<TestPasswordCommand> result = validator.TestValidate(command);
+
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Login password is required");
+    }
+
+    #endregion
+
+    #region ValidCredentials
+
+    [Fact]
+    public void ValidCredentials_WithValidEmail_ShouldPass()
+    {
+        var validator = new TestCredentialsCommandValidator();
+        var command = new TestCredentialsCommand { Credentials = "user@example.com" };
+
+        TestValidationResult<TestCredentialsCommand> result = validator.TestValidate(command);
+
+        result.ShouldNotHaveValidationErrorFor(x => x.Credentials);
+    }
+
+    [Fact]
+    public void ValidCredentials_WithValidUsername_ShouldPass()
+    {
+        var validator = new TestCredentialsCommandValidator();
+        var command = new TestCredentialsCommand { Credentials = "john-doe" };
+
+        TestValidationResult<TestCredentialsCommand> result = validator.TestValidate(command);
+
+        result.ShouldNotHaveValidationErrorFor(x => x.Credentials);
+    }
+
+    [Fact]
+    public void ValidCredentials_WithEmptyCredentials_ShouldFail()
+    {
+        var validator = new TestCredentialsCommandValidator();
+        var command = new TestCredentialsCommand { Credentials = string.Empty };
+
+        TestValidationResult<TestCredentialsCommand> result = validator.TestValidate(command);
+
+        result.ShouldHaveValidationErrorFor(x => x.Credentials).WithErrorMessage("Email or username is required.");
+    }
+
+    [Fact]
+    public void ValidCredentials_WithNullCredentials_ShouldFail()
+    {
+        var validator = new TestCredentialsCommandValidator();
+        var command = new TestCredentialsCommand { Credentials = null! };
+
+        TestValidationResult<TestCredentialsCommand> result = validator.TestValidate(command);
+
+        result.ShouldHaveValidationErrorFor(x => x.Credentials).WithErrorMessage("Email or username is required.");
+    }
+
+    [Fact]
+    public void ValidCredentials_WithWhitespaceCredentials_ShouldFail()
+    {
+        var validator = new TestCredentialsCommandValidator();
+        var command = new TestCredentialsCommand { Credentials = "   " };
+
+        TestValidationResult<TestCredentialsCommand> result = validator.TestValidate(command);
+
+        result.ShouldHaveValidationErrorFor(x => x.Credentials).WithErrorMessage("Email or username is required.");
     }
 
     #endregion
