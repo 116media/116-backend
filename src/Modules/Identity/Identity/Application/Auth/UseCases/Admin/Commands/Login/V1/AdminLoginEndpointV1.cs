@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Constants;
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -19,22 +20,10 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.V1;
 public record AdminLoginRequest(string Email, string Password);
 
 /// <summary>
-/// Response model for successful admin authentication.
+/// Response model for successful admin authentication (tokens delivered via HttpOnly cookies).
 /// </summary>
 /// <param name="User">The authenticated admin user information.</param>
-/// <param name="AccessToken">The JWT access token with admin claims.</param>
-/// <param name="AccessTokenExpiresAt">Date and time when the access token expires in UTC.</param>
-/// <param name="RefreshToken">Refresh token for obtaining new access tokens.</param>
-/// <param name="RefreshTokenExpiresAt">Date and time when the refresh token expires in UTC.</param>
-/// <param name="TokenType">Type of token (typically "Bearer").</param>
-public record AdminLoginResponse(
-    UserResponseDto User,
-    string AccessToken,
-    DateTime AccessTokenExpiresAt,
-    string RefreshToken,
-    DateTime RefreshTokenExpiresAt,
-    string TokenType
-);
+public record AdminLoginResponse(UserResponseDto User);
 
 /// <summary>
 /// Defines the admin login endpoint for authentication (V1).
@@ -57,19 +46,14 @@ public class AdminLoginEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: AuthRouteConstants.Login,
-                async (AdminLoginRequest request, IDispatcher dispatcher) =>
+                async (AdminLoginRequest request, IDispatcher dispatcher, ITokenDeliveryService tokenDelivery) =>
                 {
                     var command = new AdminLoginCommand(Email: request.Email, Password: request.Password);
                     AdminLoginResult result = await dispatcher.Send(request: command);
 
-                    var response = new AdminLoginResponse(
-                        User: result.AuthenticationResult.User,
-                        AccessToken: result.AuthenticationResult.AccessToken,
-                        AccessTokenExpiresAt: result.AuthenticationResult.AccessTokenExpiresAt,
-                        RefreshToken: result.AuthenticationResult.RefreshToken,
-                        RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt,
-                        TokenType: result.AuthenticationResult.TokenType
-                    );
+                    tokenDelivery.SetTokenCookies(authResult: result.AuthenticationResult);
+
+                    var response = new AdminLoginResponse(User: result.AuthenticationResult.User);
 
                     return Results.Ok(value: response);
                 }
