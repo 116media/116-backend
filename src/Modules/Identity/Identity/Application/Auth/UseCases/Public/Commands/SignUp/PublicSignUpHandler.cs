@@ -1,5 +1,5 @@
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contracts;
-using _116.Identity.Application.Session.Factories;
+using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Results;
 using _116.Shared.Contracts.Application.CQRS;
