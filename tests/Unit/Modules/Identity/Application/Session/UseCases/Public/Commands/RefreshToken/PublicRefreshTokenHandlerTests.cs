@@ -1,7 +1,7 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken;
-using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken.Contracts;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Results;
@@ -19,14 +19,14 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Session.UseCases.Public.C
 /// </summary>
 public class PublicRefreshTokenHandlerTests : BaseHandlerTest
 {
-    private readonly Mock<IPublicRefreshTokenFactory> _refreshTokenFactoryMock;
+    private readonly Mock<IRefreshTokenFactory> _refreshTokenFactoryMock;
     private readonly Mock<IJwtService> _jwtServiceMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicRefreshTokenHandler _handler;
 
     public PublicRefreshTokenHandlerTests()
     {
-        _refreshTokenFactoryMock = new Mock<IPublicRefreshTokenFactory>();
+        _refreshTokenFactoryMock = new Mock<IRefreshTokenFactory>();
         _jwtServiceMock = new Mock<IJwtService>();
         _fileRepositoryMock = MockFileRepository.Create();
 
@@ -52,7 +52,7 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         DateTime accessTokenExpiry = DateTime.UtcNow.AddHours(1);
 
         PublicRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        PublicRefreshTokenData authData = new(user, session, newRefreshToken);
+        RefreshTokenData authData = new(user, session, newRefreshToken);
         JwtGenerationResult jwtResult = new(accessToken, accessTokenExpiry);
 
         _refreshTokenFactoryMock
@@ -94,7 +94,7 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         string refreshToken = "valid-refresh-token";
 
         PublicRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        PublicRefreshTokenData authData = new(user, session, "new-token");
+        RefreshTokenData authData = new(user, session, "new-token");
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
@@ -136,7 +136,7 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         string refreshToken = "valid-refresh-token";
 
         PublicRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        PublicRefreshTokenData authData = new(user, session, "new-token");
+        RefreshTokenData authData = new(user, session, "new-token");
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
@@ -189,7 +189,7 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         string refreshToken = "valid-refresh-token";
 
         PublicRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        PublicRefreshTokenData authData = new(user, session, "new-token");
+        RefreshTokenData authData = new(user, session, "new-token");
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
@@ -231,7 +231,7 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         string refreshToken = "valid-refresh-token";
 
         PublicRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        PublicRefreshTokenData authData = new(user, session, "new-token");
+        RefreshTokenData authData = new(user, session, "new-token");
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
@@ -276,7 +276,7 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         using CancellationTokenSource cts = new();
 
         PublicRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        PublicRefreshTokenData authData = new(user, session, "new-token");
+        RefreshTokenData authData = new(user, session, "new-token");
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
@@ -316,7 +316,7 @@ public class PublicRefreshTokenHandlerTests : BaseHandlerTest
         using CancellationTokenSource cts = new();
 
         PublicRefreshTokenCommand command = new(RefreshToken: refreshToken);
-        PublicRefreshTokenData authData = new(user, session, "new-token");
+        RefreshTokenData authData = new(user, session, "new-token");
         JwtGenerationResult jwtResult = new("token", DateTime.UtcNow.AddHours(1));
 
         _refreshTokenFactoryMock
