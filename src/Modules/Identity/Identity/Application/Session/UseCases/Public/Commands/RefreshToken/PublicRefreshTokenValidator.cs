@@ -1,3 +1,4 @@
+using _116.Identity.Application.Auth.Validators;
 using FluentValidation;
 
 namespace _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken;
@@ -12,6 +13,6 @@ public class PublicRefreshTokenValidator : AbstractValidator<PublicRefreshTokenC
     /// </summary>
     public PublicRefreshTokenValidator()
     {
-        RuleFor(x => x.RefreshToken).NotEmpty().WithMessage("Refresh token is required.");
+        RuleFor(x => x.RefreshToken).ValidRefreshToken();
     }
 }
