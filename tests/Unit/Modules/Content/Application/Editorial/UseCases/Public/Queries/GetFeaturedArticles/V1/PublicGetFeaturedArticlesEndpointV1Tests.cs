@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetFeaturedArticles.V1;
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
@@ -34,7 +35,7 @@ public class PublicGetFeaturedArticlesEndpointV1Tests
             Headline: "Test",
             CoverImageUrl: null,
             AuthorId: "Test",
-            Status: "Published",
+            Status: EnumContentStatus.Published,
             IsFeatured: false,
             PublishedAt: null
         );

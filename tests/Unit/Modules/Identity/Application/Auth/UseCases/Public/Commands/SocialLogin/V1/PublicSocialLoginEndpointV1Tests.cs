@@ -1,5 +1,6 @@
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.V1;
 using _116.Identity.Application.Shared.DTOs;
+using _116.Identity.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
@@ -14,7 +15,7 @@ public class PublicSocialLoginEndpointV1Tests
             "testuser",
             [],
             [],
-            "Local",
+            EnumAuthProvider.Local,
             true,
             true,
             null,

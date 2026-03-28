@@ -16,9 +16,7 @@ public static class ArticleMapper
     /// <param name="config">The TypeAdapterConfig to register mappings into.</param>
     public static void Register(TypeAdapterConfig config)
     {
-        config
-            .NewConfig<ArticleImageEntity, ArticleImageDto>()
-            .Map(dest => dest.ImageType, src => src.ImageType.ToString());
+        config.NewConfig<ArticleImageEntity, ArticleImageDto>();
 
         config
             .NewConfig<ArticleTagEntity, TagDto>()
@@ -26,15 +24,11 @@ public static class ArticleMapper
             .Map(dest => dest.Name, src => src.Tag.Name)
             .Map(dest => dest.Slug, src => src.Tag.Slug);
 
-        config
-            .NewConfig<ArticleEntity, ArticleSummaryDto>()
-            .Map(dest => dest.CategoryName, src => src.Category.Name)
-            .Map(dest => dest.Status, src => src.Status.ToString());
+        config.NewConfig<ArticleEntity, ArticleSummaryDto>().Map(dest => dest.CategoryName, src => src.Category.Name);
 
         config
             .NewConfig<ArticleEntity, ArticleDetailDto>()
             .Map(dest => dest.CategoryName, src => src.Category.Name)
-            .Map(dest => dest.Status, src => src.Status.ToString())
             .Map(dest => dest.Images, src => src.Images)
             .Map(dest => dest.Tags, src => src.Tags)
             .Map(

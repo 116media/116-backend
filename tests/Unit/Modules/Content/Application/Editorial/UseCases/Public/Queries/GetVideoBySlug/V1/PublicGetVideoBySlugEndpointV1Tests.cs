@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoBySlug.V1;
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
@@ -35,7 +36,7 @@ public class PublicGetVideoBySlugEndpointV1Tests
             ThumbnailUrl: null,
             ThumbnailStorageKey: null,
             AuthorId: "Test",
-            Status: "Published",
+            Status: EnumContentStatus.Published,
             RejectionReason: null,
             YoutubeVideoId: null,
             IsFeatured: false,

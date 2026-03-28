@@ -1,5 +1,6 @@
 using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken.V1;
 using _116.Identity.Application.Shared.DTOs;
+using _116.Identity.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
@@ -14,7 +15,7 @@ public class PublicRefreshTokenEndpointV1Tests
             "testuser",
             [],
             [],
-            "Local",
+            EnumAuthProvider.Local,
             true,
             true,
             null,

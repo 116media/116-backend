@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllVideos.V1;
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Pagination;
 using AwesomeAssertions;
 using Xunit;
@@ -34,7 +35,7 @@ public class AdminGetAllVideosEndpointV1Tests
             Slug: "test",
             ThumbnailUrl: null,
             AuthorId: "Test",
-            Status: "Draft",
+            Status: EnumContentStatus.Draft,
             YoutubeVideoId: null,
             IsFeatured: false,
             HasLyrics: false,

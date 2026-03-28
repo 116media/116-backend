@@ -1,3 +1,5 @@
+using _116.Content.Domain.Enums;
+
 namespace _116.Content.Application.Shared.DTOs;
 
 /// <summary>
@@ -7,4 +9,4 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="Url">The publicly accessible URL of the image.</param>
 /// <param name="StorageKey">The provider-agnostic storage key used for CDN asset management.</param>
 /// <param name="ImageType">The image type: <c>Cover</c> or <c>Body</c>.</param>
-public record ArticleImageDto(Guid Id, string Url, string StorageKey, string ImageType);
+public record ArticleImageDto(Guid Id, string Url, string StorageKey, EnumArticleImageType ImageType);

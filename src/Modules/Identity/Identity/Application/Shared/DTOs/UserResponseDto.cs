@@ -1,4 +1,5 @@
 using _116.Core.Application.Shared.DTOs;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Application.DTOs;
 
 namespace _116.Identity.Application.Shared.DTOs;
@@ -27,7 +28,7 @@ public record UserResponseDto(
     string UserName,
     IReadOnlyCollection<RoleDto> Roles,
     IReadOnlyCollection<PermissionDto> Permissions,
-    string AuthProvider,
+    EnumAuthProvider AuthProvider,
     bool IsVerified,
     bool IsActive,
     FileDto? Avatar,

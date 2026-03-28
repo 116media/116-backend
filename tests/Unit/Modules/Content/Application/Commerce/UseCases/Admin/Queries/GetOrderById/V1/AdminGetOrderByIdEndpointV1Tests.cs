@@ -1,5 +1,6 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderById.V1;
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
@@ -14,7 +15,7 @@ public class AdminGetOrderByIdEndpointV1Tests
     public void AdminGetOrderByIdResponse_ShouldConstructCorrectly()
     {
         // Arrange
-        var order = new ContentOrderDetailDto(Guid.NewGuid(), "Acme Corp", "Draft", 0m, [], null);
+        var order = new ContentOrderDetailDto(Guid.NewGuid(), "Acme Corp", EnumOrderStatus.Draft, 0m, [], null);
 
         // Act
         var response = new AdminGetOrderByIdResponse(Order: order);

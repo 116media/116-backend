@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideoSeo.V1;
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
@@ -35,7 +36,7 @@ public class AdminUpdateVideoSeoEndpointV1Tests
             ThumbnailUrl: null,
             ThumbnailStorageKey: null,
             AuthorId: "Test",
-            Status: "Draft",
+            Status: EnumContentStatus.Draft,
             RejectionReason: null,
             YoutubeVideoId: null,
             IsFeatured: false,

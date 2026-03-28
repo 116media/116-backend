@@ -25,7 +25,6 @@ public static class ContentOrderMapper
 
         config
             .NewConfig<ContentOrderItemEntity, OrderItemDto>()
-            .Map(dest => dest.ContentKind, src => src.ContentKind.ToString())
             .Map(dest => dest.CategoryName, src => src.Category.Name)
             .Map(dest => dest.PromotionLevelName, src => src.PromotionLevel != null ? src.PromotionLevel.Name : null)
             .Map(dest => dest.PromoPriceUsd, src => src.PromoPriceSnapshotUsd)
@@ -33,21 +32,17 @@ public static class ContentOrderMapper
 
         config
             .NewConfig<ContentPaymentEntity, PaymentDto>()
-            .Map(dest => dest.PaymentMethod, src => src.PaymentMethod != null ? src.PaymentMethod.ToString() : null)
             .Map(dest => dest.PaymentProof, _ => (FileDto?)null)
-            .Map(dest => dest.Status, src => src.Status.ToString())
             .Map(dest => dest.VerifiedBy, src => src.VerifiedById);
 
         config
             .NewConfig<ContentOrderEntity, ContentOrderSummaryDto>()
             .Map(dest => dest.CustomerName, src => src.Customer.FullName)
-            .Map(dest => dest.Status, src => src.Status.ToString())
             .Map(dest => dest.ItemCount, src => src.Items.Count);
 
         config
             .NewConfig<ContentOrderEntity, ContentOrderDetailDto>()
             .Map(dest => dest.CustomerName, src => src.Customer.FullName)
-            .Map(dest => dest.Status, src => src.Status.ToString())
             .Map(dest => dest.Items, src => src.Items)
             .Map(dest => dest.Payment, src => src.Payment);
     }

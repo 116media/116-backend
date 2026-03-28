@@ -44,6 +44,9 @@ public static class SwaggerExtensions
         options.SupportNonNullableReferenceTypes();
         options.NonNullableReferenceTypesAsRequired();
 
+        options.UseAllOfToExtendReferenceSchemas();
+        options.SchemaFilter<EnumSchemaFilter>();
+
         return options;
     }
 }

@@ -15,7 +15,16 @@ public class AdminAddOrderItemEndpointV1Tests
     public void AdminAddOrderItemResponse_ShouldConstructCorrectly()
     {
         // Arrange
-        var item = new OrderItemDto(Guid.NewGuid(), "Article", "Technology", null, null, false, false, []);
+        var item = new OrderItemDto(
+            Guid.NewGuid(),
+            EnumCoreContentType.Article,
+            "Technology",
+            null,
+            null,
+            false,
+            false,
+            []
+        );
 
         // Act
         var response = new AdminAddOrderItemResponse(Item: item);

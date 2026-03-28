@@ -1,3 +1,4 @@
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.DTOs;
 
 namespace _116.Content.Application.Shared.DTOs;
@@ -26,7 +27,7 @@ public record VideoSummaryDto(
     string Slug,
     string? ThumbnailUrl,
     string AuthorId,
-    string Status,
+    EnumContentStatus Status,
     string? YoutubeVideoId,
     bool IsFeatured,
     bool HasLyrics,

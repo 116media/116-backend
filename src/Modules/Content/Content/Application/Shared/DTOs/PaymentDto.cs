@@ -1,3 +1,4 @@
+using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.DTOs;
 
 namespace _116.Content.Application.Shared.DTOs;
@@ -19,9 +20,9 @@ namespace _116.Content.Application.Shared.DTOs;
 public record PaymentDto(
     Guid Id,
     decimal AmountUsd,
-    string? PaymentMethod,
+    EnumPaymentMethod? PaymentMethod,
     FileDto? PaymentProof,
-    string Status,
+    EnumPaymentStatus Status,
     Guid? VerifiedBy,
     DateTimeOffset? VerifiedAt,
     string? ReceiptUrl

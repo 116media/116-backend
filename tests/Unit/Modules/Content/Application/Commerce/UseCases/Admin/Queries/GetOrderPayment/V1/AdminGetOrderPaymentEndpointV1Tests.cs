@@ -1,5 +1,6 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderPayment.V1;
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
@@ -14,7 +15,7 @@ public class AdminGetOrderPaymentEndpointV1Tests
     public void AdminGetOrderPaymentResponse_ShouldConstructCorrectly()
     {
         // Arrange
-        var payment = new PaymentDto(Guid.NewGuid(), 100m, null, null, "Pending", null, null, null);
+        var payment = new PaymentDto(Guid.NewGuid(), 100m, null, null, EnumPaymentStatus.Pending, null, null, null);
 
         // Act
         var response = new AdminGetOrderPaymentResponse(Payment: payment);

@@ -1,5 +1,6 @@
 using _116.Identity.Application.Session.UseCases.Admin.Queries.GetAllSessions.V1;
 using _116.Identity.Application.Shared.DTOs;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Pagination;
 using AwesomeAssertions;
 using Xunit;
@@ -13,10 +14,10 @@ public class AdminGetAllSessionsEndpointV1Tests
             Guid.NewGuid(),
             "127.0.0.1",
             "Mozilla/5.0",
-            "Chrome",
-            "Desktop",
-            "Windows",
-            "WebApp",
+            EnumBrowser.Chrome,
+            EnumDevice.Desktop,
+            EnumPlatform.Windows,
+            EnumClient.WebApp,
             DateTime.UtcNow.AddDays(1),
             true
         );

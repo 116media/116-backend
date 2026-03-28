@@ -11,14 +11,14 @@ namespace _116.Identity.Infrastructure.Services;
 /// </summary>
 public class SessionExportService : ISessionExportService
 {
-    private readonly Dictionary<SessionExportFormat, IExportStrategy> _strategies = new()
+    private readonly Dictionary<EnumSessionExportFormat, IExportStrategy> _strategies = new()
     {
-        [key: SessionExportFormat.Csv] = new CsvExportStrategy(),
-        [key: SessionExportFormat.Xlsx] = new XlsxExportStrategy(),
+        [key: EnumSessionExportFormat.Csv] = new CsvExportStrategy(),
+        [key: EnumSessionExportFormat.Xlsx] = new XlsxExportStrategy(),
     };
 
     /// <inheritdoc />
-    public byte[] Export(List<SessionExportDto> sessions, SessionExportFormat format, List<string>? columns = null)
+    public byte[] Export(List<SessionExportDto> sessions, EnumSessionExportFormat format, List<string>? columns = null)
     {
         if (!_strategies.TryGetValue(key: format, out IExportStrategy? strategy))
         {
@@ -29,25 +29,25 @@ public class SessionExportService : ISessionExportService
     }
 
     /// <inheritdoc />
-    public string GetContentType(SessionExportFormat format)
+    public string GetContentType(EnumSessionExportFormat format)
     {
         return format switch
         {
-            SessionExportFormat.Csv => "text/csv",
-            SessionExportFormat.Xlsx => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            EnumSessionExportFormat.Csv => "text/csv",
+            EnumSessionExportFormat.Xlsx => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             _ => throw new ArgumentException($"Unsupported export format: {format}", nameof(format)),
         };
     }
 
     /// <inheritdoc />
-    public string GenerateFileName(SessionExportFormat format, string? baseFileName = null)
+    public string GenerateFileName(EnumSessionExportFormat format, string? baseFileName = null)
     {
         string fileName = baseFileName ?? SessionExportConstants.DefaultBaseFileName;
 
         string fileExtension = format switch
         {
-            SessionExportFormat.Csv => "csv",
-            SessionExportFormat.Xlsx => "xlsx",
+            EnumSessionExportFormat.Csv => "csv",
+            EnumSessionExportFormat.Xlsx => "xlsx",
             _ => throw new ArgumentException($"Unsupported export format: {format}", nameof(format)),
         };
 

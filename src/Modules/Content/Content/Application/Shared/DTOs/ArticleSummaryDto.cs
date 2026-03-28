@@ -1,3 +1,4 @@
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.DTOs;
 
 namespace _116.Content.Application.Shared.DTOs;
@@ -26,7 +27,7 @@ public record ArticleSummaryDto(
     string Headline,
     string? CoverImageUrl,
     string AuthorId,
-    string Status,
+    EnumContentStatus Status,
     bool IsFeatured,
     DateTimeOffset? PublishedAt
 ) : AuditableDto;

@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllArticles.V1;
 using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Pagination;
 using AwesomeAssertions;
 using Xunit;
@@ -35,7 +36,7 @@ public class AdminGetAllArticlesEndpointV1Tests
             Headline: "Test",
             CoverImageUrl: null,
             AuthorId: "Test",
-            Status: "Draft",
+            Status: EnumContentStatus.Draft,
             IsFeatured: false,
             PublishedAt: null
         );
