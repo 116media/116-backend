@@ -65,6 +65,30 @@ public interface ISessionRepository
     );
 
     /// <summary>
+    /// Gets any session (regardless of status) for a specific user and device.
+    /// Unlike <see cref="GetActiveSessionByUserIdAndDeviceIdAsync"/>, this includes expired and revoked sessions.
+    /// Used during login to detect stale sessions that should be reactivated instead of causing
+    /// a unique constraint violation on (user_id, device_id).
+    /// </summary>
+    /// <param name="userId">
+    /// The user identifier.
+    /// </param>
+    /// <param name="deviceId">
+    /// The device identifier.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Token to cancel the operation.
+    /// </param>
+    /// <returns>
+    /// The session entity if one exists for this user/device pair, null otherwise.
+    /// </returns>
+    Task<SessionEntity?> GetSessionByUserIdAndDeviceIdAsync(
+        Guid userId,
+        string deviceId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Gets all sessions for a user with optional filtering by active status.
     /// </summary>
     /// <param name="userId">The user's ID.</param>
