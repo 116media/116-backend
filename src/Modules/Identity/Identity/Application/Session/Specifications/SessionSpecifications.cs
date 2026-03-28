@@ -53,12 +53,32 @@ public class SessionByDeviceIdSpecification(string deviceId) : Specification<Ses
 }
 
 /// <summary>
+/// Composite specification that matches any session (regardless of status) by user ID and device ID.
+/// Does not filter by active, revoked, or expired status.
+/// </summary>
+/// <remarks>
+/// Used during login to find stale sessions that should be reactivated instead of triggering
+/// a unique constraint violation on (user_id, device_id).
+/// </remarks>
+public class SessionByUserIdAndDeviceIdSpecification(Guid userId, string deviceId) : Specification<SessionEntity>
+{
+    public override Expression<Func<SessionEntity, bool>> ToExpression()
+    {
+        var userIdSpec = new SessionByUserIdSpecification(userId);
+        var deviceIdSpec = new SessionByDeviceIdSpecification(deviceId);
+
+        return userIdSpec.And(deviceIdSpec).ToExpression();
+    }
+}
+
+/// <summary>
 /// Composite specification that matches active sessions by user ID and device ID.
 /// Combines user ID, device ID, not revoked, and not expired specifications.
 /// Used for finding existing active session for a specific user on a specific device.
 /// This is critical for preventing duplicate active sessions on the same device.
 /// </summary>
-public class SessionByUserIdAndDeviceIdSpecification(Guid userId, string deviceId) : Specification<SessionEntity>
+public class SessionIsActiveByUserIdAndDeviceIdSpecification(Guid userId, string deviceId)
+    : Specification<SessionEntity>
 {
     public override Expression<Func<SessionEntity, bool>> ToExpression()
     {
