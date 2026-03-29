@@ -33,7 +33,10 @@ public class PublicGetOwnSessionsHandler(ISessionRepository sessionRepository, I
             cancellationToken: cancellationToken
         );
 
-        ReadOnlyCollection<SessionDto> sessionDtos = sessions.Select(s => s.ToSessionDto(mapper)).ToList().AsReadOnly();
+        ReadOnlyCollection<SessionDto> sessionDtos = sessions
+            .Select(s => s.ToSessionDto(mapper, currentSessionId: query.CurrentSessionId))
+            .ToList()
+            .AsReadOnly();
 
         return new PublicGetOwnSessionsResult(Sessions: sessionDtos);
     }
