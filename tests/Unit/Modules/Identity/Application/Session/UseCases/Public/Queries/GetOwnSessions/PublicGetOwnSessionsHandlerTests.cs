@@ -32,7 +32,7 @@ public class PublicGetOwnSessionsHandlerTests : BaseHandlerTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        PublicGetOwnSessionsQuery query = new(UserId: userId);
+        PublicGetOwnSessionsQuery query = new(UserId: userId, CurrentSessionId: Guid.NewGuid());
 
         List<SessionEntity> sessions = SessionFactory.CreateMany(3);
         _sessionRepositoryMock.SetupGetUserSessions(userId, sessions);
@@ -50,7 +50,7 @@ public class PublicGetOwnSessionsHandlerTests : BaseHandlerTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        PublicGetOwnSessionsQuery query = new(UserId: userId);
+        PublicGetOwnSessionsQuery query = new(UserId: userId, CurrentSessionId: Guid.NewGuid());
         _sessionRepositoryMock.SetupGetUserSessionsEmpty(userId);
 
         // Act
@@ -65,7 +65,7 @@ public class PublicGetOwnSessionsHandlerTests : BaseHandlerTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        PublicGetOwnSessionsQuery query = new(UserId: userId);
+        PublicGetOwnSessionsQuery query = new(UserId: userId, CurrentSessionId: Guid.NewGuid());
         _sessionRepositoryMock.SetupGetUserSessionsEmpty(userId);
 
         // Act
@@ -83,7 +83,7 @@ public class PublicGetOwnSessionsHandlerTests : BaseHandlerTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        PublicGetOwnSessionsQuery query = new(UserId: userId, IsActive: true);
+        PublicGetOwnSessionsQuery query = new(UserId: userId, CurrentSessionId: Guid.NewGuid(), IsActive: true);
         _sessionRepositoryMock.SetupGetUserSessionsEmpty(userId);
 
         // Act
@@ -101,7 +101,7 @@ public class PublicGetOwnSessionsHandlerTests : BaseHandlerTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        PublicGetOwnSessionsQuery query = new(UserId: userId, IsActive: false);
+        PublicGetOwnSessionsQuery query = new(UserId: userId, CurrentSessionId: Guid.NewGuid(), IsActive: false);
         _sessionRepositoryMock.SetupGetUserSessionsEmpty(userId);
 
         // Act
@@ -119,7 +119,7 @@ public class PublicGetOwnSessionsHandlerTests : BaseHandlerTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        PublicGetOwnSessionsQuery query = new(UserId: userId);
+        PublicGetOwnSessionsQuery query = new(UserId: userId, CurrentSessionId: Guid.NewGuid());
 
         List<SessionEntity> sessions = SessionFactory.CreateMany(2);
         _sessionRepositoryMock.SetupGetUserSessions(userId, sessions);
@@ -142,7 +142,7 @@ public class PublicGetOwnSessionsHandlerTests : BaseHandlerTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        PublicGetOwnSessionsQuery query = new(UserId: userId);
+        PublicGetOwnSessionsQuery query = new(UserId: userId, CurrentSessionId: Guid.NewGuid());
         using CancellationTokenSource cts = new();
         _sessionRepositoryMock.SetupGetUserSessionsEmpty(userId);
 
