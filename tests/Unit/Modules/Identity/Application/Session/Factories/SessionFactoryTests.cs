@@ -66,7 +66,7 @@ public class SessionFactoryTests
         _sessionMetadataServiceMock.Setup(x => x.ExtractDeviceId()).Returns(deviceId);
 
         _sessionRepositoryMock
-            .Setup(x => x.GetActiveSessionByUserIdAndDeviceIdAsync(user.Id, deviceId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetSessionByUserIdAndDeviceIdAsync(user.Id, deviceId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((SessionEntity?)null);
 
         _refreshTokenServiceMock.Setup(x => x.GenerateRefreshToken()).Returns(refreshToken);
@@ -131,7 +131,7 @@ public class SessionFactoryTests
         _sessionMetadataServiceMock.Setup(x => x.ExtractDeviceId()).Returns(deviceId);
 
         _sessionRepositoryMock
-            .Setup(x => x.GetActiveSessionByUserIdAndDeviceIdAsync(user.Id, deviceId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetSessionByUserIdAndDeviceIdAsync(user.Id, deviceId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingSession);
 
         _refreshTokenServiceMock.Setup(x => x.GenerateRefreshToken()).Returns(refreshToken);
@@ -180,7 +180,7 @@ public class SessionFactoryTests
 
         _sessionRepositoryMock
             .Setup(x =>
-                x.GetActiveSessionByUserIdAndDeviceIdAsync(
+                x.GetSessionByUserIdAndDeviceIdAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
@@ -241,7 +241,7 @@ public class SessionFactoryTests
 
         _sessionRepositoryMock
             .Setup(x =>
-                x.GetActiveSessionByUserIdAndDeviceIdAsync(
+                x.GetSessionByUserIdAndDeviceIdAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
@@ -300,7 +300,7 @@ public class SessionFactoryTests
 
         _sessionRepositoryMock
             .Setup(x =>
-                x.GetActiveSessionByUserIdAndDeviceIdAsync(
+                x.GetSessionByUserIdAndDeviceIdAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
@@ -367,7 +367,7 @@ public class SessionFactoryTests
 
         _sessionRepositoryMock
             .Setup(x =>
-                x.GetActiveSessionByUserIdAndDeviceIdAsync(
+                x.GetSessionByUserIdAndDeviceIdAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
@@ -426,7 +426,7 @@ public class SessionFactoryTests
 
         _sessionRepositoryMock
             .Setup(x =>
-                x.GetActiveSessionByUserIdAndDeviceIdAsync(
+                x.GetSessionByUserIdAndDeviceIdAsync(
                     It.IsAny<Guid>(),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
@@ -499,7 +499,7 @@ public class SessionFactoryTests
         _sessionMetadataServiceMock.Setup(x => x.ExtractDeviceId()).Returns(deviceId);
 
         _sessionRepositoryMock
-            .Setup(x => x.GetActiveSessionByUserIdAndDeviceIdAsync(user.Id, deviceId, cancellationToken))
+            .Setup(x => x.GetSessionByUserIdAndDeviceIdAsync(user.Id, deviceId, cancellationToken))
             .ReturnsAsync((SessionEntity?)null);
 
         _refreshTokenServiceMock.Setup(x => x.GenerateRefreshToken()).Returns("refresh_token");
@@ -539,7 +539,7 @@ public class SessionFactoryTests
 
         // Assert
         _sessionRepositoryMock.Verify(
-            x => x.GetActiveSessionByUserIdAndDeviceIdAsync(user.Id, deviceId, cancellationToken),
+            x => x.GetSessionByUserIdAndDeviceIdAsync(user.Id, deviceId, cancellationToken),
             Times.Once
         );
         _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<SessionEntity>(), cancellationToken), Times.Once);
