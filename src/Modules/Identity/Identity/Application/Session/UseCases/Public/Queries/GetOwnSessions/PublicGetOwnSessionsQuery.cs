@@ -7,8 +7,10 @@ namespace _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessio
 /// Query used to retrieve all sessions for the current user.
 /// </summary>
 /// <param name="UserId">The ID of the user requesting their sessions.</param>
+/// <param name="CurrentSessionId">The ID of the session making the request.</param>
 /// <param name="IsActive">Optional filter: true for active only, false for inactive only, null for all.</param>
-public record PublicGetOwnSessionsQuery(Guid UserId, bool? IsActive = null) : IQuery<PublicGetOwnSessionsResult>;
+public record PublicGetOwnSessionsQuery(Guid UserId, Guid CurrentSessionId, bool? IsActive = null)
+    : IQuery<PublicGetOwnSessionsResult>;
 
 /// <summary>
 /// The result of executing a <see cref="PublicGetOwnSessionsQuery" />.
