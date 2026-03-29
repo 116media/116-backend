@@ -52,18 +52,18 @@ public class SessionFactory(
             throw SessionErrors.DeviceIdRequired();
         }
 
-        // Check for existing active session on this device
-        SessionEntity? existingActiveSession = await sessionRepository.GetActiveSessionByUserIdAndDeviceIdAsync(
+        // Find any existing session for this device (active, expired, or revoked)
+        SessionEntity? existingSession = await sessionRepository.GetSessionByUserIdAndDeviceIdAsync(
             userId: user.Id,
             deviceId: deviceId,
             cancellationToken: cancellationToken
         );
 
         Guid sessionId;
-        if (existingActiveSession != null)
+        if (existingSession != null)
         {
-            sessionId = existingActiveSession.Id;
-            existingActiveSession.UpdateRefreshToken(refreshTokenHash, refreshTokenExpiresAt);
+            sessionId = existingSession.Id;
+            existingSession.Reactivate(refreshTokenHash, refreshTokenExpiresAt);
         }
         else
         {
