@@ -146,14 +146,12 @@ public class SessionSpecificationsTests
     #region SessionByUserIdAndDeviceIdSpecification Tests
 
     [Fact]
-    public void SessionByUserIdAndDeviceIdSpecification_WithMatchingBoth_ShouldReturnTrue()
+    public void SessionByUserIdAndDeviceIdSpecification_WithMatchingUserIdAndDeviceId_ShouldReturnTrue()
     {
         // Arrange
         var userId = Guid.NewGuid();
         string deviceId = "device-123";
         SessionEntity session = SessionFactory.Create(userId, deviceId);
-        session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
-
         SessionByUserIdAndDeviceIdSpecification spec = new(userId, deviceId);
 
         // Act
@@ -169,9 +167,95 @@ public class SessionSpecificationsTests
         // Arrange
         string deviceId = "device-123";
         SessionEntity session = SessionFactory.Create(Guid.NewGuid(), deviceId);
+        SessionByUserIdAndDeviceIdSpecification spec = new(Guid.NewGuid(), deviceId);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(session);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void SessionByUserIdAndDeviceIdSpecification_WithDifferentDeviceId_ShouldReturnFalse()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        SessionEntity session = SessionFactory.Create(userId, "device-123");
+        SessionByUserIdAndDeviceIdSpecification spec = new(userId, "device-456");
+
+        // Act
+        bool result = spec.IsSatisfiedBy(session);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void SessionByUserIdAndDeviceIdSpecification_WithExpiredSession_ShouldReturnTrue()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        string deviceId = "device-123";
+        SessionEntity session = SessionFactory.Create(userId, deviceId);
+        session.GetType().GetProperty("ExpiresAt")!.SetValue(session, DateTime.UtcNow.AddDays(-1));
+        SessionByUserIdAndDeviceIdSpecification spec = new(userId, deviceId);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(session);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void SessionByUserIdAndDeviceIdSpecification_WithRevokedSession_ShouldReturnTrue()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        string deviceId = "device-123";
+        SessionEntity session = SessionFactory.Create(userId, deviceId);
+        session.GetType().GetProperty("IsRevoked")!.SetValue(session, true);
+        SessionByUserIdAndDeviceIdSpecification spec = new(userId, deviceId);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(session);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region SessionIsActiveByUserIdAndDeviceIdSpecification Tests
+
+    [Fact]
+    public void SessionIsActiveByUserIdAndDeviceIdSpecification_WithMatchingBoth_ShouldReturnTrue()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        string deviceId = "device-123";
+        SessionEntity session = SessionFactory.Create(userId, deviceId);
         session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
 
-        SessionByUserIdAndDeviceIdSpecification spec = new(Guid.NewGuid(), deviceId);
+        SessionIsActiveByUserIdAndDeviceIdSpecification spec = new(userId, deviceId);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(session);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void SessionIsActiveByUserIdAndDeviceIdSpecification_WithDifferentUserId_ShouldReturnFalse()
+    {
+        // Arrange
+        string deviceId = "device-123";
+        SessionEntity session = SessionFactory.Create(Guid.NewGuid(), deviceId);
+        session.GetType().GetProperty("IsRevoked")!.SetValue(session, false);
+
+        SessionIsActiveByUserIdAndDeviceIdSpecification spec = new(Guid.NewGuid(), deviceId);
 
         // Act
         bool result = spec.IsSatisfiedBy(session);
@@ -612,6 +696,48 @@ public class SessionSpecificationsTests
 
         // Assert
         result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region SessionByUserIdAndDeviceIdSpecification LINQ Integration Tests
+
+    [Fact]
+    public void SessionByUserIdAndDeviceIdSpecification_WithLinq_ShouldReturnSessionsRegardlessOfStatus()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        string deviceId = "device-123";
+
+        SessionEntity activeSession = SessionFactory.Create(userId, deviceId);
+        activeSession.GetType().GetProperty("IsRevoked")!.SetValue(activeSession, false);
+
+        SessionEntity expiredSession = SessionFactory.Create(userId, deviceId);
+        expiredSession.GetType().GetProperty("ExpiresAt")!.SetValue(expiredSession, DateTime.UtcNow.AddDays(-1));
+        expiredSession.GetType().GetProperty("IsRevoked")!.SetValue(expiredSession, false);
+
+        SessionEntity revokedSession = SessionFactory.Create(userId, deviceId);
+        revokedSession.GetType().GetProperty("IsRevoked")!.SetValue(revokedSession, true);
+
+        SessionEntity otherDeviceSession = SessionFactory.Create(userId, "device-other");
+        SessionEntity otherUserSession = SessionFactory.Create(Guid.NewGuid(), deviceId);
+
+        List<SessionEntity> sessions =
+        [
+            activeSession,
+            expiredSession,
+            revokedSession,
+            otherDeviceSession,
+            otherUserSession,
+        ];
+        SessionByUserIdAndDeviceIdSpecification spec = new(userId, deviceId);
+
+        // Act
+        List<SessionEntity> filtered = sessions.Where(spec.ToExpression().Compile()).ToList();
+
+        // Assert
+        filtered.Should().HaveCount(3);
+        filtered.Should().OnlyContain(s => s.UserId == userId && s.DeviceId == deviceId);
     }
 
     #endregion
