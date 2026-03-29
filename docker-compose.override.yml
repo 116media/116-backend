@@ -42,6 +42,8 @@ services:
             - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
             - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
             - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+            - DASHBOARD_ORIGIN=${DASHBOARD_ORIGIN}
+            - WEBAPP_ORIGIN=${WEBAPP_ORIGIN}
         restart: always
         ports:
             - "5025:8080"
