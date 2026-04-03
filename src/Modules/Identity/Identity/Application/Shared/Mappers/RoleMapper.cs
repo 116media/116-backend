@@ -104,6 +104,7 @@ public static class RoleMapper
     /// <returns>A RoleWithPermissionsDto containing role and permission information.</returns>
     public static RoleWithPermissionsDto ToRoleWithPermissionsDto(this RoleEntity role, IMapper mapper)
     {
-        return mapper.Map<RoleWithPermissionsDto>(role);
+        var dto = mapper.Map<RoleWithPermissionsDto>(role);
+        return dto with { Permissions = role.RolePermissions.ToPermissionDtos(mapper) };
     }
 }

@@ -52,7 +52,8 @@ public static class ContentOrderMapper
     /// </summary>
     public static ContentOrderSummaryDto ToContentOrderSummaryDto(this ContentOrderEntity entity, IMapper mapper)
     {
-        return mapper.Map<ContentOrderSummaryDto>(entity);
+        var dto = mapper.Map<ContentOrderSummaryDto>(entity);
+        return dto with { CustomerName = entity.Customer.FullName, ItemCount = entity.Items.Count };
     }
 
     /// <summary>
@@ -63,7 +64,7 @@ public static class ContentOrderMapper
         IMapper mapper
     )
     {
-        return mapper.Map<IReadOnlyList<ContentOrderSummaryDto>>(entities);
+        return entities.Select(e => e.ToContentOrderSummaryDto(mapper)).ToList();
     }
 
     /// <summary>
@@ -71,7 +72,12 @@ public static class ContentOrderMapper
     /// </summary>
     public static ContentOrderDetailDto ToContentOrderDetailDto(this ContentOrderEntity entity, IMapper mapper)
     {
-        return mapper.Map<ContentOrderDetailDto>(entity);
+        var dto = mapper.Map<ContentOrderDetailDto>(entity);
+        return dto with
+        {
+            Items = entity.Items.Select(i => i.ToOrderItemDto(mapper)).ToList(),
+            Payment = entity.Payment != null ? mapper.Map<PaymentDto>(entity.Payment) : null,
+        };
     }
 
     /// <summary>
@@ -97,6 +103,11 @@ public static class ContentOrderMapper
     /// </summary>
     public static OrderItemDto ToOrderItemDto(this ContentOrderItemEntity entity, IMapper mapper)
     {
-        return mapper.Map<OrderItemDto>(entity);
+        var dto = mapper.Map<OrderItemDto>(entity);
+        return dto with
+        {
+            Tiers = mapper.Map<IReadOnlyList<ItemTierDto>>(entity.Tiers),
+            PromoPriceUsd = entity.PromoPriceSnapshotUsd,
+        };
     }
 }

@@ -58,7 +58,16 @@ public static class ArticleMapper
     /// </summary>
     public static ArticleDetailDto ToArticleDetailDto(this ArticleEntity entity, IMapper mapper)
     {
-        return mapper.Map<ArticleDetailDto>(entity);
+        var dto = mapper.Map<ArticleDetailDto>(entity);
+        return dto with
+        {
+            Images = mapper.Map<IReadOnlyList<ArticleImageDto>>(entity.Images),
+            Tags = mapper.Map<IReadOnlyList<TagDto>>(entity.Tags),
+            ReadTimeInMinutes = Math.Max(
+                1,
+                (int)Math.Ceiling(entity.Body.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length / 200.0)
+            ),
+        };
     }
 
     /// <summary>
@@ -77,7 +86,8 @@ public static class ArticleMapper
     /// </summary>
     public static ArticleCommentDto ToArticleCommentDto(this ArticleCommentEntity entity, IMapper mapper)
     {
-        return mapper.Map<ArticleCommentDto>(entity);
+        var dto = mapper.Map<ArticleCommentDto>(entity);
+        return dto with { Body = entity.IsDeleted ? null : entity.Body };
     }
 
     /// <summary>
@@ -88,6 +98,6 @@ public static class ArticleMapper
         IMapper mapper
     )
     {
-        return mapper.Map<IReadOnlyList<ArticleCommentDto>>(entities);
+        return entities.Select(e => e.ToArticleCommentDto(mapper)).ToList();
     }
 }

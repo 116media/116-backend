@@ -37,7 +37,11 @@ public static class PlaylistMapper
     /// </summary>
     public static PlaylistDetailDto ToPlaylistDetailDto(this PlaylistEntity entity, IMapper mapper)
     {
-        return mapper.Map<PlaylistDetailDto>(entity);
+        var dto = mapper.Map<PlaylistDetailDto>(entity);
+        return dto with
+        {
+            Videos = mapper.Map<IReadOnlyList<VideoInPlaylistDto>>(entity.Videos.OrderBy(v => v.SortOrder).ToList()),
+        };
     }
 
     /// <summary>
@@ -45,6 +49,12 @@ public static class PlaylistMapper
     /// </summary>
     public static IReadOnlyList<PlaylistDto> ToPlaylistDtos(this IReadOnlyList<PlaylistEntity> entities, IMapper mapper)
     {
-        return mapper.Map<IReadOnlyList<PlaylistDto>>(entities);
+        return entities
+            .Select(e =>
+            {
+                var dto = mapper.Map<PlaylistDto>(e);
+                return dto with { VideoCount = e.Videos.Count };
+            })
+            .ToList();
     }
 }
