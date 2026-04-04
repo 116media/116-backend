@@ -7,30 +7,30 @@ using _116.Identity.Domain.Results;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
-namespace _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken;
+namespace _116.Identity.Application.Session.UseCases.Admin.Commands.RefreshToken;
 
 /// <summary>
-/// Handles the <see cref="PublicRefreshTokenCommand" /> to refresh access tokens.
+/// Handles the <see cref="AdminRefreshTokenCommand" /> to refresh admin access tokens.
 /// </summary>
 /// <param name="refreshTokenFactory">Factory for handling refresh token validation and rotation logic.</param>
 /// <param name="jwtService">Service for generating JWT access tokens.</param>
 /// <param name="fileRepository">Repository for accessing file metadata.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicRefreshTokenHandler(
+public class AdminRefreshTokenHandler(
     IRefreshTokenFactory refreshTokenFactory,
     IJwtService jwtService,
     IFileRepository fileRepository,
     IMapper mapper
-) : ICommandHandler<PublicRefreshTokenCommand, PublicRefreshTokenResult>
+) : ICommandHandler<AdminRefreshTokenCommand, AdminRefreshTokenResult>
 {
     /// <summary>
     /// Handles the refresh token command by validating and rotating the refresh token.
     /// </summary>
     /// <param name="command">The refresh token command containing the refresh token.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>A <see cref="PublicRefreshTokenResult" /> containing new authentication tokens.</returns>
-    public async Task<PublicRefreshTokenResult> Handle(
-        PublicRefreshTokenCommand command,
+    /// <returns>An <see cref="AdminRefreshTokenResult" /> containing new authentication tokens.</returns>
+    public async Task<AdminRefreshTokenResult> Handle(
+        AdminRefreshTokenCommand command,
         CancellationToken cancellationToken
     )
     {
@@ -72,6 +72,6 @@ public class PublicRefreshTokenHandler(
             RefreshTokenExpiresAt: authData.Session.ExpiresAt
         );
 
-        return new PublicRefreshTokenResult(AuthenticationResult: authResult);
+        return new AdminRefreshTokenResult(AuthenticationResult: authResult);
     }
 }

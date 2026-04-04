@@ -1,34 +1,34 @@
 using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.Repositories;
-using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken;
-using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken.Contracts;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Tests.Fixtures.Factories;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
+using RefreshTokenFactory = _116.Identity.Application.Session.Factories.RefreshTokenFactory;
 
 namespace _116.Unit.Tests.Modules.Identity.Application.Session.Public.RefreshToken;
 
 /// <summary>
-/// Unit tests for <see cref="PublicRefreshTokenFactory"/>.
+/// Unit tests for <see cref="RefreshTokenFactory"/>.
 /// </summary>
-public class PublicRefreshTokenFactoryTests
+public class RefreshTokenFactoryTests
 {
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IRefreshTokenService> _refreshTokenServiceMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly PublicRefreshTokenFactory _factory;
+    private readonly RefreshTokenFactory _factory;
 
-    public PublicRefreshTokenFactoryTests()
+    public RefreshTokenFactoryTests()
     {
         Environment.SetEnvironmentVariable("JWT_REFRESH_TOKEN_EXPIRATION", "43200");
 
         _sessionRepositoryMock = new Mock<ISessionRepository>();
         _refreshTokenServiceMock = new Mock<IRefreshTokenService>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
-        _factory = new PublicRefreshTokenFactory(
+        _factory = new RefreshTokenFactory(
             _sessionRepositoryMock.Object,
             _refreshTokenServiceMock.Object,
             _unitOfWorkMock.Object
@@ -73,7 +73,7 @@ public class PublicRefreshTokenFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        PublicRefreshTokenData result = await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        RefreshTokenData result = await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -315,7 +315,7 @@ public class PublicRefreshTokenFactoryTests
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         // Act
-        PublicRefreshTokenData result = await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
+        RefreshTokenData result = await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();

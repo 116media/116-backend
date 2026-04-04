@@ -1,3 +1,4 @@
+using _116.Identity.Application.Auth.Validators;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
@@ -15,7 +16,7 @@ public class PublicLoginValidator : AbstractValidator<PublicLoginCommand>
     /// </remarks>
     public PublicLoginValidator()
     {
-        RuleFor(x => x.Credentials).NotEmpty().WithMessage("Email or username is required.");
-        RuleFor(x => x.Password).NotEmpty().WithMessage("Password cannot be empty.");
+        RuleFor(x => x.Credentials).ValidCredentials();
+        RuleFor(x => x.Password).ValidPassword(isStrong: false);
     }
 }

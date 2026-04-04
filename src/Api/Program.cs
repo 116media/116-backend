@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
+using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Extensions;
 using Asp.Versioning;
 using Carter;
@@ -44,12 +45,19 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddRateLimiting();
 
+string[] allowedOrigins = AppEnvironment.CorsAllowedOrigins();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        //TODO: should update this to only allow frontend domain name
-        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        if (allowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+        }
+        else
+        {
+            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        }
     });
 });
 

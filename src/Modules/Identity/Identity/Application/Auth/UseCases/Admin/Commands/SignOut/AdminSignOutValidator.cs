@@ -1,3 +1,4 @@
+using _116.Identity.Application.Auth.Validators;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
@@ -15,6 +16,6 @@ public class AdminSignOutValidator : AbstractValidator<AdminSignOutCommand>
     /// </remarks>
     public AdminSignOutValidator()
     {
-        RuleFor(x => x.RefreshToken).NotEmpty().WithMessage("Refresh token is required.");
+        RuleFor(x => x.RefreshToken).ValidRefreshToken();
     }
 }

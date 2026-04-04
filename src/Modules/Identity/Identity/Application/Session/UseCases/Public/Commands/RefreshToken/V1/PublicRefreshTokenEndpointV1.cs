@@ -1,4 +1,5 @@
 using _116.BuildingBlocks.Constants.RateLimit;
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Constants;
@@ -18,7 +19,7 @@ namespace _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToke
 public record PublicRefreshTokenRequest(string RefreshToken);
 
 /// <summary>
-/// Response model for successful token refresh.
+/// Response model for mobile client token refresh (tokens delivered in the body).
 /// </summary>
 /// <param name="User">The authenticated user information.</param>
 /// <param name="AccessToken">The new JWT access token.</param>
@@ -26,7 +27,7 @@ public record PublicRefreshTokenRequest(string RefreshToken);
 /// <param name="RefreshToken">New refresh token (old token is invalidated).</param>
 /// <param name="RefreshTokenExpiresAt">Date and time when the refresh token expires in UTC.</param>
 /// <param name="TokenType">Type of token (typically "Bearer").</param>
-public record PublicRefreshTokenResponse(
+public record PublicRefreshTokenMobileResponse(
     UserResponseDto User,
     string AccessToken,
     DateTime AccessTokenExpiresAt,
@@ -34,6 +35,12 @@ public record PublicRefreshTokenResponse(
     DateTime RefreshTokenExpiresAt,
     string TokenType
 );
+
+/// <summary>
+/// Response model for web client token refresh (tokens delivered via HttpOnly cookies).
+/// </summary>
+/// <param name="User">The authenticated user information.</param>
+public record PublicRefreshTokenWebResponse(UserResponseDto User);
 
 /// <summary>
 /// Defines the public refresh token endpoint for obtaining new access tokens.
@@ -56,12 +63,25 @@ public class PublicRefreshTokenEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: SessionRouteConstants.RefreshToken,
-                async (PublicRefreshTokenRequest request, IDispatcher dispatcher) =>
+                async (
+                    PublicRefreshTokenRequest? request,
+                    IDispatcher dispatcher,
+                    ITokenDeliveryService tokenDelivery
+                ) =>
                 {
-                    var command = new PublicRefreshTokenCommand(RefreshToken: request.RefreshToken);
+                    string? refreshToken = tokenDelivery.ReadRefreshToken(bodyRefreshToken: request?.RefreshToken);
+
+                    var command = new PublicRefreshTokenCommand(RefreshToken: refreshToken!);
                     PublicRefreshTokenResult result = await dispatcher.Send(request: command);
 
-                    var response = new PublicRefreshTokenResponse(
+                    if (tokenDelivery.IsWebClient())
+                    {
+                        tokenDelivery.SetTokenCookies(authResult: result.AuthenticationResult);
+                        var webResponse = new PublicRefreshTokenWebResponse(User: result.AuthenticationResult.User);
+                        return Results.Ok(value: webResponse);
+                    }
+
+                    var mobileResponse = new PublicRefreshTokenMobileResponse(
                         User: result.AuthenticationResult.User,
                         TokenType: result.AuthenticationResult.TokenType,
                         AccessToken: result.AuthenticationResult.AccessToken,
@@ -70,7 +90,7 @@ public class PublicRefreshTokenEndpointV1 : ICarterModule
                         RefreshTokenExpiresAt: result.AuthenticationResult.RefreshTokenExpiresAt
                     );
 
-                    return Results.Ok(value: response);
+                    return Results.Ok(value: mobileResponse);
                 }
             )
             .WithName(endpointName: PublicRefreshTokenMetaField.PublicRefreshToken.Name)
@@ -79,7 +99,8 @@ public class PublicRefreshTokenEndpointV1 : ICarterModule
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
-            .Produces<PublicRefreshTokenResponse>()
+            .Produces<PublicRefreshTokenMobileResponse>()
+            .Produces<PublicRefreshTokenWebResponse>()
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);

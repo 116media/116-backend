@@ -1,6 +1,6 @@
 using _116.Identity.Domain.Entities;
 
-namespace _116.Identity.Application.Session.Factories;
+namespace _116.Identity.Application.Session.Factories.Contracts;
 
 /// <summary>
 /// Result of session creation containing tokens and expiration times.

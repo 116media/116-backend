@@ -27,12 +27,12 @@ public class PublicSocialLoginEndpointV1Tests
         );
 
     [Fact]
-    public void PublicSocialLoginResponse_ShouldConstructCorrectly()
+    public void PublicSocialLoginMobileResponse_ShouldConstructCorrectly()
     {
         UserResponseDto user = CreateUserResponseDto();
         const string tokenType = "Bearer";
 
-        var response = new PublicSocialLoginResponse(
+        var response = new PublicSocialLoginMobileResponse(
             User: user,
             AccessToken: "access-token",
             AccessTokenExpiresAt: DateTime.UtcNow.AddMinutes(60),
@@ -44,5 +44,16 @@ public class PublicSocialLoginEndpointV1Tests
         response.Should().NotBeNull();
         response.User.Should().Be(user);
         response.TokenType.Should().Be(tokenType);
+    }
+
+    [Fact]
+    public void PublicSocialLoginWebResponse_ShouldConstructCorrectly()
+    {
+        UserResponseDto user = CreateUserResponseDto();
+
+        var response = new PublicSocialLoginWebResponse(User: user);
+
+        response.Should().NotBeNull();
+        response.User.Should().Be(user);
     }
 }

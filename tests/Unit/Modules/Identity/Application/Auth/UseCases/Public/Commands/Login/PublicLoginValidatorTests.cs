@@ -110,7 +110,7 @@ public class PublicLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password cannot be empty.");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required");
     }
 
     [Fact]
@@ -124,7 +124,7 @@ public class PublicLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password cannot be empty.");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required");
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class PublicLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password cannot be empty.");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required");
     }
 
     #endregion

@@ -1,7 +1,7 @@
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.Contracts;
-using _116.Identity.Application.Session.Factories;
+using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Results;
 using _116.Shared.Application.Exceptions;

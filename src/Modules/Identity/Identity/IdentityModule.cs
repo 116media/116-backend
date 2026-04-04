@@ -28,10 +28,9 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contracts;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
 using _116.Identity.Application.Session.Factories;
+using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
-using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken;
-using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken.Contracts;
 using _116.Identity.Application.Shared.Authorizations.Extensions;
 using _116.Identity.Application.Shared.Exceptions.Handlers;
 using _116.Identity.Application.Shared.Mappers;
@@ -132,6 +131,7 @@ public static class IdentityModule
         services.AddScoped<IOtpRepository, OtpRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<ISessionMetadataService, SessionMetadataService>();
+        services.AddScoped<ITokenDeliveryService, TokenDeliveryService>();
         services.AddScoped<ISessionExportService, SessionExportService>();
 
         // Register authentication factories
@@ -152,7 +152,7 @@ public static class IdentityModule
         services.AddScoped<IAdminResendOtpFactory, AdminResendOtpFactory>();
         services.AddScoped<IPublicSignOutSessionFactory, PublicSignOutSessionFactory>();
         services.AddScoped<IAdminSignOutSessionFactory, AdminSignOutSessionFactory>();
-        services.AddScoped<IPublicRefreshTokenFactory, PublicRefreshTokenFactory>();
+        services.AddScoped<IRefreshTokenFactory, RefreshTokenFactory>();
 
         services.AddScoped<SuperAdminSeeder>();
         services.AddScoped<VisitorRoleSeeder>();

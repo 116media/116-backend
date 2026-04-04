@@ -1,4 +1,5 @@
 using System.Text.Json;
+using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Shared.Authorizations.Configuration;
 using _116.Identity.Application.Shared.Authorizations.Handlers;
 using _116.Identity.Application.Shared.Authorizations.Requirements;
@@ -129,6 +130,15 @@ public static class AuthorizationExtensions
     {
         options.Events = new JwtBearerEvents
         {
+            OnMessageReceived = context =>
+            {
+                if (string.IsNullOrEmpty(context.Token))
+                {
+                    context.Token = context.Request.Cookies[TokenCookieConstants.AccessTokenCookie];
+                }
+
+                return Task.CompletedTask;
+            },
             OnChallenge = async context =>
             {
                 // Prevent default challenge response
