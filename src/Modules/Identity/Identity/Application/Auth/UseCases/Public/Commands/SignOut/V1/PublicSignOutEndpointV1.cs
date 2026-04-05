@@ -17,8 +17,12 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignOut.V1;
 /// <summary>
 /// Request model for sign-out (RFC 7009 compliant).
 /// </summary>
-/// <param name="RefreshToken">The refresh token to revoke.</param>
-public record PublicSignOutRequest(string RefreshToken);
+/// <param name="RefreshToken">
+/// Optional refresh token to revoke.
+/// Web clients send the token via HttpOnly cookies, while mobile clients
+/// include it in the request body.
+/// </param>
+public record PublicSignOutRequest(string? RefreshToken);
 
 /// <summary>
 /// Response model for sign-out.
