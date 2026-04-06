@@ -38,9 +38,9 @@ public class AdminGetAllPromotionLevelsEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher) =>
+                async (IDispatcher dispatcher, string? search = null) =>
                 {
-                    var query = new AdminGetAllPromotionLevelsQuery();
+                    var query = new AdminGetAllPromotionLevelsQuery(Search: search);
 
                     AdminGetAllPromotionLevelsResult result = await dispatcher.Send(request: query);
 
