@@ -22,6 +22,7 @@ public class AdminGetAllPricingTiersHandler(ILookupRepository lookupRepository, 
     )
     {
         IReadOnlyList<PricingTierEntity> pricingTiers = await lookupRepository.GetAllPricingTiersAsync(
+            search: query.Search,
             cancellationToken: cancellationToken
         );
 
