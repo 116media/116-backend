@@ -22,6 +22,7 @@ public class AdminGetAllContentTypesHandler(ILookupRepository lookupRepository, 
     )
     {
         IReadOnlyList<ContentTypeEntity> contentTypes = await lookupRepository.GetAllContentTypesAsync(
+            search: query.Search,
             cancellationToken: cancellationToken
         );
 
