@@ -38,9 +38,9 @@ public class AdminGetAllPricingTiersEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher) =>
+                async (IDispatcher dispatcher, string? search = null) =>
                 {
-                    var query = new AdminGetAllPricingTiersQuery();
+                    var query = new AdminGetAllPricingTiersQuery(Search: search);
 
                     AdminGetAllPricingTiersResult result = await dispatcher.Send(request: query);
 
