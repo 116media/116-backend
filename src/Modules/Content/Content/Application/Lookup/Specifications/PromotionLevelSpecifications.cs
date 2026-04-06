@@ -30,6 +30,20 @@ public class PromotionLevelByNameSpecification(string name) : Specification<Prom
 }
 
 /// <summary>
+/// Specification for fuzzy search across promotion level Name.
+/// Uses case-insensitive matching (ILIKE in PostgreSQL).
+/// </summary>
+public class PromotionLevelSearchSpecification(string search) : Specification<PromotionLevelEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<PromotionLevelEntity, bool>> ToExpression()
+    {
+        string pattern = $"%{search}%";
+        return promotionLevel => EF.Functions.ILike(promotionLevel.Name, pattern);
+    }
+}
+
+/// <summary>
 /// Specification that matches only active promotion levels.
 /// Used for public-facing queries where inactive levels must be hidden.
 /// </summary>
