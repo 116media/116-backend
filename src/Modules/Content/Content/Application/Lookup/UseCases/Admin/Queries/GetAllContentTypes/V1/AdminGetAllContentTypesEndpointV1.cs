@@ -38,9 +38,9 @@ public class AdminGetAllContentTypesEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher) =>
+                async (IDispatcher dispatcher, string? search = null) =>
                 {
-                    var query = new AdminGetAllContentTypesQuery();
+                    var query = new AdminGetAllContentTypesQuery(Search: search);
 
                     AdminGetAllContentTypesResult result = await dispatcher.Send(request: query);
 
