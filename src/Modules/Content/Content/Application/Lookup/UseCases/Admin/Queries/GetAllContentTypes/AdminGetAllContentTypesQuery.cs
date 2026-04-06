@@ -6,7 +6,10 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllContentTy
 /// <summary>
 /// Query for retrieving all content types.
 /// </summary>
-public record AdminGetAllContentTypesQuery : IQuery<AdminGetAllContentTypesResult>;
+/// <param name="Search">
+/// Optional search term to filter content types by name (case-insensitive, partial match).
+/// </param>
+public record AdminGetAllContentTypesQuery(string? Search = null) : IQuery<AdminGetAllContentTypesResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminGetAllContentTypesQuery" /> containing all content types.
