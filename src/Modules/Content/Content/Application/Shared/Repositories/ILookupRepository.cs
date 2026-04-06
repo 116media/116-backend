@@ -36,11 +36,15 @@ public interface ILookupRepository : IRepository<ContentTypeEntity>
     Task<bool> ContentTypeExistsByNameAsync(string name, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves all content types ordered by name.
+    /// Retrieves all content types ordered by name, with optional search filtering.
     /// </summary>
+    /// <param name="search">Optional search term for case-insensitive partial match on Name.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>A read-only list of all content type entities.</returns>
-    Task<IReadOnlyList<ContentTypeEntity>> GetAllContentTypesAsync(CancellationToken cancellationToken = default);
+    /// <returns>A read-only list of matching content type entities.</returns>
+    Task<IReadOnlyList<ContentTypeEntity>> GetAllContentTypesAsync(
+        string? search = null,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Adds a new pricing tier entity to the repository.
@@ -69,11 +73,15 @@ public interface ILookupRepository : IRepository<ContentTypeEntity>
     Task<bool> PricingTierExistsByNameAsync(string name, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves all pricing tiers ordered by name.
+    /// Retrieves all pricing tiers ordered by name, with optional search filtering.
     /// </summary>
+    /// <param name="search">Optional search term for case-insensitive partial match on Name and Description.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>A read-only list of all pricing tier entities.</returns>
-    Task<IReadOnlyList<PricingTierEntity>> GetAllPricingTiersAsync(CancellationToken cancellationToken = default);
+    /// <returns>A read-only list of matching pricing tier entities.</returns>
+    Task<IReadOnlyList<PricingTierEntity>> GetAllPricingTiersAsync(
+        string? search = null,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Adds a new promotion level entity to the repository.
@@ -105,11 +113,15 @@ public interface ILookupRepository : IRepository<ContentTypeEntity>
     Task<bool> PromotionLevelExistsByNameAsync(string name, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves all promotion levels ordered by name.
+    /// Retrieves all promotion levels ordered by name, with optional search filtering.
     /// </summary>
+    /// <param name="search">Optional search term for case-insensitive partial match on Name.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>A read-only list of all promotion level entities.</returns>
-    Task<IReadOnlyList<PromotionLevelEntity>> GetAllPromotionLevelsAsync(CancellationToken cancellationToken = default);
+    /// <returns>A read-only list of matching promotion level entities.</returns>
+    Task<IReadOnlyList<PromotionLevelEntity>> GetAllPromotionLevelsAsync(
+        string? search = null,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Retrieves only active promotion levels ordered by name.
