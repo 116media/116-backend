@@ -8,9 +8,11 @@ using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateTag;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivateContentType;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivatePricingTier;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivatePromotionLevel;
+using _116.Content.Application.Lookup.UseCases.Admin.Commands.DeleteTag;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateContentType;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePricingTier;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePromotionLevel;
+using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateTag;
 using _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllContentTypes;
 using _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllPricingTiers;
 using _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllPromotionLevels;
@@ -130,6 +132,20 @@ public class LookupMetaFieldTests
     public void CreateTagMetaField_ShouldBeInitialized()
     {
         RouteMetadata metadata = AdminCreateTagMetaField.AdminCreateTag;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void UpdateTagMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = AdminUpdateTagMetaField.AdminUpdateTag;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void DeleteTagMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = AdminDeleteTagMetaField.AdminDeleteTag;
         metadata.Should().NotBeNull();
     }
 
