@@ -147,6 +147,12 @@ public interface ILookupRepository : IRepository<ContentTypeEntity>
     Task<TagEntity?> GetTagBySlugAsync(string slug, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Removes a tag entity from the repository.
+    /// </summary>
+    /// <param name="entity">The tag entity to remove.</param>
+    void Remove(TagEntity entity);
+
+    /// <summary>
     /// Retrieves all tags ordered by name, with optional search filtering.
     /// </summary>
     /// <param name="search">Optional search term for case-insensitive partial match on Name and Slug.</param>
