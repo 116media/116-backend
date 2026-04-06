@@ -6,7 +6,10 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllPromotion
 /// <summary>
 /// Query for retrieving all promotion levels.
 /// </summary>
-public record AdminGetAllPromotionLevelsQuery : IQuery<AdminGetAllPromotionLevelsResult>;
+/// <param name="Search">
+/// Optional search term to filter promotion levels by name (case-insensitive, partial match).
+/// </param>
+public record AdminGetAllPromotionLevelsQuery(string? Search = null) : IQuery<AdminGetAllPromotionLevelsResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminGetAllPromotionLevelsQuery" /> containing all promotion levels.
