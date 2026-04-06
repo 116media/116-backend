@@ -100,8 +100,8 @@ public class LookupRepositoryTests : IDisposable
         result[2].Name.Should().Be("Video");
     }
 
-    // NOTE: ContentTypeExistsByNameAsync uses ILike which is not supported by InMemoryDatabase provider.
-    // This method is tested in integration tests.
+    // NOTE: ContentTypeExistsByNameAsync and ContentTypeSearchSpecification use ILike
+    // which is not supported by InMemoryDatabase provider — tested in integration tests.
 
     #endregion
 
@@ -168,7 +168,7 @@ public class LookupRepositoryTests : IDisposable
         result[1].Name.Should().Be("social_boost");
     }
 
-    // NOTE: PricingTierExistsByNameAsync uses ILike — tested in integration tests.
+    // NOTE: PricingTierExistsByNameAsync and PricingTierSearchSpecification use ILike — tested in integration tests.
 
     #endregion
 
@@ -249,7 +249,7 @@ public class LookupRepositoryTests : IDisposable
         result[0].IsActive.Should().BeTrue();
     }
 
-    // NOTE: PromotionLevelExistsByNameAsync uses ILike — tested in integration tests.
+    // NOTE: PromotionLevelExistsByNameAsync and PromotionLevelSearchSpecification use ILike — tested in integration tests.
 
     #endregion
 
