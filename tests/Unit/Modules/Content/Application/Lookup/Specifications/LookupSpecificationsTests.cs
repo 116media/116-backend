@@ -255,6 +255,60 @@ public class LookupSpecificationsTests
 
     #endregion
 
+    #region ContentTypeSearchSpecification — ToExpression only (ILike)
+
+    [Fact]
+    public void ContentTypeSearchSpecification_ShouldCreateValidExpression()
+    {
+        // Arrange
+        var spec = new ContentTypeSearchSpecification("art");
+
+        // Act
+        Expression<Func<ContentTypeEntity, bool>> expression = spec.ToExpression();
+
+        // Assert — ILike-based; compile only, do not invoke against in-memory data
+        expression.Should().NotBeNull();
+        expression.Compile().Should().NotBeNull();
+    }
+
+    #endregion
+
+    #region PricingTierSearchSpecification — ToExpression only (ILike)
+
+    [Fact]
+    public void PricingTierSearchSpecification_ShouldCreateValidExpression()
+    {
+        // Arrange
+        var spec = new PricingTierSearchSpecification("base");
+
+        // Act
+        Expression<Func<PricingTierEntity, bool>> expression = spec.ToExpression();
+
+        // Assert — ILike-based; compile only, do not invoke against in-memory data
+        expression.Should().NotBeNull();
+        expression.Compile().Should().NotBeNull();
+    }
+
+    #endregion
+
+    #region PromotionLevelSearchSpecification — ToExpression only (ILike)
+
+    [Fact]
+    public void PromotionLevelSearchSpecification_ShouldCreateValidExpression()
+    {
+        // Arrange
+        var spec = new PromotionLevelSearchSpecification("feat");
+
+        // Act
+        Expression<Func<PromotionLevelEntity, bool>> expression = spec.ToExpression();
+
+        // Assert — ILike-based; compile only, do not invoke against in-memory data
+        expression.Should().NotBeNull();
+        expression.Compile().Should().NotBeNull();
+    }
+
+    #endregion
+
     #region TagSearchSpecification — ToExpression only (ILike)
 
     [Fact]
