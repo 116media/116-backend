@@ -57,7 +57,7 @@ public class AdminRefreshTokenEndpointV1 : ICarterModule
             .WithName(endpointName: AdminRefreshTokenMetaField.AdminRefreshToken.Name)
             .WithSummary(summary: AdminRefreshTokenMetaField.AdminRefreshToken.Summary)
             .WithDescription(description: AdminRefreshTokenMetaField.AdminRefreshToken.Description)
-            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
+            .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
             .Produces<AdminRefreshTokenResponse>()

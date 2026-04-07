@@ -151,4 +151,17 @@ public class SessionEntity : Aggregate<Guid>
         IsRevoked = true;
         RevokedAt = DateTime.UtcNow;
     }
+
+    /// <summary>
+    /// Reactivates a previously expired or revoked session with a new refresh token and expiry.
+    /// Used when a user logs in again on the same device after their previous session has expired or been revoked.
+    /// Reusing the existing row avoids unique constraint violations on (user_id, device_id).
+    /// </summary>
+    public void Reactivate(string newRefreshTokenHash, DateTime newExpiresAt)
+    {
+        RefreshTokenHash = newRefreshTokenHash;
+        ExpiresAt = newExpiresAt;
+        IsRevoked = false;
+        RevokedAt = null;
+    }
 }
