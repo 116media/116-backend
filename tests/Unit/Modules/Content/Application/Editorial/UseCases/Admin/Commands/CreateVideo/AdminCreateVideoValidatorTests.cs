@@ -26,7 +26,7 @@ public class AdminCreateVideoValidatorTests
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
-            Description: null,
+            Description: TestConstants.Content.Editorial.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -49,7 +49,7 @@ public class AdminCreateVideoValidatorTests
             AuthorId: Guid.NewGuid(),
             CustomerId: Guid.NewGuid(),
             OrderItemId: Guid.NewGuid(),
-            Description: null,
+            Description: TestConstants.Content.Editorial.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -76,7 +76,7 @@ public class AdminCreateVideoValidatorTests
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
-            Description: null,
+            Description: TestConstants.Content.Editorial.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -108,7 +108,7 @@ public class AdminCreateVideoValidatorTests
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
-            Description: null,
+            Description: TestConstants.Content.Editorial.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -135,7 +135,7 @@ public class AdminCreateVideoValidatorTests
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
-            Description: null,
+            Description: TestConstants.Content.Editorial.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -167,7 +167,7 @@ public class AdminCreateVideoValidatorTests
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
-            Description: null,
+            Description: TestConstants.Content.Editorial.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -194,7 +194,7 @@ public class AdminCreateVideoValidatorTests
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: null,
-            Description: null,
+            Description: TestConstants.Content.Editorial.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -226,7 +226,7 @@ public class AdminCreateVideoValidatorTests
             AuthorId: Guid.NewGuid(),
             CustomerId: Guid.NewGuid(),
             OrderItemId: null,
-            Description: null,
+            Description: TestConstants.Content.Editorial.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -254,7 +254,7 @@ public class AdminCreateVideoValidatorTests
             AuthorId: Guid.NewGuid(),
             CustomerId: null,
             OrderItemId: Guid.NewGuid(),
-            Description: null,
+            Description: TestConstants.Content.Editorial.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
