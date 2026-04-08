@@ -16,23 +16,6 @@ public class AdminCreatePricingTierValidatorTests
     #region Valid Command Tests
 
     [Fact]
-    public async Task Validate_WithValidNameAndNoDescription_ShouldNotHaveErrors()
-    {
-        // Arrange
-        var command = new AdminCreatePricingTierCommand(
-            Name: TestConstants.Content.PricingTier.ValidName,
-            Description: null
-        );
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-        result.Errors.Should().BeEmpty();
-    }
-
-    [Fact]
     public async Task Validate_WithValidNameAndDescription_ShouldNotHaveErrors()
     {
         // Arrange
@@ -55,7 +38,7 @@ public class AdminCreatePricingTierValidatorTests
         // Arrange
         var command = new AdminCreatePricingTierCommand(
             Name: new string('a', TestConstants.Content.PricingTier.NameMaxLength),
-            Description: null
+            Description: TestConstants.Content.PricingTier.ValidDescription
         );
 
         // Act
@@ -89,7 +72,10 @@ public class AdminCreatePricingTierValidatorTests
     public async Task Validate_WithEmptyName_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreatePricingTierCommand(Name: string.Empty, Description: null);
+        var command = new AdminCreatePricingTierCommand(
+            Name: string.Empty,
+            Description: TestConstants.Content.PricingTier.ValidDescription
+        );
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -108,7 +94,10 @@ public class AdminCreatePricingTierValidatorTests
     public async Task Validate_WithNullName_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreatePricingTierCommand(Name: null!, Description: null);
+        var command = new AdminCreatePricingTierCommand(
+            Name: null!,
+            Description: TestConstants.Content.PricingTier.ValidDescription
+        );
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -129,7 +118,7 @@ public class AdminCreatePricingTierValidatorTests
         // Arrange
         var command = new AdminCreatePricingTierCommand(
             Name: new string('a', TestConstants.Content.PricingTier.NameMaxLength + 1),
-            Description: null
+            Description: TestConstants.Content.PricingTier.ValidDescription
         );
 
         // Act
@@ -150,19 +139,47 @@ public class AdminCreatePricingTierValidatorTests
     #region Description Validation Tests
 
     [Fact]
-    public async Task Validate_WithNullDescription_ShouldBeValid()
+    public async Task Validate_WithNullDescription_ShouldHaveError()
     {
         // Arrange
         var command = new AdminCreatePricingTierCommand(
             Name: TestConstants.Content.PricingTier.ValidName,
-            Description: null
+            Description: null!
         );
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
 
         // Assert
-        result.IsValid.Should().BeTrue();
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .ContainSingle(e =>
+                e.PropertyName == nameof(AdminCreatePricingTierCommand.Description)
+                && e.ErrorMessage == "Pricing tier description is required."
+            );
+    }
+
+    [Fact]
+    public async Task Validate_WithEmptyDescription_ShouldHaveError()
+    {
+        // Arrange
+        var command = new AdminCreatePricingTierCommand(
+            Name: TestConstants.Content.PricingTier.ValidName,
+            Description: string.Empty
+        );
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .ContainSingle(e =>
+                e.PropertyName == nameof(AdminCreatePricingTierCommand.Description)
+                && e.ErrorMessage == "Pricing tier description is required."
+            );
     }
 
     [Fact]
