@@ -25,5 +25,6 @@ public class AdminGetAllPackagesEndpointV1Tests
         response.Packages.Should().Be(paginated);
     }
 
-    private static PackageDto CreatePackageDto() => new(Guid.NewGuid(), "Starter Pack", null, 49.99m, true, []);
+    private static PackageDto CreatePackageDto() =>
+        new(Guid.NewGuid(), "Starter Pack", "Test package description", 49.99m, true, []);
 }
