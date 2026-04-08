@@ -16,8 +16,8 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePricingT
 /// Request model for updating a pricing tier.
 /// </summary>
 /// <param name="Name">The new name for the pricing tier.</param>
-/// <param name="Description">The new description (may be null).</param>
-public record AdminUpdatePricingTierRequest(string Name, string? Description);
+/// <param name="Description">The new description for the pricing tier.</param>
+public record AdminUpdatePricingTierRequest(string Name, string Description);
 
 /// <summary>
 /// Response model for a successful pricing tier update.
