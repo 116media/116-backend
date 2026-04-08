@@ -51,35 +51,22 @@ public static class PricingTierValidation
     }
 
     /// <summary>
-    /// Validates pricing tier description with length constraints.
+    /// Validates pricing tier description with required and length constraints.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the description property.</param>
-    /// <param name="isRequired">Whether the description is required (default: false).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidPricingTierDescription<T>(
-        this IRuleBuilderInitial<T, string?> ruleBuilder,
-        bool isRequired = false
+        this IRuleBuilderInitial<T, string?> ruleBuilder
     )
     {
-        if (isRequired)
-        {
-            return ruleBuilder
-                .Cascade(cascadeMode: CascadeMode.Stop)
-                .NotEmpty()
-                .WithMessage("Pricing tier description is required.")
-                .MaximumLength(maximumLength: ContentConstants.MaxPricingTierDescriptionLength)
-                .WithMessage(
-                    $"Pricing tier description must not exceed {ContentConstants.MaxPricingTierDescriptionLength} characters."
-                );
-        }
-
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage("Pricing tier description is required.")
             .MaximumLength(maximumLength: ContentConstants.MaxPricingTierDescriptionLength)
             .WithMessage(
                 $"Pricing tier description must not exceed {ContentConstants.MaxPricingTierDescriptionLength} characters."
-            )
-            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Description")));
+            );
     }
 }
