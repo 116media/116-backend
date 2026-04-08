@@ -57,9 +57,9 @@ public class VideoEntity : Aggregate<Guid>
     public string Slug { get; private set; } = null!;
 
     /// <summary>
-    /// Optional description shown on the video page below the player.
+    /// Description shown on the video page below the player.
     /// </summary>
-    public string? Description { get; private set; }
+    public string Description { get; private set; } = null!;
 
     /// <summary>
     /// URL of the video thumbnail image.
@@ -191,7 +191,7 @@ public class VideoEntity : Aggregate<Guid>
     /// <param name="title">The video title.</param>
     /// <param name="slug">The URL-safe slug.</param>
     /// <param name="authorId">The identity user UUID from JWT claims.</param>
-    /// <param name="description">Optional description.</param>
+    /// <param name="description">The description.</param>
     /// <returns>A new <see cref="VideoEntity" /> in <c>Draft</c> status.</returns>
     public static VideoEntity CreateFree(
         Guid id,
@@ -199,7 +199,7 @@ public class VideoEntity : Aggregate<Guid>
         string title,
         string slug,
         Guid authorId,
-        string? description = null
+        string description
     )
     {
         if (string.IsNullOrWhiteSpace(value: title))
@@ -234,7 +234,7 @@ public class VideoEntity : Aggregate<Guid>
     /// <param name="title">The video title.</param>
     /// <param name="slug">The URL-safe slug.</param>
     /// <param name="authorId">The identity user UUID from JWT claims.</param>
-    /// <param name="description">Optional description.</param>
+    /// <param name="description">The description.</param>
     /// <returns>A new <see cref="VideoEntity" /> in <c>Draft</c> status.</returns>
     public static VideoEntity CreatePaid(
         Guid id,
@@ -244,7 +244,7 @@ public class VideoEntity : Aggregate<Guid>
         string title,
         string slug,
         Guid authorId,
-        string? description = null
+        string description
     )
     {
         if (string.IsNullOrWhiteSpace(value: title))
@@ -279,7 +279,7 @@ public class VideoEntity : Aggregate<Guid>
         Guid categoryId,
         string title,
         string slug,
-        string? description,
+        string description,
         Guid? customerId,
         Guid? orderItemId,
         bool socialBoost,
