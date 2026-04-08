@@ -20,10 +20,7 @@ public class CategoryConfiguration : IEntityTypeConfiguration<CategoryEntity>
 
         builder.Property(x => x.Slug).HasMaxLength(ContentConstants.MaxCategorySlugLength).IsRequired();
 
-        builder
-            .Property(x => x.Description)
-            .HasMaxLength(ContentConstants.MaxCategoryDescriptionLength)
-            .IsRequired(false);
+        builder.Property(x => x.Description).HasMaxLength(ContentConstants.MaxCategoryDescriptionLength).IsRequired();
 
         builder.Property(x => x.IsFree).IsRequired().HasDefaultValue(false);
 
