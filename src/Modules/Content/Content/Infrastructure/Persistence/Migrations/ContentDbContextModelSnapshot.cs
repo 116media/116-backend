@@ -482,6 +482,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnName("created_by");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)")
                         .HasColumnName("description");
@@ -1030,6 +1031,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnName("created_by");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
                         .HasColumnName("description");
@@ -1221,6 +1223,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnName("created_by");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
                         .HasColumnName("description");
@@ -1630,6 +1633,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnName("customer_id");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("description");
 
