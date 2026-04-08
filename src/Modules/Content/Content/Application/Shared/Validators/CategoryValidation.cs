@@ -64,16 +64,20 @@ public static partial class CategoryValidation
     }
 
     /// <summary>
-    /// Validates category description with length constraints (optional field).
+    /// Validates category description with required and length constraints.
     /// </summary>
-    public static IRuleBuilderOptions<T, string?> ValidCategoryDescription<T>(this IRuleBuilder<T, string?> ruleBuilder)
+    public static IRuleBuilderOptions<T, string?> ValidCategoryDescription<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder
+    )
     {
         return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage("Category description is required.")
             .MaximumLength(maximumLength: ContentConstants.MaxCategoryDescriptionLength)
             .WithMessage(
                 $"Category description must not exceed {ContentConstants.MaxCategoryDescriptionLength} characters."
-            )
-            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Description")));
+            );
     }
 
     /// <summary>
