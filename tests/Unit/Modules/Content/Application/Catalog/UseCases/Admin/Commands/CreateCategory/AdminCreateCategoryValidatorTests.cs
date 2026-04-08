@@ -43,7 +43,7 @@ public class AdminCreateCategoryValidatorTests
             ContentTypeId: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: "artist-profile",
-            Description: null,
+            Description: TestConstants.Content.Category.ValidDescription,
             IsFree: true
         );
 
@@ -66,7 +66,7 @@ public class AdminCreateCategoryValidatorTests
             ContentTypeId: string.Empty,
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
-            Description: null,
+            Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false
         );
 
@@ -95,7 +95,7 @@ public class AdminCreateCategoryValidatorTests
             ContentTypeId: Guid.NewGuid().ToString(),
             Name: string.Empty,
             Slug: TestConstants.Content.Category.ValidSlug,
-            Description: null,
+            Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false
         );
 
@@ -120,7 +120,7 @@ public class AdminCreateCategoryValidatorTests
             ContentTypeId: Guid.NewGuid().ToString(),
             Name: null!,
             Slug: TestConstants.Content.Category.ValidSlug,
-            Description: null,
+            Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false
         );
 
@@ -145,7 +145,7 @@ public class AdminCreateCategoryValidatorTests
             ContentTypeId: Guid.NewGuid().ToString(),
             Name: new string('a', TestConstants.Content.Category.NameMaxLength + 1),
             Slug: TestConstants.Content.Category.ValidSlug,
-            Description: null,
+            Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false
         );
 
@@ -174,7 +174,7 @@ public class AdminCreateCategoryValidatorTests
             ContentTypeId: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: string.Empty,
-            Description: null,
+            Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false
         );
 
@@ -199,7 +199,7 @@ public class AdminCreateCategoryValidatorTests
             ContentTypeId: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: new string('a', TestConstants.Content.Category.SlugMaxLength + 1),
-            Description: null,
+            Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false
         );
 
@@ -224,7 +224,7 @@ public class AdminCreateCategoryValidatorTests
             ContentTypeId: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: "Artist Profile",
-            Description: null,
+            Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false
         );
 
@@ -271,14 +271,14 @@ public class AdminCreateCategoryValidatorTests
     }
 
     [Fact]
-    public async Task Validate_WithNullDescription_ShouldNotHaveErrors()
+    public async Task Validate_WithNullDescription_ShouldHaveError()
     {
         // Arrange
         var command = new AdminCreateCategoryCommand(
             ContentTypeId: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
-            Description: null,
+            Description: null!,
             IsFree: false
         );
 
@@ -286,7 +286,8 @@ public class AdminCreateCategoryValidatorTests
         ValidationResult result = await _validator.ValidateAsync(command);
 
         // Assert
-        result.IsValid.Should().BeTrue();
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminCreateCategoryCommand.Description));
     }
 
     #endregion
