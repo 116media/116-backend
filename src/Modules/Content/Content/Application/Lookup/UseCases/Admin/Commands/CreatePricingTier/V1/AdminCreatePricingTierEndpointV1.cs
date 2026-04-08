@@ -17,8 +17,8 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePricingT
 /// Request model for creating a pricing tier.
 /// </summary>
 /// <param name="Name">The name of the pricing tier.</param>
-/// <param name="Description">An optional description of what this tier covers.</param>
-public record AdminCreatePricingTierRequest(string Name, string? Description);
+/// <param name="Description">A description of what this tier covers.</param>
+public record AdminCreatePricingTierRequest(string Name, string Description);
 
 /// <summary>
 /// Response model for successful pricing tier creation.
