@@ -26,5 +26,15 @@ public class AdminGetAllCategoriesEndpointV1Tests
     }
 
     private static CategoryDto CreateCategoryDto() =>
-        new(Guid.NewGuid(), Guid.NewGuid(), "Article", "Technology", "technology", true, true, []);
+        new(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "Article",
+            "Technology",
+            "technology",
+            "Test category description",
+            true,
+            true,
+            []
+        );
 }
