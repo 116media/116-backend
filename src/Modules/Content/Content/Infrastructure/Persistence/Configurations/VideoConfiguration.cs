@@ -23,7 +23,7 @@ public class VideoConfiguration : IEntityTypeConfiguration<VideoEntity>
 
         builder.Property(x => x.Slug).HasMaxLength(ContentConstants.MaxSlugLength).IsRequired();
 
-        builder.Property(x => x.Description).IsRequired(false);
+        builder.Property(x => x.Description).IsRequired();
 
         builder.Property(x => x.ThumbnailUrl).HasMaxLength(ContentConstants.MaxThumbnailUrlLength).IsRequired(false);
 
