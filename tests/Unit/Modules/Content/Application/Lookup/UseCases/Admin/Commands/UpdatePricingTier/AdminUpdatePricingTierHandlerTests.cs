@@ -38,7 +38,11 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
         // Arrange
         PricingTierEntity existing = PricingTierFactory.CreateDefault();
         string newName = TestConstants.Content.PricingTier.AnotherValidName;
-        var command = new AdminUpdatePricingTierCommand(Id: existing.Id.ToString(), Name: newName, Description: null);
+        var command = new AdminUpdatePricingTierCommand(
+            Id: existing.Id.ToString(),
+            Name: newName,
+            Description: TestConstants.Content.PricingTier.ValidDescription
+        );
 
         _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
         _lookupRepositoryMock.SetupPricingTierExistsByName(newName, false);
@@ -58,7 +62,11 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
         // Arrange
         string sameName = TestConstants.Content.PricingTier.ValidName;
         PricingTierEntity existing = PricingTierFactory.Create(sameName);
-        var command = new AdminUpdatePricingTierCommand(Id: existing.Id.ToString(), Name: sameName, Description: null);
+        var command = new AdminUpdatePricingTierCommand(
+            Id: existing.Id.ToString(),
+            Name: sameName,
+            Description: TestConstants.Content.PricingTier.ValidDescription
+        );
 
         _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
         _lookupRepositoryMock.SetupPricingTierExistsByName(sameName, true);
@@ -107,7 +115,7 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdatePricingTierCommand(
             Id: nonExistentId.ToString(),
             Name: TestConstants.Content.PricingTier.ValidName,
-            Description: null
+            Description: TestConstants.Content.PricingTier.ValidDescription
         );
 
         _lookupRepositoryMock.SetupGetPricingTierByIdOrThrowNotFound(nonExistentId);
@@ -128,7 +136,7 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdatePricingTierCommand(
             Id: existing.Id.ToString(),
             Name: conflictingName,
-            Description: null
+            Description: TestConstants.Content.PricingTier.ValidDescription
         );
 
         _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
@@ -150,7 +158,7 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdatePricingTierCommand(
             Id: existing.Id.ToString(),
             Name: conflictingName,
-            Description: null
+            Description: TestConstants.Content.PricingTier.ValidDescription
         );
 
         _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
@@ -180,7 +188,11 @@ public class AdminUpdatePricingTierHandlerTests : BaseContentHandlerTest
         // Arrange
         PricingTierEntity existing = PricingTierFactory.CreateDefault();
         string newName = TestConstants.Content.PricingTier.AnotherValidName;
-        var command = new AdminUpdatePricingTierCommand(Id: existing.Id.ToString(), Name: newName, Description: null);
+        var command = new AdminUpdatePricingTierCommand(
+            Id: existing.Id.ToString(),
+            Name: newName,
+            Description: TestConstants.Content.PricingTier.ValidDescription
+        );
         using var cts = new CancellationTokenSource();
 
         _lookupRepositoryMock.SetupGetPricingTierByIdOrThrow(existing);
