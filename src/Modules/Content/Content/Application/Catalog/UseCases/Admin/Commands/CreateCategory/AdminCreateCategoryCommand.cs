@@ -9,13 +9,13 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategor
 /// <param name="ContentTypeId">The identifier of the content type this category belongs to.</param>
 /// <param name="Name">The display name of the category.</param>
 /// <param name="Slug">The URL-safe slug for the category.</param>
-/// <param name="Description">An optional description of the category.</param>
+/// <param name="Description">The description of the category.</param>
 /// <param name="IsFree">Whether content in this category requires no payment.</param>
 public record AdminCreateCategoryCommand(
     string ContentTypeId,
     string Name,
     string Slug,
-    string? Description,
+    string Description,
     bool IsFree
 ) : ICommand<AdminCreateCategoryResult>;
 
