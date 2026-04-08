@@ -22,16 +22,20 @@ public static class PackageValidation
     }
 
     /// <summary>
-    /// Validates optional package description with length constraints.
+    /// Validates package description with required and length constraints.
     /// </summary>
-    public static IRuleBuilderOptions<T, string?> ValidPackageDescription<T>(this IRuleBuilder<T, string?> ruleBuilder)
+    public static IRuleBuilderOptions<T, string?> ValidPackageDescription<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder
+    )
     {
         return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage("Package description is required.")
             .MaximumLength(maximumLength: ContentConstants.MaxPackageDescriptionLength)
             .WithMessage(
                 $"Package description must not exceed {ContentConstants.MaxPackageDescriptionLength} characters."
-            )
-            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Description")));
+            );
     }
 
     /// <summary>
