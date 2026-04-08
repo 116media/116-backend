@@ -23,7 +23,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo
 /// <param name="Slug">The URL-safe slug for this video.</param>
 /// <param name="CustomerId">The B2B customer who commissioned this video. Null for free content.</param>
 /// <param name="OrderItemId">The order item this video fulfils. Null for free content.</param>
-/// <param name="Description">Optional description shown below the video player.</param>
+/// <param name="Description">The description shown below the video player.</param>
 /// <param name="ShootingScheduledAt">Optional scheduled shooting date for pre-booked productions.</param>
 public record AdminCreateVideoRequest(
     Guid CategoryId,
@@ -31,7 +31,7 @@ public record AdminCreateVideoRequest(
     string Slug,
     Guid? CustomerId,
     Guid? OrderItemId,
-    string? Description,
+    string Description,
     DateTimeOffset? ShootingScheduledAt
 );
 
