@@ -14,7 +14,7 @@ internal class PackageBuilder
 
     private Guid _id;
     private string _name;
-    private string? _description;
+    private string _description = "Default package description";
     private decimal _flatPriceUsd;
     private bool _isActive = true;
 
@@ -44,7 +44,7 @@ internal class PackageBuilder
     }
 
     /// <summary>Sets the package description.</summary>
-    public PackageBuilder WithDescription(string? description)
+    public PackageBuilder WithDescription(string description)
     {
         _description = description;
         return this;
