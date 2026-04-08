@@ -18,10 +18,10 @@ public class PackageEntity : Aggregate<Guid>
     public string Name { get; private set; } = null!;
 
     /// <summary>
-    /// Optional description of what the package includes.
+    /// Description of what the package includes.
     /// </summary>
     [MaxLength(length: ContentConstants.MaxPackageDescriptionLength)]
-    public string? Description { get; private set; }
+    public string Description { get; private set; } = null!;
 
     /// <summary>
     /// The flat price in USD for the entire package.
@@ -48,10 +48,10 @@ public class PackageEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="id">The unique identifier for the package.</param>
     /// <param name="name">The display name of the package.</param>
-    /// <param name="description">An optional description.</param>
+    /// <param name="description">The description of the package.</param>
     /// <param name="flatPriceUsd">The flat price in USD (must be >= 0).</param>
     /// <returns>A new <see cref="PackageEntity" /> instance.</returns>
-    public static PackageEntity Create(Guid id, string name, string? description, decimal flatPriceUsd)
+    public static PackageEntity Create(Guid id, string name, string description, decimal flatPriceUsd)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
