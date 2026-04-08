@@ -31,10 +31,10 @@ public class CategoryEntity : Aggregate<Guid>
     public string Slug { get; private set; } = null!;
 
     /// <summary>
-    /// Optional human-readable description of the category.
+    /// Human-readable description of the category.
     /// </summary>
     [MaxLength(length: ContentConstants.MaxCategoryDescriptionLength)]
-    public string? Description { get; private set; }
+    public string Description { get; private set; } = null!;
 
     /// <summary>
     /// Indicates whether content in this category is free (no payment required).
@@ -74,7 +74,7 @@ public class CategoryEntity : Aggregate<Guid>
     /// <param name="contentTypeId">The identifier of the associated content type.</param>
     /// <param name="name">The display name of the category.</param>
     /// <param name="slug">The URL-safe slug for the category.</param>
-    /// <param name="description">An optional description of the category.</param>
+    /// <param name="description">The description of the category.</param>
     /// <param name="isFree">Whether content in this category is free.</param>
     /// <returns>A new <see cref="CategoryEntity" /> instance.</returns>
     public static CategoryEntity Create(
@@ -82,7 +82,7 @@ public class CategoryEntity : Aggregate<Guid>
         Guid contentTypeId,
         string name,
         string slug,
-        string? description,
+        string description,
         bool isFree
     )
     {
@@ -113,8 +113,8 @@ public class CategoryEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="name">The new display name.</param>
     /// <param name="slug">The new URL-safe slug.</param>
-    /// <param name="description">The new optional description.</param>
-    public void Update(string name, string slug, string? description)
+    /// <param name="description">The new description.</param>
+    public void Update(string name, string slug, string description)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
