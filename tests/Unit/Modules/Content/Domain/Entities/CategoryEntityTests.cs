@@ -38,7 +38,7 @@ public class CategoryEntityTests
     }
 
     [Fact]
-    public void Create_WithNullDescription_ShouldSucceed()
+    public void Create_WithDescription_ShouldSetDescription()
     {
         // Act
         var entity = CategoryEntity.Create(
@@ -46,12 +46,12 @@ public class CategoryEntityTests
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
             TestConstants.Content.Category.ValidSlug,
-            null,
+            TestConstants.Content.Category.ValidDescription,
             false
         );
 
         // Assert
-        entity.Description.Should().BeNull();
+        entity.Description.Should().Be(TestConstants.Content.Category.ValidDescription);
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public class CategoryEntityTests
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
             TestConstants.Content.Category.ValidSlug,
-            null,
+            TestConstants.Content.Category.ValidDescription,
             true
         );
 
@@ -84,7 +84,7 @@ public class CategoryEntityTests
                 ContentTypeId,
                 invalidName!,
                 TestConstants.Content.Category.ValidSlug,
-                null,
+                TestConstants.Content.Category.ValidDescription,
                 false
             );
 
@@ -105,7 +105,7 @@ public class CategoryEntityTests
                 ContentTypeId,
                 TestConstants.Content.Category.ValidName,
                 invalidSlug!,
-                null,
+                TestConstants.Content.Category.ValidDescription,
                 false
             );
 
@@ -126,7 +126,7 @@ public class CategoryEntityTests
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
             TestConstants.Content.Category.ValidSlug,
-            null,
+            TestConstants.Content.Category.ValidDescription,
             false
         );
 
@@ -155,12 +155,17 @@ public class CategoryEntityTests
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
             TestConstants.Content.Category.ValidSlug,
-            null,
+            TestConstants.Content.Category.ValidDescription,
             false
         );
 
         // Act
-        Action act = () => entity.Update(invalidName!, TestConstants.Content.Category.ValidSlug, null);
+        Action act = () =>
+            entity.Update(
+                invalidName!,
+                TestConstants.Content.Category.ValidSlug,
+                TestConstants.Content.Category.ValidDescription
+            );
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -178,12 +183,17 @@ public class CategoryEntityTests
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
             TestConstants.Content.Category.ValidSlug,
-            null,
+            TestConstants.Content.Category.ValidDescription,
             false
         );
 
         // Act
-        Action act = () => entity.Update(TestConstants.Content.Category.ValidName, invalidSlug!, null);
+        Action act = () =>
+            entity.Update(
+                TestConstants.Content.Category.ValidName,
+                invalidSlug!,
+                TestConstants.Content.Category.ValidDescription
+            );
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -202,7 +212,7 @@ public class CategoryEntityTests
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
             TestConstants.Content.Category.ValidSlug,
-            null,
+            TestConstants.Content.Category.ValidDescription,
             false
         );
         entity.Deactivate();
@@ -221,7 +231,7 @@ public class CategoryEntityTests
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
             TestConstants.Content.Category.ValidSlug,
-            null,
+            TestConstants.Content.Category.ValidDescription,
             false
         );
 
@@ -238,7 +248,7 @@ public class CategoryEntityTests
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
             TestConstants.Content.Category.ValidSlug,
-            null,
+            TestConstants.Content.Category.ValidDescription,
             false
         );
 
@@ -256,7 +266,7 @@ public class CategoryEntityTests
             ContentTypeId,
             TestConstants.Content.Category.ValidName,
             TestConstants.Content.Category.ValidSlug,
-            null,
+            TestConstants.Content.Category.ValidDescription,
             false
         );
         entity.Deactivate();
