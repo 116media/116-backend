@@ -16,7 +16,7 @@ internal class CategoryBuilder
     private Guid _contentTypeId;
     private string _name;
     private string _slug;
-    private string? _description;
+    private string _description = "Default category description";
     private bool _isFree;
     private bool _isActive = true;
 
@@ -61,7 +61,7 @@ internal class CategoryBuilder
     }
 
     /// <summary>Sets the category description.</summary>
-    public CategoryBuilder WithDescription(string? description)
+    public CategoryBuilder WithDescription(string description)
     {
         _description = description;
         return this;
