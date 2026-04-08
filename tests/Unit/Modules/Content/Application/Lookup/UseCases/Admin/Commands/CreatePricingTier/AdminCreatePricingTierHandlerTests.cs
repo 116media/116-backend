@@ -35,7 +35,10 @@ public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         string name = TestConstants.Content.PricingTier.ValidName;
-        var command = new AdminCreatePricingTierCommand(Name: name, Description: null);
+        var command = new AdminCreatePricingTierCommand(
+            Name: name,
+            Description: TestConstants.Content.PricingTier.ValidDescription
+        );
 
         _lookupRepositoryMock.SetupPricingTierExistsByName(name, false);
 
@@ -77,7 +80,10 @@ public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         string name = TestConstants.Content.PricingTier.ValidName;
-        var command = new AdminCreatePricingTierCommand(Name: name, Description: null);
+        var command = new AdminCreatePricingTierCommand(
+            Name: name,
+            Description: TestConstants.Content.PricingTier.ValidDescription
+        );
 
         _lookupRepositoryMock.SetupPricingTierExistsByName(name, true);
 
@@ -93,7 +99,10 @@ public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         string name = TestConstants.Content.PricingTier.ValidName;
-        var command = new AdminCreatePricingTierCommand(Name: name, Description: null);
+        var command = new AdminCreatePricingTierCommand(
+            Name: name,
+            Description: TestConstants.Content.PricingTier.ValidDescription
+        );
 
         _lookupRepositoryMock.SetupPricingTierExistsByName(name, true);
 
