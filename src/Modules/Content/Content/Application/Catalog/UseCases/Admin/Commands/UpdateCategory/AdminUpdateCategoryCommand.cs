@@ -9,8 +9,8 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategor
 /// <param name="Id">The unique identifier of the category to update.</param>
 /// <param name="Name">The new display name for the category.</param>
 /// <param name="Slug">The new URL-safe slug for the category.</param>
-/// <param name="Description">The new optional description.</param>
-public record AdminUpdateCategoryCommand(string Id, string Name, string Slug, string? Description)
+/// <param name="Description">The new description.</param>
+public record AdminUpdateCategoryCommand(string Id, string Name, string Slug, string Description)
     : ICommand<AdminUpdateCategoryResult>;
 
 /// <summary>
