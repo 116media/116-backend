@@ -22,7 +22,7 @@ public class AdminUpdatePricingTierValidatorTests
         var command = new AdminUpdatePricingTierCommand(
             Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.PricingTier.ValidName,
-            Description: null
+            Description: TestConstants.Content.PricingTier.ValidDescription
         );
 
         // Act
@@ -62,7 +62,7 @@ public class AdminUpdatePricingTierValidatorTests
         var command = new AdminUpdatePricingTierCommand(
             Id: "",
             Name: TestConstants.Content.PricingTier.ValidName,
-            Description: null
+            Description: TestConstants.Content.PricingTier.ValidDescription
         );
 
         // Act
@@ -89,7 +89,7 @@ public class AdminUpdatePricingTierValidatorTests
         var command = new AdminUpdatePricingTierCommand(
             Id: Guid.NewGuid().ToString(),
             Name: string.Empty,
-            Description: null
+            Description: TestConstants.Content.PricingTier.ValidDescription
         );
 
         // Act
@@ -112,7 +112,7 @@ public class AdminUpdatePricingTierValidatorTests
         var command = new AdminUpdatePricingTierCommand(
             Id: Guid.NewGuid().ToString(),
             Name: new string('a', TestConstants.Content.PricingTier.NameMaxLength + 1),
-            Description: null
+            Description: TestConstants.Content.PricingTier.ValidDescription
         );
 
         // Act
@@ -136,7 +136,11 @@ public class AdminUpdatePricingTierValidatorTests
     public async Task Validate_WithEmptyIdAndName_ShouldHaveMultipleErrors()
     {
         // Arrange
-        var command = new AdminUpdatePricingTierCommand(Id: "", Name: string.Empty, Description: null);
+        var command = new AdminUpdatePricingTierCommand(
+            Id: "",
+            Name: string.Empty,
+            Description: TestConstants.Content.PricingTier.ValidDescription
+        );
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -145,6 +149,79 @@ public class AdminUpdatePricingTierValidatorTests
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdatePricingTierCommand.Id));
         result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdatePricingTierCommand.Name));
+    }
+
+    #endregion
+
+    #region Description Validation Tests
+
+    [Fact]
+    public async Task Validate_WithNullDescription_ShouldHaveError()
+    {
+        // Arrange
+        var command = new AdminUpdatePricingTierCommand(
+            Id: Guid.NewGuid().ToString(),
+            Name: TestConstants.Content.PricingTier.ValidName,
+            Description: null!
+        );
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .ContainSingle(e =>
+                e.PropertyName == nameof(AdminUpdatePricingTierCommand.Description)
+                && e.ErrorMessage == "Pricing tier description is required."
+            );
+    }
+
+    [Fact]
+    public async Task Validate_WithEmptyDescription_ShouldHaveError()
+    {
+        // Arrange
+        var command = new AdminUpdatePricingTierCommand(
+            Id: Guid.NewGuid().ToString(),
+            Name: TestConstants.Content.PricingTier.ValidName,
+            Description: string.Empty
+        );
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .ContainSingle(e =>
+                e.PropertyName == nameof(AdminUpdatePricingTierCommand.Description)
+                && e.ErrorMessage == "Pricing tier description is required."
+            );
+    }
+
+    [Fact]
+    public async Task Validate_WithDescriptionExceedingMaxLength_ShouldHaveError()
+    {
+        // Arrange
+        var command = new AdminUpdatePricingTierCommand(
+            Id: Guid.NewGuid().ToString(),
+            Name: TestConstants.Content.PricingTier.ValidName,
+            Description: new string('a', TestConstants.Content.PricingTier.DescriptionMaxLength + 1)
+        );
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .ContainSingle(e =>
+                e.PropertyName == nameof(AdminUpdatePricingTierCommand.Description)
+                && e.ErrorMessage == "Pricing tier description must not exceed 200 characters."
+            );
     }
 
     #endregion
