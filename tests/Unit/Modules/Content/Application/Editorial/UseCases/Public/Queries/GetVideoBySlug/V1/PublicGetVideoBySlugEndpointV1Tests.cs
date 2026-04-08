@@ -32,7 +32,7 @@ public class PublicGetVideoBySlugEndpointV1Tests
             CategoryName: "Test",
             Title: "Test",
             Slug: "test",
-            Description: null,
+            Description: "Test video description",
             ThumbnailUrl: null,
             ThumbnailStorageKey: null,
             AuthorId: "Test",
