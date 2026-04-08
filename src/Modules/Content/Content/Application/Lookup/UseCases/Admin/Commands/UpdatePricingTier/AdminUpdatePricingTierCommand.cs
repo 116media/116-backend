@@ -8,8 +8,8 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePricingT
 /// </summary>
 /// <param name="Id">The unique identifier of the pricing tier to update.</param>
 /// <param name="Name">The new name for the pricing tier.</param>
-/// <param name="Description">The new description (can be null).</param>
-public record AdminUpdatePricingTierCommand(string Id, string Name, string? Description)
+/// <param name="Description">The new description for the pricing tier.</param>
+public record AdminUpdatePricingTierCommand(string Id, string Name, string Description)
     : ICommand<AdminUpdatePricingTierResult>;
 
 /// <summary>
