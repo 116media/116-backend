@@ -39,7 +39,7 @@ public class AdminCreatePackageValidatorTests
         // Arrange
         var command = new AdminCreatePackageCommand(
             Name: TestConstants.Content.Package.ValidName,
-            Description: null,
+            Description: TestConstants.Content.Package.ValidDescription,
             FlatPriceUsd: TestConstants.Content.Package.ZeroFlatPriceUsd
         );
 
@@ -60,7 +60,7 @@ public class AdminCreatePackageValidatorTests
         // Arrange
         var command = new AdminCreatePackageCommand(
             Name: string.Empty,
-            Description: null,
+            Description: TestConstants.Content.Package.ValidDescription,
             FlatPriceUsd: TestConstants.Content.Package.ValidFlatPriceUsd
         );
 
@@ -83,7 +83,7 @@ public class AdminCreatePackageValidatorTests
         // Arrange
         var command = new AdminCreatePackageCommand(
             Name: new string('a', TestConstants.Content.Package.NameMaxLength + 1),
-            Description: null,
+            Description: TestConstants.Content.Package.ValidDescription,
             FlatPriceUsd: TestConstants.Content.Package.ValidFlatPriceUsd
         );
 
@@ -137,7 +137,7 @@ public class AdminCreatePackageValidatorTests
         // Arrange
         var command = new AdminCreatePackageCommand(
             Name: TestConstants.Content.Package.ValidName,
-            Description: null,
+            Description: TestConstants.Content.Package.ValidDescription,
             FlatPriceUsd: -1m
         );
 
