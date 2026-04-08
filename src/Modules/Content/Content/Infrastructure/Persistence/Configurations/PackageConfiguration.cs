@@ -18,10 +18,7 @@ public class PackageConfiguration : IEntityTypeConfiguration<PackageEntity>
 
         builder.Property(x => x.Name).HasMaxLength(ContentConstants.MaxPackageNameLength).IsRequired();
 
-        builder
-            .Property(x => x.Description)
-            .HasMaxLength(ContentConstants.MaxPackageDescriptionLength)
-            .IsRequired(false);
+        builder.Property(x => x.Description).HasMaxLength(ContentConstants.MaxPackageDescriptionLength).IsRequired();
 
         builder.Property(x => x.FlatPriceUsd).HasColumnType("numeric(10,2)").IsRequired();
 
