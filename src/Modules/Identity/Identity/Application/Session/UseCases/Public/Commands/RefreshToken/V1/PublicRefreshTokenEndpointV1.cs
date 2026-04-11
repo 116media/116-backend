@@ -2,6 +2,7 @@ using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Shared.DTOs;
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -70,8 +71,12 @@ public class PublicRefreshTokenEndpointV1 : ICarterModule
                 ) =>
                 {
                     string? refreshToken = tokenDelivery.ReadRefreshToken(bodyRefreshToken: request?.RefreshToken);
+                    if (string.IsNullOrEmpty(refreshToken))
+                    {
+                        throw SessionErrors.InvalidRefreshToken();
+                    }
 
-                    var command = new PublicRefreshTokenCommand(RefreshToken: refreshToken!);
+                    var command = new PublicRefreshTokenCommand(RefreshToken: refreshToken);
                     PublicRefreshTokenResult result = await dispatcher.Send(request: command);
 
                     if (tokenDelivery.IsWebClient())

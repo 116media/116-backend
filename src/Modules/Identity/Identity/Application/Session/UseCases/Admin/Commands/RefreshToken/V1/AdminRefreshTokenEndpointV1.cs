@@ -1,8 +1,8 @@
-using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Shared.DTOs;
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -43,8 +43,12 @@ public class AdminRefreshTokenEndpointV1 : ICarterModule
                 async (IDispatcher dispatcher, ITokenDeliveryService tokenDelivery) =>
                 {
                     string? refreshToken = tokenDelivery.ReadRefreshToken(bodyRefreshToken: null);
+                    if (string.IsNullOrEmpty(refreshToken))
+                    {
+                        throw SessionErrors.InvalidRefreshToken();
+                    }
 
-                    var command = new AdminRefreshTokenCommand(RefreshToken: refreshToken!);
+                    var command = new AdminRefreshTokenCommand(RefreshToken: refreshToken);
                     AdminRefreshTokenResult result = await dispatcher.Send(request: command);
 
                     tokenDelivery.SetTokenCookies(authResult: result.AuthenticationResult);
