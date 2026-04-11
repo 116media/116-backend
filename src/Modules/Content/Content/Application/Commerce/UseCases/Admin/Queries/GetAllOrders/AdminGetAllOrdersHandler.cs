@@ -27,6 +27,7 @@ public class AdminGetAllOrdersHandler(IContentOrderRepository contentOrderReposi
             pageSize: pageSize,
             status: query.Status,
             customerId: query.CustomerId,
+            search: query.Search,
             orderByAscending: false,
             ct: cancellationToken
         );
