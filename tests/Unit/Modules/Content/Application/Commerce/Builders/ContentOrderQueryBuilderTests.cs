@@ -102,6 +102,65 @@ public class ContentOrderQueryBuilderTests
 
     #endregion
 
+    #region WithSearch Tests
+
+    [Fact]
+    public void WithSearch_WhenNullSearch_ShouldReturnBuilderWithNoSpecification()
+    {
+        // Arrange
+        var builder = new ContentOrderQueryBuilder();
+
+        // Act
+        builder.WithSearch(null);
+        Specification<ContentOrderEntity>? spec = builder.Build();
+
+        // Assert
+        spec.Should().BeNull();
+    }
+
+    [Fact]
+    public void WithSearch_WhenEmptySearch_ShouldReturnBuilderWithNoSpecification()
+    {
+        // Arrange
+        var builder = new ContentOrderQueryBuilder();
+
+        // Act
+        builder.WithSearch("   ");
+        Specification<ContentOrderEntity>? spec = builder.Build();
+
+        // Assert
+        spec.Should().BeNull();
+    }
+
+    [Fact]
+    public void WithSearch_WhenSearchProvided_ShouldReturnBuilderWithSpecification()
+    {
+        // Arrange
+        var builder = new ContentOrderQueryBuilder();
+
+        // Act
+        builder.WithSearch("acme");
+        Specification<ContentOrderEntity>? spec = builder.Build();
+
+        // Assert
+        spec.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void WithSearch_ShouldReturnSameBuilderInstance()
+    {
+        // Arrange
+        var builder = new ContentOrderQueryBuilder();
+
+        // Act
+        IContentOrderQueryBuilder result = builder.WithSearch(null);
+
+        // Assert
+        result.Should().BeSameAs(builder);
+    }
+
+    #endregion
+
     #region CombineSpecification Tests
 
     [Fact]
@@ -113,6 +172,22 @@ public class ContentOrderQueryBuilderTests
         // Act
         builder.WithStatus(EnumOrderStatus.Draft);
         builder.WithCustomerId(Guid.NewGuid());
+        Specification<ContentOrderEntity>? spec = builder.Build();
+
+        // Assert
+        spec.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Build_WhenAllFiltersProvided_ShouldCombineAllSpecifications()
+    {
+        // Arrange
+        var builder = new ContentOrderQueryBuilder();
+
+        // Act
+        builder.WithStatus(EnumOrderStatus.Draft);
+        builder.WithCustomerId(Guid.NewGuid());
+        builder.WithSearch("acme");
         Specification<ContentOrderEntity>? spec = builder.Build();
 
         // Assert
