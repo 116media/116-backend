@@ -6,13 +6,18 @@ using _116.Shared.Contracts.Application.CQRS;
 namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetAllOrders;
 
 /// <summary>
-/// Query for retrieving a paginated list of orders with optional status and customer filters.
+/// Query for retrieving a paginated list of orders with optional status, customer, and search filters.
 /// </summary>
 /// <param name="PaginatedRequest">Pagination parameters.</param>
 /// <param name="Status">Optional filter by order status.</param>
 /// <param name="CustomerId">Optional filter by customer identifier.</param>
-public record AdminGetAllOrdersQuery(PaginatedRequest PaginatedRequest, EnumOrderStatus? Status, Guid? CustomerId)
-    : IQuery<AdminGetAllOrdersResult>;
+/// <param name="Search">Optional search term matching customer name, email, or company.</param>
+public record AdminGetAllOrdersQuery(
+    PaginatedRequest PaginatedRequest,
+    EnumOrderStatus? Status,
+    Guid? CustomerId,
+    string? Search = null
+) : IQuery<AdminGetAllOrdersResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminGetAllOrdersQuery" /> containing paginated order summaries.
