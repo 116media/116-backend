@@ -40,14 +40,16 @@ public class AdminGetAllOrdersEndpointV1 : ICarterModule
                     int pageIndex = 0,
                     int pageSize = 10,
                     EnumOrderStatus? status = null,
-                    Guid? customerId = null
+                    Guid? customerId = null,
+                    string? search = null
                 ) =>
                 {
                     var paginatedRequest = new PaginatedRequest(pageIndex, pageSize);
                     var query = new AdminGetAllOrdersQuery(
                         PaginatedRequest: paginatedRequest,
                         Status: status,
-                        CustomerId: customerId
+                        CustomerId: customerId,
+                        Search: search
                     );
 
                     AdminGetAllOrdersResult result = await dispatcher.Send(request: query);
