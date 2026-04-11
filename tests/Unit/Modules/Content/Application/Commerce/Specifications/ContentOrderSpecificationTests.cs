@@ -93,6 +93,37 @@ public class ContentOrderSpecificationTests
 
     #endregion
 
+    #region ContentOrderSearchSpecification
+
+    [Fact]
+    public void SearchSpec_ShouldCompileWithoutError()
+    {
+        // Arrange
+        var spec = new ContentOrderSearchSpecification("test");
+
+        // Act
+        Func<ContentOrderEntity, bool> compiled = spec.ToExpression().Compile();
+
+        // Assert — compiles successfully (ILike cannot be tested in-memory)
+        compiled.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void SearchSpec_ShouldGenerateNonNullExpression()
+    {
+        // Arrange
+        var spec = new ContentOrderSearchSpecification("acme");
+
+        // Act
+        var expression = spec.ToExpression();
+
+        // Assert
+        expression.Should().NotBeNull();
+        expression.Body.Should().NotBeNull();
+    }
+
+    #endregion
+
     #region ContentPaymentByOrderIdSpecification
 
     [Fact]
