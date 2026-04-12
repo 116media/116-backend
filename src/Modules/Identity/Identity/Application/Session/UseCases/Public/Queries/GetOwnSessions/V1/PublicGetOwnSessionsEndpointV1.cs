@@ -48,8 +48,13 @@ public class PublicGetOwnSessionsEndpointV1 : ICarterModule
                 ) =>
                 {
                     Guid userId = authProvider.GetUserIdFromClaims(user: user);
+                    Guid sessionId = authProvider.GetSessionIdFromClaims(user: user);
 
-                    var query = new PublicGetOwnSessionsQuery(UserId: userId, IsActive: isActive);
+                    var query = new PublicGetOwnSessionsQuery(
+                        UserId: userId,
+                        CurrentSessionId: sessionId,
+                        IsActive: isActive
+                    );
                     PublicGetOwnSessionsResult result = await dispatcher.Send(request: query);
 
                     var response = new PublicGetOwnSessionsResponse(Sessions: result.Sessions);

@@ -31,12 +31,17 @@ public static class SessionMapper
     /// Maps a SessionEntity to a SessionDto for display to users.
     /// </summary>
     /// <param name="session">The session entity to map.</param>
-    /// <param name="mapper">Injected IMapper instance</param>
+    /// <param name="mapper">Injected IMapper instance.</param>
+    /// <param name="currentSessionId">The ID of the requesting session, used to flag the current session.</param>
     /// <returns>A SessionDto containing session information.</returns>
-    public static SessionDto ToSessionDto(this SessionEntity session, IMapper mapper)
+    public static SessionDto ToSessionDto(this SessionEntity session, IMapper mapper, Guid? currentSessionId = null)
     {
         var dto = mapper.Map<SessionDto>(session);
-        return dto with { IsActive = session.IsActive() };
+        return dto with
+        {
+            IsActive = session.IsActive(),
+            IsCurrent = currentSessionId.HasValue && session.Id == currentSessionId.Value,
+        };
     }
 
     /// <summary>

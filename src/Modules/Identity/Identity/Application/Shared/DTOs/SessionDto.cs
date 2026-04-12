@@ -15,6 +15,7 @@ namespace _116.Identity.Application.Shared.DTOs;
 /// <param name="Client">Client application type that initiated the session.</param>
 /// <param name="ExpiresAt">When this session expires.</param>
 /// <param name="IsActive">Whether this session is currently active (not deleted and not expired).</param>
+/// <param name="IsCurrent">Whether this session belongs to the current request.</param>
 public record SessionDto(
     Guid Id,
     string? IpAddress,
@@ -24,5 +25,6 @@ public record SessionDto(
     EnumPlatform Platform,
     EnumClient Client,
     DateTime ExpiresAt,
-    bool IsActive
+    bool IsActive,
+    bool IsCurrent = false
 ) : AuditableDto;
