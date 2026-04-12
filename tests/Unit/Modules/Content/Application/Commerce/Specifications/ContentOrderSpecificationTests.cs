@@ -189,4 +189,81 @@ public class ContentOrderSpecificationTests
     }
 
     #endregion
+
+    #region ContentPaymentByStatusSpecification
+
+    [Fact]
+    public void PaymentByStatusSpec_WhenStatusMatches_ShouldReturnTrue()
+    {
+        ContentPaymentEntity payment = ContentPaymentFactory.Create(Guid.NewGuid());
+        var spec = new ContentPaymentByStatusSpecification(EnumPaymentStatus.Pending);
+
+        bool result = spec.ToExpression().Compile()(payment);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void PaymentByStatusSpec_WhenStatusDoesNotMatch_ShouldReturnFalse()
+    {
+        ContentPaymentEntity payment = ContentPaymentFactory.Create(Guid.NewGuid());
+        var spec = new ContentPaymentByStatusSpecification(EnumPaymentStatus.Verified);
+
+        bool result = spec.ToExpression().Compile()(payment);
+
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region ContentPaymentByMethodSpecification
+
+    [Fact]
+    public void PaymentByMethodSpec_WhenMethodMatches_ShouldReturnTrue()
+    {
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(Guid.NewGuid(), Guid.NewGuid());
+        var spec = new ContentPaymentByMethodSpecification(EnumPaymentMethod.BankTransfer);
+
+        bool result = spec.ToExpression().Compile()(payment);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void PaymentByMethodSpec_WhenMethodDoesNotMatch_ShouldReturnFalse()
+    {
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(Guid.NewGuid(), Guid.NewGuid());
+        var spec = new ContentPaymentByMethodSpecification(EnumPaymentMethod.Cash);
+
+        bool result = spec.ToExpression().Compile()(payment);
+
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region ContentPaymentSearchSpecification
+
+    [Fact]
+    public void PaymentSearchSpec_ShouldCompileWithoutError()
+    {
+        var spec = new ContentPaymentSearchSpecification("test");
+
+        Func<ContentPaymentEntity, bool> compiled = spec.ToExpression().Compile();
+
+        compiled.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void PaymentSearchSpec_ShouldGenerateNonNullExpression()
+    {
+        var spec = new ContentPaymentSearchSpecification("acme");
+
+        var expression = spec.ToExpression();
+
+        expression.Should().NotBeNull();
+        expression.Body.Should().NotBeNull();
+    }
+
+    #endregion
 }
