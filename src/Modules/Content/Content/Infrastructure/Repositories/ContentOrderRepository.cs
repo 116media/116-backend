@@ -114,6 +114,38 @@ public class ContentOrderRepository(ContentDbContext context) : IContentOrderRep
     }
 
     /// <inheritdoc />
+    public async Task<(IReadOnlyList<ContentPaymentEntity> Items, int TotalCount)> GetAllPaymentsAsync(
+        int page,
+        int pageSize,
+        EnumPaymentStatus? status,
+        EnumPaymentMethod? method,
+        string? search = null,
+        bool orderByAscending = false,
+        CancellationToken ct = default
+    )
+    {
+        Specification<ContentPaymentEntity>? spec = new ContentPaymentQueryBuilder()
+            .WithStatus(status: status)
+            .WithMethod(method: method)
+            .WithSearch(search: search)
+            .Build();
+
+        IQueryable<ContentPaymentEntity> query = spec is not null
+            ? context.ContentPayments.ApplySpecification(specification: spec)
+            : context.ContentPayments;
+
+        query = query.Include(p => p.Order).ThenInclude(o => o.Customer);
+
+        int totalCount = await query.CountAsync(ct);
+
+        query = orderByAscending ? query.OrderBy(p => p.CreatedAt) : query.OrderByDescending(p => p.CreatedAt);
+
+        List<ContentPaymentEntity> payments = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+
+        return (payments, totalCount);
+    }
+
+    /// <inheritdoc />
     public async Task<ContentPaymentEntity?> GetPaymentByOrderIdAsync(Guid orderId, CancellationToken ct = default)
     {
         var specification = new ContentPaymentByOrderIdSpecification(orderId: orderId);
