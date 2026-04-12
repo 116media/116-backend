@@ -36,6 +36,13 @@ public static class ContentOrderMapper
             .Map(dest => dest.VerifiedBy, src => src.VerifiedById);
 
         config
+            .NewConfig<ContentPaymentEntity, PaymentSummaryDto>()
+            .Map(dest => dest.OrderId, src => src.OrderId)
+            .Map(dest => dest.CustomerName, src => src.Order.Customer.FullName)
+            .Map(dest => dest.OrderStatus, src => src.Order.Status)
+            .Map(dest => dest.VerifiedBy, src => src.VerifiedById);
+
+        config
             .NewConfig<ContentOrderEntity, ContentOrderSummaryDto>()
             .Map(dest => dest.CustomerName, src => src.Customer.FullName)
             .Map(dest => dest.ItemCount, src => src.Items.Count);
@@ -78,6 +85,33 @@ public static class ContentOrderMapper
             Items = entity.Items.Select(i => i.ToOrderItemDto(mapper)).ToList(),
             Payment = entity.Payment != null ? mapper.Map<PaymentDto>(entity.Payment) : null,
         };
+    }
+
+    /// <summary>
+    /// Maps a <see cref="ContentPaymentEntity" /> to a <see cref="PaymentSummaryDto" />
+    /// including customer name and order status from the linked order.
+    /// </summary>
+    public static PaymentSummaryDto ToPaymentSummaryDto(this ContentPaymentEntity entity, IMapper mapper)
+    {
+        var dto = mapper.Map<PaymentSummaryDto>(entity);
+        return dto with
+        {
+            OrderId = entity.OrderId,
+            CustomerName = entity.Order.Customer.FullName,
+            OrderStatus = entity.Order.Status,
+            VerifiedBy = entity.VerifiedById,
+        };
+    }
+
+    /// <summary>
+    /// Maps a collection of <see cref="ContentPaymentEntity" /> to a list of <see cref="PaymentSummaryDto" />.
+    /// </summary>
+    public static IReadOnlyList<PaymentSummaryDto> ToPaymentSummaryDtos(
+        this IReadOnlyList<ContentPaymentEntity> entities,
+        IMapper mapper
+    )
+    {
+        return entities.Select(e => e.ToPaymentSummaryDto(mapper)).ToList();
     }
 
     /// <summary>
