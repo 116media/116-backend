@@ -105,4 +105,43 @@ public interface IContentOrderRepository : IRepository<ContentOrderEntity>
     /// Returns null if not found.
     /// </summary>
     Task<ContentOrderItemEntity?> GetItemByIdAsync(Guid orderId, Guid itemId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Retrieves a specific order item that belongs to the given order.
+    /// Throws a NotFoundException if not found.
+    /// </summary>
+    /// <exception cref="_116.Shared.Application.Exceptions.NotFoundException">
+    /// Thrown when the item is not found.
+    /// </exception>
+    Task<ContentOrderItemEntity> GetItemByIdOrThrowAsync(Guid orderId, Guid itemId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Retrieves a specific pricing tier that belongs to the given order item.
+    /// Returns null if not found.
+    /// </summary>
+    Task<ContentItemTierEntity?> GetItemTierByIdAsync(Guid itemId, Guid tierId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Retrieves a specific pricing tier that belongs to the given order item.
+    /// Throws a NotFoundException if not found.
+    /// </summary>
+    /// <exception cref="_116.Shared.Application.Exceptions.NotFoundException">
+    /// Thrown when the tier is not found.
+    /// </exception>
+    Task<ContentItemTierEntity> GetItemTierByIdOrThrowAsync(Guid itemId, Guid tierId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Persists changes to an existing order item.
+    /// </summary>
+    Task UpdateItemAsync(ContentOrderItemEntity item, CancellationToken ct = default);
+
+    /// <summary>
+    /// Removes a content order item from the repository.
+    /// </summary>
+    Task RemoveItemAsync(ContentOrderItemEntity item, CancellationToken ct = default);
+
+    /// <summary>
+    /// Removes a pricing tier snapshot from the repository.
+    /// </summary>
+    Task RemoveItemTierAsync(ContentItemTierEntity tier, CancellationToken ct = default);
 }
