@@ -65,4 +65,10 @@ public static class CommerceRouteConstants
     /// Example: /api/v1/admin/orders/pending-payment.
     /// </summary>
     public const string PendingPayment = "pending-payment";
+
+    /// <summary>
+    /// The base endpoint path for payment list routes.
+    /// Combined with admin prefix: /api/v1/admin/payments.
+    /// </summary>
+    public const string Payments = "payments";
 }
