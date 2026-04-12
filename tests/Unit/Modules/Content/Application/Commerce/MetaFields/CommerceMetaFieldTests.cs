@@ -7,6 +7,7 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.RejectPayment;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
 using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetAllOrders;
+using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetAllPayments;
 using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetCustomerOrders;
 using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderById;
 using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderPayment;
@@ -117,6 +118,13 @@ public class CommerceMetaFieldTests
     public void AdminGetPendingPaymentOrdersMetaField_ShouldBeInitialized()
     {
         RouteMetadata metadata = AdminGetPendingPaymentOrdersMetaField.AdminGetPendingPaymentOrders;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void AdminGetAllPaymentsMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = AdminGetAllPaymentsMetaField.AdminGetAllPayments;
         metadata.Should().NotBeNull();
     }
 
