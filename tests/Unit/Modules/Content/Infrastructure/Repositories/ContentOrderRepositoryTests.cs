@@ -393,4 +393,191 @@ public class ContentOrderRepositoryTests : IDisposable
     }
 
     #endregion
+
+    #region GetItemByIdOrThrowAsync
+
+    [Fact]
+    public async Task GetItemByIdOrThrowAsync_WhenFound_ShouldReturnItem()
+    {
+        // Arrange
+        ContentOrderEntity order = await SeedOrderAsync();
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        await _repository.AddItemAsync(item);
+        await _context.SaveChangesAsync();
+
+        // Act
+        ContentOrderItemEntity result = await _repository.GetItemByIdOrThrowAsync(order.Id, item.Id);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Id.Should().Be(item.Id);
+        result.OrderId.Should().Be(order.Id);
+    }
+
+    [Fact]
+    public async Task GetItemByIdOrThrowAsync_WhenNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        ContentOrderEntity order = await SeedOrderAsync();
+
+        // Act
+        Func<Task> act = async () => await _repository.GetItemByIdOrThrowAsync(order.Id, Guid.NewGuid());
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    #endregion
+
+    #region GetItemTierByIdAsync
+
+    [Fact]
+    public async Task GetItemTierByIdAsync_WhenFound_ShouldReturnTier()
+    {
+        // Arrange
+        ContentOrderEntity order = await SeedOrderAsync();
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        await _repository.AddItemAsync(item);
+        await _context.SaveChangesAsync();
+
+        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
+        await _repository.AddItemTierAsync(tier);
+        await _context.SaveChangesAsync();
+
+        // Act
+        ContentItemTierEntity? result = await _repository.GetItemTierByIdAsync(item.Id, tier.Id);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(tier.Id);
+        result.OrderItemId.Should().Be(item.Id);
+    }
+
+    [Fact]
+    public async Task GetItemTierByIdAsync_WhenNotFound_ShouldReturnNull()
+    {
+        // Act
+        ContentItemTierEntity? result = await _repository.GetItemTierByIdAsync(Guid.NewGuid(), Guid.NewGuid());
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
+    #region GetItemTierByIdOrThrowAsync
+
+    [Fact]
+    public async Task GetItemTierByIdOrThrowAsync_WhenFound_ShouldReturnTier()
+    {
+        // Arrange
+        ContentOrderEntity order = await SeedOrderAsync();
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        await _repository.AddItemAsync(item);
+        await _context.SaveChangesAsync();
+
+        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
+        await _repository.AddItemTierAsync(tier);
+        await _context.SaveChangesAsync();
+
+        // Act
+        ContentItemTierEntity result = await _repository.GetItemTierByIdOrThrowAsync(item.Id, tier.Id);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Id.Should().Be(tier.Id);
+        result.OrderItemId.Should().Be(item.Id);
+    }
+
+    [Fact]
+    public async Task GetItemTierByIdOrThrowAsync_WhenNotFound_ShouldThrowNotFoundException()
+    {
+        // Act
+        Func<Task> act = async () => await _repository.GetItemTierByIdOrThrowAsync(Guid.NewGuid(), Guid.NewGuid());
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    #endregion
+
+    #region UpdateItemAsync
+
+    [Fact]
+    public async Task UpdateItemAsync_ShouldUpdateItemInDatabase()
+    {
+        // Arrange
+        ContentOrderEntity order = await SeedOrderAsync();
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        await _repository.AddItemAsync(item);
+        await _context.SaveChangesAsync();
+
+        Guid newCategoryId = Guid.NewGuid();
+        item.Update(
+            contentKind: null,
+            categoryId: newCategoryId,
+            promotionLevelId: null,
+            promoPriceSnapshotUsd: null,
+            socialBoost: null,
+            isBonus: null
+        );
+
+        // Act
+        await _repository.UpdateItemAsync(item);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        ContentOrderItemEntity? updated = await _context.ContentOrderItems.FindAsync(item.Id);
+        updated!.CategoryId.Should().Be(newCategoryId);
+    }
+
+    #endregion
+
+    #region RemoveItemAsync
+
+    [Fact]
+    public async Task RemoveItemAsync_ShouldRemoveItemFromDatabase()
+    {
+        // Arrange
+        ContentOrderEntity order = await SeedOrderAsync();
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        await _repository.AddItemAsync(item);
+        await _context.SaveChangesAsync();
+
+        // Act
+        await _repository.RemoveItemAsync(item);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        ContentOrderItemEntity? retrieved = await _context.ContentOrderItems.FindAsync(item.Id);
+        retrieved.Should().BeNull();
+    }
+
+    #endregion
+
+    #region RemoveItemTierAsync
+
+    [Fact]
+    public async Task RemoveItemTierAsync_ShouldRemoveTierFromDatabase()
+    {
+        // Arrange
+        ContentOrderEntity order = await SeedOrderAsync();
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, Guid.NewGuid());
+        await _repository.AddItemAsync(item);
+        await _context.SaveChangesAsync();
+
+        ContentItemTierEntity tier = ContentItemTierFactory.CreateDefault(item.Id, Guid.NewGuid());
+        await _repository.AddItemTierAsync(tier);
+        await _context.SaveChangesAsync();
+
+        // Act
+        await _repository.RemoveItemTierAsync(tier);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        ContentItemTierEntity? retrieved = await _context.ContentItemTiers.FindAsync(tier.Id);
+        retrieved.Should().BeNull();
+    }
+
+    #endregion
 }
