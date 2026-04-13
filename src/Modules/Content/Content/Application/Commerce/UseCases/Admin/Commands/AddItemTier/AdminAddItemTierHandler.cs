@@ -29,7 +29,7 @@ public class AdminAddItemTierHandler(IAddItemTierFactory addItemTierFactory)
             cancellationToken: cancellationToken
         );
 
-        var dto = new ItemTierDto(TierName: tierName, PriceSnapshotUsd: tier.PriceSnapshotUsd);
+        var dto = new ItemTierDto(Id: tier.Id, TierName: tierName, PriceSnapshotUsd: tier.PriceSnapshotUsd);
         return new AdminAddItemTierResult(Tier: dto);
     }
 }
