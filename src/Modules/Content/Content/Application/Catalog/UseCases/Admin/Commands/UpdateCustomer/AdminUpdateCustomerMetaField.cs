@@ -11,10 +11,8 @@ public static class AdminUpdateCustomerMetaField
         "AdminUpdateCustomer",
         "Update a customer",
         """
-            Updates the contact information of an existing B2B customer.
-            \n
-            Email is intentionally excluded from this operation — it serves as the unique
-            identifier for a customer and cannot be changed after creation.
+            Updates the contact information of an existing B2B customer,
+            including name, email, phone, company, and notes.
             \n
             **Authentication Requirements:**\n
             - User must be authenticated with a valid access token\n
