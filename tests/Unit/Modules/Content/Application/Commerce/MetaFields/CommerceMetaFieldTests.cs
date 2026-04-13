@@ -3,7 +3,11 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymentProof;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.CancelOrder;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrder;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrderItem;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.RejectPayment;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.RemoveItemTier;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.RemoveOrderItem;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
 using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetAllOrders;
@@ -125,6 +129,38 @@ public class CommerceMetaFieldTests
     public void AdminGetAllPaymentsMetaField_ShouldBeInitialized()
     {
         RouteMetadata metadata = AdminGetAllPaymentsMetaField.AdminGetAllPayments;
+        metadata.Should().NotBeNull();
+    }
+
+    #endregion
+
+    #region Editing MetaFields
+
+    [Fact]
+    public void AdminEditOrderMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = AdminEditOrderMetaField.AdminEditOrder;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void AdminRemoveOrderItemMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = AdminRemoveOrderItemMetaField.AdminRemoveOrderItem;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void AdminRemoveItemTierMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = AdminRemoveItemTierMetaField.AdminRemoveItemTier;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void AdminEditOrderItemMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = AdminEditOrderItemMetaField.AdminEditOrderItem;
         metadata.Should().NotBeNull();
     }
 
