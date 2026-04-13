@@ -16,10 +16,11 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCustome
 /// Request model for updating a customer.
 /// </summary>
 /// <param name="FullName">The new full name of the customer.</param>
+/// <param name="Email">The new email address of the customer.</param>
 /// <param name="Phone">The new optional phone number.</param>
 /// <param name="Company">The new optional company or label name.</param>
 /// <param name="Notes">The new optional internal notes.</param>
-public record AdminUpdateCustomerRequest(string FullName, string? Phone, string? Company, string? Notes);
+public record AdminUpdateCustomerRequest(string FullName, string Email, string? Phone, string? Company, string? Notes);
 
 /// <summary>
 /// Response model for a successful customer update.
@@ -52,6 +53,7 @@ public class AdminUpdateCustomerEndpointV1 : ICarterModule
                     var command = new AdminUpdateCustomerCommand(
                         Id: id,
                         FullName: request.FullName,
+                        Email: request.Email,
                         Phone: request.Phone,
                         Company: request.Company,
                         Notes: request.Notes
