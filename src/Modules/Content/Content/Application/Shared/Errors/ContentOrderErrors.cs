@@ -90,14 +90,6 @@ public static class ContentOrderErrors
     }
 
     /// <summary>
-    /// Throws when an attempt is made to modify an order that is not in Draft status.
-    /// </summary>
-    public static BadRequestException CannotModifyNonDraftOrder()
-    {
-        return new BadRequestException(ContentOrderErrorMessage.CannotAddItemToNonDraftOrder());
-    }
-
-    /// <summary>
     /// Throws when the payment has already been verified and cannot be verified again.
     /// </summary>
     public static ConflictException PaymentAlreadyVerified()
