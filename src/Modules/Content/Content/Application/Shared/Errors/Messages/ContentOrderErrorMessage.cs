@@ -42,12 +42,12 @@ public static class ContentOrderErrorMessage
     }
 
     /// <summary>
-    /// Gets an error message for when an attempt is made to add an item to a non-draft order.
+    /// Gets an error message for when an attempt is made to modify a non-draft order.
     /// </summary>
-    /// <returns>An error message indicating that items can only be added to orders in Draft status.</returns>
+    /// <returns>An error message indicating that only draft orders can be modified.</returns>
     public static string CannotAddItemToNonDraftOrder()
     {
-        return "Items can only be added to orders in Draft status.";
+        return "This order can only be modified while in Draft status.";
     }
 
     /// <summary>
