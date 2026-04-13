@@ -22,6 +22,7 @@ public class AdminUpdateCustomerValidatorTests
         var command = new AdminUpdateCustomerCommand(
             Id: Guid.NewGuid().ToString(),
             FullName: TestConstants.Content.Customer.ValidFullName,
+            Email: TestConstants.Content.Customer.ValidEmail,
             Phone: TestConstants.Content.Customer.ValidPhone,
             Company: TestConstants.Content.Customer.ValidCompany,
             Notes: TestConstants.Content.Customer.ValidNotes
@@ -42,6 +43,7 @@ public class AdminUpdateCustomerValidatorTests
         var command = new AdminUpdateCustomerCommand(
             Id: Guid.NewGuid().ToString(),
             FullName: TestConstants.Content.Customer.ValidFullName,
+            Email: TestConstants.Content.Customer.ValidEmail,
             Phone: null,
             Company: null,
             Notes: null
@@ -65,6 +67,7 @@ public class AdminUpdateCustomerValidatorTests
         var command = new AdminUpdateCustomerCommand(
             Id: "",
             FullName: TestConstants.Content.Customer.ValidFullName,
+            Email: TestConstants.Content.Customer.ValidEmail,
             Phone: null,
             Company: null,
             Notes: null
@@ -93,6 +96,7 @@ public class AdminUpdateCustomerValidatorTests
         var command = new AdminUpdateCustomerCommand(
             Id: Guid.NewGuid().ToString(),
             FullName: string.Empty,
+            Email: TestConstants.Content.Customer.ValidEmail,
             Phone: null,
             Company: null,
             Notes: null
