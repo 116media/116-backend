@@ -15,7 +15,7 @@ public class AdminAddItemTierEndpointV1Tests
     public void AdminAddItemTierResponse_ShouldConstructCorrectly()
     {
         // Arrange
-        var tier = new ItemTierDto("Standard", TestConstants.Content.Commerce.ValidTierPriceUsd);
+        var tier = new ItemTierDto(Guid.NewGuid(), "Standard", TestConstants.Content.Commerce.ValidTierPriceUsd);
 
         // Act
         var response = new AdminAddItemTierResponse(Tier: tier);
