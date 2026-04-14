@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -13,8 +14,12 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetAllPayment
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminGetAllPaymentsHandler(IContentOrderRepository contentOrderRepository, IMapper mapper)
-    : IQueryHandler<AdminGetAllPaymentsQuery, AdminGetAllPaymentsResult>
+/// <param name="userLookup">Cross-module service for resolving admin user names.</param>
+public class AdminGetAllPaymentsHandler(
+    IContentOrderRepository contentOrderRepository,
+    IMapper mapper,
+    IUserLookupService userLookup
+) : IQueryHandler<AdminGetAllPaymentsQuery, AdminGetAllPaymentsResult>
 {
     /// <inheritdoc />
     public async Task<AdminGetAllPaymentsResult> Handle(
@@ -36,7 +41,11 @@ public class AdminGetAllPaymentsHandler(IContentOrderRepository contentOrderRepo
                 ct: cancellationToken
             );
 
-        IReadOnlyList<PaymentSummaryDto> dtoList = payments.ToPaymentSummaryDtos(mapper);
+        IReadOnlyList<PaymentSummaryDto> dtoList = await payments.ToPaymentSummaryDtosAsync(
+            mapper,
+            userLookup,
+            cancellationToken
+        );
 
         var paginatedResult = new PaginatedResult<PaymentSummaryDto>(
             pageIndex: pageIndex,
