@@ -4,6 +4,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
+using _116.Identity.Contracts.Application;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -15,10 +16,12 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderById;
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="fileRepository">Repository for resolving payment proof file metadata.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="userLookup">Cross-module service for resolving admin user names.</param>
 public class AdminGetOrderByIdHandler(
     IContentOrderRepository contentOrderRepository,
     IFileRepository fileRepository,
-    IMapper mapper
+    IMapper mapper,
+    IUserLookupService userLookup
 ) : IQueryHandler<AdminGetOrderByIdQuery, AdminGetOrderByIdResult>
 {
     /// <inheritdoc />
@@ -43,7 +46,10 @@ public class AdminGetOrderByIdHandler(
 
         FileEntity? proofFile = await fileRepository.GetByIdAsync(proofFileId, cancellationToken);
         var proofDto = proofFile.ToFileDto(mapper);
-        dto = dto with { Payment = order.Payment.ToPaymentDto(mapper, proofDto) };
+        dto = dto with
+        {
+            Payment = await order.Payment.ToPaymentDtoAsync(mapper, userLookup, proofDto, cancellationToken),
+        };
 
         return new AdminGetOrderByIdResult(Order: dto);
     }
