@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.DTOs;
 using _116.Core.Domain.Entities;
+using _116.Identity.Contracts.Application;
 using Mapster;
 using MapsterMapper;
 
@@ -33,14 +34,16 @@ public static class ContentOrderMapper
         config
             .NewConfig<ContentPaymentEntity, PaymentDto>()
             .Map(dest => dest.PaymentProof, _ => (FileDto?)null)
-            .Map(dest => dest.VerifiedBy, src => src.VerifiedById);
+            .Map(dest => dest.VerifiedBy, src => src.VerifiedById)
+            .Map(dest => dest.VerifiedByUserName, _ => (string?)null);
 
         config
             .NewConfig<ContentPaymentEntity, PaymentSummaryDto>()
             .Map(dest => dest.OrderId, src => src.OrderId)
             .Map(dest => dest.CustomerName, src => src.Order.Customer.FullName)
             .Map(dest => dest.OrderStatus, src => src.Order.Status)
-            .Map(dest => dest.VerifiedBy, src => src.VerifiedById);
+            .Map(dest => dest.VerifiedBy, src => src.VerifiedById)
+            .Map(dest => dest.VerifiedByUserName, _ => (string?)null);
 
         config
             .NewConfig<ContentOrderEntity, ContentOrderSummaryDto>()
@@ -91,37 +94,65 @@ public static class ContentOrderMapper
     /// Maps a <see cref="ContentPaymentEntity" /> to a <see cref="PaymentSummaryDto" />
     /// including customer name and order status from the linked order.
     /// </summary>
-    public static PaymentSummaryDto ToPaymentSummaryDto(this ContentPaymentEntity entity, IMapper mapper)
+    public static async Task<PaymentSummaryDto> ToPaymentSummaryDtoAsync(
+        this ContentPaymentEntity entity,
+        IMapper mapper,
+        IUserLookupService userLookup,
+        CancellationToken ct = default
+    )
     {
         var dto = mapper.Map<PaymentSummaryDto>(entity);
+        string? verifiedByUserName = entity.VerifiedById.HasValue
+            ? await userLookup.GetUserNameByIdAsync(entity.VerifiedById.Value, ct)
+            : null;
+
         return dto with
         {
             OrderId = entity.OrderId,
             CustomerName = entity.Order.Customer.FullName,
             OrderStatus = entity.Order.Status,
             VerifiedBy = entity.VerifiedById,
+            VerifiedByUserName = verifiedByUserName,
         };
     }
 
     /// <summary>
     /// Maps a collection of <see cref="ContentPaymentEntity" /> to a list of <see cref="PaymentSummaryDto" />.
     /// </summary>
-    public static IReadOnlyList<PaymentSummaryDto> ToPaymentSummaryDtos(
+    public static async Task<IReadOnlyList<PaymentSummaryDto>> ToPaymentSummaryDtosAsync(
         this IReadOnlyList<ContentPaymentEntity> entities,
-        IMapper mapper
+        IMapper mapper,
+        IUserLookupService userLookup,
+        CancellationToken ct = default
     )
     {
-        return entities.Select(e => e.ToPaymentSummaryDto(mapper)).ToList();
+        var tasks = entities.Select(e => e.ToPaymentSummaryDtoAsync(mapper, userLookup, ct));
+        var results = await Task.WhenAll(tasks);
+        return results.ToList();
     }
 
     /// <summary>
     /// Maps a <see cref="ContentPaymentEntity" /> to a <see cref="PaymentDto" />,
     /// injecting the resolved proof file so the frontend can render image or PDF accordingly.
     /// </summary>
-    public static PaymentDto ToPaymentDto(this ContentPaymentEntity entity, IMapper mapper, FileDto? proofFile = null)
+    public static async Task<PaymentDto> ToPaymentDtoAsync(
+        this ContentPaymentEntity entity,
+        IMapper mapper,
+        IUserLookupService userLookup,
+        FileDto? proofFile = null,
+        CancellationToken ct = default
+    )
     {
         var dto = mapper.Map<PaymentDto>(entity);
-        return dto with { PaymentProof = proofFile };
+        string? verifiedByUserName = entity.VerifiedById.HasValue
+            ? await userLookup.GetUserNameByIdAsync(entity.VerifiedById.Value, ct)
+            : null;
+
+        return dto with
+        {
+            PaymentProof = proofFile,
+            VerifiedByUserName = verifiedByUserName,
+        };
     }
 
     /// <summary>
