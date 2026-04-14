@@ -123,6 +123,7 @@ public static class IdentityModule
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
         services.AddScoped<IAuthRepository, AuthRepository>();
         services.AddScoped<IClaimsProvider, AuthRepository>();
+        services.AddScoped<IUserLookupService, UserLookupService>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
