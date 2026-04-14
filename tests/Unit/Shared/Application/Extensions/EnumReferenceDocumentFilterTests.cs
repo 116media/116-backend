@@ -182,6 +182,32 @@ public class EnumReferenceDocumentFilterTests
     }
 
     [Fact]
+    public void Apply_WithSchemaWithNullProperties_ShouldNotThrow()
+    {
+        // Arrange — force Properties to null to cover the null-guard branch
+        var schemaWithNullProps = new OpenApiSchema { Type = "object" };
+        schemaWithNullProps.Properties = null!;
+
+        var doc = new OpenApiDocument
+        {
+            Components = new OpenApiComponents
+            {
+                Schemas = new Dictionary<string, OpenApiSchema>
+                {
+                    ["EnumStatus"] = CreateEnumSchema("Draft", "Paid"),
+                    ["NullPropsSchema"] = schemaWithNullProps,
+                },
+            },
+        };
+
+        // Act
+        Action act = () => _sut.Apply(doc, CreateContext());
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [Fact]
     public void Apply_ShouldMatchByValuesRegardlessOfOrder()
     {
         // Arrange — component has values in a different order than the inline property
