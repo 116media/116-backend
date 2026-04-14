@@ -89,7 +89,7 @@ public class AdminExportSessionDataEndpointV1 : ICarterModule
     /// <param name="format">The export format string.</param>
     /// <param name="columns">The columns to export.</param>
     /// <returns>File result.</returns>
-    private static IResult ExportFile(
+    internal static IResult ExportFile(
         ISessionExportService exportService,
         AdminExportSessionDataResult result,
         string format,
