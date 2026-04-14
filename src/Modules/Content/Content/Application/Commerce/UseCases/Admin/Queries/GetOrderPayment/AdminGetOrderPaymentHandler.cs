@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
+using _116.Identity.Contracts.Application;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -14,10 +15,12 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderPayme
 /// <param name="orderPaymentFactory">Shared factory for fetching and validating payment records.</param>
 /// <param name="fileRepository">Repository for resolving payment proof file metadata.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="userLookup">Cross-module service for resolving admin user names.</param>
 public class AdminGetOrderPaymentHandler(
     IOrderPaymentFactory orderPaymentFactory,
     IFileRepository fileRepository,
-    IMapper mapper
+    IMapper mapper,
+    IUserLookupService userLookup
 ) : IQueryHandler<AdminGetOrderPaymentQuery, AdminGetOrderPaymentResult>
 {
     /// <inheritdoc />
@@ -36,7 +39,7 @@ public class AdminGetOrderPaymentHandler(
             : null;
 
         var proofDto = proofFile.ToFileDto(mapper);
-        var dto = payment.ToPaymentDto(mapper, proofDto);
+        var dto = await payment.ToPaymentDtoAsync(mapper, userLookup, proofDto, cancellationToken);
 
         return new AdminGetOrderPaymentResult(Payment: dto);
     }
