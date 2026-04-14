@@ -6,11 +6,14 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Core.Application.Shared.DTOs;
 using _116.Core.Domain.Entities;
+using _116.Identity.Contracts.Application;
 using _116.Tests.Fixtures.Factories;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Application.Commerce.Mappers;
@@ -22,6 +25,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
 {
     private readonly ContentDbContext _context;
     private readonly ContentOrderRepository _repository;
+    private readonly Mock<IUserLookupService> _userLookupMock;
 
     public ContentOrderMapperTests()
     {
@@ -30,6 +34,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
             .Options;
         _context = new ContentDbContext(options);
         _repository = new ContentOrderRepository(_context);
+        _userLookupMock = MockUserLookupService.Create();
     }
 
     public void Dispose()
@@ -71,12 +76,12 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
     #region ToPaymentDto
 
     [Fact]
-    public void ToPaymentDto_WithNullProofFile_ShouldReturnDtoWithNullProof()
+    public async Task ToPaymentDtoAsync_WithNullProofFile_ShouldReturnDtoWithNullProof()
     {
         Guid orderId = Guid.NewGuid();
         ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
 
-        PaymentDto result = payment.ToPaymentDto(Mapper, proofFile: null);
+        PaymentDto result = await payment.ToPaymentDtoAsync(Mapper, _userLookupMock.Object, proofFile: null);
 
         result.Should().NotBeNull();
         result.PaymentProof.Should().BeNull();
@@ -84,7 +89,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
     }
 
     [Fact]
-    public void ToPaymentDto_WithProofFile_ShouldInjectProofFile()
+    public async Task ToPaymentDtoAsync_WithProofFile_ShouldInjectProofFile()
     {
         Guid orderId = Guid.NewGuid();
         ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
@@ -98,7 +103,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
             false
         );
 
-        PaymentDto result = payment.ToPaymentDto(Mapper, proofFile: proofFile);
+        PaymentDto result = await payment.ToPaymentDtoAsync(Mapper, _userLookupMock.Object, proofFile: proofFile);
 
         result.Should().NotBeNull();
         result.PaymentProof.Should().NotBeNull();
