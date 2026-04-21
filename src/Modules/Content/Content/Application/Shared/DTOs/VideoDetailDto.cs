@@ -27,6 +27,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="MetaTitle">Custom SEO meta title, or null.</param>
 /// <param name="MetaDescription">Custom SEO meta description, or null.</param>
 /// <param name="Tags">Tags applied to this video for discovery and SEO.</param>
+/// <param name="Author">The resolved author profile with avatar URL, or null if the author could not be found.</param>
 public record VideoDetailDto(
     Guid Id,
     Guid CategoryId,
@@ -47,5 +48,6 @@ public record VideoDetailDto(
     DateTimeOffset? PublishedAt,
     string? MetaTitle,
     string? MetaDescription,
-    IReadOnlyList<TagDto> Tags
+    IReadOnlyList<TagDto> Tags,
+    AuthorDto? Author = null
 ) : AuditableDto;
