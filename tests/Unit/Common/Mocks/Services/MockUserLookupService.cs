@@ -77,5 +77,8 @@ public static class MockUserLookupService
     {
         mock.Setup(x => x.GetUserNameByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((string?)null);
+
+        mock.Setup(x => x.GetAuthorInfoByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((AuthorInfo?)null);
     }
 }
