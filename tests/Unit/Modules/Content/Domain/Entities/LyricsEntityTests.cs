@@ -36,37 +36,10 @@ public class LyricsEntityTests
         // Assert
         lyrics.Id.Should().Be(id);
         lyrics.VideoId.Should().Be(videoId);
-        lyrics.ArticleId.Should().BeNull();
         lyrics.SongTitle.Should().Be(TestConstants.Content.Editorial.Lyrics.ValidSongTitle);
         lyrics.ArtistName.Should().Be(TestConstants.Content.Editorial.Lyrics.ValidArtistName);
         lyrics.LyricsText.Should().Be(TestConstants.Content.Editorial.Lyrics.ValidLyricsText);
         lyrics.Language.Should().Be(TestConstants.Content.Editorial.Lyrics.ValidLanguage);
-    }
-
-    #endregion
-
-    #region CreateForArticle Tests
-
-    [Fact]
-    public void CreateForArticle_WithValidParams_ShouldSetArticleId()
-    {
-        // Arrange
-        var articleId = Guid.NewGuid();
-
-        // Act
-        LyricsEntity lyrics = LyricsEntity.CreateForArticle(
-            Guid.NewGuid(),
-            articleId,
-            TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-            TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-            TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-            TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            AuthorId
-        );
-
-        // Assert
-        lyrics.ArticleId.Should().Be(articleId);
-        lyrics.VideoId.Should().BeNull();
     }
 
     #endregion
@@ -88,7 +61,6 @@ public class LyricsEntityTests
 
         // Assert
         lyrics.VideoId.Should().BeNull();
-        lyrics.ArticleId.Should().BeNull();
     }
 
     [Theory]
