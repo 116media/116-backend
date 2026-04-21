@@ -36,6 +36,7 @@ public class AdminGetShortByIdEndpointV1Tests
             ViewCount: 0,
             LikeCount: 0,
             ShareCount: 0,
-            BookmarkCount: 0
+            BookmarkCount: 0,
+            AuthorId: Guid.NewGuid().ToString()
         );
 }
