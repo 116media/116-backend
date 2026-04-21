@@ -48,12 +48,5 @@ public class LyricsConfiguration : IEntityTypeConfiguration<LyricsEntity>
             .HasForeignKey(x => x.VideoId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
-
-        builder
-            .HasOne(x => x.Article)
-            .WithMany()
-            .HasForeignKey(x => x.ArticleId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.SetNull);
     }
 }
