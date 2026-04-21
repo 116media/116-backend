@@ -69,7 +69,6 @@ public class AdminUpdateLyricsSeoEndpointV1Tests
             LyricsText: "Test",
             Language: "fr",
             VideoId: null,
-            ArticleId: null,
             MetaTitle: null,
             MetaDescription: null,
             MetaKeywords: null,
