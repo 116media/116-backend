@@ -25,8 +25,7 @@ public class AdminCreateLyricsValidatorTests
             LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
             Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
             AuthorId: Guid.NewGuid(),
-            VideoId: null,
-            ArticleId: null
+            VideoId: null
         );
 
         // Act
@@ -51,8 +50,7 @@ public class AdminCreateLyricsValidatorTests
             LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
             Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
             AuthorId: Guid.NewGuid(),
-            VideoId: null,
-            ArticleId: null
+            VideoId: null
         );
 
         // Act
@@ -78,8 +76,7 @@ public class AdminCreateLyricsValidatorTests
             LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
             Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
             AuthorId: Guid.NewGuid(),
-            VideoId: null,
-            ArticleId: null
+            VideoId: null
         );
 
         // Act
@@ -109,8 +106,7 @@ public class AdminCreateLyricsValidatorTests
             LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
             Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
             AuthorId: Guid.NewGuid(),
-            VideoId: null,
-            ArticleId: null
+            VideoId: null
         );
 
         // Act
@@ -136,8 +132,7 @@ public class AdminCreateLyricsValidatorTests
             LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
             Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
             AuthorId: Guid.NewGuid(),
-            VideoId: null,
-            ArticleId: null
+            VideoId: null
         );
 
         // Act
@@ -167,8 +162,7 @@ public class AdminCreateLyricsValidatorTests
             LyricsText: string.Empty,
             Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
             AuthorId: Guid.NewGuid(),
-            VideoId: null,
-            ArticleId: null
+            VideoId: null
         );
 
         // Act
@@ -198,8 +192,7 @@ public class AdminCreateLyricsValidatorTests
             LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
             Language: string.Empty,
             AuthorId: Guid.NewGuid(),
-            VideoId: null,
-            ArticleId: null
+            VideoId: null
         );
 
         // Act
@@ -225,8 +218,7 @@ public class AdminCreateLyricsValidatorTests
             LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
             Language: new string('a', TestConstants.Content.Editorial.Lyrics.LanguageMaxLength + 1),
             AuthorId: Guid.NewGuid(),
-            VideoId: null,
-            ArticleId: null
+            VideoId: null
         );
 
         // Act
