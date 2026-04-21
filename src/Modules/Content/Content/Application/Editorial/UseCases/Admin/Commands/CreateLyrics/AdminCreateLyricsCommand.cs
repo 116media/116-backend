@@ -5,7 +5,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyric
 
 /// <summary>
 /// Command for creating a new lyrics page on the platform.
-/// A lyrics page can be standalone, linked to a video, or linked to an article.
+/// A lyrics page can be standalone or linked to a video.
 /// </summary>
 /// <param name="SongTitle">The title of the song.</param>
 /// <param name="ArtistName">The name of the performing artist.</param>
@@ -13,15 +13,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyric
 /// <param name="Language">The ISO 639-1 language code (e.g., "fr", "en", "ln").</param>
 /// <param name="AuthorId">The identity user UUID read from JWT claims.</param>
 /// <param name="VideoId">Optional parent video identifier. Links the lyrics to a lyric video or episode.</param>
-/// <param name="ArticleId">Optional parent article identifier. Links the lyrics to a dedicated article.</param>
 public record AdminCreateLyricsCommand(
     string SongTitle,
     string ArtistName,
     string LyricsText,
     string Language,
     Guid AuthorId,
-    Guid? VideoId,
-    Guid? ArticleId
+    Guid? VideoId
 ) : ICommand<AdminCreateLyricsResult>;
 
 /// <summary>
