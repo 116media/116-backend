@@ -23,14 +23,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyric
 /// <param name="LyricsText">The full lyrics text of the song.</param>
 /// <param name="Language">The ISO 639-1 language code (e.g., "fr", "en", "ln").</param>
 /// <param name="VideoId">Optional parent video identifier.</param>
-/// <param name="ArticleId">Optional parent article identifier.</param>
 public record AdminCreateLyricsRequest(
     string SongTitle,
     string ArtistName,
     string LyricsText,
     string Language,
-    Guid? VideoId,
-    Guid? ArticleId
+    Guid? VideoId
 );
 
 /// <summary>
@@ -75,8 +73,7 @@ public class AdminCreateLyricsEndpointV1 : ICarterModule
                         LyricsText: request.LyricsText,
                         Language: request.Language,
                         AuthorId: authorId,
-                        VideoId: request.VideoId,
-                        ArticleId: request.ArticleId
+                        VideoId: request.VideoId
                     );
 
                     AdminCreateLyricsResult result = await dispatcher.Send(request: command);
