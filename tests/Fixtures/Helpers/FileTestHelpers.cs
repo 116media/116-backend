@@ -22,6 +22,18 @@ public static class FileTestHelpers
     }
 
     /// <summary>
+    /// Creates a mock IFormFile representing a valid video file for testing.
+    /// </summary>
+    public static IFormFile CreateMockVideoFile()
+    {
+        Mock<IFormFile> fileMock = new();
+        fileMock.Setup(f => f.FileName).Returns("clip.mp4");
+        fileMock.Setup(f => f.Length).Returns(5_000_000);
+        fileMock.Setup(f => f.ContentType).Returns("video/mp4");
+        return fileMock.Object;
+    }
+
+    /// <summary>
     /// Creates a mock IFormFile with custom parameters for testing file validation.
     /// </summary>
     public static IFormFile CreateMockFormFile(string fileName, string contentType, long length)
