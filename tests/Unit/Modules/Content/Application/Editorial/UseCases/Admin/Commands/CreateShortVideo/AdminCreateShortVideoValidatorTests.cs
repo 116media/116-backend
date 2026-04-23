@@ -1,5 +1,7 @@
+using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShortVideo;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
@@ -21,12 +23,11 @@ public class AdminCreateShortVideoValidatorTests
     public async Task Validate_WithValidData_ShouldNotHaveErrors()
     {
         // Arrange
-        var fileMock = new Mock<IFormFile>();
-        fileMock.Setup(f => f.Length).Returns(1);
+        IFormFile fileMock = FileTestHelpers.CreateMockVideoFile();
         var command = new AdminCreateShortVideoCommand(
             Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
             Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            VideoFile: fileMock.Object,
+            VideoFile: fileMock,
             AuthorId: Guid.NewGuid(),
             VideoId: null
         );
@@ -47,12 +48,11 @@ public class AdminCreateShortVideoValidatorTests
     public async Task Validate_WithEmptyTitle_ShouldHaveError()
     {
         // Arrange
-        var fileMock = new Mock<IFormFile>();
-        fileMock.Setup(f => f.Length).Returns(1);
+        IFormFile fileMock = FileTestHelpers.CreateMockVideoFile();
         var command = new AdminCreateShortVideoCommand(
             Title: string.Empty,
             Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            VideoFile: fileMock.Object,
+            VideoFile: fileMock,
             AuthorId: Guid.NewGuid(),
             VideoId: null
         );
@@ -74,12 +74,11 @@ public class AdminCreateShortVideoValidatorTests
     public async Task Validate_WithTitleExceedingMaxLength_ShouldHaveError()
     {
         // Arrange
-        var fileMock = new Mock<IFormFile>();
-        fileMock.Setup(f => f.Length).Returns(1);
+        IFormFile fileMock = FileTestHelpers.CreateMockVideoFile();
         var command = new AdminCreateShortVideoCommand(
             Title: new string('a', TestConstants.Content.Editorial.ShortVideo.TitleMaxLength + 1),
             Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            VideoFile: fileMock.Object,
+            VideoFile: fileMock,
             AuthorId: Guid.NewGuid(),
             VideoId: null
         );
@@ -105,12 +104,11 @@ public class AdminCreateShortVideoValidatorTests
     public async Task Validate_WithEmptySlug_ShouldHaveError()
     {
         // Arrange
-        var fileMock = new Mock<IFormFile>();
-        fileMock.Setup(f => f.Length).Returns(1);
+        IFormFile fileMock = FileTestHelpers.CreateMockVideoFile();
         var command = new AdminCreateShortVideoCommand(
             Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
             Slug: string.Empty,
-            VideoFile: fileMock.Object,
+            VideoFile: fileMock,
             AuthorId: Guid.NewGuid(),
             VideoId: null
         );
@@ -132,12 +130,11 @@ public class AdminCreateShortVideoValidatorTests
     public async Task Validate_WithUppercaseSlug_ShouldHaveError()
     {
         // Arrange
-        var fileMock = new Mock<IFormFile>();
-        fileMock.Setup(f => f.Length).Returns(1);
+        IFormFile fileMock = FileTestHelpers.CreateMockVideoFile();
         var command = new AdminCreateShortVideoCommand(
             Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
             Slug: "Invalid-Slug",
-            VideoFile: fileMock.Object,
+            VideoFile: fileMock,
             AuthorId: Guid.NewGuid(),
             VideoId: null
         );
@@ -184,6 +181,136 @@ public class AdminCreateShortVideoValidatorTests
                 e.PropertyName == nameof(AdminCreateShortVideoCommand.VideoFile)
                 && e.ErrorMessage == "Short video file is required."
             );
+    }
+
+    [Fact]
+    public async Task Validate_WithEmptyVideoFile_ShouldHaveError()
+    {
+        // Arrange
+        IFormFile fileMock = FileTestHelpers.CreateMockFormFile("clip.mp4", "video/mp4", 0);
+        var command = new AdminCreateShortVideoCommand(
+            Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            VideoFile: fileMock,
+            AuthorId: Guid.NewGuid(),
+            VideoId: null
+        );
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreateShortVideoCommand.VideoFile)
+                && e.ErrorMessage == "Short video file must not be empty."
+            );
+    }
+
+    [Fact]
+    public async Task Validate_WithVideoFileExceedingMaxSize_ShouldHaveError()
+    {
+        // Arrange
+        long oversizedBytes = FileConstants.MaxVideoFileSizeBytes + 1;
+        IFormFile fileMock = FileTestHelpers.CreateMockFormFile("clip.mp4", "video/mp4", oversizedBytes);
+        var command = new AdminCreateShortVideoCommand(
+            Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            VideoFile: fileMock,
+            AuthorId: Guid.NewGuid(),
+            VideoId: null
+        );
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreateShortVideoCommand.VideoFile)
+                && e.ErrorMessage == "Short video file must not exceed 100 MB."
+            );
+    }
+
+    [Fact]
+    public async Task Validate_WithInvalidVideoExtension_ShouldHaveError()
+    {
+        // Arrange
+        IFormFile fileMock = FileTestHelpers.CreateMockFormFile("photo.jpg", "image/jpeg", 5_000_000);
+        var command = new AdminCreateShortVideoCommand(
+            Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            VideoFile: fileMock,
+            AuthorId: Guid.NewGuid(),
+            VideoId: null
+        );
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreateShortVideoCommand.VideoFile)
+                && e.ErrorMessage
+                    == $"Short video file must be one of: {string.Join(", ", FileConstants.AllowedVideoExtensions)}."
+            );
+    }
+
+    [Theory]
+    [InlineData("clip.mp4", "video/mp4")]
+    [InlineData("clip.mov", "video/quicktime")]
+    [InlineData("clip.webm", "video/webm")]
+    [InlineData("clip.avi", "video/x-msvideo")]
+    [InlineData("clip.mkv", "video/x-matroska")]
+    [InlineData("clip.3gp", "video/3gpp")]
+    public async Task Validate_WithAllowedVideoFormats_ShouldNotHaveErrors(string fileName, string contentType)
+    {
+        // Arrange
+        IFormFile fileMock = FileTestHelpers.CreateMockFormFile(fileName, contentType, 5_000_000);
+        var command = new AdminCreateShortVideoCommand(
+            Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            VideoFile: fileMock,
+            AuthorId: Guid.NewGuid(),
+            VideoId: null
+        );
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Validate_WithVideoFileAtMaxSize_ShouldNotHaveErrors()
+    {
+        // Arrange
+        IFormFile fileMock = FileTestHelpers.CreateMockFormFile(
+            "clip.mp4",
+            "video/mp4",
+            FileConstants.MaxVideoFileSizeBytes
+        );
+        var command = new AdminCreateShortVideoCommand(
+            Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            VideoFile: fileMock,
+            AuthorId: Guid.NewGuid(),
+            VideoId: null
+        );
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
     }
 
     #endregion
