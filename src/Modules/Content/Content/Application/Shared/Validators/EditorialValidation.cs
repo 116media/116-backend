@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using _116.BuildingBlocks.Constants;
 using _116.Content.Domain.Constants;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
@@ -250,7 +251,7 @@ public static partial class EditorialValidation
     }
 
     /// <summary>
-    /// Validates that a short video file is not null.
+    /// Validates a short video file: required, non-empty, max 100 MB, video formats only.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the video file property.</param>
@@ -259,7 +260,26 @@ public static partial class EditorialValidation
         this IRuleBuilder<T, IFormFile?> ruleBuilder
     )
     {
-        return ruleBuilder.NotNull().WithMessage("Short video file is required.");
+        return ruleBuilder
+            .NotNull()
+            .WithMessage("Short video file is required.")
+            .Must(file => file is null || file.Length > 0)
+            .WithMessage("Short video file must not be empty.")
+            .Must(file => file is null || file.Length <= FileConstants.MaxVideoFileSizeBytes)
+            .WithMessage($"Short video file must not exceed {FileConstants.MaxVideoFileSizeBytes / (1024 * 1024)} MB.")
+            .Must(file =>
+            {
+                if (file is null)
+                {
+                    return true;
+                }
+
+                string ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+                return FileConstants.AllowedVideoExtensions.Contains(ext);
+            })
+            .WithMessage(
+                $"Short video file must be one of: {string.Join(", ", FileConstants.AllowedVideoExtensions)}."
+            );
     }
 
     /// <summary>
