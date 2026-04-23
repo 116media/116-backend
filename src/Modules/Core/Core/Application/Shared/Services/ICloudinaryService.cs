@@ -43,6 +43,22 @@ public interface ICloudinaryService
     );
 
     /// <summary>
+    /// Uploads a video file to Cloudinary using the <c>video</c> resource type.
+    /// Validates against video constraints: 100 MB limit, video formats only.
+    /// </summary>
+    /// <param name="file">The video file to upload.</param>
+    /// <param name="publicId">The public ID for the file.</param>
+    /// <param name="folder">Optional folder path in Cloudinary.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Upload result containing the public URL, public ID, and metadata.</returns>
+    Task<CloudinaryUploadResult> UploadVideoAsync(
+        IFormFile file,
+        string publicId,
+        string? folder = null,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Deletes a single file from Cloudinary by its public ID.
     /// </summary>
     /// <param name="publicId">The Cloudinary public ID of the file to delete.</param>
