@@ -283,6 +283,59 @@ public class CloudinaryService : ICloudinaryService
         }
     }
 
+    /// <inheritdoc />
+    public async Task<CloudinaryUploadResult> UploadVideoAsync(
+        IFormFile file,
+        string publicId,
+        string? folder = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ValidateVideoFile(file);
+
+        try
+        {
+            var uploadParams = new VideoUploadParams
+            {
+                File = new FileDescription(file.FileName, file.OpenReadStream()),
+                PublicId = publicId,
+                Folder = folder,
+                Overwrite = true,
+                UniqueFilename = false,
+                UseFilename = false,
+            };
+
+            VideoUploadResult result = await _cloudinary.UploadAsync(uploadParams, cancellationToken);
+
+            if (result.Error != null)
+            {
+                _logger.LogError("Cloudinary video upload failed: {ErrorMessage}", result.Error.Message);
+                throw CoreErrors.FileUploadFailed(result.Error.Message);
+            }
+
+            _logger.LogInformation(
+                "Successfully uploaded video to Cloudinary: {PublicId}, Size: {Bytes} bytes",
+                result.PublicId,
+                result.Bytes
+            );
+
+            return new CloudinaryUploadResult(
+                PublicId: result.PublicId,
+                SecureUrl: result.SecureUrl.ToString(),
+                Format: result.Format,
+                Width: result.Width,
+                Height: result.Height,
+                Bytes: result.Bytes,
+                ResourceType: result.ResourceType
+            );
+        }
+        catch (Exception ex) when (ex is not BadRequestException)
+        {
+            _logger.LogError(ex, "Unexpected error during Cloudinary video upload");
+            throw CoreErrors.FileUploadFailed(ex.Message);
+        }
+    }
+
     /// <summary>
     /// Validates the uploaded file for size and type constraints.
     /// </summary>
@@ -356,6 +409,42 @@ public class CloudinaryService : ICloudinaryService
         if (!isValidContentType)
         {
             throw CoreErrors.InvalidFileType(contentType, string.Join(", ", FileConstants.AllowedRawFileMimeTypes));
+        }
+    }
+
+    /// <summary>
+    /// Validates a video file against size (100 MB) and type (video formats) constraints.
+    /// </summary>
+    private static void ValidateVideoFile(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            throw CoreErrors.FileRequired();
+        }
+
+        if (file.Length > FileConstants.MaxVideoFileSizeBytes)
+        {
+            const long maxSizeMb = FileConstants.MaxVideoFileSizeBytes / (1024 * 1024);
+            throw CoreErrors.FileTooLarge(file.Length, FileConstants.MaxVideoFileSizeBytes, maxSizeMb);
+        }
+
+        string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (!FileConstants.AllowedVideoExtensions.Contains(extension))
+        {
+            throw CoreErrors.InvalidFileExtension(extension, string.Join(", ", FileConstants.AllowedVideoExtensions));
+        }
+
+        string contentType = (file.ContentType?.Split(';')[0] ?? string.Empty).Trim().ToLowerInvariant();
+
+        bool isValidContentType =
+            FileConstants.AllowedVideoMimeTypes.Contains(contentType)
+            || string.IsNullOrEmpty(contentType)
+            || contentType == "application/octet-stream"
+            || contentType == "multipart/form-data";
+
+        if (!isValidContentType)
+        {
+            throw CoreErrors.InvalidFileType(contentType, string.Join(", ", FileConstants.AllowedVideoMimeTypes));
         }
     }
 }
