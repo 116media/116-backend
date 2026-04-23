@@ -41,7 +41,7 @@ public class AdminCreateShortVideoHandler(
 
         string storageKey = $"content/short-videos/{Guid.NewGuid()}";
 
-        CloudinaryUploadResult uploadResult = await cloudinaryService.UploadImageAsync(
+        CloudinaryUploadResult uploadResult = await cloudinaryService.UploadVideoAsync(
             file: command.VideoFile,
             publicId: storageKey,
             folder: "content/short-videos",
