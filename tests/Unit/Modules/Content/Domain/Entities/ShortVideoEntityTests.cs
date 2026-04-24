@@ -373,11 +373,11 @@ public class ShortVideoEntityTests
         );
 
         // Act
-        shortVideo.Update("New Title", "new-slug", null);
+        shortVideo.Update("New Title", null);
 
         // Assert
         shortVideo.Title.Should().Be("New Title");
-        shortVideo.Slug.Should().Be("new-slug");
+        shortVideo.Slug.Should().Be(TestConstants.Content.Editorial.ShortVideo.ValidSlug);
         shortVideo.VideoId.Should().BeNull();
         shortVideo.HasFullVideo.Should().BeFalse();
     }
@@ -397,7 +397,7 @@ public class ShortVideoEntityTests
         Guid parentVideoId = Guid.NewGuid();
 
         // Act
-        shortVideo.Update("Updated", "updated-slug", parentVideoId);
+        shortVideo.Update("Updated", parentVideoId);
 
         // Assert
         shortVideo.VideoId.Should().Be(parentVideoId);
@@ -420,7 +420,7 @@ public class ShortVideoEntityTests
         );
 
         // Act
-        shortVideo.Update("Standalone Now", "standalone-now", null);
+        shortVideo.Update("Standalone Now", null);
 
         // Assert
         shortVideo.VideoId.Should().BeNull();
@@ -444,7 +444,7 @@ public class ShortVideoEntityTests
         );
 
         // Act
-        Action act = () => shortVideo.Update(invalidTitle!, "valid-slug", null);
+        Action act = () => shortVideo.Update(invalidTitle!, null);
 
         // Assert
         act.Should().Throw<BadRequestException>();
