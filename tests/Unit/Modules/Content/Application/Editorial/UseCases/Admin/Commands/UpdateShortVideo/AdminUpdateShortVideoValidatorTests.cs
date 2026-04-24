@@ -22,7 +22,6 @@ public class AdminUpdateShortVideoValidatorTests
         var command = new AdminUpdateShortVideoCommand(
             Id: Guid.NewGuid().ToString(),
             Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             VideoId: null,
             VideoFile: null
         );
@@ -46,7 +45,6 @@ public class AdminUpdateShortVideoValidatorTests
         var command = new AdminUpdateShortVideoCommand(
             Id: "not-a-guid",
             Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             VideoId: null,
             VideoFile: null
         );
@@ -66,7 +64,6 @@ public class AdminUpdateShortVideoValidatorTests
         var command = new AdminUpdateShortVideoCommand(
             Id: string.Empty,
             Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             VideoId: null,
             VideoFile: null
         );
@@ -90,7 +87,6 @@ public class AdminUpdateShortVideoValidatorTests
         var command = new AdminUpdateShortVideoCommand(
             Id: Guid.NewGuid().ToString(),
             Title: string.Empty,
-            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             VideoId: null,
             VideoFile: null
         );
@@ -115,7 +111,6 @@ public class AdminUpdateShortVideoValidatorTests
         var command = new AdminUpdateShortVideoCommand(
             Id: Guid.NewGuid().ToString(),
             Title: new string('a', TestConstants.Content.Editorial.ShortVideo.TitleMaxLength + 1),
-            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             VideoId: null,
             VideoFile: null
         );
@@ -130,61 +125,6 @@ public class AdminUpdateShortVideoValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateShortVideoCommand.Title)
                 && e.ErrorMessage == "Short video title must not exceed 200 characters."
-            );
-    }
-
-    #endregion
-
-    #region Slug Validation Tests
-
-    [Fact]
-    public async Task Validate_WithEmptySlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = new AdminUpdateShortVideoCommand(
-            Id: Guid.NewGuid().ToString(),
-            Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            Slug: string.Empty,
-            VideoId: null,
-            VideoFile: null
-        );
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateShortVideoCommand.Slug)
-                && e.ErrorMessage == "Short video slug is required."
-            );
-    }
-
-    [Fact]
-    public async Task Validate_WithUppercaseSlug_ShouldHaveError()
-    {
-        // Arrange
-        var command = new AdminUpdateShortVideoCommand(
-            Id: Guid.NewGuid().ToString(),
-            Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            Slug: "Invalid-Slug",
-            VideoId: null,
-            VideoFile: null
-        );
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateShortVideoCommand.Slug)
-                && e.ErrorMessage
-                    == "Short video slug must be lowercase and contain only letters, numbers, and hyphens."
             );
     }
 
