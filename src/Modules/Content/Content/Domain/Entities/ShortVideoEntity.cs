@@ -193,6 +193,35 @@ public class ShortVideoEntity : Aggregate<Guid>
     }
 
     /// <summary>
+    /// Updates the editable metadata fields of this short video.
+    /// </summary>
+    /// <param name="title">The new display title.</param>
+    /// <param name="slug">The new URL-safe slug.</param>
+    /// <param name="videoId">Optional parent full video ID. <c>null</c> to make standalone.</param>
+    public void Update(string title, string slug, Guid? videoId)
+    {
+        if (string.IsNullOrWhiteSpace(value: title))
+        {
+            throw ShortVideoErrors.TitleRequired();
+        }
+
+        Title = title;
+        Slug = slug;
+        VideoId = videoId;
+        HasFullVideo = videoId.HasValue;
+    }
+
+    /// <summary>
+    /// Replaces the video file URL after a successful re-upload to cloud storage.
+    /// The storage key remains the same (Cloudinary overwrites in place).
+    /// </summary>
+    /// <param name="videoUrl">The new publicly accessible video URL.</param>
+    public void ReplaceVideoFile(string videoUrl)
+    {
+        VideoUrl = videoUrl;
+    }
+
+    /// <summary>
     /// Sets or replaces the thumbnail for this short video.
     /// Called by <c>UploadShortVideoThumbnailCommandHandler</c>.
     /// </summary>
