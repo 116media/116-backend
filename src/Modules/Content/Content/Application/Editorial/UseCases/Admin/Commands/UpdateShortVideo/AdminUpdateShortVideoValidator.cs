@@ -18,8 +18,6 @@ public class AdminUpdateShortVideoValidator : AbstractValidator<AdminUpdateShort
 
         RuleFor(x => x.Title).ValidShortVideoTitle();
 
-        RuleFor(x => x.Slug).ValidShortVideoSlug();
-
         When(
             x => x.VideoFile is not null,
             () =>
