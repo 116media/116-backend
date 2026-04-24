@@ -18,7 +18,9 @@ public class AdminAddOrderItemEndpointV1Tests
         var item = new OrderItemDto(
             Guid.NewGuid(),
             EnumCoreContentType.Article,
+            Guid.NewGuid(),
             "Technology",
+            null,
             null,
             null,
             false,
