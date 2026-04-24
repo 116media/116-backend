@@ -356,4 +356,124 @@ public class ShortVideoEntityTests
     }
 
     #endregion
+
+    #region Update Tests
+
+    [Fact]
+    public void Update_WithValidParams_ShouldUpdateFields()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
+            Guid.NewGuid(),
+            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            "https://cdn.test/video.mp4",
+            "content/short-videos/abc",
+            AuthorId
+        );
+
+        // Act
+        shortVideo.Update("New Title", "new-slug", null);
+
+        // Assert
+        shortVideo.Title.Should().Be("New Title");
+        shortVideo.Slug.Should().Be("new-slug");
+        shortVideo.VideoId.Should().BeNull();
+        shortVideo.HasFullVideo.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Update_WithVideoId_ShouldSetHasFullVideo()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
+            Guid.NewGuid(),
+            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            "https://cdn.test/video.mp4",
+            "content/short-videos/abc",
+            AuthorId
+        );
+        Guid parentVideoId = Guid.NewGuid();
+
+        // Act
+        shortVideo.Update("Updated", "updated-slug", parentVideoId);
+
+        // Assert
+        shortVideo.VideoId.Should().Be(parentVideoId);
+        shortVideo.HasFullVideo.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Update_WithNullVideoId_ShouldRemoveParentLink()
+    {
+        // Arrange
+        Guid parentVideoId = Guid.NewGuid();
+        ShortVideoEntity shortVideo = ShortVideoEntity.CreateTeaser(
+            Guid.NewGuid(),
+            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            "https://cdn.test/video.mp4",
+            "content/short-videos/abc",
+            parentVideoId,
+            AuthorId
+        );
+
+        // Act
+        shortVideo.Update("Standalone Now", "standalone-now", null);
+
+        // Assert
+        shortVideo.VideoId.Should().BeNull();
+        shortVideo.HasFullVideo.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Update_WithEmptyTitle_ShouldThrowBadRequestException(string? invalidTitle)
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
+            Guid.NewGuid(),
+            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            "https://cdn.test/video.mp4",
+            "content/short-videos/abc",
+            AuthorId
+        );
+
+        // Act
+        Action act = () => shortVideo.Update(invalidTitle!, "valid-slug", null);
+
+        // Assert
+        act.Should().Throw<BadRequestException>();
+    }
+
+    #endregion
+
+    #region ReplaceVideoFile Tests
+
+    [Fact]
+    public void ReplaceVideoFile_ShouldUpdateVideoUrl()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
+            Guid.NewGuid(),
+            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            "https://cdn.test/old-video.mp4",
+            "content/short-videos/abc",
+            AuthorId
+        );
+        const string newUrl = "https://cdn.test/new-video.mp4";
+
+        // Act
+        shortVideo.ReplaceVideoFile(newUrl);
+
+        // Assert
+        shortVideo.VideoUrl.Should().Be(newUrl);
+    }
+
+    #endregion
 }
