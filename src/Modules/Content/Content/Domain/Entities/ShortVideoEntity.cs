@@ -194,11 +194,11 @@ public class ShortVideoEntity : Aggregate<Guid>
 
     /// <summary>
     /// Updates the editable metadata fields of this short video.
+    /// Slug is immutable after creation to preserve public URLs.
     /// </summary>
     /// <param name="title">The new display title.</param>
-    /// <param name="slug">The new URL-safe slug.</param>
     /// <param name="videoId">Optional parent full video ID. <c>null</c> to make standalone.</param>
-    public void Update(string title, string slug, Guid? videoId)
+    public void Update(string title, Guid? videoId)
     {
         if (string.IsNullOrWhiteSpace(value: title))
         {
@@ -206,7 +206,6 @@ public class ShortVideoEntity : Aggregate<Guid>
         }
 
         Title = title;
-        Slug = slug;
         VideoId = videoId;
         HasFullVideo = videoId.HasValue;
     }
