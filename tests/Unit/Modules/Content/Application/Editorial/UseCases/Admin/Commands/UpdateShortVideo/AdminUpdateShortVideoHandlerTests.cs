@@ -44,14 +44,12 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
     private static AdminUpdateShortVideoCommand BuildCommand(
         string? id = null,
         string? title = null,
-        string? slug = null,
         Guid? videoId = null,
         IFormFile? videoFile = null
     ) =>
         new(
             Id: id ?? Guid.NewGuid().ToString(),
             Title: title ?? TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            Slug: slug ?? "new-slug",
             VideoId: videoId,
             VideoFile: videoFile
         );
@@ -63,7 +61,7 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ShortVideoEntity existing = ShortVideoFactory.Create();
-        var command = BuildCommand(id: existing.Id.ToString(), slug: "updated-slug");
+        var command = BuildCommand(id: existing.Id.ToString());
 
         _shortVideoRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
@@ -83,35 +81,12 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task Handle_WithSameSlug_ShouldSkipSlugConflictCheck()
-    {
-        // Arrange
-        ShortVideoEntity existing = ShortVideoFactory.CreateWithSlug("existing-slug");
-        var command = BuildCommand(id: existing.Id.ToString(), slug: "existing-slug");
-
-        _shortVideoRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(existing);
-
-        // Act
-        AdminUpdateShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-        _shortVideoRepositoryMock.Verify(
-            x => x.GetBySlugAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
-        _unitOfWorkMock.VerifyCommitCalled();
-    }
-
-    [Fact]
     public async Task Handle_WithVideoId_ShouldLinkToParentVideo()
     {
         // Arrange
         ShortVideoEntity existing = ShortVideoFactory.Create();
         Guid parentVideoId = Guid.NewGuid();
-        var command = BuildCommand(id: existing.Id.ToString(), slug: existing.Slug, videoId: parentVideoId);
+        var command = BuildCommand(id: existing.Id.ToString(), videoId: parentVideoId);
 
         _shortVideoRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
@@ -132,7 +107,7 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
         // Arrange
         Guid videoId = Guid.NewGuid();
         ShortVideoEntity existing = ShortVideoFactory.CreateTeaser(videoId);
-        var command = BuildCommand(id: existing.Id.ToString(), slug: existing.Slug, videoId: null);
+        var command = BuildCommand(id: existing.Id.ToString(), videoId: null);
 
         _shortVideoRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
@@ -152,7 +127,7 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
         // Arrange
         ShortVideoEntity existing = ShortVideoFactory.Create();
         IFormFile videoFile = FileTestHelpers.CreateMockVideoFile();
-        var command = BuildCommand(id: existing.Id.ToString(), slug: existing.Slug, videoFile: videoFile);
+        var command = BuildCommand(id: existing.Id.ToString(), videoFile: videoFile);
 
         _shortVideoRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
@@ -172,7 +147,7 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ShortVideoEntity existing = ShortVideoFactory.Create();
-        var command = BuildCommand(id: existing.Id.ToString(), slug: existing.Slug, videoFile: null);
+        var command = BuildCommand(id: existing.Id.ToString(), videoFile: null);
 
         _shortVideoRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
@@ -206,28 +181,6 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenSlugConflict_ShouldThrowConflictException()
-    {
-        // Arrange
-        ShortVideoEntity existing = ShortVideoFactory.Create();
-        ShortVideoEntity conflict = ShortVideoFactory.CreateWithSlug("taken-slug");
-        var command = BuildCommand(id: existing.Id.ToString(), slug: "taken-slug");
-
-        _shortVideoRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(existing);
-        _shortVideoRepositoryMock
-            .Setup(x => x.GetBySlugAsync("taken-slug", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(conflict);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<ConflictException>();
     }
 
     #endregion
