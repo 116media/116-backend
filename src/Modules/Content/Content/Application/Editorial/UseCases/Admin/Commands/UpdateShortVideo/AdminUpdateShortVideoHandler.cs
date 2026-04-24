@@ -37,27 +37,14 @@ public class AdminUpdateShortVideoHandler(
             cancellationToken: cancellationToken
         );
 
-        if (!string.Equals(shortVideo.Slug, command.Slug, StringComparison.Ordinal))
-        {
-            ShortVideoEntity? slugConflict = await shortVideoRepository.GetBySlugAsync(
-                slug: command.Slug,
-                cancellationToken: cancellationToken
-            );
-
-            if (slugConflict is not null)
-            {
-                throw ShortVideoErrors.SlugAlreadyExists(slug: command.Slug);
-            }
-        }
-
-        shortVideo.Update(title: command.Title, slug: command.Slug, videoId: command.VideoId);
+        shortVideo.Update(title: command.Title, videoId: command.VideoId);
 
         if (command.VideoFile is not null)
         {
             CloudinaryUploadResult uploadResult = await cloudinaryService.UploadVideoAsync(
+                folder: null,
                 file: command.VideoFile,
                 publicId: shortVideo.VideoStorageKey,
-                folder: null,
                 cancellationToken: cancellationToken
             );
 
