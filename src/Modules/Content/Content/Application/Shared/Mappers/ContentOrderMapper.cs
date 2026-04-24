@@ -26,7 +26,9 @@ public static class ContentOrderMapper
 
         config
             .NewConfig<ContentOrderItemEntity, OrderItemDto>()
+            .Map(dest => dest.CategoryId, src => src.CategoryId)
             .Map(dest => dest.CategoryName, src => src.Category.Name)
+            .Map(dest => dest.PromotionLevelId, src => src.PromotionLevelId)
             .Map(dest => dest.PromotionLevelName, src => src.PromotionLevel != null ? src.PromotionLevel.Name : null)
             .Map(dest => dest.PromoPriceUsd, src => src.PromoPriceSnapshotUsd)
             .Map(dest => dest.Tiers, src => src.Tiers);
@@ -52,7 +54,9 @@ public static class ContentOrderMapper
 
         config
             .NewConfig<ContentOrderEntity, ContentOrderDetailDto>()
+            .Map(dest => dest.CustomerId, src => src.CustomerId)
             .Map(dest => dest.CustomerName, src => src.Customer.FullName)
+            .Map(dest => dest.PackageId, src => src.PackageId)
             .Map(dest => dest.Items, src => src.Items)
             .Map(dest => dest.Payment, src => src.Payment);
     }
