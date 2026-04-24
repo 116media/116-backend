@@ -41,7 +41,6 @@ public class AdminUpdateShortVideoEndpointV1 : ICarterModule
                 async (
                     string id,
                     string title,
-                    string slug,
                     IDispatcher dispatcher,
                     Guid? videoId = null,
                     IFormFile? videoFile = null
@@ -50,7 +49,6 @@ public class AdminUpdateShortVideoEndpointV1 : ICarterModule
                     var command = new AdminUpdateShortVideoCommand(
                         Id: id,
                         Title: title,
-                        Slug: slug,
                         VideoId: videoId,
                         VideoFile: videoFile
                     );
@@ -73,7 +71,6 @@ public class AdminUpdateShortVideoEndpointV1 : ICarterModule
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
-            .ProducesProblem(statusCode: StatusCodes.Status409Conflict)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }
