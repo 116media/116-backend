@@ -20,16 +20,14 @@ public class PackageEntityTests
         var id = Guid.NewGuid();
         string name = TestConstants.Content.Package.ValidName;
         string description = TestConstants.Content.Package.ValidDescription;
-        decimal price = TestConstants.Content.Package.ValidFlatPriceUsd;
 
         // Act
-        var entity = PackageEntity.Create(id, name, description, price);
+        var entity = PackageEntity.Create(id, name, description);
 
         // Assert
         entity.Id.Should().Be(id);
         entity.Name.Should().Be(name);
         entity.Description.Should().Be(description);
-        entity.FlatPriceUsd.Should().Be(price);
         entity.IsActive.Should().BeTrue();
     }
 
@@ -40,27 +38,11 @@ public class PackageEntityTests
         var entity = PackageEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.Package.ValidName,
-            TestConstants.Content.Package.ValidDescription,
-            TestConstants.Content.Package.ValidFlatPriceUsd
+            TestConstants.Content.Package.ValidDescription
         );
 
         // Assert
         entity.Description.Should().Be(TestConstants.Content.Package.ValidDescription);
-    }
-
-    [Fact]
-    public void Create_WithZeroPrice_ShouldSucceed()
-    {
-        // Act
-        var entity = PackageEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.Package.ValidName,
-            TestConstants.Content.Package.ValidDescription,
-            TestConstants.Content.Package.ZeroFlatPriceUsd
-        );
-
-        // Assert
-        entity.FlatPriceUsd.Should().Be(0m);
     }
 
     [Theory]
@@ -71,25 +53,7 @@ public class PackageEntityTests
     {
         // Act
         Action act = () =>
-            PackageEntity.Create(Guid.NewGuid(), invalidName!, TestConstants.Content.Package.ValidDescription, 100m);
-
-        // Assert
-        act.Should().Throw<BadRequestException>();
-    }
-
-    [Theory]
-    [InlineData(-0.01)]
-    [InlineData(-100)]
-    public void Create_WithNegativePrice_ShouldThrowBadRequestException(decimal invalidPrice)
-    {
-        // Act
-        Action act = () =>
-            PackageEntity.Create(
-                Guid.NewGuid(),
-                TestConstants.Content.Package.ValidName,
-                TestConstants.Content.Package.ValidDescription,
-                invalidPrice
-            );
+            PackageEntity.Create(Guid.NewGuid(), invalidName!, TestConstants.Content.Package.ValidDescription);
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -106,8 +70,7 @@ public class PackageEntityTests
         var entity = PackageEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.Package.ValidName,
-            TestConstants.Content.Package.ValidDescription,
-            100m
+            TestConstants.Content.Package.ValidDescription
         );
         entity.Deactivate();
 
@@ -123,8 +86,7 @@ public class PackageEntityTests
         var entity = PackageEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.Package.ValidName,
-            TestConstants.Content.Package.ValidDescription,
-            100m
+            TestConstants.Content.Package.ValidDescription
         );
 
         // Act & Assert
@@ -138,8 +100,7 @@ public class PackageEntityTests
         var entity = PackageEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.Package.ValidName,
-            TestConstants.Content.Package.ValidDescription,
-            100m
+            TestConstants.Content.Package.ValidDescription
         );
 
         // Act & Assert
@@ -154,8 +115,7 @@ public class PackageEntityTests
         var entity = PackageEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.Package.ValidName,
-            TestConstants.Content.Package.ValidDescription,
-            100m
+            TestConstants.Content.Package.ValidDescription
         );
         entity.Deactivate();
 
