@@ -1,3 +1,4 @@
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder.Contracts;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Persistence;
@@ -9,14 +10,17 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder;
 
 /// <summary>
 /// Handles the <see cref="AdminCreateOrderCommand" /> to open a new content order.
+/// When a package is selected, delegates item/tier creation to the factory.
 /// </summary>
 /// <param name="customerRepository">Repository for customer data access operations.</param>
 /// <param name="packageRepository">Repository for package data access operations.</param>
+/// <param name="createOrderFactory">Factory for populating orders from package slots.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminCreateOrderHandler(
     ICustomerRepository customerRepository,
     IPackageRepository packageRepository,
+    ICreateOrderFactory createOrderFactory,
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork
 ) : ICommandHandler<AdminCreateOrderCommand, AdminCreateOrderResult>
@@ -34,37 +38,55 @@ public class AdminCreateOrderHandler(
             cancellationToken: cancellationToken
         );
 
-        if (customer is null)
+        if (customer is not null)
         {
-            throw CustomerErrors.NotFound(id: customerId);
-        }
+            PackageEntity? package = null;
 
-        if (command.PackageId.HasValue)
-        {
-            PackageEntity? package = await packageRepository.GetByIdWithSlotsAsync(
-                id: command.PackageId.Value,
-                cancellationToken: cancellationToken
+            if (command.PackageId.HasValue)
+            {
+                package = await packageRepository.GetByIdWithSlotsAsync(
+                    id: command.PackageId.Value,
+                    cancellationToken: cancellationToken
+                );
+
+                if (package is null || !package.IsActive)
+                {
+                    throw PackageErrors.NotFound(id: command.PackageId.Value);
+                }
+            }
+
+            var order = ContentOrderEntity.Create(
+                id: Guid.NewGuid(),
+                customerId: customerId,
+                packageId: command.PackageId
             );
 
-            if (package is null || !package.IsActive)
+            await contentOrderRepository.AddAsync(order: order, ct: cancellationToken);
+
+            int itemCount = 0;
+
+            if (package is not null)
             {
-                throw PackageErrors.NotFound(id: command.PackageId.Value);
+                itemCount = await createOrderFactory.PopulateFromPackageAsync(
+                    order: order,
+                    package: package,
+                    ct: cancellationToken
+                );
             }
+
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+            var dto = new ContentOrderSummaryDto(
+                Id: order.Id,
+                Status: order.Status,
+                CustomerName: customer.FullName,
+                TotalAmountUsd: order.TotalAmountUsd,
+                ItemCount: itemCount
+            );
+
+            return new AdminCreateOrderResult(Order: dto);
         }
 
-        var order = ContentOrderEntity.Create(id: Guid.NewGuid(), customerId: customerId, packageId: command.PackageId);
-
-        await contentOrderRepository.AddAsync(order: order, ct: cancellationToken);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        var dto = new ContentOrderSummaryDto(
-            Id: order.Id,
-            CustomerName: customer.FullName,
-            Status: order.Status,
-            TotalAmountUsd: order.TotalAmountUsd,
-            ItemCount: 0
-        );
-
-        return new AdminCreateOrderResult(Order: dto);
+        throw CustomerErrors.NotFound(id: customerId);
     }
 }
