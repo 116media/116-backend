@@ -4,13 +4,12 @@ using _116.Shared.Contracts.Application.CQRS;
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreatePackage;
 
 /// <summary>
-/// Command for creating a new content package with a flat price.
+/// Command for creating a new content package.
+/// Price is derived from the required slots' category tier prices.
 /// </summary>
 /// <param name="Name">The display name of the package.</param>
 /// <param name="Description">The description of what the package includes.</param>
-/// <param name="FlatPriceUsd">The flat price in USD for the entire package (must be >= 0).</param>
-public record AdminCreatePackageCommand(string Name, string Description, decimal FlatPriceUsd)
-    : ICommand<AdminCreatePackageResult>;
+public record AdminCreatePackageCommand(string Name, string Description) : ICommand<AdminCreatePackageResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminCreatePackageCommand" /> containing the created package details.
