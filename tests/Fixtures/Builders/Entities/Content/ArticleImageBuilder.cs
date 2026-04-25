@@ -24,49 +24,63 @@ internal class ArticleImageBuilder
         _articleId = articleId;
     }
 
-    /// <summary>Sets the image record ID.</summary>
+    /// <summary>
+    /// Sets the image record ID.
+    /// </summary>
     public ArticleImageBuilder WithId(Guid id)
     {
         _id = id;
         return this;
     }
 
-    /// <summary>Sets the article ID.</summary>
+    /// <summary>
+    /// Sets the article ID.
+    /// </summary>
     public ArticleImageBuilder WithArticleId(Guid articleId)
     {
         _articleId = articleId;
         return this;
     }
 
-    /// <summary>Sets the storage key.</summary>
+    /// <summary>
+    /// Sets the storage key.
+    /// </summary>
     public ArticleImageBuilder WithStorageKey(string storageKey)
     {
         _storageKey = storageKey;
         return this;
     }
 
-    /// <summary>Sets the public URL.</summary>
+    /// <summary>
+    /// Sets the public URL.
+    /// </summary>
     public ArticleImageBuilder WithUrl(string url)
     {
         _url = url;
         return this;
     }
 
-    /// <summary>Marks the image as a cover image.</summary>
+    /// <summary>
+    /// Marks the image as a cover image.
+    /// </summary>
     public ArticleImageBuilder AsCover()
     {
         _imageType = EnumArticleImageType.Cover;
         return this;
     }
 
-    /// <summary>Marks the image as a body image.</summary>
+    /// <summary>
+    /// Marks the image as a body image.
+    /// </summary>
     public ArticleImageBuilder AsBody()
     {
         _imageType = EnumArticleImageType.Body;
         return this;
     }
 
-    /// <summary>Builds the <see cref="ArticleImageEntity"/> instance.</summary>
+    /// <summary>
+    /// Builds the <see cref="ArticleImageEntity"/> instance.
+    /// </summary>
     public ArticleImageEntity Build()
     {
         return ArticleImageEntity.Create(
