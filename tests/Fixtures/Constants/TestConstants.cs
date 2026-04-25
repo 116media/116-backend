@@ -229,7 +229,9 @@ public static class TestConstants
     /// </summary>
     public static class Content
     {
-        /// <summary>Constants for ContentType entity testing.</summary>
+        /// <summary>
+        /// Constants for ContentType entity testing.
+        /// </summary>
         public static class ContentType
         {
             public const int NameMaxLength = 30;
@@ -237,7 +239,9 @@ public static class TestConstants
             public const string AnotherValidName = "Video";
         }
 
-        /// <summary>Constants for PricingTier entity testing.</summary>
+        /// <summary>
+        /// Constants for PricingTier entity testing.
+        /// </summary>
         public static class PricingTier
         {
             public const int NameMaxLength = 40;
@@ -247,7 +251,9 @@ public static class TestConstants
             public const string ValidDescription = "Base upload fee for content.";
         }
 
-        /// <summary>Constants for PromotionLevel entity testing.</summary>
+        /// <summary>
+        /// Constants for PromotionLevel entity testing.
+        /// </summary>
         public static class PromotionLevel
         {
             public const int NameMaxLength = 40;
@@ -258,7 +264,9 @@ public static class TestConstants
             public const decimal ZeroPriceUsd = 0m;
         }
 
-        /// <summary>Constants for Tag entity testing.</summary>
+        /// <summary>
+        /// Constants for Tag entity testing.
+        /// </summary>
         public static class Tag
         {
             public const int NameMaxLength = 50;
@@ -269,7 +277,9 @@ public static class TestConstants
             public const string AnotherValidSlug = "kinshasa";
         }
 
-        /// <summary>Constants for Category entity testing.</summary>
+        /// <summary>
+        /// Constants for Category entity testing.
+        /// </summary>
         public static class Category
         {
             public const int NameMaxLength = 60;
@@ -282,7 +292,9 @@ public static class TestConstants
             public const string ValidDescription = "Artist profile category.";
         }
 
-        /// <summary>Constants for Customer entity testing.</summary>
+        /// <summary>
+        /// Constants for Customer entity testing.
+        /// </summary>
         public static class Customer
         {
             public const int FullNameMaxLength = 100;
@@ -298,7 +310,9 @@ public static class TestConstants
             public const string ValidNotes = "VIP customer with special pricing.";
         }
 
-        /// <summary>Constants for Package entity testing.</summary>
+        /// <summary>
+        /// Constants for Package entity testing.
+        /// </summary>
         public static class Package
         {
             public const int NameMaxLength = 100;
@@ -306,18 +320,20 @@ public static class TestConstants
             public const string ValidName = "Artist Starter Pack";
             public const string AnotherValidName = "Premium Bundle";
             public const string ValidDescription = "Includes 1 artist profile and 1 interview.";
-            public const decimal ValidFlatPriceUsd = 300m;
-            public const decimal ZeroFlatPriceUsd = 0m;
         }
 
-        /// <summary>Constants for PackageSlot entity testing.</summary>
+        /// <summary>
+        /// Constants for PackageSlot entity testing.
+        /// </summary>
         public static class PackageSlot
         {
             public const int ValidQuantity = 1;
             public const int AnotherValidQuantity = 2;
         }
 
-        /// <summary>Constants for CategoryPricing entity testing.</summary>
+        /// <summary>
+        /// Constants for CategoryPricing entity testing.
+        /// </summary>
         public static class CategoryPricing
         {
             public const decimal ValidPriceUsd = 25m;
@@ -325,7 +341,9 @@ public static class TestConstants
             public const decimal UpdatedPriceUsd = 50m;
         }
 
-        /// <summary>Constants for Commerce entity testing (orders, payments, items, tiers).</summary>
+        /// <summary>
+        /// Constants for Commerce entity testing (orders, payments, items, tiers).
+        /// </summary>
         public static class Commerce
         {
             public const decimal ValidTierPriceUsd = 100.00m;
@@ -335,10 +353,14 @@ public static class TestConstants
             public const string ValidRejectionNotes = "Payment proof is not legible, please resubmit.";
         }
 
-        /// <summary>Constants for Editorial entity testing (Article, Video, ShortVideo, Lyrics).</summary>
+        /// <summary>
+        /// Constants for Editorial entity testing (Article, Video, ShortVideo, Lyrics).
+        /// </summary>
         public static class Editorial
         {
-            /// <summary>Constants for Article entity testing.</summary>
+            /// <summary>
+            /// Constants for Article entity testing.
+            /// </summary>
             public static class Article
             {
                 public const int TitleMaxLength = 100;
@@ -355,7 +377,9 @@ public static class TestConstants
                 public const string ValidRejectionReason = "Le contenu n'est pas conforme aux standards éditoriaux.";
             }
 
-            /// <summary>Constants for Video entity testing.</summary>
+            /// <summary>
+            /// Constants for Video entity testing.
+            /// </summary>
             public static class Video
             {
                 public const int TitleMaxLength = 100;
@@ -370,7 +394,9 @@ public static class TestConstants
                 public const string ValidRejectionReason = "La qualité vidéo ne répond pas aux critères requis.";
             }
 
-            /// <summary>Constants for ShortVideo entity testing.</summary>
+            /// <summary>
+            /// Constants for ShortVideo entity testing.
+            /// </summary>
             public static class ShortVideo
             {
                 public const int TitleMaxLength = 200;
@@ -382,7 +408,9 @@ public static class TestConstants
                 public const string ValidVideoStorageKey = "content/shorts/test-short";
             }
 
-            /// <summary>Constants for Lyrics entity testing.</summary>
+            /// <summary>
+            /// Constants for Lyrics entity testing.
+            /// </summary>
             public static class Lyrics
             {
                 public const int SongTitleMaxLength = 200;
@@ -396,7 +424,9 @@ public static class TestConstants
                 public const string ValidLanguage = "fr";
             }
 
-            /// <summary>Constants for ArticleImage entity testing.</summary>
+            /// <summary>
+            /// Constants for ArticleImage entity testing.
+            /// </summary>
             public static class ArticleImage
             {
                 public const string ValidStorageKey = "content/articles/test-image-key";
@@ -405,7 +435,9 @@ public static class TestConstants
                 public const string AnotherUrl = "https://res.cloudinary.com/test/image/upload/v1/another-image.jpg";
             }
 
-            /// <summary>Cloudinary test upload result values.</summary>
+            /// <summary>
+            /// Cloudinary test upload result values.
+            /// </summary>
             public static class Cloudinary
             {
                 public const string ValidPublicId = "content/articles/uploaded-image";
@@ -419,7 +451,9 @@ public static class TestConstants
             }
         }
 
-        /// <summary>Constants for Interactions entity testing (likes, bookmarks, comments, playlists, ratings, shares).</summary>
+        /// <summary>
+        /// Constants for Interactions entity testing (likes, bookmarks, comments, playlists, ratings, shares).
+        /// </summary>
         public static class Interactions
         {
             public const string ValidCommentBody = "This is a valid test comment body.";
