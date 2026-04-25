@@ -31,25 +31,28 @@ public class RefreshTokenFactory(
             cancellationToken: cancellationToken
         );
 
-        if (session is null)
+        if (session is not null)
         {
-            throw SessionErrors.InvalidRefreshToken();
+            var (newRefreshToken, newRefreshTokenHash, newRefreshTokenExpiresAt) = GenerateNewRefreshToken();
+
+            await sessionRepository.UpdateRefreshTokenAsync(
+                sessionId: session.Id,
+                newRefreshTokenHash: newRefreshTokenHash,
+                newExpiresAt: newRefreshTokenExpiresAt,
+                cancellationToken: cancellationToken
+            );
+
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+            session.UpdateRefreshToken(
+                newRefreshTokenHash: newRefreshTokenHash,
+                newExpiresAt: newRefreshTokenExpiresAt
+            );
+
+            return new RefreshTokenData(User: session.User, Session: session, NewRefreshToken: newRefreshToken);
         }
 
-        var (newRefreshToken, newRefreshTokenHash, newRefreshTokenExpiresAt) = GenerateNewRefreshToken();
-
-        await sessionRepository.UpdateRefreshTokenAsync(
-            sessionId: session.Id,
-            newRefreshTokenHash: newRefreshTokenHash,
-            newExpiresAt: newRefreshTokenExpiresAt,
-            cancellationToken: cancellationToken
-        );
-
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        session.UpdateRefreshToken(newRefreshTokenHash: newRefreshTokenHash, newExpiresAt: newRefreshTokenExpiresAt);
-
-        return new RefreshTokenData(User: session.User, Session: session, NewRefreshToken: newRefreshToken);
+        throw SessionErrors.InvalidRefreshToken();
     }
 
     /// <summary>
