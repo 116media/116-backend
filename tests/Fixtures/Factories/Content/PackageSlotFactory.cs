@@ -8,22 +8,42 @@ namespace _116.Tests.Fixtures.Factories.Content;
 /// </summary>
 public static class PackageSlotFactory
 {
-    /// <summary>Creates a slot for a package with a specific category.</summary>
+    /// <summary>
+    /// Creates a slot for a package with a specific category.
+    /// </summary>
     public static PackageSlotEntity Create(Guid packageId) => new PackageSlotBuilder(packageId).Build();
 
-    /// <summary>Creates a slot for a package with a specific category ID.</summary>
+    /// <summary>
+    /// Creates a slot for a package with a specific category ID.
+    /// </summary>
     public static PackageSlotEntity Create(Guid packageId, Guid categoryId) =>
         new PackageSlotBuilder(packageId).WithCategoryId(categoryId).Build();
 
-    /// <summary>Creates an open slot (no category assigned — client can choose any).</summary>
+    /// <summary>
+    /// Creates an open slot (no category assigned — client can choose any).
+    /// </summary>
     public static PackageSlotEntity CreateOpen(Guid packageId) =>
         new PackageSlotBuilder(packageId).WithCategoryId(null).Build();
 
-    /// <summary>Creates a required slot.</summary>
+    /// <summary>
+    /// Creates a required slot.
+    /// </summary>
     public static PackageSlotEntity CreateRequired(Guid packageId) =>
         new PackageSlotBuilder(packageId).WithIsRequired(true).Build();
 
-    /// <summary>Creates an optional (non-required) slot.</summary>
+    /// <summary>
+    /// Creates an optional (non-required) slot.
+    /// </summary>
     public static PackageSlotEntity CreateOptional(Guid packageId) =>
         new PackageSlotBuilder(packageId).AsOptional().Build();
+
+    /// <summary>
+    /// Creates a slot with explicit category, required flag, and quantity.
+    /// </summary>
+    public static PackageSlotEntity Create(Guid packageId, Guid? categoryId, bool isRequired, int quantity) =>
+        new PackageSlotBuilder(packageId)
+            .WithCategoryId(categoryId)
+            .WithIsRequired(isRequired)
+            .WithQuantity(quantity)
+            .Build();
 }
