@@ -16,14 +16,12 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 public class AdminCreateOrderFactoryTests
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
-    private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly AdminCreateOrderFactory _factory;
 
     public AdminCreateOrderFactoryTests()
     {
         _categoryRepositoryMock = MockCategoryRepository.Create();
-        _orderRepositoryMock = MockContentOrderRepository.Create();
-        _factory = new AdminCreateOrderFactory(_categoryRepositoryMock.Object, _orderRepositoryMock.Object);
+        _factory = new AdminCreateOrderFactory(_categoryRepositoryMock.Object);
     }
 
     #region PopulateFromPackageAsync Tests
