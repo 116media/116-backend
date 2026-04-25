@@ -15,11 +15,11 @@ public class OrderPaymentFactory(IContentOrderRepository contentOrderRepository)
     {
         ContentPaymentEntity? payment = await contentOrderRepository.GetPaymentByOrderIdAsync(orderId: orderId, ct: ct);
 
-        if (payment is null)
+        if (payment is not null)
         {
-            throw ContentOrderErrors.PaymentNotFound(orderId: orderId);
+            return payment;
         }
 
-        return payment;
+        throw ContentOrderErrors.PaymentNotFound(orderId: orderId);
     }
 }
