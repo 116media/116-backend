@@ -8,7 +8,9 @@ namespace _116.Tests.Fixtures.Factories.Content;
 /// </summary>
 public static class ArticleCommentFactory
 {
-    /// <summary>Creates a non-deleted comment on the given article by the given user.</summary>
+    /// <summary>
+    /// Creates a non-deleted comment on the given article by the given user.
+    /// </summary>
     public static ArticleCommentEntity Create(Guid articleId, Guid userId) =>
         ArticleCommentEntity.Create(
             id: Guid.NewGuid(),
@@ -17,7 +19,9 @@ public static class ArticleCommentFactory
             body: TestConstants.Content.Interactions.ValidCommentBody
         );
 
-    /// <summary>Creates a non-deleted comment with a specific ID.</summary>
+    /// <summary>
+    /// Creates a non-deleted comment with a specific ID.
+    /// </summary>
     public static ArticleCommentEntity CreateWithId(Guid id, Guid articleId, Guid userId) =>
         ArticleCommentEntity.Create(
             id: id,
@@ -26,7 +30,9 @@ public static class ArticleCommentFactory
             body: TestConstants.Content.Interactions.ValidCommentBody
         );
 
-    /// <summary>Creates a soft-deleted comment on the given article by the given user.</summary>
+    /// <summary>
+    /// Creates a soft-deleted comment on the given article by the given user.
+    /// </summary>
     public static ArticleCommentEntity CreateDeleted(Guid articleId, Guid userId)
     {
         ArticleCommentEntity comment = Create(articleId, userId);
