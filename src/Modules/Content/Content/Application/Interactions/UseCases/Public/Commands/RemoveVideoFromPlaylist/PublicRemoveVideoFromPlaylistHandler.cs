@@ -25,24 +25,24 @@ public class PublicRemoveVideoFromPlaylistHandler(IPlaylistRepository playlistRe
             cancellationToken: cancellationToken
         );
 
-        if (playlist is null)
+        if (playlist is not null)
         {
-            throw PlaylistErrors.NotFound(id: command.PlaylistId);
+            if (playlist.UserId != command.UserId)
+            {
+                throw PlaylistErrors.NotOwner();
+            }
+
+            await playlistRepository.RemoveVideoAsync(
+                playlistId: command.PlaylistId,
+                videoId: command.VideoId,
+                cancellationToken: cancellationToken
+            );
+
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+            return new PublicRemoveVideoFromPlaylistResult(IsSuccess: true);
         }
 
-        if (playlist.UserId != command.UserId)
-        {
-            throw PlaylistErrors.NotOwner();
-        }
-
-        await playlistRepository.RemoveVideoAsync(
-            playlistId: command.PlaylistId,
-            videoId: command.VideoId,
-            cancellationToken: cancellationToken
-        );
-
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        return new PublicRemoveVideoFromPlaylistResult(IsSuccess: true);
+        throw PlaylistErrors.NotFound(id: command.PlaylistId);
     }
 }
