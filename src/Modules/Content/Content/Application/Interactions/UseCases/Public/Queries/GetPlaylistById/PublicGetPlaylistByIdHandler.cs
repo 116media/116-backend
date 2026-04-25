@@ -26,17 +26,17 @@ public class PublicGetPlaylistByIdHandler(IPlaylistRepository playlistRepository
             cancellationToken: cancellationToken
         );
 
-        if (playlist is null)
+        if (playlist is not null)
         {
-            throw PlaylistErrors.NotFound(id: query.Id);
+            if (playlist.UserId != query.UserId)
+            {
+                throw PlaylistErrors.NotOwner();
+            }
+
+            var dto = playlist.ToPlaylistDetailDto(mapper);
+            return new PublicGetPlaylistByIdResult(Playlist: dto);
         }
 
-        if (playlist.UserId != query.UserId)
-        {
-            throw PlaylistErrors.NotOwner();
-        }
-
-        var dto = playlist.ToPlaylistDetailDto(mapper);
-        return new PublicGetPlaylistByIdResult(Playlist: dto);
+        throw PlaylistErrors.NotFound(id: query.Id);
     }
 }
