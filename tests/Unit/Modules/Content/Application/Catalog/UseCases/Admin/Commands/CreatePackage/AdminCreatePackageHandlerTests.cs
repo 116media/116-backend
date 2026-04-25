@@ -36,16 +36,13 @@ public class AdminCreatePackageHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         string name = TestConstants.Content.Package.ValidName;
-        decimal price = TestConstants.Content.Package.ValidFlatPriceUsd;
 
         var command = new AdminCreatePackageCommand(
             Name: name,
-            Description: TestConstants.Content.Package.ValidDescription,
-            FlatPriceUsd: price
+            Description: TestConstants.Content.Package.ValidDescription
         );
 
         PackageEntity created = PackageFactory.Create(name);
-        // The handler creates a new entity with Guid.NewGuid(), so we match any Guid
         _packageRepositoryMock
             .Setup(x => x.GetByIdWithSlotsOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(created);
@@ -68,8 +65,7 @@ public class AdminCreatePackageHandlerTests : BaseContentHandlerTest
         // Arrange
         var command = new AdminCreatePackageCommand(
             Name: TestConstants.Content.Package.ValidName,
-            Description: TestConstants.Content.Package.ValidDescription,
-            FlatPriceUsd: TestConstants.Content.Package.ZeroFlatPriceUsd
+            Description: TestConstants.Content.Package.ValidDescription
         );
 
         PackageEntity created = PackageFactory.Create();
