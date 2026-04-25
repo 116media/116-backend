@@ -25,7 +25,7 @@ public class PackageRepository(ContentDbContext context) : IPackageRepository
         IQueryable<PackageEntity> query = context
             .Packages.Include(p => p.Slots)
                 .ThenInclude(s => s.Category)
-                    .ThenInclude(c => c.Pricing);
+                    .ThenInclude(c => c!.Pricing);
 
         if (isActive.HasValue)
         {
@@ -54,6 +54,7 @@ public class PackageRepository(ContentDbContext context) : IPackageRepository
             .Packages.ApplySpecification(specification: specification)
             .Include(p => p.Slots)
                 .ThenInclude(s => s.Category)
+                    .ThenInclude(c => c!.Pricing)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -68,6 +69,7 @@ public class PackageRepository(ContentDbContext context) : IPackageRepository
             .Packages.ApplySpecification(specification: specification)
             .Include(p => p.Slots)
                 .ThenInclude(s => s.Category)
+                    .ThenInclude(c => c!.Pricing)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
