@@ -29,13 +29,12 @@ public class AdminSubmitOrderHandler(
             ct: cancellationToken
         );
 
-        if (order is null)
+        if (order is not null)
         {
-            throw ContentOrderErrors.NotFound(id: orderId);
+            await submitOrderFactory.SubmitAsync(order: order, ct: cancellationToken);
+            return new AdminSubmitOrderResult(IsSuccess: true);
         }
 
-        await submitOrderFactory.SubmitAsync(order: order, ct: cancellationToken);
-
-        return new AdminSubmitOrderResult(IsSuccess: true);
+        throw ContentOrderErrors.NotFound(id: orderId);
     }
 }
