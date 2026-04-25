@@ -25,20 +25,20 @@ public class PublicDeletePlaylistHandler(IPlaylistRepository playlistRepository,
             cancellationToken: cancellationToken
         );
 
-        if (playlist is null)
+        if (playlist is not null)
         {
-            throw PlaylistErrors.NotFound(id: command.Id);
+            if (playlist.UserId != command.UserId)
+            {
+                throw PlaylistErrors.NotOwner();
+            }
+
+            playlistRepository.Delete(playlist: playlist);
+
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+            return new PublicDeletePlaylistResult(IsSuccess: true);
         }
 
-        if (playlist.UserId != command.UserId)
-        {
-            throw PlaylistErrors.NotOwner();
-        }
-
-        playlistRepository.Delete(playlist: playlist);
-
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        return new PublicDeletePlaylistResult(IsSuccess: true);
+        throw PlaylistErrors.NotFound(id: command.Id);
     }
 }
