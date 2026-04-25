@@ -144,5 +144,30 @@ public class AdminAddItemTierFactoryTests
         await act.Should().ThrowAsync<NotFoundException>();
     }
 
+    [Fact]
+    public async Task AttachTierAsync_WhenTierAlreadyAttached_ShouldThrowConflictException()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.Create();
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, category.Id);
+        PricingTierEntity pricingTier = PricingTierFactory.CreateDefault();
+
+        // Pre-attach the same tier to the item
+        ContentItemTierEntity existingTier = ContentItemTierFactory.Create(item.Id, pricingTier.Id, 100m);
+        item.Tiers.Add(existingTier);
+
+        _orderRepositoryMock.SetupGetByIdWithItems(order);
+        _orderRepositoryMock.SetupGetItemById(order.Id, item.Id, item);
+
+        // Act
+        Func<Task> act = async () =>
+            await _factory.AttachTierAsync(order.Id, item.Id, pricingTier.Id, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+    }
+
     #endregion
 }
