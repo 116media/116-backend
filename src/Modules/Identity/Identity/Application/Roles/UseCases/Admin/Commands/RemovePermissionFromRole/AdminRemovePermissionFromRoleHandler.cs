@@ -46,22 +46,22 @@ public class AdminRemovePermissionFromRoleHandler(
             cancellationToken: cancellationToken
         );
 
-        if (rolePermission is null)
+        if (rolePermission is not null)
         {
-            throw UserErrors.PermissionNotAssignedToRole();
+            // Remove the association
+            rolePermissionRepository.Delete(entity: rolePermission);
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+            // Reload role with permissions to return updated data
+            RoleEntity? role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(
+                roleId: roleId,
+                cancellationToken: cancellationToken
+            );
+
+            var roleDto = role!.ToRoleWithPermissionsDto(mapper);
+            return new AdminRemovePermissionFromRoleResult(Role: roleDto, IsSuccess: true);
         }
 
-        // Remove the association
-        rolePermissionRepository.Delete(entity: rolePermission);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        // Reload role with permissions to return updated data
-        RoleEntity? role = await roleRepository.GetRoleByIdWithPermissionsOrThrowAsync(
-            roleId: roleId,
-            cancellationToken: cancellationToken
-        );
-
-        var roleDto = role!.ToRoleWithPermissionsDto(mapper);
-        return new AdminRemovePermissionFromRoleResult(Role: roleDto, IsSuccess: true);
+        throw UserErrors.PermissionNotAssignedToRole();
     }
 }
