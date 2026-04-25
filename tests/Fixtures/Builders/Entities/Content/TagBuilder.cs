@@ -27,28 +27,36 @@ internal class TagBuilder
         _slug = word[..Math.Min(TestConstants.Content.Tag.SlugMaxLength, word.Length)];
     }
 
-    /// <summary>Sets the tag ID.</summary>
+    /// <summary>
+    /// Sets the tag ID.
+    /// </summary>
     public TagBuilder WithId(Guid id)
     {
         _id = id;
         return this;
     }
 
-    /// <summary>Sets the tag name.</summary>
+    /// <summary>
+    /// Sets the tag name.
+    /// </summary>
     public TagBuilder WithName(string name)
     {
         _name = name;
         return this;
     }
 
-    /// <summary>Sets the tag slug.</summary>
+    /// <summary>
+    /// Sets the tag slug.
+    /// </summary>
     public TagBuilder WithSlug(string slug)
     {
         _slug = slug;
         return this;
     }
 
-    /// <summary>Builds the <see cref="TagEntity"/> instance.</summary>
+    /// <summary>
+    /// Builds the <see cref="TagEntity"/> instance.
+    /// </summary>
     public TagEntity Build()
     {
         return TagEntity.Create(_id, _name, _slug);
