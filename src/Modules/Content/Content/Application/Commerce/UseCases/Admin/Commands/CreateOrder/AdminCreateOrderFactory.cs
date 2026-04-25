@@ -10,11 +10,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder;
 /// Batch-fetches category pricing upfront to avoid nested async loops.
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
-/// <param name="contentOrderRepository">Repository for content order data access operations.</param>
-public class AdminCreateOrderFactory(
-    ICategoryRepository categoryRepository,
-    IContentOrderRepository contentOrderRepository
-) : ICreateOrderFactory
+public class AdminCreateOrderFactory(ICategoryRepository categoryRepository) : ICreateOrderFactory
 {
     /// <inheritdoc />
     public async Task<int> PopulateFromPackageAsync(
@@ -70,9 +66,6 @@ public class AdminCreateOrderFactory(
 
         foreach ((ContentOrderItemEntity item, IReadOnlyList<CategoryPricingEntity> pricing) in itemsToCreate)
         {
-            await contentOrderRepository.AddItemAsync(item: item, ct: ct);
-            order.Items.Add(item);
-
             foreach (CategoryPricingEntity p in pricing)
             {
                 var tier = ContentItemTierEntity.Create(
@@ -82,13 +75,13 @@ public class AdminCreateOrderFactory(
                     priceSnapshotUsd: p.PriceUsd
                 );
 
-                await contentOrderRepository.AddItemTierAsync(tier: tier, ct: ct);
                 item.Tiers.Add(tier);
             }
+
+            order.Items.Add(item);
         }
 
         order.RecalculateTotalFromItems();
-        await contentOrderRepository.UpdateAsync(order: order, ct: ct);
 
         return itemsToCreate.Count;
     }
