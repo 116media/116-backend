@@ -26,6 +26,17 @@ public static class ContentOrderErrors
     }
 
     /// <summary>
+    /// Throws when a pricing tier is already attached to the order item.
+    /// </summary>
+    public static ConflictException TierAlreadyAttached(Guid pricingTierId)
+    {
+        return new ConflictException(
+            "ContentOrderItem.TierAlreadyAttached",
+            $"Pricing tier {pricingTierId} is already attached to this item"
+        );
+    }
+
+    /// <summary>
     /// Throws when a payment record is not found for the given order.
     /// </summary>
     public static NotFoundException PaymentNotFound(Guid orderId)
