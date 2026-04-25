@@ -22,4 +22,10 @@ public enum EnumCoreContentType
     /// Short-form loopable video clips: teasers, reels, and quick previews.
     /// </summary>
     Short,
+
+    /// <summary>
+    /// User-defined content type created from the dashboard.
+    /// The actual type is identified by <c>CategoryId</c> and <c>ContentTypeId</c>.
+    /// </summary>
+    Custom,
 }
