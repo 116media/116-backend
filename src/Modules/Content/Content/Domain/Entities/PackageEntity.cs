@@ -6,8 +6,9 @@ using _116.Shared.Domain;
 namespace _116.Content.Domain.Entities;
 
 /// <summary>
-/// Represents a named bundle deal offered to clients who want multiple content pieces at a flat rate
-/// (e.g., "Artist Starter Pack — $300: 1 × Artist Profile + 1 × 116 Interview").
+/// Represents a named bundle deal offered to clients who want multiple content pieces
+/// (e.g., "Artist Starter Pack: 1 × Artist Profile + 1 × 116 Interview").
+/// The price is derived from the required slots' category tier prices, not manually set.
 /// </summary>
 public class PackageEntity : Aggregate<Guid>
 {
@@ -22,11 +23,6 @@ public class PackageEntity : Aggregate<Guid>
     /// </summary>
     [MaxLength(length: ContentConstants.MaxPackageDescriptionLength)]
     public string Description { get; private set; } = null!;
-
-    /// <summary>
-    /// The flat price in USD for the entire package.
-    /// </summary>
-    public decimal FlatPriceUsd { get; private set; }
 
     /// <summary>
     /// Indicates whether this package is active and available for new orders.
@@ -49,18 +45,12 @@ public class PackageEntity : Aggregate<Guid>
     /// <param name="id">The unique identifier for the package.</param>
     /// <param name="name">The display name of the package.</param>
     /// <param name="description">The description of the package.</param>
-    /// <param name="flatPriceUsd">The flat price in USD (must be >= 0).</param>
     /// <returns>A new <see cref="PackageEntity" /> instance.</returns>
-    public static PackageEntity Create(Guid id, string name, string description, decimal flatPriceUsd)
+    public static PackageEntity Create(Guid id, string name, string description)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
             throw PackageErrors.NameRequired();
-        }
-
-        if (flatPriceUsd < 0)
-        {
-            throw PackageErrors.PriceMustBeNonNegative();
         }
 
         return new PackageEntity
@@ -68,7 +58,6 @@ public class PackageEntity : Aggregate<Guid>
             Id = id,
             Name = name,
             Description = description,
-            FlatPriceUsd = flatPriceUsd,
             IsActive = true,
         };
     }
