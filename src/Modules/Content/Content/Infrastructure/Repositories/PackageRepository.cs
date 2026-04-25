@@ -55,6 +55,9 @@ public class PackageRepository(ContentDbContext context) : IPackageRepository
             .Include(p => p.Slots)
                 .ThenInclude(s => s.Category)
                     .ThenInclude(c => c!.Pricing)
+            .Include(p => p.Slots)
+                .ThenInclude(s => s.Category)
+                    .ThenInclude(c => c!.ContentType)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -70,6 +73,9 @@ public class PackageRepository(ContentDbContext context) : IPackageRepository
             .Include(p => p.Slots)
                 .ThenInclude(s => s.Category)
                     .ThenInclude(c => c!.Pricing)
+            .Include(p => p.Slots)
+                .ThenInclude(s => s.Category)
+                    .ThenInclude(c => c!.ContentType)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
