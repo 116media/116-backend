@@ -15,6 +15,5 @@ public class AdminCreatePackageValidator : AbstractValidator<AdminCreatePackageC
     {
         RuleFor(x => x.Name).ValidPackageName();
         RuleFor(x => x.Description).ValidPackageDescription();
-        RuleFor(x => x.FlatPriceUsd).ValidFlatPriceUsd();
     }
 }
