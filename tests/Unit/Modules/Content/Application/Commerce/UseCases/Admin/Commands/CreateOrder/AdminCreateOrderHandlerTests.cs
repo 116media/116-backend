@@ -1,4 +1,5 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder.Contracts;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -19,6 +20,7 @@ public class AdminCreateOrderHandlerTests
 {
     private readonly Mock<ICustomerRepository> _customerRepositoryMock;
     private readonly Mock<IPackageRepository> _packageRepositoryMock;
+    private readonly Mock<ICreateOrderFactory> _createOrderFactoryMock;
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminCreateOrderHandler _handler;
@@ -27,11 +29,22 @@ public class AdminCreateOrderHandlerTests
     {
         _customerRepositoryMock = MockCustomerRepository.Create();
         _packageRepositoryMock = MockPackageRepository.Create();
+        _createOrderFactoryMock = new Mock<ICreateOrderFactory>();
+        _createOrderFactoryMock
+            .Setup(x =>
+                x.PopulateFromPackageAsync(
+                    It.IsAny<ContentOrderEntity>(),
+                    It.IsAny<PackageEntity>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(0);
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _handler = new AdminCreateOrderHandler(
             _customerRepositoryMock.Object,
             _packageRepositoryMock.Object,
+            _createOrderFactoryMock.Object,
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object
         );
