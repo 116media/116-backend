@@ -36,20 +36,20 @@ public class AdminRemoveCategoryPricingHandler(
             cancellationToken: cancellationToken
         );
 
-        if (pricing is null)
+        if (pricing is not null)
         {
-            throw CategoryErrors.PricingNotFound(categoryId: categoryId, tierId: pricingTierId);
+            categoryRepository.RemovePricing(pricing: pricing);
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+            IReadOnlyList<CategoryPricingEntity> remaining = await categoryRepository.GetPricingByCategoryAsync(
+                categoryId: categoryId,
+                cancellationToken: cancellationToken
+            );
+
+            IReadOnlyList<CategoryPricingDto> dtoList = remaining.Select(p => p.ToCategoryPricingDto(mapper)).ToList();
+            return new AdminRemoveCategoryPricingResult(Pricing: dtoList, IsSuccess: true);
         }
 
-        categoryRepository.RemovePricing(pricing: pricing);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        IReadOnlyList<CategoryPricingEntity> remaining = await categoryRepository.GetPricingByCategoryAsync(
-            categoryId: categoryId,
-            cancellationToken: cancellationToken
-        );
-
-        IReadOnlyList<CategoryPricingDto> dtoList = remaining.Select(p => p.ToCategoryPricingDto(mapper)).ToList();
-        return new AdminRemoveCategoryPricingResult(Pricing: dtoList, IsSuccess: true);
+        throw CategoryErrors.PricingNotFound(categoryId: categoryId, tierId: pricingTierId);
     }
 }
