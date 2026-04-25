@@ -3,6 +3,8 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier.Contracts;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem.Contracts;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder.Contracts;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder.Contracts;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
@@ -81,6 +83,7 @@ public static class ContentModule
         services.AddScoped<ISubmitOrderFactory, AdminSubmitOrderFactory>();
         services.AddScoped<IAddOrderItemFactory, AdminAddOrderItemFactory>();
         services.AddScoped<IAddItemTierFactory, AdminAddItemTierFactory>();
+        services.AddScoped<ICreateOrderFactory, AdminCreateOrderFactory>();
 
         services.AddHttpClient<IYoutubeThumbnailService, YoutubeThumbnailService>();
         services.AddScheduledJob<AbandonedDraftCleanupJob>(cronExpression: "0 0 * * * ?");
