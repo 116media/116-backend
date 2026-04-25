@@ -18,8 +18,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreatePackage
 /// </summary>
 /// <param name="Name">The display name of the package.</param>
 /// <param name="Description">The description of what the package includes.</param>
-/// <param name="FlatPriceUsd">The flat price in USD for the entire package.</param>
-public record AdminCreatePackageRequest(string Name, string Description, decimal FlatPriceUsd);
+public record AdminCreatePackageRequest(string Name, string Description);
 
 /// <summary>
 /// Response model for successful package creation.
@@ -49,11 +48,7 @@ public class AdminCreatePackageEndpointV1 : ICarterModule
                 "/",
                 async (AdminCreatePackageRequest request, IDispatcher dispatcher, HttpContext httpContext) =>
                 {
-                    var command = new AdminCreatePackageCommand(
-                        Name: request.Name,
-                        Description: request.Description,
-                        FlatPriceUsd: request.FlatPriceUsd
-                    );
+                    var command = new AdminCreatePackageCommand(Name: request.Name, Description: request.Description);
 
                     AdminCreatePackageResult result = await dispatcher.Send(request: command);
 
