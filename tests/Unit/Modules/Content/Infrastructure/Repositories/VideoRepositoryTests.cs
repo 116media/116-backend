@@ -35,7 +35,9 @@ public class VideoRepositoryTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    /// <summary>Seeds a ContentType and Category, returning the Category ID.</summary>
+    /// <summary>
+    /// Seeds a ContentType and Category, returning the Category ID.
+    /// </summary>
     private async Task<Guid> SeedCategoryAsync()
     {
         ContentTypeEntity contentType = ContentTypeFactory.Create();
