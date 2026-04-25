@@ -9,23 +9,33 @@ namespace _116.Tests.Fixtures.Factories.Content;
 /// </summary>
 public static class CustomerFactory
 {
-    /// <summary>Creates a customer with default random values.</summary>
+    /// <summary>
+    /// Creates a customer with default random values.
+    /// </summary>
     public static CustomerEntity Create() => new CustomerBuilder().Build();
 
-    /// <summary>Creates a customer with a specific email.</summary>
+    /// <summary>
+    /// Creates a customer with a specific email.
+    /// </summary>
     public static CustomerEntity Create(string email) => new CustomerBuilder().WithEmail(email).Build();
 
-    /// <summary>Creates a customer with a specific ID.</summary>
+    /// <summary>
+    /// Creates a customer with a specific ID.
+    /// </summary>
     public static CustomerEntity CreateWithId(Guid id) => new CustomerBuilder().WithId(id).Build();
 
-    /// <summary>Creates a customer with known default values.</summary>
+    /// <summary>
+    /// Creates a customer with known default values.
+    /// </summary>
     public static CustomerEntity CreateDefault() =>
         new CustomerBuilder()
             .WithFullName(TestConstants.Content.Customer.ValidFullName)
             .WithEmail(TestConstants.Content.Customer.ValidEmail)
             .Build();
 
-    /// <summary>Creates a list of customers with the specified count.</summary>
+    /// <summary>
+    /// Creates a list of customers with the specified count.
+    /// </summary>
     public static List<CustomerEntity> CreateMany(int count) =>
         Enumerable.Range(0, count).Select(_ => Create()).ToList();
 }
