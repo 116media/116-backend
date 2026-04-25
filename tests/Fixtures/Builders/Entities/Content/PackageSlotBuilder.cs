@@ -25,42 +25,54 @@ internal class PackageSlotBuilder
         _quantity = TestConstants.Content.PackageSlot.ValidQuantity;
     }
 
-    /// <summary>Sets the slot ID.</summary>
+    /// <summary>
+    /// Sets the slot ID.
+    /// </summary>
     public PackageSlotBuilder WithId(Guid id)
     {
         _id = id;
         return this;
     }
 
-    /// <summary>Sets the category ID (null for open slot).</summary>
+    /// <summary>
+    /// Sets the category ID (null for open slot).
+    /// </summary>
     public PackageSlotBuilder WithCategoryId(Guid? categoryId)
     {
         _categoryId = categoryId;
         return this;
     }
 
-    /// <summary>Sets the required flag.</summary>
+    /// <summary>
+    /// Sets the required flag.
+    /// </summary>
     public PackageSlotBuilder WithIsRequired(bool isRequired)
     {
         _isRequired = isRequired;
         return this;
     }
 
-    /// <summary>Marks the slot as optional (not required).</summary>
+    /// <summary>
+    /// Marks the slot as optional (not required).
+    /// </summary>
     public PackageSlotBuilder AsOptional()
     {
         _isRequired = false;
         return this;
     }
 
-    /// <summary>Sets the quantity.</summary>
+    /// <summary>
+    /// Sets the quantity.
+    /// </summary>
     public PackageSlotBuilder WithQuantity(int quantity)
     {
         _quantity = quantity;
         return this;
     }
 
-    /// <summary>Builds the <see cref="PackageSlotEntity"/> instance.</summary>
+    /// <summary>
+    /// Builds the <see cref="PackageSlotEntity"/> instance.
+    /// </summary>
     public PackageSlotEntity Build()
     {
         return PackageSlotEntity.Create(_id, _packageId, _categoryId, _isRequired, _quantity);
