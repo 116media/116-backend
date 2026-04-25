@@ -20,7 +20,10 @@ public static class PackageMapper
             .NewConfig<PackageSlotEntity, PackageSlotDto>()
             .Map(dest => dest.CategoryName, src => src.Category != null ? src.Category.Name : null);
 
-        config.NewConfig<PackageEntity, PackageDto>().Map(dest => dest.Slots, src => src.Slots);
+        config
+            .NewConfig<PackageEntity, PackageDto>()
+            .Map(dest => dest.Slots, src => src.Slots)
+            .Map(dest => dest.CalculatedPriceUsd, _ => 0m);
     }
 
     /// <summary>
@@ -29,7 +32,16 @@ public static class PackageMapper
     public static PackageDto ToPackageDto(this PackageEntity entity, IMapper mapper)
     {
         var dto = mapper.Map<PackageDto>(entity);
-        return dto with { Slots = mapper.Map<IReadOnlyList<PackageSlotDto>>(entity.Slots) };
+
+        decimal calculatedPrice = entity
+            .Slots.Where(s => s.IsRequired && s.Category != null)
+            .Sum(s => s.Category!.Pricing.Sum(p => p.PriceUsd) * s.Quantity);
+
+        return dto with
+        {
+            Slots = mapper.Map<IReadOnlyList<PackageSlotDto>>(entity.Slots),
+            CalculatedPriceUsd = calculatedPrice,
+        };
     }
 
     /// <summary>
