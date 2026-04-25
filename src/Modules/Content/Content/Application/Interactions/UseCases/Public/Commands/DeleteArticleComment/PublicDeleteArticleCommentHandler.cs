@@ -25,29 +25,29 @@ public class PublicDeleteArticleCommentHandler(IArticleRepository articleReposit
             cancellationToken: cancellationToken
         );
 
-        if (comment is null)
+        if (comment is not null)
         {
-            throw ArticleInteractionErrors.CommentNotFound(commentId: command.CommentId);
+            if (comment.UserId != command.UserId)
+            {
+                throw ArticleInteractionErrors.NotCommentOwner();
+            }
+
+            comment.SoftDelete();
+
+            ArticleEntity article = await articleRepository.GetByIdOrThrowAsync(
+                id: command.ArticleId,
+                cancellationToken: cancellationToken
+            );
+
+            article.DecrementCommentCount();
+            articleRepository.Update(article: article);
+            articleRepository.UpdateComment(comment: comment);
+
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+            return new PublicDeleteArticleCommentResult(IsSuccess: true);
         }
 
-        if (comment.UserId != command.UserId)
-        {
-            throw ArticleInteractionErrors.NotCommentOwner();
-        }
-
-        comment.SoftDelete();
-
-        ArticleEntity article = await articleRepository.GetByIdOrThrowAsync(
-            id: command.ArticleId,
-            cancellationToken: cancellationToken
-        );
-
-        article.DecrementCommentCount();
-        articleRepository.Update(article: article);
-        articleRepository.UpdateComment(comment: comment);
-
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        return new PublicDeleteArticleCommentResult(IsSuccess: true);
+        throw ArticleInteractionErrors.CommentNotFound(commentId: command.CommentId);
     }
 }
