@@ -27,35 +27,45 @@ internal class PricingTierBuilder
         _name = word[..Math.Min(TestConstants.Content.PricingTier.NameMaxLength, word.Length)];
     }
 
-    /// <summary>Sets the pricing tier ID.</summary>
+    /// <summary>
+    /// Sets the pricing tier ID.
+    /// </summary>
     public PricingTierBuilder WithId(Guid id)
     {
         _id = id;
         return this;
     }
 
-    /// <summary>Sets the pricing tier name.</summary>
+    /// <summary>
+    /// Sets the pricing tier name.
+    /// </summary>
     public PricingTierBuilder WithName(string name)
     {
         _name = name;
         return this;
     }
 
-    /// <summary>Sets the pricing tier description.</summary>
+    /// <summary>
+    /// Sets the pricing tier description.
+    /// </summary>
     public PricingTierBuilder WithDescription(string description)
     {
         _description = description;
         return this;
     }
 
-    /// <summary>Marks the pricing tier as inactive.</summary>
+    /// <summary>
+    /// Marks the pricing tier as inactive.
+    /// </summary>
     public PricingTierBuilder AsInactive()
     {
         _isActive = false;
         return this;
     }
 
-    /// <summary>Builds the <see cref="PricingTierEntity"/> instance.</summary>
+    /// <summary>
+    /// Builds the <see cref="PricingTierEntity"/> instance.
+    /// </summary>
     public PricingTierEntity Build()
     {
         var entity = PricingTierEntity.Create(_id, _name, _description);
