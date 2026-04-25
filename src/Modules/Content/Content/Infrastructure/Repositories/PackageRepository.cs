@@ -22,7 +22,10 @@ public class PackageRepository(ContentDbContext context) : IPackageRepository
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<PackageEntity> query = context.Packages.Include(p => p.Slots).ThenInclude(s => s.Category);
+        IQueryable<PackageEntity> query = context
+            .Packages.Include(p => p.Slots)
+                .ThenInclude(s => s.Category)
+                    .ThenInclude(c => c.Pricing);
 
         if (isActive.HasValue)
         {
