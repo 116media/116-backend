@@ -1029,10 +1029,6 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("description");
 
-                    b.Property<decimal>("FlatPriceUsd")
-                        .HasColumnType("numeric(10,2)")
-                        .HasColumnName("flat_price_usd");
-
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
