@@ -57,4 +57,66 @@ public class TagEntityTests
     }
 
     #endregion
+
+    #region Update Tests
+
+    [Fact]
+    public void Update_WithValidValues_ShouldUpdateNameAndSlug()
+    {
+        // Arrange
+        var tag = TagEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.Tag.ValidName,
+            TestConstants.Content.Tag.ValidSlug
+        );
+
+        // Act
+        tag.Update(name: "New Name", slug: "new-slug");
+
+        // Assert
+        tag.Name.Should().Be("New Name");
+        tag.Slug.Should().Be("new-slug");
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Update_WithInvalidName_ShouldThrowBadRequestException(string? invalidName)
+    {
+        // Arrange
+        var tag = TagEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.Tag.ValidName,
+            TestConstants.Content.Tag.ValidSlug
+        );
+
+        // Act
+        Action act = () => tag.Update(name: invalidName!, slug: "valid-slug");
+
+        // Assert
+        act.Should().Throw<BadRequestException>();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Update_WithInvalidSlug_ShouldThrowBadRequestException(string? invalidSlug)
+    {
+        // Arrange
+        var tag = TagEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.Tag.ValidName,
+            TestConstants.Content.Tag.ValidSlug
+        );
+
+        // Act
+        Action act = () => tag.Update(name: "Valid Name", slug: invalidSlug!);
+
+        // Assert
+        act.Should().Throw<BadRequestException>();
+    }
+
+    #endregion
 }

@@ -313,5 +313,22 @@ public class LookupRepositoryTests : IDisposable
         result[1].Name.Should().Be("Kinshasa");
     }
 
+    [Fact]
+    public async Task Remove_ShouldDeleteTagFromDatabase()
+    {
+        // Arrange
+        TagEntity tag = TagFactory.CreateDefault();
+        _context.Tags.Add(tag);
+        await _context.SaveChangesAsync();
+
+        // Act
+        _repository.Remove(tag);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        TagEntity? retrieved = await _context.Tags.FindAsync(tag.Id);
+        retrieved.Should().BeNull();
+    }
+
     #endregion
 }

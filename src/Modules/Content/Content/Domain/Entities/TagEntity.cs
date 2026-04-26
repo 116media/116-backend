@@ -56,4 +56,26 @@ public class TagEntity : Aggregate<Guid>
             Slug = slug,
         };
     }
+
+    /// <summary>
+    /// Updates the tag's name and slug.
+    /// </summary>
+    /// <param name="name">The new display name for the tag.</param>
+    /// <param name="slug">The new URL-safe slug for the tag.</param>
+    /// <exception cref="BadRequestException">Thrown when name or slug are empty or whitespace.</exception>
+    public void Update(string name, string slug)
+    {
+        if (string.IsNullOrWhiteSpace(value: name))
+        {
+            throw TagErrors.NameRequired();
+        }
+
+        if (string.IsNullOrWhiteSpace(value: slug))
+        {
+            throw TagErrors.SlugRequired();
+        }
+
+        Name = name;
+        Slug = slug;
+    }
 }

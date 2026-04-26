@@ -236,6 +236,16 @@ public static class MockLookupRepository
         mock.Verify(x => x.AddTagAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    public static void VerifyRemoveTagCalled(this Mock<ILookupRepository> mock, TagEntity tag)
+    {
+        mock.Verify(x => x.Remove(tag), Times.Once);
+    }
+
+    public static void VerifyRemoveTagNotCalled(this Mock<ILookupRepository> mock)
+    {
+        mock.Verify(x => x.Remove(It.IsAny<TagEntity>()), Times.Never);
+    }
+
     private static void SetupDefaults(Mock<ILookupRepository> mock)
     {
         // ContentType

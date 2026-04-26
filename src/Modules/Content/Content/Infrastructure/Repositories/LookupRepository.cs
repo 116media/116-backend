@@ -152,6 +152,12 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
     }
 
     /// <inheritdoc />
+    public void Remove(TagEntity entity)
+    {
+        context.Tags.Remove(entity);
+    }
+
+    /// <inheritdoc />
     public async Task<TagEntity?> GetTagBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
         var specification = new TagBySlugSpecification(slug: slug);
