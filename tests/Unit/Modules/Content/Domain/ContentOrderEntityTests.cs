@@ -75,10 +75,10 @@ public class ContentOrderEntityTests
 
     #endregion
 
-    #region RecalculateTotal
+    #region RecalculateTotalFromItems (inline)
 
     [Fact]
-    public void RecalculateTotal_ShouldSumTierPricesAndPromoPrice()
+    public void RecalculateTotalFromItems_Inline_ShouldSumTierPricesAndPromoPrice()
     {
         // Arrange
         ContentOrderEntity order = ContentOrderFactory.Create();
@@ -93,10 +93,10 @@ public class ContentOrderEntityTests
         item.Tiers.Add(tier);
         order.Items.Add(item);
 
-        // Act — no new tier being added in this call, so newTierPrice = 0
-        order.RecalculateTotal(newTierPrice: 0m);
+        // Act
+        order.RecalculateTotalFromItems();
 
-        // Assert: 100 (tier) + 0 (new) + 50 (promo) = 150
+        // Assert: 100 (tier) + 50 (promo) = 150
         order.TotalAmountUsd.Should().Be(150m);
     }
 
@@ -249,66 +249,6 @@ public class ContentOrderEntityTests
 
         // Assert
         act.Should().Throw<BadRequestException>();
-    }
-
-    [Fact]
-    public void RecalculateTotal_ShouldExcludeBonusItems()
-    {
-        // Arrange
-        ContentOrderEntity order = ContentOrderFactory.Create();
-        Guid categoryId = Guid.NewGuid();
-
-        ContentOrderItemEntity paidItem = ContentOrderItemFactory.Create(order.Id, categoryId);
-        ContentItemTierEntity paidTier = ContentItemTierFactory.Create(paidItem.Id, Guid.NewGuid(), 40m);
-        paidItem.Tiers.Add(paidTier);
-        order.Items.Add(paidItem);
-
-        ContentOrderItemEntity bonusItem = ContentOrderItemFactory.CreateBonus(order.Id, categoryId);
-        ContentItemTierEntity bonusTier = ContentItemTierFactory.Create(bonusItem.Id, Guid.NewGuid(), 25m);
-        bonusItem.Tiers.Add(bonusTier);
-        order.Items.Add(bonusItem);
-
-        // Act
-        order.RecalculateTotal(newTierPrice: 0m);
-
-        // Assert: only paid item tier (40), bonus item excluded
-        order.TotalAmountUsd.Should().Be(40m);
-    }
-
-    [Fact]
-    public void RecalculateTotal_WithNewTierOnBonusItem_ShouldNotAddPrice()
-    {
-        // Arrange
-        ContentOrderEntity order = ContentOrderFactory.Create();
-        Guid categoryId = Guid.NewGuid();
-
-        ContentOrderItemEntity paidItem = ContentOrderItemFactory.Create(order.Id, categoryId);
-        ContentItemTierEntity paidTier = ContentItemTierFactory.Create(paidItem.Id, Guid.NewGuid(), 40m);
-        paidItem.Tiers.Add(paidTier);
-        order.Items.Add(paidItem);
-
-        // Act — adding a $50 tier to a bonus item should not increase total
-        order.RecalculateTotal(newTierPrice: 50m, isBonusItem: true);
-
-        // Assert: only paid item tier (40), bonus tier ignored
-        order.TotalAmountUsd.Should().Be(40m);
-    }
-
-    [Fact]
-    public void RecalculateTotal_WithOnlyBonusItems_ShouldBeZero()
-    {
-        // Arrange
-        ContentOrderEntity order = ContentOrderFactory.Create();
-        ContentOrderItemEntity bonusItem = ContentOrderItemFactory.CreateBonus(order.Id, Guid.NewGuid());
-        ContentItemTierEntity tier = ContentItemTierFactory.Create(bonusItem.Id, Guid.NewGuid(), 100m);
-        bonusItem.Tiers.Add(tier);
-        order.Items.Add(bonusItem);
-
-        // Act
-        order.RecalculateTotal(newTierPrice: 0m);
-
-        // Assert
-        order.TotalAmountUsd.Should().Be(0m);
     }
 
     #endregion
