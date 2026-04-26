@@ -36,11 +36,14 @@ public class AdminRemoveOrderItemHandler(IContentOrderRepository contentOrderRep
         );
 
         await contentOrderRepository.RemoveItemAsync(item: item, ct: cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        order.Items.Remove(item);
-        order.RecalculateTotalFromItems();
+        ContentOrderEntity updated =
+            await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
+            ?? throw ContentOrderErrors.NotFound(id: orderId);
 
-        await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
+        updated.RecalculateTotalFromItems();
+        await contentOrderRepository.UpdateAsync(order: updated, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminRemoveOrderItemResult(IsSuccess: true);
