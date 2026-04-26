@@ -76,4 +76,15 @@ public static class ContentOrderErrorMessage
     {
         return "Payment has already been rejected.";
     }
+
+    /// <summary>
+    /// Gets an error message for when a pricing tier is already attached to an order item.
+    /// </summary>
+    /// <returns>
+    /// An error message indicating that the tier is already attached to the item.
+    /// </returns>
+    public static string TierAlreadyAttached()
+    {
+        return "This pricing tier is already attached to the item.";
+    }
 }
