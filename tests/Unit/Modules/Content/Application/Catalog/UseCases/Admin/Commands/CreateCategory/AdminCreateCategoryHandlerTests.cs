@@ -86,7 +86,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             ContentTypeId: contentType.Id.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: slug,
-            Description: null,
+            Description: TestConstants.Content.Category.ValidDescription,
             IsFree: true
         );
 
@@ -114,7 +114,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             ContentTypeId: contentType.Id.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: slug,
-            Description: null,
+            Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false
         );
 
@@ -150,7 +150,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             ContentTypeId: nonExistentId.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
-            Description: null,
+            Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false
         );
 
@@ -174,7 +174,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             ContentTypeId: contentType.Id.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: slug,
-            Description: null,
+            Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false
         );
 
@@ -201,7 +201,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             ContentTypeId: contentType.Id.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: slug,
-            Description: null,
+            Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false
         );
 

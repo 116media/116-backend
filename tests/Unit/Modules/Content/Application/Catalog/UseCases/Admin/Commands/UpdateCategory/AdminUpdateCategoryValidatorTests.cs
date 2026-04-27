@@ -46,7 +46,7 @@ public class AdminUpdateCategoryValidatorTests
             Id: "",
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
-            Description: null
+            Description: TestConstants.Content.Category.ValidDescription
         );
 
         // Act
@@ -73,7 +73,7 @@ public class AdminUpdateCategoryValidatorTests
             Id: Guid.NewGuid().ToString(),
             Name: string.Empty,
             Slug: TestConstants.Content.Category.ValidSlug,
-            Description: null
+            Description: TestConstants.Content.Category.ValidDescription
         );
 
         // Act
@@ -97,7 +97,7 @@ public class AdminUpdateCategoryValidatorTests
             Id: Guid.NewGuid().ToString(),
             Name: new string('a', TestConstants.Content.Category.NameMaxLength + 1),
             Slug: TestConstants.Content.Category.ValidSlug,
-            Description: null
+            Description: TestConstants.Content.Category.ValidDescription
         );
 
         // Act
@@ -125,7 +125,7 @@ public class AdminUpdateCategoryValidatorTests
             Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: "Invalid Slug",
-            Description: null
+            Description: TestConstants.Content.Category.ValidDescription
         );
 
         // Act

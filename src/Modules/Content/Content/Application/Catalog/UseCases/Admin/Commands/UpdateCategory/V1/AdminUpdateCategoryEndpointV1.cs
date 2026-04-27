@@ -17,8 +17,8 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategor
 /// </summary>
 /// <param name="Name">The new display name for the category.</param>
 /// <param name="Slug">The new URL-safe slug for the category.</param>
-/// <param name="Description">The new optional description.</param>
-public record AdminUpdateCategoryRequest(string Name, string Slug, string? Description);
+/// <param name="Description">The new description.</param>
+public record AdminUpdateCategoryRequest(string Name, string Slug, string Description);
 
 /// <summary>
 /// Response model for a successful category update.

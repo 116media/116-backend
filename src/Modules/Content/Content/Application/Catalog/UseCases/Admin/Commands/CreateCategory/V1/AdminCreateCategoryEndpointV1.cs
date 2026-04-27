@@ -18,9 +18,9 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategor
 /// </summary>
 /// <param name="Name">The display name of the category.</param>
 /// <param name="Slug">The URL-safe slug for the category.</param>
-/// <param name="Description">An optional description of the category.</param>
+/// <param name="Description">The description of the category.</param>
 /// <param name="IsFree">Whether content in this category requires no payment.</param>
-public record AdminCreateCategoryRequest(string Name, string Slug, string? Description, bool IsFree);
+public record AdminCreateCategoryRequest(string Name, string Slug, string Description, bool IsFree);
 
 /// <summary>
 /// Response model for successful category creation.

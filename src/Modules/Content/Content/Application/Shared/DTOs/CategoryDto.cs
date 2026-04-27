@@ -8,6 +8,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="ContentTypeName">The display name of the associated content type.</param>
 /// <param name="Name">The display name of the category.</param>
 /// <param name="Slug">The URL-safe slug of the category.</param>
+/// <param name="Description">The description of the category.</param>
 /// <param name="IsFree">Whether content in this category requires no payment.</param>
 /// <param name="IsActive">Whether the category is currently active.</param>
 /// <param name="Pricing">The pricing tiers configured for this category.</param>
@@ -17,6 +18,7 @@ public record CategoryDto(
     string ContentTypeName,
     string Name,
     string Slug,
+    string Description,
     bool IsFree,
     bool IsActive,
     IReadOnlyList<CategoryPricingDto> Pricing

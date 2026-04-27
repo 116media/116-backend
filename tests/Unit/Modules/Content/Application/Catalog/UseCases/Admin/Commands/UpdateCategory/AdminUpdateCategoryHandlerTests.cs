@@ -82,7 +82,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Id: category.Id.ToString(),
             Name: "Updated Name",
             Slug: slug,
-            Description: null
+            Description: TestConstants.Content.Category.ValidDescription
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -110,7 +110,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Id: nonExistentId.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
-            Description: null
+            Description: TestConstants.Content.Category.ValidDescription
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
@@ -134,7 +134,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Id: category.Id.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: conflictingSlug,
-            Description: null
+            Description: TestConstants.Content.Category.ValidDescription
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);

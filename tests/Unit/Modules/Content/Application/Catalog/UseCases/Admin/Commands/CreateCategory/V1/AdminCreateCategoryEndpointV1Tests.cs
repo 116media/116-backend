@@ -44,7 +44,7 @@ public class AdminCreateCategoryEndpointV1Tests
     }
 
     [Fact]
-    public void AdminCreateCategoryRequest_WithNullDescription_ShouldConstructCorrectly()
+    public void AdminCreateCategoryRequest_WithDescription_ShouldConstructCorrectly_Alt()
     {
         // Arrange
         var contentTypeId = Guid.NewGuid();
@@ -53,14 +53,24 @@ public class AdminCreateCategoryEndpointV1Tests
         var request = new AdminCreateCategoryRequest(
             Name: "Technology",
             Slug: "technology",
-            Description: null,
+            Description: "Test category description",
             IsFree: false
         );
 
         // Assert
-        request.Description.Should().BeNull();
+        request.Description.Should().Be("Test category description");
     }
 
     private static CategoryDto CreateCategoryDto() =>
-        new(Guid.NewGuid(), Guid.NewGuid(), "Article", "Technology", "technology", true, true, []);
+        new(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "Article",
+            "Technology",
+            "technology",
+            "Test category description",
+            true,
+            true,
+            []
+        );
 }
