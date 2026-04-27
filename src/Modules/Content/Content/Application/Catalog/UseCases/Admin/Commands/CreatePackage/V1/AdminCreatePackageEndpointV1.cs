@@ -17,9 +17,9 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreatePackage
 /// Request model for creating a package.
 /// </summary>
 /// <param name="Name">The display name of the package.</param>
-/// <param name="Description">An optional description of what the package includes.</param>
+/// <param name="Description">The description of what the package includes.</param>
 /// <param name="FlatPriceUsd">The flat price in USD for the entire package.</param>
-public record AdminCreatePackageRequest(string Name, string? Description, decimal FlatPriceUsd);
+public record AdminCreatePackageRequest(string Name, string Description, decimal FlatPriceUsd);
 
 /// <summary>
 /// Response model for successful package creation.

@@ -18,10 +18,10 @@ public class PricingTierEntity : Aggregate<Guid>
     public string Name { get; private set; } = null!;
 
     /// <summary>
-    /// Optional human-readable description explaining what this tier covers.
+    /// Human-readable description explaining what this tier covers.
     /// </summary>
     [MaxLength(length: ContentConstants.MaxPricingTierDescriptionLength)]
-    public string? Description { get; private set; }
+    public string Description { get; private set; } = null!;
 
     /// <summary>
     /// Indicates whether this pricing tier is active and available for category pricing configuration.
@@ -38,10 +38,10 @@ public class PricingTierEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="id">The unique identifier for the pricing tier.</param>
     /// <param name="name">The name of the pricing tier.</param>
-    /// <param name="description">An optional description of what this tier covers.</param>
+    /// <param name="description">A description of what this tier covers.</param>
     /// <returns>A new <see cref="PricingTierEntity" /> instance.</returns>
     /// <exception cref="ArgumentException">Thrown when name is empty or whitespace.</exception>
-    public static PricingTierEntity Create(Guid id, string name, string? description)
+    public static PricingTierEntity Create(Guid id, string name, string description)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
@@ -60,8 +60,8 @@ public class PricingTierEntity : Aggregate<Guid>
     /// Updates the name and description of this pricing tier.
     /// </summary>
     /// <param name="name">The new name for the pricing tier.</param>
-    /// <param name="description">The new description (may be null).</param>
-    public void Update(string name, string? description)
+    /// <param name="description">The new description for the pricing tier.</param>
+    public void Update(string name, string description)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {

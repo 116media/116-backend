@@ -66,14 +66,14 @@ public class AdminCreateVideoEndpointV1Tests
             Slug: "test-video",
             CustomerId: null,
             OrderItemId: null,
-            Description: null,
+            Description: "Test video description",
             ShootingScheduledAt: null
         );
 
         // Assert
         request.CustomerId.Should().BeNull();
         request.OrderItemId.Should().BeNull();
-        request.Description.Should().BeNull();
+        request.Description.Should().Be("Test video description");
         request.ShootingScheduledAt.Should().BeNull();
     }
 
@@ -84,7 +84,7 @@ public class AdminCreateVideoEndpointV1Tests
             CategoryName: "Test",
             Title: "Test",
             Slug: "test",
-            Description: null,
+            Description: "Test video description",
             ThumbnailUrl: null,
             ThumbnailStorageKey: null,
             AuthorId: "Test",

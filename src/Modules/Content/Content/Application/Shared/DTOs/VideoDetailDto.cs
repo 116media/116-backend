@@ -12,7 +12,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="CategoryName">The display name of the video's category.</param>
 /// <param name="Title">The video display title.</param>
 /// <param name="Slug">The URL-safe slug used in public video URLs.</param>
-/// <param name="Description">Optional description shown below the video player.</param>
+/// <param name="Description">Description shown below the video player.</param>
 /// <param name="ThumbnailUrl">The URL of the video thumbnail, or null if not yet uploaded.</param>
 /// <param name="ThumbnailStorageKey">The CDN storage key for the thumbnail asset, or null.</param>
 /// <param name="AuthorId">The identity user UUID of the author.</param>
@@ -33,7 +33,7 @@ public record VideoDetailDto(
     string CategoryName,
     string Title,
     string Slug,
-    string? Description,
+    string Description,
     string? ThumbnailUrl,
     string? ThumbnailStorageKey,
     string AuthorId,

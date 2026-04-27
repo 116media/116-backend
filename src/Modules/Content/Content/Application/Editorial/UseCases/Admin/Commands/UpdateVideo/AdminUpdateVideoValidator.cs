@@ -23,6 +23,8 @@ public class AdminUpdateVideoValidator : AbstractValidator<AdminUpdateVideoComma
 
         RuleFor(x => x.Slug).ValidVideoSlug();
 
+        RuleFor(x => x.Description).NotEmpty().WithMessage("Video description is required.");
+
         RuleFor(x => x.OrderItemId)
             .NotEmpty()
             .When(x => x.CustomerId.HasValue)

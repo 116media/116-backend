@@ -14,7 +14,7 @@ internal class PricingTierBuilder
 
     private Guid _id;
     private string _name;
-    private string? _description;
+    private string _description = "Default pricing tier description";
     private bool _isActive = true;
 
     /// <summary>
@@ -42,7 +42,7 @@ internal class PricingTierBuilder
     }
 
     /// <summary>Sets the pricing tier description.</summary>
-    public PricingTierBuilder WithDescription(string? description)
+    public PricingTierBuilder WithDescription(string description)
     {
         _description = description;
         return this;

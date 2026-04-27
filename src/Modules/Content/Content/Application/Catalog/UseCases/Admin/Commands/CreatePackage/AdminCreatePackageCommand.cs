@@ -7,9 +7,9 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreatePackage
 /// Command for creating a new content package with a flat price.
 /// </summary>
 /// <param name="Name">The display name of the package.</param>
-/// <param name="Description">An optional description of what the package includes.</param>
+/// <param name="Description">The description of what the package includes.</param>
 /// <param name="FlatPriceUsd">The flat price in USD for the entire package (must be >= 0).</param>
-public record AdminCreatePackageCommand(string Name, string? Description, decimal FlatPriceUsd)
+public record AdminCreatePackageCommand(string Name, string Description, decimal FlatPriceUsd)
     : ICommand<AdminCreatePackageResult>;
 
 /// <summary>

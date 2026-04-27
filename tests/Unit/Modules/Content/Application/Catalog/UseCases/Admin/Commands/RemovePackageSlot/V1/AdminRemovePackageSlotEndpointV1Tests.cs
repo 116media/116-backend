@@ -24,5 +24,6 @@ public class AdminRemovePackageSlotEndpointV1Tests
         response.IsSuccess.Should().BeTrue();
     }
 
-    private static PackageDto CreatePackageDto() => new(Guid.NewGuid(), "Starter Pack", null, 49.99m, true, []);
+    private static PackageDto CreatePackageDto() =>
+        new(Guid.NewGuid(), "Starter Pack", "Test package description", 49.99m, true, []);
 }

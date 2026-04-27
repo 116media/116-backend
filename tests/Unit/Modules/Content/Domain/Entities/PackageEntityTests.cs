@@ -19,15 +19,16 @@ public class PackageEntityTests
         // Arrange
         var id = Guid.NewGuid();
         string name = TestConstants.Content.Package.ValidName;
+        string description = TestConstants.Content.Package.ValidDescription;
         decimal price = TestConstants.Content.Package.ValidFlatPriceUsd;
 
         // Act
-        var entity = PackageEntity.Create(id, name, null, price);
+        var entity = PackageEntity.Create(id, name, description, price);
 
         // Assert
         entity.Id.Should().Be(id);
         entity.Name.Should().Be(name);
-        entity.Description.Should().BeNull();
+        entity.Description.Should().Be(description);
         entity.FlatPriceUsd.Should().Be(price);
         entity.IsActive.Should().BeTrue();
     }
@@ -54,7 +55,7 @@ public class PackageEntityTests
         var entity = PackageEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.Package.ValidName,
-            null,
+            TestConstants.Content.Package.ValidDescription,
             TestConstants.Content.Package.ZeroFlatPriceUsd
         );
 
@@ -69,7 +70,8 @@ public class PackageEntityTests
     public void Create_WithInvalidName_ShouldThrowBadRequestException(string? invalidName)
     {
         // Act
-        Action act = () => PackageEntity.Create(Guid.NewGuid(), invalidName!, null, 100m);
+        Action act = () =>
+            PackageEntity.Create(Guid.NewGuid(), invalidName!, TestConstants.Content.Package.ValidDescription, 100m);
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -82,7 +84,12 @@ public class PackageEntityTests
     {
         // Act
         Action act = () =>
-            PackageEntity.Create(Guid.NewGuid(), TestConstants.Content.Package.ValidName, null, invalidPrice);
+            PackageEntity.Create(
+                Guid.NewGuid(),
+                TestConstants.Content.Package.ValidName,
+                TestConstants.Content.Package.ValidDescription,
+                invalidPrice
+            );
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -96,7 +103,12 @@ public class PackageEntityTests
     public void Activate_WhenInactive_ShouldReturnTrue()
     {
         // Arrange
-        var entity = PackageEntity.Create(Guid.NewGuid(), TestConstants.Content.Package.ValidName, null, 100m);
+        var entity = PackageEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.Package.ValidName,
+            TestConstants.Content.Package.ValidDescription,
+            100m
+        );
         entity.Deactivate();
 
         // Act & Assert
@@ -108,7 +120,12 @@ public class PackageEntityTests
     public void Activate_WhenAlreadyActive_ShouldReturnFalse()
     {
         // Arrange
-        var entity = PackageEntity.Create(Guid.NewGuid(), TestConstants.Content.Package.ValidName, null, 100m);
+        var entity = PackageEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.Package.ValidName,
+            TestConstants.Content.Package.ValidDescription,
+            100m
+        );
 
         // Act & Assert
         entity.Activate().Should().BeFalse();
@@ -118,7 +135,12 @@ public class PackageEntityTests
     public void Deactivate_WhenActive_ShouldReturnTrue()
     {
         // Arrange
-        var entity = PackageEntity.Create(Guid.NewGuid(), TestConstants.Content.Package.ValidName, null, 100m);
+        var entity = PackageEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.Package.ValidName,
+            TestConstants.Content.Package.ValidDescription,
+            100m
+        );
 
         // Act & Assert
         entity.Deactivate().Should().BeTrue();
@@ -129,7 +151,12 @@ public class PackageEntityTests
     public void Deactivate_WhenAlreadyInactive_ShouldReturnFalse()
     {
         // Arrange
-        var entity = PackageEntity.Create(Guid.NewGuid(), TestConstants.Content.Package.ValidName, null, 100m);
+        var entity = PackageEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.Package.ValidName,
+            TestConstants.Content.Package.ValidDescription,
+            100m
+        );
         entity.Deactivate();
 
         // Act & Assert

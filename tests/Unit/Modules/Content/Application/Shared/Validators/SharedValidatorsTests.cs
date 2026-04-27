@@ -29,8 +29,7 @@ internal class PricingTierOptionalNameValidator : AbstractValidator<PricingTierO
 
 internal class PricingTierRequiredDescriptionValidator : AbstractValidator<PricingTierOptionalInput>
 {
-    public PricingTierRequiredDescriptionValidator() =>
-        RuleFor(x => x.Description).ValidPricingTierDescription(isRequired: true);
+    public PricingTierRequiredDescriptionValidator() => RuleFor(x => x.Description).ValidPricingTierDescription();
 }
 
 internal class PromotionLevelOptionalNameValidator : AbstractValidator<PromotionLevelOptionalNameInput>
@@ -138,7 +137,7 @@ public class SharedValidatorsTests
 
     #endregion
 
-    #region PricingTierValidation — ValidPricingTierDescription(isRequired: true)
+    #region PricingTierValidation — ValidPricingTierDescription
 
     [Fact]
     public async Task ValidPricingTierDescription_Required_WithValidDescription_ShouldNotHaveErrors()

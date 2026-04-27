@@ -18,7 +18,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 /// <param name="CategoryId">The category this video belongs to.</param>
 /// <param name="Title">The video display title.</param>
 /// <param name="Slug">The URL-safe slug for this video.</param>
-/// <param name="Description">Optional description shown below the video player.</param>
+/// <param name="Description">The description shown below the video player.</param>
 /// <param name="CustomerId">The B2B customer who commissioned this video. <c>null</c> for free content.</param>
 /// <param name="OrderItemId">The order item this video fulfils. Required when <c>CustomerId</c> is set.</param>
 /// <param name="SocialBoost">Whether to flag this video for manual social media promotion.</param>
@@ -30,7 +30,7 @@ public record AdminUpdateVideoRequest(
     Guid CategoryId,
     string Title,
     string Slug,
-    string? Description,
+    string Description,
     Guid? CustomerId,
     Guid? OrderItemId,
     bool SocialBoost,

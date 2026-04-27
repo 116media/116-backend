@@ -68,7 +68,7 @@ public class AdminCreatePackageHandlerTests : BaseContentHandlerTest
         // Arrange
         var command = new AdminCreatePackageCommand(
             Name: TestConstants.Content.Package.ValidName,
-            Description: null,
+            Description: TestConstants.Content.Package.ValidDescription,
             FlatPriceUsd: TestConstants.Content.Package.ZeroFlatPriceUsd
         );
 

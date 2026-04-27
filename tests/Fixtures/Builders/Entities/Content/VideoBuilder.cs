@@ -16,7 +16,7 @@ internal class VideoBuilder
     private string _title = TestConstants.Content.Editorial.Video.ValidTitle;
     private string _slug = TestConstants.Content.Editorial.Video.ValidSlug;
     private Guid _authorId = Guid.NewGuid();
-    private string? _description;
+    private string _description = TestConstants.Content.Editorial.Video.ValidDescription;
     private Guid? _customerId;
     private Guid? _orderItemId;
     private string? _youtubeVideoId;
@@ -68,8 +68,8 @@ internal class VideoBuilder
         return this;
     }
 
-    /// <summary>Sets the optional description.</summary>
-    public VideoBuilder WithDescription(string? description)
+    /// <summary>Sets the description.</summary>
+    public VideoBuilder WithDescription(string description)
     {
         _description = description;
         return this;

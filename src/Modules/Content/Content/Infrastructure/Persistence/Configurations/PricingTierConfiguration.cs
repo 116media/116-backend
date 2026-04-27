@@ -18,7 +18,10 @@ public class PricingTierConfiguration : IEntityTypeConfiguration<PricingTierEnti
 
         builder.Property(x => x.Name).HasMaxLength(ContentConstants.MaxPricingTierNameLength).IsRequired();
 
-        builder.Property(x => x.Description).HasMaxLength(ContentConstants.MaxPricingTierDescriptionLength);
+        builder
+            .Property(x => x.Description)
+            .HasMaxLength(ContentConstants.MaxPricingTierDescriptionLength)
+            .IsRequired();
 
         builder.Property(x => x.IsActive).IsRequired().HasDefaultValue(true);
 

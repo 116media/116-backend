@@ -72,7 +72,7 @@ public class AdminUpdateVideoEndpointV1Tests
             CategoryId: Guid.NewGuid(),
             Title: "Updated Video",
             Slug: "updated-video",
-            Description: null,
+            Description: "Test video description",
             CustomerId: null,
             OrderItemId: null,
             SocialBoost: false,
@@ -83,7 +83,7 @@ public class AdminUpdateVideoEndpointV1Tests
         );
 
         // Assert
-        request.Description.Should().BeNull();
+        request.Description.Should().Be("Test video description");
         request.CustomerId.Should().BeNull();
         request.OrderItemId.Should().BeNull();
         request.FeaturedUntil.Should().BeNull();
@@ -98,7 +98,7 @@ public class AdminUpdateVideoEndpointV1Tests
             CategoryName: "Test",
             Title: "Test",
             Slug: "test",
-            Description: null,
+            Description: "Test video description",
             ThumbnailUrl: null,
             ThumbnailStorageKey: null,
             AuthorId: "Test",

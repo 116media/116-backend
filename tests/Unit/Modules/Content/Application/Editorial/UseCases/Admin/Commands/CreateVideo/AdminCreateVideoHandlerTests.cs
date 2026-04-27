@@ -56,7 +56,7 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
             AuthorId: AuthorId,
             CustomerId: null,
             OrderItemId: null,
-            Description: null,
+            Description: TestConstants.Content.Editorial.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -94,7 +94,7 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
             AuthorId: AuthorId,
             CustomerId: customerId,
             OrderItemId: orderItemId,
-            Description: null,
+            Description: TestConstants.Content.Editorial.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
@@ -132,7 +132,7 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
             AuthorId: AuthorId,
             CustomerId: null,
             OrderItemId: null,
-            Description: null,
+            Description: TestConstants.Content.Editorial.Video.ValidDescription,
             ShootingScheduledAt: null
         );
         _categoryRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
@@ -158,7 +158,7 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
             AuthorId: AuthorId,
             CustomerId: null,
             OrderItemId: null,
-            Description: null,
+            Description: TestConstants.Content.Editorial.Video.ValidDescription,
             ShootingScheduledAt: null
         );
 
