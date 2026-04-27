@@ -16,6 +16,7 @@ using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateTag;
 using _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllContentTypes;
 using _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllPricingTiers;
 using _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllPromotionLevels;
+using _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllTags;
 using _116.Content.Application.Lookup.UseCases.Public.Queries.GetActivePromotionLevels;
 using _116.Content.Application.Lookup.UseCases.Public.Queries.GetAllTags;
 using _116.Shared.Application.Metadata;
@@ -152,6 +153,13 @@ public class LookupMetaFieldTests
     #endregion
 
     #region Admin Query MetaFields
+
+    [Fact]
+    public void AdminGetAllTagsMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = AdminGetAllTagsMetaField.AdminGetAllTags;
+        metadata.Should().NotBeNull();
+    }
 
     [Fact]
     public void GetAllContentTypesMetaField_ShouldBeInitialized()

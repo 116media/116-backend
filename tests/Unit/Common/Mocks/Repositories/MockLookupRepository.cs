@@ -55,7 +55,8 @@ public static class MockLookupRepository
         IReadOnlyList<ContentTypeEntity> list
     )
     {
-        mock.Setup(x => x.GetAllContentTypesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(list);
+        mock.Setup(x => x.GetAllContentTypesAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(list);
         return mock;
     }
 
@@ -110,7 +111,8 @@ public static class MockLookupRepository
         IReadOnlyList<PricingTierEntity> list
     )
     {
-        mock.Setup(x => x.GetAllPricingTiersAsync(It.IsAny<CancellationToken>())).ReturnsAsync(list);
+        mock.Setup(x => x.GetAllPricingTiersAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(list);
         return mock;
     }
 
@@ -165,7 +167,8 @@ public static class MockLookupRepository
         IReadOnlyList<PromotionLevelEntity> list
     )
     {
-        mock.Setup(x => x.GetAllPromotionLevelsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(list);
+        mock.Setup(x => x.GetAllPromotionLevelsAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(list);
         return mock;
     }
 
@@ -253,7 +256,7 @@ public static class MockLookupRepository
             .ReturnsAsync(false);
         mock.Setup(x => x.AddContentTypeAsync(It.IsAny<ContentTypeEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        mock.Setup(x => x.GetAllContentTypesAsync(It.IsAny<CancellationToken>()))
+        mock.Setup(x => x.GetAllContentTypesAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ContentTypeEntity>());
 
         // PricingTier
@@ -261,7 +264,7 @@ public static class MockLookupRepository
             .ReturnsAsync(false);
         mock.Setup(x => x.AddPricingTierAsync(It.IsAny<PricingTierEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        mock.Setup(x => x.GetAllPricingTiersAsync(It.IsAny<CancellationToken>()))
+        mock.Setup(x => x.GetAllPricingTiersAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PricingTierEntity>());
 
         // PromotionLevel
@@ -269,7 +272,7 @@ public static class MockLookupRepository
             .ReturnsAsync(false);
         mock.Setup(x => x.AddPromotionLevelAsync(It.IsAny<PromotionLevelEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        mock.Setup(x => x.GetAllPromotionLevelsAsync(It.IsAny<CancellationToken>()))
+        mock.Setup(x => x.GetAllPromotionLevelsAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PromotionLevelEntity>());
         mock.Setup(x => x.GetActivePromotionLevelsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PromotionLevelEntity>());

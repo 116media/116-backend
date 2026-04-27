@@ -22,6 +22,7 @@ public class AdminGetAllPromotionLevelsHandler(ILookupRepository lookupRepositor
     )
     {
         IReadOnlyList<PromotionLevelEntity> promotionLevels = await lookupRepository.GetAllPromotionLevelsAsync(
+            search: query.Search,
             cancellationToken: cancellationToken
         );
 

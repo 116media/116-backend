@@ -28,3 +28,17 @@ public class ContentTypeByNameSpecification(string name) : Specification<Content
         return contentType => EF.Functions.ILike(contentType.Name, name);
     }
 }
+
+/// <summary>
+/// Specification for fuzzy search across content type Name.
+/// Uses case-insensitive matching (ILIKE in PostgreSQL).
+/// </summary>
+public class ContentTypeSearchSpecification(string search) : Specification<ContentTypeEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ContentTypeEntity, bool>> ToExpression()
+    {
+        string pattern = $"%{search}%";
+        return contentType => EF.Functions.ILike(contentType.Name, pattern);
+    }
+}

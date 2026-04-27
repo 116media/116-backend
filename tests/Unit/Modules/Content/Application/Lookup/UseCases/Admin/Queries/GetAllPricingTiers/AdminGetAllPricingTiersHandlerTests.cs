@@ -1,6 +1,7 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllPricingTiers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -27,13 +28,13 @@ public class AdminGetAllPricingTiersHandlerTests : BaseContentHandlerTest
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WithMultiplePricingTiers_ShouldReturnAllMapped()
+    public async Task Handle_WithNoSearch_ShouldReturnAllPricingTiers()
     {
         // Arrange
         List<PricingTierEntity> pricingTiers = PricingTierFactory.CreateMany(3);
         _lookupRepositoryMock.SetupGetAllPricingTiers(pricingTiers);
 
-        var query = new AdminGetAllPricingTiersQuery();
+        var query = new AdminGetAllPricingTiersQuery(Search: null);
 
         // Act
         AdminGetAllPricingTiersResult result = await _handler.Handle(query, CancellationToken.None);
@@ -41,6 +42,28 @@ public class AdminGetAllPricingTiersHandlerTests : BaseContentHandlerTest
         // Assert
         result.Should().NotBeNull();
         result.PricingTiers.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task Handle_WithSearchTerm_ShouldPassSearchToRepository()
+    {
+        // Arrange
+        string searchTerm = TestConstants.Content.PricingTier.ValidName;
+        PricingTierEntity tier = PricingTierFactory.CreateDefault();
+        _lookupRepositoryMock.SetupGetAllPricingTiers(new List<PricingTierEntity> { tier });
+
+        var query = new AdminGetAllPricingTiersQuery(Search: searchTerm);
+
+        // Act
+        AdminGetAllPricingTiersResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.PricingTiers.Should().ContainSingle();
+        _lookupRepositoryMock.Verify(
+            x => x.GetAllPricingTiersAsync(searchTerm, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllPromotionLevels;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -27,13 +28,13 @@ public class AdminGetAllPromotionLevelsHandlerTests : BaseContentHandlerTest
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WithMultiplePromotionLevels_ShouldReturnAllMapped()
+    public async Task Handle_WithNoSearch_ShouldReturnAllPromotionLevels()
     {
         // Arrange
         List<PromotionLevelEntity> promotionLevels = PromotionLevelFactory.CreateMany(3);
         _lookupRepositoryMock.SetupGetAllPromotionLevels(promotionLevels);
 
-        var query = new AdminGetAllPromotionLevelsQuery();
+        var query = new AdminGetAllPromotionLevelsQuery(Search: null);
 
         // Act
         AdminGetAllPromotionLevelsResult result = await _handler.Handle(query, CancellationToken.None);
@@ -41,6 +42,28 @@ public class AdminGetAllPromotionLevelsHandlerTests : BaseContentHandlerTest
         // Assert
         result.Should().NotBeNull();
         result.PromotionLevels.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task Handle_WithSearchTerm_ShouldPassSearchToRepository()
+    {
+        // Arrange
+        string searchTerm = TestConstants.Content.PromotionLevel.ValidName;
+        PromotionLevelEntity level = PromotionLevelFactory.CreateDefault();
+        _lookupRepositoryMock.SetupGetAllPromotionLevels(new List<PromotionLevelEntity> { level });
+
+        var query = new AdminGetAllPromotionLevelsQuery(Search: searchTerm);
+
+        // Act
+        AdminGetAllPromotionLevelsResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.PromotionLevels.Should().ContainSingle();
+        _lookupRepositoryMock.Verify(
+            x => x.GetAllPromotionLevelsAsync(searchTerm, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Fact]

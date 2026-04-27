@@ -6,7 +6,10 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllPricingTi
 /// <summary>
 /// Query for retrieving all pricing tiers.
 /// </summary>
-public record AdminGetAllPricingTiersQuery : IQuery<AdminGetAllPricingTiersResult>;
+/// <param name="Search">
+/// Optional search term to filter pricing tiers by name or description (case-insensitive, partial match).
+/// </param>
+public record AdminGetAllPricingTiersQuery(string? Search = null) : IQuery<AdminGetAllPricingTiersResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminGetAllPricingTiersQuery" /> containing all pricing tiers.

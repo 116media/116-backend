@@ -43,10 +43,15 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<ContentTypeEntity>> GetAllContentTypesAsync(
+        string? search = null,
         CancellationToken cancellationToken = default
     )
     {
-        return await context.ContentTypes.OrderBy(x => x.Name).ToListAsync(cancellationToken);
+        IQueryable<ContentTypeEntity> query = string.IsNullOrWhiteSpace(search)
+            ? context.ContentTypes
+            : context.ContentTypes.ApplySpecification(new ContentTypeSearchSpecification(search: search));
+
+        return await query.OrderBy(x => x.Name).ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -79,10 +84,15 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<PricingTierEntity>> GetAllPricingTiersAsync(
+        string? search = null,
         CancellationToken cancellationToken = default
     )
     {
-        return await context.PricingTiers.OrderBy(x => x.Name).ToListAsync(cancellationToken);
+        IQueryable<PricingTierEntity> query = string.IsNullOrWhiteSpace(search)
+            ? context.PricingTiers
+            : context.PricingTiers.ApplySpecification(new PricingTierSearchSpecification(search: search));
+
+        return await query.OrderBy(x => x.Name).ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -118,10 +128,15 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<PromotionLevelEntity>> GetAllPromotionLevelsAsync(
+        string? search = null,
         CancellationToken cancellationToken = default
     )
     {
-        return await context.PromotionLevels.OrderBy(x => x.Name).ToListAsync(cancellationToken);
+        IQueryable<PromotionLevelEntity> query = string.IsNullOrWhiteSpace(search)
+            ? context.PromotionLevels
+            : context.PromotionLevels.ApplySpecification(new PromotionLevelSearchSpecification(search: search));
+
+        return await query.OrderBy(x => x.Name).ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />

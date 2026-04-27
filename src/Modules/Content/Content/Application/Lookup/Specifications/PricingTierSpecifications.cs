@@ -28,3 +28,19 @@ public class PricingTierByNameSpecification(string name) : Specification<Pricing
         return pricingTier => EF.Functions.ILike(pricingTier.Name, name);
     }
 }
+
+/// <summary>
+/// Specification for fuzzy search across pricing tier Name and Description.
+/// Uses case-insensitive matching (ILIKE in PostgreSQL).
+/// </summary>
+public class PricingTierSearchSpecification(string search) : Specification<PricingTierEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<PricingTierEntity, bool>> ToExpression()
+    {
+        string pattern = $"%{search}%";
+        return pricingTier =>
+            EF.Functions.ILike(pricingTier.Name, pattern)
+            || (pricingTier.Description != null && EF.Functions.ILike(pricingTier.Description, pattern));
+    }
+}
