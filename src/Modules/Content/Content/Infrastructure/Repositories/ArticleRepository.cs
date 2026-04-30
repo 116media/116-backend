@@ -60,6 +60,7 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
             .Include(a => a.Images)
             .Include(a => a.Tags)
                 .ThenInclude(t => t.Tag)
+            .Include(a => a.Customer)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -73,6 +74,7 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
             .Include(a => a.Images)
             .Include(a => a.Tags)
                 .ThenInclude(t => t.Tag)
+            .Include(a => a.Customer)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
