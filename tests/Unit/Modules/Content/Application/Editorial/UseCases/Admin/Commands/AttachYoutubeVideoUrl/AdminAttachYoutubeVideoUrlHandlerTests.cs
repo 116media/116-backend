@@ -1,6 +1,6 @@
 using System.Reflection;
 using _116.Content.Application.Editorial.Services;
-using _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeId;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeVideoUrl;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -16,28 +16,28 @@ using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeId;
+namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeVideoUrl;
 
 /// <summary>
-/// Unit tests for <see cref="AdminAttachYoutubeIdHandler"/>.
+/// Unit tests for <see cref="AdminAttachYoutubeVideoUrlHandler"/>.
 /// </summary>
-public class AdminAttachYoutubeIdHandlerTests : BaseContentHandlerTest
+public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly Mock<ICloudinaryService> _cloudinaryMock;
     private readonly Mock<IYoutubeThumbnailService> _youtubeThumbnailMock;
-    private readonly AdminAttachYoutubeIdHandler _handler;
+    private readonly AdminAttachYoutubeVideoUrlHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
 
-    public AdminAttachYoutubeIdHandlerTests()
+    public AdminAttachYoutubeVideoUrlHandlerTests()
     {
         _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _cloudinaryMock = MockCloudinaryService.Create();
         _youtubeThumbnailMock = MockYoutubeThumbnailService.Create();
-        _handler = new AdminAttachYoutubeIdHandler(
+        _handler = new AdminAttachYoutubeVideoUrlHandler(
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _cloudinaryMock.Object,
@@ -63,9 +63,9 @@ public class AdminAttachYoutubeIdHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         VideoEntity video = WithCategory(VideoFactory.Create(CategoryId));
-        var command = new AdminAttachYoutubeIdCommand(
+        var command = new AdminAttachYoutubeVideoUrlCommand(
             VideoId: video.Id.ToString(),
-            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoId
+            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl
         );
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
@@ -74,7 +74,7 @@ public class AdminAttachYoutubeIdHandlerTests : BaseContentHandlerTest
             .ReturnsAsync(video);
 
         // Act
-        AdminAttachYoutubeIdResult result = await _handler.Handle(command, CancellationToken.None);
+        AdminAttachYoutubeVideoUrlResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -90,9 +90,9 @@ public class AdminAttachYoutubeIdHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         VideoEntity video = WithCategory(VideoFactory.CreateWithThumbnail(CategoryId));
-        var command = new AdminAttachYoutubeIdCommand(
+        var command = new AdminAttachYoutubeVideoUrlCommand(
             VideoId: video.Id.ToString(),
-            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoId
+            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl
         );
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
@@ -103,7 +103,7 @@ public class AdminAttachYoutubeIdHandlerTests : BaseContentHandlerTest
         string oldThumbnailKey = video.ThumbnailStorageKey!;
 
         // Act
-        AdminAttachYoutubeIdResult result = await _handler.Handle(command, CancellationToken.None);
+        AdminAttachYoutubeVideoUrlResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -121,9 +121,9 @@ public class AdminAttachYoutubeIdHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         Guid nonExistentId = Guid.NewGuid();
-        var command = new AdminAttachYoutubeIdCommand(
+        var command = new AdminAttachYoutubeVideoUrlCommand(
             VideoId: nonExistentId.ToString(),
-            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoId
+            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl
         );
         _videoRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
@@ -132,6 +132,55 @@ public class AdminAttachYoutubeIdHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenUrlContainsNoRecognisedYoutubePattern_ShouldThrowArgumentException()
+    {
+        // Arrange
+        VideoEntity video = WithCategory(VideoFactory.Create(CategoryId));
+        var command = new AdminAttachYoutubeVideoUrlCommand(
+            VideoId: video.Id.ToString(),
+            YoutubeVideoUrl: "https://www.vimeo.com/watch?v=dQw4w9WgXcQ"
+        );
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ArgumentException>().WithMessage("*Could not extract a YouTube video ID from*");
+    }
+
+    #endregion
+
+    #region ExtractVideoId (via Handle) — URL format coverage
+
+    [Theory]
+    [InlineData("https://www.youtube.com/watch?v=dQw4w9WgXcQ", "dQw4w9WgXcQ")]
+    [InlineData("https://youtu.be/dQw4w9WgXcQ", "dQw4w9WgXcQ")]
+    [InlineData("https://www.youtube.com/embed/dQw4w9WgXcQ", "dQw4w9WgXcQ")]
+    [InlineData("https://www.youtube.com/shorts/dQw4w9WgXcQ", "dQw4w9WgXcQ")]
+    public async Task Handle_WithSupportedYoutubeUrlFormat_ShouldExtractIdAndSucceed(
+        string youtubeUrl,
+        string expectedId
+    )
+    {
+        // Arrange
+        VideoEntity video = WithCategory(VideoFactory.Create(CategoryId));
+        var command = new AdminAttachYoutubeVideoUrlCommand(VideoId: video.Id.ToString(), YoutubeVideoUrl: youtubeUrl);
+
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+
+        // Act
+        AdminAttachYoutubeVideoUrlResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        _youtubeThumbnailMock.Verify(
+            x => x.DownloadThumbnailAsync(expectedId, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     #endregion
