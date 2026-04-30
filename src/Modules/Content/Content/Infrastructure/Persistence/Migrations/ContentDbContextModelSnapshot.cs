@@ -1730,10 +1730,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("updated_by");
 
-                    b.Property<string>("YoutubeVideoId")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("youtube_video_id");
+                    b.Property<string>("YoutubeVideoUrl")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("youtube_video_url");
 
                     b.HasKey("Id")
                         .HasName("pk_videos");
