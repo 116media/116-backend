@@ -16,10 +16,10 @@ public static class VideoFactory
     public static VideoEntity Create(Guid categoryId) => new VideoBuilder(categoryId).Build();
 
     /// <summary>
-    /// Creates a free video with a YouTube ID attached (Draft status).
+    /// Creates a free video with a YouTube URL attached (Draft status).
     /// </summary>
-    public static VideoEntity CreateWithYoutubeId(Guid categoryId) =>
-        new VideoBuilder(categoryId).WithYoutubeId().Build();
+    public static VideoEntity CreateWithYoutubeUrl(Guid categoryId) =>
+        new VideoBuilder(categoryId).WithYoutubeUrl().Build();
 
     /// <summary>
     /// Creates a paid video in Draft status.
@@ -33,7 +33,7 @@ public static class VideoFactory
     public static VideoEntity CreateWithId(Guid id, Guid categoryId) => new VideoBuilder(categoryId).WithId(id).Build();
 
     /// <summary>
-    /// Creates a published free video (requires YouTube ID).
+    /// Creates a published free video (requires YouTube URL).
     /// </summary>
     public static VideoEntity CreatePublished(Guid categoryId) => new VideoBuilder(categoryId).AsPublished().Build();
 
@@ -99,10 +99,10 @@ public static class VideoFactory
         new VideoBuilder(categoryId).WithThumbnail().Build();
 
     /// <summary>
-    /// Creates an approved free video with a YouTube ID attached (ready to publish).
+    /// Creates an approved free video with a YouTube URL attached (ready to publish).
     /// </summary>
-    public static VideoEntity CreateApprovedWithYoutubeId(Guid categoryId) =>
-        new VideoBuilder(categoryId).WithYoutubeId().AsApproved().Build();
+    public static VideoEntity CreateApprovedWithYoutubeUrl(Guid categoryId) =>
+        new VideoBuilder(categoryId).WithYoutubeUrl().AsApproved().Build();
 
     /// <summary>
     /// Creates a free video with the Category navigation property loaded via reflection.
