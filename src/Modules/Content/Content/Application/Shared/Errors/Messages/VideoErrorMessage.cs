@@ -41,14 +41,14 @@ public static class VideoErrorMessage
     }
 
     /// <summary>
-    /// Gets an error message for when a video cannot be published without an attached YouTube ID.
+    /// Gets an error message for when a video cannot be published without an attached YouTube URL.
     /// </summary>
     /// <returns>
-    /// An error message indicating that a YouTube video ID must be attached before the video can be published.
+    /// An error message indicating that a YouTube video URL must be attached before the video can be published.
     /// </returns>
-    public static string CannotPublishWithoutYoutubeId()
+    public static string CannotPublishWithoutYoutubeUrl()
     {
-        return "A YouTube video ID must be attached before this video can be published";
+        return "A YouTube video URL must be attached before this video can be published";
     }
 
     /// <summary>
