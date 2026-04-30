@@ -21,7 +21,7 @@ public class AdminAttachYoutubeIdValidatorTests
         // Arrange
         var command = new AdminAttachYoutubeIdCommand(
             VideoId: Guid.NewGuid().ToString(),
-            YoutubeVideoId: TestConstants.Content.Editorial.Video.ValidYoutubeVideoId
+            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoId
         );
 
         // Act
@@ -42,7 +42,7 @@ public class AdminAttachYoutubeIdValidatorTests
         // Arrange
         var command = new AdminAttachYoutubeIdCommand(
             VideoId: string.Empty,
-            YoutubeVideoId: TestConstants.Content.Editorial.Video.ValidYoutubeVideoId
+            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoId
         );
 
         // Act
@@ -64,7 +64,7 @@ public class AdminAttachYoutubeIdValidatorTests
         // Arrange
         var command = new AdminAttachYoutubeIdCommand(
             VideoId: "not-a-guid",
-            YoutubeVideoId: TestConstants.Content.Editorial.Video.ValidYoutubeVideoId
+            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoId
         );
 
         // Act
@@ -88,28 +88,9 @@ public class AdminAttachYoutubeIdValidatorTests
     public async Task Validate_WithEmptyYoutubeVideoId_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminAttachYoutubeIdCommand(VideoId: Guid.NewGuid().ToString(), YoutubeVideoId: string.Empty);
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminAttachYoutubeIdCommand.YoutubeVideoId)
-                && e.ErrorMessage == "YouTube video ID is required."
-            );
-    }
-
-    [Fact]
-    public async Task Validate_WithYoutubeVideoIdExceedingMaxLength_ShouldHaveError()
-    {
-        // Arrange
         var command = new AdminAttachYoutubeIdCommand(
             VideoId: Guid.NewGuid().ToString(),
-            YoutubeVideoId: new string('a', TestConstants.Content.Editorial.Video.YoutubeVideoIdMaxLength + 1)
+            YoutubeVideoUrl: string.Empty
         );
 
         // Act
@@ -120,8 +101,53 @@ public class AdminAttachYoutubeIdValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminAttachYoutubeIdCommand.YoutubeVideoId)
-                && e.ErrorMessage == "YouTube video ID must not exceed 20 characters."
+                e.PropertyName == nameof(AdminAttachYoutubeIdCommand.YoutubeVideoUrl)
+                && e.ErrorMessage == "YouTube video URL is required."
+            );
+    }
+
+    [Fact]
+    public async Task Validate_WithYoutubeVideoIdExceedingMaxLength_ShouldHaveError()
+    {
+        // Arrange
+        var command = new AdminAttachYoutubeIdCommand(
+            VideoId: Guid.NewGuid().ToString(),
+            YoutubeVideoUrl: new string('a', TestConstants.Content.Editorial.Video.YoutubeVideoIdMaxLength + 1)
+        );
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminAttachYoutubeIdCommand.YoutubeVideoUrl)
+                && e.ErrorMessage
+                    == $"YouTube video URL must not exceed {TestConstants.Content.Editorial.Video.YoutubeVideoIdMaxLength} characters."
+            );
+    }
+
+    [Fact]
+    public async Task Validate_WithInvalidYoutubeUrl_ShouldHaveError()
+    {
+        // Arrange
+        var command = new AdminAttachYoutubeIdCommand(
+            VideoId: Guid.NewGuid().ToString(),
+            YoutubeVideoUrl: "https://www.vimeo.com/watch?v=dQw4w9WgXcQ"
+        );
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminAttachYoutubeIdCommand.YoutubeVideoUrl)
+                && e.ErrorMessage == "Must be a valid YouTube video URL."
             );
     }
 
