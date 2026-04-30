@@ -90,7 +90,7 @@ public class AdminCreateVideoEndpointV1Tests
             AuthorId: "Test",
             Status: EnumContentStatus.Draft,
             RejectionReason: null,
-            YoutubeVideoId: null,
+            YoutubeVideoUrl: null,
             IsFeatured: false,
             FeaturedUntil: null,
             HasLyrics: false,
