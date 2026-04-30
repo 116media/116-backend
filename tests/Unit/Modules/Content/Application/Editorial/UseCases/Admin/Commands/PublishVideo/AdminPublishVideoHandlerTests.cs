@@ -34,7 +34,7 @@ public class AdminPublishVideoHandlerTests
     public async Task Handle_WhenVideoIsApproved_ShouldPublishAndReturnSuccess()
     {
         // Arrange
-        VideoEntity video = VideoFactory.CreateApprovedWithYoutubeId(CategoryId);
+        VideoEntity video = VideoFactory.CreateApprovedWithYoutubeUrl(CategoryId);
         var command = new AdminPublishVideoCommand(Id: video.Id.ToString());
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
