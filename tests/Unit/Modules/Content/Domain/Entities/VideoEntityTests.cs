@@ -246,7 +246,7 @@ public class VideoEntityTests
     }
 
     [Fact]
-    public void Publish_WithYoutubeId_ShouldTransitionToPublished_AndSetPublishedAt()
+    public void Publish_WithYoutubeUrl_ShouldTransitionToPublished_AndSetPublishedAt()
     {
         // Arrange
         VideoEntity video = VideoEntity.CreateFree(
@@ -257,7 +257,7 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.AttachYoutubeId(TestConstants.Content.Editorial.Video.ValidYoutubeVideoId);
+        video.AttachYoutubeVideoUrl(TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
 
@@ -271,7 +271,7 @@ public class VideoEntityTests
     }
 
     [Fact]
-    public void Publish_WithoutYoutubeId_ShouldThrow()
+    public void Publish_WithoutYoutubeUrl_ShouldThrow()
     {
         // Arrange
         VideoEntity video = VideoEntity.CreateFree(
@@ -304,7 +304,7 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.AttachYoutubeId(TestConstants.Content.Editorial.Video.ValidYoutubeVideoId);
+        video.AttachYoutubeVideoUrl(TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.Publish();
@@ -372,7 +372,7 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.AttachYoutubeId(TestConstants.Content.Editorial.Video.ValidYoutubeVideoId);
+        video.AttachYoutubeVideoUrl(TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.Publish();
@@ -397,7 +397,7 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.AttachYoutubeId(TestConstants.Content.Editorial.Video.ValidYoutubeVideoId);
+        video.AttachYoutubeVideoUrl(TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.Publish();
@@ -415,7 +415,7 @@ public class VideoEntityTests
     #region Domain Method Tests
 
     [Fact]
-    public void AttachYoutubeId_ShouldSetYoutubeVideoId()
+    public void AttachYoutubeUrl_ShouldSetYoutubeVideoUrl()
     {
         // Arrange
         VideoEntity video = VideoEntity.CreateFree(
@@ -426,10 +426,10 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        const string youtubeId = TestConstants.Content.Editorial.Video.ValidYoutubeVideoId;
+        const string youtubeId = TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl;
 
         // Act
-        video.AttachYoutubeId(youtubeId);
+        video.AttachYoutubeVideoUrl(youtubeId);
 
         // Assert
         video.YoutubeVideoUrl.Should().Be(youtubeId);
