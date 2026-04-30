@@ -37,7 +37,7 @@ public class VideoEntityTests
         video.AuthorId.Should().Be(AuthorId);
         video.Status.Should().Be(EnumContentStatus.Draft);
         video.CustomerId.Should().BeNull();
-        video.YoutubeVideoId.Should().BeNull();
+        video.YoutubeVideoUrl.Should().BeNull();
     }
 
     [Theory]
@@ -432,7 +432,7 @@ public class VideoEntityTests
         video.AttachYoutubeId(youtubeId);
 
         // Assert
-        video.YoutubeVideoId.Should().Be(youtubeId);
+        video.YoutubeVideoUrl.Should().Be(youtubeId);
     }
 
     [Fact]
