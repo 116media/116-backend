@@ -181,10 +181,9 @@ public static class ContentConstants
     public const int MaxCoverImageUrlLength = 500;
 
     /// <summary>
-    /// Maximum allowed length for a YouTube video ID (e.g., "dQw4w9WgXcQ" is 11 chars;
-    /// padded to 20 to accommodate future ID format changes).
+    /// Maximum allowed length for a YouTube video URL.
     /// </summary>
-    public const int MaxYoutubeVideoIdLength = 20;
+    public const int MaxYoutubeVideoUrlLength = 200;
 
     /// <summary>
     /// Maximum allowed length for a video thumbnail URL.
