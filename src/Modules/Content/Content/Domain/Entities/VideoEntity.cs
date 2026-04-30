@@ -321,14 +321,14 @@ public class VideoEntity : Aggregate<Guid>
 
     /// <summary>
     /// Attaches the full YouTube video URL. Sets <c>YoutubeVideoUrl</c> only — the handler
-    /// (<c>AttachYoutubeIdCommandHandler</c>) is responsible for downloading the YouTube
+    /// (<c>AttachYoutubeVideoUrlCommandHandler</c>) is responsible for downloading the YouTube
     /// thumbnail and calling <see cref="UpdateThumbnail" /> separately.
     /// Keeping these two concerns separate makes the entity method simple and testable.
     /// </summary>
     /// <param name="youtubeVideoUrl">
     /// The full YouTube video URL (e.g., "https://www.youtube.com/watch?v=dQw4w9WgXcQ").
     /// </param>
-    public void AttachYoutubeId(string youtubeVideoUrl) => YoutubeVideoUrl = youtubeVideoUrl;
+    public void AttachYoutubeVideoUrl(string youtubeVideoUrl) => YoutubeVideoUrl = youtubeVideoUrl;
 
     /// <summary>
     /// Records or updates the scheduled shooting date.
@@ -410,7 +410,7 @@ public class VideoEntity : Aggregate<Guid>
 
         if (string.IsNullOrWhiteSpace(YoutubeVideoUrl))
         {
-            throw VideoErrors.CannotPublishWithoutYoutubeId();
+            throw VideoErrors.CannotPublishWithoutYoutubeUrl();
         }
 
         Status = EnumContentStatus.Published;
