@@ -16,6 +16,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Mappers;
 public class ArticleMapperTests : BaseContentHandlerTest
 {
     private static readonly Guid CategoryId = Guid.NewGuid();
+    private static readonly Guid ContentTypeId = Guid.NewGuid();
 
     #region Register
 
@@ -228,6 +229,50 @@ public class ArticleMapperTests : BaseContentHandlerTest
         dtos.Should().HaveCount(2);
         dtos[0].Body.Should().NotBeNull();
         dtos[1].Body.Should().BeNull();
+    }
+
+    #endregion
+
+    #region ToArticleDetailDto — customer and order item mapping
+
+    [Fact]
+    public void ToArticleDetailDto_WhenFreeArticle_ShouldMapCustomerFieldsAsNull()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        article.GetType().GetProperty("Category")!.SetValue(article, category);
+
+        // Act
+        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+
+        // Assert
+        dto.CustomerId.Should().BeNull();
+        dto.CustomerName.Should().BeNull();
+        dto.OrderItemId.Should().BeNull();
+    }
+
+    [Fact]
+    public void ToArticleDetailDto_WhenPaidArticle_ShouldMapCustomerAndOrderItemId()
+    {
+        // Arrange
+        Guid customerId = Guid.NewGuid();
+        Guid orderItemId = Guid.NewGuid();
+
+        ArticleEntity article = ArticleFactory.CreatePaid(CategoryId, customerId, orderItemId);
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        CustomerEntity customer = CustomerFactory.Create();
+
+        article.GetType().GetProperty("Category")!.SetValue(article, category);
+        article.GetType().GetProperty("Customer")!.SetValue(article, customer);
+
+        // Act
+        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+
+        // Assert
+        dto.CustomerId.Should().Be(customerId);
+        dto.CustomerName.Should().Be(customer.FullName);
+        dto.OrderItemId.Should().Be(orderItemId);
     }
 
     #endregion
