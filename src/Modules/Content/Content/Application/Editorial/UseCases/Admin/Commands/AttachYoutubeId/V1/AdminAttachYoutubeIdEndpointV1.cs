@@ -13,10 +13,12 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeId.V1;
 
 /// <summary>
-/// Request model for attaching a YouTube video ID.
+/// Request model for attaching a YouTube video URL.
 /// </summary>
-/// <param name="YoutubeVideoId">The YouTube video ID (e.g., "dQw4w9WgXcQ").</param>
-public record AdminAttachYoutubeIdRequest(string YoutubeVideoId);
+/// <param name="YoutubeVideoUrl">
+/// The full YouTube video URL (e.g., "https://www.youtube.com/watch?v=dQw4w9WgXcQ").
+/// </param>
+public record AdminAttachYoutubeIdRequest(string YoutubeVideoUrl);
 
 /// <summary>
 /// Response model for successful YouTube ID attachment.
@@ -46,7 +48,10 @@ public class AdminAttachYoutubeIdEndpointV1 : ICarterModule
                 $"/{{id}}/{EditorialRouteConstants.Youtube}",
                 async (string id, AdminAttachYoutubeIdRequest request, IDispatcher dispatcher) =>
                 {
-                    var command = new AdminAttachYoutubeIdCommand(VideoId: id, YoutubeVideoId: request.YoutubeVideoId);
+                    var command = new AdminAttachYoutubeIdCommand(
+                        VideoId: id,
+                        YoutubeVideoUrl: request.YoutubeVideoUrl
+                    );
 
                     AdminAttachYoutubeIdResult result = await dispatcher.Send(request: command);
 
@@ -58,7 +63,7 @@ public class AdminAttachYoutubeIdEndpointV1 : ICarterModule
             .WithSummary(summary: AdminAttachYoutubeIdMetaField.AdminAttachYoutubeId.Summary)
             .WithDescription(description: AdminAttachYoutubeIdMetaField.AdminAttachYoutubeId.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
-            .WithAuthorization(UserRolePolicies.RequireAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminAttachYoutubeIdResponse>(statusCode: StatusCodes.Status200OK)
