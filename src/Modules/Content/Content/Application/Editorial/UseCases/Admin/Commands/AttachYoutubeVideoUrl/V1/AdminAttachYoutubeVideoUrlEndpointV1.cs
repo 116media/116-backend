@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
-namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeId.V1;
+namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeVideoUrl.V1;
 
 /// <summary>
 /// Request model for attaching a YouTube video URL.
@@ -18,19 +18,19 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutu
 /// <param name="YoutubeVideoUrl">
 /// The full YouTube video URL (e.g., "https://www.youtube.com/watch?v=dQw4w9WgXcQ").
 /// </param>
-public record AdminAttachYoutubeIdRequest(string YoutubeVideoUrl);
+public record AdminAttachYoutubeVideoUrlRequest(string YoutubeVideoUrl);
 
 /// <summary>
 /// Response model for successful YouTube ID attachment.
 /// </summary>
 /// <param name="Video">The updated video detail information.</param>
-public record AdminAttachYoutubeIdResponse(VideoDetailDto Video);
+public record AdminAttachYoutubeVideoUrlResponse(VideoDetailDto Video);
 
 /// <summary>
 /// Defines the "admin attach" YouTube ID endpoint.
 /// Handles attaching a YouTube video ID and auto-downloading the thumbnail.
 /// </summary>
-public class AdminAttachYoutubeIdEndpointV1 : ICarterModule
+public class AdminAttachYoutubeVideoUrlEndpointV1 : ICarterModule
 {
     /// <summary>
     /// Configures the YouTube ID attachment route within the API pipeline.
@@ -46,27 +46,27 @@ public class AdminAttachYoutubeIdEndpointV1 : ICarterModule
         group
             .MapPatch(
                 $"/{{id}}/{EditorialRouteConstants.Youtube}",
-                async (string id, AdminAttachYoutubeIdRequest request, IDispatcher dispatcher) =>
+                async (string id, AdminAttachYoutubeVideoUrlRequest request, IDispatcher dispatcher) =>
                 {
-                    var command = new AdminAttachYoutubeIdCommand(
+                    var command = new AdminAttachYoutubeVideoUrlCommand(
                         VideoId: id,
                         YoutubeVideoUrl: request.YoutubeVideoUrl
                     );
 
-                    AdminAttachYoutubeIdResult result = await dispatcher.Send(request: command);
+                    AdminAttachYoutubeVideoUrlResult result = await dispatcher.Send(request: command);
 
-                    var response = new AdminAttachYoutubeIdResponse(Video: result.Video);
+                    var response = new AdminAttachYoutubeVideoUrlResponse(Video: result.Video);
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminAttachYoutubeIdMetaField.AdminAttachYoutubeId.Name)
-            .WithSummary(summary: AdminAttachYoutubeIdMetaField.AdminAttachYoutubeId.Summary)
-            .WithDescription(description: AdminAttachYoutubeIdMetaField.AdminAttachYoutubeId.Description)
+            .WithName(endpointName: AdminAttachYoutubeVideoUrlMetaField.AdminAttachYoutubeVideoUrl.Name)
+            .WithSummary(summary: AdminAttachYoutubeVideoUrlMetaField.AdminAttachYoutubeVideoUrl.Summary)
+            .WithDescription(description: AdminAttachYoutubeVideoUrlMetaField.AdminAttachYoutubeVideoUrl.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
-            .Produces<AdminAttachYoutubeIdResponse>(statusCode: StatusCodes.Status200OK)
+            .Produces<AdminAttachYoutubeVideoUrlResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
