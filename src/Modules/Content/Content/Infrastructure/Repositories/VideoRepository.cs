@@ -59,6 +59,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
             .Include(v => v.Category)
             .Include(v => v.Tags)
                 .ThenInclude(t => t.Tag)
+            .Include(v => v.Customer)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -71,6 +72,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
             .Include(v => v.Category)
             .Include(v => v.Tags)
                 .ThenInclude(t => t.Tag)
+            .Include(v => v.Customer)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
