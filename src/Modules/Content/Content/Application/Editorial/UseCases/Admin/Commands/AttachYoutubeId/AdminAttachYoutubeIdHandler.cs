@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
@@ -11,14 +12,24 @@ using Microsoft.AspNetCore.Http;
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeId;
 
 /// <summary>
-/// Handles the <see cref="AdminAttachYoutubeIdCommand" /> to attach a YouTube video ID and
+/// Handles the <see cref="AdminAttachYoutubeIdCommand" /> to attach a YouTube video URL and
 /// automatically download and re-upload the YouTube thumbnail to Cloudinary.
 /// </summary>
-/// <param name="videoRepository">Repository for video data access operations.</param>
-/// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="cloudinaryService">Service for uploading and deleting Cloudinary image assets.</param>
-/// <param name="youtubeThumbnailService">Service for downloading YouTube video thumbnails.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="videoRepository">
+/// Repository for video data access operations.
+/// </param>
+/// <param name="unitOfWork">
+/// Unit of Work for managing database transactions.
+/// </param>
+/// <param name="cloudinaryService">
+/// Service for uploading and deleting Cloudinary image assets.
+/// </param>
+/// <param name="youtubeThumbnailService">
+/// Service for downloading YouTube video thumbnails.
+/// </param>
+/// <param name="mapper">
+/// Mapster mapper for entity-to-DTO transformations.
+/// </param>
 public class AdminAttachYoutubeIdHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
@@ -27,6 +38,33 @@ public class AdminAttachYoutubeIdHandler(
     IMapper mapper
 ) : ICommandHandler<AdminAttachYoutubeIdCommand, AdminAttachYoutubeIdResult>
 {
+    private static readonly Regex YoutubeIdRegex = new(
+        @"(?:youtube\.com/(?:watch\?v=|embed/|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})",
+        RegexOptions.Compiled
+    );
+
+    /// <summary>
+    /// Extracts the 11-character YouTube video ID from a full YouTube URL.
+    /// </summary>
+    /// <param name="youtubeUrl">
+    /// A YouTube video URL in any supported format.
+    /// </param>
+    /// <returns>
+    /// The extracted video ID.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when no valid YouTube video ID can be extracted from the URL.
+    /// </exception>
+    private static string ExtractVideoId(string youtubeUrl)
+    {
+        Match match = YoutubeIdRegex.Match(youtubeUrl);
+        if (!match.Success)
+        {
+            throw new ArgumentException($"Could not extract a YouTube video ID from: {youtubeUrl}");
+        }
+        return match.Groups[1].Value;
+    }
+
     /// <inheritdoc />
     public async Task<AdminAttachYoutubeIdResult> Handle(
         AdminAttachYoutubeIdCommand command,
@@ -41,11 +79,12 @@ public class AdminAttachYoutubeIdHandler(
         );
 
         string? oldThumbnailStorageKey = video.ThumbnailStorageKey;
+        string extractedId = ExtractVideoId(command.YoutubeVideoUrl);
 
-        video.AttachYoutubeId(youtubeVideoId: command.YoutubeVideoId);
+        video.AttachYoutubeId(youtubeVideoUrl: command.YoutubeVideoUrl);
 
         IFormFile thumbnail = await youtubeThumbnailService.DownloadThumbnailAsync(
-            youtubeVideoId: command.YoutubeVideoId,
+            youtubeVideoId: extractedId,
             cancellationToken: cancellationToken
         );
 
