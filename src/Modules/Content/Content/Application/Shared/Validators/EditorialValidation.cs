@@ -144,7 +144,7 @@ public static partial class EditorialValidation
     /// <returns>
     /// The configured rule builder.
     /// </returns>
-    public static IRuleBuilderOptions<T, string?> ValidYoutubeVideoId<T>(
+    public static IRuleBuilderOptions<T, string?> ValidYoutubeVideoUrl<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder
     )
     {
