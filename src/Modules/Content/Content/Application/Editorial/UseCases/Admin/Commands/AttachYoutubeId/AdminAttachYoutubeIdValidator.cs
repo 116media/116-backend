@@ -16,6 +16,6 @@ public class AdminAttachYoutubeIdValidator : AbstractValidator<AdminAttachYoutub
     {
         RuleFor(x => x.VideoId).IsValidGuid("Video ID");
 
-        RuleFor(x => x.YoutubeVideoId).ValidYoutubeVideoId();
+        RuleFor(x => x.YoutubeVideoUrl).ValidYoutubeVideoId();
     }
 }
