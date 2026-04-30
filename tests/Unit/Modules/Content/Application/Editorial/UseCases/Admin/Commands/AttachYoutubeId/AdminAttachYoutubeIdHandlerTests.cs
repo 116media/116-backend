@@ -65,7 +65,7 @@ public class AdminAttachYoutubeIdHandlerTests : BaseContentHandlerTest
         VideoEntity video = WithCategory(VideoFactory.Create(CategoryId));
         var command = new AdminAttachYoutubeIdCommand(
             VideoId: video.Id.ToString(),
-            YoutubeVideoId: TestConstants.Content.Editorial.Video.ValidYoutubeVideoId
+            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoId
         );
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
@@ -92,7 +92,7 @@ public class AdminAttachYoutubeIdHandlerTests : BaseContentHandlerTest
         VideoEntity video = WithCategory(VideoFactory.CreateWithThumbnail(CategoryId));
         var command = new AdminAttachYoutubeIdCommand(
             VideoId: video.Id.ToString(),
-            YoutubeVideoId: TestConstants.Content.Editorial.Video.ValidYoutubeVideoId
+            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoId
         );
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
@@ -123,7 +123,7 @@ public class AdminAttachYoutubeIdHandlerTests : BaseContentHandlerTest
         Guid nonExistentId = Guid.NewGuid();
         var command = new AdminAttachYoutubeIdCommand(
             VideoId: nonExistentId.ToString(),
-            YoutubeVideoId: TestConstants.Content.Editorial.Video.ValidYoutubeVideoId
+            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoId
         );
         _videoRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
