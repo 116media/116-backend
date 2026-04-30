@@ -30,8 +30,8 @@ public class VideoConfiguration : IEntityTypeConfiguration<VideoEntity>
         builder.Property(x => x.ThumbnailStorageKey).IsRequired(false);
 
         builder
-            .Property(x => x.YoutubeVideoId)
-            .HasMaxLength(ContentConstants.MaxYoutubeVideoIdLength)
+            .Property(x => x.YoutubeVideoUrl)
+            .HasMaxLength(ContentConstants.MaxYoutubeVideoUrlLength)
             .IsRequired(false);
 
         builder.Property(x => x.Status).HasConversion<string>().HasDefaultValue(EnumContentStatus.Draft).IsRequired();
