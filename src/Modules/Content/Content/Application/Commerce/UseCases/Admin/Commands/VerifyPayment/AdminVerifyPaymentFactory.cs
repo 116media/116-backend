@@ -65,6 +65,9 @@ public class AdminVerifyPaymentFactory(
                 video?.StampFeatured(until: featuredUntil);
             }
 
+            article?.MarkPendingReview();
+            video?.MarkPendingReview();
+
             if (article is not null)
             {
                 articleRepository.Update(article: article);
