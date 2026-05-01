@@ -186,6 +186,16 @@ public static class MockContentOrderRepository
         );
     }
 
+    public static Mock<IContentOrderRepository> SetupGetOrderByItemId(
+        this Mock<IContentOrderRepository> mock,
+        Guid orderItemId,
+        ContentOrderEntity? order
+    )
+    {
+        mock.Setup(x => x.GetOrderByItemIdAsync(orderItemId, It.IsAny<CancellationToken>())).ReturnsAsync(order);
+        return mock;
+    }
+
     public static Mock<IContentOrderRepository> SetupGetAllPaymentsAsync(
         this Mock<IContentOrderRepository> mock,
         IReadOnlyList<ContentPaymentEntity> list,
@@ -265,5 +275,7 @@ public static class MockContentOrderRepository
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.RemoveItemTierAsync(It.IsAny<ContentItemTierEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        mock.Setup(x => x.GetOrderByItemIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ContentOrderEntity?)null);
     }
 }
