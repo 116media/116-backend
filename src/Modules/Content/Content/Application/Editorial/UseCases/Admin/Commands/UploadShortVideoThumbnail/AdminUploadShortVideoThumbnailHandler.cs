@@ -8,6 +8,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadShort
 
 /// <summary>
 /// Handles the <see cref="AdminUploadShortVideoThumbnailCommand" /> to upload or replace a short video thumbnail.
+/// The thumbnail always uses the short video ID as the Cloudinary public ID, so uploading a new file
+/// overwrites the existing asset in place — no explicit delete is needed.
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
 /// <param name="cloudinaryService">Service for uploading and deleting media assets in cloud storage.</param>
@@ -31,13 +33,9 @@ public class AdminUploadShortVideoThumbnailHandler(
             cancellationToken: cancellationToken
         );
 
-        string? oldStorageKey = shortVideo.ThumbnailStorageKey;
-
-        string newStorageKey = shortVideoId.ToString();
-
         CloudinaryUploadResult result = await cloudinaryService.UploadImageAsync(
             file: command.File,
-            publicId: newStorageKey,
+            publicId: shortVideoId.ToString(),
             folder: "content/short-video-thumbnails",
             cancellationToken: cancellationToken
         );
@@ -46,11 +44,6 @@ public class AdminUploadShortVideoThumbnailHandler(
 
         shortVideoRepository.Update(shortVideo: shortVideo);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        if (oldStorageKey is not null)
-        {
-            await cloudinaryService.DeleteImageAsync(publicId: oldStorageKey, cancellationToken: cancellationToken);
-        }
 
         return new AdminUploadShortVideoThumbnailResult(
             ThumbnailUrl: result.SecureUrl,
