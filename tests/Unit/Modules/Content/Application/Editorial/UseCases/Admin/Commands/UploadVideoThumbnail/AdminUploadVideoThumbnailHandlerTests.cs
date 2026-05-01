@@ -63,11 +63,10 @@ public class AdminUploadVideoThumbnailHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenVideoHasExistingThumbnail_ShouldDeleteOldThumbnailAfterUpload()
+    public async Task Handle_WhenVideoHasExistingThumbnail_ShouldOverwriteInPlaceWithoutDelete()
     {
-        // Arrange
+        // Arrange — thumbnail uses the video ID as publicId so Cloudinary overwrites in place
         VideoEntity video = VideoFactory.CreateWithThumbnail(CategoryId);
-        string oldKey = video.ThumbnailStorageKey!;
         IFormFile fileMock = MockYoutubeThumbnailService.CreateMockFormFile();
         var command = new AdminUploadVideoThumbnailCommand(VideoId: video.Id.ToString(), File: fileMock);
 
@@ -79,7 +78,7 @@ public class AdminUploadVideoThumbnailHandlerTests
         // Assert
         result.Should().NotBeNull();
         _cloudinaryMock.VerifyUploadCalled();
-        _cloudinaryMock.VerifyDeleteImageCalled(oldKey);
+        _cloudinaryMock.VerifyDeleteImageNotCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
