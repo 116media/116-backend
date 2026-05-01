@@ -40,6 +40,19 @@ public class ContentOrderQueryBuilder : IContentOrderQueryBuilder
     }
 
     /// <inheritdoc />
+    public IContentOrderQueryBuilder WithSearch(string? search)
+    {
+        if (string.IsNullOrWhiteSpace(value: search))
+        {
+            return this;
+        }
+
+        var searchSpec = new ContentOrderSearchSpecification(search: search);
+        CombineSpecification(spec: searchSpec);
+        return this;
+    }
+
+    /// <inheritdoc />
     public Specification<ContentOrderEntity>? Build()
     {
         return _specification;

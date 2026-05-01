@@ -87,6 +87,7 @@ public class ContentOrderRepository(ContentDbContext context) : IContentOrderRep
         int pageSize,
         EnumOrderStatus? status,
         Guid? customerId,
+        string? search = null,
         bool orderByAscending = false,
         CancellationToken ct = default
     )
@@ -94,6 +95,7 @@ public class ContentOrderRepository(ContentDbContext context) : IContentOrderRep
         Specification<ContentOrderEntity>? spec = new ContentOrderQueryBuilder()
             .WithStatus(status: status)
             .WithCustomerId(customerId: customerId)
+            .WithSearch(search: search)
             .Build();
 
         IQueryable<ContentOrderEntity> query = spec is not null

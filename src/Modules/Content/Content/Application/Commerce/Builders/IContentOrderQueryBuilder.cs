@@ -21,6 +21,11 @@ public interface IContentOrderQueryBuilder
     IContentOrderQueryBuilder WithCustomerId(Guid? customerId);
 
     /// <summary>
+    /// Adds a search filter matching customer name, email, or company.
+    /// </summary>
+    IContentOrderQueryBuilder WithSearch(string? search);
+
+    /// <summary>
     /// Builds and returns the final specification.
     /// Returns null if no filters were applied.
     /// </summary>

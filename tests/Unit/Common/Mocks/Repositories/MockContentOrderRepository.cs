@@ -61,6 +61,7 @@ public static class MockContentOrderRepository
                     It.IsAny<int>(),
                     It.IsAny<EnumOrderStatus?>(),
                     It.IsAny<Guid?>(),
+                    It.IsAny<string?>(),
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()
                 )
@@ -155,6 +156,7 @@ public static class MockContentOrderRepository
                     It.IsAny<int>(),
                     It.IsAny<EnumOrderStatus?>(),
                     It.IsAny<Guid?>(),
+                    It.IsAny<string?>(),
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()
                 )

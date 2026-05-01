@@ -55,12 +55,13 @@ public interface IContentOrderRepository : IRepository<ContentOrderEntity>
     Task<ContentOrderEntity> GetByIdOrThrowAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>
-    /// Retrieves a paginated list of content orders with optional filters for status and customer.
+    /// Retrieves a paginated list of content orders with optional filters for status, customer, and search.
     /// </summary>
     /// <param name="page">The 1-based page number.</param>
     /// <param name="pageSize">The number of items per page.</param>
     /// <param name="status">Optional filter by order status.</param>
     /// <param name="customerId">Optional filter by customer identifier.</param>
+    /// <param name="search">Optional search term matching customer name, email, or company.</param>
     /// <param name="orderByAscending">When true, orders by <c>CreatedAt</c> ascending (oldest first); defaults to descending.</param>
     /// <param name="ct">Token to observe for cancellation requests.</param>
     Task<(IReadOnlyList<ContentOrderEntity> Items, int TotalCount)> GetAllAsync(
@@ -68,6 +69,7 @@ public interface IContentOrderRepository : IRepository<ContentOrderEntity>
         int pageSize,
         EnumOrderStatus? status,
         Guid? customerId,
+        string? search = null,
         bool orderByAscending = false,
         CancellationToken ct = default
     );

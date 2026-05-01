@@ -43,7 +43,8 @@ public class AdminGetAllOrdersHandlerTests : BaseContentHandlerTest
         var query = new AdminGetAllOrdersQuery(
             PaginatedRequest: new PaginatedRequest(0, 10),
             Status: null,
-            CustomerId: null
+            CustomerId: null,
+            Search: null
         );
 
         // Act

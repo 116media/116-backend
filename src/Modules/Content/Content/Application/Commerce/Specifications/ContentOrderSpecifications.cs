@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Shared.Application.Specifications;
+using Microsoft.EntityFrameworkCore;
 
 namespace _116.Content.Application.Commerce.Specifications;
 
@@ -38,6 +39,23 @@ public class ContentOrderByCustomerIdSpecification(Guid customerId) : Specificat
     public override Expression<Func<ContentOrderEntity, bool>> ToExpression()
     {
         return order => order.CustomerId == customerId;
+    }
+}
+
+/// <summary>
+/// Specification that matches content orders by customer name, email, or company.
+/// Uses case-insensitive matching (ILIKE in PostgreSQL) for partial search.
+/// </summary>
+public class ContentOrderSearchSpecification(string search) : Specification<ContentOrderEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ContentOrderEntity, bool>> ToExpression()
+    {
+        string pattern = $"%{search}%";
+        return order =>
+            EF.Functions.ILike(order.Customer.FullName, pattern)
+            || EF.Functions.ILike(order.Customer.Email, pattern)
+            || (order.Customer.Company != null && EF.Functions.ILike(order.Customer.Company, pattern));
     }
 }
 
