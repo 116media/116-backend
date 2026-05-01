@@ -46,6 +46,7 @@ public static class SwaggerExtensions
 
         options.UseAllOfToExtendReferenceSchemas();
         options.SchemaFilter<EnumSchemaFilter>();
+        options.DocumentFilter<EnumReferenceDocumentFilter>();
 
         return options;
     }
