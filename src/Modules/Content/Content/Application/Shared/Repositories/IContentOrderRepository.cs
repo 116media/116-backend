@@ -144,4 +144,10 @@ public interface IContentOrderRepository : IRepository<ContentOrderEntity>
     /// Removes a pricing tier snapshot from the repository.
     /// </summary>
     Task RemoveItemTierAsync(ContentItemTierEntity tier, CancellationToken ct = default);
+
+    /// <summary>
+    /// Retrieves the order that owns the given order item. Returns null if not found.
+    /// Used to check order payment status before transitioning content status on submit.
+    /// </summary>
+    Task<ContentOrderEntity?> GetOrderByItemIdAsync(Guid orderItemId, CancellationToken ct = default);
 }
