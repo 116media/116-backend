@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.SubmitArticle;
@@ -10,9 +11,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.SubmitArtic
 /// Handles the <see cref="AdminSubmitArticleCommand" /> to submit an article for review or payment.
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminSubmitArticleHandler(IArticleRepository articleRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<AdminSubmitArticleCommand, AdminSubmitArticleResult>
+public class AdminSubmitArticleHandler(
+    IArticleRepository articleRepository,
+    IContentOrderRepository contentOrderRepository,
+    IContentUnitOfWork unitOfWork
+) : ICommandHandler<AdminSubmitArticleCommand, AdminSubmitArticleResult>
 {
     /// <inheritdoc />
     public async Task<AdminSubmitArticleResult> Handle(
@@ -27,12 +32,26 @@ public class AdminSubmitArticleHandler(IArticleRepository articleRepository, ICo
             cancellationToken: cancellationToken
         );
 
-        if (article.CustomerId.HasValue && !article.Submit())
+        if (article.CustomerId.HasValue && article.OrderItemId.HasValue)
         {
-            throw ArticleErrors.AlreadySubmitted();
-        }
+            ContentOrderEntity? order = await contentOrderRepository.GetOrderByItemIdAsync(
+                orderItemId: article.OrderItemId.Value,
+                ct: cancellationToken
+            );
 
-        if (!article.CustomerId.HasValue && !article.MarkPendingReview())
+            bool orderAlreadyPaid = order?.Status == EnumOrderStatus.Paid;
+
+            if (orderAlreadyPaid && !article.MarkPendingReview())
+            {
+                throw ArticleErrors.AlreadyPendingReview();
+            }
+
+            if (!orderAlreadyPaid && !article.Submit())
+            {
+                throw ArticleErrors.AlreadySubmitted();
+            }
+        }
+        else if (!article.CustomerId.HasValue && !article.MarkPendingReview())
         {
             throw ArticleErrors.AlreadyPendingReview();
         }
