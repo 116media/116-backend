@@ -130,6 +130,27 @@ public static class MockContentOrderRepository
         );
     }
 
+    public static Mock<IContentOrderRepository> SetupGetAllPaymentsAsync(
+        this Mock<IContentOrderRepository> mock,
+        IReadOnlyList<ContentPaymentEntity> list,
+        int totalCount
+    )
+    {
+        mock.Setup(x =>
+                x.GetAllPaymentsAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<EnumPaymentStatus?>(),
+                    It.IsAny<EnumPaymentMethod?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((list, totalCount));
+        return mock;
+    }
+
     private static void SetupDefaults(Mock<IContentOrderRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<ContentOrderEntity>(), It.IsAny<CancellationToken>()))
@@ -162,5 +183,17 @@ public static class MockContentOrderRepository
                 )
             )
             .ReturnsAsync((new List<ContentOrderEntity>(), 0));
+        mock.Setup(x =>
+                x.GetAllPaymentsAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<EnumPaymentStatus?>(),
+                    It.IsAny<EnumPaymentMethod?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((new List<ContentPaymentEntity>(), 0));
     }
 }

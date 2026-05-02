@@ -75,6 +75,27 @@ public interface IContentOrderRepository : IRepository<ContentOrderEntity>
     );
 
     /// <summary>
+    /// Retrieves a paginated list of payment records with optional filters for status,
+    /// payment method, and customer search. Includes the linked order and customer.
+    /// </summary>
+    /// <param name="page">The 1-based page number.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="status">Optional filter by payment verification status.</param>
+    /// <param name="method">Optional filter by payment method.</param>
+    /// <param name="search">Optional search term matching customer name, email, or company.</param>
+    /// <param name="orderByAscending">When true, orders by <c>CreatedAt</c> ascending; defaults to descending.</param>
+    /// <param name="ct">Token to observe for cancellation requests.</param>
+    Task<(IReadOnlyList<ContentPaymentEntity> Items, int TotalCount)> GetAllPaymentsAsync(
+        int page,
+        int pageSize,
+        EnumPaymentStatus? status,
+        EnumPaymentMethod? method,
+        string? search = null,
+        bool orderByAscending = false,
+        CancellationToken ct = default
+    );
+
+    /// <summary>
     /// Retrieves the payment record for a given order. Returns null if not found.
     /// </summary>
     Task<ContentPaymentEntity?> GetPaymentByOrderIdAsync(Guid orderId, CancellationToken ct = default);
