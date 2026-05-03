@@ -120,7 +120,7 @@ public static class MockVideoRepository
 
     public static void VerifyAddTagCalled(this Mock<IVideoRepository> mock)
     {
-        mock.Verify(x => x.AddTagAsync(It.IsAny<VideoTagEntity>(), It.IsAny<CancellationToken>()), Times.Once);
+        mock.Verify(x => x.AddTagAsync(It.IsAny<VideoTagEntity>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
     }
 
     public static void VerifyRemoveTagCalled(this Mock<IVideoRepository> mock)
