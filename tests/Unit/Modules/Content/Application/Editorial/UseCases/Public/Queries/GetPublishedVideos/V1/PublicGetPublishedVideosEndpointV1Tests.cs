@@ -39,6 +39,7 @@ public class PublicGetPublishedVideosEndpointV1Tests
             YoutubeVideoUrl: null,
             IsFeatured: false,
             HasLyrics: false,
-            PublishedAt: null
+            PublishedAt: null,
+            ShootingScheduledAt: null
         );
 }
