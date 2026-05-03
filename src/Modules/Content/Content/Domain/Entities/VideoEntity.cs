@@ -328,7 +328,18 @@ public class VideoEntity : Aggregate<Guid>
     /// <param name="youtubeVideoUrl">
     /// The full YouTube video URL (e.g., "https://www.youtube.com/watch?v=dQw4w9WgXcQ").
     /// </param>
-    public void AttachYoutubeVideoUrl(string youtubeVideoUrl) => YoutubeVideoUrl = youtubeVideoUrl;
+    /// <exception cref="BadRequestException">
+    /// Thrown when a shooting is scheduled in the future, meaning the video has not yet been shot.
+    /// </exception>
+    public void AttachYoutubeVideoUrl(string youtubeVideoUrl)
+    {
+        if (ShootingScheduledAt.HasValue && ShootingScheduledAt.Value > DateTimeOffset.UtcNow)
+        {
+            throw VideoErrors.CannotAttachYoutubeUrlBeforeShoot(ShootingScheduledAt.Value);
+        }
+
+        YoutubeVideoUrl = youtubeVideoUrl;
+    }
 
     /// <summary>
     /// Records or updates the scheduled shooting date.
