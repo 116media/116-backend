@@ -112,4 +112,14 @@ public static class VideoErrors
     {
         return new BadRequestException(VideoErrorMessage.InvalidStatusTransition(from: from, to: to));
     }
+
+    /// <summary>
+    /// Throws when a YouTube URL is attached before the scheduled shooting date has passed.
+    /// </summary>
+    public static BadRequestException CannotAttachYoutubeUrlBeforeShoot(DateTimeOffset shootingScheduledAt)
+    {
+        return new BadRequestException(
+            VideoErrorMessage.CannotAttachYoutubeUrlBeforeShoot(shootingScheduledAt: shootingScheduledAt)
+        );
+    }
 }
