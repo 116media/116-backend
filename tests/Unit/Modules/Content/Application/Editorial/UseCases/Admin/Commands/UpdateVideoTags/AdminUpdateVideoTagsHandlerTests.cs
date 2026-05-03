@@ -36,40 +36,186 @@ public class AdminUpdateVideoTagsHandlerTests
         );
     }
 
+    #region Success Cases
+
     [Fact]
-    public async Task Handle_WhenValidTagIds_ShouldReplaceTagsAndReturnSuccess()
+    public async Task Handle_WhenEmptyTagNames_ShouldClearExistingTagsAndReturnSuccess()
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
-        Guid tagId1 = Guid.NewGuid();
-        Guid tagId2 = Guid.NewGuid();
-        TagEntity tag1 = TagFactory.CreateWithId(tagId1);
-        TagEntity tag2 = TagFactory.CreateWithId(tagId2);
-
-        var command = new AdminUpdateVideoTagsCommand(
-            VideoId: video.Id.ToString(),
-            TagIds: new List<Guid> { tagId1, tagId2 }
-        );
+        TagEntity existingTag = TagFactory.Create();
+        var command = new AdminUpdateVideoTagsCommand(VideoId: video.Id.ToString(), TagNames: new List<string>());
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
-        _lookupRepositoryMock.SetupGetTagByIdOrThrow(tag1);
-        _lookupRepositoryMock.SetupGetTagByIdOrThrow(tag2);
-        _videoRepositoryMock.SetupGetTagsByVideoId(video.Id, new List<VideoTagEntity>());
+        _videoRepositoryMock.SetupGetTagsByVideoId(
+            video.Id,
+            new List<VideoTagEntity>
+            {
+                VideoTagEntity.Create(id: Guid.NewGuid(), videoId: video.Id, tagId: existingTag.Id),
+            }
+        );
 
         // Act
         AdminUpdateVideoTagsResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
+        _videoRepositoryMock.VerifyRemoveTagCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
+
+    [Fact]
+    public async Task Handle_WhenTagNamesMatchExistingTags_ShouldReuseExistingTagsAndReturnSuccess()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        TagEntity tag1 = TagFactory.Create("Fally Ipupa", "fally-ipupa");
+        TagEntity tag2 = TagFactory.Create("Kinshasa", "kinshasa");
+
+        var command = new AdminUpdateVideoTagsCommand(
+            VideoId: video.Id.ToString(),
+            TagNames: new List<string> { "Fally Ipupa", "Kinshasa" }
+        );
+
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+        _videoRepositoryMock.SetupGetTagsByVideoId(video.Id, new List<VideoTagEntity>());
+        _lookupRepositoryMock.SetupGetTagBySlug("fally-ipupa", tag1);
+        _lookupRepositoryMock.SetupGetTagBySlug("kinshasa", tag2);
+
+        // Act
+        AdminUpdateVideoTagsResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        _lookupRepositoryMock.VerifyAddTagNotCalled();
+        _videoRepositoryMock.VerifyAddTagCalled();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenTagNamesAreNew_ShouldCreateTagsAndReturnSuccess()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+
+        var command = new AdminUpdateVideoTagsCommand(
+            VideoId: video.Id.ToString(),
+            TagNames: new List<string> { "Afrobeats", "Rumba" }
+        );
+
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+        _videoRepositoryMock.SetupGetTagsByVideoId(video.Id, new List<VideoTagEntity>());
+        _lookupRepositoryMock.SetupGetTagBySlug("afrobeats", null);
+        _lookupRepositoryMock.SetupGetTagBySlug("rumba", null);
+
+        // Act
+        AdminUpdateVideoTagsResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        _lookupRepositoryMock.Verify(
+            x => x.AddTagAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()),
+            Times.Exactly(2)
+        );
+        _videoRepositoryMock.VerifyAddTagCalled();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenMixedExistingAndNewTagNames_ShouldUpsertAndReturnSuccess()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        TagEntity existingTag = TagFactory.Create("Fally Ipupa", "fally-ipupa");
+
+        var command = new AdminUpdateVideoTagsCommand(
+            VideoId: video.Id.ToString(),
+            TagNames: new List<string> { "Fally Ipupa", "NewArtist" }
+        );
+
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+        _videoRepositoryMock.SetupGetTagsByVideoId(video.Id, new List<VideoTagEntity>());
+        _lookupRepositoryMock.SetupGetTagBySlug("fally-ipupa", existingTag);
+        _lookupRepositoryMock.SetupGetTagBySlug("newartist", null);
+
+        // Act
+        AdminUpdateVideoTagsResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        _lookupRepositoryMock.Verify(
+            x => x.AddTagAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenTagNameHasDiacritics_ShouldSlugifyAndUpsertCorrectly()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+
+        var command = new AdminUpdateVideoTagsCommand(
+            VideoId: video.Id.ToString(),
+            TagNames: new List<string> { "Café & Crème" }
+        );
+
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+        _videoRepositoryMock.SetupGetTagsByVideoId(video.Id, new List<VideoTagEntity>());
+        _lookupRepositoryMock.SetupGetTagBySlug("cafe-creme", null);
+
+        // Act
+        AdminUpdateVideoTagsResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        _lookupRepositoryMock.Verify(x => x.GetTagBySlugAsync("cafe-creme", It.IsAny<CancellationToken>()), Times.Once);
+        _lookupRepositoryMock.Verify(
+            x => x.AddTagAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_WhenExistingTagsPresent_ShouldRemoveThemBeforeAddingNew()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        TagEntity oldTag = TagFactory.Create();
+        var existingVideoTag = VideoTagEntity.Create(id: Guid.NewGuid(), videoId: video.Id, tagId: oldTag.Id);
+
+        TagEntity newTag = TagFactory.Create("Kinshasa", "kinshasa");
+
+        var command = new AdminUpdateVideoTagsCommand(
+            VideoId: video.Id.ToString(),
+            TagNames: new List<string> { "Kinshasa" }
+        );
+
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+        _videoRepositoryMock.SetupGetTagsByVideoId(video.Id, new List<VideoTagEntity> { existingVideoTag });
+        _lookupRepositoryMock.SetupGetTagBySlug("kinshasa", newTag);
+
+        // Act
+        AdminUpdateVideoTagsResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        _videoRepositoryMock.VerifyRemoveTagCalled();
+        _videoRepositoryMock.VerifyAddTagCalled();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    #endregion
+
+    #region Failure Cases
 
     [Fact]
     public async Task Handle_WhenVideoNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
         Guid nonExistentId = Guid.NewGuid();
-        var command = new AdminUpdateVideoTagsCommand(VideoId: nonExistentId.ToString(), TagIds: new List<Guid>());
+        var command = new AdminUpdateVideoTagsCommand(VideoId: nonExistentId.ToString(), TagNames: new List<string>());
         _videoRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
         // Act
@@ -79,25 +225,5 @@ public class AdminUpdateVideoTagsHandlerTests
         await act.Should().ThrowAsync<NotFoundException>();
     }
 
-    [Fact]
-    public async Task Handle_WhenTagNotFound_ShouldThrowNotFoundException()
-    {
-        // Arrange
-        VideoEntity video = VideoFactory.Create(CategoryId);
-        Guid nonExistentTagId = Guid.NewGuid();
-
-        var command = new AdminUpdateVideoTagsCommand(
-            VideoId: video.Id.ToString(),
-            TagIds: new List<Guid> { nonExistentTagId }
-        );
-
-        _videoRepositoryMock.SetupGetByIdOrThrow(video);
-        _lookupRepositoryMock.SetupGetTagByIdOrThrowNotFound(nonExistentTagId);
-
-        // Act
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<NotFoundException>();
-    }
+    #endregion
 }
