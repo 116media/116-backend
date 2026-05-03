@@ -112,17 +112,24 @@ public class CustomerEntityTests
         );
 
         // Act
-        entity.Update("New Name", TestConstants.Content.Customer.ValidPhone, "New Company", "Some notes");
+        entity.Update(
+            "New Name",
+            "new@example.com",
+            TestConstants.Content.Customer.ValidPhone,
+            "New Company",
+            "Some notes"
+        );
 
         // Assert
         entity.FullName.Should().Be("New Name");
+        entity.Email.Should().Be("new@example.com");
         entity.Phone.Should().Be(TestConstants.Content.Customer.ValidPhone);
         entity.Company.Should().Be("New Company");
         entity.Notes.Should().Be("Some notes");
     }
 
     [Fact]
-    public void Update_ShouldNotChangeEmail()
+    public void Update_ShouldChangeEmail()
     {
         // Arrange
         var entity = CustomerEntity.Create(
@@ -133,13 +140,12 @@ public class CustomerEntityTests
             null,
             null
         );
-        string originalEmail = entity.Email;
 
         // Act
-        entity.Update("New Name", null, null, null);
+        entity.Update("New Name", "updated@example.com", null, null, null);
 
         // Assert
-        entity.Email.Should().Be(originalEmail);
+        entity.Email.Should().Be("updated@example.com");
     }
 
     [Theory]
@@ -159,10 +165,57 @@ public class CustomerEntityTests
         );
 
         // Act
-        Action act = () => entity.Update(invalidFullName!, null, null, null);
+        Action act = () => entity.Update(invalidFullName!, TestConstants.Content.Customer.ValidEmail, null, null, null);
 
         // Assert
         act.Should().Throw<BadRequestException>();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Update_WithInvalidEmail_ShouldThrowBadRequestException(string? invalidEmail)
+    {
+        // Arrange
+        var entity = CustomerEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.Customer.ValidFullName,
+            TestConstants.Content.Customer.ValidEmail,
+            null,
+            null,
+            null
+        );
+
+        // Act
+        Action act = () => entity.Update(TestConstants.Content.Customer.ValidFullName, invalidEmail!, null, null, null);
+
+        // Assert
+        act.Should().Throw<BadRequestException>();
+    }
+
+    [Fact]
+    public void Update_WithNullOptionalFields_ShouldClearThem()
+    {
+        // Arrange
+        var entity = CustomerEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.Customer.ValidFullName,
+            TestConstants.Content.Customer.ValidEmail,
+            TestConstants.Content.Customer.ValidPhone,
+            TestConstants.Content.Customer.ValidCompany,
+            TestConstants.Content.Customer.ValidNotes
+        );
+
+        // Act
+        entity.Update("Updated Name", "updated@example.com", null, null, null);
+
+        // Assert
+        entity.FullName.Should().Be("Updated Name");
+        entity.Email.Should().Be("updated@example.com");
+        entity.Phone.Should().BeNull();
+        entity.Company.Should().BeNull();
+        entity.Notes.Should().BeNull();
     }
 
     #endregion

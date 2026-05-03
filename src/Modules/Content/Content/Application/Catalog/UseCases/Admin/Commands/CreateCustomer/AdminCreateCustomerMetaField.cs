@@ -16,8 +16,6 @@ public static class AdminCreateCustomerMetaField
             A customer account must exist before an order can be opened for them. Customers are entirely
             separate from platform visitor accounts (B2C users who read articles and watch videos).
             \n
-            **Note:** The email address is used as the unique identifier and cannot be changed after creation.
-            \n
             **Authentication Requirements:**\n
             - User must be authenticated with a valid access token\n
             - User must have Admin or SuperAdmin role\n

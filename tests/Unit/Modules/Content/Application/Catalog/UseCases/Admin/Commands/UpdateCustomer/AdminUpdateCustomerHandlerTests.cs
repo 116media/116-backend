@@ -41,6 +41,7 @@ public class AdminUpdateCustomerHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdateCustomerCommand(
             Id: customer.Id.ToString(),
             FullName: newFullName,
+            Email: "jane@example.com",
             Phone: "+123456789",
             Company: "New Company",
             Notes: "Updated notes"
@@ -70,6 +71,7 @@ public class AdminUpdateCustomerHandlerTests : BaseContentHandlerTest
         var command = new AdminUpdateCustomerCommand(
             Id: nonExistentId.ToString(),
             FullName: TestConstants.Content.Customer.ValidFullName,
+            Email: TestConstants.Content.Customer.ValidEmail,
             Phone: null,
             Company: null,
             Notes: null

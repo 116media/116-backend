@@ -16,6 +16,7 @@ public class AdminUpdateCustomerValidator : AbstractValidator<AdminUpdateCustome
     {
         RuleFor(x => x.Id).IsValidGuid("Customer ID");
         RuleFor(x => x.FullName).ValidCustomerFullName();
+        RuleFor(x => x.Email).ValidCustomerEmail();
         RuleFor(x => x.Phone).ValidCustomerPhone();
         RuleFor(x => x.Company).ValidCustomerCompany();
         RuleFor(x => x.Notes).ValidCustomerNotes();

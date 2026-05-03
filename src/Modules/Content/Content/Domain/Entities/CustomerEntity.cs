@@ -19,7 +19,7 @@ public class CustomerEntity : Aggregate<Guid>
     public string FullName { get; private set; } = null!;
 
     /// <summary>
-    /// Email address of the customer. Used as the unique identifier — not updatable after creation.
+    /// Email address of the customer.
     /// </summary>
     [MaxLength(length: ContentConstants.MaxCustomerEmailLength)]
     public string Email { get; private set; } = null!;
@@ -88,21 +88,27 @@ public class CustomerEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Updates the customer's contact information. Email is intentionally excluded —
-    /// it is the unique identifier and cannot be changed after creation.
+    /// Updates the customer's contact information.
     /// </summary>
     /// <param name="fullName">The new full name.</param>
+    /// <param name="email">The new email address.</param>
     /// <param name="phone">The new optional phone number.</param>
     /// <param name="company">The new optional company name.</param>
     /// <param name="notes">The new optional internal notes.</param>
-    public void Update(string fullName, string? phone, string? company, string? notes)
+    public void Update(string fullName, string email, string? phone, string? company, string? notes)
     {
         if (string.IsNullOrWhiteSpace(value: fullName))
         {
             throw CustomerErrors.FullNameRequired();
         }
 
+        if (string.IsNullOrWhiteSpace(value: email))
+        {
+            throw CustomerErrors.EmailRequired();
+        }
+
         FullName = fullName;
+        Email = email;
         Phone = phone;
         Company = company;
         Notes = notes;

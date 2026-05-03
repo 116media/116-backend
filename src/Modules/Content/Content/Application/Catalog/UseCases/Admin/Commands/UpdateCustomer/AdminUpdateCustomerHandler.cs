@@ -34,6 +34,7 @@ public class AdminUpdateCustomerHandler(
 
         customer.Update(
             fullName: command.FullName,
+            email: command.Email,
             phone: command.Phone,
             company: command.Company,
             notes: command.Notes
