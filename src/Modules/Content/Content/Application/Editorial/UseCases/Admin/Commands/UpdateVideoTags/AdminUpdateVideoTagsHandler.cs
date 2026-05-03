@@ -1,13 +1,15 @@
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Helpers;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideoTags;
 
 /// <summary>
 /// Handles the <see cref="AdminUpdateVideoTagsCommand" /> to replace all tags on a video.
-/// Validates all tag identifiers, removes existing tag associations, then adds the new set.
+/// For each tag name, the handler looks up an existing tag by slug or creates a new one,
+/// then removes existing video tag associations and adds the resolved set.
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="lookupRepository">Repository for lookup entities including tags.</param>
@@ -28,9 +30,25 @@ public class AdminUpdateVideoTagsHandler(
 
         await videoRepository.GetByIdOrThrowAsync(id: videoId, cancellationToken: cancellationToken);
 
-        foreach (Guid tagId in command.TagIds)
+        var resolvedTagIds = new List<Guid>();
+
+        foreach (string name in command.TagNames)
         {
-            await lookupRepository.GetTagByIdOrThrowAsync(id: tagId, cancellationToken: cancellationToken);
+            string slug = SlugHelper.ToSlug(name);
+
+            TagEntity? existing = await lookupRepository.GetTagBySlugAsync(
+                slug: slug,
+                cancellationToken: cancellationToken
+            );
+
+            if (existing is null)
+            {
+                string uniqueSlug = SlugHelper.ToUniqueSlug(name);
+                existing = TagEntity.Create(id: Guid.NewGuid(), name: name, slug: uniqueSlug);
+                await lookupRepository.AddTagAsync(tag: existing, cancellationToken: cancellationToken);
+            }
+
+            resolvedTagIds.Add(existing.Id);
         }
 
         IReadOnlyList<VideoTagEntity> existingTags = await videoRepository.GetTagsByVideoIdAsync(
@@ -43,7 +61,7 @@ public class AdminUpdateVideoTagsHandler(
             videoRepository.RemoveTag(tag: tag);
         }
 
-        foreach (Guid tagId in command.TagIds)
+        foreach (Guid tagId in resolvedTagIds)
         {
             var tag = VideoTagEntity.Create(id: Guid.NewGuid(), videoId: videoId, tagId: tagId);
             await videoRepository.AddTagAsync(tag: tag, cancellationToken: cancellationToken);
