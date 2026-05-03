@@ -193,4 +193,105 @@ public class ContentOrderEntityTests
     }
 
     #endregion
+
+    #region Update
+
+    [Fact]
+    public void Update_WhenDraft_ShouldUpdateCustomerId()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.Create();
+        Guid newCustomerId = Guid.NewGuid();
+
+        // Act
+        order.Update(customerId: newCustomerId, packageId: null);
+
+        // Assert
+        order.CustomerId.Should().Be(newCustomerId);
+    }
+
+    [Fact]
+    public void Update_WhenDraft_ShouldUpdatePackageId()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.Create();
+        Guid newPackageId = Guid.NewGuid();
+
+        // Act
+        order.Update(customerId: null, packageId: newPackageId);
+
+        // Assert
+        order.PackageId.Should().Be(newPackageId);
+    }
+
+    [Fact]
+    public void Update_WhenDraft_WithNullCustomerId_ShouldKeepExisting()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.Create();
+        Guid originalCustomerId = order.CustomerId;
+
+        // Act
+        order.Update(customerId: null, packageId: null);
+
+        // Assert
+        order.CustomerId.Should().Be(originalCustomerId);
+    }
+
+    [Fact]
+    public void Update_WhenNotDraft_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+
+        // Act
+        Action act = () => order.Update(customerId: Guid.NewGuid(), packageId: null);
+
+        // Assert
+        act.Should().Throw<BadRequestException>();
+    }
+
+    #endregion
+
+    #region RecalculateTotalFromItems
+
+    [Fact]
+    public void RecalculateTotalFromItems_ShouldSumAllTiersAndPromos()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.Create();
+        Guid categoryId = Guid.NewGuid();
+        ContentOrderItemEntity item = ContentOrderItemFactory.CreateWithPromo(
+            order.Id,
+            categoryId,
+            Guid.NewGuid(),
+            50m
+        );
+        ContentItemTierEntity tier1 = ContentItemTierFactory.Create(item.Id, Guid.NewGuid(), 100m);
+        ContentItemTierEntity tier2 = ContentItemTierFactory.Create(item.Id, Guid.NewGuid(), 75m);
+        item.Tiers.Add(tier1);
+        item.Tiers.Add(tier2);
+        order.Items.Add(item);
+
+        // Act
+        order.RecalculateTotalFromItems();
+
+        // Assert: 100 (tier1) + 75 (tier2) + 50 (promo) = 225
+        order.TotalAmountUsd.Should().Be(225m);
+    }
+
+    [Fact]
+    public void RecalculateTotalFromItems_WithNoItems_ShouldSetTotalToZero()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.Create();
+
+        // Act
+        order.RecalculateTotalFromItems();
+
+        // Assert
+        order.TotalAmountUsd.Should().Be(0m);
+    }
+
+    #endregion
 }

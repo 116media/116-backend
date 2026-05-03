@@ -91,6 +91,16 @@ public static class MockContentOrderRepository
         return mock;
     }
 
+    public static Mock<IContentOrderRepository> SetupGetItemByIdOrThrow(
+        this Mock<IContentOrderRepository> mock,
+        ContentOrderItemEntity item
+    )
+    {
+        mock.Setup(x => x.GetItemByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(item);
+        return mock;
+    }
+
     public static void VerifyAddCalled(this Mock<IContentOrderRepository> mock)
     {
         mock.Verify(x => x.AddAsync(It.IsAny<ContentOrderEntity>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -126,6 +136,52 @@ public static class MockContentOrderRepository
     {
         mock.Verify(
             x => x.UpdatePaymentAsync(It.IsAny<ContentPaymentEntity>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    public static Mock<IContentOrderRepository> SetupGetItemTierById(
+        this Mock<IContentOrderRepository> mock,
+        ContentItemTierEntity? tier
+    )
+    {
+        mock.Setup(x => x.GetItemTierByIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(tier);
+        return mock;
+    }
+
+    public static Mock<IContentOrderRepository> SetupGetItemTierByIdOrThrow(
+        this Mock<IContentOrderRepository> mock,
+        ContentItemTierEntity tier
+    )
+    {
+        mock.Setup(x =>
+                x.GetItemTierByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(tier);
+        return mock;
+    }
+
+    public static void VerifyUpdateItemCalled(this Mock<IContentOrderRepository> mock)
+    {
+        mock.Verify(
+            x => x.UpdateItemAsync(It.IsAny<ContentOrderItemEntity>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    public static void VerifyRemoveItemCalled(this Mock<IContentOrderRepository> mock)
+    {
+        mock.Verify(
+            x => x.RemoveItemAsync(It.IsAny<ContentOrderItemEntity>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    public static void VerifyRemoveItemTierCalled(this Mock<IContentOrderRepository> mock)
+    {
+        mock.Verify(
+            x => x.RemoveItemTierAsync(It.IsAny<ContentItemTierEntity>(), It.IsAny<CancellationToken>()),
             Times.Once
         );
     }
@@ -171,6 +227,8 @@ public static class MockContentOrderRepository
             .ReturnsAsync((ContentPaymentEntity?)null);
         mock.Setup(x => x.GetItemByIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((ContentOrderItemEntity?)null);
+        mock.Setup(x => x.GetItemByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new NotFoundException("ContentOrderItem", "id", Guid.Empty));
         mock.Setup(x =>
                 x.GetAllAsync(
                     It.IsAny<int>(),
@@ -195,5 +253,17 @@ public static class MockContentOrderRepository
                 )
             )
             .ReturnsAsync((new List<ContentPaymentEntity>(), 0));
+        mock.Setup(x => x.GetItemTierByIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ContentItemTierEntity?)null);
+        mock.Setup(x =>
+                x.GetItemTierByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>())
+            )
+            .ThrowsAsync(new NotFoundException("ContentItemTier", "id", Guid.Empty));
+        mock.Setup(x => x.UpdateItemAsync(It.IsAny<ContentOrderItemEntity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x => x.RemoveItemAsync(It.IsAny<ContentOrderItemEntity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x => x.RemoveItemTierAsync(It.IsAny<ContentItemTierEntity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
     }
 }

@@ -95,6 +95,34 @@ public class ContentOrderEntity : Aggregate<Guid>
     }
 
     /// <summary>
+    /// Updates the customer and/or package on a draft order.
+    /// </summary>
+    /// <param name="customerId">The new customer ID, or null to keep the current one.</param>
+    /// <param name="packageId">The new package ID, or null to clear it.</param>
+    public void Update(Guid? customerId, Guid? packageId)
+    {
+        EnsureDraft();
+
+        if (customerId.HasValue)
+        {
+            CustomerId = customerId.Value;
+        }
+
+        PackageId = packageId;
+    }
+
+    /// <summary>
+    /// Recalculates the order total from scratch using all existing items and their tiers.
+    /// Called after removing an item or tier.
+    /// </summary>
+    public void RecalculateTotalFromItems()
+    {
+        decimal tierTotal = Items.SelectMany(i => i.Tiers).Sum(t => t.PriceSnapshotUsd);
+        decimal promoTotal = Items.Sum(i => i.PromoPriceSnapshotUsd ?? 0m);
+        TotalAmountUsd = tierTotal + promoTotal;
+    }
+
+    /// <summary>
     /// Recomputes the order total after a new pricing tier is added.
     /// Sums all existing tier price snapshots across all items, adds <paramref name="newTierPrice" />,
     /// then adds all promotion level price snapshots.

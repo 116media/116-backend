@@ -82,6 +82,14 @@ public static class ContentOrderErrors
     }
 
     /// <summary>
+    /// Throws when a content item tier is not found by its identifier.
+    /// </summary>
+    public static NotFoundException ItemTierNotFound(Guid tierId)
+    {
+        return new NotFoundException("ContentItemTier", "id", keyValue: tierId);
+    }
+
+    /// <summary>
     /// Throws when the payment has already been verified and cannot be verified again.
     /// </summary>
     public static ConflictException PaymentAlreadyVerified()

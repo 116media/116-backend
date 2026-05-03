@@ -46,7 +46,7 @@ public class ContentOrderErrorMessageTests
     {
         string message = ContentOrderErrorMessage.CannotAddItemToNonDraftOrder();
 
-        message.Should().Be("Items can only be added to orders in Draft status.");
+        message.Should().Be("This order can only be modified while in Draft status.");
     }
 
     [Fact]

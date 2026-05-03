@@ -1,5 +1,6 @@
 using _116.Content.Application.Commerce.Builders;
 using _116.Content.Application.Commerce.Specifications;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -161,5 +162,59 @@ public class ContentOrderRepository(ContentDbContext context) : IContentOrderRep
     {
         var specification = new ContentOrderItemByIdAndOrderIdSpecification(orderId: orderId, itemId: itemId);
         return await context.ContentOrderItems.ApplySpecification(specification: specification).FirstOrDefaultAsync(ct);
+    }
+
+    /// <inheritdoc />
+    public async Task<ContentOrderItemEntity> GetItemByIdOrThrowAsync(
+        Guid orderId,
+        Guid itemId,
+        CancellationToken ct = default
+    )
+    {
+        var specification = new ContentOrderItemByIdAndOrderIdSpecification(orderId: orderId, itemId: itemId);
+        return await context.ContentOrderItems.ApplySpecification(specification: specification).FirstOrDefaultAsync(ct)
+            ?? throw ContentOrderErrors.ItemNotFound(itemId: itemId);
+    }
+
+    /// <inheritdoc />
+    public async Task<ContentItemTierEntity?> GetItemTierByIdAsync(
+        Guid itemId,
+        Guid tierId,
+        CancellationToken ct = default
+    )
+    {
+        return await context.ContentItemTiers.FirstOrDefaultAsync(t => t.OrderItemId == itemId && t.Id == tierId, ct);
+    }
+
+    /// <inheritdoc />
+    public async Task<ContentItemTierEntity> GetItemTierByIdOrThrowAsync(
+        Guid itemId,
+        Guid tierId,
+        CancellationToken ct = default
+    )
+    {
+        return await context.ContentItemTiers.FirstOrDefaultAsync(t => t.OrderItemId == itemId && t.Id == tierId, ct)
+            ?? throw ContentOrderErrors.ItemTierNotFound(tierId: tierId);
+    }
+
+    /// <inheritdoc />
+    public Task UpdateItemAsync(ContentOrderItemEntity item, CancellationToken ct = default)
+    {
+        context.ContentOrderItems.Update(item);
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public Task RemoveItemAsync(ContentOrderItemEntity item, CancellationToken ct = default)
+    {
+        context.ContentOrderItems.Remove(item);
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public Task RemoveItemTierAsync(ContentItemTierEntity tier, CancellationToken ct = default)
+    {
+        context.ContentItemTiers.Remove(tier);
+        return Task.CompletedTask;
     }
 }
