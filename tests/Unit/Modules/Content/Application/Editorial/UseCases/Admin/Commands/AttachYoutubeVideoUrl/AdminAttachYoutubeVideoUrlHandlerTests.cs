@@ -152,6 +152,47 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
         await act.Should().ThrowAsync<ArgumentException>().WithMessage("*Could not extract a YouTube video ID from*");
     }
 
+    [Fact]
+    public async Task Handle_WhenShootIsScheduledInTheFuture_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        VideoEntity video = WithCategory(VideoFactory.CreateWithFutureShoot(CategoryId));
+        var command = new AdminAttachYoutubeVideoUrlCommand(
+            VideoId: video.Id.ToString(),
+            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl
+        );
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should()
+            .ThrowAsync<BadRequestException>()
+            .WithMessage("*YouTube URL cannot be added before the shooting date*");
+    }
+
+    [Fact]
+    public async Task Handle_WhenShootIsScheduledInThePast_ShouldAttachUrlSuccessfully()
+    {
+        // Arrange
+        VideoEntity video = WithCategory(VideoFactory.CreateWithPastShoot(CategoryId));
+        var command = new AdminAttachYoutubeVideoUrlCommand(
+            VideoId: video.Id.ToString(),
+            YoutubeVideoUrl: TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl
+        );
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+
+        // Act
+        AdminAttachYoutubeVideoUrlResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Video.Should().NotBeNull();
+        _cloudinaryMock.VerifyUploadCalled();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
     #endregion
 
     #region ExtractVideoId (via Handle) — URL format coverage
