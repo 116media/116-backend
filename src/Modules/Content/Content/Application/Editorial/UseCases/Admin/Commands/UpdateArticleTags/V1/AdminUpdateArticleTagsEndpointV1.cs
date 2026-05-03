@@ -14,8 +14,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 /// <summary>
 /// Request model for updating article tags.
 /// </summary>
-/// <param name="TagIds">The complete set of tag identifiers to assign to this article.</param>
-public record AdminUpdateArticleTagsRequest(IReadOnlyList<Guid> TagIds);
+/// <param name="TagNames">The complete set of tag display names to assign to this article.</param>
+public record AdminUpdateArticleTagsRequest(IReadOnlyList<string> TagNames);
 
 /// <summary>
 /// Response model for a successful UpdateArticleTags operation.
@@ -45,7 +45,7 @@ public class AdminUpdateArticleTagsEndpointV1 : ICarterModule
                 $"/{{id}}/{EditorialRouteConstants.Tags}",
                 async (string id, AdminUpdateArticleTagsRequest request, IDispatcher dispatcher) =>
                 {
-                    var command = new AdminUpdateArticleTagsCommand(ArticleId: id, TagIds: request.TagIds);
+                    var command = new AdminUpdateArticleTagsCommand(ArticleId: id, TagNames: request.TagNames);
                     AdminUpdateArticleTagsResult result = await dispatcher.Send(request: command);
 
                     var response = new AdminUpdateArticleTagsResponse(IsSuccess: result.IsSuccess);
