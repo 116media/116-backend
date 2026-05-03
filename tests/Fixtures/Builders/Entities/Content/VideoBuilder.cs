@@ -22,6 +22,7 @@ internal class VideoBuilder
     private string? _youtubeVideoUrl;
     private string? _thumbnailUrl;
     private string? _thumbnailStorageKey;
+    private DateTimeOffset? _shootingScheduledAt;
     private EnumContentStatus _targetStatus = EnumContentStatus.Draft;
     private string? _rejectionReason;
 
@@ -103,6 +104,15 @@ internal class VideoBuilder
     public VideoBuilder WithYoutubeUrl(string? youtubeVideoUrl = null)
     {
         _youtubeVideoUrl = youtubeVideoUrl ?? TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets a shooting scheduled date on the video.
+    /// </summary>
+    public VideoBuilder WithShootingScheduledAt(DateTimeOffset scheduledAt)
+    {
+        _shootingScheduledAt = scheduledAt;
         return this;
     }
 
@@ -207,6 +217,11 @@ internal class VideoBuilder
                 authorId: _authorId,
                 description: _description
             );
+
+        if (_shootingScheduledAt.HasValue)
+        {
+            entity.ScheduleShoot(_shootingScheduledAt.Value);
+        }
 
         if (_youtubeVideoUrl is not null)
         {
