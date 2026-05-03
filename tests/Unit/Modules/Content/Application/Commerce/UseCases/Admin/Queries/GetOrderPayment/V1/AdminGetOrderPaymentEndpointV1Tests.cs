@@ -15,7 +15,17 @@ public class AdminGetOrderPaymentEndpointV1Tests
     public void AdminGetOrderPaymentResponse_ShouldConstructCorrectly()
     {
         // Arrange
-        var payment = new PaymentDto(Guid.NewGuid(), 100m, null, null, EnumPaymentStatus.Pending, null, null, null);
+        var payment = new PaymentDto(
+            Guid.NewGuid(),
+            100m,
+            null,
+            null,
+            EnumPaymentStatus.Pending,
+            null,
+            null,
+            null,
+            null
+        );
 
         // Act
         var response = new AdminGetOrderPaymentResponse(Payment: payment);

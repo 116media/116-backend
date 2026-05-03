@@ -2,10 +2,13 @@ using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetAllPayments;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Pagination;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -18,12 +21,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Qu
 public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
+    private readonly Mock<IUserLookupService> _userLookupMock;
     private readonly AdminGetAllPaymentsHandler _handler;
 
     public AdminGetAllPaymentsHandlerTests()
     {
         _orderRepositoryMock = MockContentOrderRepository.Create();
-        _handler = new AdminGetAllPaymentsHandler(_orderRepositoryMock.Object, Mapper);
+        _userLookupMock = MockUserLookupService.Create();
+        _handler = new AdminGetAllPaymentsHandler(_orderRepositoryMock.Object, Mapper, _userLookupMock.Object);
     }
 
     #region Success Cases
@@ -57,6 +62,72 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
         result.Should().NotBeNull();
         result.Payments.Should().NotBeNull();
         result.Payments.Items.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task Handle_WithVerifiedPayment_ShouldResolveVerifierUserName()
+    {
+        // Arrange
+        var orderId = Guid.NewGuid();
+        var adminUserId = Guid.NewGuid();
+        ContentOrderEntity order = ContentOrderFactory.CreateWithId(orderId);
+        CustomerEntity customer = CustomerFactory.Create();
+        typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Customer))!.SetValue(order, customer);
+
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateVerified(orderId);
+        typeof(ContentPaymentEntity).GetProperty(nameof(ContentPaymentEntity.Order))!.SetValue(payment, order);
+
+        Guid verifierId = payment.VerifiedById!.Value;
+        _userLookupMock.SetupGetUserNameById(verifierId, TestConstants.User.ValidUserName);
+
+        List<ContentPaymentEntity> payments = [payment];
+        _orderRepositoryMock.SetupGetAllPaymentsAsync(payments, payments.Count);
+
+        var query = new AdminGetAllPaymentsQuery(
+            PaginatedRequest: new PaginatedRequest(0, 10),
+            Status: null,
+            Method: null,
+            Search: null
+        );
+
+        // Act
+        AdminGetAllPaymentsResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.Payments.Items.Should().HaveCount(1);
+        result.Payments.Items.First().VerifiedByUserName.Should().Be(TestConstants.User.ValidUserName);
+        _userLookupMock.VerifyGetUserNameByIdCalled(verifierId);
+    }
+
+    [Fact]
+    public async Task Handle_WithUnverifiedPayment_ShouldNotCallUserLookup()
+    {
+        // Arrange
+        var orderId = Guid.NewGuid();
+        ContentOrderEntity order = ContentOrderFactory.CreateWithId(orderId);
+        CustomerEntity customer = CustomerFactory.Create();
+        typeof(ContentOrderEntity).GetProperty(nameof(ContentOrderEntity.Customer))!.SetValue(order, customer);
+
+        ContentPaymentEntity payment = ContentPaymentFactory.Create(orderId);
+        typeof(ContentPaymentEntity).GetProperty(nameof(ContentPaymentEntity.Order))!.SetValue(payment, order);
+
+        List<ContentPaymentEntity> payments = [payment];
+        _orderRepositoryMock.SetupGetAllPaymentsAsync(payments, payments.Count);
+
+        var query = new AdminGetAllPaymentsQuery(
+            PaginatedRequest: new PaginatedRequest(0, 10),
+            Status: null,
+            Method: null,
+            Search: null
+        );
+
+        // Act
+        AdminGetAllPaymentsResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.Payments.Items.Should().HaveCount(1);
+        result.Payments.Items.First().VerifiedByUserName.Should().BeNull();
+        _userLookupMock.VerifyGetUserNameByIdNotCalled();
     }
 
     [Fact]

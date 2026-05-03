@@ -16,6 +16,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="Status">The current verification status of the payment.</param>
 /// <param name="OrderStatus">The lifecycle status of the linked order.</param>
 /// <param name="VerifiedBy">The identity user UUID of the admin who verified, or null.</param>
+/// <param name="VerifiedByUserName">The user name of the admin who verified, or null.</param>
 /// <param name="VerifiedAt">When the payment was verified, or null.</param>
 public record PaymentSummaryDto(
     Guid Id,
@@ -26,5 +27,6 @@ public record PaymentSummaryDto(
     EnumPaymentStatus Status,
     EnumOrderStatus OrderStatus,
     Guid? VerifiedBy,
+    string? VerifiedByUserName,
     DateTimeOffset? VerifiedAt
 ) : AuditableDto;
