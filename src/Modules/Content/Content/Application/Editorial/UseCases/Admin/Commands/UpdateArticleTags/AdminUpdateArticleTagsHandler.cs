@@ -34,10 +34,8 @@ public class AdminUpdateArticleTagsHandler(
 
         foreach (string name in command.TagNames)
         {
-            string slug = SlugHelper.ToSlug(name);
-
-            TagEntity? existing = await lookupRepository.GetTagBySlugAsync(
-                slug: slug,
+            TagEntity? existing = await lookupRepository.GetTagByNameAsync(
+                name: name,
                 cancellationToken: cancellationToken
             );
 
