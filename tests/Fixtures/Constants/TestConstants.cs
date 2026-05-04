@@ -366,7 +366,7 @@ public static class TestConstants
                 public const int TitleMaxLength = 100;
                 public const int SlugMaxLength = 220;
                 public const int HeadlineMinLength = 100;
-                public const int HeadlineMaxLength = 300;
+                public const int HeadlineMaxLength = 500;
                 public const int RejectionReasonMaxLength = 500;
 
                 public const string ValidTitle = "Fally Ipupa — Portrait d'un Géant";
