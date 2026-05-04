@@ -181,8 +181,8 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.Property<string>("Headline")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasDefaultValue("")
                         .HasColumnName("headline");
 
