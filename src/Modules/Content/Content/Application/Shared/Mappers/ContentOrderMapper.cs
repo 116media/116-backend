@@ -130,9 +130,12 @@ public static class ContentOrderMapper
         CancellationToken ct = default
     )
     {
-        var tasks = entities.Select(e => e.ToPaymentSummaryDtoAsync(mapper, userLookup, ct));
-        var results = await Task.WhenAll(tasks);
-        return results.ToList();
+        var results = new List<PaymentSummaryDto>(entities.Count);
+        foreach (ContentPaymentEntity entity in entities)
+        {
+            results.Add(await entity.ToPaymentSummaryDtoAsync(mapper, userLookup, ct));
+        }
+        return results;
     }
 
     /// <summary>
