@@ -31,9 +31,9 @@ public static class FileConstants
     public const bool DefaultIsDeleted = false;
 
     /// <summary>
-    /// Maximum file size for avatar uploads (1MB).
+    /// Maximum file size for avatar uploads (2MB).
     /// </summary>
-    public const long MaxAvatarFileSizeBytes = 1024 * 1024;
+    public const long MaxAvatarFileSizeBytes = 2 * 1024 * 1024;
 
     /// <summary>
     /// Allowed image MIME types for avatar uploads.
@@ -76,9 +76,9 @@ public static class FileConstants
     public static readonly string[] AllowedRawFileExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf"];
 
     /// <summary>
-    /// Maximum file size for video uploads (100 MB).
+    /// Maximum file size for video uploads (350 MB).
     /// </summary>
-    public const long MaxVideoFileSizeBytes = 100 * 1024 * 1024;
+    public const long MaxVideoFileSizeBytes = 350L * 1024 * 1024;
 
     /// <summary>
     /// Allowed MIME types for video uploads.
