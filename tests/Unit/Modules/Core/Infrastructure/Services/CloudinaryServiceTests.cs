@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Core.Infrastructure.Services;
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions;
@@ -486,7 +487,7 @@ public class CloudinaryServiceTests
     {
         var service = new CloudinaryService(_settings, _loggerMock.Object);
         var fileMock = new Mock<IFormFile>();
-        fileMock.Setup(f => f.Length).Returns(101L * 1024 * 1024);
+        fileMock.Setup(f => f.Length).Returns(FileConstants.MaxVideoFileSizeBytes + 1);
         fileMock.Setup(f => f.FileName).Returns("clip.mp4");
 
         Func<Task> act = async () => await service.UploadVideoAsync(fileMock.Object, "test-id");
