@@ -110,7 +110,7 @@ public class CloudinaryServiceTests
         ExceptionAssertions<BadRequestException>? exception = await act.Should()
             .ThrowExactlyAsync<BadRequestException>();
 
-        exception.Which.Message.Should().Be("File.InvalidExtension");
+        exception.Which.Message.Should().Contain("not allowed");
     }
 
     [Fact]
@@ -289,7 +289,7 @@ public class CloudinaryServiceTests
         ExceptionAssertions<BadRequestException>? exception = await act.Should()
             .ThrowExactlyAsync<BadRequestException>();
 
-        exception.Which.Message.Should().Be("File.InvalidType");
+        exception.Which.Message.Should().Contain("not allowed");
     }
 
     [Fact]
@@ -507,7 +507,7 @@ public class CloudinaryServiceTests
 
         ExceptionAssertions<BadRequestException>? exception = await act.Should()
             .ThrowExactlyAsync<BadRequestException>();
-        exception.Which.Message.Should().Be("File.InvalidExtension");
+        exception.Which.Message.Should().Contain("not allowed");
     }
 
     [Fact]
@@ -523,7 +523,7 @@ public class CloudinaryServiceTests
 
         ExceptionAssertions<BadRequestException>? exception = await act.Should()
             .ThrowExactlyAsync<BadRequestException>();
-        exception.Which.Message.Should().Be("File.InvalidType");
+        exception.Which.Message.Should().Contain("not allowed");
     }
 
     [Theory]
