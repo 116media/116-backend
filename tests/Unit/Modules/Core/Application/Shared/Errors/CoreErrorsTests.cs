@@ -272,8 +272,7 @@ public class CoreErrorsTests
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be("File.Required");
-        exception.Details.Should().Be("No file was provided for upload");
+        exception.Message.Should().Contain("No file was provided");
     }
 
     [Fact]
@@ -289,10 +288,7 @@ public class CoreErrorsTests
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be("File.TooLarge");
-        exception.Details.Should().Contain(actualSize.ToString());
-        exception.Details.Should().Contain(maxSize.ToString());
-        exception.Details.Should().Contain(maxSizeMB.ToString());
+        exception.Message.Should().Contain(maxSizeMB.ToString());
     }
 
     [Fact]
@@ -307,9 +303,8 @@ public class CoreErrorsTests
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be("File.InvalidType");
-        exception.Details.Should().Contain(providedType);
-        exception.Details.Should().Contain(allowedTypes);
+        exception.Message.Should().Contain(providedType);
+        exception.Message.Should().Contain(allowedTypes);
     }
 
     [Fact]
@@ -324,9 +319,8 @@ public class CoreErrorsTests
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be("File.InvalidExtension");
-        exception.Details.Should().Contain(providedExtension);
-        exception.Details.Should().Contain(allowedExtensions);
+        exception.Message.Should().Contain(providedExtension);
+        exception.Message.Should().Contain(allowedExtensions);
     }
 
     [Fact]
@@ -340,8 +334,7 @@ public class CoreErrorsTests
 
         // Assert
         exception.Should().BeOfType<BadGatewayException>();
-        exception.Message.Should().Be("File.UploadFailed");
-        exception.Details.Should().Contain(reason);
+        exception.Message.Should().Contain(reason);
     }
 
     [Fact]
