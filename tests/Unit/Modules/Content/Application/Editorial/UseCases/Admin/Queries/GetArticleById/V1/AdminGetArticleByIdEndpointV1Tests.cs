@@ -38,6 +38,7 @@ public class AdminGetArticleByIdEndpointV1Tests
             AuthorId: "Test",
             Status: EnumContentStatus.Draft,
             RejectionReason: null,
+            SocialBoost: false,
             IsFeatured: false,
             FeaturedUntil: null,
             PublishedAt: null,
