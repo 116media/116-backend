@@ -143,7 +143,7 @@ public static class ContentConstants
     /// Minimum length of 100 is enforced at the application layer only
     /// (drafts start with an empty string and the min is checked on <c>PUT</c>).
     /// </summary>
-    public const int MaxHeadlineLength = 300;
+    public const int MaxHeadlineLength = 500;
 
     /// <summary>
     /// Minimum allowed length for the article headline, enforced on PUT/update only.
