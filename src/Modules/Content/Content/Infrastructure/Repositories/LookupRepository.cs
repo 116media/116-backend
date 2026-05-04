@@ -183,6 +183,15 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
     }
 
     /// <inheritdoc />
+    public async Task<TagEntity?> GetTagByNameAsync(string name, CancellationToken cancellationToken = default)
+    {
+        return await context.Tags.FirstOrDefaultAsync(
+            t => t.Name.ToLower() == name.ToLower(),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    /// <inheritdoc />
     public async Task<IReadOnlyList<TagEntity>> GetAllTagsAsync(
         string? search = null,
         CancellationToken cancellationToken = default
