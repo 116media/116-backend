@@ -220,6 +220,16 @@ public static class MockLookupRepository
         return mock;
     }
 
+    public static Mock<ILookupRepository> SetupGetTagByName(
+        this Mock<ILookupRepository> mock,
+        string name,
+        TagEntity? tag
+    )
+    {
+        mock.Setup(x => x.GetTagByNameAsync(name, It.IsAny<CancellationToken>())).ReturnsAsync(tag);
+        return mock;
+    }
+
     public static Mock<ILookupRepository> SetupGetAllTags(
         this Mock<ILookupRepository> mock,
         IReadOnlyList<TagEntity> list
