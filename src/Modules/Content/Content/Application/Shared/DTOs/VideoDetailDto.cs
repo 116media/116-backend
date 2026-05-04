@@ -19,6 +19,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="Status">The current editorial workflow status.</param>
 /// <param name="RejectionReason">The rejection reason, if the video was rejected.</param>
 /// <param name="YoutubeVideoUrl">The full YouTube video URL, or null if not yet attached.</param>
+/// <param name="SocialBoost">Whether the video is flagged for social media promotion.</param>
 /// <param name="IsFeatured">Whether the video has an active featured placement.</param>
 /// <param name="FeaturedUntil">When the featured placement expires, or null.</param>
 /// <param name="HasLyrics">Whether a lyrics page is linked to this video.</param>
@@ -44,6 +45,7 @@ public record VideoDetailDto(
     EnumContentStatus Status,
     string? RejectionReason,
     string? YoutubeVideoUrl,
+    bool SocialBoost,
     bool IsFeatured,
     DateTimeOffset? FeaturedUntil,
     bool HasLyrics,
