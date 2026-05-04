@@ -232,7 +232,8 @@ public class AdminCreateShortVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateShortVideoCommand.VideoFile)
-                && e.ErrorMessage == "Short video file must not exceed 100 MB."
+                && e.ErrorMessage
+                    == $"Short video file must not exceed {FileConstants.MaxVideoFileSizeBytes / (1024 * 1024)} MB."
             );
     }
 
