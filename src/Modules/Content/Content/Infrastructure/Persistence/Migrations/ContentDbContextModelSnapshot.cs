@@ -967,11 +967,6 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(160)")
                         .HasColumnName("meta_description");
 
-                    b.Property<string>("MetaKeywords")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)")
-                        .HasColumnName("meta_keywords");
-
                     b.Property<string>("MetaTitle")
                         .HasMaxLength(70)
                         .HasColumnType("character varying(70)")
