@@ -35,7 +35,6 @@ public class AdminGetAllLyricsEndpointV1Tests
             VideoId: null,
             MetaTitle: null,
             MetaDescription: null,
-            MetaKeywords: null,
             AuthorId: Guid.NewGuid().ToString()
         );
 }
