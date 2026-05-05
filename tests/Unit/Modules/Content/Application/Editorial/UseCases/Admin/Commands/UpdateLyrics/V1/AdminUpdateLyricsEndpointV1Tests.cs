@@ -24,6 +24,27 @@ public class AdminUpdateLyricsEndpointV1Tests
         response.Lyrics.Should().Be(dto);
     }
 
+    [Fact]
+    public void AdminUpdateLyricsRequest_ShouldConstructCorrectly()
+    {
+        // Act
+        var request = new AdminUpdateLyricsRequest(
+            SongTitle: "Eloko Oyo",
+            ArtistName: "Fally Ipupa",
+            LyricsText: "Eloko oyo...",
+            Language: "fr",
+            VideoId: null
+        );
+
+        // Assert
+        request.Should().NotBeNull();
+        request.SongTitle.Should().Be("Eloko Oyo");
+        request.ArtistName.Should().Be("Fally Ipupa");
+        request.LyricsText.Should().Be("Eloko oyo...");
+        request.Language.Should().Be("fr");
+        request.VideoId.Should().BeNull();
+    }
+
     private static LyricsDto CreateLyricsDto() =>
         new(
             Id: Guid.NewGuid(),
