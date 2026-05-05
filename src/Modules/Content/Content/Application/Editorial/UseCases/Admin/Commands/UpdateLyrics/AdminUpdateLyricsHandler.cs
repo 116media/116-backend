@@ -2,19 +2,29 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Identity.Contracts.Application;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyrics;
 
 /// <summary>
-/// Handles the <see cref="AdminUpdateLyricsCommand" /> to replace the lyrics text of an existing lyrics page.
+/// Handles the <see cref="AdminUpdateLyricsCommand" /> to update the content
+/// and metadata of an existing lyrics page.
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
+/// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminUpdateLyricsHandler(ILyricsRepository lyricsRepository, IContentUnitOfWork unitOfWork, IMapper mapper)
-    : ICommandHandler<AdminUpdateLyricsCommand, AdminUpdateLyricsResult>
+public class AdminUpdateLyricsHandler(
+    ILyricsRepository lyricsRepository,
+    IContentUnitOfWork unitOfWork,
+    IUserLookupService userLookup,
+    IFileRepository fileRepository,
+    IMapper mapper
+) : ICommandHandler<AdminUpdateLyricsCommand, AdminUpdateLyricsResult>
 {
     /// <inheritdoc />
     public async Task<AdminUpdateLyricsResult> Handle(
@@ -26,7 +36,13 @@ public class AdminUpdateLyricsHandler(ILyricsRepository lyricsRepository, IConte
 
         LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(id: id, cancellationToken: cancellationToken);
 
-        lyrics.UpdateLyrics(lyricsText: command.LyricsText);
+        lyrics.Update(
+            songTitle: command.SongTitle,
+            artistName: command.ArtistName,
+            lyricsText: command.LyricsText,
+            language: command.Language,
+            videoId: command.VideoId
+        );
 
         lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
@@ -36,7 +52,7 @@ public class AdminUpdateLyricsHandler(ILyricsRepository lyricsRepository, IConte
             cancellationToken: cancellationToken
         );
 
-        var dto = updated.ToLyricsDto(mapper);
+        var dto = await updated.ToLyricsDtoAsync(mapper, userLookup, fileRepository, cancellationToken);
         return new AdminUpdateLyricsResult(Lyrics: dto);
     }
 }
