@@ -57,6 +57,15 @@ public interface ILyricsRepository : IRepository<LyricsEntity>
     );
 
     /// <summary>
+    /// Retrieves a lyrics record linked to the given video.
+    /// Returns null if no lyrics are linked to the video.
+    /// </summary>
+    /// <param name="videoId">The video identifier to look up.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The lyrics entity if found, otherwise null.</returns>
+    Task<LyricsEntity?> GetByVideoIdAsync(Guid videoId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Adds a new lyrics record to the repository.
     /// </summary>
     Task AddAsync(LyricsEntity lyrics, CancellationToken cancellationToken = default);
@@ -65,4 +74,9 @@ public interface ILyricsRepository : IRepository<LyricsEntity>
     /// Marks an existing lyrics record as modified.
     /// </summary>
     void Update(LyricsEntity lyrics);
+
+    /// <summary>
+    /// Marks a lyrics record for deletion from the repository.
+    /// </summary>
+    void Remove(LyricsEntity lyrics);
 }
