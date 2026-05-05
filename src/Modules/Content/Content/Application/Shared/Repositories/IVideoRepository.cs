@@ -29,6 +29,13 @@ public interface IVideoRepository : IRepository<VideoEntity>
     );
 
     /// <summary>
+    /// Retrieves all active videos (excluding Archived and Rejected) without pagination.
+    /// </summary>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>A list of active video entities ordered by most recent first.</returns>
+    Task<List<VideoEntity>> GetActiveAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves a video by its unique identifier, including related data.
     /// Returns null if not found.
     /// </summary>
