@@ -2,12 +2,15 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyrics;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -27,18 +30,33 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
     {
         _lyricsRepositoryMock = MockLyricsRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminUpdateLyricsHandler(_lyricsRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
+        Mock<IUserLookupService> userLookupMock = MockUserLookupService.Create();
+        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        _handler = new AdminUpdateLyricsHandler(
+            _lyricsRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            userLookupMock.Object,
+            fileRepositoryMock.Object,
+            Mapper
+        );
     }
+
+    private static AdminUpdateLyricsCommand ValidCommand(string id) =>
+        new(
+            Id: id,
+            SongTitle: TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
+            ArtistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
+            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
+            Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
+            VideoId: null
+        );
 
     [Fact]
     public async Task Handle_WhenLyricsExists_ShouldUpdateAndReturnLyrics()
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.Create();
-        var command = new AdminUpdateLyricsCommand(
-            Id: lyrics.Id.ToString(),
-            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText
-        );
+        var command = ValidCommand(lyrics.Id.ToString());
 
         _lyricsRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(lyrics.Id, It.IsAny<CancellationToken>()))
@@ -59,10 +77,7 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         Guid nonExistentId = Guid.NewGuid();
-        var command = new AdminUpdateLyricsCommand(
-            Id: nonExistentId.ToString(),
-            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText
-        );
+        var command = ValidCommand(nonExistentId.ToString());
         _lyricsRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
         // Act
