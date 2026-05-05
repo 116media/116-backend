@@ -22,7 +22,6 @@ public class AdminUpdateLyricsSeoValidatorTests
             Id: Guid.NewGuid().ToString(),
             MetaTitle: null,
             MetaDescription: null,
-            MetaKeywords: null,
             StructuredData: null
         );
 
@@ -46,7 +45,6 @@ public class AdminUpdateLyricsSeoValidatorTests
             Id: string.Empty,
             MetaTitle: null,
             MetaDescription: null,
-            MetaKeywords: null,
             StructuredData: null
         );
 
@@ -70,7 +68,6 @@ public class AdminUpdateLyricsSeoValidatorTests
             Id: "not-a-guid",
             MetaTitle: null,
             MetaDescription: null,
-            MetaKeywords: null,
             StructuredData: null
         );
 
