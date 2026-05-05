@@ -84,6 +84,12 @@ public static class MockVideoRepository
         return mock;
     }
 
+    public static Mock<IVideoRepository> SetupGetActiveAsync(this Mock<IVideoRepository> mock, List<VideoEntity> videos)
+    {
+        mock.Setup(x => x.GetActiveAsync(It.IsAny<CancellationToken>())).ReturnsAsync(videos);
+        return mock;
+    }
+
     public static Mock<IVideoRepository> SetupGetFeaturedAsync(
         this Mock<IVideoRepository> mock,
         IReadOnlyList<VideoEntity> videos
