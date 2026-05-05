@@ -35,6 +35,18 @@ public class LyricsSearchSpecification(string search) : Specification<LyricsEnti
 }
 
 /// <summary>
+/// Specification that matches a lyrics record by its linked video identifier.
+/// </summary>
+public class LyricsByVideoIdSpecification(Guid videoId) : Specification<LyricsEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<LyricsEntity, bool>> ToExpression()
+    {
+        return lyrics => lyrics.VideoId == videoId;
+    }
+}
+
+/// <summary>
 /// Specification that matches a lyrics record by song title and artist name (case-insensitive).
 /// Used to enforce the uniqueness constraint at the application layer before insert.
 /// </summary>
