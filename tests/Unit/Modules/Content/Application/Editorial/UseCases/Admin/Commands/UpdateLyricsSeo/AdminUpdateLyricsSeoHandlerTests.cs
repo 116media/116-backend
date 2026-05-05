@@ -2,11 +2,14 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyricsSeo
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -26,7 +29,15 @@ public class AdminUpdateLyricsSeoHandlerTests : BaseContentHandlerTest
     {
         _lyricsRepositoryMock = MockLyricsRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminUpdateLyricsSeoHandler(_lyricsRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
+        Mock<IUserLookupService> userLookupMock = MockUserLookupService.Create();
+        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        _handler = new AdminUpdateLyricsSeoHandler(
+            _lyricsRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            userLookupMock.Object,
+            fileRepositoryMock.Object,
+            Mapper
+        );
     }
 
     [Fact]
