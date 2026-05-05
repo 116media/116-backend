@@ -78,6 +78,21 @@ public static class MockLyricsRepository
         mock.Verify(x => x.Update(It.IsAny<LyricsEntity>()), Times.Once);
     }
 
+    public static Mock<ILyricsRepository> SetupGetByVideoIdAsync(
+        this Mock<ILyricsRepository> mock,
+        Guid videoId,
+        LyricsEntity? entity
+    )
+    {
+        mock.Setup(x => x.GetByVideoIdAsync(videoId, It.IsAny<CancellationToken>())).ReturnsAsync(entity);
+        return mock;
+    }
+
+    public static void VerifyRemoveCalled(this Mock<ILyricsRepository> mock, LyricsEntity lyrics)
+    {
+        mock.Verify(x => x.Remove(lyrics), Times.Once);
+    }
+
     private static void SetupDefaults(Mock<ILyricsRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<LyricsEntity>(), It.IsAny<CancellationToken>()))
@@ -87,6 +102,8 @@ public static class MockLyricsRepository
             )
             .ReturnsAsync((LyricsEntity?)null);
         mock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((LyricsEntity?)null);
+        mock.Setup(x => x.GetByVideoIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((LyricsEntity?)null);
         mock.Setup(x =>
                 x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<CancellationToken>())
