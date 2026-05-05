@@ -51,6 +51,17 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     }
 
     /// <inheritdoc />
+    public async Task<List<VideoEntity>> GetActiveAsync(CancellationToken cancellationToken = default)
+    {
+        var specification = new ActiveVideoSpecification();
+        return await context
+            .Videos.Include(v => v.Category)
+            .ApplySpecification(specification)
+            .OrderByDescending(v => v.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<VideoEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var specification = new VideoByIdSpecification(id: id);
