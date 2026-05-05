@@ -14,12 +14,14 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyric
 /// and metadata of an existing lyrics page.
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
+/// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
 /// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminUpdateLyricsHandler(
     ILyricsRepository lyricsRepository,
+    IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
     IUserLookupService userLookup,
     IFileRepository fileRepository,
@@ -36,6 +38,8 @@ public class AdminUpdateLyricsHandler(
 
         LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(id: id, cancellationToken: cancellationToken);
 
+        Guid? previousVideoId = lyrics.VideoId;
+
         lyrics.Update(
             songTitle: command.SongTitle,
             artistName: command.ArtistName,
@@ -43,6 +47,26 @@ public class AdminUpdateLyricsHandler(
             language: command.Language,
             videoId: command.VideoId
         );
+
+        if (previousVideoId != command.VideoId && previousVideoId.HasValue)
+        {
+            VideoEntity oldVideo = await videoRepository.GetByIdOrThrowAsync(
+                id: previousVideoId.Value,
+                cancellationToken: cancellationToken
+            );
+            oldVideo.UnmarkHasLyrics();
+            videoRepository.Update(video: oldVideo);
+        }
+
+        if (previousVideoId != command.VideoId && command.VideoId.HasValue)
+        {
+            VideoEntity newVideo = await videoRepository.GetByIdOrThrowAsync(
+                id: command.VideoId.Value,
+                cancellationToken: cancellationToken
+            );
+            newVideo.MarkHasLyrics();
+            videoRepository.Update(video: newVideo);
+        }
 
         lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
