@@ -31,7 +31,6 @@ public class AdminUpdateLyricsSeoEndpointV1Tests
         var request = new AdminUpdateLyricsSeoRequest(
             MetaTitle: "SEO Title",
             MetaDescription: "SEO Description",
-            MetaKeywords: "keyword1, keyword2",
             StructuredData: "{\"@type\": \"MusicRecording\"}"
         );
 
@@ -39,7 +38,6 @@ public class AdminUpdateLyricsSeoEndpointV1Tests
         request.Should().NotBeNull();
         request.MetaTitle.Should().Be("SEO Title");
         request.MetaDescription.Should().Be("SEO Description");
-        request.MetaKeywords.Should().Be("keyword1, keyword2");
         request.StructuredData.Should().Be("{\"@type\": \"MusicRecording\"}");
     }
 
@@ -47,17 +45,11 @@ public class AdminUpdateLyricsSeoEndpointV1Tests
     public void AdminUpdateLyricsSeoRequest_WithAllNullFields_ShouldConstructCorrectly()
     {
         // Act
-        var request = new AdminUpdateLyricsSeoRequest(
-            MetaTitle: null,
-            MetaDescription: null,
-            MetaKeywords: null,
-            StructuredData: null
-        );
+        var request = new AdminUpdateLyricsSeoRequest(MetaTitle: null, MetaDescription: null, StructuredData: null);
 
         // Assert
         request.MetaTitle.Should().BeNull();
         request.MetaDescription.Should().BeNull();
-        request.MetaKeywords.Should().BeNull();
         request.StructuredData.Should().BeNull();
     }
 
@@ -71,7 +63,6 @@ public class AdminUpdateLyricsSeoEndpointV1Tests
             VideoId: null,
             MetaTitle: null,
             MetaDescription: null,
-            MetaKeywords: null,
             AuthorId: Guid.NewGuid().ToString()
         );
 }
