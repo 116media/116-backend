@@ -14,12 +14,14 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyric
 /// Handles the <see cref="AdminCreateLyricsCommand" /> to create a new lyrics page.
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
+/// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
 /// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminCreateLyricsHandler(
     ILyricsRepository lyricsRepository,
+    IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
     IUserLookupService userLookup,
     IFileRepository fileRepository,
@@ -56,6 +58,13 @@ public class AdminCreateLyricsHandler(
                 language: command.Language,
                 authorId: command.AuthorId
             );
+
+            VideoEntity video = await videoRepository.GetByIdOrThrowAsync(
+                id: command.VideoId.Value,
+                cancellationToken: cancellationToken
+            );
+            video.MarkHasLyrics();
+            videoRepository.Update(video: video);
         }
         else
         {
