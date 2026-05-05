@@ -194,4 +194,78 @@ public class VideoSpecificationsTests
     }
 
     #endregion
+
+    #region ActiveVideoSpecification
+
+    [Fact]
+    public void ActiveVideoSpecification_WithDraftVideo_ShouldReturnTrue()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        var spec = new ActiveVideoSpecification();
+
+        // Act
+        bool result = spec.IsSatisfiedBy(video);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ActiveVideoSpecification_WithPublishedVideo_ShouldReturnTrue()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.CreatePublished(CategoryId);
+        var spec = new ActiveVideoSpecification();
+
+        // Act
+        bool result = spec.IsSatisfiedBy(video);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ActiveVideoSpecification_WithApprovedVideo_ShouldReturnTrue()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.CreateApproved(CategoryId);
+        var spec = new ActiveVideoSpecification();
+
+        // Act
+        bool result = spec.IsSatisfiedBy(video);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ActiveVideoSpecification_WithRejectedVideo_ShouldReturnFalse()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.CreateRejected(CategoryId);
+        var spec = new ActiveVideoSpecification();
+
+        // Act
+        bool result = spec.IsSatisfiedBy(video);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ActiveVideoSpecification_WithArchivedVideo_ShouldReturnFalse()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.CreateArchived(CategoryId);
+        var spec = new ActiveVideoSpecification();
+
+        // Act
+        bool result = spec.IsSatisfiedBy(video);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
 }
