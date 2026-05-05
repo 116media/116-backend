@@ -2,6 +2,8 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -10,11 +12,26 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllShorts
 
 /// <summary>
 /// Handles the <see cref="AdminGetAllShortsQuery" /> to retrieve a paginated list of short videos.
+/// Enriches each short with the author's profile (user name, email, avatar URL, role).
 /// </summary>
-/// <param name="shortVideoRepository">Repository for short video data access operations.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminGetAllShortsHandler(IShortVideoRepository shortVideoRepository, IMapper mapper)
-    : IQueryHandler<AdminGetAllShortsQuery, AdminGetAllShortsResult>
+/// <param name="shortVideoRepository">
+/// Repository for short video data access operations.
+/// </param>
+/// <param name="userLookup">
+/// Cross-module service for resolving author profiles.
+/// </param>
+/// <param name="fileRepository">
+/// Repository for resolving avatar file URLs.
+/// </param>
+/// <param name="mapper">
+/// Mapster mapper for entity-to-DTO transformations.
+/// </param>
+public class AdminGetAllShortsHandler(
+    IShortVideoRepository shortVideoRepository,
+    IUserLookupService userLookup,
+    IFileRepository fileRepository,
+    IMapper mapper
+) : IQueryHandler<AdminGetAllShortsQuery, AdminGetAllShortsResult>
 {
     /// <inheritdoc />
     public async Task<AdminGetAllShortsResult> Handle(AdminGetAllShortsQuery query, CancellationToken cancellationToken)
@@ -30,7 +47,12 @@ public class AdminGetAllShortsHandler(IShortVideoRepository shortVideoRepository
             cancellationToken: cancellationToken
         );
 
-        List<ShortVideoDto> dtoList = shortVideos.Select(sv => sv.ToShortVideoDto(mapper)).ToList();
+        IReadOnlyList<ShortVideoDto> dtoList = await shortVideos.ToShortVideoDtosAsync(
+            mapper,
+            userLookup,
+            fileRepository,
+            cancellationToken
+        );
 
         var paginatedResult = new PaginatedResult<ShortVideoDto>(
             pageIndex: pageIndex,
