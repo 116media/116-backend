@@ -34,6 +34,7 @@ public class AdminUpdateShortVideoEndpointV1Tests
             Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             VideoUrl: "https://res.cloudinary.com/test/video/upload/v1/clip.mp4",
             ThumbnailUrl: null,
+            VideoId: null,
             HasFullVideo: false,
             IsActive: true,
             ViewCount: 0,
