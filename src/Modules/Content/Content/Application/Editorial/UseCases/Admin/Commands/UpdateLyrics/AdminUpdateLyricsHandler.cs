@@ -58,7 +58,7 @@ public class AdminUpdateLyricsHandler(
             videoRepository.Update(video: oldVideo);
         }
 
-        if (previousVideoId != command.VideoId && command.VideoId.HasValue)
+        if (command.VideoId.HasValue)
         {
             VideoEntity newVideo = await videoRepository.GetByIdOrThrowAsync(
                 id: command.VideoId.Value,
