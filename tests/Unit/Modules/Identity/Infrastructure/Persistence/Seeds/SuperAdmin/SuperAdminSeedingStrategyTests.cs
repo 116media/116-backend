@@ -13,6 +13,7 @@ namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Persistence.Seeds.Supe
 /// <summary>
 /// Unit tests for <see cref="SuperAdminSeedingStrategy"/>.
 /// </summary>
+[Collection("SuperAdminSeeder")]
 public class SuperAdminSeedingStrategyTests
 {
     private readonly Mock<ILogger<SuperAdminRepositoryManager>> _repositoryLoggerMock;
