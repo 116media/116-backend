@@ -1,4 +1,5 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticleTags;
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -20,6 +21,7 @@ public class AdminUpdateArticleTagsHandlerTests
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<ILookupRepository> _lookupRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IPopularTagsCacheInvalidator> _cacheInvalidatorMock;
     private readonly AdminUpdateArticleTagsHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -29,10 +31,12 @@ public class AdminUpdateArticleTagsHandlerTests
         _articleRepositoryMock = MockArticleRepository.Create();
         _lookupRepositoryMock = MockLookupRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _cacheInvalidatorMock = MockPopularTagsCacheInvalidator.Create();
         _handler = new AdminUpdateArticleTagsHandler(
             _articleRepositoryMock.Object,
             _lookupRepositoryMock.Object,
-            _unitOfWorkMock.Object
+            _unitOfWorkMock.Object,
+            _cacheInvalidatorMock.Object
         );
     }
 
@@ -62,6 +66,7 @@ public class AdminUpdateArticleTagsHandlerTests
         result.IsSuccess.Should().BeTrue();
         _articleRepositoryMock.VerifyRemoveTagCalled();
         _unitOfWorkMock.VerifyCommitCalled();
+        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     [Fact]
@@ -90,6 +95,7 @@ public class AdminUpdateArticleTagsHandlerTests
         _lookupRepositoryMock.VerifyAddTagNotCalled();
         _articleRepositoryMock.VerifyAddTagCalled();
         _unitOfWorkMock.VerifyCommitCalled();
+        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     [Fact]
@@ -119,6 +125,7 @@ public class AdminUpdateArticleTagsHandlerTests
         );
         _articleRepositoryMock.VerifyAddTagCalled();
         _unitOfWorkMock.VerifyCommitCalled();
+        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     [Fact]
@@ -148,6 +155,7 @@ public class AdminUpdateArticleTagsHandlerTests
             Times.Once
         );
         _unitOfWorkMock.VerifyCommitCalled();
+        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     [Fact]
@@ -207,6 +215,7 @@ public class AdminUpdateArticleTagsHandlerTests
         _articleRepositoryMock.VerifyRemoveTagCalled();
         _articleRepositoryMock.VerifyAddTagCalled();
         _unitOfWorkMock.VerifyCommitCalled();
+        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     #endregion
@@ -229,6 +238,31 @@ public class AdminUpdateArticleTagsHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenArticleNotFound_ShouldNotInvalidateCache()
+    {
+        // Arrange
+        Guid nonExistentId = Guid.NewGuid();
+        var command = new AdminUpdateArticleTagsCommand(
+            ArticleId: nonExistentId.ToString(),
+            TagNames: new List<string>()
+        );
+        _articleRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
+
+        // Act
+        try
+        {
+            await _handler.Handle(command, CancellationToken.None);
+        }
+        catch (NotFoundException)
+        {
+            // Expected
+        }
+
+        // Assert
+        _cacheInvalidatorMock.VerifyInvalidateNotCalled();
     }
 
     #endregion
