@@ -45,6 +45,8 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddRateLimiting();
 
+builder.Services.AddMemoryCache();
+
 string[] allowedOrigins = AppEnvironment.CorsAllowedOrigins();
 builder.Services.AddCors(options =>
 {
