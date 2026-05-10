@@ -2,6 +2,7 @@ using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Lookup.Constants;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
 using Carter;
@@ -37,9 +38,17 @@ public class PublicGetPopularTagsEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher, int? limit = null) =>
+                async (IDispatcher dispatcher, int? limit = null, string? contentType = null) =>
                 {
-                    var query = new PublicGetPopularTagsQuery(Limit: limit);
+                    EnumCoreContentType? parsedContentType = Enum.TryParse(
+                        contentType,
+                        ignoreCase: true,
+                        out EnumCoreContentType parsed
+                    )
+                        ? parsed
+                        : null;
+
+                    var query = new PublicGetPopularTagsQuery(Limit: limit, ContentType: parsedContentType);
 
                     PublicGetPopularTagsResult result = await dispatcher.Send(request: query);
 
