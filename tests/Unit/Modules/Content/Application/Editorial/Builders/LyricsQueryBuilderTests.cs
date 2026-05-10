@@ -1,4 +1,5 @@
 using _116.Content.Application.Editorial.Builders;
+using _116.Content.Application.Editorial.Builders.Contracts;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Specifications;
 using AwesomeAssertions;
