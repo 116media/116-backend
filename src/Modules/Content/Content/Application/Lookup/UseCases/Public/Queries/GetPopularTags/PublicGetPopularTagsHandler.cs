@@ -17,11 +17,12 @@ namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetPopularTags
 /// GROUP BY aggregation query on every request. Popular tags change infrequently,
 /// so a short TTL is acceptable and keeps the cache warm under normal traffic.
 /// <para>
-/// Each distinct <paramref name="query" /> limit value produces an independent cache
-/// entry (e.g. <c>popular_tags_8</c>, <c>popular_tags_null</c>). All entries share the
-/// same eviction token supplied by <see cref="IPopularTagsCacheInvalidator" />, so any
-/// tag-graph mutation — adding or removing article / video tag associations — cancels
-/// the token and instantly evicts every entry regardless of which limits were cached.
+/// Each distinct combination of <c>Limit</c> and <c>ContentType</c> produces an
+/// independent cache entry (e.g. <c>popular_tags_10_article</c>,
+/// <c>popular_tags_10_video</c>, <c>popular_tags_all_null</c>). All entries share
+/// the same eviction token supplied by <see cref="IPopularTagsCacheInvalidator" />,
+/// so any tag-graph mutation cancels the token and instantly evicts every entry
+/// regardless of which limit/contentType combinations were cached.
 /// </para>
 /// </remarks>
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
@@ -43,7 +44,9 @@ public class PublicGetPopularTagsHandler(
         CancellationToken cancellationToken
     )
     {
-        string cacheKey = $"popular_tags_{query.Limit?.ToString() ?? "all"}";
+        string limitPart = query.Limit?.ToString() ?? "all";
+        string contentTypePart = query.ContentType?.ToString().ToLowerInvariant() ?? "null";
+        string cacheKey = $"popular_tags_{limitPart}_{contentTypePart}";
 
         if (cache.TryGetValue(cacheKey, out IReadOnlyList<TagDto>? cached) && cached is not null)
         {
@@ -52,6 +55,7 @@ public class PublicGetPopularTagsHandler(
 
         IReadOnlyList<TagEntity> tags = await lookupRepository.GetPopularTagsAsync(
             limit: query.Limit,
+            contentType: query.ContentType,
             cancellationToken: cancellationToken
         );
 
