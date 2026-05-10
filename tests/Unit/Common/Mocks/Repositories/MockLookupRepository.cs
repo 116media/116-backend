@@ -60,6 +60,15 @@ public static class MockLookupRepository
         return mock;
     }
 
+    public static Mock<ILookupRepository> SetupGetActiveContentTypes(
+        this Mock<ILookupRepository> mock,
+        IReadOnlyList<ContentTypeEntity> list
+    )
+    {
+        mock.Setup(x => x.GetActiveContentTypesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(list);
+        return mock;
+    }
+
     public static void VerifyAddContentTypeCalled(this Mock<ILookupRepository> mock)
     {
         mock.Verify(
