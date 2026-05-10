@@ -55,6 +55,18 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<ContentTypeEntity>> GetActiveContentTypesAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ActiveContentTypeSpecification();
+        return await context
+            .ContentTypes.ApplySpecification(specification: specification)
+            .OrderBy(x => x.Name)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task AddPricingTierAsync(PricingTierEntity pricingTier, CancellationToken cancellationToken = default)
     {
         await context.PricingTiers.AddAsync(pricingTier, cancellationToken);
