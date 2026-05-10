@@ -1,6 +1,8 @@
+using _116.Content.Application.Lookup.Builders;
 using _116.Content.Application.Lookup.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -219,46 +221,14 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
     /// <inheritdoc />
     public async Task<IReadOnlyList<TagEntity>> GetPopularTagsAsync(
         int? limit,
+        EnumCoreContentType? contentType = null,
         CancellationToken cancellationToken = default
     )
     {
-        // Count article usages per tag (hits ix_article_tags_tag_id)
-        IQueryable<IGrouping<Guid, ArticleTagEntity>> articleCounts = context.ArticleTags.GroupBy(at => at.TagId);
-
-        // Count video usages per tag (hits ix_video_tags_tag_id)
-        IQueryable<IGrouping<Guid, VideoTagEntity>> videoCounts = context.VideoTags.GroupBy(vt => vt.TagId);
-
-        // Left-join both counts onto the tags table, sum, order descending
-        IQueryable<TagEntity> query = context
-            .Tags.GroupJoin(articleCounts, tag => tag.Id, grp => grp.Key, (tag, articleGrp) => new { tag, articleGrp })
-            .SelectMany(
-                x => x.articleGrp.DefaultIfEmpty(),
-                (x, articleGrp) => new { x.tag, articleCount = articleGrp == null ? 0 : articleGrp.Count() }
-            )
-            .GroupJoin(
-                videoCounts,
-                x => x.tag.Id,
-                grp => grp.Key,
-                (x, videoGrp) =>
-                    new
-                    {
-                        x.tag,
-                        x.articleCount,
-                        videoGrp,
-                    }
-            )
-            .SelectMany(
-                x => x.videoGrp.DefaultIfEmpty(),
-                (x, videoGrp) => new { x.tag, totalCount = x.articleCount + (videoGrp == null ? 0 : videoGrp.Count()) }
-            )
-            .OrderByDescending(x => x.totalCount)
-            .ThenBy(x => x.tag.Name)
-            .Select(x => x.tag);
-
-        if (limit.HasValue)
-        {
-            query = query.Take(limit.Value);
-        }
+        IQueryable<TagEntity> query = new PopularTagsQueryBuilder()
+            .WithContentType(contentType)
+            .WithLimit(limit)
+            .Build(context);
 
         return await query.ToListAsync(cancellationToken);
     }
