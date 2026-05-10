@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using Moq;
 
@@ -253,7 +254,10 @@ public static class MockLookupRepository
         IReadOnlyList<TagEntity> list
     )
     {
-        mock.Setup(x => x.GetPopularTagsAsync(It.IsAny<int?>(), It.IsAny<CancellationToken>())).ReturnsAsync(list);
+        mock.Setup(x =>
+                x.GetPopularTagsAsync(It.IsAny<int?>(), It.IsAny<EnumCoreContentType?>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(list);
         return mock;
     }
 
