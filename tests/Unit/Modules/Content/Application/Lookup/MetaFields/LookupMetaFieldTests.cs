@@ -20,6 +20,7 @@ using _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllTags;
 using _116.Content.Application.Lookup.UseCases.Public.Queries.GetActivePromotionLevels;
 using _116.Content.Application.Lookup.UseCases.Public.Queries.GetAllContentTypes;
 using _116.Content.Application.Lookup.UseCases.Public.Queries.GetAllTags;
+using _116.Content.Application.Lookup.UseCases.Public.Queries.GetPopularTags;
 using _116.Shared.Application.Metadata;
 using AwesomeAssertions;
 using Xunit;
@@ -205,6 +206,13 @@ public class LookupMetaFieldTests
     public void PublicGetAllContentTypesMetaField_ShouldBeInitialized()
     {
         RouteMetadata metadata = PublicGetAllContentTypesMetaField.PublicGetAllContentTypes;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void PublicGetPopularTagsMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = PublicGetPopularTagsMetaField.PublicGetPopularTags;
         metadata.Should().NotBeNull();
     }
 
