@@ -18,6 +18,7 @@ using _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllPricingTiers;
 using _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllPromotionLevels;
 using _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllTags;
 using _116.Content.Application.Lookup.UseCases.Public.Queries.GetActivePromotionLevels;
+using _116.Content.Application.Lookup.UseCases.Public.Queries.GetAllContentTypes;
 using _116.Content.Application.Lookup.UseCases.Public.Queries.GetAllTags;
 using _116.Shared.Application.Metadata;
 using AwesomeAssertions;
@@ -197,6 +198,13 @@ public class LookupMetaFieldTests
     public void GetAllTagsMetaField_ShouldBeInitialized()
     {
         RouteMetadata metadata = PublicGetAllTagsMetaField.PublicGetAllTags;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void PublicGetAllContentTypesMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = PublicGetAllContentTypesMetaField.PublicGetAllContentTypes;
         metadata.Should().NotBeNull();
     }
 
