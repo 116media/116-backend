@@ -47,6 +47,13 @@ public interface ILookupRepository : IRepository<ContentTypeEntity>
     );
 
     /// <summary>
+    /// Retrieves only active content types ordered by name.
+    /// </summary>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>A read-only list of active content type entities.</returns>
+    Task<IReadOnlyList<ContentTypeEntity>> GetActiveContentTypesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Adds a new pricing tier entity to the repository.
     /// </summary>
     /// <param name="pricingTier">The pricing tier entity to add.</param>
