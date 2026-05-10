@@ -2,6 +2,7 @@ using _116.Content.Application.Lookup.UseCases.Public.Queries.GetPopularTags;
 using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -77,7 +78,10 @@ public class PublicGetPopularTagsHandlerTests : BaseContentHandlerTest
         result.Should().NotBeNull();
         result.Tags.Should().HaveCount(12);
 
-        _lookupRepositoryMock.Verify(x => x.GetPopularTagsAsync((int?)null, It.IsAny<CancellationToken>()), Times.Once);
+        _lookupRepositoryMock.Verify(
+            x => x.GetPopularTagsAsync((int?)null, (EnumCoreContentType?)null, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -110,7 +114,10 @@ public class PublicGetPopularTagsHandlerTests : BaseContentHandlerTest
         await _handler.Handle(query, CancellationToken.None);
 
         // Assert — repository must have been called exactly once (second call served from cache)
-        _lookupRepositoryMock.Verify(x => x.GetPopularTagsAsync((int?)3, It.IsAny<CancellationToken>()), Times.Once);
+        _lookupRepositoryMock.Verify(
+            x => x.GetPopularTagsAsync((int?)3, (EnumCoreContentType?)null, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -125,7 +132,12 @@ public class PublicGetPopularTagsHandlerTests : BaseContentHandlerTest
 
         // Assert — repository called once per unique limit
         _lookupRepositoryMock.Verify(
-            x => x.GetPopularTagsAsync(It.IsAny<int?>(), It.IsAny<CancellationToken>()),
+            x =>
+                x.GetPopularTagsAsync(
+                    It.IsAny<int?>(),
+                    It.IsAny<EnumCoreContentType?>(),
+                    It.IsAny<CancellationToken>()
+                ),
             Times.Exactly(2)
         );
     }
@@ -136,13 +148,99 @@ public class PublicGetPopularTagsHandlerTests : BaseContentHandlerTest
         // Arrange
         _lookupRepositoryMock.SetupGetPopularTags(new List<TagEntity>());
 
-        var query = new PublicGetPopularTagsQuery(Limit: 8);
+        var query = new PublicGetPopularTagsQuery(Limit: 10);
 
         // Act
         await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        _lookupRepositoryMock.Verify(x => x.GetPopularTagsAsync((int?)8, It.IsAny<CancellationToken>()), Times.Once);
+        _lookupRepositoryMock.Verify(
+            x => x.GetPopularTagsAsync((int?)10, (EnumCoreContentType?)null, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_WithArticleContentType_ShouldPassContentTypeToRepository()
+    {
+        // Arrange
+        _lookupRepositoryMock.SetupGetPopularTags(TagFactory.CreateMany(10));
+
+        var query = new PublicGetPopularTagsQuery(Limit: 10, ContentType: EnumCoreContentType.Article);
+
+        // Act
+        await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        _lookupRepositoryMock.Verify(
+            x => x.GetPopularTagsAsync((int?)10, EnumCoreContentType.Article, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_WithVideoContentType_ShouldPassContentTypeToRepository()
+    {
+        // Arrange
+        _lookupRepositoryMock.SetupGetPopularTags(TagFactory.CreateMany(10));
+
+        var query = new PublicGetPopularTagsQuery(Limit: 10, ContentType: EnumCoreContentType.Video);
+
+        // Act
+        await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        _lookupRepositoryMock.Verify(
+            x => x.GetPopularTagsAsync((int?)10, EnumCoreContentType.Video, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_CalledWithDifferentContentTypes_ShouldHitRepositoryForEach()
+    {
+        // Arrange
+        _lookupRepositoryMock.SetupGetPopularTags(TagFactory.CreateMany(10));
+
+        // Act — Article and Video produce different cache keys even with the same limit
+        await _handler.Handle(
+            new PublicGetPopularTagsQuery(Limit: 10, ContentType: EnumCoreContentType.Article),
+            CancellationToken.None
+        );
+        await _handler.Handle(
+            new PublicGetPopularTagsQuery(Limit: 10, ContentType: EnumCoreContentType.Video),
+            CancellationToken.None
+        );
+
+        // Assert — repository called once per unique (limit, contentType) combination
+        _lookupRepositoryMock.Verify(
+            x =>
+                x.GetPopularTagsAsync(
+                    It.IsAny<int?>(),
+                    It.IsAny<EnumCoreContentType?>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Exactly(2)
+        );
+    }
+
+    [Fact]
+    public async Task Handle_CalledTwiceWithSameContentType_ShouldHitRepositoryOnlyOnce()
+    {
+        // Arrange
+        _lookupRepositoryMock.SetupGetPopularTags(TagFactory.CreateMany(10));
+
+        var query = new PublicGetPopularTagsQuery(Limit: 10, ContentType: EnumCoreContentType.Article);
+
+        // Act
+        await _handler.Handle(query, CancellationToken.None);
+        await _handler.Handle(query, CancellationToken.None);
+
+        // Assert — second call served from cache
+        _lookupRepositoryMock.Verify(
+            x => x.GetPopularTagsAsync((int?)10, EnumCoreContentType.Article, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Fact]
