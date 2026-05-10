@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
@@ -191,18 +192,26 @@ public interface ILookupRepository : IRepository<ContentTypeEntity>
     );
 
     /// <summary>
-    /// Retrieves the most-used tags across all articles and videos,
-    /// ordered by total usage count descending.
+    /// Retrieves the most-used tags, ordered by usage count descending.
     /// </summary>
     /// <param name="limit">
     /// Maximum number of tags to return. When <see langword="null" /> all tags are
     /// returned ordered by popularity — useful for pages that display a complete
     /// ranked tag list.
     /// </param>
+    /// <param name="contentType">
+    /// Optional content type filter. Pass <see cref="EnumCoreContentType.Article"/> to rank
+    /// by article usage only, <see cref="EnumCoreContentType.Video"/> to rank by video usage
+    /// only. When <see langword="null" />, popularity is ranked by combined usage across all
+    /// content types.
+    /// </param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>
-    /// A read-only list of tag entities ranked by combined article and video
-    /// usage, most popular first.
+    /// A read-only list of tag entities ranked by usage count, most popular first.
     /// </returns>
-    Task<IReadOnlyList<TagEntity>> GetPopularTagsAsync(int? limit, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<TagEntity>> GetPopularTagsAsync(
+        int? limit,
+        EnumCoreContentType? contentType = null,
+        CancellationToken cancellationToken = default
+    );
 }
