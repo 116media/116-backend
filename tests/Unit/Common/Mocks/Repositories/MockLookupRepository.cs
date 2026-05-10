@@ -248,6 +248,15 @@ public static class MockLookupRepository
         return mock;
     }
 
+    public static Mock<ILookupRepository> SetupGetPopularTags(
+        this Mock<ILookupRepository> mock,
+        IReadOnlyList<TagEntity> list
+    )
+    {
+        mock.Setup(x => x.GetPopularTagsAsync(It.IsAny<int?>(), It.IsAny<CancellationToken>())).ReturnsAsync(list);
+        return mock;
+    }
+
     public static void VerifyAddTagCalled(this Mock<ILookupRepository> mock)
     {
         mock.Verify(x => x.AddTagAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()), Times.Once);
