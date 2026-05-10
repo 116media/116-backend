@@ -42,3 +42,16 @@ public class ContentTypeSearchSpecification(string search) : Specification<Conte
         return contentType => EF.Functions.ILike(contentType.Name, pattern);
     }
 }
+
+/// <summary>
+/// Specification that matches only active content types.
+/// Used for public-facing queries where inactive content types must be hidden.
+/// </summary>
+public class ActiveContentTypeSpecification : Specification<ContentTypeEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ContentTypeEntity, bool>> ToExpression()
+    {
+        return contentType => contentType.IsActive;
+    }
+}
