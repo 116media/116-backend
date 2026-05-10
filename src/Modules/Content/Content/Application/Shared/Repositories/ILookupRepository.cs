@@ -189,4 +189,20 @@ public interface ILookupRepository : IRepository<ContentTypeEntity>
         string? search = null,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Retrieves the most-used tags across all articles and videos,
+    /// ordered by total usage count descending.
+    /// </summary>
+    /// <param name="limit">
+    /// Maximum number of tags to return. When <see langword="null" /> all tags are
+    /// returned ordered by popularity — useful for pages that display a complete
+    /// ranked tag list.
+    /// </param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>
+    /// A read-only list of tag entities ranked by combined article and video
+    /// usage, most popular first.
+    /// </returns>
+    Task<IReadOnlyList<TagEntity>> GetPopularTagsAsync(int? limit, CancellationToken cancellationToken = default);
 }
