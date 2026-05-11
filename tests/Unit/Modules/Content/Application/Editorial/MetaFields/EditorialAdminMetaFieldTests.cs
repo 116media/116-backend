@@ -13,6 +13,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteArticle;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteLyrics;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteShortVideo;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteVideo;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteArticle;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteVideo;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishArticle;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishVideo;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectArticle;
@@ -131,6 +133,13 @@ public class EditorialAdminMetaFieldTests
         metadata.Should().NotBeNull();
     }
 
+    [Fact]
+    public void AdminForceUnpromoteArticleMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = AdminForceUnpromoteArticleMetaField.AdminForceUnpromoteArticle;
+        metadata.Should().NotBeNull();
+    }
+
     #endregion
 
     #region Article Query MetaFields
@@ -241,6 +250,13 @@ public class EditorialAdminMetaFieldTests
     public void AdminScheduleShootMetaField_ShouldBeInitialized()
     {
         RouteMetadata metadata = AdminScheduleShootMetaField.AdminScheduleShoot;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void AdminForceUnpromoteVideoMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = AdminForceUnpromoteVideoMetaField.AdminForceUnpromoteVideo;
         metadata.Should().NotBeNull();
     }
 
