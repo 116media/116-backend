@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -20,8 +21,8 @@ namespace _116.Content.Domain.Entities;
 /// </list>
 /// </para>
 /// <para>
-/// <c>social_boost</c>, <c>is_featured</c>, and <c>featured_until</c> are stamped
-/// automatically by the Commerce payment verification flow — never through article endpoints.thin k
+/// <c>social_boost</c>, <c>is_promoted</c>, and <c>promoted_until</c> are stamped
+/// automatically by the Commerce payment verification flow — never through article endpoints.
 /// </para>
 /// </summary>
 public class ArticleEntity : Aggregate<Guid>
@@ -95,16 +96,33 @@ public class ArticleEntity : Aggregate<Guid>
     public bool SocialBoost { get; private set; }
 
     /// <summary>
-    /// Whether this article has an active featured/À-la-Une homepage placement.
+    /// Whether this article has an active paid promotion placement (À-la-Une).
     /// Stamped by Commerce payment verification — never set through article endpoints.
     /// </summary>
-    public bool IsFeatured { get; private set; }
+    public bool IsPromoted { get; private set; }
 
     /// <summary>
-    /// When the featured placement expires. <c>null</c> if not featured.
+    /// When the paid promotion expires. <c>null</c> if not promoted.
     /// Set to <c>payment.verified_at + promotion_level.duration_days</c> by the Commerce flow.
     /// </summary>
-    public DateTimeOffset? FeaturedUntil { get; private set; }
+    public DateTimeOffset? PromotedUntil { get; private set; }
+
+    /// <summary>
+    /// When a SuperAdmin force-unpromoted this article. <c>null</c> if never force-unpromoted.
+    /// </summary>
+    public DateTimeOffset? UnpromotedAt { get; private set; }
+
+    /// <summary>
+    /// Identity of the SuperAdmin who applied the force-unpromote. <c>null</c> if never force-unpromoted.
+    /// </summary>
+    public string? UnpromotedBy { get; private set; }
+
+    /// <summary>
+    /// Reason recorded when a SuperAdmin force-unpromoted this article (max 500 chars).
+    /// Used as evidence for future refund processing.
+    /// </summary>
+    [MaxLength(500)]
+    public string? UnpromotedReason { get; private set; }
 
     /// <summary>
     /// Current status in the editorial workflow.
@@ -282,8 +300,6 @@ public class ArticleEntity : Aggregate<Guid>
     /// <param name="customerId">The B2B customer who commissioned this article. <c>null</c> for free content.</param>
     /// <param name="orderItemId">The order item this article fulfils. <c>null</c> for free content.</param>
     /// <param name="socialBoost">Whether this article is flagged for social media promotion.</param>
-    /// <param name="isFeatured">Whether this article has an active featured/À-la-Une placement.</param>
-    /// <param name="featuredUntil">When the featured placement expires. <c>null</c> if not featured.</param>
     /// <param name="metaTitle">Optional SEO meta title (max 70 chars). Falls back to <c>Title</c> if null.</param>
     /// <param name="metaDescription">Optional SEO meta description (max 160 chars).</param>
     public void Update(
@@ -296,8 +312,6 @@ public class ArticleEntity : Aggregate<Guid>
         Guid? customerId,
         Guid? orderItemId,
         bool socialBoost,
-        bool isFeatured,
-        DateTimeOffset? featuredUntil,
         string? metaTitle,
         string? metaDescription
     )
@@ -311,8 +325,6 @@ public class ArticleEntity : Aggregate<Guid>
         CustomerId = customerId;
         OrderItemId = orderItemId;
         SocialBoost = socialBoost;
-        IsFeatured = isFeatured;
-        FeaturedUntil = featuredUntil;
         MetaTitle = metaTitle;
         MetaDescription = metaDescription;
     }
@@ -439,14 +451,43 @@ public class ArticleEntity : Aggregate<Guid>
     public void StampSocialBoost() => SocialBoost = true;
 
     /// <summary>
-    /// Activates the article's featured/À-la-Une homepage placement until the given date.
+    /// Activates the article's paid promotion (À-la-Une) placement until the given date.
     /// Called by the Commerce payment verification flow only.
     /// </summary>
-    /// <param name="until">When the featured placement expires (<c>verified_at + duration_days</c>).</param>
-    public void StampFeatured(DateTimeOffset until)
+    /// <param name="until">
+    /// When the promotion expires (<c>payment.verified_at + promotion_level.duration_days</c>).
+    /// </param>
+    public void StampPromotion(DateTimeOffset until)
     {
-        IsFeatured = true;
-        FeaturedUntil = until;
+        IsPromoted = true;
+        PromotedUntil = until;
+    }
+
+    /// <summary>
+    /// Force-removes the active paid promotion. SuperAdmin only.
+    /// Records the audit trail needed for future pro-rata refund calculation.
+    /// </summary>
+    /// <param name="unpromotedBy">
+    /// Identity of the SuperAdmin performing the force-unpromote, read from JWT claims.
+    /// </param>
+    /// <param name="reason">
+    /// Mandatory reason for the force-unpromote (e.g. "government request", "policy violation").
+    /// </param>
+    /// <exception cref="BadRequestException">
+    /// Thrown when the article does not have an active promotion.
+    /// </exception>
+    public void ForceUnpromote(string unpromotedBy, string reason)
+    {
+        if (!IsPromoted)
+        {
+            throw new BadRequestException("Article is not currently promoted.");
+        }
+
+        IsPromoted = false;
+        PromotedUntil = null;
+        UnpromotedAt = DateTimeOffset.UtcNow;
+        UnpromotedBy = unpromotedBy;
+        UnpromotedReason = reason;
     }
 
     /// <summary>
