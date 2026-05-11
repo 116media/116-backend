@@ -37,7 +37,7 @@ public class PublicGetPublishedVideosEndpointV1Tests
             AuthorId: "Test",
             Status: EnumContentStatus.Published,
             YoutubeVideoUrl: null,
-            IsFeatured: false,
+            IsPromoted: false,
             HasLyrics: false,
             PublishedAt: null,
             ShootingScheduledAt: null
