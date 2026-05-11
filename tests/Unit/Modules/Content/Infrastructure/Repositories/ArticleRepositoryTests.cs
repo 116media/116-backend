@@ -238,29 +238,29 @@ public class ArticleRepositoryTests : IDisposable
 
     #endregion
 
-    #region GetFeaturedAsync Tests
+    #region GetPromotedAsync Tests
 
     [Fact]
-    public async Task GetFeaturedAsync_ShouldReturnFeaturedPublishedArticles()
+    public async Task GetPromotedAsync_ShouldReturnPromotedPublishedArticles()
     {
         // Arrange
         Guid categoryId = await SeedCategoryAsync();
-        ArticleEntity featured = ArticleFactory.CreateFeatured(categoryId);
+        ArticleEntity promoted = ArticleFactory.CreatePromoted(categoryId);
         ArticleEntity draft = ArticleFactory.Create(categoryId);
-        _context.Articles.AddRange(featured, draft);
+        _context.Articles.AddRange(promoted, draft);
         await _context.SaveChangesAsync();
 
         // Act
-        IReadOnlyList<ArticleEntity> result = await _repository.GetFeaturedAsync();
+        IReadOnlyList<ArticleEntity> result = await _repository.GetPromotedAsync();
 
         // Assert
         result.Should().ContainSingle();
-        result.First().IsFeatured.Should().BeTrue();
+        result.First().IsPromoted.Should().BeTrue();
         result.First().Status.Should().Be(EnumContentStatus.Published);
     }
 
     [Fact]
-    public async Task GetFeaturedAsync_WhenNoFeaturedArticles_ShouldReturnEmptyList()
+    public async Task GetPromotedAsync_WhenNoPromotedArticles_ShouldReturnEmptyList()
     {
         // Arrange
         Guid categoryId = await SeedCategoryAsync();
@@ -268,7 +268,7 @@ public class ArticleRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        IReadOnlyList<ArticleEntity> result = await _repository.GetFeaturedAsync();
+        IReadOnlyList<ArticleEntity> result = await _repository.GetPromotedAsync();
 
         // Assert
         result.Should().BeEmpty();
