@@ -50,7 +50,7 @@ public class AdminGetActiveVideosEndpointV1Tests
             AuthorId: "Test",
             Status: EnumContentStatus.Draft,
             YoutubeVideoUrl: null,
-            IsFeatured: false,
+            IsPromoted: false,
             HasLyrics: false,
             PublishedAt: null,
             ShootingScheduledAt: null
