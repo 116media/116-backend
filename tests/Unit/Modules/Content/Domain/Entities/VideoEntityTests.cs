@@ -586,7 +586,7 @@ public class VideoEntityTests
     }
 
     [Fact]
-    public void StampFeatured_ShouldSetIsFeaturedAndFeaturedUntil()
+    public void StampPromotion_ShouldSetIsPromotedAndPromotedUntil()
     {
         // Arrange
         VideoEntity video = VideoEntity.CreateFree(
@@ -600,11 +600,91 @@ public class VideoEntityTests
         DateTimeOffset until = DateTimeOffset.UtcNow.AddDays(7);
 
         // Act
-        video.StampFeatured(until);
+        video.StampPromotion(until);
 
         // Assert
-        video.IsFeatured.Should().BeTrue();
-        video.FeaturedUntil.Should().Be(until);
+        video.IsPromoted.Should().BeTrue();
+        video.PromotedUntil.Should().Be(until);
+    }
+
+    [Fact]
+    public void ForceUnpromote_WhenVideoIsPromoted_ShouldClearPromotionAndRecordAudit()
+    {
+        // Arrange
+        const string superAdminId = "super-admin-uuid";
+        const string reason = "government takedown request";
+
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description
+        );
+        video.StampPromotion(DateTimeOffset.UtcNow.AddDays(7));
+
+        DateTimeOffset before = DateTimeOffset.UtcNow;
+
+        // Act
+        video.ForceUnpromote(superAdminId, reason);
+
+        // Assert
+        video.IsPromoted.Should().BeFalse();
+        video.PromotedUntil.Should().BeNull();
+        video.UnpromotedBy.Should().Be(superAdminId);
+        video.UnpromotedReason.Should().Be(reason);
+        video.UnpromotedAt.Should().NotBeNull();
+        video.UnpromotedAt!.Value.Should().BeCloseTo(before, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void ForceUnpromote_WhenVideoIsNotPromoted_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description
+        );
+
+        // Act
+        Action act = () => video.ForceUnpromote("super-admin-uuid", "reason");
+
+        // Assert
+        act.Should().Throw<BadRequestException>();
+    }
+
+    [Fact]
+    public void ForceUnpromote_ShouldNotAffectOtherFields()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description
+        );
+        video.AttachYoutubeVideoUrl(TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl);
+        video.MarkPendingReview();
+        video.Approve();
+        video.Publish();
+        video.StampSocialBoost();
+        video.StampPromotion(DateTimeOffset.UtcNow.AddDays(7));
+
+        // Act
+        video.ForceUnpromote("super-admin-uuid", "reason");
+
+        // Assert
+        video.Status.Should().Be(EnumContentStatus.Published);
+        video.SocialBoost.Should().BeTrue();
+        video.Title.Should().Be(TestConstants.Content.Editorial.Video.ValidTitle);
+        video.Slug.Should().Be(TestConstants.Content.Editorial.Video.ValidSlug);
     }
 
     [Fact]
@@ -622,7 +702,6 @@ public class VideoEntityTests
         Guid newCategoryId = Guid.NewGuid();
         Guid customerId = Guid.NewGuid();
         Guid orderItemId = Guid.NewGuid();
-        DateTimeOffset featuredUntil = DateTimeOffset.UtcNow.AddDays(7);
 
         // Act
         video.Update(
@@ -633,8 +712,6 @@ public class VideoEntityTests
             customerId: customerId,
             orderItemId: orderItemId,
             socialBoost: true,
-            isFeatured: true,
-            featuredUntil: featuredUntil,
             metaTitle: "Updated Meta",
             metaDescription: "Updated description"
         );
@@ -647,8 +724,6 @@ public class VideoEntityTests
         video.CustomerId.Should().Be(customerId);
         video.OrderItemId.Should().Be(orderItemId);
         video.SocialBoost.Should().BeTrue();
-        video.IsFeatured.Should().BeTrue();
-        video.FeaturedUntil.Should().Be(featuredUntil);
         video.MetaTitle.Should().Be("Updated Meta");
         video.MetaDescription.Should().Be("Updated description");
     }
