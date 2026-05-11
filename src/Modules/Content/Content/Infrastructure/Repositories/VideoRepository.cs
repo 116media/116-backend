@@ -100,9 +100,9 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<VideoEntity>> GetFeaturedAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<VideoEntity>> GetPromotedAsync(CancellationToken cancellationToken = default)
     {
-        var specification = new FeaturedVideoSpecification();
+        var specification = new PromotedVideoSpecification();
         return await context
             .Videos.ApplySpecification(specification: specification)
             .Include(v => v.Category)
