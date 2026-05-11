@@ -13,7 +13,7 @@ public enum EnumPaymentStatus
 
     /// <summary>
     /// The payment proof has been reviewed and confirmed by an admin.
-    /// Triggers social boost and featured stamps on linked content.
+    /// Triggers social boost and promoted stamps on linked content.
     /// </summary>
     Verified,
 
