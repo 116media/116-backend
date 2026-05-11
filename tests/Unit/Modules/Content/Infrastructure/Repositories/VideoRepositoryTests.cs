@@ -238,29 +238,29 @@ public class VideoRepositoryTests : IDisposable
 
     #endregion
 
-    #region GetFeaturedAsync Tests
+    #region GetPromotedAsync Tests
 
     [Fact]
-    public async Task GetFeaturedAsync_ShouldReturnFeaturedPublishedVideos()
+    public async Task GetPromotedAsync_ShouldReturnPromotedPublishedVideos()
     {
         // Arrange
         Guid categoryId = await SeedCategoryAsync();
-        VideoEntity featured = VideoFactory.CreateFeatured(categoryId);
+        VideoEntity promoted = VideoFactory.CreatePromoted(categoryId);
         VideoEntity draft = VideoFactory.Create(categoryId);
-        _context.Videos.AddRange(featured, draft);
+        _context.Videos.AddRange(promoted, draft);
         await _context.SaveChangesAsync();
 
         // Act
-        IReadOnlyList<VideoEntity> result = await _repository.GetFeaturedAsync();
+        IReadOnlyList<VideoEntity> result = await _repository.GetPromotedAsync();
 
         // Assert
         result.Should().ContainSingle();
-        result.First().IsFeatured.Should().BeTrue();
+        result.First().IsPromoted.Should().BeTrue();
         result.First().Status.Should().Be(EnumContentStatus.Published);
     }
 
     [Fact]
-    public async Task GetFeaturedAsync_WhenNoFeaturedVideos_ShouldReturnEmptyList()
+    public async Task GetPromotedAsync_WhenNoPromotedVideos_ShouldReturnEmptyList()
     {
         // Arrange
         Guid categoryId = await SeedCategoryAsync();
@@ -268,7 +268,7 @@ public class VideoRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        IReadOnlyList<VideoEntity> result = await _repository.GetFeaturedAsync();
+        IReadOnlyList<VideoEntity> result = await _repository.GetPromotedAsync();
 
         // Assert
         result.Should().BeEmpty();
