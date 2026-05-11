@@ -12,7 +12,7 @@ public static class AdminVerifyPaymentMetaField
         "Verify an order payment",
         """
             Verifies a PendingPayment order's payment, transitioning the order to Paid status.
-            A receipt URL is recorded and social boost / featured promotion is stamped on any
+            A receipt URL is recorded and social boost / promotion is stamped on any
             already-linked content items.
             \n
             **Authentication Requirements:**\n
