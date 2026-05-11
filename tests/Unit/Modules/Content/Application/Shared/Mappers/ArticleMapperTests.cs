@@ -138,8 +138,6 @@ public class ArticleMapperTests : BaseContentHandlerTest
             customerId: null,
             orderItemId: null,
             socialBoost: false,
-            isFeatured: false,
-            featuredUntil: null,
             metaTitle: null,
             metaDescription: null
         );
@@ -155,8 +153,6 @@ public class ArticleMapperTests : BaseContentHandlerTest
             customerId: null,
             orderItemId: null,
             socialBoost: false,
-            isFeatured: false,
-            featuredUntil: null,
             metaTitle: null,
             metaDescription: null
         );
