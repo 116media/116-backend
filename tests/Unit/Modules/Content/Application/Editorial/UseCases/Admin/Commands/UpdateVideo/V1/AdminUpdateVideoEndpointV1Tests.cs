@@ -32,7 +32,6 @@ public class AdminUpdateVideoEndpointV1Tests
         Guid categoryId = Guid.NewGuid();
         Guid customerId = Guid.NewGuid();
         Guid orderItemId = Guid.NewGuid();
-        DateTimeOffset featuredUntil = DateTimeOffset.UtcNow.AddDays(7);
 
         // Act
         var request = new AdminUpdateVideoRequest(
@@ -43,8 +42,6 @@ public class AdminUpdateVideoEndpointV1Tests
             CustomerId: customerId,
             OrderItemId: orderItemId,
             SocialBoost: true,
-            IsFeatured: true,
-            FeaturedUntil: featuredUntil,
             MetaTitle: "Updated Meta Title",
             MetaDescription: "Updated meta description"
         );
@@ -58,8 +55,6 @@ public class AdminUpdateVideoEndpointV1Tests
         request.CustomerId.Should().Be(customerId);
         request.OrderItemId.Should().Be(orderItemId);
         request.SocialBoost.Should().BeTrue();
-        request.IsFeatured.Should().BeTrue();
-        request.FeaturedUntil.Should().Be(featuredUntil);
         request.MetaTitle.Should().Be("Updated Meta Title");
         request.MetaDescription.Should().Be("Updated meta description");
     }
@@ -76,8 +71,6 @@ public class AdminUpdateVideoEndpointV1Tests
             CustomerId: null,
             OrderItemId: null,
             SocialBoost: false,
-            IsFeatured: false,
-            FeaturedUntil: null,
             MetaTitle: null,
             MetaDescription: null
         );
@@ -86,7 +79,6 @@ public class AdminUpdateVideoEndpointV1Tests
         request.Description.Should().Be("Test video description");
         request.CustomerId.Should().BeNull();
         request.OrderItemId.Should().BeNull();
-        request.FeaturedUntil.Should().BeNull();
         request.MetaTitle.Should().BeNull();
         request.MetaDescription.Should().BeNull();
     }
@@ -106,8 +98,8 @@ public class AdminUpdateVideoEndpointV1Tests
             RejectionReason: null,
             YoutubeVideoUrl: null,
             SocialBoost: false,
-            IsFeatured: false,
-            FeaturedUntil: null,
+            IsPromoted: false,
+            PromotedUntil: null,
             HasLyrics: false,
             ShootingScheduledAt: null,
             PublishedAt: null,
