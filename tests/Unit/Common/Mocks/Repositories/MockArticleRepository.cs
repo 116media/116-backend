@@ -84,12 +84,12 @@ public static class MockArticleRepository
         return mock;
     }
 
-    public static Mock<IArticleRepository> SetupGetFeaturedAsync(
+    public static Mock<IArticleRepository> SetupGetPromotedAsync(
         this Mock<IArticleRepository> mock,
         IReadOnlyList<ArticleEntity> articles
     )
     {
-        mock.Setup(x => x.GetFeaturedAsync(It.IsAny<CancellationToken>())).ReturnsAsync(articles);
+        mock.Setup(x => x.GetPromotedAsync(It.IsAny<CancellationToken>())).ReturnsAsync(articles);
         return mock;
     }
 
@@ -278,7 +278,7 @@ public static class MockArticleRepository
                 )
             )
             .ReturnsAsync((new List<ArticleEntity>(), 0));
-        mock.Setup(x => x.GetFeaturedAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<ArticleEntity>());
+        mock.Setup(x => x.GetPromotedAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<ArticleEntity>());
         mock.Setup(x => x.GetAbandonedDraftsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ArticleEntity>());
         mock.Setup(x => x.GetImagesByArticleIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
