@@ -63,11 +63,11 @@ public interface IVideoRepository : IRepository<VideoEntity>
     Task<VideoEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves all currently featured published videos.
+    /// Retrieves all currently promoted published videos.
     /// </summary>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>A read-only list of featured video entities.</returns>
-    Task<IReadOnlyList<VideoEntity>> GetFeaturedAsync(CancellationToken cancellationToken = default);
+    /// <returns>A read-only list of promoted video entities.</returns>
+    Task<IReadOnlyList<VideoEntity>> GetPromotedAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a video linked to the given order item identifier. Returns null if not found.
