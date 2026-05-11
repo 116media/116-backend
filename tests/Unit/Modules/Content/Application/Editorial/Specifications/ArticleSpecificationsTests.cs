@@ -148,14 +148,14 @@ public class ArticleSpecificationsTests
 
     #endregion
 
-    #region FeaturedArticleSpecification
+    #region PromotedArticleSpecification
 
     [Fact]
-    public void FeaturedArticleSpecification_WithFeaturedPublishedArticle_ShouldReturnTrue()
+    public void PromotedArticleSpecification_WithPromotedPublishedArticle_ShouldReturnTrue()
     {
         // Arrange
-        ArticleEntity article = ArticleFactory.CreateFeatured(CategoryId);
-        var spec = new FeaturedArticleSpecification();
+        ArticleEntity article = ArticleFactory.CreatePromoted(CategoryId);
+        var spec = new PromotedArticleSpecification();
 
         // Act
         bool result = spec.IsSatisfiedBy(article);
@@ -165,11 +165,11 @@ public class ArticleSpecificationsTests
     }
 
     [Fact]
-    public void FeaturedArticleSpecification_WithNonFeaturedPublishedArticle_ShouldReturnFalse()
+    public void PromotedArticleSpecification_WithNonPromotedPublishedArticle_ShouldReturnFalse()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
-        var spec = new FeaturedArticleSpecification();
+        var spec = new PromotedArticleSpecification();
 
         // Act
         bool result = spec.IsSatisfiedBy(article);
@@ -179,12 +179,12 @@ public class ArticleSpecificationsTests
     }
 
     [Fact]
-    public void FeaturedArticleSpecification_WithFeaturedDraftArticle_ShouldReturnFalse()
+    public void PromotedArticleSpecification_WithPromotedDraftArticle_ShouldReturnFalse()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
-        article.StampFeatured(DateTimeOffset.UtcNow.AddDays(7));
-        var spec = new FeaturedArticleSpecification();
+        article.StampPromotion(DateTimeOffset.UtcNow.AddDays(7));
+        var spec = new PromotedArticleSpecification();
 
         // Act
         bool result = spec.IsSatisfiedBy(article);
