@@ -56,11 +56,11 @@ public interface IArticleRepository : IRepository<ArticleEntity>
     Task<ArticleEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves all currently featured published articles.
+    /// Retrieves all currently promoted published articles.
     /// </summary>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>A read-only list of featured article entities.</returns>
-    Task<IReadOnlyList<ArticleEntity>> GetFeaturedAsync(CancellationToken cancellationToken = default);
+    /// <returns>A read-only list of promoted article entities.</returns>
+    Task<IReadOnlyList<ArticleEntity>> GetPromotedAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves draft articles with no content that were created before the specified cutoff date.
