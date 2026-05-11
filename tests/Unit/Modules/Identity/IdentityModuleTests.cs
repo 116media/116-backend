@@ -19,6 +19,7 @@ namespace _116.Unit.Tests.Modules.Identity;
 /// <summary>
 /// Unit tests for <see cref="IdentityModule"/>.
 /// </summary>
+[Collection("EnvironmentVariable")]
 public class IdentityModuleTests
 {
     [Fact]
