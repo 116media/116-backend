@@ -92,9 +92,9 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<ArticleEntity>> GetFeaturedAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ArticleEntity>> GetPromotedAsync(CancellationToken cancellationToken = default)
     {
-        var specification = new FeaturedArticleSpecification();
+        var specification = new PromotedArticleSpecification();
         return await context
             .Articles.ApplySpecification(specification: specification)
             .Include(a => a.Category)
