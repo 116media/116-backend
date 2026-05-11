@@ -90,12 +90,12 @@ public static class MockVideoRepository
         return mock;
     }
 
-    public static Mock<IVideoRepository> SetupGetFeaturedAsync(
+    public static Mock<IVideoRepository> SetupGetPromotedAsync(
         this Mock<IVideoRepository> mock,
         IReadOnlyList<VideoEntity> videos
     )
     {
-        mock.Setup(x => x.GetFeaturedAsync(It.IsAny<CancellationToken>())).ReturnsAsync(videos);
+        mock.Setup(x => x.GetPromotedAsync(It.IsAny<CancellationToken>())).ReturnsAsync(videos);
         return mock;
     }
 
@@ -191,7 +191,7 @@ public static class MockVideoRepository
                 )
             )
             .ReturnsAsync((new List<VideoEntity>(), 0));
-        mock.Setup(x => x.GetFeaturedAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<VideoEntity>());
+        mock.Setup(x => x.GetPromotedAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<VideoEntity>());
         mock.Setup(x => x.GetTagsByVideoIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<VideoTagEntity>());
         mock.Setup(x => x.GetRatingAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
