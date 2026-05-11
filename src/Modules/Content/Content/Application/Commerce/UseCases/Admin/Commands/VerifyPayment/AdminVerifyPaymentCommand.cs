@@ -3,7 +3,7 @@ using _116.Shared.Contracts.Application.CQRS;
 namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
 
 /// <summary>
-/// Command for verifying an order payment and stamping social boost / featured promotion on linked content.
+/// Command for verifying an order payment and stamping social boost / promotion on linked content.
 /// </summary>
 /// <param name="OrderId">The identifier of the order whose payment is being verified.</param>
 /// <param name="ReceiptUrl">The URL of the official payment receipt.</param>
