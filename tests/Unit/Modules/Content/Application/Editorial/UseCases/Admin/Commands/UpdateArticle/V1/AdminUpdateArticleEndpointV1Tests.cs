@@ -32,7 +32,6 @@ public class AdminUpdateArticleEndpointV1Tests
         Guid categoryId = Guid.NewGuid();
         Guid customerId = Guid.NewGuid();
         Guid orderItemId = Guid.NewGuid();
-        DateTimeOffset featuredUntil = DateTimeOffset.UtcNow.AddDays(7);
 
         // Act
         var request = new AdminUpdateArticleRequest(
@@ -45,8 +44,6 @@ public class AdminUpdateArticleEndpointV1Tests
             CustomerId: customerId,
             OrderItemId: orderItemId,
             SocialBoost: true,
-            IsFeatured: true,
-            FeaturedUntil: featuredUntil,
             MetaTitle: "Updated Meta Title",
             MetaDescription: "Updated meta description"
         );
@@ -62,8 +59,6 @@ public class AdminUpdateArticleEndpointV1Tests
         request.CustomerId.Should().Be(customerId);
         request.OrderItemId.Should().Be(orderItemId);
         request.SocialBoost.Should().BeTrue();
-        request.IsFeatured.Should().BeTrue();
-        request.FeaturedUntil.Should().Be(featuredUntil);
         request.MetaTitle.Should().Be("Updated Meta Title");
         request.MetaDescription.Should().Be("Updated meta description");
     }
@@ -82,8 +77,6 @@ public class AdminUpdateArticleEndpointV1Tests
             CustomerId: null,
             OrderItemId: null,
             SocialBoost: false,
-            IsFeatured: false,
-            FeaturedUntil: null,
             MetaTitle: null,
             MetaDescription: null
         );
@@ -92,7 +85,6 @@ public class AdminUpdateArticleEndpointV1Tests
         request.CoverImageUrl.Should().BeNull();
         request.CustomerId.Should().BeNull();
         request.OrderItemId.Should().BeNull();
-        request.FeaturedUntil.Should().BeNull();
         request.MetaTitle.Should().BeNull();
         request.MetaDescription.Should().BeNull();
     }
@@ -111,8 +103,8 @@ public class AdminUpdateArticleEndpointV1Tests
             Status: EnumContentStatus.Draft,
             RejectionReason: null,
             SocialBoost: false,
-            IsFeatured: false,
-            FeaturedUntil: null,
+            IsPromoted: false,
+            PromotedUntil: null,
             PublishedAt: null,
             MetaTitle: null,
             MetaDescription: null,
