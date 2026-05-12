@@ -34,6 +34,7 @@ public class PublicGetActiveCategoriesEndpointV1Tests
             "Test category description",
             true,
             true,
+            false,
             []
         );
 }
