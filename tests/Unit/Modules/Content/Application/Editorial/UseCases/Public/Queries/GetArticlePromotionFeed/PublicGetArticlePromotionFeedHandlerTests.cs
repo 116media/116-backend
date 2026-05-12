@@ -1,0 +1,309 @@
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticlePromotionFeed;
+using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Tests.Fixtures.Factories.Content;
+using _116.Unit.Tests.Common;
+using _116.Unit.Tests.Common.Mocks.Repositories;
+using AwesomeAssertions;
+using Moq;
+using Xunit;
+
+namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetArticlePromotionFeed;
+
+/// <summary>
+/// Unit tests for <see cref="PublicGetArticlePromotionFeedHandler"/>.
+/// </summary>
+public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
+{
+    private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly PublicGetArticlePromotionFeedHandler _handler;
+
+    private static readonly Guid CategoryId = Guid.NewGuid();
+
+    public PublicGetArticlePromotionFeedHandlerTests()
+    {
+        _articleRepositoryMock = MockArticleRepository.Create();
+        _categoryRepositoryMock = MockCategoryRepository.Create();
+        _handler = new PublicGetArticlePromotionFeedHandler(
+            _articleRepositoryMock.Object,
+            _categoryRepositoryMock.Object,
+            Mapper
+        );
+    }
+
+    #region All spots filled
+
+    [Fact]
+    public async Task Handle_WhenAllSpotsHavePromotedArticles_ShouldReturnPromotedArticlesWithNoFallbacks()
+    {
+        // Arrange
+        CategoryEntity gossipCategory = CategoryFactory.Create(Guid.NewGuid());
+        List<ArticleEntity> spot1 = ArticleFactory.CreateManyPublished(CategoryId, 1);
+        List<ArticleEntity> spot2 = ArticleFactory.CreateManyPublished(CategoryId, 1);
+        List<ArticleEntity> spot3 = ArticleFactory.CreateManyPublished(CategoryId, 2);
+        List<ArticleEntity> gossipPool = ArticleFactory.CreateManyPublished(CategoryId, 5);
+
+        _categoryRepositoryMock.SetupGetGossipCategory(gossipCategory);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(1, spot1);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(2, spot2);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(3, spot3);
+        _articleRepositoryMock.SetupGetGossipFallback(gossipPool);
+
+        // Act
+        PublicGetArticlePromotionFeedResult result = await _handler.Handle(
+            new PublicGetArticlePromotionFeedQuery(),
+            CancellationToken.None
+        );
+
+        // Assert
+        result.Spot1.Articles.Should().HaveCount(1);
+        result.Spot2.Articles.Should().HaveCount(1);
+        result.Spot3.Slots.Should().HaveCount(2);
+        result.GossipStrip.Should().HaveCount(3);
+    }
+
+    #endregion
+
+    #region Spot 1 empty — fallback
+
+    [Fact]
+    public async Task Handle_WhenSpot1Empty_ShouldFallBackToOneGossipArticle()
+    {
+        // Arrange
+        CategoryEntity gossipCategory = CategoryFactory.Create(Guid.NewGuid());
+        List<ArticleEntity> spot2 = ArticleFactory.CreateManyPublished(CategoryId, 1);
+        List<ArticleEntity> spot3 = ArticleFactory.CreateManyPublished(CategoryId, 1);
+        List<ArticleEntity> gossipPool = ArticleFactory.CreateManyPublished(CategoryId, 5);
+
+        _categoryRepositoryMock.SetupGetGossipCategory(gossipCategory);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(1, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(2, spot2);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(3, spot3);
+        _articleRepositoryMock.SetupGetGossipFallback(gossipPool);
+
+        // Act
+        PublicGetArticlePromotionFeedResult result = await _handler.Handle(
+            new PublicGetArticlePromotionFeedQuery(),
+            CancellationToken.None
+        );
+
+        // Assert
+        result.Spot1.SpotPriority.Should().Be(1);
+        result.Spot1.Articles.Should().HaveCount(1);
+        result.Spot2.Articles.Should().HaveCount(1);
+    }
+
+    #endregion
+
+    #region Spot 2 empty — fallback
+
+    [Fact]
+    public async Task Handle_WhenSpot2Empty_ShouldFallBackToOneGossipArticle()
+    {
+        // Arrange
+        CategoryEntity gossipCategory = CategoryFactory.Create(Guid.NewGuid());
+        List<ArticleEntity> spot1 = ArticleFactory.CreateManyPublished(CategoryId, 1);
+        List<ArticleEntity> spot3 = ArticleFactory.CreateManyPublished(CategoryId, 1);
+        List<ArticleEntity> gossipPool = ArticleFactory.CreateManyPublished(CategoryId, 5);
+
+        _categoryRepositoryMock.SetupGetGossipCategory(gossipCategory);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(1, spot1);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(2, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(3, spot3);
+        _articleRepositoryMock.SetupGetGossipFallback(gossipPool);
+
+        // Act
+        PublicGetArticlePromotionFeedResult result = await _handler.Handle(
+            new PublicGetArticlePromotionFeedQuery(),
+            CancellationToken.None
+        );
+
+        // Assert
+        result.Spot2.SpotPriority.Should().Be(2);
+        result.Spot2.Articles.Should().HaveCount(1);
+    }
+
+    #endregion
+
+    #region Spot 3 partial — one promoted, one fallback
+
+    [Fact]
+    public async Task Handle_WhenSpot3HasOnePromo_ShouldPutItInColumnAAndFallbackInColumnB()
+    {
+        // Arrange
+        CategoryEntity gossipCategory = CategoryFactory.Create(Guid.NewGuid());
+        List<ArticleEntity> spot3 = ArticleFactory.CreateManyPublished(CategoryId, 1);
+        List<ArticleEntity> gossipPool = ArticleFactory.CreateManyPublished(CategoryId, 5);
+
+        _categoryRepositoryMock.SetupGetGossipCategory(gossipCategory);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(1, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(2, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(3, spot3);
+        _articleRepositoryMock.SetupGetGossipFallback(gossipPool);
+
+        // Act
+        PublicGetArticlePromotionFeedResult result = await _handler.Handle(
+            new PublicGetArticlePromotionFeedQuery(),
+            CancellationToken.None
+        );
+
+        // Assert
+        ArticlePromotionSlotDto slotA = result.Spot3.Slots.Single(s => s.Position == "a");
+        ArticlePromotionSlotDto slotB = result.Spot3.Slots.Single(s => s.Position == "b");
+        slotA.Articles.Should().HaveCount(1);
+        slotB.Articles.Should().HaveCount(1);
+    }
+
+    #endregion
+
+    #region Spot 3 fully empty — both columns get fallbacks
+
+    [Fact]
+    public async Task Handle_WhenSpot3FullyEmpty_ShouldFillBothColumnsWithGossipFallback()
+    {
+        // Arrange
+        CategoryEntity gossipCategory = CategoryFactory.Create(Guid.NewGuid());
+        List<ArticleEntity> gossipPool = ArticleFactory.CreateManyPublished(CategoryId, 10);
+
+        _categoryRepositoryMock.SetupGetGossipCategory(gossipCategory);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(1, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(2, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(3, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetGossipFallback(gossipPool);
+
+        // Act
+        PublicGetArticlePromotionFeedResult result = await _handler.Handle(
+            new PublicGetArticlePromotionFeedQuery(),
+            CancellationToken.None
+        );
+
+        // Assert
+        ArticlePromotionSlotDto slotA = result.Spot3.Slots.Single(s => s.Position == "a");
+        ArticlePromotionSlotDto slotB = result.Spot3.Slots.Single(s => s.Position == "b");
+        slotA.Articles.Should().HaveCount(1);
+        slotB.Articles.Should().HaveCount(1);
+    }
+
+    #endregion
+
+    #region All spots empty
+
+    [Fact]
+    public async Task Handle_WhenAllSpotsEmpty_ShouldFillAllFromGossipPool()
+    {
+        // Arrange
+        CategoryEntity gossipCategory = CategoryFactory.Create(Guid.NewGuid());
+        List<ArticleEntity> gossipPool = ArticleFactory.CreateManyPublished(CategoryId, 10);
+
+        _categoryRepositoryMock.SetupGetGossipCategory(gossipCategory);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(1, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(2, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(3, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetGossipFallback(gossipPool);
+
+        // Act
+        PublicGetArticlePromotionFeedResult result = await _handler.Handle(
+            new PublicGetArticlePromotionFeedQuery(),
+            CancellationToken.None
+        );
+
+        // Assert
+        result.Spot1.Articles.Should().HaveCount(1);
+        result.Spot2.Articles.Should().HaveCount(1);
+        result.Spot3.SpotPriority.Should().Be(3);
+        result.GossipStrip.Count.Should().BeLessThanOrEqualTo(3);
+    }
+
+    #endregion
+
+    #region Gossip pool exhausted
+
+    [Fact]
+    public async Task Handle_WhenGossipPoolEmpty_ShouldReturnEmptySpotsWithNoFallback()
+    {
+        // Arrange
+        CategoryEntity gossipCategory = CategoryFactory.Create(Guid.NewGuid());
+
+        _categoryRepositoryMock.SetupGetGossipCategory(gossipCategory);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(1, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(2, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(3, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetGossipFallback(new List<ArticleEntity>());
+
+        // Act
+        PublicGetArticlePromotionFeedResult result = await _handler.Handle(
+            new PublicGetArticlePromotionFeedQuery(),
+            CancellationToken.None
+        );
+
+        // Assert
+        result.Spot1.Articles.Should().BeEmpty();
+        result.Spot2.Articles.Should().BeEmpty();
+        result.GossipStrip.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region No gossip category configured
+
+    [Fact]
+    public async Task Handle_WhenNoGossipCategoryExists_ShouldReturnEmptyFallbacksAndStrip()
+    {
+        // Arrange — gossip category is null (not configured)
+        _categoryRepositoryMock.SetupGetGossipCategory(null);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(1, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(2, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(3, new List<ArticleEntity>());
+
+        // Act
+        PublicGetArticlePromotionFeedResult result = await _handler.Handle(
+            new PublicGetArticlePromotionFeedQuery(),
+            CancellationToken.None
+        );
+
+        // Assert
+        result.Spot1.Articles.Should().BeEmpty();
+        result.Spot2.Articles.Should().BeEmpty();
+        result.GossipStrip.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region GossipStrip deduplication
+
+    [Fact]
+    public async Task Handle_WhenFallbacksUsed_GossipStripShouldNotContainFallbackArticles()
+    {
+        // Arrange
+        CategoryEntity gossipCategory = CategoryFactory.Create(Guid.NewGuid());
+        List<ArticleEntity> gossipPool = ArticleFactory.CreateManyPublished(CategoryId, 10);
+
+        _categoryRepositoryMock.SetupGetGossipCategory(gossipCategory);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(1, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(2, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(3, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetGossipFallback(gossipPool);
+
+        // Act
+        PublicGetArticlePromotionFeedResult result = await _handler.Handle(
+            new PublicGetArticlePromotionFeedQuery(),
+            CancellationToken.None
+        );
+
+        // Collect all fallback IDs (spot1, spot2, slot a, slot b)
+        var fallbackIds = new HashSet<Guid>(
+            result
+                .Spot1.Articles.Select(a => a.Id)
+                .Concat(result.Spot2.Articles.Select(a => a.Id))
+                .Concat(result.Spot3.Slots.SelectMany(s => s.Articles.Select(a => a.Id)))
+        );
+
+        IEnumerable<Guid> stripIds = result.GossipStrip.Select(a => a.Id);
+
+        // Assert — strip articles must not overlap with fallbacks
+        stripIds.Should().NotContain(id => fallbackIds.Contains(id));
+    }
+
+    #endregion
+}
