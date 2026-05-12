@@ -331,4 +331,37 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
 
         return (articles, totalCount);
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<ArticleEntity>> GetActivePromotedBySpotAsync(
+        int spotPriority,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ArticleBySpotPrioritySpecification(spotPriority: spotPriority);
+        return await context
+            .Articles.ApplySpecification(specification: specification)
+            .Include(a => a.Category)
+            .Include(a => a.PromotionLevel)
+            .OrderByDescending(a => a.PublishedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<ArticleEntity>> GetGossipFallbackAsync(
+        Guid gossipCategoryId,
+        int limit,
+        IEnumerable<Guid> excludeIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new GossipArticleSpecification(gossipCategoryId: gossipCategoryId);
+        return await context
+            .Articles.ApplySpecification(specification: specification)
+            .Where(a => !excludeIds.Contains(a.Id))
+            .Include(a => a.Category)
+            .OrderByDescending(a => a.PublishedAt)
+            .Take(limit)
+            .ToListAsync(cancellationToken);
+    }
 }
