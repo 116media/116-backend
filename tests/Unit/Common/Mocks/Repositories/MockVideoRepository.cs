@@ -202,5 +202,34 @@ public static class MockVideoRepository
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.AddShareAsync(It.IsAny<VideoShareEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        mock.Setup(x => x.GetActivePromotedBySpotAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<VideoEntity>());
+        mock.Setup(x =>
+                x.GetFreeVideosAsync(It.IsAny<int>(), It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(new List<VideoEntity>());
+    }
+
+    public static Mock<IVideoRepository> SetupGetActivePromotedBySpot(
+        this Mock<IVideoRepository> mock,
+        int spotPriority,
+        IReadOnlyList<VideoEntity> videos
+    )
+    {
+        mock.Setup(x => x.GetActivePromotedBySpotAsync(spotPriority, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(videos);
+        return mock;
+    }
+
+    public static Mock<IVideoRepository> SetupGetFreeVideos(
+        this Mock<IVideoRepository> mock,
+        IReadOnlyList<VideoEntity> videos
+    )
+    {
+        mock.Setup(x =>
+                x.GetFreeVideosAsync(It.IsAny<int>(), It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(videos);
+        return mock;
     }
 }
