@@ -1,7 +1,6 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
-using _116.Content.Domain.Enums;
 using _116.Shared.Application.DTOs;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
@@ -38,6 +37,189 @@ public class VideoMapperTests : BaseContentHandlerTest
         Action act = () => MappingRegistration.CreateConfiguration();
 
         act.Should().NotThrow();
+    }
+
+    #endregion
+
+    #region ToVideoSummaryDto — category name
+
+    [Fact]
+    public void ToVideoSummaryDto_WhenCategoryIsNull_ShouldMapCategoryNameAsEmptyString()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        // Category nav property is null by default
+
+        // Act
+        VideoSummaryDto dto = video.ToVideoSummaryDto(Mapper);
+
+        // Assert
+        dto.CategoryName.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ToVideoSummaryDto_WhenCategoryIsLoaded_ShouldMapCategoryName()
+    {
+        // Arrange
+        VideoEntity video = CreateVideoWithCategory();
+
+        // Act
+        VideoSummaryDto dto = video.ToVideoSummaryDto(Mapper);
+
+        // Assert
+        dto.CategoryName.Should().NotBeEmpty();
+    }
+
+    #endregion
+
+    #region ToVideoSummaryDto — core fields
+
+    [Fact]
+    public void ToVideoSummaryDto_ShouldMapCoreFields()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+
+        // Act
+        VideoSummaryDto dto = video.ToVideoSummaryDto(Mapper);
+
+        // Assert
+        dto.Id.Should().Be(video.Id);
+        dto.CategoryId.Should().Be(video.CategoryId);
+        dto.Title.Should().Be(video.Title);
+        dto.Slug.Should().Be(video.Slug);
+        dto.ThumbnailUrl.Should().Be(video.ThumbnailUrl);
+        dto.AuthorId.Should().Be(video.AuthorId.ToString());
+        dto.Status.Should().Be(video.Status);
+        dto.YoutubeVideoUrl.Should().Be(video.YoutubeVideoUrl);
+        dto.IsPromoted.Should().Be(video.IsPromoted);
+        dto.HasLyrics.Should().Be(video.HasLyrics);
+        dto.PublishedAt.Should().Be(video.PublishedAt);
+        dto.ShootingScheduledAt.Should().Be(video.ShootingScheduledAt);
+    }
+
+    #endregion
+
+    #region ToVideoSummaryDto — AuditableDto fields
+
+    [Fact]
+    public void ToVideoSummaryDto_ShouldInheritAuditableDto()
+    {
+        typeof(VideoSummaryDto).Should().BeAssignableTo<AuditableDto>();
+    }
+
+    [Fact]
+    public void ToVideoSummaryDto_ShouldMapAuditFields()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        video.CreatedAt = new DateTime(2025, 2, 10, 9, 0, 0, DateTimeKind.Utc);
+        video.CreatedBy = "creator";
+        video.UpdatedAt = new DateTime(2025, 5, 20, 14, 0, 0, DateTimeKind.Utc);
+        video.UpdatedBy = "updater";
+
+        // Act
+        VideoSummaryDto dto = video.ToVideoSummaryDto(Mapper);
+
+        // Assert
+        dto.CreatedAt.Should().Be(video.CreatedAt);
+        dto.CreatedBy.Should().Be("creator");
+        dto.UpdatedAt.Should().Be(video.UpdatedAt);
+        dto.UpdatedBy.Should().Be("updater");
+    }
+
+    #endregion
+
+    #region ToVideoSummaryDto — promoted fields
+
+    [Fact]
+    public void ToVideoSummaryDto_WhenPromoted_ShouldMapIsPromotedTrue()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.CreatePromoted(CategoryId);
+
+        // Act
+        VideoSummaryDto dto = video.ToVideoSummaryDto(Mapper);
+
+        // Assert
+        dto.IsPromoted.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ToVideoSummaryDto_WhenNotPromoted_ShouldMapIsPromotedFalse()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+
+        // Act
+        VideoSummaryDto dto = video.ToVideoSummaryDto(Mapper);
+
+        // Assert
+        dto.IsPromoted.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region ToVideoSummaryDto — PromotionLevel nav property null safety
+
+    [Fact]
+    public void ToVideoSummaryDto_WhenPromotionLevelIsNull_ShouldNotThrow()
+    {
+        // Arrange — video with IsPromoted=true but PromotionLevel nav not loaded (null)
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
+
+        // Act
+        Action act = () => video.ToVideoSummaryDto(Mapper);
+
+        // Assert — must not NPE
+        act.Should().NotThrow();
+    }
+
+    #endregion
+
+    #region ToVideoSummaryDtos — list mapping
+
+    [Fact]
+    public void ToVideoSummaryDtos_ShouldMapAllEntities()
+    {
+        // Arrange
+        IReadOnlyList<VideoEntity> videos = VideoFactory.CreateMany(CategoryId, 3);
+
+        // Act
+        IReadOnlyList<VideoSummaryDto> dtos = videos.ToVideoSummaryDtos(Mapper);
+
+        // Assert
+        dtos.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public void ToVideoSummaryDtos_WhenEmpty_ShouldReturnEmptyList()
+    {
+        // Arrange
+        IReadOnlyList<VideoEntity> videos = [];
+
+        // Act
+        IReadOnlyList<VideoSummaryDto> dtos = videos.ToVideoSummaryDtos(Mapper);
+
+        // Assert
+        dtos.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ToVideoSummaryDtos_ShouldPreserveOrder()
+    {
+        // Arrange
+        VideoEntity first = VideoFactory.Create(CategoryId);
+        VideoEntity second = VideoFactory.Create(CategoryId);
+        IReadOnlyList<VideoEntity> videos = [first, second];
+
+        // Act
+        IReadOnlyList<VideoSummaryDto> dtos = videos.ToVideoSummaryDtos(Mapper);
+
+        // Assert
+        dtos[0].Id.Should().Be(first.Id);
+        dtos[1].Id.Should().Be(second.Id);
     }
 
     #endregion
@@ -123,10 +305,98 @@ public class VideoMapperTests : BaseContentHandlerTest
 
         // Assert
         dto.Id.Should().Be(video.Id);
+        dto.CategoryId.Should().Be(video.CategoryId);
         dto.AuthorId.Should().Be(video.AuthorId.ToString());
         dto.Status.Should().Be(video.Status);
         dto.Title.Should().Be(video.Title);
         dto.Slug.Should().Be(video.Slug);
+        dto.Description.Should().Be(video.Description);
+        dto.ThumbnailUrl.Should().Be(video.ThumbnailUrl);
+        dto.ThumbnailStorageKey.Should().Be(video.ThumbnailStorageKey);
+        dto.YoutubeVideoUrl.Should().Be(video.YoutubeVideoUrl);
+        dto.HasLyrics.Should().Be(video.HasLyrics);
+        dto.ShootingScheduledAt.Should().Be(video.ShootingScheduledAt);
+        dto.PublishedAt.Should().Be(video.PublishedAt);
+        dto.MetaTitle.Should().Be(video.MetaTitle);
+        dto.MetaDescription.Should().Be(video.MetaDescription);
+        dto.RejectionReason.Should().Be(video.RejectionReason);
+        dto.SocialBoost.Should().Be(video.SocialBoost);
+    }
+
+    #endregion
+
+    #region ToVideoDetailDto — category name
+
+    [Fact]
+    public void ToVideoDetailDto_WhenCategoryIsNull_ShouldMapCategoryNameAsEmptyString()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+
+        // Act
+        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+
+        // Assert
+        dto.CategoryName.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ToVideoDetailDto_WhenCategoryIsLoaded_ShouldMapCategoryName()
+    {
+        // Arrange
+        VideoEntity video = CreateVideoWithCategory();
+
+        // Act
+        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+
+        // Assert
+        dto.CategoryName.Should().NotBeEmpty();
+    }
+
+    #endregion
+
+    #region ToVideoDetailDto — promotion fields
+
+    [Fact]
+    public void ToVideoDetailDto_WhenPromoted_ShouldMapPromotionFields()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.CreatePromoted(CategoryId);
+
+        // Act
+        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+
+        // Assert
+        dto.IsPromoted.Should().BeTrue();
+        dto.PromotedUntil.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ToVideoDetailDto_WhenNotPromoted_ShouldMapPromotionFieldsAsDefault()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+
+        // Act
+        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+
+        // Assert
+        dto.IsPromoted.Should().BeFalse();
+        dto.PromotedUntil.Should().BeNull();
+    }
+
+    [Fact]
+    public void ToVideoDetailDto_WhenPromotionLevelIsNull_ShouldNotThrow()
+    {
+        // Arrange — video has IsPromoted=true but PromotionLevel nav not loaded
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
+
+        // Act
+        Action act = () => video.ToVideoDetailDto(Mapper);
+
+        // Assert — must not NPE
+        act.Should().NotThrow();
     }
 
     #endregion
@@ -169,6 +439,22 @@ public class VideoMapperTests : BaseContentHandlerTest
         dto.CustomerId.Should().Be(customerId);
         dto.CustomerName.Should().Be(customer.FullName);
         dto.OrderItemId.Should().Be(orderItemId);
+    }
+
+    [Fact]
+    public void ToVideoDetailDto_WhenCustomerNavIsNull_ShouldMapCustomerNameAsNull()
+    {
+        // Arrange — CustomerId is set but Customer nav not loaded
+        Guid customerId = Guid.NewGuid();
+        Guid orderItemId = Guid.NewGuid();
+        VideoEntity video = VideoFactory.CreatePaid(CategoryId, customerId, orderItemId);
+
+        // Act
+        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+
+        // Assert
+        dto.CustomerId.Should().Be(customerId);
+        dto.CustomerName.Should().BeNull();
     }
 
     #endregion
