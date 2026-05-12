@@ -1,4 +1,5 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleBySlug;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticlePromotionFeed;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBySlug;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsByVideoId;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPromotedArticles;
@@ -8,6 +9,7 @@ using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicShorts
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishedArticles;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishedVideos;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoBySlug;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoPromotionFeed;
 using _116.Shared.Application.Metadata;
 using AwesomeAssertions;
 using Xunit;
@@ -43,6 +45,13 @@ public class EditorialPublicMetaFieldTests
         metadata.Should().NotBeNull();
     }
 
+    [Fact]
+    public void PublicGetArticlePromotionFeedMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = PublicGetArticlePromotionFeedMetaField.PublicGetArticlePromotionFeed;
+        metadata.Should().NotBeNull();
+    }
+
     #endregion
 
     #region Public Video MetaFields
@@ -65,6 +74,13 @@ public class EditorialPublicMetaFieldTests
     public void PublicGetPromotedVideosMetaField_ShouldBeInitialized()
     {
         RouteMetadata metadata = PublicGetPromotedVideosMetaField.PublicGetPromotedVideos;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void PublicGetVideoPromotionFeedMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = PublicGetVideoPromotionFeedMetaField.PublicGetVideoPromotionFeed;
         metadata.Should().NotBeNull();
     }
 
