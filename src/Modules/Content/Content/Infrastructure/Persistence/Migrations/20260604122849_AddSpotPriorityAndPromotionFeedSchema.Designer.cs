@@ -522,7 +522,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("is_free");
 
-                    b.Property<bool>("IsGossipFallback")
+                    b.Property<bool>("IsGossip")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
@@ -554,7 +554,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.HasIndex("ContentTypeId")
                         .HasDatabaseName("ix_categories_content_type_id");
 
-                    b.HasIndex("IsGossipFallback")
+                    b.HasIndex("IsGossip")
                         .IsUnique()
                         .HasDatabaseName("ix_categories_is_gossip_fallback")
                         .HasFilter("is_gossip_fallback = true");
