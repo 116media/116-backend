@@ -26,6 +26,10 @@ public class CategoryConfiguration : IEntityTypeConfiguration<CategoryEntity>
 
         builder.Property(x => x.IsActive).IsRequired().HasDefaultValue(true);
 
+        builder.Property(x => x.IsGossipFallback).IsRequired().HasDefaultValue(false);
+
+        builder.HasIndex(x => x.IsGossipFallback).IsUnique().HasFilter("is_gossip_fallback = true");
+
         builder.HasIndex(x => x.Slug).IsUnique();
         builder.HasIndex(x => x.Name).IsUnique();
 
