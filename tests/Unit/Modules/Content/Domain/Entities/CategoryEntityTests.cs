@@ -134,7 +134,8 @@ public class CategoryEntityTests
         entity.Update(
             TestConstants.Content.Category.AnotherValidName,
             TestConstants.Content.Category.AnotherValidSlug,
-            TestConstants.Content.Category.ValidDescription
+            TestConstants.Content.Category.ValidDescription,
+            isGossip: false
         );
 
         // Assert
@@ -164,7 +165,8 @@ public class CategoryEntityTests
             entity.Update(
                 invalidName!,
                 TestConstants.Content.Category.ValidSlug,
-                TestConstants.Content.Category.ValidDescription
+                TestConstants.Content.Category.ValidDescription,
+                isGossip: false
             );
 
         // Assert
@@ -192,7 +194,8 @@ public class CategoryEntityTests
             entity.Update(
                 TestConstants.Content.Category.ValidName,
                 invalidSlug!,
-                TestConstants.Content.Category.ValidDescription
+                TestConstants.Content.Category.ValidDescription,
+                isGossip: false
             );
 
         // Assert
