@@ -51,6 +51,8 @@ public class ArticleConfiguration : IEntityTypeConfiguration<ArticleEntity>
 
         builder.Property(x => x.IsPromoted).HasDefaultValue(false).IsRequired();
 
+        builder.Property(x => x.PromotionLevelId).IsRequired(false);
+
         builder.Property(x => x.UnpromotedAt).IsRequired(false);
 
         builder.Property(x => x.UnpromotedBy).IsRequired(false);
@@ -74,6 +76,13 @@ public class ArticleConfiguration : IEntityTypeConfiguration<ArticleEntity>
             .HasOne(x => x.Customer)
             .WithMany()
             .HasForeignKey(x => x.CustomerId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder
+            .HasOne(x => x.PromotionLevel)
+            .WithMany()
+            .HasForeignKey(x => x.PromotionLevelId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
     }
