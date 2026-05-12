@@ -23,7 +23,8 @@ public class AdminUpdateCategoryValidatorTests
             Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsGossip: false
         );
 
         // Act
@@ -46,7 +47,8 @@ public class AdminUpdateCategoryValidatorTests
             Id: "",
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsGossip: false
         );
 
         // Act
@@ -73,7 +75,8 @@ public class AdminUpdateCategoryValidatorTests
             Id: Guid.NewGuid().ToString(),
             Name: string.Empty,
             Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsGossip: false
         );
 
         // Act
@@ -97,7 +100,8 @@ public class AdminUpdateCategoryValidatorTests
             Id: Guid.NewGuid().ToString(),
             Name: new string('a', TestConstants.Content.Category.NameMaxLength + 1),
             Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsGossip: false
         );
 
         // Act
@@ -125,7 +129,8 @@ public class AdminUpdateCategoryValidatorTests
             Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: "Invalid Slug",
-            Description: TestConstants.Content.Category.ValidDescription
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsGossip: false
         );
 
         // Act
