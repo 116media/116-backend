@@ -4,14 +4,20 @@ using _116.Shared.Contracts.Application.CQRS;
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePromotionLevel;
 
 /// <summary>
-/// Command to update an existing promotion level's name, duration, and price.
+/// Command to update an existing promotion level's name, duration, price, and spot priority.
 /// </summary>
 /// <param name="Id">The unique identifier of the promotion level to update.</param>
 /// <param name="Name">The new display name for the promotion level.</param>
 /// <param name="DurationDays">The new promotion duration in days.</param>
 /// <param name="PriceUsd">The new price in US dollars.</param>
-public record AdminUpdatePromotionLevelCommand(string Id, string Name, int DurationDays, decimal PriceUsd)
-    : ICommand<AdminUpdatePromotionLevelResult>;
+/// <param name="SpotPriority">The new homepage grid spot this promotion level maps to (1, 2, or 3).</param>
+public record AdminUpdatePromotionLevelCommand(
+    string Id,
+    string Name,
+    int DurationDays,
+    decimal PriceUsd,
+    int SpotPriority
+) : ICommand<AdminUpdatePromotionLevelResult>;
 
 /// <summary>
 /// Result returned after successfully updating a promotion level.
