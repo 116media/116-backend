@@ -48,6 +48,13 @@ public class CategoryEntity : Aggregate<Guid>
     public bool IsActive { get; private set; } = true;
 
     /// <summary>
+    /// When true, published articles from this category are used as gossip fallback content
+    /// on the homepage promotion feed. Exactly one article category should have this flag set.
+    /// Gossip is an article-only concept — no video category carries this flag.
+    /// </summary>
+    public bool IsGossipFallback { get; private set; }
+
+    /// <summary>
     /// The content type this category is classified under.
     /// </summary>
     public ContentTypeEntity ContentType { get; private set; } = null!;
