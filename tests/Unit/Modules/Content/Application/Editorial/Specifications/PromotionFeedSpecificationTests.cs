@@ -168,7 +168,7 @@ public class PromotionFeedSpecificationTests
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
-        category.GetType().GetProperty("IsGossipFallback")!.SetValue(category, true);
+        category.GetType().GetProperty("IsGossip")!.SetValue(category, true);
         var spec = new GossipCategorySpecification();
         Func<CategoryEntity, bool> predicate = spec.ToExpression().Compile();
 
@@ -184,7 +184,7 @@ public class PromotionFeedSpecificationTests
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
-        category.GetType().GetProperty("IsGossipFallback")!.SetValue(category, true);
+        category.GetType().GetProperty("IsGossip")!.SetValue(category, true);
         category.Deactivate();
         var spec = new GossipCategorySpecification();
         Func<CategoryEntity, bool> predicate = spec.ToExpression().Compile();
@@ -201,7 +201,7 @@ public class PromotionFeedSpecificationTests
     {
         // Arrange
         CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
-        // IsGossipFallback defaults to false
+        // IsGossip defaults to false
         var spec = new GossipCategorySpecification();
         Func<CategoryEntity, bool> predicate = spec.ToExpression().Compile();
 
