@@ -1,3 +1,4 @@
+using _116.Identity.Contracts.Application;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Services;
@@ -91,6 +92,72 @@ public class UserLookupServiceTests : IDisposable
 
         // Assert
         result.Should().Be("user_two");
+    }
+
+    #endregion
+
+    #region GetAuthorInfoByIdAsync Tests
+
+    [Fact]
+    public async Task GetAuthorInfoByIdAsync_WhenUserExists_ShouldReturnAuthorInfo()
+    {
+        // Arrange
+        UserEntity user = UserFactory.Create(TestConstants.User.ValidEmail, TestConstants.User.ValidUserName);
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        // Act
+        AuthorInfo? result = await _sut.GetAuthorInfoByIdAsync(user.Id);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.UserName.Should().Be(TestConstants.User.ValidUserName);
+        result.Email.Should().Be(TestConstants.User.ValidEmail);
+    }
+
+    [Fact]
+    public async Task GetAuthorInfoByIdAsync_WhenUserDoesNotExist_ShouldReturnNull()
+    {
+        // Arrange
+        Guid nonExistentId = Guid.NewGuid();
+
+        // Act
+        AuthorInfo? result = await _sut.GetAuthorInfoByIdAsync(nonExistentId);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetAuthorInfoByIdAsync_WhenUserHasNoAvatar_ShouldReturnNullAvatarFileId()
+    {
+        // Arrange
+        UserEntity user = UserFactory.Create(TestConstants.User.ValidEmail, TestConstants.User.ValidUserName);
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        // Act
+        AuthorInfo? result = await _sut.GetAuthorInfoByIdAsync(user.Id);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.AvatarFileId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetAuthorInfoByIdAsync_WhenUserHasRole_ShouldReturnRoleName()
+    {
+        // Arrange
+        UserEntity user = UserFactory.CreateSuperAdmin();
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        // Act
+        AuthorInfo? result = await _sut.GetAuthorInfoByIdAsync(user.Id);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Role.Should().NotBeNullOrEmpty();
     }
 
     #endregion

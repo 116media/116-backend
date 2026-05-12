@@ -16,7 +16,8 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="LikeCount">The cached like count.</param>
 /// <param name="ShareCount">The cached share count.</param>
 /// <param name="BookmarkCount">The cached bookmark count.</param>
-/// <param name="CreatedAt">When the short video was created.</param>
+/// <param name="AuthorId">The identity user UUID of the author.</param>
+/// <param name="Author">The resolved author profile, or null when listing.</param>
 public record ShortVideoDto(
     Guid Id,
     string Title,
@@ -28,5 +29,7 @@ public record ShortVideoDto(
     int ViewCount,
     int LikeCount,
     int ShareCount,
-    int BookmarkCount
+    int BookmarkCount,
+    string AuthorId,
+    AuthorDto? Author = null
 ) : AuditableDto;

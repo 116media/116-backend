@@ -21,4 +21,19 @@ public interface IUserLookupService
     /// The user name if found; otherwise <c>null</c>.
     /// </returns>
     Task<string?> GetUserNameByIdAsync(Guid userId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Resolves the full author profile for the given user ID.
+    /// Includes user name, email, avatar URL, and primary role.
+    /// </summary>
+    /// <param name="userId">
+    /// The identity user UUID to look up.
+    /// </param>
+    /// <param name="ct">
+    /// Cancellation token.
+    /// </param>
+    /// <returns>
+    /// The author info if found; otherwise <c>null</c>.
+    /// </returns>
+    Task<AuthorInfo?> GetAuthorInfoByIdAsync(Guid userId, CancellationToken ct = default);
 }

@@ -35,6 +35,7 @@ public class PublicGetLyricsBySlugEndpointV1Tests
             ArticleId: null,
             MetaTitle: null,
             MetaDescription: null,
-            MetaKeywords: null
+            MetaKeywords: null,
+            AuthorId: Guid.NewGuid().ToString()
         );
 }

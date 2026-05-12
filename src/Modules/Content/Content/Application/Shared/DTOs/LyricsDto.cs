@@ -15,6 +15,8 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="MetaTitle">Custom SEO meta title, or null.</param>
 /// <param name="MetaDescription">Custom SEO meta description, or null.</param>
 /// <param name="MetaKeywords">Custom SEO meta keywords, or null.</param>
+/// <param name="AuthorId">The identity user UUID of the author.</param>
+/// <param name="Author">The resolved author profile, or null when listing.</param>
 public record LyricsDto(
     Guid Id,
     string SongTitle,
@@ -25,5 +27,7 @@ public record LyricsDto(
     Guid? ArticleId,
     string? MetaTitle,
     string? MetaDescription,
-    string? MetaKeywords
+    string? MetaKeywords,
+    string AuthorId,
+    AuthorDto? Author = null
 ) : AuditableDto;
