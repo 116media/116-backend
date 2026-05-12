@@ -43,7 +43,12 @@ public class AdminUpdateCategoryHandler(
             throw CategoryErrors.AlreadyExists(slug: command.Slug);
         }
 
-        category.Update(name: command.Name, slug: command.Slug, description: command.Description);
+        category.Update(
+            name: command.Name,
+            slug: command.Slug,
+            description: command.Description,
+            isGossip: command.IsGossip
+        );
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
