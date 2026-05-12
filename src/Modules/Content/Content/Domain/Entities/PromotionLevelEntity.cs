@@ -28,6 +28,13 @@ public class PromotionLevelEntity : Aggregate<Guid>
     public decimal PriceUsd { get; private set; }
 
     /// <summary>
+    /// Homepage grid spot this promotion level targets (1 = hero top-left, 2 = tall side
+    /// top-right, 3 = small pair bottom-left). Controls which carousel the promoted article
+    /// or video appears in on the homepage feed.
+    /// </summary>
+    public int SpotPriority { get; private set; }
+
+    /// <summary>
     /// Indicates whether this promotion level is active and available for selection on new orders.
     /// </summary>
     public bool IsActive { get; private set; } = true;
@@ -46,7 +53,13 @@ public class PromotionLevelEntity : Aggregate<Guid>
     /// <param name="priceUsd">The price in USD (must be zero or greater).</param>
     /// <returns>A new <see cref="PromotionLevelEntity" /> instance.</returns>
     /// <exception cref="ArgumentException">Thrown when name is empty or constraints are violated.</exception>
-    public static PromotionLevelEntity Create(Guid id, string name, int durationDays, decimal priceUsd)
+    public static PromotionLevelEntity Create(
+        Guid id,
+        string name,
+        int durationDays,
+        decimal priceUsd,
+        int spotPriority
+    )
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
@@ -63,12 +76,18 @@ public class PromotionLevelEntity : Aggregate<Guid>
             throw PromotionLevelErrors.PriceMustBeNonNegative();
         }
 
+        if (spotPriority is < 1 or > 3)
+        {
+            throw PromotionLevelErrors.InvalidSpotPriority();
+        }
+
         return new PromotionLevelEntity
         {
             Id = id,
             Name = name,
             DurationDays = durationDays,
             PriceUsd = priceUsd,
+            SpotPriority = spotPriority,
         };
     }
 
@@ -78,7 +97,7 @@ public class PromotionLevelEntity : Aggregate<Guid>
     /// <param name="name">The new display name.</param>
     /// <param name="durationDays">The new placement duration in days.</param>
     /// <param name="priceUsd">The new price in USD.</param>
-    public void Update(string name, int durationDays, decimal priceUsd)
+    public void Update(string name, int durationDays, decimal priceUsd, int spotPriority)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
@@ -95,9 +114,15 @@ public class PromotionLevelEntity : Aggregate<Guid>
             throw PromotionLevelErrors.PriceMustBeNonNegative();
         }
 
+        if (spotPriority is < 1 or > 3)
+        {
+            throw PromotionLevelErrors.InvalidSpotPriority();
+        }
+
         Name = name;
         DurationDays = durationDays;
         PriceUsd = priceUsd;
+        SpotPriority = spotPriority;
     }
 
     /// <summary>
