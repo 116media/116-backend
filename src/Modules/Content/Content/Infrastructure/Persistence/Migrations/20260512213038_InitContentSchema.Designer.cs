@@ -12,7 +12,7 @@ using _116.Content.Infrastructure.Persistence;
 namespace _116.Content.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ContentDbContext))]
-    [Migration("20260427222154_InitContentSchema")]
+    [Migration("20260512213038_InitContentSchema")]
     partial class InitContentSchema
     {
         /// <inheritdoc />
@@ -934,10 +934,6 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid?>("ArticleId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("article_id");
-
                     b.Property<string>("ArtistName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -1008,9 +1004,6 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_lyrics");
-
-                    b.HasIndex("ArticleId")
-                        .HasDatabaseName("ix_lyrics_article_id");
 
                     b.HasIndex("VideoId")
                         .HasDatabaseName("ix_lyrics_video_id");
@@ -2120,19 +2113,11 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsEntity", b =>
                 {
-                    b.HasOne("_116.Content.Domain.Entities.ArticleEntity", "Article")
-                        .WithMany()
-                        .HasForeignKey("ArticleId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_lyrics_articles_article_id");
-
                     b.HasOne("_116.Content.Domain.Entities.VideoEntity", "Video")
                         .WithMany()
                         .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_lyrics_videos_video_id");
-
-                    b.Navigation("Article");
 
                     b.Navigation("Video");
                 });

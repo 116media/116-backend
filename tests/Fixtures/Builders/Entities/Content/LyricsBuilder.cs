@@ -16,7 +16,6 @@ internal class LyricsBuilder
     private string _lyricsText = TestConstants.Content.Editorial.Lyrics.ValidLyricsText;
     private string _language = TestConstants.Content.Editorial.Lyrics.ValidLanguage;
     private Guid? _videoId;
-    private Guid? _articleId;
 
     /// <summary>Sets the lyrics ID.</summary>
     public LyricsBuilder WithId(Guid id)
@@ -64,15 +63,6 @@ internal class LyricsBuilder
     public LyricsBuilder ForVideo(Guid videoId)
     {
         _videoId = videoId;
-        _articleId = null;
-        return this;
-    }
-
-    /// <summary>Links this lyrics page to an article.</summary>
-    public LyricsBuilder ForArticle(Guid articleId)
-    {
-        _articleId = articleId;
-        _videoId = null;
         return this;
     }
 
@@ -84,19 +74,6 @@ internal class LyricsBuilder
             return LyricsEntity.CreateForVideo(
                 id: _id,
                 videoId: _videoId.Value,
-                songTitle: _songTitle,
-                artistName: _artistName,
-                lyricsText: _lyricsText,
-                language: _language,
-                authorId: _authorId
-            );
-        }
-
-        if (_articleId.HasValue)
-        {
-            return LyricsEntity.CreateForArticle(
-                id: _id,
-                articleId: _articleId.Value,
                 songTitle: _songTitle,
                 artistName: _artistName,
                 lyricsText: _lyricsText,

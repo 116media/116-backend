@@ -628,7 +628,6 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     author_id = table.Column<Guid>(type: "uuid", nullable: false),
                     video_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    article_id = table.Column<Guid>(type: "uuid", nullable: true),
                     song_title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     artist_name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     lyrics_text = table.Column<string>(type: "text", nullable: false),
@@ -645,13 +644,6 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_lyrics", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_lyrics_articles_article_id",
-                        column: x => x.article_id,
-                        principalSchema: "content",
-                        principalTable: "articles",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "fk_lyrics_videos_video_id",
                         column: x => x.video_id,
@@ -1102,12 +1094,6 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "ix_lyrics_article_id",
-                schema: "content",
-                table: "lyrics",
-                column: "article_id");
-
-            migrationBuilder.CreateIndex(
                 name: "ix_lyrics_video_id",
                 schema: "content",
                 table: "lyrics",
@@ -1359,15 +1345,15 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                 schema: "content");
 
             migrationBuilder.DropTable(
+                name: "articles",
+                schema: "content");
+
+            migrationBuilder.DropTable(
                 name: "content_order_items",
                 schema: "content");
 
             migrationBuilder.DropTable(
                 name: "pricing_tiers",
-                schema: "content");
-
-            migrationBuilder.DropTable(
-                name: "articles",
                 schema: "content");
 
             migrationBuilder.DropTable(

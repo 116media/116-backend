@@ -36,8 +36,7 @@ public class AdminCreateLyricsEndpointV1Tests
             ArtistName: "Test Artist",
             LyricsText: "Test lyrics text",
             Language: "fr",
-            VideoId: videoId,
-            ArticleId: null
+            VideoId: videoId
         );
 
         // Assert
@@ -47,7 +46,6 @@ public class AdminCreateLyricsEndpointV1Tests
         request.LyricsText.Should().Be("Test lyrics text");
         request.Language.Should().Be("fr");
         request.VideoId.Should().Be(videoId);
-        request.ArticleId.Should().BeNull();
     }
 
     [Fact]
@@ -59,13 +57,11 @@ public class AdminCreateLyricsEndpointV1Tests
             ArtistName: "Test Artist",
             LyricsText: "Test lyrics text",
             Language: "en",
-            VideoId: null,
-            ArticleId: null
+            VideoId: null
         );
 
         // Assert
         request.VideoId.Should().BeNull();
-        request.ArticleId.Should().BeNull();
     }
 
     private static LyricsDto CreateLyricsDto() =>
@@ -76,7 +72,6 @@ public class AdminCreateLyricsEndpointV1Tests
             LyricsText: "Test",
             Language: "fr",
             VideoId: null,
-            ArticleId: null,
             MetaTitle: null,
             MetaDescription: null,
             MetaKeywords: null,

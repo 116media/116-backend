@@ -12,7 +12,6 @@ namespace _116.Content.Domain.Entities;
 /// A lyrics entry can be:
 /// <list type="bullet">
 ///   <item>Linked to a <see cref="VideoEntity" /> (e.g., a lyric video or "Behind the Lyrics" episode)</item>
-///   <item>Linked to an <see cref="ArticleEntity" /> (e.g., a dedicated Lyrics Page article)</item>
 ///   <item>Standalone with no parent content</item>
 /// </list>
 /// </para>
@@ -30,12 +29,6 @@ public class LyricsEntity : Aggregate<Guid>
     /// associated with a lyric video or a "Behind the Lyrics" episode.
     /// </summary>
     public Guid? VideoId { get; private set; }
-
-    /// <summary>
-    /// Optional link to a parent article. <c>null</c> unless this lyrics page
-    /// is the content body of a "Lyrics Page" article type.
-    /// </summary>
-    public Guid? ArticleId { get; private set; }
 
     /// <summary>
     /// The title of the song.
@@ -86,14 +79,9 @@ public class LyricsEntity : Aggregate<Guid>
     public string? StructuredData { get; private set; }
 
     /// <summary>
-    /// The parent video this lyrics page is linked to. <c>null</c> if standalone or article-linked.
+    /// The parent video this lyrics page is linked to. <c>null</c> if standalone.
     /// </summary>
     public VideoEntity? Video { get; private set; }
-
-    /// <summary>
-    /// The parent article this lyrics page is linked to. <c>null</c> if standalone or video-linked.
-    /// </summary>
-    public ArticleEntity? Article { get; private set; }
 
     /// <summary>
     /// Private parameterless constructor required by Entity Framework Core.
@@ -120,33 +108,6 @@ public class LyricsEntity : Aggregate<Guid>
             Id = id,
             AuthorId = authorId,
             VideoId = videoId,
-            SongTitle = songTitle,
-            ArtistName = artistName,
-            LyricsText = lyricsText,
-            Language = language,
-        };
-    }
-
-    /// <summary>
-    /// Creates a lyrics page linked to an article (e.g., a dedicated "Lyrics Page" article type).
-    /// </summary>
-    public static LyricsEntity CreateForArticle(
-        Guid id,
-        Guid articleId,
-        string songTitle,
-        string artistName,
-        string lyricsText,
-        string language,
-        Guid authorId
-    )
-    {
-        ValidateRequiredFields(songTitle: songTitle, artistName: artistName, lyricsText: lyricsText);
-
-        return new LyricsEntity
-        {
-            Id = id,
-            AuthorId = authorId,
-            ArticleId = articleId,
             SongTitle = songTitle,
             ArtistName = artistName,
             LyricsText = lyricsText,

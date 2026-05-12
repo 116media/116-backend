@@ -18,9 +18,6 @@ public static class LyricsFactory
     /// <summary>Creates a lyrics page linked to a video.</summary>
     public static LyricsEntity CreateForVideo(Guid videoId) => new LyricsBuilder().ForVideo(videoId).Build();
 
-    /// <summary>Creates a lyrics page linked to an article.</summary>
-    public static LyricsEntity CreateForArticle(Guid articleId) => new LyricsBuilder().ForArticle(articleId).Build();
-
     /// <summary>Creates a lyrics page with specific song title and artist name.</summary>
     public static LyricsEntity Create(string songTitle, string artistName) =>
         new LyricsBuilder().WithSongTitle(songTitle).WithArtistName(artistName).Build();

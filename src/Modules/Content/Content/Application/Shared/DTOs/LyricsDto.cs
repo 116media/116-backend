@@ -11,7 +11,6 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="LyricsText">The full lyrics text.</param>
 /// <param name="Language">The ISO-639 language code of the lyrics (e.g., "fr", "en").</param>
 /// <param name="VideoId">The linked video identifier, or null if not linked.</param>
-/// <param name="ArticleId">The linked article identifier, or null if not linked.</param>
 /// <param name="MetaTitle">Custom SEO meta title, or null.</param>
 /// <param name="MetaDescription">Custom SEO meta description, or null.</param>
 /// <param name="MetaKeywords">Custom SEO meta keywords, or null.</param>
@@ -24,7 +23,6 @@ public record LyricsDto(
     string LyricsText,
     string Language,
     Guid? VideoId,
-    Guid? ArticleId,
     string? MetaTitle,
     string? MetaDescription,
     string? MetaKeywords,

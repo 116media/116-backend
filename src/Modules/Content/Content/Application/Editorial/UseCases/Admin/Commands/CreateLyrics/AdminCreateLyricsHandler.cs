@@ -48,18 +48,6 @@ public class AdminCreateLyricsHandler(ILyricsRepository lyricsRepository, IConte
                 authorId: command.AuthorId
             );
         }
-        else if (command.ArticleId.HasValue)
-        {
-            lyrics = LyricsEntity.CreateForArticle(
-                id: Guid.NewGuid(),
-                articleId: command.ArticleId.Value,
-                songTitle: command.SongTitle,
-                artistName: command.ArtistName,
-                lyricsText: command.LyricsText,
-                language: command.Language,
-                authorId: command.AuthorId
-            );
-        }
         else
         {
             lyrics = LyricsEntity.CreateStandalone(

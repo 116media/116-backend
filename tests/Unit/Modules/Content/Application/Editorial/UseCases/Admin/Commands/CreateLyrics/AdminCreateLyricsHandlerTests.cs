@@ -30,15 +30,14 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         _handler = new AdminCreateLyricsHandler(_lyricsRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
     }
 
-    private static AdminCreateLyricsCommand BuildCommand(Guid? videoId = null, Guid? articleId = null) =>
+    private static AdminCreateLyricsCommand BuildCommand(Guid? videoId = null) =>
         new(
             SongTitle: TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
             ArtistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
             LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
             Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
             AuthorId: Guid.NewGuid(),
-            VideoId: videoId,
-            ArticleId: articleId
+            VideoId: videoId
         );
 
     #region Success Cases
@@ -74,32 +73,6 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         // Arrange
         Guid videoId = Guid.NewGuid();
         var command = BuildCommand(videoId: videoId);
-
-        LyricsEntity? capturedEntity = null;
-        _lyricsRepositoryMock
-            .Setup(x => x.AddAsync(It.IsAny<LyricsEntity>(), It.IsAny<CancellationToken>()))
-            .Callback<LyricsEntity, CancellationToken>((e, _) => capturedEntity = e)
-            .Returns(Task.CompletedTask);
-        _lyricsRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(() => capturedEntity!);
-
-        // Act
-        AdminCreateLyricsResult result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Lyrics.Should().NotBeNull();
-        _lyricsRepositoryMock.VerifyAddCalled();
-        _unitOfWorkMock.VerifyCommitCalled();
-    }
-
-    [Fact]
-    public async Task Handle_WhenLyricsForArticle_ShouldCreateAndReturnLyrics()
-    {
-        // Arrange
-        Guid articleId = Guid.NewGuid();
-        var command = BuildCommand(articleId: articleId);
 
         LyricsEntity? capturedEntity = null;
         _lyricsRepositoryMock
