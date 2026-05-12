@@ -79,14 +79,15 @@ public class CategoryByContentTypeSpecification(Guid contentTypeId) : Specificat
 }
 
 /// <summary>
-/// Specification that matches the single active category designated as the gossip fallback
-/// source for the homepage article promotion feed.
+/// Specification that matches the single active gossip category.
+/// Published articles belonging to this category populate the homepage gossip strip
+/// and serve as fallback content for empty promotion spots.
 /// </summary>
 public class GossipCategorySpecification : Specification<CategoryEntity>
 {
     /// <inheritdoc />
     public override Expression<Func<CategoryEntity, bool>> ToExpression()
     {
-        return category => category.IsGossipFallback && category.IsActive;
+        return category => category.IsGossip && category.IsActive;
     }
 }
