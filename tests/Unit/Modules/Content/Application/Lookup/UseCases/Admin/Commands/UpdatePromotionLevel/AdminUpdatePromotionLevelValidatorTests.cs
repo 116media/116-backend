@@ -23,7 +23,8 @@ public class AdminUpdatePromotionLevelValidatorTests
             Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd
+            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            SpotPriority: 1
         );
 
         // Act
@@ -42,7 +43,8 @@ public class AdminUpdatePromotionLevelValidatorTests
             Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: TestConstants.Content.PromotionLevel.ZeroPriceUsd
+            PriceUsd: TestConstants.Content.PromotionLevel.ZeroPriceUsd,
+            SpotPriority: 2
         );
 
         // Act
@@ -64,7 +66,8 @@ public class AdminUpdatePromotionLevelValidatorTests
             Id: "",
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd
+            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            SpotPriority: 1
         );
 
         // Act
@@ -92,7 +95,8 @@ public class AdminUpdatePromotionLevelValidatorTests
             Id: Guid.NewGuid().ToString(),
             Name: string.Empty,
             DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd
+            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            SpotPriority: 1
         );
 
         // Act
@@ -120,7 +124,8 @@ public class AdminUpdatePromotionLevelValidatorTests
             Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: 0,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd
+            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            SpotPriority: 1
         );
 
         // Act
@@ -144,7 +149,8 @@ public class AdminUpdatePromotionLevelValidatorTests
             Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: -5,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd
+            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            SpotPriority: 1
         );
 
         // Act
@@ -172,7 +178,8 @@ public class AdminUpdatePromotionLevelValidatorTests
             Id: Guid.NewGuid().ToString(),
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: -0.01m
+            PriceUsd: -0.01m,
+            SpotPriority: 1
         );
 
         // Act
