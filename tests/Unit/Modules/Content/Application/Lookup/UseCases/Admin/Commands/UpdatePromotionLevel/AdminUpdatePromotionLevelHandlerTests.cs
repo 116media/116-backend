@@ -44,7 +44,8 @@ public class AdminUpdatePromotionLevelHandlerTests : BaseContentHandlerTest
             Id: existing.Id.ToString(),
             Name: newName,
             DurationDays: newDuration,
-            PriceUsd: newPrice
+            PriceUsd: newPrice,
+            SpotPriority: 1
         );
 
         _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(existing);
@@ -71,7 +72,8 @@ public class AdminUpdatePromotionLevelHandlerTests : BaseContentHandlerTest
             Id: existing.Id.ToString(),
             Name: sameName,
             DurationDays: 10,
-            PriceUsd: 60m
+            PriceUsd: 60m,
+            SpotPriority: 2
         );
 
         _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(existing);
@@ -99,7 +101,8 @@ public class AdminUpdatePromotionLevelHandlerTests : BaseContentHandlerTest
             Id: nonExistentId.ToString(),
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: 7,
-            PriceUsd: 50m
+            PriceUsd: 50m,
+            SpotPriority: 1
         );
 
         _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrowNotFound(nonExistentId);
@@ -121,7 +124,8 @@ public class AdminUpdatePromotionLevelHandlerTests : BaseContentHandlerTest
             Id: existing.Id.ToString(),
             Name: conflictingName,
             DurationDays: 14,
-            PriceUsd: 99.99m
+            PriceUsd: 99.99m,
+            SpotPriority: 3
         );
 
         _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(existing);
@@ -144,7 +148,8 @@ public class AdminUpdatePromotionLevelHandlerTests : BaseContentHandlerTest
             Id: existing.Id.ToString(),
             Name: conflictingName,
             DurationDays: 14,
-            PriceUsd: 99.99m
+            PriceUsd: 99.99m,
+            SpotPriority: 3
         );
 
         _lookupRepositoryMock.SetupGetPromotionLevelByIdOrThrow(existing);
