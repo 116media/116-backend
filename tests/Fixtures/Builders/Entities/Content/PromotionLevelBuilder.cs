@@ -17,6 +17,7 @@ internal class PromotionLevelBuilder
     private int _durationDays;
     private decimal _priceUsd;
     private bool _isActive = true;
+    private int _spotPriority = 1;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromotionLevelBuilder"/> class with random default values.
@@ -28,6 +29,7 @@ internal class PromotionLevelBuilder
         _name = word[..Math.Min(TestConstants.Content.PromotionLevel.NameMaxLength, word.Length)];
         _durationDays = _faker.Random.Int(1, 30);
         _priceUsd = _faker.Random.Decimal(0, 500);
+        _spotPriority = _faker.Random.Int(1, 3);
     }
 
     /// <summary>
@@ -76,11 +78,20 @@ internal class PromotionLevelBuilder
     }
 
     /// <summary>
+    /// Sets the spot priority (1, 2, or 3).
+    /// </summary>
+    public PromotionLevelBuilder WithSpotPriority(int spotPriority)
+    {
+        _spotPriority = spotPriority;
+        return this;
+    }
+
+    /// <summary>
     /// Builds the <see cref="PromotionLevelEntity"/> instance.
     /// </summary>
     public PromotionLevelEntity Build()
     {
-        var entity = PromotionLevelEntity.Create(_id, _name, _durationDays, _priceUsd);
+        var entity = PromotionLevelEntity.Create(_id, _name, _durationDays, _priceUsd, _spotPriority);
 
         if (!_isActive)
         {
