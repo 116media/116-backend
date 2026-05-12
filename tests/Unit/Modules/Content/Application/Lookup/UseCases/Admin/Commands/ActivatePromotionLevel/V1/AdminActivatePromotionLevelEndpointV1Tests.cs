@@ -24,5 +24,5 @@ public class AdminActivatePromotionLevelEndpointV1Tests
         response.PromotionLevel.Should().Be(promotionLevel);
     }
 
-    private static PromotionLevelDto CreatePromotionLevelDto() => new(Guid.NewGuid(), "Bronze", 30, 9.99m, true);
+    private static PromotionLevelDto CreatePromotionLevelDto() => new(Guid.NewGuid(), "Bronze", 30, 9.99m, true, 1);
 }
