@@ -48,11 +48,12 @@ public class CategoryEntity : Aggregate<Guid>
     public bool IsActive { get; private set; } = true;
 
     /// <summary>
-    /// When true, published articles from this category are used as gossip fallback content
-    /// on the homepage promotion feed. Exactly one article category should have this flag set.
+    /// When true, this category is the gossip category. Published articles belonging to it
+    /// are used as fallback content on the homepage promotion feed and populate the gossip strip.
+    /// Exactly one article category should have this flag set at a time.
     /// Gossip is an article-only concept — no video category carries this flag.
     /// </summary>
-    public bool IsGossipFallback { get; private set; }
+    public bool IsGossip { get; private set; }
 
     /// <summary>
     /// The content type this category is classified under.
@@ -83,6 +84,7 @@ public class CategoryEntity : Aggregate<Guid>
     /// <param name="slug">The URL-safe slug for the category.</param>
     /// <param name="description">The description of the category.</param>
     /// <param name="isFree">Whether content in this category is free.</param>
+    /// <param name="isGossip">Whether this is the gossip category used for homepage feed fallbacks.</param>
     /// <returns>A new <see cref="CategoryEntity" /> instance.</returns>
     public static CategoryEntity Create(
         Guid id,
@@ -90,7 +92,8 @@ public class CategoryEntity : Aggregate<Guid>
         string name,
         string slug,
         string description,
-        bool isFree
+        bool isFree,
+        bool isGossip = false
     )
     {
         if (string.IsNullOrWhiteSpace(value: name))
@@ -111,6 +114,7 @@ public class CategoryEntity : Aggregate<Guid>
             Slug = slug,
             Description = description,
             IsFree = isFree,
+            IsGossip = isGossip,
             IsActive = true,
         };
     }
@@ -121,7 +125,8 @@ public class CategoryEntity : Aggregate<Guid>
     /// <param name="name">The new display name.</param>
     /// <param name="slug">The new URL-safe slug.</param>
     /// <param name="description">The new description.</param>
-    public void Update(string name, string slug, string description)
+    /// <param name="isGossip">Whether this is the gossip category used for homepage feed fallbacks.</param>
+    public void Update(string name, string slug, string description, bool isGossip)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
@@ -136,6 +141,7 @@ public class CategoryEntity : Aggregate<Guid>
         Name = name;
         Slug = slug;
         Description = description;
+        IsGossip = isGossip;
     }
 
     /// <summary>
