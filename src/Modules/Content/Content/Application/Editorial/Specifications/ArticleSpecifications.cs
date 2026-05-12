@@ -205,3 +205,35 @@ public class ArticleCommentByIdSpecification(Guid commentId) : Specification<Art
         return comment => comment.Id == commentId;
     }
 }
+
+/// <summary>
+/// Specification that matches promoted published articles assigned to a specific promotion spot
+/// via their associated <see cref="PromotionLevelEntity.SpotPriority" />.
+/// </summary>
+public class ArticleBySpotPrioritySpecification(int spotPriority) : Specification<ArticleEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleEntity, bool>> ToExpression()
+    {
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        return article =>
+            article.IsPromoted
+            && article.Status == EnumContentStatus.Published
+            && (article.PromotedUntil == null || article.PromotedUntil > now)
+            && article.PromotionLevel != null
+            && article.PromotionLevel.SpotPriority == spotPriority;
+    }
+}
+
+/// <summary>
+/// Specification that matches published articles belonging to the gossip fallback category.
+/// Used to populate empty promotion spots and the gossip strip on the homepage article feed.
+/// </summary>
+public class GossipArticleSpecification(Guid gossipCategoryId) : Specification<ArticleEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleEntity, bool>> ToExpression()
+    {
+        return article => article.Status == EnumContentStatus.Published && article.CategoryId == gossipCategoryId;
+    }
+}
