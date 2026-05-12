@@ -61,8 +61,8 @@ public class AdminVerifyPaymentFactory(
                 );
 
                 DateTimeOffset promotedUntil = DateTimeOffset.UtcNow.AddDays(promoLevel.DurationDays);
-                article?.StampPromotion(until: promotedUntil);
-                video?.StampPromotion(until: promotedUntil);
+                article?.StampPromotion(promotionLevelId: promoLevel.Id, until: promotedUntil);
+                video?.StampPromotion(promotionLevelId: promoLevel.Id, until: promotedUntil);
             }
 
             article?.MarkPendingReview();
