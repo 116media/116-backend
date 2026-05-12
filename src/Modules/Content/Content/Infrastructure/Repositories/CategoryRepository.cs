@@ -153,4 +153,14 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     {
         context.CategoryPricing.Remove(pricing);
     }
+
+    /// <inheritdoc />
+    public async Task<CategoryEntity?> GetGossipCategoryAsync(CancellationToken cancellationToken = default)
+    {
+        var specification = new GossipCategorySpecification();
+        return await context
+            .Categories.ApplySpecification(specification: specification)
+            .Include(c => c.ContentType)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }
