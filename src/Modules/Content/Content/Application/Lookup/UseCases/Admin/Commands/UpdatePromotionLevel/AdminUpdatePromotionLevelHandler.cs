@@ -43,7 +43,12 @@ public class AdminUpdatePromotionLevelHandler(
             throw PromotionLevelErrors.AlreadyExists(name: command.Name);
         }
 
-        promotionLevel.Update(name: command.Name, durationDays: command.DurationDays, priceUsd: command.PriceUsd);
+        promotionLevel.Update(
+            name: command.Name,
+            durationDays: command.DurationDays,
+            priceUsd: command.PriceUsd,
+            spotPriority: command.SpotPriority
+        );
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
