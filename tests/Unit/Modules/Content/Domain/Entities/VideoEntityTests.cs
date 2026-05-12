@@ -600,7 +600,7 @@ public class VideoEntityTests
         DateTimeOffset until = DateTimeOffset.UtcNow.AddDays(7);
 
         // Act
-        video.StampPromotion(until);
+        video.StampPromotion(Guid.NewGuid(), until);
 
         // Assert
         video.IsPromoted.Should().BeTrue();
@@ -622,7 +622,7 @@ public class VideoEntityTests
             AuthorId,
             Description
         );
-        video.StampPromotion(DateTimeOffset.UtcNow.AddDays(7));
+        video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
         DateTimeOffset before = DateTimeOffset.UtcNow;
 
@@ -675,7 +675,7 @@ public class VideoEntityTests
         video.Approve();
         video.Publish();
         video.StampSocialBoost();
-        video.StampPromotion(DateTimeOffset.UtcNow.AddDays(7));
+        video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
         // Act
         video.ForceUnpromote("super-admin-uuid", "reason");
