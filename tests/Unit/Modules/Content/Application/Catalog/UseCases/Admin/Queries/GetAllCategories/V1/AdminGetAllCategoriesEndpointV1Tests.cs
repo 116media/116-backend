@@ -35,6 +35,7 @@ public class AdminGetAllCategoriesEndpointV1Tests
             "Test category description",
             true,
             true,
+            false,
             []
         );
 }
