@@ -22,7 +22,8 @@ public class AdminCreatePromotionLevelValidatorTests
         var command = new AdminCreatePromotionLevelCommand(
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd
+            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            SpotPriority: 1
         );
 
         // Act
@@ -40,7 +41,8 @@ public class AdminCreatePromotionLevelValidatorTests
         var command = new AdminCreatePromotionLevelCommand(
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: TestConstants.Content.PromotionLevel.ZeroPriceUsd
+            PriceUsd: TestConstants.Content.PromotionLevel.ZeroPriceUsd,
+            SpotPriority: 1
         );
 
         // Act
@@ -61,7 +63,8 @@ public class AdminCreatePromotionLevelValidatorTests
         var command = new AdminCreatePromotionLevelCommand(
             Name: string.Empty,
             DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd
+            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            SpotPriority: 1
         );
 
         // Act
@@ -84,7 +87,8 @@ public class AdminCreatePromotionLevelValidatorTests
         var command = new AdminCreatePromotionLevelCommand(
             Name: new string('a', TestConstants.Content.PromotionLevel.NameMaxLength + 1),
             DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd
+            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            SpotPriority: 1
         );
 
         // Act
@@ -111,7 +115,8 @@ public class AdminCreatePromotionLevelValidatorTests
         var command = new AdminCreatePromotionLevelCommand(
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: 0,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd
+            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            SpotPriority: 1
         );
 
         // Act
@@ -134,7 +139,8 @@ public class AdminCreatePromotionLevelValidatorTests
         var command = new AdminCreatePromotionLevelCommand(
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: -1,
-            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd
+            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            SpotPriority: 1
         );
 
         // Act
@@ -161,7 +167,8 @@ public class AdminCreatePromotionLevelValidatorTests
         var command = new AdminCreatePromotionLevelCommand(
             Name: TestConstants.Content.PromotionLevel.ValidName,
             DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
-            PriceUsd: -0.01m
+            PriceUsd: -0.01m,
+            SpotPriority: 1
         );
 
         // Act
