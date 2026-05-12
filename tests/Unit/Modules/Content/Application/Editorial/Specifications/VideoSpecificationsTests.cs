@@ -183,7 +183,7 @@ public class VideoSpecificationsTests
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
-        video.StampPromotion(DateTimeOffset.UtcNow.AddDays(7));
+        video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
         var spec = new PromotedVideoSpecification();
 
         // Act
