@@ -45,7 +45,8 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Id: category.Id.ToString(),
             Name: newName,
             Slug: newSlug,
-            Description: "Updated description"
+            Description: "Updated description",
+            IsGossip: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -82,7 +83,8 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Id: category.Id.ToString(),
             Name: "Updated Name",
             Slug: slug,
-            Description: TestConstants.Content.Category.ValidDescription
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsGossip: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -110,7 +112,8 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Id: nonExistentId.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
-            Description: TestConstants.Content.Category.ValidDescription
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsGossip: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
@@ -134,7 +137,8 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Id: category.Id.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: conflictingSlug,
-            Description: TestConstants.Content.Category.ValidDescription
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsGossip: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
