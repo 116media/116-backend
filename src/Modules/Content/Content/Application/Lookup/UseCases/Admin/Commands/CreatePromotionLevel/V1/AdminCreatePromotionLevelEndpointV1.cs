@@ -19,7 +19,8 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotio
 /// <param name="Name">The display name of the promotion level.</param>
 /// <param name="DurationDays">The homepage placement duration in days.</param>
 /// <param name="PriceUsd">The price of this promotion level in USD.</param>
-public record AdminCreatePromotionLevelRequest(string Name, int DurationDays, decimal PriceUsd);
+/// <param name="SpotPriority">The homepage grid spot this promotion level maps to (1, 2, or 3).</param>
+public record AdminCreatePromotionLevelRequest(string Name, int DurationDays, decimal PriceUsd, int SpotPriority);
 
 /// <summary>
 /// Response model for successful promotion level creation.
@@ -52,7 +53,8 @@ public class AdminCreatePromotionLevelEndpointV1 : ICarterModule
                     var command = new AdminCreatePromotionLevelCommand(
                         Name: request.Name,
                         DurationDays: request.DurationDays,
-                        PriceUsd: request.PriceUsd
+                        PriceUsd: request.PriceUsd,
+                        SpotPriority: request.SpotPriority
                     );
 
                     AdminCreatePromotionLevelResult result = await dispatcher.Send(request: command);
