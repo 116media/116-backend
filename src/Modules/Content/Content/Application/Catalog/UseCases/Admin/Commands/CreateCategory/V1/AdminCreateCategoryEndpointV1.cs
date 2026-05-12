@@ -20,7 +20,8 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategor
 /// <param name="Slug">The URL-safe slug for the category.</param>
 /// <param name="Description">The description of the category.</param>
 /// <param name="IsFree">Whether content in this category requires no payment.</param>
-public record AdminCreateCategoryRequest(string Name, string Slug, string Description, bool IsFree);
+/// <param name="IsGossip">Whether this is the gossip category used for homepage feed fallbacks and the gossip strip.</param>
+public record AdminCreateCategoryRequest(string Name, string Slug, string Description, bool IsFree, bool IsGossip);
 
 /// <summary>
 /// Response model for successful category creation.
@@ -60,7 +61,8 @@ public class AdminCreateCategoryEndpointV1 : ICarterModule
                         Name: request.Name,
                         Slug: request.Slug,
                         Description: request.Description,
-                        IsFree: request.IsFree
+                        IsFree: request.IsFree,
+                        IsGossip: request.IsGossip
                     );
 
                     AdminCreateCategoryResult result = await dispatcher.Send(request: command);
