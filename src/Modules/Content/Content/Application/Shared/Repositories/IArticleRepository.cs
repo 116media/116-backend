@@ -207,4 +207,37 @@ public interface IArticleRepository : IRepository<ArticleEntity>
         int pageSize,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Retrieves all currently active promoted published articles assigned to the given
+    /// <paramref name="spotPriority" /> via their linked promotion level.
+    /// </summary>
+    /// <param name="spotPriority">The spot priority (1, 2, or 3) to filter by.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>
+    /// A read-only list of promoted article entities for the specified spot.
+    /// </returns>
+    Task<IReadOnlyList<ArticleEntity>> GetActivePromotedBySpotAsync(
+        int spotPriority,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Retrieves the most recent published articles from the gossip fallback category,
+    /// ordered by <c>PublishedAt</c> descending, excluding any IDs already used elsewhere
+    /// on the feed.
+    /// </summary>
+    /// <param name="gossipCategoryId">The identifier of the gossip fallback category.</param>
+    /// <param name="limit">The maximum number of articles to return.</param>
+    /// <param name="excludeIds">Article identifiers to exclude from the result set.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>
+    /// A read-only list of gossip article entities ordered by publication date descending.
+    /// </returns>
+    Task<IReadOnlyList<ArticleEntity>> GetGossipFallbackAsync(
+        Guid gossipCategoryId,
+        int limit,
+        IEnumerable<Guid> excludeIds,
+        CancellationToken cancellationToken = default
+    );
 }
