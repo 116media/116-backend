@@ -150,3 +150,36 @@ public class VideoRatingByVideoIdSpecification(Guid videoId) : Specification<Vid
         return rating => rating.VideoId == videoId;
     }
 }
+
+/// <summary>
+/// Specification that matches promoted published videos assigned to a specific promotion spot
+/// via their associated <see cref="PromotionLevelEntity.SpotPriority" />.
+/// </summary>
+public class VideoBySpotPrioritySpecification(int spotPriority) : Specification<VideoEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<VideoEntity, bool>> ToExpression()
+    {
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        return video =>
+            video.IsPromoted
+            && video.Status == EnumContentStatus.Published
+            && (video.PromotedUntil == null || video.PromotedUntil > now)
+            && video.PromotionLevel != null
+            && video.PromotionLevel.SpotPriority == spotPriority;
+    }
+}
+
+/// <summary>
+/// Specification that matches published free videos — videos with no associated customer
+/// (organic uploads) and a <c>Status</c> of <c>Published</c>.
+/// Used as fallback content for empty promotion spots and the free video strip on the homepage.
+/// </summary>
+public class FreeVideoSpecification : Specification<VideoEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<VideoEntity, bool>> ToExpression()
+    {
+        return video => video.Status == EnumContentStatus.Published && video.CustomerId == null;
+    }
+}
