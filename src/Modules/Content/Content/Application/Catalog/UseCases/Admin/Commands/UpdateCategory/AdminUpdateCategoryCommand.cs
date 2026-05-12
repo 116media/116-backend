@@ -10,7 +10,8 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategor
 /// <param name="Name">The new display name for the category.</param>
 /// <param name="Slug">The new URL-safe slug for the category.</param>
 /// <param name="Description">The new description.</param>
-public record AdminUpdateCategoryCommand(string Id, string Name, string Slug, string Description)
+/// <param name="IsGossip">Whether this is the gossip category used for homepage feed fallbacks and the gossip strip.</param>
+public record AdminUpdateCategoryCommand(string Id, string Name, string Slug, string Description, bool IsGossip)
     : ICommand<AdminUpdateCategoryResult>;
 
 /// <summary>
