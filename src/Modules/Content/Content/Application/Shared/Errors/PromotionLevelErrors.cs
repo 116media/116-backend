@@ -64,4 +64,12 @@ public static class PromotionLevelErrors
     {
         return new BadRequestException(PromotionLevelErrorMessage.PriceMustBeNonNegative());
     }
+
+    /// <summary>
+    /// Throws when the spot priority is not a valid homepage grid position (must be 1, 2, or 3).
+    /// </summary>
+    public static BadRequestException InvalidSpotPriority()
+    {
+        return new BadRequestException(PromotionLevelErrorMessage.InvalidSpotPriority());
+    }
 }
