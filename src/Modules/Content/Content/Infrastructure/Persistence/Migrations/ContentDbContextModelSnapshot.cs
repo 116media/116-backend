@@ -212,6 +212,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("promoted_until");
 
+                    b.Property<Guid?>("PromotionLevelId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("promotion_level_id");
+
                     b.Property<DateTimeOffset?>("PublishedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("published_at");
@@ -281,6 +285,9 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CustomerId")
                         .HasDatabaseName("ix_articles_customer_id");
+
+                    b.HasIndex("PromotionLevelId")
+                        .HasDatabaseName("ix_articles_promotion_level_id");
 
                     b.HasIndex("Slug")
                         .IsUnique()
@@ -512,6 +519,12 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("is_free");
 
+                    b.Property<bool>("IsGossipFallback")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_gossip_fallback");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(60)
@@ -537,6 +550,11 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ContentTypeId")
                         .HasDatabaseName("ix_categories_content_type_id");
+
+                    b.HasIndex("IsGossipFallback")
+                        .IsUnique()
+                        .HasDatabaseName("ix_categories_is_gossip_fallback")
+                        .HasFilter("is_gossip_fallback = true");
 
                     b.HasIndex("Name")
                         .IsUnique()
@@ -1291,6 +1309,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("numeric(10,2)")
                         .HasColumnName("price_usd");
 
+                    b.Property<int>("SpotPriority")
+                        .HasColumnType("integer")
+                        .HasColumnName("spot_priority");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -1306,7 +1328,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_promotion_levels_name");
 
-                    b.ToTable("promotion_levels", "content");
+                    b.ToTable("promotion_levels", "content", t =>
+                        {
+                            t.HasCheckConstraint("ck_promotion_levels_spot_priority", "spot_priority IN (1, 2, 3)");
+                        });
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoBookmarkEntity", b =>
@@ -1664,6 +1689,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("promoted_until");
 
+                    b.Property<Guid?>("PromotionLevelId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("promotion_level_id");
+
                     b.Property<DateTimeOffset?>("PublishedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("published_at");
@@ -1764,6 +1793,9 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CustomerId")
                         .HasDatabaseName("ix_videos_customer_id");
+
+                    b.HasIndex("PromotionLevelId")
+                        .HasDatabaseName("ix_videos_promotion_level_id");
 
                     b.HasIndex("Slug")
                         .IsUnique()
@@ -1948,9 +1980,17 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_articles_customers_customer_id");
 
+                    b.HasOne("_116.Content.Domain.Entities.PromotionLevelEntity", "PromotionLevel")
+                        .WithMany()
+                        .HasForeignKey("PromotionLevelId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_articles_promotion_levels_promotion_level_id");
+
                     b.Navigation("Category");
 
                     b.Navigation("Customer");
+
+                    b.Navigation("PromotionLevel");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleImageEntity", b =>
@@ -2239,9 +2279,17 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_videos_customers_customer_id");
 
+                    b.HasOne("_116.Content.Domain.Entities.PromotionLevelEntity", "PromotionLevel")
+                        .WithMany()
+                        .HasForeignKey("PromotionLevelId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_videos_promotion_levels_promotion_level_id");
+
                     b.Navigation("Category");
 
                     b.Navigation("Customer");
+
+                    b.Navigation("PromotionLevel");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.VideoRatingEntity", b =>
