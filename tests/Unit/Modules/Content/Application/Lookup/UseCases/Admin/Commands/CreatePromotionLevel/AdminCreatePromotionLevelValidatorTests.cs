@@ -185,4 +185,58 @@ public class AdminCreatePromotionLevelValidatorTests
     }
 
     #endregion
+
+    #region SpotPriority Validation Tests
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(4)]
+    [InlineData(-1)]
+    public async Task Validate_WithInvalidSpotPriority_ShouldHaveError(int spotPriority)
+    {
+        // Arrange
+        var command = new AdminCreatePromotionLevelCommand(
+            Name: TestConstants.Content.PromotionLevel.ValidName,
+            DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
+            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            SpotPriority: spotPriority
+        );
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreatePromotionLevelCommand.SpotPriority)
+                && e.ErrorMessage == "Spot priority must be 1, 2, or 3"
+            );
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public async Task Validate_WithValidSpotPriority_ShouldNotHaveError(int spotPriority)
+    {
+        // Arrange
+        var command = new AdminCreatePromotionLevelCommand(
+            Name: TestConstants.Content.PromotionLevel.ValidName,
+            DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
+            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            SpotPriority: spotPriority
+        );
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result
+            .Errors.Should()
+            .NotContain(e => e.PropertyName == nameof(AdminCreatePromotionLevelCommand.SpotPriority));
+    }
+
+    #endregion
 }
