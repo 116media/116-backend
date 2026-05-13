@@ -16,6 +16,6 @@ public class AdminVerifyPaymentValidator : AbstractValidator<AdminVerifyPaymentC
     {
         RuleFor(x => x.OrderId).IsValidGuid("Order ID");
         RuleFor(x => x.ReceiptUrl).ValidReceiptUrl();
-        RuleFor(x => x.AdminUserId).NotEmpty().WithMessage("Admin user ID is required.");
+        RuleFor(x => x.AdminUserId).ValidAdminUserId();
     }
 }
