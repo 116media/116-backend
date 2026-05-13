@@ -270,6 +270,34 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
 
     #endregion
 
+    #region StripSize query parameter
+
+    [Fact]
+    public async Task Handle_WhenStripSizeIsCustom_ShouldReturnThatManyItemsInGossipStrip()
+    {
+        // Arrange
+        CategoryEntity gossipCategory = CategoryFactory.Create(Guid.NewGuid());
+        List<ArticleEntity> gossipPool = ArticleFactory.CreateManyPublished(CategoryId, 15);
+
+        _categoryRepositoryMock.SetupGetGossipCategory(gossipCategory);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(1, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(2, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(3, new List<ArticleEntity>());
+        _articleRepositoryMock.SetupGetGossipFallback(gossipPool);
+
+        // Act
+        PublicGetArticlePromotionFeedResult result = await _handler.Handle(
+            new PublicGetArticlePromotionFeedQuery(StripSize: 5),
+            CancellationToken.None
+        );
+
+        // Assert — pool consumed 4 fallbacks (spot1 + spot2 + spot3 col A + col B),
+        // leaving 11; with stripSize 5, the strip should return 5
+        result.GossipStrip.Should().HaveCount(5);
+    }
+
+    #endregion
+
     #region GossipStrip deduplication
 
     [Fact]
