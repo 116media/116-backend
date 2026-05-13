@@ -18,8 +18,11 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePromotio
 /// <param name="Name">The new name for the promotion level.</param>
 /// <param name="DurationDays">The new promotion duration in days.</param>
 /// <param name="PriceUsd">The new price in US dollars.</param>
-/// <param name="SpotPriority">The homepage grid spot this promotion level maps to (1, 2, or 3).</param>
-public record AdminUpdatePromotionLevelRequest(string Name, int DurationDays, decimal PriceUsd, int SpotPriority);
+/// <param name="SpotPriority">
+/// The homepage grid spot this promotion level maps to (1, 2, or 3).
+/// Optional — when omitted the promotion level has no dedicated grid spot.
+/// </param>
+public record AdminUpdatePromotionLevelRequest(string Name, int DurationDays, decimal PriceUsd, int? SpotPriority);
 
 /// <summary>
 /// Response model for a successful promotion level update.
