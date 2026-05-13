@@ -24,9 +24,8 @@ public class AdminUpdateVideoValidator : AbstractValidator<AdminUpdateVideoComma
 
         RuleFor(x => x.Description).ValidVideoDescription();
 
-        RuleFor(x => x.OrderItemId).ValidOrderItemIdConditional(x => x.CustomerId.HasValue);
-
-        RuleFor(x => x.CustomerId).ValidCustomerIdConditional(x => x.OrderItemId.HasValue);
+        When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId());
+        When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId());
 
         RuleFor(x => x.MetaTitle).ValidOptionalMetaTitle(x => x.MetaTitle is not null);
 
