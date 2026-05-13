@@ -258,4 +258,30 @@ public class PublicGetVideoPromotionFeedHandlerTests : BaseContentHandlerTest
     }
 
     #endregion
+
+    #region StripSize query parameter
+
+    [Fact]
+    public async Task Handle_WhenStripSizeIsCustom_ShouldReturnThatManyItemsInStrip()
+    {
+        // Arrange
+        List<VideoEntity> freePool = VideoFactory.CreateMany(CategoryId, 10);
+
+        _videoRepositoryMock.SetupGetActivePromotedBySpot(1, new List<VideoEntity>());
+        _videoRepositoryMock.SetupGetActivePromotedBySpot(2, new List<VideoEntity>());
+        _videoRepositoryMock.SetupGetActivePromotedBySpot(3, new List<VideoEntity>());
+        _videoRepositoryMock.SetupGetFreeVideos(freePool);
+
+        // Act
+        PublicGetVideoPromotionFeedResult result = await _handler.Handle(
+            new PublicGetVideoPromotionFeedQuery(StripSize: 5),
+            CancellationToken.None
+        );
+
+        // Assert — strip consumed 3 fallbacks (spot1 + spot2 + spot3 col B), leaving 7;
+        // with stripSize 5, the strip should return 5
+        result.FreeVideoStrip.Should().HaveCount(5);
+    }
+
+    #endregion
 }
