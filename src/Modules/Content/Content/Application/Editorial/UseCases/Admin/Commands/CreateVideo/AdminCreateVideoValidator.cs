@@ -18,16 +18,10 @@ public class AdminCreateVideoValidator : AbstractValidator<AdminCreateVideoComma
         RuleFor(x => x.Title).ValidVideoTitle();
         RuleFor(x => x.Slug).ValidVideoSlug();
 
-        RuleFor(x => x.Description).NotEmpty().WithMessage("Video description is required.");
+        RuleFor(x => x.Description).ValidVideoDescription();
 
-        RuleFor(x => x.OrderItemId)
-            .NotEmpty()
-            .When(x => x.CustomerId.HasValue)
-            .WithMessage("Order item ID is required when customer ID is provided.");
+        RuleFor(x => x.OrderItemId).ValidOrderItemIdConditional(x => x.CustomerId.HasValue);
 
-        RuleFor(x => x.CustomerId)
-            .NotEmpty()
-            .When(x => x.OrderItemId.HasValue)
-            .WithMessage("Customer ID is required when order item ID is provided.");
+        RuleFor(x => x.CustomerId).ValidCustomerIdConditional(x => x.OrderItemId.HasValue);
     }
 }
