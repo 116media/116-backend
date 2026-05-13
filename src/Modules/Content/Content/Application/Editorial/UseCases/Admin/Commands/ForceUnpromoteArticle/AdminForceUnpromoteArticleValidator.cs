@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteArticle;
@@ -12,12 +13,7 @@ public class AdminForceUnpromoteArticleValidator : AbstractValidator<AdminForceU
     /// </summary>
     public AdminForceUnpromoteArticleValidator()
     {
-        RuleFor(x => x.Slug).NotEmpty().WithMessage("Article slug is required.");
-
-        RuleFor(x => x.Reason)
-            .NotEmpty()
-            .WithMessage("Reason is required.")
-            .MaximumLength(500)
-            .WithMessage("Reason must not exceed 500 characters.");
+        RuleFor(x => x.Slug).ValidArticleSlug();
+        RuleFor(x => x.Reason).ValidUnpromoteReason();
     }
 }
