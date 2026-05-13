@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
@@ -17,8 +18,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoPro
 public class PublicGetVideoPromotionFeedHandler(IVideoRepository videoRepository, IMapper mapper)
     : IQueryHandler<PublicGetVideoPromotionFeedQuery, PublicGetVideoPromotionFeedResult>
 {
-    private const int FreeVideoPoolSize = 20;
-    private const int FreeVideoStripSize = 3;
+    private const int FreeVideoPoolSize = EditorialFeedConstants.FreeVideoPoolSize;
 
     /// <inheritdoc />
     public async Task<PublicGetVideoPromotionFeedResult> Handle(
@@ -27,17 +27,17 @@ public class PublicGetVideoPromotionFeedHandler(IVideoRepository videoRepository
     )
     {
         Task<IReadOnlyList<VideoEntity>> spot1Task = videoRepository.GetActivePromotedBySpotAsync(
-            spotPriority: 1,
+            spotPriority: EditorialFeedConstants.Spot1,
             cancellationToken: cancellationToken
         );
 
         Task<IReadOnlyList<VideoEntity>> spot2Task = videoRepository.GetActivePromotedBySpotAsync(
-            spotPriority: 2,
+            spotPriority: EditorialFeedConstants.Spot2,
             cancellationToken: cancellationToken
         );
 
         Task<IReadOnlyList<VideoEntity>> spot3Task = videoRepository.GetActivePromotedBySpotAsync(
-            spotPriority: 3,
+            spotPriority: EditorialFeedConstants.Spot3,
             cancellationToken: cancellationToken
         );
 
@@ -47,22 +47,7 @@ public class PublicGetVideoPromotionFeedHandler(IVideoRepository videoRepository
         IReadOnlyList<VideoEntity> spot2Videos = spot2Task.Result;
         IReadOnlyList<VideoEntity> spot3Videos = spot3Task.Result;
 
-        var usedIds = new HashSet<Guid>();
-
-        foreach (VideoEntity video in spot1Videos)
-        {
-            usedIds.Add(video.Id);
-        }
-
-        foreach (VideoEntity video in spot2Videos)
-        {
-            usedIds.Add(video.Id);
-        }
-
-        foreach (VideoEntity video in spot3Videos)
-        {
-            usedIds.Add(video.Id);
-        }
+        var usedIds = new HashSet<Guid>(spot1Videos.Concat(spot2Videos).Concat(spot3Videos).Select(v => v.Id));
 
         IReadOnlyList<VideoEntity> freePool = await videoRepository.GetFreeVideosAsync(
             limit: FreeVideoPoolSize,
@@ -74,7 +59,7 @@ public class PublicGetVideoPromotionFeedHandler(IVideoRepository videoRepository
         var freeQueue = new Queue<VideoEntity>(shuffledPool);
 
         VideoPromotionSpotDto spot1 = BuildSimpleSpot(
-            spotPriority: 1,
+            spotPriority: EditorialFeedConstants.Spot1,
             promoted: spot1Videos,
             freeQueue: freeQueue,
             usedIds: usedIds,
@@ -82,7 +67,7 @@ public class PublicGetVideoPromotionFeedHandler(IVideoRepository videoRepository
         );
 
         VideoPromotionSpotDto spot2 = BuildSimpleSpot(
-            spotPriority: 2,
+            spotPriority: EditorialFeedConstants.Spot2,
             promoted: spot2Videos,
             freeQueue: freeQueue,
             usedIds: usedIds,
@@ -96,7 +81,11 @@ public class PublicGetVideoPromotionFeedHandler(IVideoRepository videoRepository
             mapper: mapper
         );
 
-        IReadOnlyList<VideoSummaryDto> freeVideoStrip = BuildFreeVideoStrip(freeQueue: freeQueue, mapper: mapper);
+        IReadOnlyList<VideoSummaryDto> freeVideoStrip = BuildFreeVideoStrip(
+            freeQueue: freeQueue,
+            stripSize: query.StripSize,
+            mapper: mapper
+        );
 
         return new PublicGetVideoPromotionFeedResult(
             Spot1: spot1,
@@ -106,6 +95,16 @@ public class PublicGetVideoPromotionFeedHandler(IVideoRepository videoRepository
         );
     }
 
+    /// <summary>
+    /// Builds a simple promotion spot (1 or 2). Returns the promoted videos when available;
+    /// otherwise dequeues one free video fallback from the pool.
+    /// </summary>
+    /// <param name="spotPriority">The spot number (1 or 2).</param>
+    /// <param name="promoted">Promoted videos assigned to this spot.</param>
+    /// <param name="freeQueue">Remaining free videos not yet consumed by earlier spots.</param>
+    /// <param name="usedIds">Tracks all video IDs already placed in the feed to prevent duplicates.</param>
+    /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+    /// <returns>A <see cref="VideoPromotionSpotDto" /> with promoted videos or a single free video fallback.</returns>
     private static VideoPromotionSpotDto BuildSimpleSpot(
         int spotPriority,
         IReadOnlyList<VideoEntity> promoted,
@@ -130,6 +129,18 @@ public class PublicGetVideoPromotionFeedHandler(IVideoRepository videoRepository
         return new VideoPromotionSpotDto(SpotPriority: spotPriority, Videos: fallback);
     }
 
+    /// <summary>
+    /// Builds spot 3, distributing promoted videos round-robin across two columns (a / b).
+    /// Each empty column is filled with one free video fallback.
+    /// </summary>
+    /// <param name="promoted">Promoted videos assigned to spot 3.</param>
+    /// <param name="freeQueue">Remaining free videos not yet consumed by earlier spots.</param>
+    /// <param name="usedIds">Tracks all video IDs already placed in the feed to prevent duplicates.</param>
+    /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+    /// <returns>
+    /// A <see cref="VideoPromotionSpot3Dto" /> with two named slots (<c>"a"</c> and <c>"b"</c>),
+    /// each containing at least one video.
+    /// </returns>
     private static VideoPromotionSpot3Dto BuildSpot3(
         IReadOnlyList<VideoEntity> promoted,
         Queue<VideoEntity> freeQueue,
@@ -143,15 +154,7 @@ public class PublicGetVideoPromotionFeedHandler(IVideoRepository videoRepository
         for (int i = 0; i < promoted.Count; i++)
         {
             VideoSummaryDto dto = promoted[i].ToVideoSummaryDto(mapper);
-
-            if (i % 2 == 0)
-            {
-                columnA.Add(dto);
-            }
-            else
-            {
-                columnB.Add(dto);
-            }
+            (i % 2 == 0 ? columnA : columnB).Add(dto);
         }
 
         if (columnA.Count == 0 && freeQueue.TryDequeue(out VideoEntity? freeA))
@@ -172,14 +175,29 @@ public class PublicGetVideoPromotionFeedHandler(IVideoRepository videoRepository
             new(Position: "b", Videos: columnB),
         };
 
-        return new VideoPromotionSpot3Dto(SpotPriority: 3, Slots: slots);
+        return new VideoPromotionSpot3Dto(SpotPriority: EditorialFeedConstants.Spot3, Slots: slots);
     }
 
-    private static IReadOnlyList<VideoSummaryDto> BuildFreeVideoStrip(Queue<VideoEntity> freeQueue, IMapper mapper)
+    /// <summary>
+    /// Dequeues up to <paramref name="stripSize" /> videos from the remaining free pool and
+    /// maps them to <see cref="VideoSummaryDto" /> for the horizontal free-video strip.
+    /// </summary>
+    /// <param name="freeQueue">Remaining free videos not yet consumed by spot fallbacks.</param>
+    /// <param name="stripSize">Maximum number of videos to include in the strip.</param>
+    /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+    /// <returns>
+    /// An ordered list of up to <paramref name="stripSize" /> free video summaries.
+    /// May be shorter if the queue is exhausted.
+    /// </returns>
+    private static IReadOnlyList<VideoSummaryDto> BuildFreeVideoStrip(
+        Queue<VideoEntity> freeQueue,
+        int stripSize,
+        IMapper mapper
+    )
     {
         var strip = new List<VideoSummaryDto>();
 
-        while (strip.Count < FreeVideoStripSize && freeQueue.TryDequeue(out VideoEntity? video))
+        while (strip.Count < stripSize && freeQueue.TryDequeue(out VideoEntity? video))
         {
             strip.Add(video.ToVideoSummaryDto(mapper));
         }
