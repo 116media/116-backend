@@ -82,6 +82,8 @@ public static class VideoMapper
             entity.SocialBoost,
             entity.IsPromoted,
             entity.PromotedUntil,
+            entity.PromotionLevelId,
+            entity.PromotionLevel?.Name,
             entity.HasLyrics,
             entity.ShootingScheduledAt,
             entity.PublishedAt,
