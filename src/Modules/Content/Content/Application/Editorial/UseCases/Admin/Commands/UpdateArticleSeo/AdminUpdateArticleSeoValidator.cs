@@ -17,8 +17,7 @@ public class AdminUpdateArticleSeoValidator : AbstractValidator<AdminUpdateArtic
     {
         RuleFor(x => x.Id).IsValidGuid("Article ID");
 
-        RuleFor(x => x.MetaTitle).ValidOptionalMetaTitle(x => x.MetaTitle is not null);
-
-        RuleFor(x => x.MetaDescription).ValidOptionalMetaDescription(x => x.MetaDescription is not null);
+        When(x => x.MetaTitle is not null, () => RuleFor(x => x.MetaTitle).ValidMetaTitle());
+        When(x => x.MetaDescription is not null, () => RuleFor(x => x.MetaDescription).ValidMetaDescription());
     }
 }
