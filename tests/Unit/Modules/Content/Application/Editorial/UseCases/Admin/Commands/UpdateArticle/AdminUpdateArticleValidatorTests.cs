@@ -378,7 +378,12 @@ public class AdminUpdateArticleValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateArticleCommand.MetaTitle));
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateArticleCommand.MetaTitle)
+                && e.ErrorMessage == "Meta title must be at least 10 characters."
+            );
     }
 
     [Fact]
@@ -395,7 +400,12 @@ public class AdminUpdateArticleValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateArticleCommand.MetaTitle));
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateArticleCommand.MetaTitle)
+                && e.ErrorMessage == "Meta title must not exceed 70 characters."
+            );
     }
 
     [Fact]
@@ -432,7 +442,12 @@ public class AdminUpdateArticleValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateArticleCommand.MetaDescription));
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateArticleCommand.MetaDescription)
+                && e.ErrorMessage == "Meta description must be at least 50 characters."
+            );
     }
 
     [Fact]
@@ -449,7 +464,12 @@ public class AdminUpdateArticleValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateArticleCommand.MetaDescription));
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateArticleCommand.MetaDescription)
+                && e.ErrorMessage == "Meta description must not exceed 160 characters."
+            );
     }
 
     [Fact]
