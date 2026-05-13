@@ -23,8 +23,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                 schema: "content",
                 table: "promotion_levels",
                 type: "integer",
-                nullable: false,
-                defaultValue: 0);
+                nullable: true);
 
             migrationBuilder.AddColumn<bool>(
                 name: "is_gossip_fallback",
@@ -51,7 +50,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                 name: "ck_promotion_levels_spot_priority",
                 schema: "content",
                 table: "promotion_levels",
-                sql: "spot_priority IN (1, 2, 3)");
+                sql: "spot_priority IS NULL OR spot_priority IN (1, 2, 3)");
 
             migrationBuilder.CreateIndex(
                 name: "ix_categories_is_gossip_fallback",
