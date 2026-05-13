@@ -1,5 +1,4 @@
 using _116.Content.Application.Shared.Validators;
-using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -23,26 +22,14 @@ public class AdminUpdateVideoValidator : AbstractValidator<AdminUpdateVideoComma
 
         RuleFor(x => x.Slug).ValidVideoSlug();
 
-        RuleFor(x => x.Description).NotEmpty().WithMessage("Video description is required.");
+        RuleFor(x => x.Description).ValidVideoDescription();
 
-        RuleFor(x => x.OrderItemId)
-            .NotEmpty()
-            .When(x => x.CustomerId.HasValue)
-            .WithMessage("Order item ID is required when customer ID is provided.");
+        RuleFor(x => x.OrderItemId).ValidOrderItemIdConditional(x => x.CustomerId.HasValue);
 
-        RuleFor(x => x.CustomerId)
-            .NotEmpty()
-            .When(x => x.OrderItemId.HasValue)
-            .WithMessage("Customer ID is required when order item ID is provided.");
+        RuleFor(x => x.CustomerId).ValidCustomerIdConditional(x => x.OrderItemId.HasValue);
 
-        RuleFor(x => x.MetaTitle)
-            .MinimumLength(ContentConstants.MinMetaTitleLength)
-            .MaximumLength(ContentConstants.MaxMetaTitleLength)
-            .When(x => x.MetaTitle is not null);
+        RuleFor(x => x.MetaTitle).ValidOptionalMetaTitle(x => x.MetaTitle is not null);
 
-        RuleFor(x => x.MetaDescription)
-            .MinimumLength(ContentConstants.MinMetaDescriptionLength)
-            .MaximumLength(ContentConstants.MaxMetaDescriptionLength)
-            .When(x => x.MetaDescription is not null);
+        RuleFor(x => x.MetaDescription).ValidOptionalMetaDescription(x => x.MetaDescription is not null);
     }
 }
