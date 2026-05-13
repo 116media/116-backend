@@ -29,8 +29,7 @@ public class AdminUpdateArticleValidator : AbstractValidator<AdminUpdateArticleC
         When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId());
         When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId());
 
-        RuleFor(x => x.MetaTitle).ValidOptionalMetaTitle(x => x.MetaTitle is not null);
-
-        RuleFor(x => x.MetaDescription).ValidOptionalMetaDescription(x => x.MetaDescription is not null);
+        When(x => x.MetaTitle is not null, () => RuleFor(x => x.MetaTitle).ValidMetaTitle());
+        When(x => x.MetaDescription is not null, () => RuleFor(x => x.MetaDescription).ValidMetaDescription());
     }
 }
