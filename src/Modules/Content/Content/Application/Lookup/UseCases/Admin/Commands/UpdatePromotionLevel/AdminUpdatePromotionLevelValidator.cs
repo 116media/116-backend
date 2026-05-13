@@ -18,6 +18,6 @@ public class AdminUpdatePromotionLevelValidator : AbstractValidator<AdminUpdateP
         RuleFor(x => x.Name).ValidPromotionLevelName();
         RuleFor(x => x.DurationDays).ValidDurationDays();
         RuleFor(x => x.PriceUsd).ValidPriceUsd();
-        RuleFor(x => x.SpotPriority).InclusiveBetween(1, 3).WithMessage("Spot priority must be 1, 2, or 3");
+        RuleFor(x => x.SpotPriority).ValidSpotPriority();
     }
 }
