@@ -22,6 +22,8 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="SocialBoost">Whether the video is flagged for social media promotion.</param>
 /// <param name="IsPromoted">Whether the video has an active paid promotion.</param>
 /// <param name="PromotedUntil">When the paid promotion expires, or null.</param>
+/// <param name="PromotionLevelId">The UUID of the applied promotion level, or null if not promoted.</param>
+/// <param name="PromotionLevelName">The display name of the applied promotion level, or null if not promoted.</param>
 /// <param name="HasLyrics">Whether a lyrics page is linked to this video.</param>
 /// <param name="ShootingScheduledAt">The scheduled shooting date, or null.</param>
 /// <param name="PublishedAt">When the video was published, or null if not yet published.</param>
@@ -48,6 +50,8 @@ public record VideoDetailDto(
     bool SocialBoost,
     bool IsPromoted,
     DateTimeOffset? PromotedUntil,
+    Guid? PromotionLevelId,
+    string? PromotionLevelName,
     bool HasLyrics,
     DateTimeOffset? ShootingScheduledAt,
     DateTimeOffset? PublishedAt,
