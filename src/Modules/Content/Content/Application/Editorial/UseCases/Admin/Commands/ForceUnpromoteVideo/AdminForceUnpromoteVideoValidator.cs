@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteVideo;
@@ -12,12 +13,7 @@ public class AdminForceUnpromoteVideoValidator : AbstractValidator<AdminForceUnp
     /// </summary>
     public AdminForceUnpromoteVideoValidator()
     {
-        RuleFor(x => x.Slug).NotEmpty().WithMessage("Video slug is required.");
-
-        RuleFor(x => x.Reason)
-            .NotEmpty()
-            .WithMessage("Reason is required.")
-            .MaximumLength(500)
-            .WithMessage("Reason must not exceed 500 characters.");
+        RuleFor(x => x.Slug).ValidVideoSlug();
+        RuleFor(x => x.Reason).ValidUnpromoteReason();
     }
 }
