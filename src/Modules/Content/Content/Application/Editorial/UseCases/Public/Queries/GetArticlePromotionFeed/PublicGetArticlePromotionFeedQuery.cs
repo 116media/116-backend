@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Shared.DTOs;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -6,7 +7,12 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleP
 /// <summary>
 /// Query for retrieving the homepage article promotion feed, grouped by spot priority.
 /// </summary>
-public record PublicGetArticlePromotionFeedQuery() : IQuery<PublicGetArticlePromotionFeedResult>;
+/// <param name="StripSize">
+/// Number of gossip articles to include in the gossip strip.
+/// Defaults to <see cref="EditorialFeedConstants.DefaultStripSize" />.
+/// </param>
+public record PublicGetArticlePromotionFeedQuery(int StripSize = EditorialFeedConstants.DefaultStripSize)
+    : IQuery<PublicGetArticlePromotionFeedResult>;
 
 /// <summary>
 /// A single promoted article entry for the feed.
