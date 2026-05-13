@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Shared.DTOs;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -6,7 +7,12 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoPro
 /// <summary>
 /// Query for retrieving the homepage video promotion feed, grouped by spot priority.
 /// </summary>
-public record PublicGetVideoPromotionFeedQuery() : IQuery<PublicGetVideoPromotionFeedResult>;
+/// <param name="StripSize">
+/// Number of free videos to include in the free-video strip.
+/// Defaults to <see cref="EditorialFeedConstants.DefaultStripSize" />.
+/// </param>
+public record PublicGetVideoPromotionFeedQuery(int StripSize = EditorialFeedConstants.DefaultStripSize)
+    : IQuery<PublicGetVideoPromotionFeedResult>;
 
 /// <summary>
 /// A column slot within spot 3, identified by its position label.
