@@ -45,9 +45,11 @@ public class PublicGetArticlePromotionFeedEndpointV1 : ICarterModule
         group
             .MapGet(
                 $"/{EditorialRouteConstants.PromotionFeed}",
-                async (IDispatcher dispatcher) =>
+                async (IDispatcher dispatcher, int? stripSize) =>
                 {
-                    var query = new PublicGetArticlePromotionFeedQuery();
+                    var query = new PublicGetArticlePromotionFeedQuery(
+                        StripSize: stripSize ?? EditorialFeedConstants.DefaultStripSize
+                    );
                     PublicGetArticlePromotionFeedResult result = await dispatcher.Send(request: query);
 
                     var response = new PublicGetArticlePromotionFeedResponse(
