@@ -126,39 +126,27 @@ public static partial class EditorialValidation
     }
 
     /// <summary>
-    /// Validates that an order item ID is present when a customer ID is provided.
+    /// Validates that the order item ID is not empty. Intended for use inside a
+    /// <c>When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId())</c> block.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the order item ID property.</param>
-    /// <param name="hasCustomerId">A predicate returning true when the customer ID is set on the command.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, Guid?> ValidOrderItemIdConditional<T>(
-        this IRuleBuilder<T, Guid?> ruleBuilder,
-        Func<T, bool> hasCustomerId
-    )
+    public static IRuleBuilderOptions<T, Guid?> ValidOrderItemId<T>(this IRuleBuilder<T, Guid?> ruleBuilder)
     {
-        return ruleBuilder
-            .NotEmpty()
-            .When(hasCustomerId)
-            .WithMessage("Order item ID is required when customer ID is provided.");
+        return ruleBuilder.NotEmpty().WithMessage("Order item ID is required when customer ID is provided.");
     }
 
     /// <summary>
-    /// Validates that a customer ID is present when an order item ID is provided.
+    /// Validates that the customer ID is not empty. Intended for use inside a
+    /// <c>When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId())</c> block.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the customer ID property.</param>
-    /// <param name="hasOrderItemId">A predicate returning true when the order item ID is set on the command.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, Guid?> ValidCustomerIdConditional<T>(
-        this IRuleBuilder<T, Guid?> ruleBuilder,
-        Func<T, bool> hasOrderItemId
-    )
+    public static IRuleBuilderOptions<T, Guid?> ValidCustomerId<T>(this IRuleBuilder<T, Guid?> ruleBuilder)
     {
-        return ruleBuilder
-            .NotEmpty()
-            .When(hasOrderItemId)
-            .WithMessage("Customer ID is required when order item ID is provided.");
+        return ruleBuilder.NotEmpty().WithMessage("Customer ID is required when order item ID is provided.");
     }
 
     /// <summary>
