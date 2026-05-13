@@ -45,9 +45,11 @@ public class PublicGetVideoPromotionFeedEndpointV1 : ICarterModule
         group
             .MapGet(
                 $"/{EditorialRouteConstants.PromotionFeed}",
-                async (IDispatcher dispatcher) =>
+                async (IDispatcher dispatcher, int? stripSize) =>
                 {
-                    var query = new PublicGetVideoPromotionFeedQuery();
+                    var query = new PublicGetVideoPromotionFeedQuery(
+                        StripSize: stripSize ?? EditorialFeedConstants.DefaultStripSize
+                    );
                     PublicGetVideoPromotionFeedResult result = await dispatcher.Send(request: query);
 
                     var response = new PublicGetVideoPromotionFeedResponse(
