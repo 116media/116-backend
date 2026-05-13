@@ -16,6 +16,6 @@ public class AdminAttachPaymentProofValidator : AbstractValidator<AdminAttachPay
     {
         RuleFor(x => x.OrderId).IsValidGuid("Order ID");
         RuleFor(x => x.File).ValidPaymentProofFile();
-        RuleFor(x => x.PaymentMethod).IsInEnum().WithMessage("Payment method is invalid.");
+        RuleFor(x => x.PaymentMethod).ValidPaymentMethod();
     }
 }
