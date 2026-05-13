@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
@@ -20,8 +21,7 @@ public class PublicGetArticlePromotionFeedHandler(
     IMapper mapper
 ) : IQueryHandler<PublicGetArticlePromotionFeedQuery, PublicGetArticlePromotionFeedResult>
 {
-    private const int GossipPoolSize = 20;
-    private const int GossipStripSize = 3;
+    private const int GossipPoolSize = EditorialFeedConstants.GossipPoolSize;
 
     /// <inheritdoc />
     public async Task<PublicGetArticlePromotionFeedResult> Handle(
@@ -32,17 +32,17 @@ public class PublicGetArticlePromotionFeedHandler(
         CategoryEntity? gossipCategory = await categoryRepository.GetGossipCategoryAsync(cancellationToken);
 
         Task<IReadOnlyList<ArticleEntity>> spot1Task = articleRepository.GetActivePromotedBySpotAsync(
-            spotPriority: 1,
+            spotPriority: EditorialFeedConstants.Spot1,
             cancellationToken: cancellationToken
         );
 
         Task<IReadOnlyList<ArticleEntity>> spot2Task = articleRepository.GetActivePromotedBySpotAsync(
-            spotPriority: 2,
+            spotPriority: EditorialFeedConstants.Spot2,
             cancellationToken: cancellationToken
         );
 
         Task<IReadOnlyList<ArticleEntity>> spot3Task = articleRepository.GetActivePromotedBySpotAsync(
-            spotPriority: 3,
+            spotPriority: EditorialFeedConstants.Spot3,
             cancellationToken: cancellationToken
         );
 
@@ -52,22 +52,7 @@ public class PublicGetArticlePromotionFeedHandler(
         IReadOnlyList<ArticleEntity> spot2Articles = spot2Task.Result;
         IReadOnlyList<ArticleEntity> spot3Articles = spot3Task.Result;
 
-        var usedIds = new HashSet<Guid>();
-
-        foreach (ArticleEntity article in spot1Articles)
-        {
-            usedIds.Add(article.Id);
-        }
-
-        foreach (ArticleEntity article in spot2Articles)
-        {
-            usedIds.Add(article.Id);
-        }
-
-        foreach (ArticleEntity article in spot3Articles)
-        {
-            usedIds.Add(article.Id);
-        }
+        var usedIds = new HashSet<Guid>(spot1Articles.Concat(spot2Articles).Concat(spot3Articles).Select(a => a.Id));
 
         IReadOnlyList<ArticleEntity> gossipPool = gossipCategory is not null
             ? await articleRepository.GetGossipFallbackAsync(
@@ -81,7 +66,7 @@ public class PublicGetArticlePromotionFeedHandler(
         var gossipQueue = new Queue<ArticleEntity>(gossipPool);
 
         ArticlePromotionSpotDto spot1 = BuildSimpleSpot(
-            spotPriority: 1,
+            spotPriority: EditorialFeedConstants.Spot1,
             promoted: spot1Articles,
             gossipQueue: gossipQueue,
             usedIds: usedIds,
@@ -89,7 +74,7 @@ public class PublicGetArticlePromotionFeedHandler(
         );
 
         ArticlePromotionSpotDto spot2 = BuildSimpleSpot(
-            spotPriority: 2,
+            spotPriority: EditorialFeedConstants.Spot2,
             promoted: spot2Articles,
             gossipQueue: gossipQueue,
             usedIds: usedIds,
@@ -103,7 +88,11 @@ public class PublicGetArticlePromotionFeedHandler(
             mapper: mapper
         );
 
-        IReadOnlyList<ArticleSummaryDto> gossipStrip = BuildGossipStrip(gossipQueue: gossipQueue, mapper: mapper);
+        IReadOnlyList<ArticleSummaryDto> gossipStrip = BuildGossipStrip(
+            gossipQueue: gossipQueue,
+            stripSize: query.StripSize,
+            mapper: mapper
+        );
 
         return new PublicGetArticlePromotionFeedResult(
             Spot1: spot1,
@@ -113,6 +102,16 @@ public class PublicGetArticlePromotionFeedHandler(
         );
     }
 
+    /// <summary>
+    /// Builds a simple promotion spot (1 or 2). Returns the promoted articles when available;
+    /// otherwise dequeues one gossip fallback from the pool.
+    /// </summary>
+    /// <param name="spotPriority">The spot number (1 or 2).</param>
+    /// <param name="promoted">Promoted articles assigned to this spot.</param>
+    /// <param name="gossipQueue">Remaining gossip articles not yet consumed by earlier spots.</param>
+    /// <param name="usedIds">Tracks all article IDs already placed in the feed to prevent duplicates.</param>
+    /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+    /// <returns>A <see cref="ArticlePromotionSpotDto" /> with promoted articles or a single gossip fallback.</returns>
     private static ArticlePromotionSpotDto BuildSimpleSpot(
         int spotPriority,
         IReadOnlyList<ArticleEntity> promoted,
@@ -140,6 +139,18 @@ public class PublicGetArticlePromotionFeedHandler(
         return new ArticlePromotionSpotDto(SpotPriority: spotPriority, Articles: fallback);
     }
 
+    /// <summary>
+    /// Builds spot 3, distributing promoted articles round-robin across two columns (a / b).
+    /// Each empty column is filled with one gossip fallback.
+    /// </summary>
+    /// <param name="promoted">Promoted articles assigned to spot 3.</param>
+    /// <param name="gossipQueue">Remaining gossip articles not yet consumed by earlier spots.</param>
+    /// <param name="usedIds">Tracks all article IDs already placed in the feed to prevent duplicates.</param>
+    /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+    /// <returns>
+    /// A <see cref="ArticlePromotionSpot3Dto" /> with two named slots (<c>"a"</c> and <c>"b"</c>),
+    /// each containing at least one article.
+    /// </returns>
     private static ArticlePromotionSpot3Dto BuildSpot3(
         IReadOnlyList<ArticleEntity> promoted,
         Queue<ArticleEntity> gossipQueue,
@@ -153,15 +164,7 @@ public class PublicGetArticlePromotionFeedHandler(
         for (int i = 0; i < promoted.Count; i++)
         {
             ArticleSummaryDto dto = promoted[i].ToArticleSummaryDto(mapper);
-
-            if (i % 2 == 0)
-            {
-                columnA.Add(dto);
-            }
-            else
-            {
-                columnB.Add(dto);
-            }
+            (i % 2 == 0 ? columnA : columnB).Add(dto);
         }
 
         if (columnA.Count == 0 && gossipQueue.TryDequeue(out ArticleEntity? gossipA))
@@ -182,14 +185,29 @@ public class PublicGetArticlePromotionFeedHandler(
             new(Position: "b", Articles: columnB),
         };
 
-        return new ArticlePromotionSpot3Dto(SpotPriority: 3, Slots: slots);
+        return new ArticlePromotionSpot3Dto(SpotPriority: EditorialFeedConstants.Spot3, Slots: slots);
     }
 
-    private static IReadOnlyList<ArticleSummaryDto> BuildGossipStrip(Queue<ArticleEntity> gossipQueue, IMapper mapper)
+    /// <summary>
+    /// Dequeues up to <paramref name="stripSize" /> articles from the remaining gossip pool and
+    /// maps them to <see cref="ArticleSummaryDto" /> for the horizontal gossip strip.
+    /// </summary>
+    /// <param name="gossipQueue">Remaining gossip articles not yet consumed by spot fallbacks.</param>
+    /// <param name="stripSize">Maximum number of articles to include in the strip.</param>
+    /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+    /// <returns>
+    /// An ordered list of up to <paramref name="stripSize" /> gossip article summaries.
+    /// May be shorter if the queue is exhausted.
+    /// </returns>
+    private static IReadOnlyList<ArticleSummaryDto> BuildGossipStrip(
+        Queue<ArticleEntity> gossipQueue,
+        int stripSize,
+        IMapper mapper
+    )
     {
         var strip = new List<ArticleSummaryDto>();
 
-        while (strip.Count < GossipStripSize && gossipQueue.TryDequeue(out ArticleEntity? article))
+        while (strip.Count < stripSize && gossipQueue.TryDequeue(out ArticleEntity? article))
         {
             strip.Add(article.ToArticleSummaryDto(mapper));
         }
