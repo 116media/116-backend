@@ -168,40 +168,35 @@ public static partial class EditorialValidation
     }
 
     /// <summary>
-    /// Validates an optional SEO meta title: between
+    /// Validates an SEO meta title: between
     /// <see cref="ContentConstants.MinMetaTitleLength"/> and <see cref="ContentConstants.MaxMetaTitleLength"/>
-    /// characters when provided.
+    /// characters. Intended for use inside a
+    /// <c>When(x => x.MetaTitle is not null, () => RuleFor(x => x.MetaTitle).ValidMetaTitle())</c> block.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the meta title property.</param>
-    /// <param name="isProvided">A predicate returning true when the meta title value is not null on the command.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, string?> ValidOptionalMetaTitle<T>(
-        this IRuleBuilderInitial<T, string?> ruleBuilder,
-        Func<T, bool> isProvided
-    )
+    public static IRuleBuilderOptions<T, string?> ValidMetaTitle<T>(this IRuleBuilderInitial<T, string?> ruleBuilder)
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MinimumLength(minimumLength: ContentConstants.MinMetaTitleLength)
             .WithMessage($"Meta title must be at least {ContentConstants.MinMetaTitleLength} characters.")
             .MaximumLength(maximumLength: ContentConstants.MaxMetaTitleLength)
-            .WithMessage($"Meta title must not exceed {ContentConstants.MaxMetaTitleLength} characters.")
-            .When(isProvided);
+            .WithMessage($"Meta title must not exceed {ContentConstants.MaxMetaTitleLength} characters.");
     }
 
     /// <summary>
-    /// Validates an optional SEO meta description: between
+    /// Validates an SEO meta description: between
     /// <see cref="ContentConstants.MinMetaDescriptionLength"/> and <see cref="ContentConstants.MaxMetaDescriptionLength"/>
-    /// characters when provided.
+    /// characters. Intended for use inside a
+    /// <c>When(x => x.MetaDescription is not null, () => RuleFor(x => x.MetaDescription).ValidMetaDescription())</c> block.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the meta description property.</param>
-    /// <param name="isProvided">A predicate returning true when the meta description value is not null on the command.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, string?> ValidOptionalMetaDescription<T>(
-        this IRuleBuilderInitial<T, string?> ruleBuilder,
-        Func<T, bool> isProvided
+    public static IRuleBuilderOptions<T, string?> ValidMetaDescription<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder
     )
     {
         return ruleBuilder
@@ -209,8 +204,7 @@ public static partial class EditorialValidation
             .MinimumLength(minimumLength: ContentConstants.MinMetaDescriptionLength)
             .WithMessage($"Meta description must be at least {ContentConstants.MinMetaDescriptionLength} characters.")
             .MaximumLength(maximumLength: ContentConstants.MaxMetaDescriptionLength)
-            .WithMessage($"Meta description must not exceed {ContentConstants.MaxMetaDescriptionLength} characters.")
-            .When(isProvided);
+            .WithMessage($"Meta description must not exceed {ContentConstants.MaxMetaDescriptionLength} characters.");
     }
 
     /// <summary>
