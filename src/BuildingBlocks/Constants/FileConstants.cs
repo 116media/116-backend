@@ -74,4 +74,27 @@ public static class FileConstants
     /// Allowed file extensions for raw file uploads.
     /// </summary>
     public static readonly string[] AllowedRawFileExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf"];
+
+    /// <summary>
+    /// Maximum file size for video uploads (100 MB).
+    /// </summary>
+    public const long MaxVideoFileSizeBytes = 100 * 1024 * 1024;
+
+    /// <summary>
+    /// Allowed MIME types for video uploads.
+    /// </summary>
+    public static readonly string[] AllowedVideoMimeTypes =
+    [
+        "video/mp4",
+        "video/quicktime",
+        "video/webm",
+        "video/x-msvideo",
+        "video/x-matroska",
+        "video/3gpp",
+    ];
+
+    /// <summary>
+    /// Allowed file extensions for video uploads.
+    /// </summary>
+    public static readonly string[] AllowedVideoExtensions = [".mp4", ".mov", ".webm", ".avi", ".mkv", ".3gp"];
 }

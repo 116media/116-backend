@@ -6,6 +6,7 @@ using _116.Core.Application.Shared.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -44,7 +45,7 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenValidStandaloneShortVideo_ShouldCreateAndReturnShortVideo()
     {
         // Arrange
-        IFormFile fileMock = MockYoutubeThumbnailService.CreateMockFormFile();
+        IFormFile fileMock = FileTestHelpers.CreateMockVideoFile();
         var command = new AdminCreateShortVideoCommand(
             Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
             Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
@@ -71,14 +72,14 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
         result.ShortVideo.Should().NotBeNull();
         _shortVideoRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
-        _cloudinaryMock.VerifyUploadCalled();
+        _cloudinaryMock.VerifyVideoUploadCalled();
     }
 
     [Fact]
     public async Task Handle_WhenValidTeaserShortVideo_ShouldCreateAndReturnShortVideo()
     {
         // Arrange
-        IFormFile fileMock = MockYoutubeThumbnailService.CreateMockFormFile();
+        IFormFile fileMock = FileTestHelpers.CreateMockVideoFile();
         Guid videoId = Guid.NewGuid();
         var command = new AdminCreateShortVideoCommand(
             Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
@@ -112,7 +113,7 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenSlugAlreadyExists_ShouldThrowConflictException()
     {
         // Arrange
-        IFormFile fileMock = MockYoutubeThumbnailService.CreateMockFormFile();
+        IFormFile fileMock = FileTestHelpers.CreateMockVideoFile();
         string slug = TestConstants.Content.Editorial.ShortVideo.ValidSlug;
         var command = new AdminCreateShortVideoCommand(
             Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,

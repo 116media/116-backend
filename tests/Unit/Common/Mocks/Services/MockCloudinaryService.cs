@@ -52,6 +52,63 @@ public static class MockCloudinaryService
         );
     }
 
+    public static Mock<ICloudinaryService> SetupUploadVideo(
+        this Mock<ICloudinaryService> mock,
+        CloudinaryUploadResult? result = null
+    )
+    {
+        CloudinaryUploadResult uploadResult = result ?? DefaultVideoUploadResult();
+        mock.Setup(x =>
+                x.UploadVideoAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(uploadResult);
+        return mock;
+    }
+
+    public static void VerifyVideoUploadCalled(this Mock<ICloudinaryService> mock)
+    {
+        mock.Verify(
+            x =>
+                x.UploadVideoAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
+    public static void VerifyVideoUploadNotCalled(this Mock<ICloudinaryService> mock)
+    {
+        mock.Verify(
+            x =>
+                x.UploadVideoAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+    }
+
+    public static CloudinaryUploadResult DefaultVideoUploadResult() =>
+        new(
+            PublicId: TestConstants.Content.Editorial.Cloudinary.ValidPublicId,
+            SecureUrl: TestConstants.Content.Editorial.Cloudinary.ValidSecureUrl,
+            Format: "mp4",
+            Width: 1080,
+            Height: 1920,
+            Bytes: 5_000_000,
+            ResourceType: "video"
+        );
+
     public static void VerifyDeleteImageCalled(this Mock<ICloudinaryService> mock, string storageKey)
     {
         mock.Verify(x => x.DeleteImageAsync(storageKey, It.IsAny<CancellationToken>()), Times.Once);
@@ -100,6 +157,15 @@ public static class MockCloudinaryService
                 )
             )
             .ReturnsAsync(DefaultUploadResult());
+        mock.Setup(x =>
+                x.UploadVideoAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(DefaultVideoUploadResult());
         mock.Setup(x => x.DeleteImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
         mock.Setup(x => x.DeleteImagesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);

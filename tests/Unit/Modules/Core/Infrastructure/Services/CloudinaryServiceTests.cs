@@ -456,6 +456,174 @@ public class CloudinaryServiceTests
 
     #endregion
 
+    #region UploadVideoAsync Tests
+
+    [Fact]
+    public async Task UploadVideoAsync_WithNullFile_ShouldThrowBadRequestException()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+
+        Func<Task> act = async () => await service.UploadVideoAsync(null!, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadRequestException>();
+    }
+
+    [Fact]
+    public async Task UploadVideoAsync_WithEmptyFile_ShouldThrowBadRequestException()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(0);
+        fileMock.Setup(f => f.FileName).Returns("clip.mp4");
+
+        Func<Task> act = async () => await service.UploadVideoAsync(fileMock.Object, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadRequestException>();
+    }
+
+    [Fact]
+    public async Task UploadVideoAsync_WithTooLargeFile_ShouldThrowBadRequestException()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(101L * 1024 * 1024);
+        fileMock.Setup(f => f.FileName).Returns("clip.mp4");
+
+        Func<Task> act = async () => await service.UploadVideoAsync(fileMock.Object, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadRequestException>();
+    }
+
+    [Fact]
+    public async Task UploadVideoAsync_WithInvalidExtension_ShouldThrowBadRequestException()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(5_000_000);
+        fileMock.Setup(f => f.FileName).Returns("photo.jpg");
+        fileMock.Setup(f => f.ContentType).Returns("image/jpeg");
+
+        Func<Task> act = async () => await service.UploadVideoAsync(fileMock.Object, "test-id");
+
+        ExceptionAssertions<BadRequestException>? exception = await act.Should()
+            .ThrowExactlyAsync<BadRequestException>();
+        exception.Which.Message.Should().Be("File.InvalidExtension");
+    }
+
+    [Fact]
+    public async Task UploadVideoAsync_WithInvalidContentType_ShouldThrowBadRequestException()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(5_000_000);
+        fileMock.Setup(f => f.FileName).Returns("clip.mp4");
+        fileMock.Setup(f => f.ContentType).Returns("image/jpeg");
+
+        Func<Task> act = async () => await service.UploadVideoAsync(fileMock.Object, "test-id");
+
+        ExceptionAssertions<BadRequestException>? exception = await act.Should()
+            .ThrowExactlyAsync<BadRequestException>();
+        exception.Which.Message.Should().Be("File.InvalidType");
+    }
+
+    [Theory]
+    [InlineData("clip.mp4", "video/mp4")]
+    [InlineData("clip.mov", "video/quicktime")]
+    [InlineData("clip.webm", "video/webm")]
+    [InlineData("clip.avi", "video/x-msvideo")]
+    [InlineData("clip.mkv", "video/x-matroska")]
+    [InlineData("clip.3gp", "video/3gpp")]
+    public async Task UploadVideoAsync_WithValidVideoFormats_ShouldPassValidation(string fileName, string contentType)
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(5_000_000);
+        fileMock.Setup(f => f.FileName).Returns(fileName);
+        fileMock.Setup(f => f.ContentType).Returns(contentType);
+        fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
+
+        Func<Task> act = async () => await service.UploadVideoAsync(fileMock.Object, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
+    }
+
+    [Fact]
+    public async Task UploadVideoAsync_WithNullContentType_ShouldPassValidation()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(5_000_000);
+        fileMock.Setup(f => f.FileName).Returns("clip.mp4");
+        fileMock.Setup(f => f.ContentType).Returns((Func<string>)null!);
+        fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
+
+        Func<Task> act = async () => await service.UploadVideoAsync(fileMock.Object, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
+    }
+
+    [Fact]
+    public async Task UploadVideoAsync_WithOctetStreamContentType_ShouldPassValidation()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(5_000_000);
+        fileMock.Setup(f => f.FileName).Returns("clip.mp4");
+        fileMock.Setup(f => f.ContentType).Returns("application/octet-stream");
+        fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
+
+        Func<Task> act = async () => await service.UploadVideoAsync(fileMock.Object, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
+    }
+
+    [Fact]
+    public async Task UploadVideoAsync_WithMultipartFormDataContentType_ShouldPassValidation()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(5_000_000);
+        fileMock.Setup(f => f.FileName).Returns("clip.mov");
+        fileMock.Setup(f => f.ContentType).Returns("multipart/form-data");
+        fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
+
+        Func<Task> act = async () => await service.UploadVideoAsync(fileMock.Object, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
+    }
+
+    [Fact]
+    public async Task UploadVideoAsync_WithUppercaseExtension_ShouldNormalizeAndValidate()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(5_000_000);
+        fileMock.Setup(f => f.FileName).Returns("CLIP.MP4");
+        fileMock.Setup(f => f.ContentType).Returns("video/mp4");
+        fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
+
+        Func<Task> act = async () => await service.UploadVideoAsync(fileMock.Object, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
+    }
+
+    [Fact]
+    public async Task UploadVideoAsync_AtExactMaxSize_ShouldPassValidation()
+    {
+        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var fileMock = new Mock<IFormFile>();
+        fileMock.Setup(f => f.Length).Returns(100L * 1024 * 1024);
+        fileMock.Setup(f => f.FileName).Returns("clip.mp4");
+        fileMock.Setup(f => f.ContentType).Returns("video/mp4");
+        fileMock.Setup(f => f.OpenReadStream()).Returns(new MemoryStream());
+
+        Func<Task> act = async () => await service.UploadVideoAsync(fileMock.Object, "test-id");
+
+        await act.Should().ThrowExactlyAsync<BadGatewayException>();
+    }
+
+    #endregion
+
     #region DeleteImageAsync Tests
 
     // Note: DeleteImageAsync would also require integration testing or complex mocking
