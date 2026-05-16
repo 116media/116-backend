@@ -24,6 +24,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticleSe
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticleTags;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyrics;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyricsSeo;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateShortVideo;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideoSeo;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideoTags;
@@ -295,6 +296,13 @@ public class EditorialAdminMetaFieldTests
     public void AdminUploadShortVideoThumbnailMetaField_ShouldBeInitialized()
     {
         RouteMetadata metadata = AdminUploadShortVideoThumbnailMetaField.AdminUploadShortVideoThumbnail;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void AdminUpdateShortVideoMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = AdminUpdateShortVideoMetaField.AdminUpdateShortVideo;
         metadata.Should().NotBeNull();
     }
 
