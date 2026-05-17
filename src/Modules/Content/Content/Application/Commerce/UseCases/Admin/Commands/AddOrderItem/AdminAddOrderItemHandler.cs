@@ -41,7 +41,9 @@ public class AdminAddOrderItemHandler(
         var dto = new OrderItemDto(
             Id: item.Id,
             ContentKind: item.ContentKind,
+            CategoryId: item.CategoryId,
             CategoryName: categoryName,
+            PromotionLevelId: item.PromotionLevelId,
             PromotionLevelName: promotionLevelName,
             PromoPriceUsd: item.PromoPriceSnapshotUsd,
             SocialBoost: item.SocialBoost,

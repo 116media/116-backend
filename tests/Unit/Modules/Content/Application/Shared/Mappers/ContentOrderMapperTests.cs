@@ -102,6 +102,32 @@ public class ContentOrderMapperTests : BaseContentHandlerTest
         dto.CustomerName.Should().Be(order.Customer.FullName);
     }
 
+    [Fact]
+    public void ToContentOrderDetailDto_ShouldMapCustomerId()
+    {
+        // Arrange
+        ContentOrderEntity order = CreateOrderWithCustomer();
+
+        // Act
+        var dto = order.ToContentOrderDetailDto(Mapper);
+
+        // Assert
+        dto.CustomerId.Should().Be(order.CustomerId);
+    }
+
+    [Fact]
+    public void ToContentOrderDetailDto_ShouldMapPackageId()
+    {
+        // Arrange
+        ContentOrderEntity order = CreateOrderWithCustomer();
+
+        // Act
+        var dto = order.ToContentOrderDetailDto(Mapper);
+
+        // Assert
+        dto.PackageId.Should().Be(order.PackageId);
+    }
+
     #endregion
 
     #region ToContentOrderSummaryDtos

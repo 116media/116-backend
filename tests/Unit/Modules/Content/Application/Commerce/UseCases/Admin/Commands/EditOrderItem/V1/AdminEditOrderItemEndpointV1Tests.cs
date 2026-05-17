@@ -56,7 +56,9 @@ public class AdminEditOrderItemEndpointV1Tests
         var item = new OrderItemDto(
             Id: Guid.NewGuid(),
             ContentKind: EnumCoreContentType.Article,
+            CategoryId: Guid.NewGuid(),
             CategoryName: "Test",
+            PromotionLevelId: null,
             PromotionLevelName: null,
             PromoPriceUsd: null,
             SocialBoost: false,
