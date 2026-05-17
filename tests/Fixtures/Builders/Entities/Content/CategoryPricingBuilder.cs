@@ -25,21 +25,27 @@ internal class CategoryPricingBuilder
         _priceUsd = TestConstants.Content.CategoryPricing.ValidPriceUsd;
     }
 
-    /// <summary>Sets the pricing ID.</summary>
+    /// <summary>
+    /// Sets the pricing ID.
+    /// </summary>
     public CategoryPricingBuilder WithId(Guid id)
     {
         _id = id;
         return this;
     }
 
-    /// <summary>Sets the price in USD.</summary>
+    /// <summary>
+    /// Sets the price in USD.
+    /// </summary>
     public CategoryPricingBuilder WithPriceUsd(decimal priceUsd)
     {
         _priceUsd = priceUsd;
         return this;
     }
 
-    /// <summary>Builds the <see cref="CategoryPricingEntity"/> instance.</summary>
+    /// <summary>
+    /// Builds the <see cref="CategoryPricingEntity"/> instance.
+    /// </summary>
     public CategoryPricingEntity Build()
     {
         return CategoryPricingEntity.Create(_id, _categoryId, _pricingTierId, _priceUsd);

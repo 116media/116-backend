@@ -30,42 +30,54 @@ internal class ArticleBuilder
         _categoryId = categoryId;
     }
 
-    /// <summary>Sets the article ID.</summary>
+    /// <summary>
+    /// Sets the article ID.
+    /// </summary>
     public ArticleBuilder WithId(Guid id)
     {
         _id = id;
         return this;
     }
 
-    /// <summary>Sets the category ID.</summary>
+    /// <summary>
+    /// Sets the category ID.
+    /// </summary>
     public ArticleBuilder WithCategoryId(Guid categoryId)
     {
         _categoryId = categoryId;
         return this;
     }
 
-    /// <summary>Sets the article title.</summary>
+    /// <summary>
+    /// Sets the article title.
+    /// </summary>
     public ArticleBuilder WithTitle(string title)
     {
         _title = title;
         return this;
     }
 
-    /// <summary>Sets the article slug.</summary>
+    /// <summary>
+    /// Sets the article slug.
+    /// </summary>
     public ArticleBuilder WithSlug(string slug)
     {
         _slug = slug;
         return this;
     }
 
-    /// <summary>Sets the author ID.</summary>
+    /// <summary>
+    /// Sets the author ID.
+    /// </summary>
     public ArticleBuilder WithAuthorId(Guid authorId)
     {
         _authorId = authorId;
         return this;
     }
 
-    /// <summary>Makes the article a paid article linked to a customer and order item.</summary>
+    /// <summary>
+    /// Makes the article a paid article linked to a customer and order item.
+    /// </summary>
     public ArticleBuilder WithCustomer(Guid customerId, Guid orderItemId)
     {
         _customerId = customerId;
@@ -73,35 +85,45 @@ internal class ArticleBuilder
         return this;
     }
 
-    /// <summary>Transitions the article to PendingPayment status.</summary>
+    /// <summary>
+    /// Transitions the article to PendingPayment status.
+    /// </summary>
     public ArticleBuilder AsPendingPayment()
     {
         _targetStatus = EnumContentStatus.PendingPayment;
         return this;
     }
 
-    /// <summary>Transitions the article to PendingReview status.</summary>
+    /// <summary>
+    /// Transitions the article to PendingReview status.
+    /// </summary>
     public ArticleBuilder AsPendingReview()
     {
         _targetStatus = EnumContentStatus.PendingReview;
         return this;
     }
 
-    /// <summary>Transitions the article to Approved status.</summary>
+    /// <summary>
+    /// Transitions the article to Approved status.
+    /// </summary>
     public ArticleBuilder AsApproved()
     {
         _targetStatus = EnumContentStatus.Approved;
         return this;
     }
 
-    /// <summary>Transitions the article to Published status.</summary>
+    /// <summary>
+    /// Transitions the article to Published status.
+    /// </summary>
     public ArticleBuilder AsPublished()
     {
         _targetStatus = EnumContentStatus.Published;
         return this;
     }
 
-    /// <summary>Transitions the article to Rejected status with a reason.</summary>
+    /// <summary>
+    /// Transitions the article to Rejected status with a reason.
+    /// </summary>
     public ArticleBuilder AsRejected(string? reason = null)
     {
         _targetStatus = EnumContentStatus.Rejected;
@@ -109,28 +131,36 @@ internal class ArticleBuilder
         return this;
     }
 
-    /// <summary>Transitions the article to Archived status.</summary>
+    /// <summary>
+    /// Transitions the article to Archived status.
+    /// </summary>
     public ArticleBuilder AsArchived()
     {
         _targetStatus = EnumContentStatus.Archived;
         return this;
     }
 
-    /// <summary>Stamps the article as having social boost.</summary>
+    /// <summary>
+    /// Stamps the article as having social boost.
+    /// </summary>
     public ArticleBuilder WithSocialBoost()
     {
         _stampSocialBoost = true;
         return this;
     }
 
-    /// <summary>Stamps the article as featured until the specified date.</summary>
+    /// <summary>
+    /// Stamps the article as featured until the specified date.
+    /// </summary>
     public ArticleBuilder AsFeatured(DateTimeOffset until)
     {
         _featuredUntil = until;
         return this;
     }
 
-    /// <summary>Builds the <see cref="ArticleEntity"/> instance.</summary>
+    /// <summary>
+    /// Builds the <see cref="ArticleEntity"/> instance.
+    /// </summary>
     public ArticleEntity Build()
     {
         ArticleEntity entity = _customerId.HasValue

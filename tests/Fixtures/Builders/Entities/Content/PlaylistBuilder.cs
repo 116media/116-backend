@@ -13,27 +13,35 @@ internal class PlaylistBuilder
     private Guid _userId = Guid.NewGuid();
     private string _name = TestConstants.Content.Interactions.ValidPlaylistName;
 
-    /// <summary>Sets the playlist ID.</summary>
+    /// <summary>
+    /// Sets the playlist ID.
+    /// </summary>
     public PlaylistBuilder WithId(Guid id)
     {
         _id = id;
         return this;
     }
 
-    /// <summary>Sets the user ID (owner).</summary>
+    /// <summary>
+    /// Sets the user ID (owner).
+    /// </summary>
     public PlaylistBuilder WithUserId(Guid userId)
     {
         _userId = userId;
         return this;
     }
 
-    /// <summary>Sets the playlist name.</summary>
+    /// <summary>
+    /// Sets the playlist name.
+    /// </summary>
     public PlaylistBuilder WithName(string name)
     {
         _name = name;
         return this;
     }
 
-    /// <summary>Builds the <see cref="PlaylistEntity"/> instance.</summary>
+    /// <summary>
+    /// Builds the <see cref="PlaylistEntity"/> instance.
+    /// </summary>
     public PlaylistEntity Build() => PlaylistEntity.Create(id: _id, userId: _userId, name: _name);
 }

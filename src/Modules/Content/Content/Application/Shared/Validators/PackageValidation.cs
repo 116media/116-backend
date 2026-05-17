@@ -39,16 +39,6 @@ public static class PackageValidation
     }
 
     /// <summary>
-    /// Validates package flat price ensuring it is zero or a positive value.
-    /// </summary>
-    public static IRuleBuilderOptions<T, decimal> ValidFlatPriceUsd<T>(this IRuleBuilder<T, decimal> ruleBuilder)
-    {
-        return ruleBuilder
-            .GreaterThanOrEqualTo(valueToCompare: 0)
-            .WithMessage("Package price must be zero or greater.");
-    }
-
-    /// <summary>
     /// Validates slot quantity ensuring it is greater than zero.
     /// </summary>
     public static IRuleBuilderOptions<T, int> ValidSlotQuantity<T>(this IRuleBuilder<T, int> ruleBuilder)

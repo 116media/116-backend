@@ -32,25 +32,25 @@ public class AdminGetOrderByIdHandler(
             ct: cancellationToken
         );
 
-        if (order is null)
+        if (order is not null)
         {
-            throw ContentOrderErrors.NotFound(id: query.Id);
-        }
+            var dto = order.ToContentOrderDetailDto(mapper);
 
-        var dto = order.ToContentOrderDetailDto(mapper);
+            if (order.Payment?.PaymentProofFileId is not { } proofFileId)
+            {
+                return new AdminGetOrderByIdResult(Order: dto);
+            }
 
-        if (order.Payment?.PaymentProofFileId is not { } proofFileId)
-        {
+            FileEntity? proofFile = await fileRepository.GetByIdAsync(proofFileId, cancellationToken);
+            var proofDto = proofFile.ToFileDto(mapper);
+            dto = dto with
+            {
+                Payment = await order.Payment.ToPaymentDtoAsync(mapper, userLookup, proofDto, cancellationToken),
+            };
+
             return new AdminGetOrderByIdResult(Order: dto);
         }
 
-        FileEntity? proofFile = await fileRepository.GetByIdAsync(proofFileId, cancellationToken);
-        var proofDto = proofFile.ToFileDto(mapper);
-        dto = dto with
-        {
-            Payment = await order.Payment.ToPaymentDtoAsync(mapper, userLookup, proofDto, cancellationToken),
-        };
-
-        return new AdminGetOrderByIdResult(Order: dto);
+        throw ContentOrderErrors.NotFound(id: query.Id);
     }
 }

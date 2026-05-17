@@ -18,6 +18,7 @@ public class AdminAddOrderItemFactoryTests
 {
     private readonly Mock<_116.Content.Application.Shared.Repositories.ICategoryRepository> _categoryRepositoryMock;
     private readonly Mock<_116.Content.Application.Shared.Repositories.ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<_116.Content.Application.Shared.Repositories.IPackageRepository> _packageRepositoryMock;
     private readonly Mock<_116.Content.Application.Shared.Repositories.IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<_116.Content.Application.Shared.Persistence.IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminAddOrderItemFactory _factory;
@@ -26,11 +27,13 @@ public class AdminAddOrderItemFactoryTests
     {
         _categoryRepositoryMock = MockCategoryRepository.Create();
         _lookupRepositoryMock = MockLookupRepository.Create();
+        _packageRepositoryMock = MockPackageRepository.Create();
         _orderRepositoryMock = MockContentOrderRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _factory = new AdminAddOrderItemFactory(
             _categoryRepositoryMock.Object,
             _lookupRepositoryMock.Object,
+            _packageRepositoryMock.Object,
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object
         );

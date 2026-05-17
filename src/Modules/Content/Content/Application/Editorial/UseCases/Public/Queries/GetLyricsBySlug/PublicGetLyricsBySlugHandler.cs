@@ -27,12 +27,12 @@ public class PublicGetLyricsBySlugHandler(ILyricsRepository lyricsRepository, IM
             cancellationToken: cancellationToken
         );
 
-        if (lyrics is null)
+        if (lyrics is not null)
         {
-            throw LyricsErrors.NotFound(id: Guid.Empty);
+            var dto = lyrics.ToLyricsDto(mapper);
+            return new PublicGetLyricsBySlugResult(Lyrics: dto);
         }
 
-        var dto = lyrics.ToLyricsDto(mapper);
-        return new PublicGetLyricsBySlugResult(Lyrics: dto);
+        throw LyricsErrors.NotFound(id: Guid.Empty);
     }
 }

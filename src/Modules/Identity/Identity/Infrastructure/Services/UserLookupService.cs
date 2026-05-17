@@ -27,7 +27,9 @@ public class UserLookupService(IdentityDbContext context) : IUserLookupService
             .FirstOrDefaultAsync(u => u.Id == userId, ct);
 
         if (user is null)
+        {
             return null;
+        }
 
         return new AuthorInfo(
             user.UserName,

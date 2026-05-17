@@ -25,21 +25,21 @@ public class PublicRenamePlaylistHandler(IPlaylistRepository playlistRepository,
             cancellationToken: cancellationToken
         );
 
-        if (playlist is null)
+        if (playlist is not null)
         {
-            throw PlaylistErrors.NotFound(id: command.Id);
+            if (playlist.UserId != command.UserId)
+            {
+                throw PlaylistErrors.NotOwner();
+            }
+
+            playlist.Rename(name: command.Name);
+            playlistRepository.Update(playlist: playlist);
+
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+            return new PublicRenamePlaylistResult(IsSuccess: true);
         }
 
-        if (playlist.UserId != command.UserId)
-        {
-            throw PlaylistErrors.NotOwner();
-        }
-
-        playlist.Rename(name: command.Name);
-        playlistRepository.Update(playlist: playlist);
-
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        return new PublicRenamePlaylistResult(IsSuccess: true);
+        throw PlaylistErrors.NotFound(id: command.Id);
     }
 }

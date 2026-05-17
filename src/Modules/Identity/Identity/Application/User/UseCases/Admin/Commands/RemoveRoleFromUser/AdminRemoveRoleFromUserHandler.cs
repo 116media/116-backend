@@ -42,22 +42,22 @@ public class AdminRemoveRoleFromUserHandler(
             cancellationToken: cancellationToken
         );
 
-        if (userRole is null)
+        if (userRole is not null)
         {
-            throw UserErrors.RoleNotAssignedToUser();
+            // Remove the association
+            userRoleRepository.Delete(entity: userRole);
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+            // Get updated user roles
+            List<UserRoleEntity> userRoles = await userRoleRepository.GetUserRolesWithRoleAsync(
+                userId: userId,
+                cancellationToken: cancellationToken
+            );
+
+            IReadOnlyCollection<RoleDto> roles = userRoles.Select(ur => ur.Role.ToRoleDto(mapper)).ToList();
+            return new AdminRemoveRoleFromUserResult(Roles: roles, IsSuccess: true);
         }
 
-        // Remove the association
-        userRoleRepository.Delete(entity: userRole);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        // Get updated user roles
-        List<UserRoleEntity> userRoles = await userRoleRepository.GetUserRolesWithRoleAsync(
-            userId: userId,
-            cancellationToken: cancellationToken
-        );
-
-        IReadOnlyCollection<RoleDto> roles = userRoles.Select(ur => ur.Role.ToRoleDto(mapper)).ToList();
-        return new AdminRemoveRoleFromUserResult(Roles: roles, IsSuccess: true);
+        throw UserErrors.RoleNotAssignedToUser();
     }
 }

@@ -25,21 +25,21 @@ public class PublicEditArticleCommentHandler(IArticleRepository articleRepositor
             cancellationToken: cancellationToken
         );
 
-        if (comment is null)
+        if (comment is not null)
         {
-            throw ArticleInteractionErrors.CommentNotFound(commentId: command.CommentId);
+            if (comment.UserId != command.UserId)
+            {
+                throw ArticleInteractionErrors.NotCommentOwner();
+            }
+
+            comment.Edit(body: command.Body);
+            articleRepository.UpdateComment(comment: comment);
+
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+            return new PublicEditArticleCommentResult(IsSuccess: true);
         }
 
-        if (comment.UserId != command.UserId)
-        {
-            throw ArticleInteractionErrors.NotCommentOwner();
-        }
-
-        comment.Edit(body: command.Body);
-        articleRepository.UpdateComment(comment: comment);
-
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        return new PublicEditArticleCommentResult(IsSuccess: true);
+        throw ArticleInteractionErrors.CommentNotFound(commentId: command.CommentId);
     }
 }

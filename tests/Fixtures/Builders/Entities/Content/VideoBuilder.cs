@@ -33,49 +33,63 @@ internal class VideoBuilder
         _categoryId = categoryId;
     }
 
-    /// <summary>Sets the video ID.</summary>
+    /// <summary>
+    /// Sets the video ID.
+    /// </summary>
     public VideoBuilder WithId(Guid id)
     {
         _id = id;
         return this;
     }
 
-    /// <summary>Sets the category ID.</summary>
+    /// <summary>
+    /// Sets the category ID.
+    /// </summary>
     public VideoBuilder WithCategoryId(Guid categoryId)
     {
         _categoryId = categoryId;
         return this;
     }
 
-    /// <summary>Sets the video title.</summary>
+    /// <summary>
+    /// Sets the video title.
+    /// </summary>
     public VideoBuilder WithTitle(string title)
     {
         _title = title;
         return this;
     }
 
-    /// <summary>Sets the video slug.</summary>
+    /// <summary>
+    /// Sets the video slug.
+    /// </summary>
     public VideoBuilder WithSlug(string slug)
     {
         _slug = slug;
         return this;
     }
 
-    /// <summary>Sets the author ID.</summary>
+    /// <summary>
+    /// Sets the author ID.
+    /// </summary>
     public VideoBuilder WithAuthorId(Guid authorId)
     {
         _authorId = authorId;
         return this;
     }
 
-    /// <summary>Sets the description.</summary>
+    /// <summary>
+    /// Sets the description.
+    /// </summary>
     public VideoBuilder WithDescription(string description)
     {
         _description = description;
         return this;
     }
 
-    /// <summary>Makes the video a paid video linked to a customer and order item.</summary>
+    /// <summary>
+    /// Makes the video a paid video linked to a customer and order item.
+    /// </summary>
     public VideoBuilder WithCustomer(Guid customerId, Guid orderItemId)
     {
         _customerId = customerId;
@@ -83,14 +97,18 @@ internal class VideoBuilder
         return this;
     }
 
-    /// <summary>Attaches a YouTube video ID (required before Publishing).</summary>
+    /// <summary>
+    /// Attaches a YouTube video ID (required before Publishing).
+    /// </summary>
     public VideoBuilder WithYoutubeId(string? youtubeVideoId = null)
     {
         _youtubeVideoId = youtubeVideoId ?? TestConstants.Content.Editorial.Video.ValidYoutubeVideoId;
         return this;
     }
 
-    /// <summary>Sets a thumbnail URL and storage key.</summary>
+    /// <summary>
+    /// Sets a thumbnail URL and storage key.
+    /// </summary>
     public VideoBuilder WithThumbnail(string? url = null, string? storageKey = null)
     {
         _thumbnailUrl = url ?? TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl;
@@ -98,40 +116,51 @@ internal class VideoBuilder
         return this;
     }
 
-    /// <summary>Transitions the video to PendingPayment status.</summary>
+    /// <summary>
+    /// Transitions the video to PendingPayment status.
+    /// </summary>
     public VideoBuilder AsPendingPayment()
     {
         _targetStatus = EnumContentStatus.PendingPayment;
         return this;
     }
 
-    /// <summary>Transitions the video to PendingReview status.</summary>
+    /// <summary>
+    /// Transitions the video to PendingReview status.
+    /// </summary>
     public VideoBuilder AsPendingReview()
     {
         _targetStatus = EnumContentStatus.PendingReview;
         return this;
     }
 
-    /// <summary>Transitions the video to Approved status.</summary>
+    /// <summary>
+    /// Transitions the video to Approved status.
+    /// </summary>
     public VideoBuilder AsApproved()
     {
         _targetStatus = EnumContentStatus.Approved;
         return this;
     }
 
-    /// <summary>Transitions the video to Published status (requires YouTube ID).</summary>
+    /// <summary>
+    /// Transitions the video to Published status (requires YouTube ID).
+    /// </summary>
     public VideoBuilder AsPublished()
     {
         _targetStatus = EnumContentStatus.Published;
-        if (_youtubeVideoId is null)
+        if (_youtubeVideoId is not null)
         {
-            _youtubeVideoId = TestConstants.Content.Editorial.Video.ValidYoutubeVideoId;
+            return this;
         }
+        _youtubeVideoId = TestConstants.Content.Editorial.Video.ValidYoutubeVideoId;
 
         return this;
     }
 
-    /// <summary>Transitions the video to Rejected status with a reason.</summary>
+    /// <summary>
+    /// Transitions the video to Rejected status with a reason.
+    /// </summary>
     public VideoBuilder AsRejected(string? reason = null)
     {
         _targetStatus = EnumContentStatus.Rejected;
@@ -139,19 +168,24 @@ internal class VideoBuilder
         return this;
     }
 
-    /// <summary>Transitions the video to Archived status (requires YouTube ID; auto-set if not provided).</summary>
+    /// <summary>
+    /// Transitions the video to Archived status (requires YouTube ID; auto-set if not provided).
+    /// </summary>
     public VideoBuilder AsArchived()
     {
         _targetStatus = EnumContentStatus.Archived;
-        if (_youtubeVideoId is null)
+        if (_youtubeVideoId is not null)
         {
-            _youtubeVideoId = TestConstants.Content.Editorial.Video.ValidYoutubeVideoId;
+            return this;
         }
+        _youtubeVideoId = TestConstants.Content.Editorial.Video.ValidYoutubeVideoId;
 
         return this;
     }
 
-    /// <summary>Builds the <see cref="VideoEntity"/> instance.</summary>
+    /// <summary>
+    /// Builds the <see cref="VideoEntity"/> instance.
+    /// </summary>
     public VideoEntity Build()
     {
         VideoEntity entity = _customerId.HasValue

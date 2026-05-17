@@ -34,12 +34,12 @@ public static class DbSetExtension
         DbContext context = dbSet.GetService<ICurrentDbContext>().Context;
         T? entity = await context.Set<T>().FindAsync(keyValues, cancellationToken);
 
-        if (entity is null)
+        if (entity is not null)
         {
-            throw new NotFoundException(typeof(T).Name, (object)string.Join(", ", keyValues));
+            return entity;
         }
 
-        return entity;
+        throw new NotFoundException(typeof(T).Name, (object)string.Join(", ", keyValues));
     }
 
     /// <summary>

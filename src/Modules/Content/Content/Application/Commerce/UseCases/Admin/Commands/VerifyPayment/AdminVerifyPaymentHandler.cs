@@ -32,24 +32,24 @@ public class AdminVerifyPaymentHandler(
             ct: cancellationToken
         );
 
-        if (order is null)
+        if (order is not null)
         {
-            throw ContentOrderErrors.NotFound(id: orderId);
+            ContentPaymentEntity payment = await orderPaymentFactory.GetByOrderIdOrThrowAsync(
+                orderId: orderId,
+                ct: cancellationToken
+            );
+
+            await verifyPaymentFactory.VerifyAsync(
+                order: order,
+                payment: payment,
+                adminUserId: command.AdminUserId,
+                receiptUrl: command.ReceiptUrl,
+                ct: cancellationToken
+            );
+
+            return new AdminVerifyPaymentResult(IsSuccess: true);
         }
 
-        ContentPaymentEntity payment = await orderPaymentFactory.GetByOrderIdOrThrowAsync(
-            orderId: orderId,
-            ct: cancellationToken
-        );
-
-        await verifyPaymentFactory.VerifyAsync(
-            order: order,
-            payment: payment,
-            adminUserId: command.AdminUserId,
-            receiptUrl: command.ReceiptUrl,
-            ct: cancellationToken
-        );
-
-        return new AdminVerifyPaymentResult(IsSuccess: true);
+        throw ContentOrderErrors.NotFound(id: orderId);
     }
 }

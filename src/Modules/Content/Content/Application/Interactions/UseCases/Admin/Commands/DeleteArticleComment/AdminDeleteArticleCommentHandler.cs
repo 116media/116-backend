@@ -25,24 +25,24 @@ public class AdminDeleteArticleCommentHandler(IArticleRepository articleReposito
             cancellationToken: cancellationToken
         );
 
-        if (comment is null)
+        if (comment is not null)
         {
-            throw ArticleInteractionErrors.CommentNotFound(commentId: command.CommentId);
+            comment.SoftDelete();
+
+            ArticleEntity article = await articleRepository.GetByIdOrThrowAsync(
+                id: command.ArticleId,
+                cancellationToken: cancellationToken
+            );
+
+            article.DecrementCommentCount();
+            articleRepository.Update(article: article);
+            articleRepository.UpdateComment(comment: comment);
+
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+            return new AdminDeleteArticleCommentResult(IsSuccess: true);
         }
 
-        comment.SoftDelete();
-
-        ArticleEntity article = await articleRepository.GetByIdOrThrowAsync(
-            id: command.ArticleId,
-            cancellationToken: cancellationToken
-        );
-
-        article.DecrementCommentCount();
-        articleRepository.Update(article: article);
-        articleRepository.UpdateComment(comment: comment);
-
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        return new AdminDeleteArticleCommentResult(IsSuccess: true);
+        throw ArticleInteractionErrors.CommentNotFound(commentId: command.CommentId);
     }
 }

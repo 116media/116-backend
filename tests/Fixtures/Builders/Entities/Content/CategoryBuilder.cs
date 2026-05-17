@@ -32,63 +32,81 @@ internal class CategoryBuilder
         _slug = word[..Math.Min(TestConstants.Content.Category.SlugMaxLength, word.Length)];
     }
 
-    /// <summary>Sets the category ID.</summary>
+    /// <summary>
+    /// Sets the category ID.
+    /// </summary>
     public CategoryBuilder WithId(Guid id)
     {
         _id = id;
         return this;
     }
 
-    /// <summary>Sets the content type ID.</summary>
+    /// <summary>
+    /// Sets the content type ID.
+    /// </summary>
     public CategoryBuilder WithContentTypeId(Guid contentTypeId)
     {
         _contentTypeId = contentTypeId;
         return this;
     }
 
-    /// <summary>Sets the category name.</summary>
+    /// <summary>
+    /// Sets the category name.
+    /// </summary>
     public CategoryBuilder WithName(string name)
     {
         _name = name;
         return this;
     }
 
-    /// <summary>Sets the category slug.</summary>
+    /// <summary>
+    /// Sets the category slug.
+    /// </summary>
     public CategoryBuilder WithSlug(string slug)
     {
         _slug = slug;
         return this;
     }
 
-    /// <summary>Sets the category description.</summary>
+    /// <summary>
+    /// Sets the category description.
+    /// </summary>
     public CategoryBuilder WithDescription(string description)
     {
         _description = description;
         return this;
     }
 
-    /// <summary>Marks the category as free.</summary>
+    /// <summary>
+    /// Marks the category as free.
+    /// </summary>
     public CategoryBuilder AsFree()
     {
         _isFree = true;
         return this;
     }
 
-    /// <summary>Marks the category as paid.</summary>
+    /// <summary>
+    /// Marks the category as paid.
+    /// </summary>
     public CategoryBuilder AsPaid()
     {
         _isFree = false;
         return this;
     }
 
-    /// <summary>Marks the category as inactive.</summary>
+    /// <summary>
+    /// Marks the category as inactive.
+    /// </summary>
     public CategoryBuilder AsInactive()
     {
         _isActive = false;
         return this;
     }
 
-    /// <summary>Builds the <see cref="CategoryEntity"/> instance.</summary>
+    /// <summary>
+    /// Builds the <see cref="CategoryEntity"/> instance.
+    /// </summary>
     public CategoryEntity Build()
     {
         var entity = CategoryEntity.Create(_id, _contentTypeId, _name, _slug, _description, _isFree);

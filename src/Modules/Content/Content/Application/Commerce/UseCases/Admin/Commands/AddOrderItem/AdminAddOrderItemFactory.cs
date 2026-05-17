@@ -9,14 +9,17 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem
 
 /// <summary>
 /// Factory implementation for adding order items.
+/// Forces IsBonus = true when the order's package slot capacity is exceeded.
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
+/// <param name="packageRepository">Repository for package data access operations.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 public class AdminAddOrderItemFactory(
     ICategoryRepository categoryRepository,
     ILookupRepository lookupRepository,
+    IPackageRepository packageRepository,
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork
 ) : IAddOrderItemFactory
@@ -39,41 +42,61 @@ public class AdminAddOrderItemFactory(
             cancellationToken: cancellationToken
         );
 
-        if (category is null)
+        if (category is not null)
         {
-            throw CategoryErrors.NotFound(id: categoryId);
-        }
+            category.EnsureCommissionable();
 
-        category.EnsureCommissionable();
+            decimal? promoPriceSnapshot = null;
+            PromotionLevelEntity? promoLevel = null;
 
-        decimal? promoPriceSnapshot = null;
-        PromotionLevelEntity? promoLevel = null;
+            if (promotionLevelId.HasValue)
+            {
+                promoLevel = await lookupRepository.GetPromotionLevelByIdOrThrowAsync(
+                    id: promotionLevelId.Value,
+                    cancellationToken: cancellationToken
+                );
 
-        if (promotionLevelId.HasValue)
-        {
-            promoLevel = await lookupRepository.GetPromotionLevelByIdOrThrowAsync(
-                id: promotionLevelId.Value,
-                cancellationToken: cancellationToken
+                promoLevel.EnsureActive();
+                promoPriceSnapshot = promoLevel.PriceUsd;
+            }
+
+            bool forcedBonus = isBonus;
+
+            if (order.PackageId.HasValue)
+            {
+                PackageEntity? package = await packageRepository.GetByIdWithSlotsAsync(
+                    id: order.PackageId.Value,
+                    cancellationToken: cancellationToken
+                );
+
+                if (package is not null)
+                {
+                    int slotCapacity = package.Slots.Sum(s => s.Quantity);
+                    int currentItemCount = order.Items.Count;
+                    if (currentItemCount >= slotCapacity)
+                    {
+                        forcedBonus = true;
+                    }
+                }
+            }
+
+            var item = ContentOrderItemEntity.Create(
+                id: Guid.NewGuid(),
+                orderId: order.Id,
+                contentKind: contentKind,
+                categoryId: categoryId,
+                promotionLevelId: promotionLevelId,
+                promoPriceSnapshotUsd: promoPriceSnapshot,
+                socialBoost: socialBoost,
+                isBonus: forcedBonus
             );
 
-            promoLevel.EnsureActive();
-            promoPriceSnapshot = promoLevel.PriceUsd;
+            await contentOrderRepository.AddItemAsync(item: item, ct: cancellationToken);
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+            return (item, category.Name, promoLevel?.Name);
         }
 
-        var item = ContentOrderItemEntity.Create(
-            id: Guid.NewGuid(),
-            orderId: order.Id,
-            contentKind: contentKind,
-            categoryId: categoryId,
-            promotionLevelId: promotionLevelId,
-            promoPriceSnapshotUsd: promoPriceSnapshot,
-            socialBoost: socialBoost,
-            isBonus: isBonus
-        );
-
-        await contentOrderRepository.AddItemAsync(item: item, ct: cancellationToken);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        return (item, category.Name, promoLevel?.Name);
+        throw CategoryErrors.NotFound(id: categoryId);
     }
 }

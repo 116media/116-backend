@@ -35,16 +35,16 @@ public class AdminUpdateCategoryPricingHandler(
             cancellationToken: cancellationToken
         );
 
-        if (pricing is null)
+        if (pricing is not null)
         {
-            throw CategoryErrors.PricingNotFound(categoryId: categoryId, tierId: pricingTierId);
+            pricing.UpdatePrice(priceUsd: command.PriceUsd);
+
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+            var dto = pricing.ToCategoryPricingDto(mapper);
+            return new AdminUpdateCategoryPricingResult(Pricing: dto);
         }
 
-        pricing.UpdatePrice(priceUsd: command.PriceUsd);
-
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        var dto = pricing.ToCategoryPricingDto(mapper);
-        return new AdminUpdateCategoryPricingResult(Pricing: dto);
+        throw CategoryErrors.PricingNotFound(categoryId: categoryId, tierId: pricingTierId);
     }
 }

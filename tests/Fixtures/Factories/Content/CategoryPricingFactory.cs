@@ -9,15 +9,21 @@ namespace _116.Tests.Fixtures.Factories.Content;
 /// </summary>
 public static class CategoryPricingFactory
 {
-    /// <summary>Creates a category pricing with default price.</summary>
+    /// <summary>
+    /// Creates a category pricing with default price.
+    /// </summary>
     public static CategoryPricingEntity Create(Guid categoryId, Guid pricingTierId) =>
         new CategoryPricingBuilder(categoryId, pricingTierId).Build();
 
-    /// <summary>Creates a category pricing with a specific price.</summary>
+    /// <summary>
+    /// Creates a category pricing with a specific price.
+    /// </summary>
     public static CategoryPricingEntity Create(Guid categoryId, Guid pricingTierId, decimal priceUsd) =>
         new CategoryPricingBuilder(categoryId, pricingTierId).WithPriceUsd(priceUsd).Build();
 
-    /// <summary>Creates a category pricing with zero price.</summary>
+    /// <summary>
+    /// Creates a category pricing with zero price.
+    /// </summary>
     public static CategoryPricingEntity CreateFree(Guid categoryId, Guid pricingTierId) =>
         new CategoryPricingBuilder(categoryId, pricingTierId)
             .WithPriceUsd(TestConstants.Content.CategoryPricing.ZeroPriceUsd)

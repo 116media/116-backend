@@ -29,49 +29,63 @@ internal class CustomerBuilder
         _email = _faker.Internet.Email();
     }
 
-    /// <summary>Sets the customer ID.</summary>
+    /// <summary>
+    /// Sets the customer ID.
+    /// </summary>
     public CustomerBuilder WithId(Guid id)
     {
         _id = id;
         return this;
     }
 
-    /// <summary>Sets the customer full name.</summary>
+    /// <summary>
+    /// Sets the customer full name.
+    /// </summary>
     public CustomerBuilder WithFullName(string fullName)
     {
         _fullName = fullName;
         return this;
     }
 
-    /// <summary>Sets the customer email.</summary>
+    /// <summary>
+    /// Sets the customer email.
+    /// </summary>
     public CustomerBuilder WithEmail(string email)
     {
         _email = email;
         return this;
     }
 
-    /// <summary>Sets the customer phone.</summary>
+    /// <summary>
+    /// Sets the customer phone.
+    /// </summary>
     public CustomerBuilder WithPhone(string? phone)
     {
         _phone = phone;
         return this;
     }
 
-    /// <summary>Sets the customer company.</summary>
+    /// <summary>
+    /// Sets the customer company.
+    /// </summary>
     public CustomerBuilder WithCompany(string? company)
     {
         _company = company;
         return this;
     }
 
-    /// <summary>Sets the customer notes.</summary>
+    /// <summary>
+    /// Sets the customer notes.
+    /// </summary>
     public CustomerBuilder WithNotes(string? notes)
     {
         _notes = notes;
         return this;
     }
 
-    /// <summary>Builds the <see cref="CustomerEntity"/> instance.</summary>
+    /// <summary>
+    /// Builds the <see cref="CustomerEntity"/> instance.
+    /// </summary>
     public CustomerEntity Build()
     {
         return CustomerEntity.Create(_id, _fullName, _email, _phone, _company, _notes);

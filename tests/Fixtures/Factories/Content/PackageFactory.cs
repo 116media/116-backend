@@ -9,23 +9,30 @@ namespace _116.Tests.Fixtures.Factories.Content;
 /// </summary>
 public static class PackageFactory
 {
-    /// <summary>Creates a package with default random values.</summary>
+    /// <summary>
+    /// Creates a package with default random values.
+    /// </summary>
     public static PackageEntity Create() => new PackageBuilder().Build();
 
-    /// <summary>Creates a package with a specific name.</summary>
+    /// <summary>
+    /// Creates a package with a specific name.
+    /// </summary>
     public static PackageEntity Create(string name) => new PackageBuilder().WithName(name).Build();
 
-    /// <summary>Creates an inactive package.</summary>
+    /// <summary>
+    /// Creates an inactive package.
+    /// </summary>
     public static PackageEntity CreateInactive() => new PackageBuilder().AsInactive().Build();
 
-    /// <summary>Creates a package with known default values.</summary>
+    /// <summary>
+    /// Creates a package with known default values.
+    /// </summary>
     public static PackageEntity CreateDefault() =>
-        new PackageBuilder()
-            .WithName(TestConstants.Content.Package.ValidName)
-            .WithFlatPriceUsd(TestConstants.Content.Package.ValidFlatPriceUsd)
-            .Build();
+        new PackageBuilder().WithName(TestConstants.Content.Package.ValidName).Build();
 
-    /// <summary>Creates a list of packages with the specified count.</summary>
+    /// <summary>
+    /// Creates a list of packages with the specified count.
+    /// </summary>
     public static List<PackageEntity> CreateMany(int count) =>
         Enumerable.Range(0, count).Select(_ => Create()).ToList();
 }

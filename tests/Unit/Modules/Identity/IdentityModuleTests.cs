@@ -177,7 +177,9 @@ public class IdentityModuleTests
 
         try
         {
+            var serviceProviderMock = new Mock<IServiceProvider>();
             var appBuilderMock = new Mock<IApplicationBuilder>();
+            appBuilderMock.Setup(x => x.ApplicationServices).Returns(serviceProviderMock.Object);
 
             // Act
             IApplicationBuilder result = appBuilderMock.Object.UseIdentityModule();

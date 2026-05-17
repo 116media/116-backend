@@ -17,56 +17,72 @@ internal class LyricsBuilder
     private string _language = TestConstants.Content.Editorial.Lyrics.ValidLanguage;
     private Guid? _videoId;
 
-    /// <summary>Sets the lyrics ID.</summary>
+    /// <summary>
+    /// Sets the lyrics ID.
+    /// </summary>
     public LyricsBuilder WithId(Guid id)
     {
         _id = id;
         return this;
     }
 
-    /// <summary>Sets the author ID.</summary>
+    /// <summary>
+    /// Sets the author ID.
+    /// </summary>
     public LyricsBuilder WithAuthorId(Guid authorId)
     {
         _authorId = authorId;
         return this;
     }
 
-    /// <summary>Sets the song title.</summary>
+    /// <summary>
+    /// Sets the song title.
+    /// </summary>
     public LyricsBuilder WithSongTitle(string songTitle)
     {
         _songTitle = songTitle;
         return this;
     }
 
-    /// <summary>Sets the artist name.</summary>
+    /// <summary>
+    /// Sets the artist name.
+    /// </summary>
     public LyricsBuilder WithArtistName(string artistName)
     {
         _artistName = artistName;
         return this;
     }
 
-    /// <summary>Sets the lyrics text.</summary>
+    /// <summary>
+    /// Sets the lyrics text.
+    /// </summary>
     public LyricsBuilder WithLyricsText(string lyricsText)
     {
         _lyricsText = lyricsText;
         return this;
     }
 
-    /// <summary>Sets the language code.</summary>
+    /// <summary>
+    /// Sets the language code.
+    /// </summary>
     public LyricsBuilder WithLanguage(string language)
     {
         _language = language;
         return this;
     }
 
-    /// <summary>Links this lyrics page to a video.</summary>
+    /// <summary>
+    /// Links this lyrics page to a video.
+    /// </summary>
     public LyricsBuilder ForVideo(Guid videoId)
     {
         _videoId = videoId;
         return this;
     }
 
-    /// <summary>Builds the <see cref="LyricsEntity"/> instance.</summary>
+    /// <summary>
+    /// Builds the <see cref="LyricsEntity"/> instance.
+    /// </summary>
     public LyricsEntity Build()
     {
         if (_videoId.HasValue)

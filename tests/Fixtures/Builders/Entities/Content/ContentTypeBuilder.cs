@@ -26,28 +26,36 @@ internal class ContentTypeBuilder
         _name = word[..Math.Min(TestConstants.Content.ContentType.NameMaxLength, word.Length)];
     }
 
-    /// <summary>Sets the content type ID.</summary>
+    /// <summary>
+    /// Sets the content type ID.
+    /// </summary>
     public ContentTypeBuilder WithId(Guid id)
     {
         _id = id;
         return this;
     }
 
-    /// <summary>Sets the content type name.</summary>
+    /// <summary>
+    /// Sets the content type name.
+    /// </summary>
     public ContentTypeBuilder WithName(string name)
     {
         _name = name;
         return this;
     }
 
-    /// <summary>Marks the content type as inactive.</summary>
+    /// <summary>
+    /// Marks the content type as inactive.
+    /// </summary>
     public ContentTypeBuilder AsInactive()
     {
         _isActive = false;
         return this;
     }
 
-    /// <summary>Builds the <see cref="ContentTypeEntity"/> instance.</summary>
+    /// <summary>
+    /// Builds the <see cref="ContentTypeEntity"/> instance.
+    /// </summary>
     public ContentTypeEntity Build()
     {
         var entity = ContentTypeEntity.Create(_id, _name);

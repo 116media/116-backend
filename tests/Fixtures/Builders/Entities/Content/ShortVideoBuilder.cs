@@ -20,56 +20,72 @@ internal class ShortVideoBuilder
     private string? _thumbnailStorageKey;
     private bool _isInactive;
 
-    /// <summary>Sets the short video ID.</summary>
+    /// <summary>
+    /// Sets the short video ID.
+    /// </summary>
     public ShortVideoBuilder WithId(Guid id)
     {
         _id = id;
         return this;
     }
 
-    /// <summary>Sets the short video title.</summary>
+    /// <summary>
+    /// Sets the short video title.
+    /// </summary>
     public ShortVideoBuilder WithTitle(string title)
     {
         _title = title;
         return this;
     }
 
-    /// <summary>Sets the short video slug.</summary>
+    /// <summary>
+    /// Sets the short video slug.
+    /// </summary>
     public ShortVideoBuilder WithSlug(string slug)
     {
         _slug = slug;
         return this;
     }
 
-    /// <summary>Sets the video CDN URL.</summary>
+    /// <summary>
+    /// Sets the video CDN URL.
+    /// </summary>
     public ShortVideoBuilder WithVideoUrl(string videoUrl)
     {
         _videoUrl = videoUrl;
         return this;
     }
 
-    /// <summary>Sets the video storage key.</summary>
+    /// <summary>
+    /// Sets the video storage key.
+    /// </summary>
     public ShortVideoBuilder WithVideoStorageKey(string storageKey)
     {
         _videoStorageKey = storageKey;
         return this;
     }
 
-    /// <summary>Sets the author ID.</summary>
+    /// <summary>
+    /// Sets the author ID.
+    /// </summary>
     public ShortVideoBuilder WithAuthorId(Guid authorId)
     {
         _authorId = authorId;
         return this;
     }
 
-    /// <summary>Links this short video to a parent full video (teaser mode).</summary>
+    /// <summary>
+    /// Links this short video to a parent full video (teaser mode).
+    /// </summary>
     public ShortVideoBuilder AsTeaser(Guid videoId)
     {
         _videoId = videoId;
         return this;
     }
 
-    /// <summary>Sets a thumbnail URL and storage key.</summary>
+    /// <summary>
+    /// Sets a thumbnail URL and storage key.
+    /// </summary>
     public ShortVideoBuilder WithThumbnail(string thumbnailUrl, string thumbnailStorageKey)
     {
         _thumbnailUrl = thumbnailUrl;
@@ -77,14 +93,18 @@ internal class ShortVideoBuilder
         return this;
     }
 
-    /// <summary>Marks the short video as inactive.</summary>
+    /// <summary>
+    /// Marks the short video as inactive.
+    /// </summary>
     public ShortVideoBuilder AsInactive()
     {
         _isInactive = true;
         return this;
     }
 
-    /// <summary>Builds the <see cref="ShortVideoEntity"/> instance.</summary>
+    /// <summary>
+    /// Builds the <see cref="ShortVideoEntity"/> instance.
+    /// </summary>
     public ShortVideoEntity Build()
     {
         ShortVideoEntity entity = _videoId.HasValue

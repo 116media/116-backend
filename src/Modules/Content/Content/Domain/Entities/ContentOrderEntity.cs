@@ -113,26 +113,31 @@ public class ContentOrderEntity : Aggregate<Guid>
 
     /// <summary>
     /// Recalculates the order total from scratch using all existing items and their tiers.
+    /// Bonus items (<see cref="ContentOrderItemEntity.IsBonus" /> = true) are excluded
+    /// from the total — they are complimentary and do not contribute to the price.
     /// Called after removing an item or tier.
     /// </summary>
     public void RecalculateTotalFromItems()
     {
-        decimal tierTotal = Items.SelectMany(i => i.Tiers).Sum(t => t.PriceSnapshotUsd);
-        decimal promoTotal = Items.Sum(i => i.PromoPriceSnapshotUsd ?? 0m);
+        IEnumerable<ContentOrderItemEntity> billableItems = Items.Where(i => !i.IsBonus);
+        decimal tierTotal = billableItems.SelectMany(i => i.Tiers).Sum(t => t.PriceSnapshotUsd);
+        decimal promoTotal = billableItems.Sum(i => i.PromoPriceSnapshotUsd ?? 0m);
         TotalAmountUsd = tierTotal + promoTotal;
     }
 
     /// <summary>
     /// Recomputes the order total after a new pricing tier is added.
-    /// Sums all existing tier price snapshots across all items, adds <paramref name="newTierPrice" />,
-    /// then adds all promotion level price snapshots.
+    /// Bonus items are excluded from the total. If the item receiving the new tier
+    /// is a bonus item, <paramref name="newTierPrice" /> is not added.
     /// </summary>
     /// <param name="newTierPrice">The price snapshot of the tier being added in this operation.</param>
-    public void RecalculateTotal(decimal newTierPrice)
+    /// <param name="isBonusItem">Whether the item receiving the tier is a bonus item.</param>
+    public void RecalculateTotal(decimal newTierPrice, bool isBonusItem = false)
     {
-        decimal tierTotal = Items.SelectMany(i => i.Tiers).Sum(t => t.PriceSnapshotUsd) + newTierPrice;
-        decimal promoTotal = Items.Sum(i => i.PromoPriceSnapshotUsd ?? 0m);
-        TotalAmountUsd = tierTotal + promoTotal;
+        IEnumerable<ContentOrderItemEntity> billableItems = Items.Where(i => !i.IsBonus);
+        decimal tierTotal = billableItems.SelectMany(i => i.Tiers).Sum(t => t.PriceSnapshotUsd);
+        decimal promoTotal = billableItems.Sum(i => i.PromoPriceSnapshotUsd ?? 0m);
+        TotalAmountUsd = tierTotal + promoTotal + (isBonusItem ? 0m : newTierPrice);
     }
 
     /// <summary>

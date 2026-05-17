@@ -34,55 +34,62 @@ public class AdminAddItemTierFactory(
             ct: cancellationToken
         );
 
-        if (order is null)
+        if (order is not null)
         {
-            throw ContentOrderErrors.NotFound(id: orderId);
+            if (order.Status != EnumOrderStatus.Draft)
+            {
+                throw ContentOrderErrors.CannotAddItemToNonDraftOrder();
+            }
+
+            ContentOrderItemEntity? item = await contentOrderRepository.GetItemByIdAsync(
+                orderId: orderId,
+                itemId: orderItemId,
+                ct: cancellationToken
+            );
+
+            if (item is null)
+            {
+                throw ContentOrderErrors.ItemNotFound(itemId: orderItemId);
+            }
+
+            bool alreadyAttached = item.Tiers.Any(t => t.PricingTierId == pricingTierId);
+            if (alreadyAttached)
+            {
+                throw ContentOrderErrors.TierAlreadyAttached(pricingTierId: pricingTierId);
+            }
+
+            PricingTierEntity pricingTier = await lookupRepository.GetPricingTierByIdOrThrowAsync(
+                id: pricingTierId,
+                cancellationToken: cancellationToken
+            );
+
+            CategoryPricingEntity? categoryPricing = await categoryRepository.GetPricingAsync(
+                categoryId: item.CategoryId,
+                pricingTierId: pricingTierId,
+                cancellationToken: cancellationToken
+            );
+
+            if (categoryPricing is null)
+            {
+                throw PricingTierErrors.NotFound(id: pricingTierId);
+            }
+
+            var tier = ContentItemTierEntity.Create(
+                id: Guid.NewGuid(),
+                orderItemId: orderItemId,
+                pricingTierId: pricingTierId,
+                priceSnapshotUsd: categoryPricing.PriceUsd
+            );
+
+            await contentOrderRepository.AddItemTierAsync(tier: tier, ct: cancellationToken);
+            order.RecalculateTotal(newTierPrice: categoryPricing.PriceUsd, isBonusItem: item.IsBonus);
+
+            await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+            return (tier, pricingTier.Name);
         }
 
-        if (order.Status != EnumOrderStatus.Draft)
-        {
-            throw ContentOrderErrors.CannotAddItemToNonDraftOrder();
-        }
-
-        ContentOrderItemEntity? item = await contentOrderRepository.GetItemByIdAsync(
-            orderId: orderId,
-            itemId: orderItemId,
-            ct: cancellationToken
-        );
-        if (item is null)
-        {
-            throw ContentOrderErrors.ItemNotFound(itemId: orderItemId);
-        }
-
-        PricingTierEntity pricingTier = await lookupRepository.GetPricingTierByIdOrThrowAsync(
-            id: pricingTierId,
-            cancellationToken: cancellationToken
-        );
-
-        CategoryPricingEntity? categoryPricing = await categoryRepository.GetPricingAsync(
-            categoryId: item.CategoryId,
-            pricingTierId: pricingTierId,
-            cancellationToken: cancellationToken
-        );
-
-        if (categoryPricing is null)
-        {
-            throw PricingTierErrors.NotFound(id: pricingTierId);
-        }
-
-        var tier = ContentItemTierEntity.Create(
-            id: Guid.NewGuid(),
-            orderItemId: orderItemId,
-            pricingTierId: pricingTierId,
-            priceSnapshotUsd: categoryPricing.PriceUsd
-        );
-
-        await contentOrderRepository.AddItemTierAsync(tier: tier, ct: cancellationToken);
-        order.RecalculateTotal(newTierPrice: categoryPricing.PriceUsd);
-
-        await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        return (tier, pricingTier.Name);
+        throw ContentOrderErrors.NotFound(id: orderId);
     }
 }
