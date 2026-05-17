@@ -55,7 +55,7 @@ public class AdminRemoveOrderItemHandlerTests
         result.IsSuccess.Should().BeTrue();
         _orderRepositoryMock.VerifyRemoveItemCalled();
         _orderRepositoryMock.VerifyUpdateCalled();
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyCommitCalled(times: 2);
     }
 
     #endregion

@@ -82,9 +82,14 @@ public class AdminAddItemTierFactory(
             );
 
             await contentOrderRepository.AddItemTierAsync(tier: tier, ct: cancellationToken);
-            order.RecalculateTotal(newTierPrice: categoryPricing.PriceUsd, isBonusItem: item.IsBonus);
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-            await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
+            ContentOrderEntity updated =
+                await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
+                ?? throw ContentOrderErrors.NotFound(id: orderId);
+
+            updated.RecalculateTotalFromItems();
+            await contentOrderRepository.UpdateAsync(order: updated, ct: cancellationToken);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
             return (tier, pricingTier.Name);

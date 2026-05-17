@@ -69,7 +69,7 @@ public class AdminAddItemTierFactoryTests
         tierName.Should().Be(pricingTier.Name);
         _orderRepositoryMock.VerifyAddItemTierCalled();
         _orderRepositoryMock.VerifyUpdateCalled();
-        _unitOfWorkMock.VerifyCommitCalled();
+        _unitOfWorkMock.VerifyCommitCalled(times: 2);
     }
 
     #endregion

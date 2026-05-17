@@ -24,7 +24,7 @@ public class ContentOrderEntity : Aggregate<Guid>
 
     /// <summary>
     /// The running total of all tier price snapshots plus promotion level prices across all items.
-    /// Recomputed each time a tier is added via <see cref="RecalculateTotal" />.
+    /// Recomputed each time a tier or item is added or removed via <see cref="RecalculateTotalFromItems" />.
     /// Starts at <c>0</c> and is never negative.
     /// </summary>
     public decimal TotalAmountUsd { get; private set; }
@@ -123,21 +123,6 @@ public class ContentOrderEntity : Aggregate<Guid>
         decimal tierTotal = billableItems.SelectMany(i => i.Tiers).Sum(t => t.PriceSnapshotUsd);
         decimal promoTotal = billableItems.Sum(i => i.PromoPriceSnapshotUsd ?? 0m);
         TotalAmountUsd = tierTotal + promoTotal;
-    }
-
-    /// <summary>
-    /// Recomputes the order total after a new pricing tier is added.
-    /// Bonus items are excluded from the total. If the item receiving the new tier
-    /// is a bonus item, <paramref name="newTierPrice" /> is not added.
-    /// </summary>
-    /// <param name="newTierPrice">The price snapshot of the tier being added in this operation.</param>
-    /// <param name="isBonusItem">Whether the item receiving the tier is a bonus item.</param>
-    public void RecalculateTotal(decimal newTierPrice, bool isBonusItem = false)
-    {
-        IEnumerable<ContentOrderItemEntity> billableItems = Items.Where(i => !i.IsBonus);
-        decimal tierTotal = billableItems.SelectMany(i => i.Tiers).Sum(t => t.PriceSnapshotUsd);
-        decimal promoTotal = billableItems.Sum(i => i.PromoPriceSnapshotUsd ?? 0m);
-        TotalAmountUsd = tierTotal + promoTotal + (isBonusItem ? 0m : newTierPrice);
     }
 
     /// <summary>
