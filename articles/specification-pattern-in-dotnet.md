@@ -540,7 +540,7 @@ After rolling this out across all modules, a few things changed:
 - **Repository methods got shorter.** Instead of growing a new method for every filter combination, each repository has a small set of generic methods that accept specifications. The `GetAllAsync` method on every repository looks almost identical.
 - **The filtering logic is reusable.** The `VideoSearchSpecification` works whether you call it from the admin panel, a public API, or a background job. Same class, same SQL, same behavior.
 - **New filters are trivial to add.** When I needed an `ActiveVideoSpecification` to exclude archived and rejected videos from a dropdown, I created one small class and was done. No repository changes. No handler changes. Just a new specification.
-- **Composition works naturally.** Need active videos in a specific category? `activeSpec.And(categorySpec)`. Need published or featured videos? `publishedSpec.Or(featuredSpec)`. The `And`, `Or`, and `Not` operators handle it.
+- **Composition works naturally.** Need active videos in a specific category? `activeSpec.And(categorySpec)`. Need published or promoted videos? `publishedSpec.Or(promotedSpec)`. The `And`, `Or`, and `Not` operators handle it.
 - **Unit tests are fast.** I have nearly 100 specification tests across the project and they all run in under a second because none of them hit a database.
 
 The pattern is not free. You end up with more files. A module that had one repository class now has a specifications folder with 5 to 10 small classes, plus a builder. But each file is 10 to 15 lines, does one thing, and is independently testable. I will take that over a 200-line repository method with nested conditionals any day.
