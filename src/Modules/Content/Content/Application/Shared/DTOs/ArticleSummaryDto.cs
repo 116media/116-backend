@@ -7,17 +7,51 @@ namespace _116.Content.Application.Shared.DTOs;
 /// Data transfer object for an article in list and feed views.
 /// Contains all fields needed to render an article card, excluding the rich-text body.
 /// </summary>
-/// <param name="Id">The unique identifier of the article.</param>
-/// <param name="CategoryId">The identifier of the article's category.</param>
-/// <param name="CategoryName">The display name of the article's category.</param>
-/// <param name="Title">The article display title.</param>
-/// <param name="Slug">The URL-safe slug used in public article URLs.</param>
-/// <param name="Headline">The short teaser text shown on article cards.</param>
-/// <param name="CoverImageUrl">The URL of the cover image, or null if not set.</param>
-/// <param name="AuthorId">The identity user UUID of the author.</param>
-/// <param name="Status">The current editorial workflow status.</param>
-/// <param name="IsPromoted">Whether the article has an active paid promotion.</param>
-/// <param name="PublishedAt">When the article was published, or null if not yet published.</param>
+/// <param name="Id">
+/// The unique identifier of the article.
+/// </param>
+/// <param name="CategoryId">
+/// The identifier of the article's category.
+/// </param>
+/// <param name="CategoryName">
+/// The display name of the article's category.
+/// </param>
+/// <param name="Title">
+/// The article display title.
+/// </param>
+/// <param name="Slug">
+/// The URL-safe slug used in public article URLs.
+/// </param>
+/// <param name="Headline">
+/// The short teaser text shown on article cards.
+/// </param>
+/// <param name="CoverImageUrl">
+/// The URL of the cover image, or null if not set.
+/// </param>
+/// <param name="AuthorId">
+/// The identity user UUID of the author.
+/// </param>
+/// <param name="Status">
+/// The current editorial workflow status.
+/// </param>
+/// <param name="IsPromoted">
+/// Whether the article has an active paid promotion.
+/// </param>
+/// <param name="PublishedAt">
+/// When the article was published, or null if not yet published.
+/// </param>
+/// <param name="LikeCount">
+/// Cached number of likes. Incremented and decremented by interaction events.
+/// </param>
+/// <param name="CommentCount">
+/// Cached number of comments. Incremented and decremented by interaction events.
+/// </param>
+/// <param name="ShareCount">
+/// Cached number of shares. Incremented by interaction events.
+/// </param>
+/// <param name="BookmarkCount">
+/// Cached number of bookmarks. Incremented and decremented by interaction events.
+/// </param>
 public record ArticleSummaryDto(
     Guid Id,
     Guid CategoryId,
@@ -29,5 +63,9 @@ public record ArticleSummaryDto(
     string AuthorId,
     EnumContentStatus Status,
     bool IsPromoted,
-    DateTimeOffset? PublishedAt
+    DateTimeOffset? PublishedAt,
+    int LikeCount,
+    int CommentCount,
+    int ShareCount,
+    int BookmarkCount
 ) : AuditableDto;
