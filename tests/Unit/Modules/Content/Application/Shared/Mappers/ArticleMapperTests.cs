@@ -526,6 +526,106 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
     #endregion
 
+    #region ToArticleSummaryDto — engagement counters
+
+    [Fact]
+    public void ToArticleSummaryDto_ShouldMapEngagementCounters()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        article.IncrementLikeCount();
+        article.IncrementLikeCount();
+        article.IncrementCommentCount();
+        article.IncrementShareCount();
+        article.IncrementBookmarkCount();
+        article.IncrementBookmarkCount();
+        article.IncrementBookmarkCount();
+
+        // Act
+        ArticleSummaryDto dto = article.ToArticleSummaryDto(Mapper);
+
+        // Assert
+        dto.LikeCount.Should().Be(2);
+        dto.CommentCount.Should().Be(1);
+        dto.ShareCount.Should().Be(1);
+        dto.BookmarkCount.Should().Be(3);
+    }
+
+    [Fact]
+    public void ToArticleSummaryDto_WhenNoInteractions_ShouldMapCountersAsZero()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+
+        // Act
+        ArticleSummaryDto dto = article.ToArticleSummaryDto(Mapper);
+
+        // Assert
+        dto.LikeCount.Should().Be(0);
+        dto.CommentCount.Should().Be(0);
+        dto.ShareCount.Should().Be(0);
+        dto.BookmarkCount.Should().Be(0);
+    }
+
+    #endregion
+
+    #region ToArticleDetailDto — engagement counters
+
+    [Fact]
+    public void ToArticleDetailDto_ShouldMapEngagementCounters()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        article.IncrementLikeCount();
+        article.IncrementCommentCount();
+        article.IncrementCommentCount();
+        article.IncrementShareCount();
+        article.IncrementShareCount();
+        article.IncrementShareCount();
+        article.IncrementBookmarkCount();
+
+        // Act
+        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+
+        // Assert
+        dto.LikeCount.Should().Be(1);
+        dto.CommentCount.Should().Be(2);
+        dto.ShareCount.Should().Be(3);
+        dto.BookmarkCount.Should().Be(1);
+    }
+
+    [Fact]
+    public void ToArticleDetailDto_WhenNoInteractions_ShouldMapCountersAsZero()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+
+        // Act
+        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+
+        // Assert
+        dto.LikeCount.Should().Be(0);
+        dto.CommentCount.Should().Be(0);
+        dto.ShareCount.Should().Be(0);
+        dto.BookmarkCount.Should().Be(0);
+    }
+
+    [Fact]
+    public void ToArticleDetailDto_WhenLikeCountDecremented_ShouldNotGoBelowZero()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        article.DecrementLikeCount();
+
+        // Act
+        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+
+        // Assert
+        dto.LikeCount.Should().Be(0);
+    }
+
+    #endregion
+
     #region ToArticleCommentDto — body nulling on deleted comments
 
     [Fact]
