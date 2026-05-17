@@ -50,6 +50,9 @@ public class AdminGetVideoByIdEndpointV1Tests
             MetaTitle: null,
             MetaDescription: null,
             Tags: [],
+            ShareCount: 0,
+            RatingAverage: 0m,
+            RatingCount: 0,
             CustomerId: null,
             CustomerName: null,
             OrderItemId: null
