@@ -37,6 +37,10 @@ public class PublicGetPromotedArticlesEndpointV1Tests
             AuthorId: "Test",
             Status: EnumContentStatus.Published,
             IsPromoted: false,
-            PublishedAt: null
+            PublishedAt: null,
+            LikeCount: 0,
+            CommentCount: 0,
+            ShareCount: 0,
+            BookmarkCount: 0
         );
 }
