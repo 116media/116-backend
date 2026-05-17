@@ -28,12 +28,9 @@ public static class ContentOrderErrors
     /// <summary>
     /// Throws when a pricing tier is already attached to the order item.
     /// </summary>
-    public static ConflictException TierAlreadyAttached(Guid pricingTierId)
+    public static ConflictException TierAlreadyAttached()
     {
-        return new ConflictException(
-            "ContentOrderItem.TierAlreadyAttached",
-            $"Pricing tier {pricingTierId} is already attached to this item"
-        );
+        return new ConflictException(ContentOrderErrorMessage.TierAlreadyAttached());
     }
 
     /// <summary>

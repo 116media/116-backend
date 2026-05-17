@@ -55,7 +55,7 @@ public class AdminAddItemTierFactory(
             bool alreadyAttached = item.Tiers.Any(t => t.PricingTierId == pricingTierId);
             if (alreadyAttached)
             {
-                throw ContentOrderErrors.TierAlreadyAttached(pricingTierId: pricingTierId);
+                throw ContentOrderErrors.TierAlreadyAttached();
             }
 
             PricingTierEntity pricingTier = await lookupRepository.GetPricingTierByIdOrThrowAsync(
