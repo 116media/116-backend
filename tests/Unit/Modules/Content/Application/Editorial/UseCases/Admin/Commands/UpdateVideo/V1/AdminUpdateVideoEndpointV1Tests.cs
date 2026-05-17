@@ -107,6 +107,9 @@ public class AdminUpdateVideoEndpointV1Tests
             PublishedAt: null,
             MetaTitle: null,
             MetaDescription: null,
-            Tags: []
+            Tags: [],
+            ShareCount: 0,
+            RatingAverage: 0m,
+            RatingCount: 0
         );
 }
