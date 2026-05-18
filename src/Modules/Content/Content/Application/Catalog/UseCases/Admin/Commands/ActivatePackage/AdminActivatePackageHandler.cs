@@ -14,10 +14,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.ActivatePacka
 /// <param name="packageRepository">Repository for package data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="packageErrors">Package domain error factory.</param>
 public class AdminActivatePackageHandler(
     IPackageRepository packageRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    PackageErrors packageErrors
 ) : ICommandHandler<AdminActivatePackageCommand, AdminActivatePackageResult>
 {
     /// <inheritdoc />
@@ -37,7 +39,7 @@ public class AdminActivatePackageHandler(
 
         if (!activated)
         {
-            throw PackageErrors.AlreadyActive();
+            throw packageErrors.AlreadyActive();
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
