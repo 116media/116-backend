@@ -14,10 +14,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCustome
 /// <param name="customerRepository">Repository for customer data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="customerErrors">Customer domain error factory.</param>
 public class AdminCreateCustomerHandler(
     ICustomerRepository customerRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    CustomerErrors customerErrors
 ) : ICommandHandler<AdminCreateCustomerCommand, AdminCreateCustomerResult>
 {
     /// <inheritdoc />
@@ -33,7 +35,7 @@ public class AdminCreateCustomerHandler(
 
         if (existing is not null)
         {
-            throw CustomerErrors.AlreadyExists(email: command.Email);
+            throw customerErrors.AlreadyExists(email: command.Email);
         }
 
         var customer = CustomerEntity.Create(
@@ -42,7 +44,8 @@ public class AdminCreateCustomerHandler(
             email: command.Email,
             phone: command.Phone,
             company: command.Company,
-            notes: command.Notes
+            notes: command.Notes,
+            errors: customerErrors
         );
 
         await customerRepository.AddAsync(customer: customer, cancellationToken: cancellationToken);
