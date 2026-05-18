@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
@@ -9,14 +10,15 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShort
 public class AdminCreateShortVideoValidator : AbstractValidator<AdminCreateShortVideoCommand>
 {
     /// <summary>
-    /// Configures validation rules for short video creation.
+    /// Initializes a new instance of <see cref="AdminCreateShortVideoValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminCreateShortVideoValidator()
+    /// <param name="msg">Short video validation error messages.</param>
+    public AdminCreateShortVideoValidator(ShortVideoErrorMessage msg)
     {
-        RuleFor(x => x.Title).ValidShortVideoTitle();
+        RuleFor(x => x.Title).ValidShortVideoTitle(msg);
 
-        RuleFor(x => x.Slug).ValidShortVideoSlug();
+        RuleFor(x => x.Slug).ValidShortVideoSlug(msg);
 
-        RuleFor(x => x.VideoFile).ValidShortVideoFile();
+        RuleFor(x => x.VideoFile).ValidShortVideoFile(msg);
     }
 }
