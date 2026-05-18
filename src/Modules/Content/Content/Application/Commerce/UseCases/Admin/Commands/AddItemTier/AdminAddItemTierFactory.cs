@@ -14,11 +14,15 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier;
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="contentOrderErrors">Content order domain error factory.</param>
+/// <param name="pricingTierErrors">Pricing tier domain error factory.</param>
 public class AdminAddItemTierFactory(
     IContentOrderRepository contentOrderRepository,
     ICategoryRepository categoryRepository,
     ILookupRepository lookupRepository,
-    IContentUnitOfWork unitOfWork
+    IContentUnitOfWork unitOfWork,
+    ContentOrderErrors contentOrderErrors,
+    PricingTierErrors pricingTierErrors
 ) : IAddItemTierFactory
 {
     /// <inheritdoc />
@@ -38,7 +42,7 @@ public class AdminAddItemTierFactory(
         {
             if (order.Status != EnumOrderStatus.Draft)
             {
-                throw ContentOrderErrors.CannotAddItemToNonDraftOrder();
+                throw contentOrderErrors.CannotAddItemToNonDraftOrder();
             }
 
             ContentOrderItemEntity? item = await contentOrderRepository.GetItemByIdAsync(
@@ -49,13 +53,13 @@ public class AdminAddItemTierFactory(
 
             if (item is null)
             {
-                throw ContentOrderErrors.ItemNotFound(itemId: orderItemId);
+                throw contentOrderErrors.ItemNotFound(itemId: orderItemId);
             }
 
             bool alreadyAttached = item.Tiers.Any(t => t.PricingTierId == pricingTierId);
             if (alreadyAttached)
             {
-                throw ContentOrderErrors.TierAlreadyAttached();
+                throw contentOrderErrors.TierAlreadyAttached();
             }
 
             PricingTierEntity pricingTier = await lookupRepository.GetPricingTierByIdOrThrowAsync(
@@ -71,7 +75,7 @@ public class AdminAddItemTierFactory(
 
             if (categoryPricing is null)
             {
-                throw PricingTierErrors.NotFound(id: pricingTierId);
+                throw pricingTierErrors.NotFound(id: pricingTierId);
             }
 
             var tier = ContentItemTierEntity.Create(
@@ -86,7 +90,7 @@ public class AdminAddItemTierFactory(
 
             ContentOrderEntity updated =
                 await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
-                ?? throw ContentOrderErrors.NotFound(id: orderId);
+                ?? throw contentOrderErrors.NotFound(id: orderId);
 
             updated.RecalculateTotalFromItems();
             await contentOrderRepository.UpdateAsync(order: updated, ct: cancellationToken);
@@ -95,6 +99,6 @@ public class AdminAddItemTierFactory(
             return (tier, pricingTier.Name);
         }
 
-        throw ContentOrderErrors.NotFound(id: orderId);
+        throw contentOrderErrors.NotFound(id: orderId);
     }
 }
