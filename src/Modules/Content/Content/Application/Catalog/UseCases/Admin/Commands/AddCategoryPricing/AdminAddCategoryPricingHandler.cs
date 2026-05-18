@@ -15,11 +15,15 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPr
 /// <param name="lookupRepository">Repository for verifying pricing tier existence and active status.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="pricingTierErrors">Pricing tier domain error factory.</param>
+/// <param name="categoryErrors">Category domain error factory.</param>
 public class AdminAddCategoryPricingHandler(
     ICategoryRepository categoryRepository,
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    PricingTierErrors pricingTierErrors,
+    CategoryErrors categoryErrors
 ) : ICommandHandler<AdminAddCategoryPricingCommand, AdminAddCategoryPricingResult>
 {
     /// <inheritdoc />
@@ -39,7 +43,7 @@ public class AdminAddCategoryPricingHandler(
 
         if (!pricingTier.IsActive)
         {
-            throw PricingTierErrors.IsInactive();
+            throw pricingTierErrors.IsInactive();
         }
 
         CategoryPricingEntity? existing = await categoryRepository.GetPricingAsync(
@@ -50,14 +54,15 @@ public class AdminAddCategoryPricingHandler(
 
         if (existing is not null)
         {
-            throw CategoryErrors.PricingAlreadyExists();
+            throw categoryErrors.PricingAlreadyExists();
         }
 
         var pricing = CategoryPricingEntity.Create(
             id: Guid.NewGuid(),
             categoryId: categoryId,
             pricingTierId: command.PricingTierId,
-            priceUsd: command.PriceUsd
+            priceUsd: command.PriceUsd,
+            errors: categoryErrors
         );
 
         await categoryRepository.AddPricingAsync(pricing: pricing, cancellationToken: cancellationToken);
