@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
@@ -10,15 +11,16 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrderIte
 public class AdminEditOrderItemValidator : AbstractValidator<AdminEditOrderItemCommand>
 {
     /// <summary>
-    /// Configures validation rules for editing an order item.
+    /// Initializes a new instance of <see cref="AdminEditOrderItemValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminEditOrderItemValidator()
+    /// <param name="msg">Content order validation error messages.</param>
+    public AdminEditOrderItemValidator(ContentOrderErrorMessage msg)
     {
         RuleFor(x => x.OrderId).IsValidGuid("Order ID");
         RuleFor(x => x.ItemId).IsValidGuid("Item ID");
 
         When(x => x.CategoryId is not null, () => RuleFor(x => x.CategoryId!).IsValidGuid("Category ID"));
 
-        When(x => x.ContentKind.HasValue, () => RuleFor(x => x.ContentKind!.Value).ValidOrderItemContentKind());
+        When(x => x.ContentKind.HasValue, () => RuleFor(x => x.ContentKind!.Value).ValidOrderItemContentKind(msg));
     }
 }
