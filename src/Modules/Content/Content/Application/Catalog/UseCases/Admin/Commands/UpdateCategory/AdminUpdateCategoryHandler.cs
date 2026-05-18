@@ -14,10 +14,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategor
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="categoryErrors">Category domain error factory.</param>
 public class AdminUpdateCategoryHandler(
     ICategoryRepository categoryRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    CategoryErrors categoryErrors
 ) : ICommandHandler<AdminUpdateCategoryCommand, AdminUpdateCategoryResult>
 {
     /// <inheritdoc />
@@ -40,14 +42,15 @@ public class AdminUpdateCategoryHandler(
 
         if (slugConflict is not null && slugConflict.Id != id)
         {
-            throw CategoryErrors.AlreadyExists(slug: command.Slug);
+            throw categoryErrors.AlreadyExists(slug: command.Slug);
         }
 
         category.Update(
             name: command.Name,
             slug: command.Slug,
             description: command.Description,
-            isGossip: command.IsGossip
+            isGossip: command.IsGossip,
+            errors: categoryErrors
         );
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
