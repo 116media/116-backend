@@ -15,10 +15,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.RemovePackage
 /// <param name="packageRepository">Repository for package data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="packageErrors">Package domain error factory.</param>
 public class AdminRemovePackageSlotHandler(
     IPackageRepository packageRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    PackageErrors packageErrors
 ) : ICommandHandler<AdminRemovePackageSlotCommand, AdminRemovePackageSlotResult>
 {
     /// <inheritdoc />
@@ -51,6 +53,6 @@ public class AdminRemovePackageSlotHandler(
             return new AdminRemovePackageSlotResult(Package: dto, IsSuccess: true);
         }
 
-        throw PackageErrors.SlotNotFound(slotId: slotId);
+        throw packageErrors.SlotNotFound(slotId: slotId);
     }
 }
