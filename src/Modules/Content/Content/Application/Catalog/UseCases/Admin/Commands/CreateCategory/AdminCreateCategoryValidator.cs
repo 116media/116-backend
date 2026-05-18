@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
@@ -10,13 +11,14 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategor
 public class AdminCreateCategoryValidator : AbstractValidator<AdminCreateCategoryCommand>
 {
     /// <summary>
-    /// Configures validation rules for category creation.
+    /// Initializes a new instance of <see cref="AdminCreateCategoryValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminCreateCategoryValidator()
+    /// <param name="msg">Category validation error messages.</param>
+    public AdminCreateCategoryValidator(CategoryErrorMessage msg)
     {
         RuleFor(x => x.ContentTypeId).IsValidGuid("Content type ID");
-        RuleFor(x => x.Name).ValidCategoryName();
-        RuleFor(x => x.Slug).ValidCategorySlug();
-        RuleFor(x => x.Description).ValidCategoryDescription();
+        RuleFor(x => x.Name).ValidCategoryName(msg);
+        RuleFor(x => x.Slug).ValidCategorySlug(msg);
+        RuleFor(x => x.Description).ValidCategoryDescription(msg);
     }
 }
