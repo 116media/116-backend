@@ -16,12 +16,18 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem
 /// <param name="packageRepository">Repository for package data access operations.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="categoryErrors">Category domain error factory.</param>
+/// <param name="contentOrderErrors">Content order domain error factory.</param>
+/// <param name="promotionLevelErrors">Promotion level domain error factory.</param>
 public class AdminAddOrderItemFactory(
     ICategoryRepository categoryRepository,
     ILookupRepository lookupRepository,
     IPackageRepository packageRepository,
     IContentOrderRepository contentOrderRepository,
-    IContentUnitOfWork unitOfWork
+    IContentUnitOfWork unitOfWork,
+    CategoryErrors categoryErrors,
+    ContentOrderErrors contentOrderErrors,
+    PromotionLevelErrors promotionLevelErrors
 ) : IAddOrderItemFactory
 {
     /// <inheritdoc />
@@ -35,7 +41,7 @@ public class AdminAddOrderItemFactory(
         CancellationToken cancellationToken
     )
     {
-        order.EnsureDraft();
+        order.EnsureDraft(contentOrderErrors);
 
         CategoryEntity? category = await categoryRepository.GetByIdAsync(
             id: categoryId,
@@ -44,7 +50,7 @@ public class AdminAddOrderItemFactory(
 
         if (category is not null)
         {
-            category.EnsureCommissionable();
+            category.EnsureCommissionable(categoryErrors);
 
             decimal? promoPriceSnapshot = null;
             PromotionLevelEntity? promoLevel = null;
@@ -56,7 +62,7 @@ public class AdminAddOrderItemFactory(
                     cancellationToken: cancellationToken
                 );
 
-                promoLevel.EnsureActive();
+                promoLevel.EnsureActive(promotionLevelErrors);
                 promoPriceSnapshot = promoLevel.PriceUsd;
             }
 
@@ -97,6 +103,6 @@ public class AdminAddOrderItemFactory(
             return (item, category.Name, promoLevel?.Name);
         }
 
-        throw CategoryErrors.NotFound(id: categoryId);
+        throw categoryErrors.NotFound(id: categoryId);
     }
 }
