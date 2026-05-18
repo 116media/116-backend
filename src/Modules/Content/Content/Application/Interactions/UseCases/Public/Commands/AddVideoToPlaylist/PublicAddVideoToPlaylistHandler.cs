@@ -14,10 +14,14 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddVide
 /// <param name="playlistRepository">Repository for playlist data access operations.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="playlistErrors">Playlist domain error factory.</param>
+/// <param name="videoErrors">Video domain error factory.</param>
 public class PublicAddVideoToPlaylistHandler(
     IPlaylistRepository playlistRepository,
     IVideoRepository videoRepository,
-    IContentUnitOfWork unitOfWork
+    IContentUnitOfWork unitOfWork,
+    PlaylistErrors playlistErrors,
+    VideoErrors videoErrors
 ) : ICommandHandler<PublicAddVideoToPlaylistCommand, PublicAddVideoToPlaylistResult>
 {
     /// <inheritdoc />
@@ -35,7 +39,7 @@ public class PublicAddVideoToPlaylistHandler(
         {
             if (playlist.UserId != command.UserId)
             {
-                throw PlaylistErrors.NotOwner();
+                throw playlistErrors.NotOwner();
             }
 
             VideoEntity video = await videoRepository.GetByIdOrThrowAsync(
@@ -45,7 +49,7 @@ public class PublicAddVideoToPlaylistHandler(
 
             if (video.Status != EnumContentStatus.Published)
             {
-                throw VideoErrors.NotFound(id: command.VideoId);
+                throw videoErrors.NotFound(id: command.VideoId);
             }
 
             bool alreadyExists = await playlistRepository.VideoExistsInPlaylistAsync(
@@ -56,7 +60,7 @@ public class PublicAddVideoToPlaylistHandler(
 
             if (alreadyExists)
             {
-                throw PlaylistErrors.VideoAlreadyInPlaylist();
+                throw playlistErrors.VideoAlreadyInPlaylist();
             }
 
             var playlistVideo = PlaylistVideoEntity.Create(
@@ -72,6 +76,6 @@ public class PublicAddVideoToPlaylistHandler(
             return new PublicAddVideoToPlaylistResult(IsSuccess: true);
         }
 
-        throw PlaylistErrors.NotFound(id: command.PlaylistId);
+        throw playlistErrors.NotFound(id: command.PlaylistId);
     }
 }
