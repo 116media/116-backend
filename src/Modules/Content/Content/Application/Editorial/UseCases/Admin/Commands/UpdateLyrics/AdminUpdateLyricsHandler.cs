@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -19,13 +20,15 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyric
 /// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
 /// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="lyricsErrors">Lyrics domain error factory.</param>
 public class AdminUpdateLyricsHandler(
     ILyricsRepository lyricsRepository,
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
     IUserLookupService userLookup,
     IFileRepository fileRepository,
-    IMapper mapper
+    IMapper mapper,
+    LyricsErrors lyricsErrors
 ) : ICommandHandler<AdminUpdateLyricsCommand, AdminUpdateLyricsResult>
 {
     /// <inheritdoc />
@@ -45,7 +48,8 @@ public class AdminUpdateLyricsHandler(
             artistName: command.ArtistName,
             lyricsText: command.LyricsText,
             language: command.Language,
-            videoId: command.VideoId
+            videoId: command.VideoId,
+            errors: lyricsErrors
         );
 
         if (previousVideoId != command.VideoId && previousVideoId.HasValue)
