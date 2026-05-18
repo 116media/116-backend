@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -13,10 +14,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCustome
 /// <param name="customerRepository">Repository for customer data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="customerErrors">Customer domain error factory.</param>
 public class AdminUpdateCustomerHandler(
     ICustomerRepository customerRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    CustomerErrors customerErrors
 ) : ICommandHandler<AdminUpdateCustomerCommand, AdminUpdateCustomerResult>
 {
     /// <inheritdoc />
@@ -37,7 +40,8 @@ public class AdminUpdateCustomerHandler(
             email: command.Email,
             phone: command.Phone,
             company: command.Company,
-            notes: command.Notes
+            notes: command.Notes,
+            errors: customerErrors
         );
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
