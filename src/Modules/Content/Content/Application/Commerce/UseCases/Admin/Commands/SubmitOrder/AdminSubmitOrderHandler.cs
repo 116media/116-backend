@@ -11,9 +11,11 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="submitOrderFactory">Factory for the order submission flow.</param>
+/// <param name="contentOrderErrors">Content order domain error factory.</param>
 public class AdminSubmitOrderHandler(
     IContentOrderRepository contentOrderRepository,
-    ISubmitOrderFactory submitOrderFactory
+    ISubmitOrderFactory submitOrderFactory,
+    ContentOrderErrors contentOrderErrors
 ) : ICommandHandler<AdminSubmitOrderCommand, AdminSubmitOrderResult>
 {
     /// <inheritdoc />
@@ -35,6 +37,6 @@ public class AdminSubmitOrderHandler(
             return new AdminSubmitOrderResult(IsSuccess: true);
         }
 
-        throw ContentOrderErrors.NotFound(id: orderId);
+        throw contentOrderErrors.NotFound(id: orderId);
     }
 }
