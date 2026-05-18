@@ -15,11 +15,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtic
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="articleErrors">Article domain error factory.</param>
 public class AdminCreateArticleHandler(
     ICategoryRepository categoryRepository,
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    ArticleErrors articleErrors
 ) : ICommandHandler<AdminCreateArticleCommand, AdminCreateArticleResult>
 {
     /// <inheritdoc />
@@ -37,7 +39,7 @@ public class AdminCreateArticleHandler(
 
         if (existing is not null)
         {
-            throw ArticleErrors.SlugAlreadyExists(slug: command.Slug);
+            throw articleErrors.SlugAlreadyExists(slug: command.Slug);
         }
 
         ArticleEntity article = CreateArticle(command);
@@ -61,7 +63,7 @@ public class AdminCreateArticleHandler(
     /// </summary>
     /// <param name="command">The command containing article creation data.</param>
     /// <returns>A new <see cref="ArticleEntity"/> instance.</returns>
-    private static ArticleEntity CreateArticle(AdminCreateArticleCommand command)
+    private ArticleEntity CreateArticle(AdminCreateArticleCommand command)
     {
         return command.CustomerId.HasValue
             ? ArticleEntity.CreatePaid(
@@ -71,14 +73,16 @@ public class AdminCreateArticleHandler(
                 categoryId: command.CategoryId,
                 title: command.Title,
                 slug: command.Slug,
-                authorId: command.AuthorId
+                authorId: command.AuthorId,
+                errors: articleErrors
             )
             : ArticleEntity.CreateFree(
                 id: Guid.NewGuid(),
                 categoryId: command.CategoryId,
                 title: command.Title,
                 slug: command.Slug,
-                authorId: command.AuthorId
+                authorId: command.AuthorId,
+                errors: articleErrors
             );
     }
 }
