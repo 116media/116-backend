@@ -17,12 +17,16 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder;
 /// <param name="createOrderFactory">Factory for populating orders from package slots.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="packageErrors">Package domain error factory.</param>
+/// <param name="customerErrors">Customer domain error factory.</param>
 public class AdminCreateOrderHandler(
     ICustomerRepository customerRepository,
     IPackageRepository packageRepository,
     ICreateOrderFactory createOrderFactory,
     IContentOrderRepository contentOrderRepository,
-    IContentUnitOfWork unitOfWork
+    IContentUnitOfWork unitOfWork,
+    PackageErrors packageErrors,
+    CustomerErrors customerErrors
 ) : ICommandHandler<AdminCreateOrderCommand, AdminCreateOrderResult>
 {
     /// <inheritdoc />
@@ -51,7 +55,7 @@ public class AdminCreateOrderHandler(
 
                 if (package is null || !package.IsActive)
                 {
-                    throw PackageErrors.NotFound(id: command.PackageId.Value);
+                    throw packageErrors.NotFound(id: command.PackageId.Value);
                 }
             }
 
@@ -87,6 +91,6 @@ public class AdminCreateOrderHandler(
             return new AdminCreateOrderResult(Order: dto);
         }
 
-        throw CustomerErrors.NotFound(id: customerId);
+        throw customerErrors.NotFound(id: customerId);
     }
 }
