@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
@@ -9,11 +10,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnprom
 public class AdminForceUnpromoteArticleValidator : AbstractValidator<AdminForceUnpromoteArticleCommand>
 {
     /// <summary>
-    /// Configures validation rules for the force-unpromote article command.
+    /// Initializes a new instance of <see cref="AdminForceUnpromoteArticleValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminForceUnpromoteArticleValidator()
+    /// <param name="msg">Article validation error messages.</param>
+    public AdminForceUnpromoteArticleValidator(ArticleErrorMessage msg)
     {
-        RuleFor(x => x.Slug).ValidArticleSlug();
-        RuleFor(x => x.Reason).ValidUnpromoteReason();
+        RuleFor(x => x.Slug).ValidArticleSlug(msg);
+        RuleFor(x => x.Reason).ValidUnpromoteReason(msg);
     }
 }
