@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
@@ -10,26 +11,36 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 public class AdminUpdateArticleValidator : AbstractValidator<AdminUpdateArticleCommand>
 {
     /// <summary>
-    /// Configures validation rules for the full article update.
+    /// Initializes a new instance of <see cref="AdminUpdateArticleValidator" /> with the specified error message providers.
     /// </summary>
-    public AdminUpdateArticleValidator()
+    /// <param name="articleMsg">Article validation error messages.</param>
+    /// <param name="orderMsg">Content order validation error messages.</param>
+    /// <param name="customerMsg">Customer validation error messages.</param>
+    public AdminUpdateArticleValidator(
+        ArticleErrorMessage articleMsg,
+        ContentOrderErrorMessage orderMsg,
+        CustomerErrorMessage customerMsg
+    )
     {
         RuleFor(x => x.Id).IsValidGuid("Article ID");
 
-        RuleFor(x => x.CategoryId).ValidArticleCategoryId();
+        RuleFor(x => x.CategoryId).ValidArticleCategoryId(articleMsg);
 
-        RuleFor(x => x.Title).ValidArticleTitle();
+        RuleFor(x => x.Title).ValidArticleTitle(articleMsg);
 
-        RuleFor(x => x.Slug).ValidArticleSlug();
+        RuleFor(x => x.Slug).ValidArticleSlug(articleMsg);
 
-        RuleFor(x => x.Headline).ValidArticleHeadline();
+        RuleFor(x => x.Headline).ValidArticleHeadline(articleMsg);
 
-        RuleFor(x => x.Body).ValidArticleBody();
+        RuleFor(x => x.Body).ValidArticleBody(articleMsg);
 
-        When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId());
-        When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId());
+        When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId(orderMsg));
+        When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId(customerMsg));
 
-        When(x => x.MetaTitle is not null, () => RuleFor(x => x.MetaTitle).ValidMetaTitle());
-        When(x => x.MetaDescription is not null, () => RuleFor(x => x.MetaDescription).ValidMetaDescription());
+        When(x => x.MetaTitle is not null, () => RuleFor(x => x.MetaTitle).ValidMetaTitle(articleMsg));
+        When(
+            x => x.MetaDescription is not null,
+            () => RuleFor(x => x.MetaDescription).ValidMetaDescription(articleMsg)
+        );
     }
 }
