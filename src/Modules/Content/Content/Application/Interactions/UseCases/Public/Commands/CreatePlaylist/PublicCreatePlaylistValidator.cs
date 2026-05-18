@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
@@ -9,10 +10,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.CreateP
 public class PublicCreatePlaylistValidator : AbstractValidator<PublicCreatePlaylistCommand>
 {
     /// <summary>
-    /// Configures validation rules for creating a playlist.
+    /// Initializes a new instance of <see cref="PublicCreatePlaylistValidator" /> with the specified error message provider.
     /// </summary>
-    public PublicCreatePlaylistValidator()
+    /// <param name="msg">Playlist validation error messages.</param>
+    public PublicCreatePlaylistValidator(PlaylistErrorMessage msg)
     {
-        RuleFor(x => x.Name).ValidPlaylistName();
+        RuleFor(x => x.Name).ValidPlaylistName(msg);
     }
 }
