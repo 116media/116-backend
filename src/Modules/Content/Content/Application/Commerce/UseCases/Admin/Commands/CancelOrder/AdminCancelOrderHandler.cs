@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -10,8 +11,12 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.CancelOrder;
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminCancelOrderHandler(IContentOrderRepository contentOrderRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<AdminCancelOrderCommand, AdminCancelOrderResult>
+/// <param name="contentOrderErrors">Content order domain error factory.</param>
+public class AdminCancelOrderHandler(
+    IContentOrderRepository contentOrderRepository,
+    IContentUnitOfWork unitOfWork,
+    ContentOrderErrors contentOrderErrors
+) : ICommandHandler<AdminCancelOrderCommand, AdminCancelOrderResult>
 {
     /// <inheritdoc />
     public async Task<AdminCancelOrderResult> Handle(
@@ -23,7 +28,7 @@ public class AdminCancelOrderHandler(IContentOrderRepository contentOrderReposit
 
         ContentOrderEntity order = await contentOrderRepository.GetByIdOrThrowAsync(id: orderId, ct: cancellationToken);
 
-        order.Cancel();
+        order.Cancel(contentOrderErrors);
 
         await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
