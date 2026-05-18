@@ -11,18 +11,22 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminSubmitOrderFactory(IContentOrderRepository contentOrderRepository, IContentUnitOfWork unitOfWork)
-    : ISubmitOrderFactory
+/// <param name="contentOrderErrors">Content order domain error factory.</param>
+public class AdminSubmitOrderFactory(
+    IContentOrderRepository contentOrderRepository,
+    IContentUnitOfWork unitOfWork,
+    ContentOrderErrors contentOrderErrors
+) : ISubmitOrderFactory
 {
     /// <inheritdoc />
     public async Task SubmitAsync(ContentOrderEntity order, CancellationToken cancellationToken)
     {
         if (!order.Items.Any(i => i.Tiers.Count > 0))
         {
-            throw ContentOrderErrors.MustHaveAtLeastOneItemWithTier();
+            throw contentOrderErrors.MustHaveAtLeastOneItemWithTier();
         }
 
-        order.Submit();
+        order.Submit(contentOrderErrors);
 
         var payment = ContentPaymentEntity.Create(
             id: Guid.NewGuid(),
