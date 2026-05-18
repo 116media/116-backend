@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
@@ -11,11 +12,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 public class AdminUpdateVideoTagsValidator : AbstractValidator<AdminUpdateVideoTagsCommand>
 {
     /// <summary>
-    /// Configures validation rules for video tags update.
+    /// Initializes a new instance of <see cref="AdminUpdateVideoTagsValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminUpdateVideoTagsValidator()
+    /// <param name="msg">Tag validation error messages.</param>
+    public AdminUpdateVideoTagsValidator(TagErrorMessage msg)
     {
         RuleFor(x => x.VideoId).IsValidGuid("Video ID");
-        RuleForEach(x => x.TagNames).ValidTagNameItem();
+        RuleForEach(x => x.TagNames).ValidTagNameItem(msg);
     }
 }
