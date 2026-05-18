@@ -15,11 +15,15 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.AddPackageSlo
 /// <param name="categoryRepository">Repository for verifying category existence.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="categoryErrors">Category domain error factory.</param>
+/// <param name="packageErrors">Package domain error factory.</param>
 public class AdminAddPackageSlotHandler(
     IPackageRepository packageRepository,
     ICategoryRepository categoryRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    CategoryErrors categoryErrors,
+    PackageErrors packageErrors
 ) : ICommandHandler<AdminAddPackageSlotCommand, AdminAddPackageSlotResult>
 {
     /// <inheritdoc />
@@ -41,7 +45,7 @@ public class AdminAddPackageSlotHandler(
 
             if (category is null)
             {
-                throw CategoryErrors.NotFound(id: command.CategoryId.Value);
+                throw categoryErrors.NotFound(id: command.CategoryId.Value);
             }
         }
 
@@ -50,7 +54,8 @@ public class AdminAddPackageSlotHandler(
             packageId: packageId,
             categoryId: command.CategoryId,
             isRequired: command.IsRequired,
-            quantity: command.Quantity
+            quantity: command.Quantity,
+            errors: packageErrors
         );
 
         await packageRepository.AddSlotAsync(slot: slot, cancellationToken: cancellationToken);
