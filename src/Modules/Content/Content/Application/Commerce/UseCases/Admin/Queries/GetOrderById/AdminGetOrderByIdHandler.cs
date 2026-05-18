@@ -17,11 +17,13 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderById;
 /// <param name="fileRepository">Repository for resolving payment proof file metadata.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="userLookup">Cross-module service for resolving admin user names.</param>
+/// <param name="contentOrderErrors">Content order domain error factory.</param>
 public class AdminGetOrderByIdHandler(
     IContentOrderRepository contentOrderRepository,
     IFileRepository fileRepository,
     IMapper mapper,
-    IUserLookupService userLookup
+    IUserLookupService userLookup,
+    ContentOrderErrors contentOrderErrors
 ) : IQueryHandler<AdminGetOrderByIdQuery, AdminGetOrderByIdResult>
 {
     /// <inheritdoc />
@@ -51,6 +53,6 @@ public class AdminGetOrderByIdHandler(
             return new AdminGetOrderByIdResult(Order: dto);
         }
 
-        throw ContentOrderErrors.NotFound(id: query.Id);
+        throw contentOrderErrors.NotFound(id: query.Id);
     }
 }
