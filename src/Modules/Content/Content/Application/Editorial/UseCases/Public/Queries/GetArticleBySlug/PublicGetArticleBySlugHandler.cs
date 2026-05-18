@@ -13,8 +13,12 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleB
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetArticleBySlugHandler(IArticleRepository articleRepository, IMapper mapper)
-    : IQueryHandler<PublicGetArticleBySlugQuery, PublicGetArticleBySlugResult>
+/// <param name="articleErrors">Article domain error factory.</param>
+public class PublicGetArticleBySlugHandler(
+    IArticleRepository articleRepository,
+    IMapper mapper,
+    ArticleErrors articleErrors
+) : IQueryHandler<PublicGetArticleBySlugQuery, PublicGetArticleBySlugResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetArticleBySlugResult> Handle(
@@ -29,7 +33,7 @@ public class PublicGetArticleBySlugHandler(IArticleRepository articleRepository,
 
         if (article is null || article.Status != EnumContentStatus.Published)
         {
-            throw ArticleErrors.NotFound(Guid.Empty);
+            throw articleErrors.NotFound(Guid.Empty);
         }
 
         var dto = article.ToArticleDetailDto(mapper);
