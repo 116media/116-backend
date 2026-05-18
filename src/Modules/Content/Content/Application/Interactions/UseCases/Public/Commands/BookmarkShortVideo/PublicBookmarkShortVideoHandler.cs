@@ -11,8 +11,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.Bookmar
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicBookmarkShortVideoHandler(IShortVideoRepository shortVideoRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<PublicBookmarkShortVideoCommand, PublicBookmarkShortVideoResult>
+/// <param name="shortVideoInteractionErrors">Short video interaction domain error factory.</param>
+public class PublicBookmarkShortVideoHandler(
+    IShortVideoRepository shortVideoRepository,
+    IContentUnitOfWork unitOfWork,
+    ShortVideoInteractionErrors shortVideoInteractionErrors
+) : ICommandHandler<PublicBookmarkShortVideoCommand, PublicBookmarkShortVideoResult>
 {
     /// <inheritdoc />
     public async Task<PublicBookmarkShortVideoResult> Handle(
@@ -33,7 +37,7 @@ public class PublicBookmarkShortVideoHandler(IShortVideoRepository shortVideoRep
 
         if (alreadyBookmarked)
         {
-            throw ShortVideoInteractionErrors.AlreadyBookmarked();
+            throw shortVideoInteractionErrors.AlreadyBookmarked();
         }
 
         var bookmark = ShortVideoBookmarkEntity.Create(
