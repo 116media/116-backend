@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
@@ -9,11 +10,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnprom
 public class AdminForceUnpromoteVideoValidator : AbstractValidator<AdminForceUnpromoteVideoCommand>
 {
     /// <summary>
-    /// Configures validation rules for the force-unpromote video command.
+    /// Initializes a new instance of <see cref="AdminForceUnpromoteVideoValidator" /> with the specified error message providers.
     /// </summary>
-    public AdminForceUnpromoteVideoValidator()
+    /// <param name="articleMsg">Article validation error messages.</param>
+    /// <param name="videoMsg">Video validation error messages.</param>
+    public AdminForceUnpromoteVideoValidator(ArticleErrorMessage articleMsg, VideoErrorMessage videoMsg)
     {
-        RuleFor(x => x.Slug).ValidVideoSlug();
-        RuleFor(x => x.Reason).ValidUnpromoteReason();
+        RuleFor(x => x.Slug).ValidVideoSlug(videoMsg);
+        RuleFor(x => x.Reason).ValidUnpromoteReason(articleMsg);
     }
 }
