@@ -15,10 +15,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnprom
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="currentActor">Provides the identity of the authenticated user from JWT claims.</param>
+/// <param name="videoErrors">Video domain error factory.</param>
 public class AdminForceUnpromoteVideoHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    ICurrentActor currentActor
+    ICurrentActor currentActor,
+    VideoErrors videoErrors
 ) : ICommandHandler<AdminForceUnpromoteVideoCommand, AdminForceUnpromoteVideoResult>
 {
     /// <inheritdoc />
@@ -34,7 +36,7 @@ public class AdminForceUnpromoteVideoHandler(
 
         if (video is null)
         {
-            throw VideoErrors.NotFound(Guid.Empty);
+            throw videoErrors.NotFound(Guid.Empty);
         }
 
         video.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason);
