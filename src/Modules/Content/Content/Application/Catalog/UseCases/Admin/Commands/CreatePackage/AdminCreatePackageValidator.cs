@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
@@ -9,11 +10,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreatePackage
 public class AdminCreatePackageValidator : AbstractValidator<AdminCreatePackageCommand>
 {
     /// <summary>
-    /// Configures validation rules for package creation.
+    /// Initializes a new instance of <see cref="AdminCreatePackageValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminCreatePackageValidator()
+    /// <param name="msg">Package validation error messages.</param>
+    public AdminCreatePackageValidator(PackageErrorMessage msg)
     {
-        RuleFor(x => x.Name).ValidPackageName();
-        RuleFor(x => x.Description).ValidPackageDescription();
+        RuleFor(x => x.Name).ValidPackageName(msg);
+        RuleFor(x => x.Description).ValidPackageDescription(msg);
     }
 }
