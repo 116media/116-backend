@@ -13,10 +13,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.SubmitVideo
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="videoErrors">Video domain error factory.</param>
 public class AdminSubmitVideoHandler(
     IVideoRepository videoRepository,
     IContentOrderRepository contentOrderRepository,
-    IContentUnitOfWork unitOfWork
+    IContentUnitOfWork unitOfWork,
+    VideoErrors videoErrors
 ) : ICommandHandler<AdminSubmitVideoCommand, AdminSubmitVideoResult>
 {
     /// <inheritdoc />
@@ -40,17 +42,17 @@ public class AdminSubmitVideoHandler(
 
             if (orderAlreadyPaid && !video.MarkPendingReview())
             {
-                throw VideoErrors.AlreadyPendingReview();
+                throw videoErrors.AlreadyPendingReview();
             }
 
             if (!orderAlreadyPaid && !video.Submit())
             {
-                throw VideoErrors.AlreadySubmitted();
+                throw videoErrors.AlreadySubmitted();
             }
         }
         else if (!video.CustomerId.HasValue && !video.MarkPendingReview())
         {
-            throw VideoErrors.AlreadyPendingReview();
+            throw videoErrors.AlreadyPendingReview();
         }
 
         videoRepository.Update(video: video);
