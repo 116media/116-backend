@@ -12,8 +12,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishVide
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminPublishVideoHandler(IVideoRepository videoRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<AdminPublishVideoCommand, AdminPublishVideoResult>
+/// <param name="videoErrors">Video domain error factory.</param>
+public class AdminPublishVideoHandler(
+    IVideoRepository videoRepository,
+    IContentUnitOfWork unitOfWork,
+    VideoErrors videoErrors
+) : ICommandHandler<AdminPublishVideoCommand, AdminPublishVideoResult>
 {
     /// <inheritdoc />
     public async Task<AdminPublishVideoResult> Handle(
@@ -27,18 +31,18 @@ public class AdminPublishVideoHandler(IVideoRepository videoRepository, IContent
 
         if (video.Status == EnumContentStatus.Published)
         {
-            throw VideoErrors.AlreadyPublished();
+            throw videoErrors.AlreadyPublished();
         }
 
         if (video.Status != EnumContentStatus.Approved)
         {
-            throw VideoErrors.InvalidStatusTransition(
+            throw videoErrors.InvalidStatusTransition(
                 from: video.Status.ToString(),
                 to: nameof(EnumContentStatus.Published)
             );
         }
 
-        video.Publish();
+        video.Publish(videoErrors);
         videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
