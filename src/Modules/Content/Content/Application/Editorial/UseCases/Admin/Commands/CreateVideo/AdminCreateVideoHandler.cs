@@ -15,11 +15,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="videoErrors">Video domain error factory.</param>
 public class AdminCreateVideoHandler(
     ICategoryRepository categoryRepository,
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    VideoErrors videoErrors
 ) : ICommandHandler<AdminCreateVideoCommand, AdminCreateVideoResult>
 {
     /// <inheritdoc />
@@ -37,7 +39,7 @@ public class AdminCreateVideoHandler(
 
         if (existing is not null)
         {
-            throw VideoErrors.SlugAlreadyExists(slug: command.Slug);
+            throw videoErrors.SlugAlreadyExists(slug: command.Slug);
         }
 
         VideoEntity video;
@@ -52,7 +54,8 @@ public class AdminCreateVideoHandler(
                 title: command.Title,
                 slug: command.Slug,
                 authorId: command.AuthorId,
-                description: command.Description
+                description: command.Description,
+                errors: videoErrors
             );
         }
         else
@@ -63,7 +66,8 @@ public class AdminCreateVideoHandler(
                 title: command.Title,
                 slug: command.Slug,
                 authorId: command.AuthorId,
-                description: command.Description
+                description: command.Description,
+                errors: videoErrors
             );
         }
 
