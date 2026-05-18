@@ -12,8 +12,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishArti
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminPublishArticleHandler(IArticleRepository articleRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<AdminPublishArticleCommand, AdminPublishArticleResult>
+/// <param name="articleErrors">Article domain error factory.</param>
+public class AdminPublishArticleHandler(
+    IArticleRepository articleRepository,
+    IContentUnitOfWork unitOfWork,
+    ArticleErrors articleErrors
+) : ICommandHandler<AdminPublishArticleCommand, AdminPublishArticleResult>
 {
     /// <inheritdoc />
     public async Task<AdminPublishArticleResult> Handle(
@@ -30,12 +34,12 @@ public class AdminPublishArticleHandler(IArticleRepository articleRepository, IC
 
         if (article.Status == EnumContentStatus.Published)
         {
-            throw ArticleErrors.AlreadyPublished();
+            throw articleErrors.AlreadyPublished();
         }
 
         if (article.Status != EnumContentStatus.Approved)
         {
-            throw ArticleErrors.InvalidStatusTransition(
+            throw articleErrors.InvalidStatusTransition(
                 from: article.Status.ToString(),
                 to: nameof(EnumContentStatus.Published)
             );
