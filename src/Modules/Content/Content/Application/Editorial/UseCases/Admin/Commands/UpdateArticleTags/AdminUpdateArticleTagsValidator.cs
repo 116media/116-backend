@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
@@ -11,11 +12,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 public class AdminUpdateArticleTagsValidator : AbstractValidator<AdminUpdateArticleTagsCommand>
 {
     /// <summary>
-    /// Configures validation rules for article tags update.
+    /// Initializes a new instance of <see cref="AdminUpdateArticleTagsValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminUpdateArticleTagsValidator()
+    /// <param name="msg">Tag validation error messages.</param>
+    public AdminUpdateArticleTagsValidator(TagErrorMessage msg)
     {
         RuleFor(x => x.ArticleId).IsValidGuid("Article ID");
-        RuleForEach(x => x.TagNames).ValidTagNameItem();
+        RuleForEach(x => x.TagNames).ValidTagNameItem(msg);
     }
 }
