@@ -14,10 +14,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotio
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="promotionLevelErrors">Promotion level domain error factory.</param>
 public class AdminCreatePromotionLevelHandler(
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    PromotionLevelErrors promotionLevelErrors
 ) : ICommandHandler<AdminCreatePromotionLevelCommand, AdminCreatePromotionLevelResult>
 {
     /// <inheritdoc />
@@ -33,7 +35,7 @@ public class AdminCreatePromotionLevelHandler(
 
         if (exists)
         {
-            throw PromotionLevelErrors.AlreadyExists(name: command.Name);
+            throw promotionLevelErrors.AlreadyExists(name: command.Name);
         }
 
         var promotionLevel = PromotionLevelEntity.Create(
@@ -41,7 +43,8 @@ public class AdminCreatePromotionLevelHandler(
             name: command.Name,
             durationDays: command.DurationDays,
             priceUsd: command.PriceUsd,
-            spotPriority: command.SpotPriority
+            spotPriority: command.SpotPriority,
+            errors: promotionLevelErrors
         );
 
         await lookupRepository.AddPromotionLevelAsync(
