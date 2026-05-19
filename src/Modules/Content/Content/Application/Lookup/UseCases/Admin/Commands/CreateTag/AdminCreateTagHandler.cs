@@ -16,11 +16,13 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateTag;
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="cacheInvalidator">Invalidates the popular-tags cache after the tag graph changes.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="tagErrors">Tag domain error factory.</param>
 public class AdminCreateTagHandler(
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
     IPopularTagsCacheInvalidator cacheInvalidator,
-    IMapper mapper
+    IMapper mapper,
+    TagErrors tagErrors
 ) : ICommandHandler<AdminCreateTagCommand, AdminCreateTagResult>
 {
     /// <inheritdoc />
@@ -33,10 +35,10 @@ public class AdminCreateTagHandler(
 
         if (existing is not null)
         {
-            throw TagErrors.SlugAlreadyExists(slug: command.Slug);
+            throw tagErrors.SlugAlreadyExists(slug: command.Slug);
         }
 
-        var tag = TagEntity.Create(id: Guid.NewGuid(), name: command.Name, slug: command.Slug);
+        var tag = TagEntity.Create(id: Guid.NewGuid(), name: command.Name, slug: command.Slug, errors: tagErrors);
 
         await lookupRepository.AddTagAsync(tag: tag, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
