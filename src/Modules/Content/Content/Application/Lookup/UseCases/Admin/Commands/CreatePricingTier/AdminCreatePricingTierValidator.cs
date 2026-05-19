@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
@@ -9,11 +10,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePricingT
 public class AdminCreatePricingTierValidator : AbstractValidator<AdminCreatePricingTierCommand>
 {
     /// <summary>
-    /// Configures validation rules for pricing tier creation.
+    /// Initializes a new instance of <see cref="AdminCreatePricingTierValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminCreatePricingTierValidator()
+    /// <param name="msg">Pricing tier validation error messages.</param>
+    public AdminCreatePricingTierValidator(PricingTierErrorMessage msg)
     {
-        RuleFor(x => x.Name).ValidPricingTierName();
-        RuleFor(x => x.Description).ValidPricingTierDescription();
+        RuleFor(x => x.Name).ValidPricingTierName(msg);
+        RuleFor(x => x.Description).ValidPricingTierDescription(msg);
     }
 }
