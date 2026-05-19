@@ -11,8 +11,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.LikeArt
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicLikeArticleHandler(IArticleRepository articleRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<PublicLikeArticleCommand, PublicLikeArticleResult>
+/// <param name="articleInteractionErrors">Article interaction domain error factory.</param>
+public class PublicLikeArticleHandler(
+    IArticleRepository articleRepository,
+    IContentUnitOfWork unitOfWork,
+    ArticleInteractionErrors articleInteractionErrors
+) : ICommandHandler<PublicLikeArticleCommand, PublicLikeArticleResult>
 {
     /// <inheritdoc />
     public async Task<PublicLikeArticleResult> Handle(
@@ -33,7 +37,7 @@ public class PublicLikeArticleHandler(IArticleRepository articleRepository, ICon
 
         if (alreadyLiked)
         {
-            throw ArticleInteractionErrors.AlreadyLiked();
+            throw articleInteractionErrors.AlreadyLiked();
         }
 
         var like = ArticleLikeEntity.Create(id: Guid.NewGuid(), userId: command.UserId, articleId: command.ArticleId);
