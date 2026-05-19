@@ -1,10 +1,12 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Content.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides error messages for the <c>Video</c> domain.
 /// Covers conflict situations and validation failures related to video operations.
 /// </summary>
-public static class VideoErrorMessage
+public class VideoErrorMessage(IStringLocalizer<VideoErrorMessage> localizer)
 {
     /// <summary>
     /// Gets an error message for when a video with the given slug already exists.
@@ -13,9 +15,9 @@ public static class VideoErrorMessage
     /// <returns>
     /// A formatted error message indicating that a video with the specified slug already exists.
     /// </returns>
-    public static string SlugAlreadyExists(string slug)
+    public string SlugAlreadyExists(string slug)
     {
-        return $"Video with slug '{slug}' already exists";
+        return string.Format(localizer["SlugAlreadyExists"], slug);
     }
 
     /// <summary>
@@ -24,9 +26,9 @@ public static class VideoErrorMessage
     /// <returns>
     /// An error message indicating that the video title is required.
     /// </returns>
-    public static string TitleRequired()
+    public string TitleRequired()
     {
-        return "Video title is required";
+        return localizer["TitleRequired"];
     }
 
     /// <summary>
@@ -35,9 +37,9 @@ public static class VideoErrorMessage
     /// <returns>
     /// An error message indicating that the video slug is required.
     /// </returns>
-    public static string SlugRequired()
+    public string SlugRequired()
     {
-        return "Video slug is required";
+        return localizer["SlugRequired"];
     }
 
     /// <summary>
@@ -46,9 +48,9 @@ public static class VideoErrorMessage
     /// <returns>
     /// An error message indicating that a YouTube video URL must be attached before the video can be published.
     /// </returns>
-    public static string CannotPublishWithoutYoutubeUrl()
+    public string CannotPublishWithoutYoutubeUrl()
     {
-        return "A YouTube video URL must be attached before this video can be published";
+        return localizer["CannotPublishWithoutYoutubeUrl"];
     }
 
     /// <summary>
@@ -57,65 +59,57 @@ public static class VideoErrorMessage
     /// <returns>
     /// An error message indicating that only videos in Draft or Rejected status can be permanently deleted.
     /// </returns>
-    public static string CannotDeletePublishedVideo()
+    public string CannotDeletePublishedVideo()
     {
-        return "Only videos in Draft or Rejected status can be permanently deleted. Archive published videos instead.";
+        return localizer["CannotDeletePublishedVideo"];
     }
 
     /// <summary>
-    /// Gets an error message for when an invalid status transition is attempted.
-    /// </summary>
-    /// <param name="from">The current status of the video.</param>
-    /// <param name="to">The target status that the transition was attempted towards.</param>
-    /// <returns>
-    /// A formatted error message indicating that the transition from the current status to the target status is not allowed.
-    /// </returns>
-    /// <summary>
     /// Gets an error message for when a video is already pending payment.
     /// </summary>
-    public static string AlreadySubmitted()
+    public string AlreadySubmitted()
     {
-        return "Video is already pending payment";
+        return localizer["AlreadySubmitted"];
     }
 
     /// <summary>
     /// Gets an error message for when a video is already pending review.
     /// </summary>
-    public static string AlreadyPendingReview()
+    public string AlreadyPendingReview()
     {
-        return "Video is already pending review";
+        return localizer["AlreadyPendingReview"];
     }
 
     /// <summary>
     /// Gets an error message for when a video is already approved.
     /// </summary>
-    public static string AlreadyApproved()
+    public string AlreadyApproved()
     {
-        return "Video is already approved";
+        return localizer["AlreadyApproved"];
     }
 
     /// <summary>
     /// Gets an error message for when a video is already published.
     /// </summary>
-    public static string AlreadyPublished()
+    public string AlreadyPublished()
     {
-        return "Video is already published";
+        return localizer["AlreadyPublished"];
     }
 
     /// <summary>
     /// Gets an error message for when a video is already rejected.
     /// </summary>
-    public static string AlreadyRejected()
+    public string AlreadyRejected()
     {
-        return "Video is already rejected";
+        return localizer["AlreadyRejected"];
     }
 
     /// <summary>
     /// Gets an error message for when a video is already archived.
     /// </summary>
-    public static string AlreadyArchived()
+    public string AlreadyArchived()
     {
-        return "Video is already archived";
+        return localizer["AlreadyArchived"];
     }
 
     /// <summary>
@@ -126,9 +120,9 @@ public static class VideoErrorMessage
     /// <returns>
     /// A formatted error message indicating that the transition from the current status to the target status is not allowed.
     /// </returns>
-    public static string InvalidStatusTransition(string from, string to)
+    public string InvalidStatusTransition(string from, string to)
     {
-        return $"Cannot transition video from '{from}' to '{to}'";
+        return string.Format(localizer["InvalidStatusTransition"], from, to);
     }
 
     /// <summary>
@@ -140,8 +134,49 @@ public static class VideoErrorMessage
     /// <returns>
     /// An error message indicating that the YouTube URL cannot be attached until after the scheduled shooting date.
     /// </returns>
-    public static string CannotAttachYoutubeUrlBeforeShoot(DateTimeOffset shootingScheduledAt)
+    public string CannotAttachYoutubeUrlBeforeShoot(DateTimeOffset shootingScheduledAt)
     {
-        return $"YouTube URL cannot be added before the shooting date ({shootingScheduledAt:yyyy-MM-dd}).";
+        return string.Format(
+            localizer["CannotAttachYoutubeUrlBeforeShoot"],
+            shootingScheduledAt.ToString("yyyy-MM-dd")
+        );
     }
+
+    /// <summary>
+    /// Gets an error message for when a video title exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string TitleTooLong(int max) => string.Format(localizer["TitleTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a video slug exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string SlugTooLong(int max) => string.Format(localizer["SlugTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a video slug has an invalid format.
+    /// </summary>
+    public string SlugInvalidFormat() => localizer["SlugInvalidFormat"];
+
+    /// <summary>
+    /// Gets an error message for when a video description is required.
+    /// </summary>
+    public string DescriptionRequired() => localizer["DescriptionRequired"];
+
+    /// <summary>
+    /// Gets an error message for when a YouTube video URL is required.
+    /// </summary>
+    public string YoutubeUrlRequired() => localizer["YoutubeUrlRequired"];
+
+    /// <summary>
+    /// Gets an error message for when a YouTube video URL exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string YoutubeUrlTooLong(int max) => string.Format(localizer["YoutubeUrlTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a YouTube URL is not a valid YouTube URL.
+    /// </summary>
+    public string YoutubeUrlInvalidFormat() => localizer["YoutubeUrlInvalidFormat"];
 }
