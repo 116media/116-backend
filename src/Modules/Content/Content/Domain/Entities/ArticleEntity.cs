@@ -224,16 +224,23 @@ public class ArticleEntity : Aggregate<Guid>
     /// <param name="slug">The URL-safe slug.</param>
     /// <param name="authorId">The identity user UUID from JWT claims.</param>
     /// <returns>A new <see cref="ArticleEntity" /> in <c>Draft</c> status.</returns>
-    public static ArticleEntity CreateFree(Guid id, Guid categoryId, string title, string slug, Guid authorId)
+    public static ArticleEntity CreateFree(
+        Guid id,
+        Guid categoryId,
+        string title,
+        string slug,
+        Guid authorId,
+        ArticleErrors errors
+    )
     {
         if (string.IsNullOrWhiteSpace(value: title))
         {
-            throw ArticleErrors.TitleRequired();
+            throw errors.TitleRequired();
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw ArticleErrors.SlugRequired();
+            throw errors.SlugRequired();
         }
 
         return new ArticleEntity
@@ -258,6 +265,7 @@ public class ArticleEntity : Aggregate<Guid>
     /// <param name="title">The article title.</param>
     /// <param name="slug">The URL-safe slug.</param>
     /// <param name="authorId">The identity user UUID from JWT claims.</param>
+    /// <param name="errors">The errors factory instance.</param>
     /// <returns>A new <see cref="ArticleEntity" /> in <c>Draft</c> status.</returns>
     public static ArticleEntity CreatePaid(
         Guid id,
@@ -266,17 +274,18 @@ public class ArticleEntity : Aggregate<Guid>
         Guid categoryId,
         string title,
         string slug,
-        Guid authorId
+        Guid authorId,
+        ArticleErrors errors
     )
     {
         if (string.IsNullOrWhiteSpace(value: title))
         {
-            throw ArticleErrors.TitleRequired();
+            throw errors.TitleRequired();
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw ArticleErrors.SlugRequired();
+            throw errors.SlugRequired();
         }
 
         return new ArticleEntity
