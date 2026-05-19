@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Shared.Infrastructure.Seed;
@@ -14,7 +15,11 @@ namespace _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 /// Every category and content item must belong to one of these types.
 /// This seeder is idempotent — it skips execution if any content types already exist.
 /// </remarks>
-public class ContentTypeSeeder(ContentDbContext context, ILogger<ContentTypeSeeder> logger) : IDataSeeder
+public class ContentTypeSeeder(
+    ContentDbContext context,
+    ILogger<ContentTypeSeeder> logger,
+    ContentTypeErrors contentTypeErrors
+) : IDataSeeder
 {
     private static readonly string[] ContentTypeNames =
     [
@@ -53,7 +58,7 @@ public class ContentTypeSeeder(ContentDbContext context, ILogger<ContentTypeSeed
     private async Task ExecuteSeedingAsync()
     {
         ContentTypeEntity[] contentTypes = ContentTypeNames
-            .Select(name => ContentTypeEntity.Create(id: Guid.NewGuid(), name: name))
+            .Select(name => ContentTypeEntity.Create(id: Guid.NewGuid(), name: name, errors: contentTypeErrors))
             .ToArray();
 
         await context.ContentTypes.AddRangeAsync(contentTypes);
