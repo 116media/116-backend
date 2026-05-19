@@ -1,17 +1,17 @@
 using _116.Shared.Application.Metadata;
 
-namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeId;
+namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeVideoUrl;
 
 /// <summary>
-/// Contains metadata information for the attach YouTube ID route.
+/// Contains metadata information for the attach YouTube video URL route.
 /// </summary>
-public static class AdminAttachYoutubeIdMetaField
+public static class AdminAttachYoutubeVideoUrlMetaField
 {
-    public static readonly RouteMetadata AdminAttachYoutubeId = new(
-        "AttachYoutubeId",
-        "Attach a YouTube video ID",
+    public static readonly RouteMetadata AdminAttachYoutubeVideoUrl = new(
+        "AttachYoutubeVideoUrl",
+        "Attach a YouTube video URL",
         """
-            Attaches a YouTube video ID to a video and automatically downloads
+            Attaches a full YouTube video URL to a video and automatically downloads
             the YouTube thumbnail, re-uploading it to Cloudinary.
             \n
             If the video already has a thumbnail, the old Cloudinary asset is deleted

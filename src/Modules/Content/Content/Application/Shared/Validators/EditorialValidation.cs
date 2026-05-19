@@ -133,21 +133,37 @@ public static partial class EditorialValidation
     }
 
     /// <summary>
-    /// Validates a YouTube video ID with length constraints.
+    /// Validates a YouTube video URL.
     /// </summary>
-    /// <typeparam name="T">The type being validated.</typeparam>
-    /// <param name="ruleBuilder">The rule builder for the YouTube video ID property.</param>
-    /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, string?> ValidYoutubeVideoId<T>(
+    /// <typeparam name="T">
+    /// The type being validated.
+    /// </typeparam>
+    /// <param name="ruleBuilder">
+    /// The rule builder for the YouTube video URL property.
+    /// </param>
+    /// <returns>
+    /// The configured rule builder.
+    /// </returns>
+    public static IRuleBuilderOptions<T, string?> ValidYoutubeVideoUrl<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage("YouTube video ID is required.")
-            .MaximumLength(maximumLength: ContentConstants.MaxYoutubeVideoIdLength)
-            .WithMessage($"YouTube video ID must not exceed {ContentConstants.MaxYoutubeVideoIdLength} characters.");
+            .WithMessage("YouTube video URL is required.")
+            .MaximumLength(maximumLength: ContentConstants.MaxYoutubeVideoUrlLength)
+            .WithMessage($"YouTube video URL must not exceed {ContentConstants.MaxYoutubeVideoUrlLength} characters.")
+            .Must(url =>
+                url is not null
+                && (
+                    url.Contains("youtube.com/watch")
+                    || url.Contains("youtu.be/")
+                    || url.Contains("youtube.com/embed/")
+                    || url.Contains("youtube.com/shorts/")
+                )
+            )
+            .WithMessage("Must be a valid YouTube video URL.");
     }
 
     /// <summary>

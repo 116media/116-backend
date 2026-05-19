@@ -384,12 +384,12 @@ public static class TestConstants
             {
                 public const int TitleMaxLength = 100;
                 public const int SlugMaxLength = 220;
-                public const int YoutubeVideoIdMaxLength = 20;
+                public const int YoutubeVideoUrlMaxLength = 200;
                 public const int RejectionReasonMaxLength = 500;
 
                 public const string ValidTitle = "116 Le Focus — Fally Ipupa";
                 public const string ValidSlug = "116-le-focus-fally-ipupa";
-                public const string ValidYoutubeVideoId = "dQw4w9WgXcQ";
+                public const string ValidYoutubeVideoUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
                 public const string ValidDescription = "Épisode complet de 116 Le Focus avec Fally Ipupa.";
                 public const string ValidRejectionReason = "La qualité vidéo ne répond pas aux critères requis.";
             }

@@ -38,7 +38,7 @@ public class AdminGetVideoByIdEndpointV1Tests
             AuthorId: "Test",
             Status: EnumContentStatus.Draft,
             RejectionReason: null,
-            YoutubeVideoId: null,
+            YoutubeVideoUrl: null,
             IsFeatured: false,
             FeaturedUntil: null,
             HasLyrics: false,
@@ -46,6 +46,9 @@ public class AdminGetVideoByIdEndpointV1Tests
             PublishedAt: null,
             MetaTitle: null,
             MetaDescription: null,
-            Tags: []
+            Tags: [],
+            CustomerId: null,
+            CustomerName: null,
+            OrderItemId: null
         );
 }

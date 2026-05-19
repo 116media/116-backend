@@ -36,7 +36,7 @@ public class AdminGetAllVideosEndpointV1Tests
             ThumbnailUrl: null,
             AuthorId: "Test",
             Status: EnumContentStatus.Draft,
-            YoutubeVideoId: null,
+            YoutubeVideoUrl: null,
             IsFeatured: false,
             HasLyrics: false,
             PublishedAt: null

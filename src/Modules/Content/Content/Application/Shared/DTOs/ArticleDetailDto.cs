@@ -26,6 +26,9 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="Images">All image assets associated with this article.</param>
 /// <param name="Tags">Tags applied to this article for discovery and SEO.</param>
 /// <param name="ReadTimeInMinutes">Estimated reading time in minutes, computed from the body word count.</param>
+/// <param name="CustomerId">The B2B customer UUID this article was commissioned for, or null for free content.</param>
+/// <param name="CustomerName">The full name of the commissioning customer, or null for free content.</param>
+/// <param name="OrderItemId">The order item UUID this article is linked to, or null for free content.</param>
 /// <param name="Author">The resolved author profile with avatar URL, or null if the author could not be found.</param>
 public record ArticleDetailDto(
     Guid Id,
@@ -47,5 +50,8 @@ public record ArticleDetailDto(
     IReadOnlyList<ArticleImageDto> Images,
     IReadOnlyList<TagDto> Tags,
     int ReadTimeInMinutes,
+    Guid? CustomerId = null,
+    string? CustomerName = null,
+    Guid? OrderItemId = null,
     AuthorDto? Author = null
 ) : AuditableDto;

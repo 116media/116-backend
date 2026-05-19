@@ -27,7 +27,10 @@ public static class VideoMapper
         config
             .NewConfig<VideoEntity, VideoDetailDto>()
             .Map(dest => dest.CategoryName, src => src.Category.Name)
-            .Map(dest => dest.Tags, src => src.Tags);
+            .Map(dest => dest.Tags, src => src.Tags)
+            .Map(dest => dest.CustomerId, src => src.CustomerId)
+            .Map(dest => dest.CustomerName, src => src.Customer != null ? src.Customer.FullName : null)
+            .Map(dest => dest.OrderItemId, src => src.OrderItemId);
     }
 
     /// <summary>

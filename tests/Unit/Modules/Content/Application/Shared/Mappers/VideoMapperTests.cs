@@ -130,4 +130,46 @@ public class VideoMapperTests : BaseContentHandlerTest
     }
 
     #endregion
+
+    #region ToVideoDetailDto — customer and order item mapping
+
+    [Fact]
+    public void ToVideoDetailDto_WhenFreeVideo_ShouldMapCustomerIdAsNull()
+    {
+        // Arrange
+        VideoEntity video = CreateVideoWithCategory();
+
+        // Act
+        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+
+        // Assert
+        dto.CustomerId.Should().BeNull();
+        dto.CustomerName.Should().BeNull();
+        dto.OrderItemId.Should().BeNull();
+    }
+
+    [Fact]
+    public void ToVideoDetailDto_WhenPaidVideo_ShouldMapCustomerId()
+    {
+        // Arrange
+        Guid customerId = Guid.NewGuid();
+        Guid orderItemId = Guid.NewGuid();
+
+        VideoEntity video = VideoFactory.CreatePaid(CategoryId, customerId, orderItemId);
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        CustomerEntity customer = CustomerFactory.Create();
+
+        video.GetType().GetProperty("Category")!.SetValue(video, category);
+        video.GetType().GetProperty("Customer")!.SetValue(video, customer);
+
+        // Act
+        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+
+        // Assert
+        dto.CustomerId.Should().Be(customerId);
+        dto.CustomerName.Should().Be(customer.FullName);
+        dto.OrderItemId.Should().Be(orderItemId);
+    }
+
+    #endregion
 }

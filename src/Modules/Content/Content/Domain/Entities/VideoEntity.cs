@@ -80,12 +80,12 @@ public class VideoEntity : Aggregate<Guid>
     public string? ThumbnailStorageKey { get; private set; }
 
     /// <summary>
-    /// The YouTube video ID (e.g., "dQw4w9WgXcQ"). Required a gate before publishing —
-    /// <see cref="Publish" /> throws if this is null.
+    /// The full YouTube video URL (e.g., "https://www.youtube.com/watch?v=dQw4w9WgXcQ").
+    /// Required as a gate before publishing — <see cref="Publish" /> throws if this is null.
     /// Attached via <c>PATCH /api/v1/admin/videos/{id}/YouTube</c>.
     /// </summary>
-    [MaxLength(length: ContentConstants.MaxYoutubeVideoIdLength)]
-    public string? YoutubeVideoId { get; private set; }
+    [MaxLength(length: ContentConstants.MaxYoutubeVideoUrlLength)]
+    public string? YoutubeVideoUrl { get; private set; }
 
     /// <summary>
     /// Whether the video has been flagged for manual Facebook &amp; Instagram promotion.
@@ -320,13 +320,15 @@ public class VideoEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Attaches the YouTube video ID. Sets <c>YoutubeVideoId</c> only — the handler
-    /// (<c>AttachYoutubeIdCommandHandler</c>) is responsible for downloading the YouTube
+    /// Attaches the full YouTube video URL. Sets <c>YoutubeVideoUrl</c> only — the handler
+    /// (<c>AttachYoutubeVideoUrlCommandHandler</c>) is responsible for downloading the YouTube
     /// thumbnail and calling <see cref="UpdateThumbnail" /> separately.
     /// Keeping these two concerns separate makes the entity method simple and testable.
     /// </summary>
-    /// <param name="youtubeVideoId">The YouTube video ID (e.g., "dQw4w9WgXcQ").</param>
-    public void AttachYoutubeId(string youtubeVideoId) => YoutubeVideoId = youtubeVideoId;
+    /// <param name="youtubeVideoUrl">
+    /// The full YouTube video URL (e.g., "https://www.youtube.com/watch?v=dQw4w9WgXcQ").
+    /// </param>
+    public void AttachYoutubeVideoUrl(string youtubeVideoUrl) => YoutubeVideoUrl = youtubeVideoUrl;
 
     /// <summary>
     /// Records or updates the scheduled shooting date.
@@ -398,7 +400,7 @@ public class VideoEntity : Aggregate<Guid>
     /// enforcing the YouTube gate at the domain level.
     /// </summary>
     /// <returns><c>true</c> if published; <c>false</c> if already published.</returns>
-    /// <exception cref="Exception">Thrown when <c>YoutubeVideoId</c> is null or empty.</exception>
+    /// <exception cref="Exception">Thrown when <c>YoutubeVideoUrl</c> is null or empty.</exception>
     public bool Publish()
     {
         if (Status == EnumContentStatus.Published)
@@ -406,9 +408,9 @@ public class VideoEntity : Aggregate<Guid>
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(YoutubeVideoId))
+        if (string.IsNullOrWhiteSpace(YoutubeVideoUrl))
         {
-            throw VideoErrors.CannotPublishWithoutYoutubeId();
+            throw VideoErrors.CannotPublishWithoutYoutubeUrl();
         }
 
         Status = EnumContentStatus.Published;

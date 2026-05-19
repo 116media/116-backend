@@ -1,24 +1,24 @@
-using _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeId.V1;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeVideoUrl.V1;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeId.V1;
+namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeVideoUrl.V1;
 
 /// <summary>
-/// Unit tests for <see cref="AdminAttachYoutubeIdResponse"/>.
+/// Unit tests for <see cref="AdminAttachYoutubeVideoUrlResponse"/>.
 /// </summary>
-public class AdminAttachYoutubeIdEndpointV1Tests
+public class AdminAttachYoutubeVideoUrlEndpointV1Tests
 {
     [Fact]
-    public void AdminAttachYoutubeIdResponse_ShouldConstructCorrectly()
+    public void AdminAttachYoutubeVideoUrlResponse_ShouldConstructCorrectly()
     {
         // Arrange
         VideoDetailDto dto = CreateVideoDetailDto();
 
         // Act
-        var response = new AdminAttachYoutubeIdResponse(Video: dto);
+        var response = new AdminAttachYoutubeVideoUrlResponse(Video: dto);
 
         // Assert
         response.Should().NotBeNull();
@@ -38,7 +38,7 @@ public class AdminAttachYoutubeIdEndpointV1Tests
             AuthorId: "Test",
             Status: EnumContentStatus.Draft,
             RejectionReason: null,
-            YoutubeVideoId: null,
+            YoutubeVideoUrl: null,
             IsFeatured: false,
             FeaturedUntil: null,
             HasLyrics: false,

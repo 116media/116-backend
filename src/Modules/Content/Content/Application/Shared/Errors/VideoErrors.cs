@@ -42,11 +42,11 @@ public static class VideoErrors
     }
 
     /// <summary>
-    /// Throws when a video cannot be published because no YouTube ID has been attached.
+    /// Throws when a video cannot be published because no YouTube URL has been attached.
     /// </summary>
-    public static BadRequestException CannotPublishWithoutYoutubeId()
+    public static BadRequestException CannotPublishWithoutYoutubeUrl()
     {
-        return new BadRequestException(VideoErrorMessage.CannotPublishWithoutYoutubeId());
+        return new BadRequestException(VideoErrorMessage.CannotPublishWithoutYoutubeUrl());
     }
 
     /// <summary>

@@ -3,7 +3,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveArticle;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveVideo;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveArticle;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveVideo;
-using _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeId;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeVideoUrl;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArticle;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShortVideo;
@@ -222,9 +222,9 @@ public class EditorialAdminMetaFieldTests
     }
 
     [Fact]
-    public void AdminAttachYoutubeIdMetaField_ShouldBeInitialized()
+    public void AdminAttachYoutubeVideoUrlMetaField_ShouldBeInitialized()
     {
-        RouteMetadata metadata = AdminAttachYoutubeIdMetaField.AdminAttachYoutubeId;
+        RouteMetadata metadata = AdminAttachYoutubeVideoUrlMetaField.AdminAttachYoutubeVideoUrl;
         metadata.Should().NotBeNull();
     }
 

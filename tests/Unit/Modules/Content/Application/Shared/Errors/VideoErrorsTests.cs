@@ -61,10 +61,10 @@ public class VideoErrorsTests
     }
 
     [Fact]
-    public void CannotPublishWithoutYoutubeId_ShouldReturnBadRequestException()
+    public void CannotPublishWithoutYoutubeUrl_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = VideoErrors.CannotPublishWithoutYoutubeId();
+        BadRequestException exception = VideoErrors.CannotPublishWithoutYoutubeUrl();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();

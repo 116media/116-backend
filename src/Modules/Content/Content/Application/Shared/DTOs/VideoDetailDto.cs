@@ -18,7 +18,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="AuthorId">The identity user UUID of the author.</param>
 /// <param name="Status">The current editorial workflow status.</param>
 /// <param name="RejectionReason">The rejection reason, if the video was rejected.</param>
-/// <param name="YoutubeVideoId">The YouTube video ID, or null if not yet attached.</param>
+/// <param name="YoutubeVideoUrl">The full YouTube video URL, or null if not yet attached.</param>
 /// <param name="IsFeatured">Whether the video has an active featured placement.</param>
 /// <param name="FeaturedUntil">When the featured placement expires, or null.</param>
 /// <param name="HasLyrics">Whether a lyrics page is linked to this video.</param>
@@ -27,6 +27,9 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="MetaTitle">Custom SEO meta title, or null.</param>
 /// <param name="MetaDescription">Custom SEO meta description, or null.</param>
 /// <param name="Tags">Tags applied to this video for discovery and SEO.</param>
+/// <param name="CustomerId">The B2B customer UUID this video was commissioned for, or null for free content.</param>
+/// <param name="CustomerName">The full name of the commissioning customer, or null for free content.</param>
+/// <param name="OrderItemId">The order item UUID this video is linked to, or null for free content.</param>
 /// <param name="Author">The resolved author profile with avatar URL, or null if the author could not be found.</param>
 public record VideoDetailDto(
     Guid Id,
@@ -40,7 +43,7 @@ public record VideoDetailDto(
     string AuthorId,
     EnumContentStatus Status,
     string? RejectionReason,
-    string? YoutubeVideoId,
+    string? YoutubeVideoUrl,
     bool IsFeatured,
     DateTimeOffset? FeaturedUntil,
     bool HasLyrics,
@@ -49,5 +52,8 @@ public record VideoDetailDto(
     string? MetaTitle,
     string? MetaDescription,
     IReadOnlyList<TagDto> Tags,
+    Guid? CustomerId = null,
+    string? CustomerName = null,
+    Guid? OrderItemId = null,
     AuthorDto? Author = null
 ) : AuditableDto;

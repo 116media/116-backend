@@ -35,7 +35,7 @@ public class PublicGetFeaturedVideosEndpointV1Tests
             ThumbnailUrl: null,
             AuthorId: "Test",
             Status: EnumContentStatus.Published,
-            YoutubeVideoId: null,
+            YoutubeVideoUrl: null,
             IsFeatured: false,
             HasLyrics: false,
             PublishedAt: null

@@ -38,7 +38,10 @@ public static class ArticleMapper
                         1,
                         (int)Math.Ceiling(src.Body.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length / 200.0)
                     )
-            );
+            )
+            .Map(dest => dest.CustomerId, src => src.CustomerId)
+            .Map(dest => dest.CustomerName, src => src.Customer != null ? src.Customer.FullName : null)
+            .Map(dest => dest.OrderItemId, src => src.OrderItemId);
 
         config
             .NewConfig<ArticleCommentEntity, ArticleCommentDto>()

@@ -19,7 +19,7 @@ internal class VideoBuilder
     private string _description = TestConstants.Content.Editorial.Video.ValidDescription;
     private Guid? _customerId;
     private Guid? _orderItemId;
-    private string? _youtubeVideoId;
+    private string? _youtubeVideoUrl;
     private string? _thumbnailUrl;
     private string? _thumbnailStorageKey;
     private EnumContentStatus _targetStatus = EnumContentStatus.Draft;
@@ -98,11 +98,11 @@ internal class VideoBuilder
     }
 
     /// <summary>
-    /// Attaches a YouTube video ID (required before Publishing).
+    /// Attaches a YouTube video URL (required before Publishing).
     /// </summary>
-    public VideoBuilder WithYoutubeId(string? youtubeVideoId = null)
+    public VideoBuilder WithYoutubeUrl(string? youtubeVideoUrl = null)
     {
-        _youtubeVideoId = youtubeVideoId ?? TestConstants.Content.Editorial.Video.ValidYoutubeVideoId;
+        _youtubeVideoUrl = youtubeVideoUrl ?? TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl;
         return this;
     }
 
@@ -144,16 +144,16 @@ internal class VideoBuilder
     }
 
     /// <summary>
-    /// Transitions the video to Published status (requires YouTube ID).
+    /// Transitions the video to Published status (requires YouTube URL).
     /// </summary>
     public VideoBuilder AsPublished()
     {
         _targetStatus = EnumContentStatus.Published;
-        if (_youtubeVideoId is not null)
+        if (_youtubeVideoUrl is not null)
         {
             return this;
         }
-        _youtubeVideoId = TestConstants.Content.Editorial.Video.ValidYoutubeVideoId;
+        _youtubeVideoUrl = TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl;
 
         return this;
     }
@@ -169,16 +169,16 @@ internal class VideoBuilder
     }
 
     /// <summary>
-    /// Transitions the video to Archived status (requires YouTube ID; auto-set if not provided).
+    /// Transitions the video to Archived status (requires YouTube URL; auto-set if not provided).
     /// </summary>
     public VideoBuilder AsArchived()
     {
         _targetStatus = EnumContentStatus.Archived;
-        if (_youtubeVideoId is not null)
+        if (_youtubeVideoUrl is not null)
         {
             return this;
         }
-        _youtubeVideoId = TestConstants.Content.Editorial.Video.ValidYoutubeVideoId;
+        _youtubeVideoUrl = TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl;
 
         return this;
     }
@@ -208,9 +208,9 @@ internal class VideoBuilder
                 description: _description
             );
 
-        if (_youtubeVideoId is not null)
+        if (_youtubeVideoUrl is not null)
         {
-            entity.AttachYoutubeId(_youtubeVideoId);
+            entity.AttachYoutubeVideoUrl(_youtubeVideoUrl);
         }
 
         if (_thumbnailUrl is not null && _thumbnailStorageKey is not null)

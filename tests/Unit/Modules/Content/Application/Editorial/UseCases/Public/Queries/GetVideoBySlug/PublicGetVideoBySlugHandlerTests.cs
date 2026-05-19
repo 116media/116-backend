@@ -35,7 +35,7 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         VideoEntity video = VideoFactory.CreateWithCategory(CategoryId, category);
         // Manually transition to Published for the slug lookup
-        video.AttachYoutubeId(TestConstants.Content.Editorial.Video.ValidYoutubeVideoId);
+        video.AttachYoutubeVideoUrl(TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl);
         video.MarkPendingReview();
         video.Approve();
         video.Publish();

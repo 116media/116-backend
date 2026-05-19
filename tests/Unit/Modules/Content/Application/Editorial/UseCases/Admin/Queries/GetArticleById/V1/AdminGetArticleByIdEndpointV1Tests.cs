@@ -45,6 +45,9 @@ public class AdminGetArticleByIdEndpointV1Tests
             MetaDescription: null,
             Images: [],
             Tags: [],
-            ReadTimeInMinutes: 0
+            ReadTimeInMinutes: 0,
+            CustomerId: null,
+            CustomerName: null,
+            OrderItemId: null
         );
 }
