@@ -46,11 +46,11 @@ public class PackageEntity : Aggregate<Guid>
     /// <param name="name">The display name of the package.</param>
     /// <param name="description">The description of the package.</param>
     /// <returns>A new <see cref="PackageEntity" /> instance.</returns>
-    public static PackageEntity Create(Guid id, string name, string description)
+    public static PackageEntity Create(Guid id, string name, string description, PackageErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw PackageErrors.NameRequired();
+            throw errors.NameRequired();
         }
 
         return new PackageEntity
