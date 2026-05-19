@@ -11,8 +11,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.LikeSho
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicLikeShortVideoHandler(IShortVideoRepository shortVideoRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<PublicLikeShortVideoCommand, PublicLikeShortVideoResult>
+/// <param name="shortVideoInteractionErrors">Short video interaction domain error factory.</param>
+public class PublicLikeShortVideoHandler(
+    IShortVideoRepository shortVideoRepository,
+    IContentUnitOfWork unitOfWork,
+    ShortVideoInteractionErrors shortVideoInteractionErrors
+) : ICommandHandler<PublicLikeShortVideoCommand, PublicLikeShortVideoResult>
 {
     /// <inheritdoc />
     public async Task<PublicLikeShortVideoResult> Handle(
@@ -33,7 +37,7 @@ public class PublicLikeShortVideoHandler(IShortVideoRepository shortVideoReposit
 
         if (alreadyLiked)
         {
-            throw ShortVideoInteractionErrors.AlreadyLiked();
+            throw shortVideoInteractionErrors.AlreadyLiked();
         }
 
         var like = ShortVideoLikeEntity.Create(
