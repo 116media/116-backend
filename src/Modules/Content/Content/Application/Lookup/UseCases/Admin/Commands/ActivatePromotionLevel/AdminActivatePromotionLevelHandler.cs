@@ -14,10 +14,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.ActivatePromot
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="promotionLevelErrors">Promotion level domain error factory.</param>
 public class AdminActivatePromotionLevelHandler(
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    PromotionLevelErrors promotionLevelErrors
 ) : ICommandHandler<AdminActivatePromotionLevelCommand, AdminActivatePromotionLevelResult>
 {
     /// <inheritdoc />
@@ -37,7 +39,7 @@ public class AdminActivatePromotionLevelHandler(
 
         if (!activated)
         {
-            throw PromotionLevelErrors.AlreadyActive();
+            throw promotionLevelErrors.AlreadyActive();
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
