@@ -1,10 +1,12 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Content.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides error messages for the <c>PricingTier</c> domain.
 /// Covers conflict situations and validation failures related to pricing tier operations.
 /// </summary>
-public static class PricingTierErrorMessage
+public class PricingTierErrorMessage(IStringLocalizer<PricingTierErrorMessage> localizer)
 {
     /// <summary>
     /// Gets an error message for when a pricing tier with the given name already exists.
@@ -13,9 +15,9 @@ public static class PricingTierErrorMessage
     /// <returns>
     /// A formatted error message indicating that a pricing tier with the specified name already exists.
     /// </returns>
-    public static string AlreadyExists(string name)
+    public string AlreadyExists(string name)
     {
-        return $"Pricing tier '{name}' already exists";
+        return string.Format(localizer["AlreadyExists"], name);
     }
 
     /// <summary>
@@ -24,9 +26,9 @@ public static class PricingTierErrorMessage
     /// <returns>
     /// An error message indicating that the pricing tier is already active.
     /// </returns>
-    public static string AlreadyActive()
+    public string AlreadyActive()
     {
-        return "Pricing tier is already active";
+        return localizer["AlreadyActive"];
     }
 
     /// <summary>
@@ -35,9 +37,9 @@ public static class PricingTierErrorMessage
     /// <returns>
     /// An error message indicating that the pricing tier is already inactive.
     /// </returns>
-    public static string AlreadyInactive()
+    public string AlreadyInactive()
     {
-        return "Pricing tier is already inactive";
+        return localizer["AlreadyInactive"];
     }
 
     /// <summary>
@@ -46,9 +48,9 @@ public static class PricingTierErrorMessage
     /// <returns>
     /// An error message indicating that the pricing tier is inactive and cannot be used.
     /// </returns>
-    public static string IsInactive()
+    public string IsInactive()
     {
-        return "Cannot use an inactive pricing tier";
+        return localizer["IsInactive"];
     }
 
     /// <summary>
@@ -57,8 +59,25 @@ public static class PricingTierErrorMessage
     /// <returns>
     /// An error message indicating that the pricing tier name is required.
     /// </returns>
-    public static string NameRequired()
+    public string NameRequired()
     {
-        return "Pricing tier name is required";
+        return localizer["NameRequired"];
     }
+
+    /// <summary>
+    /// Gets an error message for when a pricing tier name exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string NameTooLong(int max) => string.Format(localizer["NameTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a pricing tier description is required.
+    /// </summary>
+    public string DescriptionRequired() => localizer["DescriptionRequired"];
+
+    /// <summary>
+    /// Gets an error message for when a pricing tier description exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string DescriptionTooLong(int max) => string.Format(localizer["DescriptionTooLong"], max);
 }
