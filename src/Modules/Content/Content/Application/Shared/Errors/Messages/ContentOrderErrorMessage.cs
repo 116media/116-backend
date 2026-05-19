@@ -1,80 +1,82 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Content.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides error messages for the <c>ContentOrder</c> and <c>ContentPayment</c> domains.
 /// </summary>
-public static class ContentOrderErrorMessage
+public class ContentOrderErrorMessage(IStringLocalizer<ContentOrderErrorMessage> localizer)
 {
     /// <summary>
     /// Gets an error message for when the order has already been submitted.
     /// </summary>
     /// <returns>An error message indicating that the order has already been submitted.</returns>
-    public static string AlreadySubmitted()
+    public string AlreadySubmitted()
     {
-        return "Order has already been submitted.";
+        return localizer["AlreadySubmitted"];
     }
 
     /// <summary>
     /// Gets an error message for when the order has already been paid.
     /// </summary>
     /// <returns>An error message indicating that the order is already paid.</returns>
-    public static string AlreadyPaid()
+    public string AlreadyPaid()
     {
-        return "Order is already paid.";
+        return localizer["AlreadyPaid"];
     }
 
     /// <summary>
     /// Gets an error message for when the order has already been cancelled.
     /// </summary>
     /// <returns>An error message indicating that the order has already been cancelled.</returns>
-    public static string AlreadyCancelled()
+    public string AlreadyCancelled()
     {
-        return "Order has already been cancelled.";
+        return localizer["AlreadyCancelled"];
     }
 
     /// <summary>
     /// Gets an error message for when an attempt is made to cancel a paid order.
     /// </summary>
     /// <returns>An error message indicating that a paid order cannot be cancelled.</returns>
-    public static string CannotCancelPaidOrder()
+    public string CannotCancelPaidOrder()
     {
-        return "A paid order cannot be cancelled.";
+        return localizer["CannotCancelPaidOrder"];
     }
 
     /// <summary>
     /// Gets an error message for when an attempt is made to modify a non-draft order.
     /// </summary>
     /// <returns>An error message indicating that only draft orders can be modified.</returns>
-    public static string CannotAddItemToNonDraftOrder()
+    public string CannotAddItemToNonDraftOrder()
     {
-        return "This order can only be modified while in Draft status.";
+        return localizer["CannotAddItemToNonDraftOrder"];
     }
 
     /// <summary>
     /// Gets an error message for when a submit is attempted on an order with no priced items.
     /// </summary>
     /// <returns>An error message indicating that at least one item with one pricing tier is required.</returns>
-    public static string MustHaveAtLeastOneItemWithTier()
+    public string MustHaveAtLeastOneItemWithTier()
     {
-        return "The order must have at least one item with at least one pricing tier before it can be submitted.";
+        return localizer["MustHaveAtLeastOneItemWithTier"];
     }
 
     /// <summary>
     /// Gets an error message for when the payment has already been verified.
     /// </summary>
     /// <returns>An error message indicating that the payment has already been verified.</returns>
-    public static string PaymentAlreadyVerified()
+    public string PaymentAlreadyVerified()
     {
-        return "Payment has already been verified.";
+        return localizer["PaymentAlreadyVerified"];
     }
 
     /// <summary>
     /// Gets an error message for when the payment has already been rejected.
     /// </summary>
     /// <returns>An error message indicating that the payment has already been rejected.</returns>
-    public static string PaymentAlreadyRejected()
+    public string PaymentAlreadyRejected()
     {
-        return "Payment has already been rejected.";
+        return localizer["PaymentAlreadyRejected"];
     }
 
     /// <summary>
@@ -83,8 +85,39 @@ public static class ContentOrderErrorMessage
     /// <returns>
     /// An error message indicating that the tier is already attached to the item.
     /// </returns>
-    public static string TierAlreadyAttached()
+    public string TierAlreadyAttached()
     {
-        return "This pricing tier is already attached to the item.";
+        return localizer["TierAlreadyAttached"];
     }
+
+    /// <summary>
+    /// Gets an error message for when a receipt URL is required.
+    /// </summary>
+    public string ReceiptUrlRequired() => localizer["ReceiptUrlRequired"];
+
+    /// <summary>
+    /// Gets an error message for when a receipt URL exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string ReceiptUrlTooLong(int max) => string.Format(localizer["ReceiptUrlTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a payment proof file is required.
+    /// </summary>
+    public string PaymentProofRequired() => localizer["PaymentProofRequired"];
+
+    /// <summary>
+    /// Gets an error message for when a content kind is invalid for an order item.
+    /// </summary>
+    public string InvalidOrderItemContentKind() => localizer["InvalidOrderItemContentKind"];
+
+    /// <summary>
+    /// Gets an error message for when an admin user ID is required.
+    /// </summary>
+    public string AdminUserIdRequired() => localizer["AdminUserIdRequired"];
+
+    /// <summary>
+    /// Gets an error message for when a payment method is invalid.
+    /// </summary>
+    public string InvalidPaymentMethod() => localizer["InvalidPaymentMethod"];
 }
