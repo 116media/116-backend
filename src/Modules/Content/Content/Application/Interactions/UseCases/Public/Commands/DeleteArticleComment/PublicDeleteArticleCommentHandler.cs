@@ -11,8 +11,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.DeleteA
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicDeleteArticleCommentHandler(IArticleRepository articleRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<PublicDeleteArticleCommentCommand, PublicDeleteArticleCommentResult>
+/// <param name="articleInteractionErrors">Article interaction domain error factory.</param>
+public class PublicDeleteArticleCommentHandler(
+    IArticleRepository articleRepository,
+    IContentUnitOfWork unitOfWork,
+    ArticleInteractionErrors articleInteractionErrors
+) : ICommandHandler<PublicDeleteArticleCommentCommand, PublicDeleteArticleCommentResult>
 {
     /// <inheritdoc />
     public async Task<PublicDeleteArticleCommentResult> Handle(
@@ -29,7 +33,7 @@ public class PublicDeleteArticleCommentHandler(IArticleRepository articleReposit
         {
             if (comment.UserId != command.UserId)
             {
-                throw ArticleInteractionErrors.NotCommentOwner();
+                throw articleInteractionErrors.NotCommentOwner();
             }
 
             comment.SoftDelete();
@@ -48,6 +52,6 @@ public class PublicDeleteArticleCommentHandler(IArticleRepository articleReposit
             return new PublicDeleteArticleCommentResult(IsSuccess: true);
         }
 
-        throw ArticleInteractionErrors.CommentNotFound(commentId: command.CommentId);
+        throw articleInteractionErrors.CommentNotFound(commentId: command.CommentId);
     }
 }
