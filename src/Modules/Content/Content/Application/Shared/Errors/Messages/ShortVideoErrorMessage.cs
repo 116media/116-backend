@@ -1,10 +1,12 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Content.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides error messages for the <c>ShortVideo</c> domain.
 /// Covers conflict situations and validation failures related to short video operations.
 /// </summary>
-public static class ShortVideoErrorMessage
+public class ShortVideoErrorMessage(IStringLocalizer<ShortVideoErrorMessage> localizer)
 {
     /// <summary>
     /// Gets an error message for when a short video title is required but not provided.
@@ -12,9 +14,9 @@ public static class ShortVideoErrorMessage
     /// <returns>
     /// An error message indicating that the short video title is required.
     /// </returns>
-    public static string TitleRequired()
+    public string TitleRequired()
     {
-        return "Short video title is required";
+        return localizer["TitleRequired"];
     }
 
     /// <summary>
@@ -23,9 +25,9 @@ public static class ShortVideoErrorMessage
     /// <returns>
     /// An error message indicating that the short video is already active.
     /// </returns>
-    public static string AlreadyActive()
+    public string AlreadyActive()
     {
-        return "Short video is already active";
+        return localizer["AlreadyActive"];
     }
 
     /// <summary>
@@ -34,9 +36,9 @@ public static class ShortVideoErrorMessage
     /// <returns>
     /// An error message indicating that the short video is already inactive.
     /// </returns>
-    public static string AlreadyInactive()
+    public string AlreadyInactive()
     {
-        return "Short video is already inactive";
+        return localizer["AlreadyInactive"];
     }
 
     /// <summary>
@@ -46,8 +48,52 @@ public static class ShortVideoErrorMessage
     /// <returns>
     /// A formatted error message indicating that a short video with the specified slug already exists.
     /// </returns>
-    public static string SlugAlreadyExists(string slug)
+    public string SlugAlreadyExists(string slug)
     {
-        return $"Short video with slug '{slug}' already exists";
+        return string.Format(localizer["SlugAlreadyExists"], slug);
     }
+
+    /// <summary>
+    /// Gets an error message for when a short video slug is required.
+    /// </summary>
+    public string SlugRequired() => localizer["SlugRequired"];
+
+    /// <summary>
+    /// Gets an error message for when a short video title exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string TitleTooLong(int max) => string.Format(localizer["TitleTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a short video slug exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string SlugTooLong(int max) => string.Format(localizer["SlugTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a short video slug has an invalid format.
+    /// </summary>
+    public string SlugInvalidFormat() => localizer["SlugInvalidFormat"];
+
+    /// <summary>
+    /// Gets an error message for when a short video file is required.
+    /// </summary>
+    public string FileRequired() => localizer["FileRequired"];
+
+    /// <summary>
+    /// Gets an error message for when a short video file is empty.
+    /// </summary>
+    public string FileEmpty() => localizer["FileEmpty"];
+
+    /// <summary>
+    /// Gets an error message for when a short video file exceeds the size limit.
+    /// </summary>
+    /// <param name="maxMb">The maximum file size in megabytes.</param>
+    public string FileTooLarge(long maxMb) => string.Format(localizer["FileTooLarge"], maxMb);
+
+    /// <summary>
+    /// Gets an error message for when a short video file has an invalid extension.
+    /// </summary>
+    /// <param name="allowed">Comma-separated list of allowed extensions.</param>
+    public string FileInvalidExtension(string allowed) => string.Format(localizer["FileInvalidExtension"], allowed);
 }
