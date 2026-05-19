@@ -93,17 +93,18 @@ public class CategoryEntity : Aggregate<Guid>
         string slug,
         string description,
         bool isFree,
+        CategoryErrors errors,
         bool isGossip = false
     )
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw CategoryErrors.NameRequired();
+            throw errors.NameRequired();
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw CategoryErrors.SlugRequired();
+            throw errors.SlugRequired();
         }
 
         return new CategoryEntity
@@ -126,16 +127,17 @@ public class CategoryEntity : Aggregate<Guid>
     /// <param name="slug">The new URL-safe slug.</param>
     /// <param name="description">The new description.</param>
     /// <param name="isGossip">Whether this is the gossip category used for homepage feed fallbacks.</param>
-    public void Update(string name, string slug, string description, bool isGossip)
+    /// <param name="errors">The errors factory instance.</param>
+    public void Update(string name, string slug, string description, bool isGossip, CategoryErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw CategoryErrors.NameRequired();
+            throw errors.NameRequired();
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw CategoryErrors.SlugRequired();
+            throw errors.SlugRequired();
         }
 
         Name = name;
@@ -148,14 +150,15 @@ public class CategoryEntity : Aggregate<Guid>
     /// Guards that this category is eligible for use on a commissioned order item.
     /// A category is commissionable when it is active and not free.
     /// </summary>
+    /// <param name="errors">The errors factory instance.</param>
     /// <exception cref="_116.Shared.Application.Exceptions.NotFoundException">
     /// Thrown when the category is inactive or free, surfaced as a not-found error to avoid leaking state.
     /// </exception>
-    public void EnsureCommissionable()
+    public void EnsureCommissionable(CategoryErrors errors)
     {
         if (!IsActive || IsFree)
         {
-            throw CategoryErrors.NotFound(id: Id);
+            throw errors.NotFound(id: Id);
         }
     }
 
