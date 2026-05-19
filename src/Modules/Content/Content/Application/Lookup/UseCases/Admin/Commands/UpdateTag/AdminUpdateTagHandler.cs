@@ -16,11 +16,13 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateTag;
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="cacheInvalidator">Invalidates the popular-tags cache after the tag graph changes.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="tagErrors">Tag domain error factory.</param>
 public class AdminUpdateTagHandler(
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
     IPopularTagsCacheInvalidator cacheInvalidator,
-    IMapper mapper
+    IMapper mapper,
+    TagErrors tagErrors
 ) : ICommandHandler<AdminUpdateTagCommand, AdminUpdateTagResult>
 {
     /// <inheritdoc />
@@ -37,10 +39,10 @@ public class AdminUpdateTagHandler(
 
         if (existing is not null && !string.Equals(tag.Slug, command.Slug, StringComparison.OrdinalIgnoreCase))
         {
-            throw TagErrors.SlugAlreadyExists(slug: command.Slug);
+            throw tagErrors.SlugAlreadyExists(slug: command.Slug);
         }
 
-        tag.Update(name: command.Name, slug: command.Slug);
+        tag.Update(name: command.Name, slug: command.Slug, errors: tagErrors);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
