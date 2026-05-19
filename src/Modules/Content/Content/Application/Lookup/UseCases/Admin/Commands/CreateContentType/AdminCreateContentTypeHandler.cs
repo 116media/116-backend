@@ -14,10 +14,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateContentT
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="contentTypeErrors">Content type domain error factory.</param>
 public class AdminCreateContentTypeHandler(
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    ContentTypeErrors contentTypeErrors
 ) : ICommandHandler<AdminCreateContentTypeCommand, AdminCreateContentTypeResult>
 {
     /// <inheritdoc />
@@ -33,10 +35,10 @@ public class AdminCreateContentTypeHandler(
 
         if (exists)
         {
-            throw ContentTypeErrors.AlreadyExists(name: command.Name);
+            throw contentTypeErrors.AlreadyExists(name: command.Name);
         }
 
-        var contentType = ContentTypeEntity.Create(id: Guid.NewGuid(), name: command.Name);
+        var contentType = ContentTypeEntity.Create(id: Guid.NewGuid(), name: command.Name, errors: contentTypeErrors);
 
         await lookupRepository.AddContentTypeAsync(contentType: contentType, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
