@@ -7,12 +7,12 @@ namespace _116.Content.Application.Shared.Errors;
 /// Package domain error factory providing simple, readable exception creation.
 /// Usage: PackageErrors.NotFound(id) or PackageErrors.AlreadyActive()
 /// </summary>
-public static class PackageErrors
+public class PackageErrors(PackageErrorMessage msg)
 {
     /// <summary>
     /// Throws when a package is not found by its identifier.
     /// </summary>
-    public static NotFoundException NotFound(Guid id)
+    public NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("Package", "id", keyValue: id);
     }
@@ -20,47 +20,47 @@ public static class PackageErrors
     /// <summary>
     /// Throws when a package is already active.
     /// </summary>
-    public static ConflictException AlreadyActive()
+    public ConflictException AlreadyActive()
     {
-        return new ConflictException(PackageErrorMessage.AlreadyActive());
+        return new ConflictException(msg.AlreadyActive());
     }
 
     /// <summary>
     /// Throws when a package is already inactive.
     /// </summary>
-    public static ConflictException AlreadyInactive()
+    public ConflictException AlreadyInactive()
     {
-        return new ConflictException(PackageErrorMessage.AlreadyInactive());
+        return new ConflictException(msg.AlreadyInactive());
     }
 
     /// <summary>
     /// Throws when a package name is required but not provided.
     /// </summary>
-    public static BadRequestException NameRequired()
+    public BadRequestException NameRequired()
     {
-        return new BadRequestException(PackageErrorMessage.NameRequired());
+        return new BadRequestException(msg.NameRequired());
     }
 
     /// <summary>
     /// Throws when a package price is negative.
     /// </summary>
-    public static BadRequestException PriceMustBeNonNegative()
+    public BadRequestException PriceMustBeNonNegative()
     {
-        return new BadRequestException(PackageErrorMessage.PriceMustBeNonNegative());
+        return new BadRequestException(msg.PriceMustBeNonNegative());
     }
 
     /// <summary>
     /// Throws when a slot quantity is not greater than zero.
     /// </summary>
-    public static BadRequestException SlotQuantityMustBePositive()
+    public BadRequestException SlotQuantityMustBePositive()
     {
-        return new BadRequestException(PackageErrorMessage.SlotQuantityMustBePositive());
+        return new BadRequestException(msg.SlotQuantityMustBePositive());
     }
 
     /// <summary>
     /// Throws when a package slot is not found.
     /// </summary>
-    public static NotFoundException SlotNotFound(Guid slotId)
+    public NotFoundException SlotNotFound(Guid slotId)
     {
         return new NotFoundException("PackageSlot", "id", keyValue: slotId);
     }
