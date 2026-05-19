@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
 using FluentValidation;
 
@@ -14,10 +15,12 @@ public static partial class TagValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the name property.</param>
+    /// <param name="msg">The error message provider for tag validation messages.</param>
     /// <param name="isRequired">Whether the name is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidTagName<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
+        TagErrorMessage msg,
         bool isRequired = true
     )
     {
@@ -26,15 +29,15 @@ public static partial class TagValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage("Tag name is required.")
+                .WithMessage(msg.NameRequired())
                 .MaximumLength(maximumLength: ContentConstants.MaxTagNameLength)
-                .WithMessage($"Tag name must not exceed {ContentConstants.MaxTagNameLength} characters.");
+                .WithMessage(msg.NameTooLong(ContentConstants.MaxTagNameLength));
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: ContentConstants.MaxTagNameLength)
-            .WithMessage($"Tag name must not exceed {ContentConstants.MaxTagNameLength} characters.")
+            .WithMessage(msg.NameTooLong(ContentConstants.MaxTagNameLength))
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Name")));
     }
 
@@ -43,10 +46,12 @@ public static partial class TagValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the slug property.</param>
+    /// <param name="msg">The error message provider for tag validation messages.</param>
     /// <param name="isRequired">Whether the slug is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidTagSlug<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
+        TagErrorMessage msg,
         bool isRequired = true
     )
     {
@@ -55,19 +60,19 @@ public static partial class TagValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage("Tag slug is required.")
+                .WithMessage(msg.SlugRequired())
                 .MaximumLength(maximumLength: ContentConstants.MaxTagSlugLength)
-                .WithMessage($"Tag slug must not exceed {ContentConstants.MaxTagSlugLength} characters.")
+                .WithMessage(msg.SlugTooLong(ContentConstants.MaxTagSlugLength))
                 .Matches(SlugRegex())
-                .WithMessage("Tag slug must be lowercase and contain only letters, numbers, and hyphens.");
+                .WithMessage(msg.SlugInvalidFormat());
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: ContentConstants.MaxTagSlugLength)
-            .WithMessage($"Tag slug must not exceed {ContentConstants.MaxTagSlugLength} characters.")
+            .WithMessage(msg.SlugTooLong(ContentConstants.MaxTagSlugLength))
             .Matches(SlugRegex())
-            .WithMessage("Tag slug must be lowercase and contain only letters, numbers, and hyphens.")
+            .WithMessage(msg.SlugInvalidFormat())
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Slug")));
     }
 
@@ -77,14 +82,18 @@ public static partial class TagValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for each element in the tag names collection.</param>
+    /// <param name="msg">The error message provider for tag validation messages.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, string> ValidTagNameItem<T>(this IRuleBuilder<T, string> ruleBuilder)
+    public static IRuleBuilderOptions<T, string> ValidTagNameItem<T>(
+        this IRuleBuilder<T, string> ruleBuilder,
+        TagErrorMessage msg
+    )
     {
         return ruleBuilder
             .NotEmpty()
-            .WithMessage("Tag name is required.")
+            .WithMessage(msg.NameRequired())
             .MaximumLength(maximumLength: ContentConstants.MaxTagNameLength)
-            .WithMessage($"Tag name must not exceed {ContentConstants.MaxTagNameLength} characters.");
+            .WithMessage(msg.NameTooLong(ContentConstants.MaxTagNameLength));
     }
 
     /// <summary>
