@@ -7,20 +7,20 @@ namespace _116.Content.Application.Shared.Errors;
 /// PricingTier domain error factory providing simple, readable exception creation.
 /// Usage: PricingTierErrors.AlreadyExists(name) or PricingTierErrors.NotFound(id)
 /// </summary>
-public static class PricingTierErrors
+public class PricingTierErrors(PricingTierErrorMessage msg)
 {
     /// <summary>
     /// Throws when a pricing tier with the given name already exists.
     /// </summary>
-    public static ConflictException AlreadyExists(string name)
+    public ConflictException AlreadyExists(string name)
     {
-        return new ConflictException(PricingTierErrorMessage.AlreadyExists(name: name));
+        return new ConflictException(msg.AlreadyExists(name: name));
     }
 
     /// <summary>
     /// Throws when a pricing tier is not found by its identifier.
     /// </summary>
-    public static NotFoundException NotFound(Guid id)
+    public NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("PricingTier", "id", keyValue: id);
     }
@@ -28,32 +28,32 @@ public static class PricingTierErrors
     /// <summary>
     /// Throws when a pricing tier is already active.
     /// </summary>
-    public static ConflictException AlreadyActive()
+    public ConflictException AlreadyActive()
     {
-        return new ConflictException(PricingTierErrorMessage.AlreadyActive());
+        return new ConflictException(msg.AlreadyActive());
     }
 
     /// <summary>
     /// Throws when a pricing tier is already inactive.
     /// </summary>
-    public static ConflictException AlreadyInactive()
+    public ConflictException AlreadyInactive()
     {
-        return new ConflictException(PricingTierErrorMessage.AlreadyInactive());
+        return new ConflictException(msg.AlreadyInactive());
     }
 
     /// <summary>
     /// Throws when an inactive pricing tier is used in an operation that requires an active one.
     /// </summary>
-    public static BadRequestException IsInactive()
+    public BadRequestException IsInactive()
     {
-        return new BadRequestException(PricingTierErrorMessage.IsInactive());
+        return new BadRequestException(msg.IsInactive());
     }
 
     /// <summary>
     /// Throws when a pricing tier name is required but not provided.
     /// </summary>
-    public static BadRequestException NameRequired()
+    public BadRequestException NameRequired()
     {
-        return new BadRequestException(PricingTierErrorMessage.NameRequired());
+        return new BadRequestException(msg.NameRequired());
     }
 }
