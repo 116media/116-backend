@@ -1,10 +1,12 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Content.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides error messages for the <c>Tag</c> domain.
 /// Covers conflict situations and validation failures related to tag operations.
 /// </summary>
-public static class TagErrorMessage
+public class TagErrorMessage(IStringLocalizer<TagErrorMessage> localizer)
 {
     /// <summary>
     /// Gets an error message for when a tag with the given slug already exists.
@@ -13,9 +15,9 @@ public static class TagErrorMessage
     /// <returns>
     /// A formatted error message indicating that a tag with the specified slug already exists.
     /// </returns>
-    public static string SlugAlreadyExists(string slug)
+    public string SlugAlreadyExists(string slug)
     {
-        return $"Tag with slug '{slug}' already exists";
+        return string.Format(localizer["SlugAlreadyExists"], slug);
     }
 
     /// <summary>
@@ -24,9 +26,9 @@ public static class TagErrorMessage
     /// <returns>
     /// An error message indicating that the tag name is required.
     /// </returns>
-    public static string NameRequired()
+    public string NameRequired()
     {
-        return "Tag name is required";
+        return localizer["NameRequired"];
     }
 
     /// <summary>
@@ -35,8 +37,25 @@ public static class TagErrorMessage
     /// <returns>
     /// An error message indicating that the tag slug is required.
     /// </returns>
-    public static string SlugRequired()
+    public string SlugRequired()
     {
-        return "Tag slug is required";
+        return localizer["SlugRequired"];
     }
+
+    /// <summary>
+    /// Gets an error message for when a tag name exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string NameTooLong(int max) => string.Format(localizer["NameTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a tag slug exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string SlugTooLong(int max) => string.Format(localizer["SlugTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a tag slug has an invalid format.
+    /// </summary>
+    public string SlugInvalidFormat() => localizer["SlugInvalidFormat"];
 }
