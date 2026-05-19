@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
@@ -10,14 +11,15 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePromotio
 public class AdminUpdatePromotionLevelValidator : AbstractValidator<AdminUpdatePromotionLevelCommand>
 {
     /// <summary>
-    /// Configures validation rules for promotion level update.
+    /// Initializes a new instance of <see cref="AdminUpdatePromotionLevelValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminUpdatePromotionLevelValidator()
+    /// <param name="msg">Promotion level validation error messages.</param>
+    public AdminUpdatePromotionLevelValidator(PromotionLevelErrorMessage msg)
     {
         RuleFor(x => x.Id).IsValidGuid("Promotion level ID");
-        RuleFor(x => x.Name).ValidPromotionLevelName();
-        RuleFor(x => x.DurationDays).ValidDurationDays();
-        RuleFor(x => x.PriceUsd).ValidPriceUsd();
-        When(x => x.SpotPriority.HasValue, () => RuleFor(x => x.SpotPriority).ValidSpotPriority());
+        RuleFor(x => x.Name).ValidPromotionLevelName(msg);
+        RuleFor(x => x.DurationDays).ValidDurationDays(msg);
+        RuleFor(x => x.PriceUsd).ValidPriceUsd(msg);
+        When(x => x.SpotPriority.HasValue, () => RuleFor(x => x.SpotPriority).ValidSpotPriority(msg));
     }
 }
