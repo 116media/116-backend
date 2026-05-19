@@ -1,9 +1,11 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Content.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides error messages for playlist operations.
 /// </summary>
-public static class PlaylistErrorMessage
+public class PlaylistErrorMessage(IStringLocalizer<PlaylistErrorMessage> localizer)
 {
     /// <summary>
     /// Gets an error message for when a playlist is not found by its identifier.
@@ -12,9 +14,9 @@ public static class PlaylistErrorMessage
     /// <returns>
     /// A formatted error message indicating the playlist was not found.
     /// </returns>
-    public static string NotFound(Guid id)
+    public string NotFound(Guid id)
     {
-        return $"Playlist '{id}' not found";
+        return string.Format(localizer["NotFound"], id);
     }
 
     /// <summary>
@@ -23,9 +25,9 @@ public static class PlaylistErrorMessage
     /// <returns>
     /// An error message indicating the user can only manage their own playlists.
     /// </returns>
-    public static string NotOwner()
+    public string NotOwner()
     {
-        return "You can only manage your own playlists";
+        return localizer["NotOwner"];
     }
 
     /// <summary>
@@ -34,8 +36,19 @@ public static class PlaylistErrorMessage
     /// <returns>
     /// An error message indicating the video is already in the playlist.
     /// </returns>
-    public static string VideoAlreadyInPlaylist()
+    public string VideoAlreadyInPlaylist()
     {
-        return "This video is already in the playlist";
+        return localizer["VideoAlreadyInPlaylist"];
     }
+
+    /// <summary>
+    /// Gets an error message for when a playlist name is required.
+    /// </summary>
+    public string NameRequired() => localizer["NameRequired"];
+
+    /// <summary>
+    /// Gets an error message for when a playlist name exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string NameTooLong(int max) => string.Format(localizer["NameTooLong"], max);
 }
