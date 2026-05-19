@@ -58,27 +58,28 @@ public class PromotionLevelEntity : Aggregate<Guid>
         string name,
         int durationDays,
         decimal priceUsd,
-        int? spotPriority
+        int? spotPriority,
+        PromotionLevelErrors errors
     )
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw PromotionLevelErrors.NameRequired();
+            throw errors.NameRequired();
         }
 
         if (durationDays <= 0)
         {
-            throw PromotionLevelErrors.DurationMustBePositive();
+            throw errors.DurationMustBePositive();
         }
 
         if (priceUsd < 0)
         {
-            throw PromotionLevelErrors.PriceMustBeNonNegative();
+            throw errors.PriceMustBeNonNegative();
         }
 
         if (spotPriority is < 1 or > 3)
         {
-            throw PromotionLevelErrors.InvalidSpotPriority();
+            throw errors.InvalidSpotPriority();
         }
 
         return new PromotionLevelEntity
@@ -97,26 +98,26 @@ public class PromotionLevelEntity : Aggregate<Guid>
     /// <param name="name">The new display name.</param>
     /// <param name="durationDays">The new placement duration in days.</param>
     /// <param name="priceUsd">The new price in USD.</param>
-    public void Update(string name, int durationDays, decimal priceUsd, int? spotPriority)
+    public void Update(string name, int durationDays, decimal priceUsd, int? spotPriority, PromotionLevelErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw PromotionLevelErrors.NameRequired();
+            throw errors.NameRequired();
         }
 
         if (durationDays <= 0)
         {
-            throw PromotionLevelErrors.DurationMustBePositive();
+            throw errors.DurationMustBePositive();
         }
 
         if (priceUsd < 0)
         {
-            throw PromotionLevelErrors.PriceMustBeNonNegative();
+            throw errors.PriceMustBeNonNegative();
         }
 
         if (spotPriority is < 1 or > 3)
         {
-            throw PromotionLevelErrors.InvalidSpotPriority();
+            throw errors.InvalidSpotPriority();
         }
 
         Name = name;
@@ -131,11 +132,11 @@ public class PromotionLevelEntity : Aggregate<Guid>
     /// <exception cref="_116.Shared.Application.Exceptions.NotFoundException">
     /// Thrown when the promotion level is inactive, surfaced as a not-found error to avoid leaking state.
     /// </exception>
-    public void EnsureActive()
+    public void EnsureActive(PromotionLevelErrors errors)
     {
         if (!IsActive)
         {
-            throw PromotionLevelErrors.NotFound(id: Id);
+            throw errors.NotFound(id: Id);
         }
     }
 
