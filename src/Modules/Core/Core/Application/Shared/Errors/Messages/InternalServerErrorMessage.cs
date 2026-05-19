@@ -1,28 +1,30 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Core.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides internal server error messages for the <c>Core</c> domain.
 /// These messages describe system-level failures and service unavailability.
 /// </summary>
-public static class InternalServerErrorMessage
+public class InternalServerErrorMessage(IStringLocalizer<InternalServerErrorMessage> localizer)
 {
     /// <summary>
     /// Gets the error message for service unavailable.
     /// </summary>
     /// <param name="serviceName">The name of the unavailable service.</param>
     /// <returns>A formatted error message indicating the service is unavailable.</returns>
-    public static string ServiceUnavailable(string serviceName)
+    public string ServiceUnavailable(string serviceName)
     {
-        return $"Service '{serviceName}' is currently unavailable";
+        return string.Format(localizer["ServiceUnavailable"], serviceName);
     }
 
     /// <summary>
     /// Error message for database connection failure.
     /// </summary>
     /// <returns>A formatted error message indicating database connection failed.</returns>
-    public static string DatabaseConnectionFailed()
+    public string DatabaseConnectionFailed()
     {
-        return "Unable to connect to the database";
+        return localizer["DatabaseConnectionFailed"];
     }
 
     /// <summary>
@@ -31,9 +33,9 @@ public static class InternalServerErrorMessage
     /// <param name="fileUrl">The URL that failed to download.</param>
     /// <param name="reason">The specific reason for the failure.</param>
     /// <returns>A formatted error message indicating the file download failed.</returns>
-    public static string FileDownloadFailed(string fileUrl, string reason)
+    public string FileDownloadFailed(string fileUrl, string reason)
     {
-        return $"Failed to download file from '{fileUrl}': {reason}";
+        return string.Format(localizer["FileDownloadFailed"], fileUrl, reason);
     }
 
     /// <summary>
@@ -41,8 +43,8 @@ public static class InternalServerErrorMessage
     /// </summary>
     /// <param name="reason">The specific reason for the storage failure.</param>
     /// <returns>A formatted error message indicating the file storage failed.</returns>
-    public static string FileStorageFailed(string reason)
+    public string FileStorageFailed(string reason)
     {
-        return $"Failed to store file: {reason}";
+        return string.Format(localizer["FileStorageFailed"], reason);
     }
 }
