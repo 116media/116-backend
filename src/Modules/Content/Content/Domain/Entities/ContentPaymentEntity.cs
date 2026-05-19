@@ -113,16 +113,16 @@ public class ContentPaymentEntity : Aggregate<Guid>
     /// <exception cref="_116.Shared.Application.Exceptions.ConflictException">
     /// Thrown when the payment is already verified or rejected.
     /// </exception>
-    public void Verify(Guid adminUserId, string receiptUrl)
+    public void Verify(Guid adminUserId, string receiptUrl, ContentOrderErrors errors)
     {
         if (Status == EnumPaymentStatus.Verified)
         {
-            throw ContentOrderErrors.PaymentAlreadyVerified();
+            throw errors.PaymentAlreadyVerified();
         }
 
         if (Status == EnumPaymentStatus.Rejected)
         {
-            throw ContentOrderErrors.PaymentAlreadyRejected();
+            throw errors.PaymentAlreadyRejected();
         }
 
         Status = EnumPaymentStatus.Verified;
@@ -136,19 +136,20 @@ public class ContentPaymentEntity : Aggregate<Guid>
     /// The order remains in <c>PendingPayment</c> so a corrected proof can be resubmitted.
     /// </summary>
     /// <param name="notes">Optional admin notes explaining why the proof was rejected.</param>
+    /// <param name="errors">The errors factory instance.</param>
     /// <exception cref="_116.Shared.Application.Exceptions.ConflictException">
     /// Thrown when the payment is already verified or rejected.
     /// </exception>
-    public void Reject(string? notes)
+    public void Reject(string? notes, ContentOrderErrors errors)
     {
         if (Status == EnumPaymentStatus.Verified)
         {
-            throw ContentOrderErrors.PaymentAlreadyVerified();
+            throw errors.PaymentAlreadyVerified();
         }
 
         if (Status == EnumPaymentStatus.Rejected)
         {
-            throw ContentOrderErrors.PaymentAlreadyRejected();
+            throw errors.PaymentAlreadyRejected();
         }
 
         Status = EnumPaymentStatus.Rejected;
