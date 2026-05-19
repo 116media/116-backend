@@ -34,11 +34,11 @@ public class ContentTypeEntity : Aggregate<Guid>
     /// <param name="name">The display name of the content type.</param>
     /// <returns>A new <see cref="ContentTypeEntity" /> instance.</returns>
     /// <exception cref="ArgumentException">Thrown when name is empty or whitespace.</exception>
-    public static ContentTypeEntity Create(Guid id, string name)
+    public static ContentTypeEntity Create(Guid id, string name, ContentTypeErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw ContentTypeErrors.NameRequired();
+            throw errors.NameRequired();
         }
 
         return new ContentTypeEntity { Id = id, Name = name };
@@ -48,12 +48,13 @@ public class ContentTypeEntity : Aggregate<Guid>
     /// Updates the content type name.
     /// </summary>
     /// <param name="name">The new display name of the content type.</param>
+    /// <param name="errors">The errors factory instance.</param>
     /// <exception cref="ArgumentException">Thrown when name is empty or whitespace.</exception>
-    public void Update(string name)
+    public void Update(string name, ContentTypeErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw ContentTypeErrors.NameRequired();
+            throw errors.NameRequired();
         }
 
         Name = name;
