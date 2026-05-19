@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
 using FluentValidation;
 
@@ -13,10 +14,12 @@ public static class ContentTypeValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the name property.</param>
+    /// <param name="msg">The error message provider for content type validation messages.</param>
     /// <param name="isRequired">Whether the name is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidContentTypeName<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
+        ContentTypeErrorMessage msg,
         bool isRequired = true
     )
     {
@@ -25,17 +28,15 @@ public static class ContentTypeValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage("Content type name is required.")
+                .WithMessage(msg.NameRequired())
                 .MaximumLength(maximumLength: ContentConstants.MaxContentTypeNameLength)
-                .WithMessage(
-                    $"Content type name must not exceed {ContentConstants.MaxContentTypeNameLength} characters."
-                );
+                .WithMessage(msg.NameTooLong(ContentConstants.MaxContentTypeNameLength));
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: ContentConstants.MaxContentTypeNameLength)
-            .WithMessage($"Content type name must not exceed {ContentConstants.MaxContentTypeNameLength} characters.")
+            .WithMessage(msg.NameTooLong(ContentConstants.MaxContentTypeNameLength))
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Name")));
     }
 }
