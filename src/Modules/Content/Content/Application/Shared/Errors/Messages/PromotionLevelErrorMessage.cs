@@ -1,10 +1,12 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Content.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides error messages for the <c>PromotionLevel</c> domain.
 /// Covers conflict situations and validation failures related to promotion level operations.
 /// </summary>
-public static class PromotionLevelErrorMessage
+public class PromotionLevelErrorMessage(IStringLocalizer<PromotionLevelErrorMessage> localizer)
 {
     /// <summary>
     /// Gets an error message for when a promotion level with the given name already exists.
@@ -13,9 +15,9 @@ public static class PromotionLevelErrorMessage
     /// <returns>
     /// A formatted error message indicating that a promotion level with the specified name already exists.
     /// </returns>
-    public static string AlreadyExists(string name)
+    public string AlreadyExists(string name)
     {
-        return $"Promotion level '{name}' already exists";
+        return string.Format(localizer["AlreadyExists"], name);
     }
 
     /// <summary>
@@ -24,9 +26,9 @@ public static class PromotionLevelErrorMessage
     /// <returns>
     /// An error message indicating that the promotion level is already active.
     /// </returns>
-    public static string AlreadyActive()
+    public string AlreadyActive()
     {
-        return "Promotion level is already active";
+        return localizer["AlreadyActive"];
     }
 
     /// <summary>
@@ -35,9 +37,9 @@ public static class PromotionLevelErrorMessage
     /// <returns>
     /// An error message indicating that the promotion level is already inactive.
     /// </returns>
-    public static string AlreadyInactive()
+    public string AlreadyInactive()
     {
-        return "Promotion level is already inactive";
+        return localizer["AlreadyInactive"];
     }
 
     /// <summary>
@@ -46,9 +48,9 @@ public static class PromotionLevelErrorMessage
     /// <returns>
     /// An error message indicating that the promotion level name is required.
     /// </returns>
-    public static string NameRequired()
+    public string NameRequired()
     {
-        return "Promotion level name is required";
+        return localizer["NameRequired"];
     }
 
     /// <summary>
@@ -57,9 +59,9 @@ public static class PromotionLevelErrorMessage
     /// <returns>
     /// An error message indicating that the duration must be greater than zero.
     /// </returns>
-    public static string DurationMustBePositive()
+    public string DurationMustBePositive()
     {
-        return "Promotion level duration must be greater than zero";
+        return localizer["DurationMustBePositive"];
     }
 
     /// <summary>
@@ -68,9 +70,9 @@ public static class PromotionLevelErrorMessage
     /// <returns>
     /// An error message indicating that the price must be zero or greater.
     /// </returns>
-    public static string PriceMustBeNonNegative()
+    public string PriceMustBeNonNegative()
     {
-        return "Promotion level price must be zero or greater";
+        return localizer["PriceMustBeNonNegative"];
     }
 
     /// <summary>
@@ -79,8 +81,14 @@ public static class PromotionLevelErrorMessage
     /// <returns>
     /// An error message indicating that spot priority must be 1, 2, or 3.
     /// </returns>
-    public static string InvalidSpotPriority()
+    public string InvalidSpotPriority()
     {
-        return "Spot priority must be 1, 2, or 3";
+        return localizer["InvalidSpotPriority"];
     }
+
+    /// <summary>
+    /// Gets an error message for when a promotion level name exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string NameTooLong(int max) => string.Format(localizer["NameTooLong"], max);
 }
