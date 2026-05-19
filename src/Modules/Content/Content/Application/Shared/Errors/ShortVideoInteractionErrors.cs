@@ -7,37 +7,37 @@ namespace _116.Content.Application.Shared.Errors;
 /// Short video interaction error factory providing simple, readable exception creation.
 /// Covers likes and bookmarks on short videos.
 /// </summary>
-public static class ShortVideoInteractionErrors
+public class ShortVideoInteractionErrors(ShortVideoInteractionErrorMessage msg)
 {
     /// <summary>
     /// Throws when a user attempts to like a short video they have already liked.
     /// </summary>
-    public static ConflictException AlreadyLiked()
+    public ConflictException AlreadyLiked()
     {
-        return new ConflictException(ShortVideoInteractionErrorMessage.AlreadyLiked());
+        return new ConflictException(msg.AlreadyLiked());
     }
 
     /// <summary>
     /// Throws when a like is not found for the given short video and user.
     /// </summary>
-    public static BadRequestException LikeNotFound()
+    public BadRequestException LikeNotFound()
     {
-        return new BadRequestException(ShortVideoInteractionErrorMessage.LikeNotFound());
+        return new BadRequestException(msg.LikeNotFound());
     }
 
     /// <summary>
     /// Throws when a user attempts to bookmark a short video they have already bookmarked.
     /// </summary>
-    public static ConflictException AlreadyBookmarked()
+    public ConflictException AlreadyBookmarked()
     {
-        return new ConflictException(ShortVideoInteractionErrorMessage.AlreadyBookmarked());
+        return new ConflictException(msg.AlreadyBookmarked());
     }
 
     /// <summary>
     /// Throws when a bookmark is not found for the given short video and user.
     /// </summary>
-    public static BadRequestException BookmarkNotFound()
+    public BadRequestException BookmarkNotFound()
     {
-        return new BadRequestException(ShortVideoInteractionErrorMessage.BookmarkNotFound());
+        return new BadRequestException(msg.BookmarkNotFound());
     }
 }
