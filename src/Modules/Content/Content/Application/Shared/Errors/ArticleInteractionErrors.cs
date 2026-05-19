@@ -7,44 +7,44 @@ namespace _116.Content.Application.Shared.Errors;
 /// Article interaction error factory providing simple, readable exception creation.
 /// Covers likes, bookmarks, and comments on articles.
 /// </summary>
-public static class ArticleInteractionErrors
+public class ArticleInteractionErrors(ArticleInteractionErrorMessage msg)
 {
     /// <summary>
     /// Throws when a user attempts to like an article they have already liked.
     /// </summary>
-    public static ConflictException AlreadyLiked()
+    public ConflictException AlreadyLiked()
     {
-        return new ConflictException(ArticleInteractionErrorMessage.AlreadyLiked());
+        return new ConflictException(msg.AlreadyLiked());
     }
 
     /// <summary>
     /// Throws when a like is not found for the given article and user.
     /// </summary>
-    public static BadRequestException LikeNotFound()
+    public BadRequestException LikeNotFound()
     {
-        return new BadRequestException(ArticleInteractionErrorMessage.LikeNotFound());
+        return new BadRequestException(msg.LikeNotFound());
     }
 
     /// <summary>
     /// Throws when a user attempts to bookmark an article they have already bookmarked.
     /// </summary>
-    public static ConflictException AlreadyBookmarked()
+    public ConflictException AlreadyBookmarked()
     {
-        return new ConflictException(ArticleInteractionErrorMessage.AlreadyBookmarked());
+        return new ConflictException(msg.AlreadyBookmarked());
     }
 
     /// <summary>
     /// Throws when a bookmark is not found for the given article and user.
     /// </summary>
-    public static BadRequestException BookmarkNotFound()
+    public BadRequestException BookmarkNotFound()
     {
-        return new BadRequestException(ArticleInteractionErrorMessage.BookmarkNotFound());
+        return new BadRequestException(msg.BookmarkNotFound());
     }
 
     /// <summary>
     /// Throws when a comment is not found by its identifier.
     /// </summary>
-    public static NotFoundException CommentNotFound(Guid commentId)
+    public NotFoundException CommentNotFound(Guid commentId)
     {
         return new NotFoundException("ArticleComment", "id", keyValue: commentId);
     }
@@ -52,8 +52,8 @@ public static class ArticleInteractionErrors
     /// <summary>
     /// Throws when a user attempts to modify a comment they do not own.
     /// </summary>
-    public static BadRequestException NotCommentOwner()
+    public BadRequestException NotCommentOwner()
     {
-        return new BadRequestException(ArticleInteractionErrorMessage.NotCommentOwner());
+        return new BadRequestException(msg.NotCommentOwner());
     }
 }
