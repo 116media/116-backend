@@ -11,8 +11,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeS
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicUnlikeShortVideoHandler(IShortVideoRepository shortVideoRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<PublicUnlikeShortVideoCommand, PublicUnlikeShortVideoResult>
+/// <param name="shortVideoInteractionErrors">Short video interaction domain error factory.</param>
+public class PublicUnlikeShortVideoHandler(
+    IShortVideoRepository shortVideoRepository,
+    IContentUnitOfWork unitOfWork,
+    ShortVideoInteractionErrors shortVideoInteractionErrors
+) : ICommandHandler<PublicUnlikeShortVideoCommand, PublicUnlikeShortVideoResult>
 {
     /// <inheritdoc />
     public async Task<PublicUnlikeShortVideoResult> Handle(
@@ -33,7 +37,7 @@ public class PublicUnlikeShortVideoHandler(IShortVideoRepository shortVideoRepos
 
         if (!hasLiked)
         {
-            throw ShortVideoInteractionErrors.LikeNotFound();
+            throw shortVideoInteractionErrors.LikeNotFound();
         }
 
         await shortVideoRepository.RemoveLikeAsync(
