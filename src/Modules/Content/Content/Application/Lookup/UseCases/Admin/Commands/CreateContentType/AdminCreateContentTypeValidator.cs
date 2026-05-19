@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
@@ -9,10 +10,11 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateContentT
 public class AdminCreateContentTypeValidator : AbstractValidator<AdminCreateContentTypeCommand>
 {
     /// <summary>
-    /// Configures validation rules for content type creation.
+    /// Initializes a new instance of <see cref="AdminCreateContentTypeValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminCreateContentTypeValidator()
+    /// <param name="msg">Content type validation error messages.</param>
+    public AdminCreateContentTypeValidator(ContentTypeErrorMessage msg)
     {
-        RuleFor(x => x.Name).ValidContentTypeName();
+        RuleFor(x => x.Name).ValidContentTypeName(msg);
     }
 }
