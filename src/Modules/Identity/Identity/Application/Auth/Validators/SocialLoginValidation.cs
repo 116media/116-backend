@@ -1,3 +1,4 @@
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Enums;
 using FluentValidation;
 
@@ -14,12 +15,14 @@ public static class SocialLoginValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the avatar URL property.</param>
+    /// <param name="msg">The validation error message provider.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, string?> ValidAvatarUrl<T>(this IRuleBuilderInitial<T, string?> ruleBuilder)
+    public static IRuleBuilderOptions<T, string?> ValidAvatarUrl<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        ValidationErrorMessage msg
+    )
     {
-        return ruleBuilder
-            .Must(predicate: ValidationUtils.ValidUrl)
-            .WithMessage("Avatar must be a valid URL when provided");
+        return ruleBuilder.Must(predicate: ValidationUtils.ValidUrl).WithMessage(msg.AvatarUrlInvalid());
     }
 
     /// <summary>
@@ -27,14 +30,18 @@ public static class SocialLoginValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the auth provider property.</param>
+    /// <param name="msg">The validation error message provider.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, string> ValidAuthProvider<T>(this IRuleBuilderInitial<T, string> ruleBuilder)
+    public static IRuleBuilderOptions<T, string> ValidAuthProvider<T>(
+        this IRuleBuilderInitial<T, string> ruleBuilder,
+        ValidationErrorMessage msg
+    )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage("Auth provider is required.")
+            .WithMessage(msg.PasswordRequired())
             .Must(provider => provider != null && Enum.IsDefined(typeof(EnumAuthProvider), value: provider))
-            .WithMessage("Auth provider must be Facebook or Google");
+            .WithMessage(msg.AuthProviderInvalid());
     }
 }
