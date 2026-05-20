@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="UnsupportedFileType" xml:space="preserve">
+    <value>Le type de fichier « {0} » n'est pas pris en charge. Types autorisés : {1}</value>
+  </data>
+  <data name="FileTooLarge" xml:space="preserve">
+    <value>La taille du fichier {0} octets dépasse la taille maximale autorisée de {1} octets</value>
+  </data>
+  <data name="CorruptedFile" xml:space="preserve">
+    <value>Le fichier « {0} » semble être corrompu ou invalide</value>
+  </data>
+  <data name="InvalidConfiguration" xml:space="preserve">
+    <value>La configuration « {0} » est manquante ou invalide</value>
+  </data>
+  <data name="FileNameRequired" xml:space="preserve">
+    <value>Le nom du fichier est obligatoire</value>
+  </data>
+  <data name="OriginalFileNameRequired" xml:space="preserve">
+    <value>Le nom de fichier original est obligatoire</value>
+  </data>
+  <data name="MimeTypeRequired" xml:space="preserve">
+    <value>Le type MIME est obligatoire</value>
+  </data>
+  <data name="StorageUrlRequired" xml:space="preserve">
+    <value>L'URL de stockage est obligatoire</value>
+  </data>
+  <data name="StorageUrlCannotBeEmpty" xml:space="preserve">
+    <value>L'URL de stockage ne peut pas être vide</value>
+  </data>
+  <data name="FileSizeMustBeGreaterThanZero" xml:space="preserve">
+    <value>La taille du fichier doit être supérieure à zéro</value>
+  </data>
+  <data name="InvalidFileUrl" xml:space="preserve">
+    <value>L'URL du fichier « {0} » a un format invalide. Doit être une URL HTTP ou HTTPS valide</value>
+  </data>
+  <data name="FileUrlRequired" xml:space="preserve">
+    <value>L'URL du fichier est obligatoire</value>
+  </data>
+</root>
