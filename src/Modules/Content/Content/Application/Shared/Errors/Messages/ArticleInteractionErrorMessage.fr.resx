@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AlreadyLiked" xml:space="preserve">
+    <value>Vous avez déjà aimé cet article</value>
+  </data>
+  <data name="LikeNotFound" xml:space="preserve">
+    <value>Aucun like trouvé pour cet article</value>
+  </data>
+  <data name="AlreadyBookmarked" xml:space="preserve">
+    <value>Vous avez déjà mis cet article en favori</value>
+  </data>
+  <data name="BookmarkNotFound" xml:space="preserve">
+    <value>Aucun favori trouvé pour cet article</value>
+  </data>
+  <data name="CommentNotFound" xml:space="preserve">
+    <value>Commentaire « {0} » introuvable</value>
+  </data>
+  <data name="NotCommentOwner" xml:space="preserve">
+    <value>Vous ne pouvez modifier que vos propres commentaires</value>
+  </data>
+  <data name="CommentBodyRequired" xml:space="preserve">
+    <value>Le corps du commentaire est obligatoire</value>
+  </data>
+  <data name="CommentBodyTooLong" xml:space="preserve">
+    <value>Le corps du commentaire ne doit pas dépasser {0} caractères</value>
+  </data>
+  <data name="InvalidStarRating" xml:space="preserve">
+    <value>La note doit être comprise entre 1 et 5</value>
+  </data>
+</root>
