@@ -1,4 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
+using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp;
@@ -14,11 +15,12 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp;
 public class AdminResendOtpValidator : AbstractValidator<AdminResendOtpCommand>
 {
     /// <summary>
-    /// Configure validation rules for admin OTP resend.
+    /// Initializes a new instance of <see cref="AdminResendOtpValidator" /> with validation rules.
     /// </summary>
-    public AdminResendOtpValidator()
+    /// <param name="msg">Validation error messages for rule configuration.</param>
+    public AdminResendOtpValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.Email).ValidEmail();
-        RuleFor(x => x.Purpose).ValidOtpPurpose();
+        RuleFor(x => x.Email).ValidEmail(msg);
+        RuleFor(x => x.Purpose).ValidOtpPurpose(msg);
     }
 }
