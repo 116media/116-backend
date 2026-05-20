@@ -15,10 +15,12 @@ namespace _116.Identity.Application.Session.Factories;
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="refreshTokenService">Service for refresh token generation and hashing.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="sessionErrors">Session domain error factory for generating domain exceptions.</param>
 public class RefreshTokenFactory(
     ISessionRepository sessionRepository,
     IRefreshTokenService refreshTokenService,
-    IIdentityUnitOfWork unitOfWork
+    IIdentityUnitOfWork unitOfWork,
+    SessionErrors sessionErrors
 ) : IRefreshTokenFactory
 {
     /// <inheritdoc />
@@ -52,7 +54,7 @@ public class RefreshTokenFactory(
             return new RefreshTokenData(User: session.User, Session: session, NewRefreshToken: newRefreshToken);
         }
 
-        throw SessionErrors.InvalidRefreshToken();
+        throw sessionErrors.InvalidRefreshToken();
     }
 
     /// <summary>
