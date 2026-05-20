@@ -14,8 +14,13 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeleteRole
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminSoftDeleteRoleHandler(IRoleRepository roleRepository, IIdentityUnitOfWork unitOfWork, IMapper mapper)
-    : ICommandHandler<AdminSoftDeleteRoleCommand, AdminSoftDeleteRoleResult>
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+public class AdminSoftDeleteRoleHandler(
+    IRoleRepository roleRepository,
+    IIdentityUnitOfWork unitOfWork,
+    IMapper mapper,
+    UserErrors userErrors
+) : ICommandHandler<AdminSoftDeleteRoleCommand, AdminSoftDeleteRoleResult>
 {
     /// <summary>
     /// Handles the role soft delete command.
@@ -39,7 +44,7 @@ public class AdminSoftDeleteRoleHandler(IRoleRepository roleRepository, IIdentit
 
         if (!wasSoftDeleted)
         {
-            throw UserErrors.RoleAlreadyDeleted();
+            throw userErrors.RoleAlreadyDeleted();
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
