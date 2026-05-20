@@ -12,7 +12,7 @@ namespace _116.Identity.Infrastructure.Repositories;
 /// <summary>
 /// Implementation of <see cref="IOtpRepository" /> using Entity Framework Core.
 /// </summary>
-public class OtpRepository(IdentityDbContext context) : IOtpRepository
+public class OtpRepository(IdentityDbContext context, UserErrors userErrors) : IOtpRepository
 {
     /// <inheritdoc />
     public async Task AddAsync(OtpEntity otp, CancellationToken cancellationToken = default)
@@ -40,13 +40,13 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
             // First check if the otp is not expired
             if (matchingOtp.IsExpired())
             {
-                throw UserErrors.OtpExpired();
+                throw userErrors.OtpExpired();
             }
 
             // Then check if the max attempts are not reached
             if (matchingOtp.HasMaxAttemptsReached())
             {
-                throw UserErrors.MaxOtpAttemptsReached();
+                throw userErrors.MaxOtpAttemptsReached();
             }
 
             // Then check if the otp is valid for the user
@@ -63,10 +63,10 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
 
             if (matchingOtp.HasMaxAttemptsReached())
             {
-                throw UserErrors.MaxOtpAttemptsReached();
+                throw userErrors.MaxOtpAttemptsReached();
             }
 
-            throw UserErrors.InvalidOtpCode();
+            throw userErrors.InvalidOtpCode();
         }
 
         // No matching OTP found — check the latest valid OTP for this purpose
@@ -78,17 +78,17 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
 
         if (latestOtp == null)
         {
-            throw UserErrors.NoValidOtpFound();
+            throw userErrors.NoValidOtpFound();
         }
 
         if (latestOtp.HasMaxAttemptsReached())
         {
-            throw UserErrors.MaxOtpAttemptsReached();
+            throw userErrors.MaxOtpAttemptsReached();
         }
 
         if (latestOtp.IsExpired())
         {
-            throw UserErrors.OtpExpired();
+            throw userErrors.OtpExpired();
         }
 
         // Increment attempts for wrong code
@@ -98,10 +98,10 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
 
         if (latestOtp.HasMaxAttemptsReached())
         {
-            throw UserErrors.MaxOtpAttemptsReached();
+            throw userErrors.MaxOtpAttemptsReached();
         }
 
-        throw UserErrors.InvalidOtpCode();
+        throw userErrors.InvalidOtpCode();
     }
 
     /// <inheritdoc />
@@ -122,13 +122,13 @@ public class OtpRepository(IdentityDbContext context) : IOtpRepository
         // Check if OTP exists
         if (matchingOtp == null)
         {
-            throw UserErrors.OtpNotYetVerified();
+            throw userErrors.OtpNotYetVerified();
         }
 
         // Check if the OTP has expired
         if (matchingOtp.IsExpired())
         {
-            throw UserErrors.OtpExpired();
+            throw userErrors.OtpExpired();
         }
 
         return matchingOtp;
