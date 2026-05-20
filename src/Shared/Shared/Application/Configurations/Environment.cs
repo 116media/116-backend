@@ -119,6 +119,10 @@ public class AppEnvironment
     /// Retrieves the allowed CORS origins from the DASHBOARD_ORIGIN and WEBAPP_ORIGIN
     /// environment variables.
     /// </summary>
+    /// <remarks>
+    /// Each variable accepts a single origin or a comma-separated list of origins.
+    /// Example: <c>DASHBOARD_ORIGIN=https://app.example.com,http://localhost:3000</c>
+    /// </remarks>
     /// <returns>
     /// An array of allowed origin strings. Returns an empty array if no origins are configured.
     /// </returns>
@@ -127,6 +131,11 @@ public class AppEnvironment
         string? dashboardOrigin = Environment.GetEnvironmentVariable("DASHBOARD_ORIGIN");
         string? webAppOrigin = Environment.GetEnvironmentVariable("WEBAPP_ORIGIN");
 
-        return [.. new[] { dashboardOrigin, webAppOrigin }.Where(o => !string.IsNullOrWhiteSpace(o)).Select(o => o!)];
+        return
+        [
+            .. new[] { dashboardOrigin, webAppOrigin }
+                .Where(o => !string.IsNullOrWhiteSpace(o))
+                .SelectMany(o => o!.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)),
+        ];
     }
 }
