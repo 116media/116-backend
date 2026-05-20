@@ -57,16 +57,16 @@ public class RoleEntity : Aggregate<Guid>
     /// <param name="description">The description of the role's purpose.</param>
     /// <returns>A new <see cref="RoleEntity" /> instance.</returns>
     /// <exception cref="ArgumentException">Thrown when name or description are empty.</exception>
-    public static RoleEntity Create(Guid id, string name, string description)
+    public static RoleEntity Create(Guid id, string name, string description, UserErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw UserErrors.RoleNameRequired();
+            throw errors.RoleNameRequired();
         }
 
         if (string.IsNullOrWhiteSpace(value: description))
         {
-            throw UserErrors.RoleDescriptionRequired();
+            throw errors.RoleDescriptionRequired();
         }
 
         return new RoleEntity
@@ -82,16 +82,17 @@ public class RoleEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="name">The new name for the role.</param>
     /// <param name="description">The new description for the role.</param>
-    public void Update(string name, string description)
+    /// <param name="errors">The errors factory instance.</param>
+    public void Update(string name, string description, UserErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw UserErrors.RoleNameRequired();
+            throw errors.RoleNameRequired();
         }
 
         if (string.IsNullOrWhiteSpace(value: description))
         {
-            throw UserErrors.RoleDescriptionRequired();
+            throw errors.RoleDescriptionRequired();
         }
 
         Name = name;
