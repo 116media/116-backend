@@ -1,4 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
+using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
@@ -6,16 +7,19 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
 /// <summary>
 /// Validator for the <see cref="AdminSignOutCommand" /> ensuring proper refresh token format.
 /// </summary>
+/// <remarks>
+/// Validates refresh token presence for session invalidation.
+/// </remarks>
 public class AdminSignOutValidator : AbstractValidator<AdminSignOutCommand>
 {
     /// <summary>
-    /// Configure validation rules for admin user sign-out.
+    /// Initializes a new instance of <see cref="AdminSignOutValidator" /> with validation rules.
     /// </summary>
-    /// <remarks>
-    /// Validates refresh token presence for session invalidation.
-    /// </remarks>
-    public AdminSignOutValidator()
+    /// <param name="msg">
+    /// Validation error messages for rule configuration.
+    /// </param>
+    public AdminSignOutValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.RefreshToken).ValidRefreshToken();
+        RuleFor(x => x.RefreshToken).ValidRefreshToken(msg);
     }
 }
