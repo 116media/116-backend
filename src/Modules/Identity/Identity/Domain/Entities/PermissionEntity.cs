@@ -62,13 +62,19 @@ public class PermissionEntity : Aggregate<Guid>
     /// <param name="description">The description of the permission's purpose.</param>
     /// <returns>A new <see cref="PermissionEntity" /> instance.</returns>
     /// <exception cref="ArgumentException">Thrown when parameters are null, empty, or exceed maximum length.</exception>
-    public static PermissionEntity Create(Guid id, string resource, string action, string description)
+    public static PermissionEntity Create(
+        Guid id,
+        string resource,
+        string action,
+        string description,
+        UserErrors errors
+    )
     {
         BadRequestException? error = (resource, action, description) switch
         {
-            var (r, _, _) when string.IsNullOrWhiteSpace(value: r) => UserErrors.PermissionResourceRequired(),
-            var (_, a, _) when string.IsNullOrWhiteSpace(value: a) => UserErrors.PermissionActionRequired(),
-            var (_, _, d) when string.IsNullOrWhiteSpace(value: d) => UserErrors.PermissionDescriptionRequired(),
+            var (r, _, _) when string.IsNullOrWhiteSpace(value: r) => errors.PermissionResourceRequired(),
+            var (_, a, _) when string.IsNullOrWhiteSpace(value: a) => errors.PermissionActionRequired(),
+            var (_, _, d) when string.IsNullOrWhiteSpace(value: d) => errors.PermissionDescriptionRequired(),
             _ => null,
         };
 
@@ -92,13 +98,14 @@ public class PermissionEntity : Aggregate<Guid>
     /// <param name="resource">The new resource name.</param>
     /// <param name="action">The new action name.</param>
     /// <param name="description">The new description.</param>
-    public void Update(string resource, string action, string description)
+    /// <param name="errors">The errors factory instance.</param>
+    public void Update(string resource, string action, string description, UserErrors errors)
     {
         BadRequestException? error = (resource, action, description) switch
         {
-            var (r, _, _) when string.IsNullOrWhiteSpace(value: r) => UserErrors.PermissionResourceRequired(),
-            var (_, a, _) when string.IsNullOrWhiteSpace(value: a) => UserErrors.PermissionActionRequired(),
-            var (_, _, d) when string.IsNullOrWhiteSpace(value: d) => UserErrors.PermissionDescriptionRequired(),
+            var (r, _, _) when string.IsNullOrWhiteSpace(value: r) => errors.PermissionResourceRequired(),
+            var (_, a, _) when string.IsNullOrWhiteSpace(value: a) => errors.PermissionActionRequired(),
+            var (_, _, d) when string.IsNullOrWhiteSpace(value: d) => errors.PermissionDescriptionRequired(),
             _ => null,
         };
 
