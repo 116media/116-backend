@@ -1,3 +1,5 @@
+using _116.Core.Application.Shared.Errors;
+using _116.Core.Application.Shared.Errors.Messages;
 using _116.Core.Application.Shared.Persistence;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
@@ -45,6 +47,14 @@ public static class CoreModule
     {
         // Register the database with base module infrastructure
         services.AddModuleDatabase(GetModuleOptions());
+
+        // Register error message classes (IStringLocalizer-backed)
+        services.AddScoped<ValidationErrorMessage>();
+        services.AddScoped<ConflictErrorMessage>();
+        services.AddScoped<InternalServerErrorMessage>();
+
+        // Register error factory class
+        services.AddScoped<CoreErrors>();
 
         // Register Unit of Work for transaction management
         services.AddScoped<ICoreUnitOfWork, CoreUnitOfWork>();
