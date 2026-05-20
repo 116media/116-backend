@@ -1,4 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
+using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 
 namespace _116.Identity.Application.Session.UseCases.Admin.Commands.RefreshToken;
@@ -11,8 +12,8 @@ public class AdminRefreshTokenValidator : AbstractValidator<AdminRefreshTokenCom
     /// <summary>
     /// Configure validation rules for admin refresh token requests.
     /// </summary>
-    public AdminRefreshTokenValidator()
+    public AdminRefreshTokenValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.RefreshToken).ValidRefreshToken();
+        RuleFor(x => x.RefreshToken).ValidRefreshToken(msg);
     }
 }
