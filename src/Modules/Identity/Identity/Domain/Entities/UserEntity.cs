@@ -101,14 +101,14 @@ public class UserEntity : Aggregate<Guid>
     /// <summary>
     /// Creates a new user with local authentication (email + password).
     /// </summary>
-    public static UserEntity Create(Guid id, string email, string userName, string passwordHash)
+    public static UserEntity Create(Guid id, string email, string userName, string passwordHash, UserErrors errors)
     {
         Exception? error = (email, userName, passwordHash) switch
         {
-            var (e, _, _) when string.IsNullOrWhiteSpace(value: e) => UserErrors.InvalidEmailFormat(email: e),
+            var (e, _, _) when string.IsNullOrWhiteSpace(value: e) => errors.InvalidEmailFormat(email: e),
             var (_, u, _) when string.IsNullOrWhiteSpace(value: u) || u.Length > UserConstants.MaxUserNameLength =>
-                UserErrors.InvalidUsernameFormat(username: u),
-            var (_, _, p) when string.IsNullOrWhiteSpace(value: p) => UserErrors.InvalidPasswordFormat(),
+                errors.InvalidUsernameFormat(username: u),
+            var (_, _, p) when string.IsNullOrWhiteSpace(value: p) => errors.InvalidPasswordFormat(),
             _ => null,
         };
         if (error is not null)
@@ -134,12 +134,13 @@ public class UserEntity : Aggregate<Guid>
         Guid id,
         string userName,
         EnumAuthProvider authProvider,
+        UserErrors errors,
         string? email = null
     )
     {
         if (string.IsNullOrWhiteSpace(value: userName))
         {
-            throw UserErrors.InvalidUsernameFormat(username: userName);
+            throw errors.InvalidUsernameFormat(username: userName);
         }
 
         return new UserEntity
@@ -156,11 +157,11 @@ public class UserEntity : Aggregate<Guid>
     /// <summary>
     /// Updates the user's email. Resets verification status since they need to verify the new email.
     /// </summary>
-    public void UpdateEmail(string newEmail)
+    public void UpdateEmail(string newEmail, UserErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: newEmail))
         {
-            throw UserErrors.InvalidEmailFormat(email: newEmail);
+            throw errors.InvalidEmailFormat(email: newEmail);
         }
 
         Email = newEmail.ToLowerInvariant();
@@ -170,16 +171,16 @@ public class UserEntity : Aggregate<Guid>
     /// <summary>
     /// Updates the password hash for existing local auth users.
     /// </summary>
-    public void UpdatePassword(string newPasswordHash)
+    public void UpdatePassword(string newPasswordHash, UserErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: newPasswordHash))
         {
-            throw UserErrors.InvalidPasswordFormat();
+            throw errors.InvalidPasswordFormat();
         }
 
         if (AuthProvider != EnumAuthProvider.Local && string.IsNullOrEmpty(value: Email))
         {
-            throw UserErrors.BadRequest("Cannot update password for a user without email.");
+            throw errors.BadRequest("Cannot update password for a user without email.");
         }
 
         PasswordHash = newPasswordHash;
@@ -189,16 +190,16 @@ public class UserEntity : Aggregate<Guid>
     /// Sets a password for social login users, converting them to local auth.
     /// Useful when a Google/Facebook user wants to also login with password.
     /// </summary>
-    public void SetPasswordAndChangeToLocal(string passwordHash)
+    public void SetPasswordAndChangeToLocal(string passwordHash, UserErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: passwordHash))
         {
-            throw UserErrors.InvalidPasswordFormat();
+            throw errors.InvalidPasswordFormat();
         }
 
         if (string.IsNullOrEmpty(value: Email))
         {
-            throw UserErrors.EmailRequiredToSetPassword();
+            throw errors.EmailRequiredToSetPassword();
         }
 
         PasswordHash = passwordHash;
@@ -208,11 +209,11 @@ public class UserEntity : Aggregate<Guid>
     /// <summary>
     /// Updates the username. Must still be unique across all users.
     /// </summary>
-    public void UpdateUserName(string newUserName)
+    public void UpdateUserName(string newUserName, UserErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: newUserName) || newUserName.Length > UserConstants.MaxUserNameLength)
         {
-            throw UserErrors.InvalidUsernameFormat(username: newUserName);
+            throw errors.InvalidUsernameFormat(username: newUserName);
         }
 
         UserName = newUserName;
@@ -247,16 +248,16 @@ public class UserEntity : Aggregate<Guid>
     /// Checks if this user can log in. Throws an exception if not.
     /// Call this before creating a new session.
     /// </summary>
-    public void ValidateCanLogin()
+    public void ValidateCanLogin(UserErrors errors)
     {
         if (!IsActive)
         {
-            throw UserErrors.AccountInactive(Email!);
+            throw errors.AccountInactive(Email!);
         }
 
         if (AuthProvider == EnumAuthProvider.Local && !IsVerified)
         {
-            throw UserErrors.AccountNotVerified(Email!);
+            throw errors.AccountNotVerified(Email!);
         }
     }
 
@@ -293,12 +294,12 @@ public class UserEntity : Aggregate<Guid>
     /// <summary>
     /// Assigns a role to this user. Throws if the role is already assigned.
     /// </summary>
-    public void AssignRole(UserRoleEntity userRole)
+    public void AssignRole(UserRoleEntity userRole, UserErrors errors)
     {
         ArgumentNullException.ThrowIfNull(argument: userRole);
         if (HasRole(roleId: userRole.RoleId))
         {
-            throw UserErrors.RoleAlreadyAssignedToUser();
+            throw errors.RoleAlreadyAssignedToUser();
         }
 
         UserRoles.Add(item: userRole);
