@@ -1,4 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
+using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
@@ -9,13 +10,14 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
 public class AdminForgotPasswordValidator : AbstractValidator<AdminForgotPasswordCommand>
 {
     /// <summary>
-    /// Configure validation rules for admin password reset request.
+    /// Initializes a new instance of <see cref="AdminForgotPasswordValidator" /> with validation rules.
     /// </summary>
+    /// <param name="msg">Validation error messages for rule configuration.</param>
     /// <remarks>
     /// Validates email presence and format for admin password reset attempts.
     /// </remarks>
-    public AdminForgotPasswordValidator()
+    public AdminForgotPasswordValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.Email).ValidEmail();
+        RuleFor(x => x.Email).ValidEmail(msg);
     }
 }
