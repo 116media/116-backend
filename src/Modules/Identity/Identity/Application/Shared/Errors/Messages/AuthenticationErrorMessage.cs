@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Identity.Application.Shared.Errors.Messages;
 
 /// <summary>
@@ -5,55 +7,55 @@ namespace _116.Identity.Application.Shared.Errors.Messages;
 /// These messages describe authentication failures, such as invalid credentials
 /// or missing administrative privileges.
 /// </summary>
-public static class AuthenticationErrorMessage
+public class AuthenticationErrorMessage(IStringLocalizer<AuthenticationErrorMessage> localizer)
 {
     /// <summary>
     /// Generic error message indicating that the provided login credentials
     /// are invalid. This message avoids leaking sensitive information
     /// for security reasons.
     /// </summary>
-    public static string InvalidCredentials()
+    public string InvalidCredentials()
     {
-        return "Invalid email or password";
+        return localizer["InvalidCredentials"];
     }
 
     /// <summary>
     /// Error message indicating that the user is not authenticated or the user ID is invalid.
     /// </summary>
-    public static string InvalidUserAuthentication()
+    public string InvalidUserAuthentication()
     {
-        return "User not authenticated or invalid user ID";
+        return localizer["InvalidUserAuthentication"];
     }
 
     /// <summary>
     /// Error message indicating that the user does not have sufficient permissions for this operation.
     /// </summary>
-    public static string InsufficientPermissions()
+    public string InsufficientPermissions()
     {
-        return "Access Denied. Insufficient permissions for this operation";
+        return localizer["InsufficientPermissions"];
     }
 
     /// <summary>
     /// Error message indicating that JWT Bearer token authentication is required.
     /// </summary>
-    public static string JwtTokenRequired()
+    public string JwtTokenRequired()
     {
-        return "Authentication required. Please provide a valid web token";
+        return localizer["JwtTokenRequired"];
     }
 
     /// <summary>
     /// Error message indicating that the provided refresh token is invalid or has expired.
     /// </summary>
-    public static string InvalidRefreshToken()
+    public string InvalidRefreshToken()
     {
-        return "Invalid or expired session. Please log in again";
+        return localizer["InvalidRefreshToken"];
     }
 
     /// <summary>
     /// Error message indicating that the device identifier is missing from the request.
     /// </summary>
-    public static string DeviceIdRequired()
+    public string DeviceIdRequired()
     {
-        return "Device ID is required. Please provide X-Device-Id header";
+        return localizer["DeviceIdRequired"];
     }
 }
