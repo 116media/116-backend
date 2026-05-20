@@ -14,8 +14,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 /// <summary>
 /// Request model for updating video tags.
 /// </summary>
-/// <param name="TagIds">The complete set of tag identifiers to assign to this video.</param>
-public record AdminUpdateVideoTagsRequest(IReadOnlyList<Guid> TagIds);
+/// <param name="TagNames">The complete set of tag display names to assign to this video.</param>
+public record AdminUpdateVideoTagsRequest(IReadOnlyList<string> TagNames);
 
 /// <summary>
 /// Response model for a successful UpdateVideoTags operation.
@@ -45,7 +45,7 @@ public class AdminUpdateVideoTagsEndpointV1 : ICarterModule
                 $"/{{id}}/{EditorialRouteConstants.Tags}",
                 async (string id, AdminUpdateVideoTagsRequest request, IDispatcher dispatcher) =>
                 {
-                    var command = new AdminUpdateVideoTagsCommand(VideoId: id, TagIds: request.TagIds);
+                    var command = new AdminUpdateVideoTagsCommand(VideoId: id, TagNames: request.TagNames);
                     AdminUpdateVideoTagsResult result = await dispatcher.Send(request: command);
 
                     var response = new AdminUpdateVideoTagsResponse(IsSuccess: result.IsSuccess);
