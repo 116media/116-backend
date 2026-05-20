@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Identity.Application.Shared.Errors.Messages;
 
 /// <summary>
@@ -5,7 +7,7 @@ namespace _116.Identity.Application.Shared.Errors.Messages;
 /// These messages describe failures related to account status or permission
 /// restrictions.
 /// </summary>
-public static class AuthorizationErrorMessage
+public class AuthorizationErrorMessage(IStringLocalizer<AuthorizationErrorMessage> localizer)
 {
     /// <summary>
     /// Gets an error message for when an account is inactive.
@@ -14,9 +16,9 @@ public static class AuthorizationErrorMessage
     /// <returns>
     /// A formatted error message indicating that the specified account is inactive.
     /// </returns>
-    public static string AccountInactive(string email)
+    public string AccountInactive(string email)
     {
-        return $"Account associated with '{email}' is inactive. Please contact support for assistance.";
+        return string.Format(localizer["AccountInactive"], email);
     }
 
     /// <summary>
@@ -26,16 +28,16 @@ public static class AuthorizationErrorMessage
     /// <returns>
     /// A formatted error message indicating that the specified account is not verified.
     /// </returns>
-    public static string AccountNotVerified(string email)
+    public string AccountNotVerified(string email)
     {
-        return $"The account associated with '{email}' is not verified. Please complete the verification process to continue.";
+        return string.Format(localizer["AccountNotVerified"], email);
     }
 
     /// <summary>
     /// Error message indicating that access is denied due to insufficient permissions.
     /// </summary>
-    public static string AccessDenied()
+    public string AccessDenied()
     {
-        return "Access denied. You don't have sufficient permissions to access this resource";
+        return localizer["AccessDenied"];
     }
 }
