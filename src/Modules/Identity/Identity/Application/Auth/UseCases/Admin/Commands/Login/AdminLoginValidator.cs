@@ -1,4 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
+using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
@@ -9,14 +10,15 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 public class AdminLoginValidator : AbstractValidator<AdminLoginCommand>
 {
     /// <summary>
-    /// Configure validation rules for admin authentication.
+    /// Initializes a new instance of <see cref="AdminLoginValidator" /> with validation rules.
     /// </summary>
+    /// <param name="msg">Validation error messages for rule configuration.</param>
     /// <remarks>
     /// Validates email and password presence for admin login attempts.
     /// </remarks>
-    public AdminLoginValidator()
+    public AdminLoginValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.Email).ValidEmail();
-        RuleFor(x => x.Password).ValidPassword(isStrong: false);
+        RuleFor(x => x.Email).ValidEmail(msg);
+        RuleFor(x => x.Password).ValidPassword(msg, isStrong: false);
     }
 }
