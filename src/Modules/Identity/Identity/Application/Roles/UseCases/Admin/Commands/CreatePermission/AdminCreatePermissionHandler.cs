@@ -15,10 +15,12 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.CreatePermissi
 /// <param name="permissionRepository">Repository for permission data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
 public class AdminCreatePermissionHandler(
     IPermissionRepository permissionRepository,
     IIdentityUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    UserErrors userErrors
 ) : ICommandHandler<AdminCreatePermissionCommand, AdminCreatePermissionResult>
 {
     /// <summary>
@@ -40,14 +42,15 @@ public class AdminCreatePermissionHandler(
 
         if (permissionExists)
         {
-            throw UserErrors.PermissionAlreadyExists(resource: command.Resource, action: command.Action);
+            throw userErrors.PermissionAlreadyExists(resource: command.Resource, action: command.Action);
         }
 
         var permission = PermissionEntity.Create(
             id: Guid.NewGuid(),
             action: command.Action,
             resource: command.Resource,
-            description: command.Description
+            description: command.Description,
+            errors: userErrors
         );
 
         await permissionRepository.AddAsync(permission: permission, cancellationToken: cancellationToken);
