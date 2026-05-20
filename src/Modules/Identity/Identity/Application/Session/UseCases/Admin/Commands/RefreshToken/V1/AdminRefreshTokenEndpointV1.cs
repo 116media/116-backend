@@ -40,12 +40,12 @@ public class AdminRefreshTokenEndpointV1 : ICarterModule
         group
             .MapPost(
                 pattern: SessionRouteConstants.RefreshToken,
-                async (IDispatcher dispatcher, ITokenDeliveryService tokenDelivery) =>
+                async (IDispatcher dispatcher, ITokenDeliveryService tokenDelivery, SessionErrors sessionErrors) =>
                 {
                     string? refreshToken = tokenDelivery.ReadRefreshToken(bodyRefreshToken: null);
                     if (string.IsNullOrEmpty(refreshToken))
                     {
-                        throw SessionErrors.InvalidRefreshToken();
+                        throw sessionErrors.InvalidRefreshToken();
                     }
 
                     var command = new AdminRefreshTokenCommand(RefreshToken: refreshToken);
