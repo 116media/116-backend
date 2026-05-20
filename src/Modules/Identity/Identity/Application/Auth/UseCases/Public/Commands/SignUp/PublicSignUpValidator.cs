@@ -1,4 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
+using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
@@ -15,12 +16,15 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 public class PublicSignUpValidator : AbstractValidator<PublicSignUpCommand>
 {
     /// <summary>
-    /// Configure validation rules for public user registration.
+    /// Initializes a new instance of <see cref="PublicSignUpValidator" /> with validation rules.
     /// </summary>
-    public PublicSignUpValidator()
+    /// <param name="msg">
+    /// Validation error messages for rule configuration.
+    /// </param>
+    public PublicSignUpValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.Email).ValidEmail();
-        RuleFor(x => x.UserName).ValidUsername();
-        RuleFor(x => x.Password).ValidPassword();
+        RuleFor(x => x.Email).ValidEmail(msg);
+        RuleFor(x => x.UserName).ValidUsername(msg);
+        RuleFor(x => x.Password).ValidPassword(msg);
     }
 }
