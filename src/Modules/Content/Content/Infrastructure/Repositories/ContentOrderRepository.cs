@@ -217,4 +217,10 @@ public class ContentOrderRepository(ContentDbContext context) : IContentOrderRep
         context.ContentItemTiers.Remove(tier);
         return Task.CompletedTask;
     }
+
+    /// <inheritdoc />
+    public async Task<ContentOrderEntity?> GetOrderByItemIdAsync(Guid orderItemId, CancellationToken ct = default)
+    {
+        return await context.ContentOrders.Where(o => o.Items.Any(i => i.Id == orderItemId)).FirstOrDefaultAsync(ct);
+    }
 }

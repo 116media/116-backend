@@ -18,6 +18,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 public class AdminSubmitArticleHandlerTests
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminSubmitArticleHandler _handler;
 
@@ -26,8 +27,13 @@ public class AdminSubmitArticleHandlerTests
     public AdminSubmitArticleHandlerTests()
     {
         _articleRepositoryMock = MockArticleRepository.Create();
+        _orderRepositoryMock = MockContentOrderRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminSubmitArticleHandler(_articleRepositoryMock.Object, _unitOfWorkMock.Object);
+        _handler = new AdminSubmitArticleHandler(
+            _articleRepositoryMock.Object,
+            _orderRepositoryMock.Object,
+            _unitOfWorkMock.Object
+        );
     }
 
     #region Success Cases
@@ -50,12 +56,37 @@ public class AdminSubmitArticleHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenPaidArticleInDraft_ShouldTransitionToPendingPayment()
+    public async Task Handle_WhenPaidArticleInDraftWithUnpaidOrder_ShouldTransitionToPendingPayment()
     {
         // Arrange
-        ArticleEntity article = ArticleFactory.CreatePaid(CategoryId, Guid.NewGuid(), Guid.NewGuid());
+        Guid customerId = Guid.NewGuid();
+        Guid orderItemId = Guid.NewGuid();
+        ArticleEntity article = ArticleFactory.CreatePaid(CategoryId, customerId, orderItemId);
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
         var command = new AdminSubmitArticleCommand(Id: article.Id.ToString());
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
+        _orderRepositoryMock.SetupGetOrderByItemId(orderItemId, order);
+
+        // Act
+        AdminSubmitArticleResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        _articleRepositoryMock.VerifyUpdateCalled();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenPaidArticleInDraftWithAlreadyPaidOrder_ShouldTransitionToPendingReview()
+    {
+        // Arrange
+        Guid customerId = Guid.NewGuid();
+        Guid orderItemId = Guid.NewGuid();
+        ArticleEntity article = ArticleFactory.CreatePaid(CategoryId, customerId, orderItemId);
+        ContentOrderEntity order = ContentOrderFactory.CreatePaid();
+        var command = new AdminSubmitArticleCommand(Id: article.Id.ToString());
+        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+        _orderRepositoryMock.SetupGetOrderByItemId(orderItemId, order);
 
         // Act
         AdminSubmitArticleResult result = await _handler.Handle(command, CancellationToken.None);
@@ -104,9 +135,13 @@ public class AdminSubmitArticleHandlerTests
     public async Task Handle_WhenPaidArticleAlreadyPendingPayment_ShouldThrowConflictException()
     {
         // Arrange
-        ArticleEntity article = ArticleFactory.CreatePendingPayment(CategoryId, Guid.NewGuid(), Guid.NewGuid());
+        Guid customerId = Guid.NewGuid();
+        Guid orderItemId = Guid.NewGuid();
+        ArticleEntity article = ArticleFactory.CreatePendingPayment(CategoryId, customerId, orderItemId);
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
         var command = new AdminSubmitArticleCommand(Id: article.Id.ToString());
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
+        _orderRepositoryMock.SetupGetOrderByItemId(orderItemId, order);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);

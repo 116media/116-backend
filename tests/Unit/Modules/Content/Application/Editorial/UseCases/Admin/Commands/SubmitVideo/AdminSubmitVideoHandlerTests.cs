@@ -18,6 +18,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 public class AdminSubmitVideoHandlerTests
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
+    private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminSubmitVideoHandler _handler;
 
@@ -26,8 +27,13 @@ public class AdminSubmitVideoHandlerTests
     public AdminSubmitVideoHandlerTests()
     {
         _videoRepositoryMock = MockVideoRepository.Create();
+        _orderRepositoryMock = MockContentOrderRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminSubmitVideoHandler(_videoRepositoryMock.Object, _unitOfWorkMock.Object);
+        _handler = new AdminSubmitVideoHandler(
+            _videoRepositoryMock.Object,
+            _orderRepositoryMock.Object,
+            _unitOfWorkMock.Object
+        );
     }
 
     #region Success Cases
@@ -50,12 +56,37 @@ public class AdminSubmitVideoHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenPaidVideoInDraft_ShouldTransitionToPendingPayment()
+    public async Task Handle_WhenPaidVideoInDraftWithUnpaidOrder_ShouldTransitionToPendingPayment()
     {
         // Arrange
-        VideoEntity video = VideoFactory.CreatePaid(CategoryId, Guid.NewGuid(), Guid.NewGuid());
+        Guid customerId = Guid.NewGuid();
+        Guid orderItemId = Guid.NewGuid();
+        VideoEntity video = VideoFactory.CreatePaid(CategoryId, customerId, orderItemId);
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
         var command = new AdminSubmitVideoCommand(Id: video.Id.ToString());
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
+        _orderRepositoryMock.SetupGetOrderByItemId(orderItemId, order);
+
+        // Act
+        AdminSubmitVideoResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        _videoRepositoryMock.VerifyUpdateCalled();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenPaidVideoInDraftWithAlreadyPaidOrder_ShouldTransitionToPendingReview()
+    {
+        // Arrange
+        Guid customerId = Guid.NewGuid();
+        Guid orderItemId = Guid.NewGuid();
+        VideoEntity video = VideoFactory.CreatePaid(CategoryId, customerId, orderItemId);
+        ContentOrderEntity order = ContentOrderFactory.CreatePaid();
+        var command = new AdminSubmitVideoCommand(Id: video.Id.ToString());
+        _videoRepositoryMock.SetupGetByIdOrThrow(video);
+        _orderRepositoryMock.SetupGetOrderByItemId(orderItemId, order);
 
         // Act
         AdminSubmitVideoResult result = await _handler.Handle(command, CancellationToken.None);
@@ -104,9 +135,13 @@ public class AdminSubmitVideoHandlerTests
     public async Task Handle_WhenPaidVideoAlreadyPendingPayment_ShouldThrowConflictException()
     {
         // Arrange
-        VideoEntity video = VideoFactory.CreatePendingPayment(CategoryId, Guid.NewGuid(), Guid.NewGuid());
+        Guid customerId = Guid.NewGuid();
+        Guid orderItemId = Guid.NewGuid();
+        VideoEntity video = VideoFactory.CreatePendingPayment(CategoryId, customerId, orderItemId);
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
         var command = new AdminSubmitVideoCommand(Id: video.Id.ToString());
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
+        _orderRepositoryMock.SetupGetOrderByItemId(orderItemId, order);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);

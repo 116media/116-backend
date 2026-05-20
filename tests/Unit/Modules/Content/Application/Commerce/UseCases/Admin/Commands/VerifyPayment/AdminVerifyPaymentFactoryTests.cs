@@ -1,5 +1,6 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -174,6 +175,53 @@ public class AdminVerifyPaymentFactoryTests
         await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
 
         // Assert
+        _videoRepositoryMock.VerifyUpdateCalled();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task VerifyAsync_WhenArticleInPendingPayment_ShouldTransitionToPendingReview()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        Guid categoryId = Guid.NewGuid();
+        Guid customerId = Guid.NewGuid();
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, categoryId);
+        order.Items.Add(item);
+        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
+
+        ArticleEntity article = ArticleFactory.CreatePendingPayment(categoryId, customerId, item.Id);
+        _articleRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, article);
+
+        // Act
+        await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
+
+        // Assert
+        article.Status.Should().Be(EnumContentStatus.PendingReview);
+        _articleRepositoryMock.VerifyUpdateCalled();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task VerifyAsync_WhenVideoInPendingPayment_ShouldTransitionToPendingReview()
+    {
+        // Arrange — article returns null so factory tries video
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        Guid categoryId = Guid.NewGuid();
+        Guid customerId = Guid.NewGuid();
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, categoryId);
+        order.Items.Add(item);
+        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
+
+        VideoEntity video = VideoFactory.CreatePendingPayment(categoryId, customerId, item.Id);
+        _articleRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, null);
+        _videoRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, video);
+
+        // Act
+        await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
+
+        // Assert
+        video.Status.Should().Be(EnumContentStatus.PendingReview);
         _videoRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
