@@ -130,4 +130,18 @@ public static class VideoErrorMessage
     {
         return $"Cannot transition video from '{from}' to '{to}'";
     }
+
+    /// <summary>
+    /// Gets an error message for when a YouTube URL is attached before the scheduled shooting date.
+    /// </summary>
+    /// <param name="shootingScheduledAt">
+    /// The future date on which the shooting is scheduled.
+    /// </param>
+    /// <returns>
+    /// An error message indicating that the YouTube URL cannot be attached until after the scheduled shooting date.
+    /// </returns>
+    public static string CannotAttachYoutubeUrlBeforeShoot(DateTimeOffset shootingScheduledAt)
+    {
+        return $"YouTube URL cannot be added before the shooting date ({shootingScheduledAt:yyyy-MM-dd}).";
+    }
 }

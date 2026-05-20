@@ -131,4 +131,18 @@ public static class VideoFactory
             .WithTitle(TestConstants.Content.Editorial.Video.ValidTitle)
             .WithSlug(TestConstants.Content.Editorial.Video.ValidSlug)
             .Build();
+
+    /// <summary>
+    /// Creates a free video with a shooting scheduled in the future.
+    /// A YouTube URL cannot be attached until after the shoot date passes.
+    /// </summary>
+    public static VideoEntity CreateWithFutureShoot(Guid categoryId, int daysFromNow = 30) =>
+        new VideoBuilder(categoryId).WithShootingScheduledAt(DateTimeOffset.UtcNow.AddDays(daysFromNow)).Build();
+
+    /// <summary>
+    /// Creates a free video with a shooting that already happened (in the past).
+    /// A YouTube URL can be freely attached.
+    /// </summary>
+    public static VideoEntity CreateWithPastShoot(Guid categoryId, int daysAgo = 7) =>
+        new VideoBuilder(categoryId).WithShootingScheduledAt(DateTimeOffset.UtcNow.AddDays(-daysAgo)).Build();
 }

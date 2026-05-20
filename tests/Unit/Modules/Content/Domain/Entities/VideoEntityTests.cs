@@ -415,7 +415,7 @@ public class VideoEntityTests
     #region Domain Method Tests
 
     [Fact]
-    public void AttachYoutubeUrl_ShouldSetYoutubeVideoUrl()
+    public void AttachYoutubeUrl_WhenNoShootScheduled_ShouldSetYoutubeVideoUrl()
     {
         // Arrange
         VideoEntity video = VideoEntity.CreateFree(
@@ -433,6 +433,51 @@ public class VideoEntityTests
 
         // Assert
         video.YoutubeVideoUrl.Should().Be(youtubeId);
+    }
+
+    [Fact]
+    public void AttachYoutubeUrl_WhenShootIsInThePast_ShouldSetYoutubeVideoUrl()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description
+        );
+        video.ScheduleShoot(DateTimeOffset.UtcNow.AddDays(-7));
+        const string youtubeId = TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl;
+
+        // Act
+        video.AttachYoutubeVideoUrl(youtubeId);
+
+        // Assert
+        video.YoutubeVideoUrl.Should().Be(youtubeId);
+    }
+
+    [Fact]
+    public void AttachYoutubeUrl_WhenShootIsInTheFuture_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description
+        );
+        DateTimeOffset futureShoot = DateTimeOffset.UtcNow.AddDays(30);
+        video.ScheduleShoot(futureShoot);
+        const string youtubeId = TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl;
+
+        // Act
+        Action act = () => video.AttachYoutubeVideoUrl(youtubeId);
+
+        // Assert
+        act.Should().Throw<BadRequestException>().WithMessage($"*{futureShoot:yyyy-MM-dd}*");
     }
 
     [Fact]

@@ -158,4 +158,18 @@ public class VideoErrorsTests
         exception.Should().BeOfType<BadRequestException>();
         exception.Message.Should().NotBeNullOrEmpty();
     }
+
+    [Fact]
+    public void CannotAttachYoutubeUrlBeforeShoot_ShouldReturnBadRequestExceptionWithShootDate()
+    {
+        // Arrange
+        DateTimeOffset shootDate = new DateTimeOffset(2026, 6, 15, 0, 0, 0, TimeSpan.Zero);
+
+        // Act
+        BadRequestException exception = VideoErrors.CannotAttachYoutubeUrlBeforeShoot(shootDate);
+
+        // Assert
+        exception.Should().BeOfType<BadRequestException>();
+        exception.Message.Should().Contain("2026-06-15");
+    }
 }

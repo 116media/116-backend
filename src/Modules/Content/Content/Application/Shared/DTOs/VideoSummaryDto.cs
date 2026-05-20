@@ -19,6 +19,10 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="IsFeatured">Whether the video has an active featured placement.</param>
 /// <param name="HasLyrics">Whether a lyrics page is linked to this video.</param>
 /// <param name="PublishedAt">When the video was published, or null if not yet published.</param>
+/// <param name="ShootingScheduledAt">
+/// The scheduled shooting date, or null if no shoot was booked.
+/// Used by the dashboard to determine whether a YouTube URL can be attached.
+/// </param>
 public record VideoSummaryDto(
     Guid Id,
     Guid CategoryId,
@@ -31,5 +35,6 @@ public record VideoSummaryDto(
     string? YoutubeVideoUrl,
     bool IsFeatured,
     bool HasLyrics,
-    DateTimeOffset? PublishedAt
+    DateTimeOffset? PublishedAt,
+    DateTimeOffset? ShootingScheduledAt
 ) : AuditableDto;
