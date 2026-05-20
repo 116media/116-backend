@@ -12,8 +12,12 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="passwordService">Service for verifying hashed passwords.</param>
-public class AdminLoginAuthFactory(IAuthRepository authRepository, IPasswordService passwordService)
-    : IAdminLoginAuthFactory
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+public class AdminLoginAuthFactory(
+    IAuthRepository authRepository,
+    IPasswordService passwordService,
+    UserErrors userErrors
+) : IAdminLoginAuthFactory
 {
     /// <summary>
     /// Authenticates an admin user with their email and password.
@@ -32,10 +36,10 @@ public class AdminLoginAuthFactory(IAuthRepository authRepository, IPasswordServ
         // Verify password first before revealing account status
         if (!passwordService.Verify(password: password, hash: user!.PasswordHash))
         {
-            throw UserErrors.InvalidCredentials();
+            throw userErrors.InvalidCredentials();
         }
 
-        user.ValidateCanLogin();
+        user.ValidateCanLogin(errors: userErrors);
         authRepository.IsUserAdmin(user: user);
 
         List<RolePermissionEntity> userPermissions = user.UserRoles.SelectMany(ur => ur.Role.RolePermissions).ToList();
