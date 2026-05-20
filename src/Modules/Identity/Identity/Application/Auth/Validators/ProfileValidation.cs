@@ -1,4 +1,5 @@
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.Validators;
@@ -13,12 +14,16 @@ public static class ProfileValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the country name property.</param>
+    /// <param name="msg">The validation error message provider.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, string?> ValidCountryName<T>(this IRuleBuilder<T, string?> ruleBuilder)
+    public static IRuleBuilderOptions<T, string?> ValidCountryName<T>(
+        this IRuleBuilder<T, string?> ruleBuilder,
+        ValidationErrorMessage msg
+    )
     {
         return ruleBuilder
             .MaximumLength(maximumLength: UserConstants.MaxCountryNameLength)
-            .WithMessage($"Country name cannot exceed {UserConstants.MaxCountryNameLength} characters")
+            .WithMessage(msg.CountryNameTooLong(UserConstants.MaxCountryNameLength))
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "CountryName")));
     }
 
@@ -27,17 +32,19 @@ public static class ProfileValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the country ISO code property.</param>
+    /// <param name="msg">The validation error message provider.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidCountryIsoCode<T>(
-        this IRuleBuilderInitial<T, string?> ruleBuilder
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        ValidationErrorMessage msg
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: UserConstants.MaxCountryIsoCodeLength)
-            .WithMessage($"Country ISO code cannot exceed {UserConstants.MaxCountryIsoCodeLength} characters")
+            .WithMessage(msg.CountryIsoCodeTooLong(UserConstants.MaxCountryIsoCodeLength))
             .Matches("^[A-Z]{2,3}$")
-            .WithMessage("Country ISO code must contain only uppercase letters")
+            .WithMessage(msg.CountryIsoCodeInvalid())
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "CountryIsoCode")));
     }
 
@@ -46,19 +53,19 @@ public static class ProfileValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the country dial code property.</param>
+    /// <param name="msg">The validation error message provider.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidCountryDialCode<T>(
-        this IRuleBuilderInitial<T, string?> ruleBuilder
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        ValidationErrorMessage msg
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: UserConstants.MaxCountryDialCodeLength)
-            .WithMessage($"Country dial code cannot exceed {UserConstants.MaxCountryDialCodeLength} characters")
+            .WithMessage(msg.CountryDialCodeTooLong(UserConstants.MaxCountryDialCodeLength))
             .Matches(@"^\+\d{1,4}$")
-            .WithMessage(
-                $"Country dial code must start with + followed by 1-{UserConstants.MaxCountryDialCodeLength} digits"
-            )
+            .WithMessage(msg.CountryDialCodeInvalid(UserConstants.MaxCountryDialCodeLength))
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "CountryDialCode")));
     }
 
@@ -67,12 +74,16 @@ public static class ProfileValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the partial phone number property.</param>
+    /// <param name="msg">The validation error message provider.</param>
     /// <returns>The configured rule builder.</returns>
-    public static IRuleBuilderOptions<T, string?> ValidPartialPhoneNumber<T>(this IRuleBuilder<T, string?> ruleBuilder)
+    public static IRuleBuilderOptions<T, string?> ValidPartialPhoneNumber<T>(
+        this IRuleBuilder<T, string?> ruleBuilder,
+        ValidationErrorMessage msg
+    )
     {
         return ruleBuilder
             .MaximumLength(maximumLength: UserConstants.MaxPartialPhoneNumberLength)
-            .WithMessage($"Partial phone number cannot exceed {UserConstants.MaxPartialPhoneNumberLength} characters")
+            .WithMessage(msg.PartialPhoneNumberTooLong(UserConstants.MaxPartialPhoneNumberLength))
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "PartialPhoneNumber")));
     }
 }
