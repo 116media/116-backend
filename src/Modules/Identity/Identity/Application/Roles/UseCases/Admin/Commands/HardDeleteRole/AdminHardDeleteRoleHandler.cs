@@ -12,8 +12,12 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.HardDeleteRole
 /// </summary>
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminHardDeleteRoleHandler(IRoleRepository roleRepository, IIdentityUnitOfWork unitOfWork)
-    : ICommandHandler<AdminHardDeleteRoleCommand, AdminHardDeleteRoleResult>
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+public class AdminHardDeleteRoleHandler(
+    IRoleRepository roleRepository,
+    IIdentityUnitOfWork unitOfWork,
+    UserErrors userErrors
+) : ICommandHandler<AdminHardDeleteRoleCommand, AdminHardDeleteRoleResult>
 {
     /// <summary>
     /// Handles the role hard delete command.
@@ -36,7 +40,7 @@ public class AdminHardDeleteRoleHandler(IRoleRepository roleRepository, IIdentit
         // Protect core roles from being deleted
         if (IsCoreRole(roleName: role!.Name))
         {
-            throw UserErrors.CoreRoleCannotBeDeleted(roleName: role.Name);
+            throw userErrors.CoreRoleCannotBeDeleted(roleName: role.Name);
         }
 
         roleRepository.Delete(entity: role);
