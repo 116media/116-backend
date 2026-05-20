@@ -12,8 +12,12 @@ namespace _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessio
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetOwnSessionByIdHandler(ISessionRepository sessionRepository, IMapper mapper)
-    : IQueryHandler<PublicGetOwnSessionByIdQuery, PublicGetOwnSessionByIdResult>
+/// <param name="sessionErrors">Session domain error factory for generating domain exceptions.</param>
+public class PublicGetOwnSessionByIdHandler(
+    ISessionRepository sessionRepository,
+    IMapper mapper,
+    SessionErrors sessionErrors
+) : IQueryHandler<PublicGetOwnSessionByIdQuery, PublicGetOwnSessionByIdResult>
 {
     /// <summary>
     /// Handles the query by fetching the session by ID and verifying ownership.
@@ -34,7 +38,7 @@ public class PublicGetOwnSessionByIdHandler(ISessionRepository sessionRepository
         // Verify the session belongs to the user
         if (session is null || session.UserId != query.UserId)
         {
-            throw SessionErrors.SessionNotFound(sessionId: query.SessionId);
+            throw sessionErrors.SessionNotFound(sessionId: query.SessionId);
         }
 
         var sessionDto = session.ToSessionDto(mapper);
