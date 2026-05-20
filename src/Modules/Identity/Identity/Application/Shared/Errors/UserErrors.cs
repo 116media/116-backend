@@ -10,52 +10,57 @@ namespace _116.Identity.Application.Shared.Errors;
 /// User domain error factory providing simple, readable exception creation.
 /// Usage: UserErrors.UserAlreadyExists(email) or UserErrors.UserNotFound(userId)
 /// </summary>
-public static class UserErrors
+public class UserErrors(
+    ConflictErrorMessage conflict,
+    ValidationErrorMessage validation,
+    AuthenticationErrorMessage authentication,
+    AuthorizationErrorMessage authorization
+)
 {
     /// <summary>
     /// Throws when a user already exists during registration.
     /// </summary>
-    public static ConflictException EmailAlreadyExists(string email)
+    public ConflictException EmailAlreadyExists(string email)
     {
-        return new ConflictException(ConflictErrorMessage.EmailAlreadyExists(email: email));
+        return new ConflictException(conflict.EmailAlreadyExists(email: email));
     }
 
     /// <summary>
     /// Throws when a username is already taken.
     /// </summary>
-    public static ConflictException UsernameAlreadyExists(string username)
+    public ConflictException UsernameAlreadyExists(string username)
     {
-        return new ConflictException(ConflictErrorMessage.UsernameAlreadyExists(username: username));
+        return new ConflictException(conflict.UsernameAlreadyExists(username: username));
     }
 
     /// <summary>
     /// Throws when a phone number is already taken.
     /// </summary>
-    public static ConflictException PhoneNumberAlreadyExists(string phoneNumber)
+    public ConflictException PhoneNumberAlreadyExists(string phoneNumber)
     {
-        return new ConflictException(ConflictErrorMessage.PhoneNumberAlreadyExists(phoneNumber: phoneNumber));
+        return new ConflictException(conflict.PhoneNumberAlreadyExists(phoneNumber: phoneNumber));
     }
 
     /// <summary>
     /// Throws when a role already exists.
     /// </summary>
-    public static ConflictException RoleAlreadyExists(string roleName)
+    public ConflictException RoleAlreadyExists(string roleName)
     {
-        return new ConflictException(ConflictErrorMessage.RoleAlreadyExists(name: roleName));
+        return new ConflictException(conflict.RoleAlreadyExists(name: roleName));
     }
 
     /// <summary>
     /// Throws when a role is already assigned to a user.
     /// </summary>
-    public static ConflictException RoleAlreadyAssignedToUser()
+    public ConflictException RoleAlreadyAssignedToUser()
     {
-        return new ConflictException(ConflictErrorMessage.RoleAlreadyAssignedToUser());
+        return new ConflictException(conflict.RoleAlreadyAssignedToUser());
     }
 
     /// <summary>
     /// Throws when a role is not found using the name.
     /// </summary>
-    public static NotFoundException RoleNotFoundByName(string roleName)
+    public NotFoundException RoleNotFoundByName(string roleName)
     {
         return new NotFoundException("Role", "name", keyValue: roleName);
     }
@@ -63,239 +68,239 @@ public static class UserErrors
     /// <summary>
     /// Throws when a permission already exists.
     /// </summary>
-    public static ConflictException PermissionAlreadyExists(string resource, string action)
+    public ConflictException PermissionAlreadyExists(string resource, string action)
     {
-        return new ConflictException(ConflictErrorMessage.PermissionAlreadyExists(resource, action));
+        return new ConflictException(conflict.PermissionAlreadyExists(resource, action));
     }
 
     /// <summary>
     /// Throws when a permission is already assigned to a role.
     /// </summary>
-    public static ConflictException PermissionAlreadyAssignedToRole()
+    public ConflictException PermissionAlreadyAssignedToRole()
     {
-        return new ConflictException(ConflictErrorMessage.PermissionAlreadyAssignedToRole());
+        return new ConflictException(conflict.PermissionAlreadyAssignedToRole());
     }
 
     /// <summary>
     /// Throws when a role is already active.
     /// </summary>
-    public static ConflictException RoleAlreadyActive()
+    public ConflictException RoleAlreadyActive()
     {
-        return new ConflictException(ConflictErrorMessage.RoleAlreadyActive());
+        return new ConflictException(conflict.RoleAlreadyActive());
     }
 
     /// <summary>
     /// Throws when a role is already inactive.
     /// </summary>
-    public static ConflictException RoleAlreadyInactive()
+    public ConflictException RoleAlreadyInactive()
     {
-        return new ConflictException(ConflictErrorMessage.RoleAlreadyInactive());
+        return new ConflictException(conflict.RoleAlreadyInactive());
     }
 
     /// <summary>
     /// Throws when a role is already deleted.
     /// </summary>
-    public static ConflictException RoleAlreadyDeleted()
+    public ConflictException RoleAlreadyDeleted()
     {
-        return new ConflictException(ConflictErrorMessage.RoleAlreadyDeleted());
+        return new ConflictException(conflict.RoleAlreadyDeleted());
     }
 
     /// <summary>
     /// Throws when a role is not deleted and cannot be restored.
     /// </summary>
-    public static ConflictException RoleNotDeleted()
+    public ConflictException RoleNotDeleted()
     {
-        return new ConflictException(ConflictErrorMessage.RoleNotDeleted());
+        return new ConflictException(conflict.RoleNotDeleted());
     }
 
     /// <summary>
     /// Throws when a permission is already active.
     /// </summary>
-    public static ConflictException PermissionAlreadyActive()
+    public ConflictException PermissionAlreadyActive()
     {
-        return new ConflictException(ConflictErrorMessage.PermissionAlreadyActive());
+        return new ConflictException(conflict.PermissionAlreadyActive());
     }
 
     /// <summary>
     /// Throws when a permission is already inactive.
     /// </summary>
-    public static ConflictException PermissionAlreadyInactive()
+    public ConflictException PermissionAlreadyInactive()
     {
-        return new ConflictException(ConflictErrorMessage.PermissionAlreadyInactive());
+        return new ConflictException(conflict.PermissionAlreadyInactive());
     }
 
     /// <summary>
     /// Throws when a permission is already deleted.
     /// </summary>
-    public static ConflictException PermissionAlreadyDeleted()
+    public ConflictException PermissionAlreadyDeleted()
     {
-        return new ConflictException(ConflictErrorMessage.PermissionAlreadyDeleted());
+        return new ConflictException(conflict.PermissionAlreadyDeleted());
     }
 
     /// <summary>
     /// Throws when a permission is not deleted and cannot be restored.
     /// </summary>
-    public static ConflictException PermissionNotDeleted()
+    public ConflictException PermissionNotDeleted()
     {
-        return new ConflictException(ConflictErrorMessage.PermissionNotDeleted());
+        return new ConflictException(conflict.PermissionNotDeleted());
     }
 
     /// <summary>
     /// Throws when a core role cannot be modified.
     /// </summary>
-    public static BadRequestException CoreRoleCannotBeModified(string roleName)
+    public BadRequestException CoreRoleCannotBeModified(string roleName)
     {
-        return new BadRequestException(ValidationErrorMessage.CoreRoleCannotBeModified(roleName));
+        return new BadRequestException(validation.CoreRoleCannotBeModified(roleName));
     }
 
     /// <summary>
     /// Throws when a core role cannot be deleted.
     /// </summary>
-    public static BadRequestException CoreRoleCannotBeDeleted(string roleName)
+    public BadRequestException CoreRoleCannotBeDeleted(string roleName)
     {
-        return new BadRequestException(ValidationErrorMessage.CoreRoleCannotBeDeleted(roleName));
+        return new BadRequestException(validation.CoreRoleCannotBeDeleted(roleName));
     }
 
     /// <summary>
     /// Throws when a role is inactive and cannot be assigned.
     /// </summary>
-    public static BadRequestException RoleIsInactive()
+    public BadRequestException RoleIsInactive()
     {
-        return new BadRequestException(ValidationErrorMessage.RoleIsInactive());
+        return new BadRequestException(validation.RoleIsInactive());
     }
 
     /// <summary>
     /// Throws when a role is deleted and cannot be used.
     /// </summary>
-    public static BadRequestException RoleIsDeleted()
+    public BadRequestException RoleIsDeleted()
     {
-        return new BadRequestException(ValidationErrorMessage.RoleIsDeleted());
+        return new BadRequestException(validation.RoleIsDeleted());
     }
 
     /// <summary>
     /// Throws when a permission is inactive.
     /// </summary>
-    public static BadRequestException PermissionIsInactive()
+    public BadRequestException PermissionIsInactive()
     {
-        return new BadRequestException(ValidationErrorMessage.PermissionIsInactive());
+        return new BadRequestException(validation.PermissionIsInactive());
     }
 
     /// <summary>
     /// Throws when a permission is deleted.
     /// </summary>
-    public static BadRequestException PermissionIsDeleted()
+    public BadRequestException PermissionIsDeleted()
     {
-        return new BadRequestException(ValidationErrorMessage.PermissionIsDeleted());
+        return new BadRequestException(validation.PermissionIsDeleted());
     }
 
     /// <summary>
     /// Throws when a permission is not assigned to the role.
     /// </summary>
-    public static BadRequestException PermissionNotAssignedToRole()
+    public BadRequestException PermissionNotAssignedToRole()
     {
-        return new BadRequestException(ValidationErrorMessage.PermissionNotAssignedToRole());
+        return new BadRequestException(validation.PermissionNotAssignedToRole());
     }
 
     /// <summary>
     /// Throws when a role is not assigned to the user.
     /// </summary>
-    public static BadRequestException RoleNotAssignedToUser()
+    public BadRequestException RoleNotAssignedToUser()
     {
-        return new BadRequestException(ValidationErrorMessage.RoleNotAssignedToUser());
+        return new BadRequestException(validation.RoleNotAssignedToUser());
     }
 
     /// <summary>
     /// Throws when the account is inactive.
     /// </summary>
-    public static AccountInactiveException AccountInactive(string email)
+    public AccountInactiveException AccountInactive(string email)
     {
-        return new AccountInactiveException(AuthorizationErrorMessage.AccountInactive(email: email));
+        return new AccountInactiveException(authorization.AccountInactive(email: email));
     }
 
     /// <summary>
     /// Throws when the account is not verified.
     /// </summary>
-    public static AccountNotVerifiedException AccountNotVerified(string email)
+    public AccountNotVerifiedException AccountNotVerified(string email)
     {
-        return new AccountNotVerifiedException(AuthorizationErrorMessage.AccountNotVerified(email: email));
+        return new AccountNotVerifiedException(authorization.AccountNotVerified(email: email));
     }
 
     /// <summary>
     /// Throws when password is invalid.
     /// </summary>
-    public static AuthenticationException InvalidCredentials()
+    public AuthenticationException InvalidCredentials()
     {
-        return new AuthenticationException(AuthenticationErrorMessage.InvalidCredentials());
+        return new AuthenticationException(authentication.InvalidCredentials());
     }
 
     /// <summary>
     /// Throws when the email format is invalid.
     /// </summary>
-    public static AuthenticationException InvalidEmailFormat(string email)
+    public AuthenticationException InvalidEmailFormat(string email)
     {
-        return new AuthenticationException(ValidationErrorMessage.InvalidEmailFormat(email: email));
+        return new AuthenticationException(validation.InvalidEmailFormat(email: email));
     }
 
     /// <summary>
     /// Throws when the password format is invalid.
     /// </summary>
-    public static AuthenticationException InvalidPasswordFormat()
+    public AuthenticationException InvalidPasswordFormat()
     {
-        return new AuthenticationException(ValidationErrorMessage.InvalidPasswordFormat());
+        return new AuthenticationException(validation.InvalidPasswordFormat());
     }
 
     /// <summary>
     /// Throws when the userName format is invalid.
     /// </summary>
-    public static BadRequestException InvalidUsernameFormat(string username)
+    public BadRequestException InvalidUsernameFormat(string username)
     {
-        return new BadRequestException(ValidationErrorMessage.InvalidUsernameFormat(userName: username));
+        return new BadRequestException(validation.InvalidUsernameFormat(userName: username));
     }
 
     /// <summary>
     /// Throws when permission resource is required.
     /// </summary>
-    public static BadRequestException PermissionResourceRequired()
+    public BadRequestException PermissionResourceRequired()
     {
-        return new BadRequestException(ValidationErrorMessage.PermissionResourceRequired());
+        return new BadRequestException(validation.PermissionResourceRequired());
     }
 
     /// <summary>
     /// Throws when permission action is required.
     /// </summary>
-    public static BadRequestException PermissionActionRequired()
+    public BadRequestException PermissionActionRequired()
     {
-        return new BadRequestException(ValidationErrorMessage.PermissionActionRequired());
+        return new BadRequestException(validation.PermissionActionRequired());
     }
 
     /// <summary>
     /// Throws when permission description is required.
     /// </summary>
-    public static BadRequestException PermissionDescriptionRequired()
+    public BadRequestException PermissionDescriptionRequired()
     {
-        return new BadRequestException(ValidationErrorMessage.PermissionDescriptionRequired());
+        return new BadRequestException(validation.PermissionDescriptionRequired());
     }
 
     /// <summary>
     /// Throws when role name is required.
     /// </summary>
-    public static BadRequestException RoleNameRequired()
+    public BadRequestException RoleNameRequired()
     {
-        return new BadRequestException(ValidationErrorMessage.RoleNameRequired());
+        return new BadRequestException(validation.RoleNameRequired());
     }
 
     /// <summary>
     /// Throws when role description is required.
     /// </summary>
-    public static BadRequestException RoleDescriptionRequired()
+    public BadRequestException RoleDescriptionRequired()
     {
-        return new BadRequestException(ValidationErrorMessage.RoleDescriptionRequired());
+        return new BadRequestException(validation.RoleDescriptionRequired());
     }
 
     /// <summary>
     /// Throws a generic bad request exception with a custom message.
     /// </summary>
-    public static BadRequestException BadRequest(string message)
+    public BadRequestException BadRequest(string message)
     {
         return new BadRequestException(message: message);
     }
@@ -303,105 +308,105 @@ public static class UserErrors
     /// <summary>
     /// Throws when the user account is already verified.
     /// </summary>
-    public static ConflictException AccountAlreadyVerified()
+    public ConflictException AccountAlreadyVerified()
     {
-        return new ConflictException(ValidationErrorMessage.AccountAlreadyVerified());
+        return new ConflictException(validation.AccountAlreadyVerified());
     }
 
     /// <summary>
     /// Throws when no valid OTP is found for verification.
     /// </summary>
-    public static NotFoundException NoValidOtpFound()
+    public NotFoundException NoValidOtpFound()
     {
-        return new NotFoundException(ValidationErrorMessage.NoValidOtpFound());
+        return new NotFoundException(validation.NoValidOtpFound());
     }
 
     /// <summary>
     /// Throws when OTP verification code is invalid.
     /// </summary>
-    public static BadRequestException InvalidOtpCode()
+    public BadRequestException InvalidOtpCode()
     {
-        return new BadRequestException(ValidationErrorMessage.InvalidOtpCode());
+        return new BadRequestException(validation.InvalidOtpCode());
     }
 
     /// <summary>
     /// Throws when OTP has expired.
     /// </summary>
-    public static OtpExpirationException OtpExpired()
+    public OtpExpirationException OtpExpired()
     {
-        return new OtpExpirationException(ValidationErrorMessage.OtpExpired());
+        return new OtpExpirationException(validation.OtpExpired());
     }
 
     /// <summary>
     /// Throws when maximum OTP verification attempts are reached.
     /// </summary>
-    public static OtpAttemptsLimitException MaxOtpAttemptsReached()
+    public OtpAttemptsLimitException MaxOtpAttemptsReached()
     {
-        return new OtpAttemptsLimitException(ValidationErrorMessage.MaxOtpAttemptsReached());
+        return new OtpAttemptsLimitException(validation.MaxOtpAttemptsReached());
     }
 
     /// <summary>
     /// Throws when OTP has not been verified yet.
     /// </summary>
-    public static BadRequestException OtpNotYetVerified()
+    public BadRequestException OtpNotYetVerified()
     {
-        return new BadRequestException(ValidationErrorMessage.OtpNotYetVerified());
+        return new BadRequestException(validation.OtpNotYetVerified());
     }
 
     /// <summary>
     /// Throws when the user is not authenticated or user ID is invalid.
     /// </summary>
-    public static AuthenticationException InvalidUserAuthentication()
+    public AuthenticationException InvalidUserAuthentication()
     {
-        return new AuthenticationException(AuthenticationErrorMessage.InvalidUserAuthentication());
+        return new AuthenticationException(authentication.InvalidUserAuthentication());
     }
 
     /// <summary>
     /// Throws when the user does not have sufficient permissions for the operation.
     /// </summary>
-    public static AccessDeniedException InsufficientPermissions()
+    public AccessDeniedException InsufficientPermissions()
     {
-        return new AccessDeniedException(AuthenticationErrorMessage.InsufficientPermissions());
+        return new AccessDeniedException(authentication.InsufficientPermissions());
     }
 
     /// <summary>
     /// Throws when the new password is the same as the old password.
     /// </summary>
-    public static ConflictException NewPasswordSameAsOld()
+    public ConflictException NewPasswordSameAsOld()
     {
-        return new ConflictException(ValidationErrorMessage.NewPasswordSameAsOld());
+        return new ConflictException(validation.NewPasswordSameAsOld());
     }
 
     /// <summary>
     /// Throws when a password has not been configured for the account.
     /// </summary>
     /// <param name="provider">The OAuth provider name (e.g., Google, Facebook).</param>
-    public static BadRequestException PasswordNotConfigured(EnumAuthProvider provider)
+    public BadRequestException PasswordNotConfigured(EnumAuthProvider provider)
     {
-        return new BadRequestException(ValidationErrorMessage.PasswordNotConfigured(provider: provider));
+        return new BadRequestException(validation.PasswordNotConfigured(provider: provider));
     }
 
     /// <summary>
     /// Throws when the current password is incorrect (e.g., during password change).
     /// </summary>
-    public static BadRequestException IncorrectCurrentPassword()
+    public BadRequestException IncorrectCurrentPassword()
     {
-        return new BadRequestException(ValidationErrorMessage.IncorrectCurrentPassword());
+        return new BadRequestException(validation.IncorrectCurrentPassword());
     }
 
     /// <summary>
     /// Throws when an email address is required to set a password.
     /// </summary>
-    public static BadRequestException EmailRequiredToSetPassword()
+    public BadRequestException EmailRequiredToSetPassword()
     {
-        return new BadRequestException(ValidationErrorMessage.EmailRequiredToSetPassword());
+        return new BadRequestException(validation.EmailRequiredToSetPassword());
     }
 
     /// <summary>
     /// Throws when setting password is only allowed for external auth users (Google/Facebook).
     /// </summary>
-    public static BadRequestException PasswordOnlyForExternalAuth()
+    public BadRequestException PasswordOnlyForExternalAuth()
     {
-        return new BadRequestException(ValidationErrorMessage.PasswordOnlyForExternalAuth());
+        return new BadRequestException(validation.PasswordOnlyForExternalAuth());
     }
 }
