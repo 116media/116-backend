@@ -1,4 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
+using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 
 namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.CreatePermission;
@@ -9,12 +10,15 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.CreatePermissi
 public class AdminCreatePermissionValidator : AbstractValidator<AdminCreatePermissionCommand>
 {
     /// <summary>
-    /// Configure validation rules for permission creation.
+    /// Initializes a new instance of <see cref="AdminCreatePermissionValidator" /> with validation rules.
     /// </summary>
-    public AdminCreatePermissionValidator()
+    /// <param name="msg">
+    /// Validation error messages for rule configuration.
+    /// </param>
+    public AdminCreatePermissionValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.Resource).ValidPermissionResource();
-        RuleFor(x => x.Action).ValidPermissionAction();
-        RuleFor(x => x.Description).ValidPermissionDescription();
+        RuleFor(x => x.Resource).ValidPermissionResource(msg);
+        RuleFor(x => x.Action).ValidPermissionAction(msg);
+        RuleFor(x => x.Description).ValidPermissionDescription(msg);
     }
 }
