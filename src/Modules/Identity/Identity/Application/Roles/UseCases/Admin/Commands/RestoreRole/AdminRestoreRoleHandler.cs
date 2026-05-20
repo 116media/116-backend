@@ -14,8 +14,13 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.RestoreRole;
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminRestoreRoleHandler(IRoleRepository roleRepository, IIdentityUnitOfWork unitOfWork, IMapper mapper)
-    : ICommandHandler<AdminRestoreRoleCommand, AdminRestoreRoleResult>
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+public class AdminRestoreRoleHandler(
+    IRoleRepository roleRepository,
+    IIdentityUnitOfWork unitOfWork,
+    IMapper mapper,
+    UserErrors userErrors
+) : ICommandHandler<AdminRestoreRoleCommand, AdminRestoreRoleResult>
 {
     /// <summary>
     /// Handles the role restore command.
@@ -39,7 +44,7 @@ public class AdminRestoreRoleHandler(IRoleRepository roleRepository, IIdentityUn
 
         if (!wasRestored)
         {
-            throw UserErrors.RoleNotDeleted();
+            throw userErrors.RoleNotDeleted();
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
