@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SlugAlreadyExists" xml:space="preserve">
+    <value>Un article avec le slug « {0} » existe déjà</value>
+  </data>
+  <data name="TitleRequired" xml:space="preserve">
+    <value>Le titre de l'article est obligatoire</value>
+  </data>
+  <data name="SlugRequired" xml:space="preserve">
+    <value>Le slug de l'article est obligatoire</value>
+  </data>
+  <data name="InvalidStatusTransition" xml:space="preserve">
+    <value>Impossible de faire passer l'article de « {0} » à « {1} »</value>
+  </data>
+  <data name="AlreadySubmitted" xml:space="preserve">
+    <value>L'article est déjà en attente de paiement</value>
+  </data>
+  <data name="AlreadyPendingReview" xml:space="preserve">
+    <value>L'article est déjà en attente de révision</value>
+  </data>
+  <data name="AlreadyApproved" xml:space="preserve">
+    <value>L'article est déjà approuvé</value>
+  </data>
+  <data name="AlreadyPublished" xml:space="preserve">
+    <value>L'article est déjà publié</value>
+  </data>
+  <data name="AlreadyRejected" xml:space="preserve">
+    <value>L'article est déjà rejeté</value>
+  </data>
+  <data name="AlreadyArchived" xml:space="preserve">
+    <value>L'article est déjà archivé</value>
+  </data>
+  <data name="CannotDeletePublishedArticle" xml:space="preserve">
+    <value>Seuls les articles en statut Brouillon ou Rejeté peuvent être supprimés définitivement. Archivez les articles publiés à la place.</value>
+  </data>
+  <data name="TitleTooLong" xml:space="preserve">
+    <value>Le titre de l'article ne doit pas dépasser {0} caractères</value>
+  </data>
+  <data name="SlugTooLong" xml:space="preserve">
+    <value>Le slug de l'article ne doit pas dépasser {0} caractères</value>
+  </data>
+  <data name="SlugInvalidFormat" xml:space="preserve">
+    <value>Le slug de l'article doit être en minuscules et ne contenir que des lettres, des chiffres et des tirets</value>
+  </data>
+  <data name="HeadlineRequired" xml:space="preserve">
+    <value>L'accroche de l'article est obligatoire</value>
+  </data>
+  <data name="HeadlineTooShort" xml:space="preserve">
+    <value>L'accroche de l'article doit comporter au moins {0} caractères</value>
+  </data>
+  <data name="HeadlineTooLong" xml:space="preserve">
+    <value>L'accroche de l'article ne doit pas dépasser {0} caractères</value>
+  </data>
+  <data name="BodyRequired" xml:space="preserve">
+    <value>Le corps de l'article est obligatoire</value>
+  </data>
+</root>
