@@ -11,8 +11,12 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="passwordService">Service for verifying hashed passwords.</param>
-public class PublicLoginAuthFactory(IAuthRepository authRepository, IPasswordService passwordService)
-    : IPublicLoginAuthFactory
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+public class PublicLoginAuthFactory(
+    IAuthRepository authRepository,
+    IPasswordService passwordService,
+    UserErrors userErrors
+) : IPublicLoginAuthFactory
 {
     /// <summary>
     /// Authenticates a user with their credentials and password.
@@ -30,10 +34,10 @@ public class PublicLoginAuthFactory(IAuthRepository authRepository, IPasswordSer
 
         if (!passwordService.Verify(password: password, hash: user!.PasswordHash))
         {
-            throw UserErrors.InvalidCredentials();
+            throw userErrors.InvalidCredentials();
         }
 
-        user.ValidateCanLogin();
+        user.ValidateCanLogin(errors: userErrors);
 
         List<RolePermissionEntity> userPermissions = user.UserRoles.SelectMany(ur => ur.Role.RolePermissions).ToList();
 
