@@ -15,10 +15,12 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword;
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="passwordService">Service for password hashing and verification operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
 public class AdminChangePasswordHandler(
     IAuthRepository authRepository,
     IPasswordService passwordService,
-    IIdentityUnitOfWork unitOfWork
+    IIdentityUnitOfWork unitOfWork,
+    UserErrors userErrors
 ) : ICommandHandler<AdminChangePasswordCommand, AdminChangePasswordResult>
 {
     /// <summary>
@@ -48,17 +50,17 @@ public class AdminChangePasswordHandler(
         // Verify old password
         if (!passwordService.Verify(password: command.OldPassword, hash: user!.PasswordHash))
         {
-            throw UserErrors.IncorrectCurrentPassword();
+            throw userErrors.IncorrectCurrentPassword();
         }
 
         // Check if new password is different from old password
         if (passwordService.Verify(password: command.NewPassword, hash: user.PasswordHash))
         {
-            throw UserErrors.NewPasswordSameAsOld();
+            throw userErrors.NewPasswordSameAsOld();
         }
 
         string hashedNewPassword = passwordService.Hash(password: command.NewPassword);
-        user.UpdatePassword(newPasswordHash: hashedNewPassword);
+        user.UpdatePassword(newPasswordHash: hashedNewPassword, errors: userErrors);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminChangePasswordResult(IsSuccess: true);
