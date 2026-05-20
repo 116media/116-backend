@@ -1,5 +1,6 @@
 using System.Reflection;
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 
@@ -15,43 +16,41 @@ public static class FileValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the avatar file property.</param>
+    /// <param name="msg">The validation error message provider.</param>
     /// <param name="isRequired">Whether the avatar file is required (default: false).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, IFormFile?> ValidAvatar<T>(
         this IRuleBuilderInitial<T, IFormFile?> ruleBuilder,
+        ValidationErrorMessage msg,
         bool isRequired = false
     )
     {
+        long maxMb = FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024);
+        string allowedTypes = string.Join(", ", value: FileConstants.AllowedAvatarMimeTypes);
+        string allowedExtensions = string.Join(", ", value: FileConstants.AllowedAvatarExtensions);
+
         if (isRequired)
         {
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotNull()
-                .WithMessage("Avatar file is required")
+                .WithMessage(msg.AvatarFileRequired())
                 .Must(predicate: BeValidFileSize)
-                .WithMessage($"File size must not exceed {FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)}MB")
+                .WithMessage(msg.AvatarFileTooLarge(maxMb))
                 .Must(predicate: BeValidImageType)
-                .WithMessage(
-                    $"Only image files are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarMimeTypes)}"
-                )
+                .WithMessage(msg.AvatarFileInvalidType(allowedTypes))
                 .Must(predicate: BeValidFileExtension)
-                .WithMessage(
-                    $"Only these extensions are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarExtensions)}"
-                );
+                .WithMessage(msg.AvatarFileInvalidExtension(allowedExtensions));
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .Must(predicate: BeValidFileSize)
-            .WithMessage($"File size must not exceed {FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)}MB")
+            .WithMessage(msg.AvatarFileTooLarge(maxMb))
             .Must(predicate: BeValidImageType)
-            .WithMessage(
-                $"Only image files are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarMimeTypes)}"
-            )
+            .WithMessage(msg.AvatarFileInvalidType(allowedTypes))
             .Must(predicate: BeValidFileExtension)
-            .WithMessage(
-                $"Only these extensions are allowed: {string.Join(", ", value: FileConstants.AllowedAvatarExtensions)}"
-            )
+            .WithMessage(msg.AvatarFileInvalidExtension(allowedExtensions))
             .When(x => GetAvatarFileValue(instance: x) != null);
     }
 
