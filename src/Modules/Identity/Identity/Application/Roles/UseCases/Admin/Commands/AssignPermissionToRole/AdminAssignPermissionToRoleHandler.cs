@@ -16,12 +16,14 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissi
 /// <param name="rolePermissionRepository">Repository for role-permission data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
 public class AdminAssignPermissionToRoleHandler(
     IRoleRepository roleRepository,
     IPermissionRepository permissionRepository,
     IRolePermissionRepository rolePermissionRepository,
     IIdentityUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    UserErrors userErrors
 ) : ICommandHandler<AdminAssignPermissionToRoleCommand, AdminAssignPermissionToRoleResult>
 {
     /// <summary>
@@ -46,12 +48,12 @@ public class AdminAssignPermissionToRoleHandler(
         // Check if the role is active and not deleted
         if (!role!.IsActive)
         {
-            throw UserErrors.RoleIsInactive();
+            throw userErrors.RoleIsInactive();
         }
 
         if (role.IsDeleted)
         {
-            throw UserErrors.RoleIsDeleted();
+            throw userErrors.RoleIsDeleted();
         }
 
         // Validate permission exists
@@ -63,12 +65,12 @@ public class AdminAssignPermissionToRoleHandler(
         // Check if permission is active and not deleted
         if (!permission!.IsActive)
         {
-            throw UserErrors.PermissionIsInactive();
+            throw userErrors.PermissionIsInactive();
         }
 
         if (permission.IsDeleted)
         {
-            throw UserErrors.PermissionIsDeleted();
+            throw userErrors.PermissionIsDeleted();
         }
 
         // Check if permission is already assigned to the role
@@ -80,7 +82,7 @@ public class AdminAssignPermissionToRoleHandler(
 
         if (alreadyAssigned)
         {
-            throw UserErrors.PermissionAlreadyAssignedToRole();
+            throw userErrors.PermissionAlreadyAssignedToRole();
         }
 
         // Create the role-permission association
