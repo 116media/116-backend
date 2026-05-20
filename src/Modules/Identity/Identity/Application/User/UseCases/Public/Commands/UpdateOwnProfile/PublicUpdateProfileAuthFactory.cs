@@ -12,8 +12,12 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfi
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicUpdateProfileAuthFactory(IAuthRepository authRepository, IIdentityUnitOfWork unitOfWork)
-    : IPublicUpdateProfileAuthFactory
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+public class PublicUpdateProfileAuthFactory(
+    IAuthRepository authRepository,
+    IIdentityUnitOfWork unitOfWork,
+    UserErrors userErrors
+) : IPublicUpdateProfileAuthFactory
 {
     /// <summary>
     /// Updates a user's profile with new information.
@@ -46,13 +50,13 @@ public class PublicUpdateProfileAuthFactory(IAuthRepository authRepository, IIde
         if (isEmailUpdated)
         {
             await EnsureEmailUnique(email!, cancellationToken: cancellationToken);
-            user!.UpdateEmail(email!);
+            user!.UpdateEmail(newEmail: email!, errors: userErrors);
         }
 
         if (isUsernameUpdated)
         {
             await EnsureUsernameUnique(userName!, cancellationToken: cancellationToken);
-            user!.UpdateUserName(userName!);
+            user!.UpdateUserName(newUserName: userName!, errors: userErrors);
         }
 
         if (isPhoneUpdated)
@@ -81,7 +85,7 @@ public class PublicUpdateProfileAuthFactory(IAuthRepository authRepository, IIde
     {
         if (await authRepository.ExistsByEmailAsync(new Email(value: email), cancellationToken: cancellationToken))
         {
-            throw UserErrors.EmailAlreadyExists(email: email);
+            throw userErrors.EmailAlreadyExists(email: email);
         }
     }
 
@@ -89,7 +93,7 @@ public class PublicUpdateProfileAuthFactory(IAuthRepository authRepository, IIde
     {
         if (await authRepository.ExistsByUserNameAsync(userName: username, cancellationToken: cancellationToken))
         {
-            throw UserErrors.UsernameAlreadyExists(username: username);
+            throw userErrors.UsernameAlreadyExists(username: username);
         }
     }
 
@@ -108,7 +112,7 @@ public class PublicUpdateProfileAuthFactory(IAuthRepository authRepository, IIde
 
         if (existing is not null && existing.Id != userId)
         {
-            throw UserErrors.PhoneNumberAlreadyExists(phoneNumber: fullPhone);
+            throw userErrors.PhoneNumberAlreadyExists(phoneNumber: fullPhone);
         }
     }
 }
