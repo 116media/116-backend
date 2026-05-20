@@ -1,4 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
+using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 
 namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
@@ -13,10 +14,13 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
 public class PublicUpdateAvatarValidator : AbstractValidator<PublicUpdateAvatarCommand>
 {
     /// <summary>
-    /// Configure validation rules for public avatar update.
+    /// Initializes a new instance of <see cref="PublicUpdateAvatarValidator" /> with validation rules.
     /// </summary>
-    public PublicUpdateAvatarValidator()
+    /// <param name="msg">
+    /// Validation error messages for rule configuration.
+    /// </param>
+    public PublicUpdateAvatarValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.AvatarFile).ValidAvatar(true);
+        RuleFor(x => x.AvatarFile).ValidAvatar(msg, true);
     }
 }
