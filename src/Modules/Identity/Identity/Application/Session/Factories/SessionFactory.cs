@@ -20,12 +20,14 @@ namespace _116.Identity.Application.Session.Factories;
 /// <param name="sessionRepository">Repository for managing user sessions.</param>
 /// <param name="sessionMetadataService">Service for extracting session metadata from HTTP context.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="sessionErrors">Session domain error factory for generating domain exceptions.</param>
 public class SessionFactory(
     IJwtService jwtService,
     IRefreshTokenService refreshTokenService,
     ISessionRepository sessionRepository,
     ISessionMetadataService sessionMetadataService,
-    IIdentityUnitOfWork unitOfWork
+    IIdentityUnitOfWork unitOfWork,
+    SessionErrors sessionErrors
 ) : ISessionFactory
 {
     /// <summary>
@@ -49,7 +51,7 @@ public class SessionFactory(
         string? deviceId = sessionMetadataService.ExtractDeviceId();
         if (string.IsNullOrWhiteSpace(deviceId))
         {
-            throw SessionErrors.DeviceIdRequired();
+            throw sessionErrors.DeviceIdRequired();
         }
 
         // Find any existing session for this device (active, expired, or revoked)
