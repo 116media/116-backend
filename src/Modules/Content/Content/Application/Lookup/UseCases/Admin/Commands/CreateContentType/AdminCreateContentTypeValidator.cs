@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using FluentValidation;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateContentType;
@@ -15,6 +16,10 @@ public class AdminCreateContentTypeValidator : AbstractValidator<AdminCreateCont
     /// <param name="msg">Content type validation error messages.</param>
     public AdminCreateContentTypeValidator(ContentTypeErrorMessage msg)
     {
-        RuleFor(x => x.Name).ValidContentTypeName(msg);
+        RuleFor(x => x.Name)
+            .ValidContentTypeName(
+                nameRequired: msg.NameRequired(),
+                nameTooLong: msg.NameTooLong(ContentConstants.MaxContentTypeNameLength)
+            );
     }
 }
