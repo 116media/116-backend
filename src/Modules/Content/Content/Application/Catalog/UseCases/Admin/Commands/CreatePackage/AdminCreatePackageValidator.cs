@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using FluentValidation;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreatePackage;
@@ -15,7 +16,15 @@ public class AdminCreatePackageValidator : AbstractValidator<AdminCreatePackageC
     /// <param name="msg">Package validation error messages.</param>
     public AdminCreatePackageValidator(PackageErrorMessage msg)
     {
-        RuleFor(x => x.Name).ValidPackageName(msg);
-        RuleFor(x => x.Description).ValidPackageDescription(msg);
+        RuleFor(x => x.Name)
+            .ValidPackageName(
+                nameRequired: msg.NameRequired(),
+                nameTooLong: msg.NameTooLong(ContentConstants.MaxPackageNameLength)
+            );
+        RuleFor(x => x.Description)
+            .ValidPackageDescription(
+                descriptionRequired: msg.DescriptionRequired(),
+                descriptionTooLong: msg.DescriptionTooLong(ContentConstants.MaxPackageDescriptionLength)
+            );
     }
 }
