@@ -13,15 +13,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AlreadyLiked" xml:space="preserve">
-    <value>You have already liked this short video</value>
+    <value>You have already liked this short video.</value>
   </data>
   <data name="LikeNotFound" xml:space="preserve">
-    <value>Like not found for this short video</value>
+    <value>Like not found for this short video.</value>
   </data>
   <data name="AlreadyBookmarked" xml:space="preserve">
-    <value>You have already bookmarked this short video</value>
+    <value>You have already bookmarked this short video.</value>
   </data>
   <data name="BookmarkNotFound" xml:space="preserve">
-    <value>Bookmark not found for this short video</value>
+    <value>Bookmark not found for this short video.</value>
   </data>
 </root>
