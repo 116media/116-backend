@@ -1,5 +1,7 @@
+using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -18,13 +20,25 @@ public class AdminUpdateShortVideoValidator : AbstractValidator<AdminUpdateShort
     {
         RuleFor(x => x.Id).IsValidGuid("Short video ID");
 
-        RuleFor(x => x.Title).ValidShortVideoTitle(msg);
+        RuleFor(x => x.Title)
+            .ValidShortVideoTitle(
+                titleRequired: msg.TitleRequired(),
+                titleTooLong: msg.TitleTooLong(ContentConstants.MaxShortVideoTitleLength)
+            );
 
         When(
             x => x.VideoFile is not null,
             () =>
             {
-                RuleFor(x => x.VideoFile).ValidShortVideoFile(msg);
+                RuleFor(x => x.VideoFile)
+                    .ValidShortVideoFile(
+                        fileRequired: msg.FileRequired(),
+                        fileEmpty: msg.FileEmpty(),
+                        fileTooLarge: msg.FileTooLarge(FileConstants.MaxVideoFileSizeBytes / (1024 * 1024)),
+                        fileInvalidExtension: msg.FileInvalidExtension(
+                            string.Join(", ", FileConstants.AllowedVideoExtensions)
+                        )
+                    );
             }
         );
     }
