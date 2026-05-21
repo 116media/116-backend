@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -18,12 +19,24 @@ public class AdminUpdateLyricsValidator : AbstractValidator<AdminUpdateLyricsCom
     {
         RuleFor(x => x.Id).IsValidGuid("Lyrics ID");
 
-        RuleFor(x => x.SongTitle).ValidSongTitle(msg);
+        RuleFor(x => x.SongTitle)
+            .ValidSongTitle(
+                songTitleRequired: msg.SongTitleRequired(),
+                songTitleTooLong: msg.SongTitleTooLong(ContentConstants.MaxSongTitleLength)
+            );
 
-        RuleFor(x => x.ArtistName).ValidArtistName(msg);
+        RuleFor(x => x.ArtistName)
+            .ValidArtistName(
+                artistNameRequired: msg.ArtistNameRequired(),
+                artistNameTooLong: msg.ArtistNameTooLong(ContentConstants.MaxArtistNameLength)
+            );
 
-        RuleFor(x => x.LyricsText).ValidLyricsText(msg);
+        RuleFor(x => x.LyricsText).ValidLyricsText(lyricsTextRequired: msg.LyricsTextRequired());
 
-        RuleFor(x => x.Language).ValidLyricsLanguage(msg);
+        RuleFor(x => x.Language)
+            .ValidLyricsLanguage(
+                languageRequired: msg.LanguageRequired(),
+                languageTooLong: msg.LanguageTooLong(ContentConstants.MaxLyricsLanguageLength)
+            );
     }
 }
