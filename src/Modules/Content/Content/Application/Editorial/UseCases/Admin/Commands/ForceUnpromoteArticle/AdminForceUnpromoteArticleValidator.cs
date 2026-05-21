@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using FluentValidation;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteArticle;
@@ -15,7 +16,16 @@ public class AdminForceUnpromoteArticleValidator : AbstractValidator<AdminForceU
     /// <param name="msg">Article validation error messages.</param>
     public AdminForceUnpromoteArticleValidator(ArticleErrorMessage msg)
     {
-        RuleFor(x => x.Slug).ValidArticleSlug(msg);
-        RuleFor(x => x.Reason).ValidUnpromoteReason(msg);
+        RuleFor(x => x.Slug)
+            .ValidArticleSlug(
+                slugRequired: msg.SlugRequired(),
+                slugTooLong: msg.SlugTooLong(ContentConstants.MaxSlugLength),
+                slugInvalidFormat: msg.SlugInvalidFormat()
+            );
+        RuleFor(x => x.Reason)
+            .ValidUnpromoteReason(
+                reasonRequired: msg.RejectionReasonRequired(),
+                reasonTooLong: msg.RejectionReasonTooLong(ContentConstants.MaxRejectionReasonLength)
+            );
     }
 }
