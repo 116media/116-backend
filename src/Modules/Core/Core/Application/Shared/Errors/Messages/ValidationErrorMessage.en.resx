@@ -13,39 +13,39 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="UnsupportedFileType" xml:space="preserve">
-    <value>File type '{0}' is not supported. Allowed types: {1}</value>
+    <value>File type '{0}' is not supported. Allowed types: {1}.</value>
   </data>
   <data name="FileTooLarge" xml:space="preserve">
-    <value>File size {0} bytes exceeds maximum allowed size of {1} bytes</value>
+    <value>File size {0} bytes exceeds maximum allowed size of {1} bytes.</value>
   </data>
   <data name="CorruptedFile" xml:space="preserve">
-    <value>File '{0}' appears to be corrupted or invalid</value>
+    <value>File '{0}' appears to be corrupted or invalid.</value>
   </data>
   <data name="InvalidConfiguration" xml:space="preserve">
-    <value>Configuration '{0}' is missing or invalid</value>
+    <value>Configuration '{0}' is missing or invalid.</value>
   </data>
   <data name="FileNameRequired" xml:space="preserve">
-    <value>File name is required</value>
+    <value>File name is required.</value>
   </data>
   <data name="OriginalFileNameRequired" xml:space="preserve">
-    <value>Original file name is required</value>
+    <value>Original file name is required.</value>
   </data>
   <data name="MimeTypeRequired" xml:space="preserve">
-    <value>MIME type is required</value>
+    <value>MIME type is required.</value>
   </data>
   <data name="StorageUrlRequired" xml:space="preserve">
-    <value>Storage URL is required</value>
+    <value>Storage URL is required.</value>
   </data>
   <data name="StorageUrlCannotBeEmpty" xml:space="preserve">
-    <value>Storage URL cannot be empty</value>
+    <value>Storage URL cannot be empty.</value>
   </data>
   <data name="FileSizeMustBeGreaterThanZero" xml:space="preserve">
-    <value>File size must be greater than zero</value>
+    <value>File size must be greater than zero.</value>
   </data>
   <data name="InvalidFileUrl" xml:space="preserve">
-    <value>File URL '{0}' has an invalid format. Must be a valid HTTP or HTTPS URL</value>
+    <value>File URL '{0}' has an invalid format. Must be a valid HTTP or HTTPS URL.</value>
   </data>
   <data name="FileUrlRequired" xml:space="preserve">
-    <value>File URL is required</value>
+    <value>File URL is required.</value>
   </data>
 </root>
