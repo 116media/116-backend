@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -17,8 +18,21 @@ public class AdminCreateCategoryValidator : AbstractValidator<AdminCreateCategor
     public AdminCreateCategoryValidator(CategoryErrorMessage msg)
     {
         RuleFor(x => x.ContentTypeId).IsValidGuid("Content type ID");
-        RuleFor(x => x.Name).ValidCategoryName(msg);
-        RuleFor(x => x.Slug).ValidCategorySlug(msg);
-        RuleFor(x => x.Description).ValidCategoryDescription(msg);
+        RuleFor(x => x.Name)
+            .ValidCategoryName(
+                nameRequired: msg.NameRequired(),
+                nameTooLong: msg.NameTooLong(ContentConstants.MaxCategoryNameLength)
+            );
+        RuleFor(x => x.Slug)
+            .ValidCategorySlug(
+                slugRequired: msg.SlugRequired(),
+                slugTooLong: msg.SlugTooLong(ContentConstants.MaxCategorySlugLength),
+                slugInvalidFormat: msg.SlugInvalidFormat()
+            );
+        RuleFor(x => x.Description)
+            .ValidCategoryDescription(
+                descriptionRequired: msg.DescriptionRequired(),
+                descriptionTooLong: msg.DescriptionTooLong(ContentConstants.MaxCategoryDescriptionLength)
+            );
     }
 }
