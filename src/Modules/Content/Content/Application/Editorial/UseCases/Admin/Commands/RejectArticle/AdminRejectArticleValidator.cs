@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -18,6 +19,10 @@ public class AdminRejectArticleValidator : AbstractValidator<AdminRejectArticleC
     {
         RuleFor(x => x.Id).IsValidGuid("Article ID");
 
-        RuleFor(x => x.Reason).ValidRejectionReason(msg);
+        RuleFor(x => x.Reason)
+            .ValidRejectionReason(
+                reasonRequired: msg.RejectionReasonRequired(),
+                reasonTooLong: msg.RejectionReasonTooLong(ContentConstants.MaxRejectionReasonLength)
+            );
     }
 }
