@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using FluentValidation;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCustomer;
@@ -15,10 +16,22 @@ public class AdminCreateCustomerValidator : AbstractValidator<AdminCreateCustome
     /// <param name="msg">Customer validation error messages.</param>
     public AdminCreateCustomerValidator(CustomerErrorMessage msg)
     {
-        RuleFor(x => x.FullName).ValidCustomerFullName(msg);
-        RuleFor(x => x.Email).ValidCustomerEmail(msg);
-        RuleFor(x => x.Phone).ValidCustomerPhone(msg);
-        RuleFor(x => x.Company).ValidCustomerCompany(msg);
-        RuleFor(x => x.Notes).ValidCustomerNotes(msg);
+        RuleFor(x => x.FullName)
+            .ValidCustomerFullName(
+                fullNameRequired: msg.FullNameRequired(),
+                fullNameTooLong: msg.FullNameTooLong(ContentConstants.MaxCustomerFullNameLength)
+            );
+        RuleFor(x => x.Email)
+            .ValidCustomerEmail(
+                emailRequired: msg.EmailRequired(),
+                emailInvalidFormat: msg.EmailInvalidFormat(),
+                emailTooLong: msg.EmailTooLong(ContentConstants.MaxCustomerEmailLength)
+            );
+        RuleFor(x => x.Phone)
+            .ValidCustomerPhone(phoneTooLong: msg.PhoneTooLong(ContentConstants.MaxCustomerPhoneLength));
+        RuleFor(x => x.Company)
+            .ValidCustomerCompany(companyTooLong: msg.CompanyTooLong(ContentConstants.MaxCustomerCompanyLength));
+        RuleFor(x => x.Notes)
+            .ValidCustomerNotes(notesTooLong: msg.NotesTooLong(ContentConstants.MaxCustomerNotesLength));
     }
 }
