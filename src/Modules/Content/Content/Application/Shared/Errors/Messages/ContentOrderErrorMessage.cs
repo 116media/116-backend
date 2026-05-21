@@ -120,4 +120,9 @@ public class ContentOrderErrorMessage(IStringLocalizer<ContentOrderErrorMessage>
     /// Gets an error message for when a payment method is invalid.
     /// </summary>
     public string InvalidPaymentMethod() => localizer["InvalidPaymentMethod"];
+
+    /// <summary>
+    /// Gets an error message for when an order item ID is required.
+    /// </summary>
+    public string OrderItemIdRequired() => localizer["OrderItemIdRequired"];
 }
