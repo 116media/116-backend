@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using FluentValidation;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotionLevel;
@@ -15,9 +16,16 @@ public class AdminCreatePromotionLevelValidator : AbstractValidator<AdminCreateP
     /// <param name="msg">Promotion level validation error messages.</param>
     public AdminCreatePromotionLevelValidator(PromotionLevelErrorMessage msg)
     {
-        RuleFor(x => x.Name).ValidPromotionLevelName(msg);
-        RuleFor(x => x.DurationDays).ValidDurationDays(msg);
-        RuleFor(x => x.PriceUsd).ValidPriceUsd(msg);
-        When(x => x.SpotPriority.HasValue, () => RuleFor(x => x.SpotPriority).ValidSpotPriority(msg));
+        RuleFor(x => x.Name)
+            .ValidPromotionLevelName(
+                nameRequired: msg.NameRequired(),
+                nameTooLong: msg.NameTooLong(ContentConstants.MaxPromotionLevelNameLength)
+            );
+        RuleFor(x => x.DurationDays).ValidDurationDays(msg.DurationMustBePositive());
+        RuleFor(x => x.PriceUsd).ValidPriceUsd(msg.PriceMustBeNonNegative());
+        When(
+            x => x.SpotPriority.HasValue,
+            () => RuleFor(x => x.SpotPriority).ValidSpotPriority(msg.InvalidSpotPriority())
+        );
     }
 }
