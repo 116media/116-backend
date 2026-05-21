@@ -18,6 +18,6 @@ public class AdminUploadArticleImageValidator : AbstractValidator<AdminUploadArt
     {
         RuleFor(x => x.ArticleId).IsValidGuid("Article ID");
 
-        RuleFor(x => x.File).ValidArticleImageFile(msg);
+        RuleFor(x => x.File).ValidArticleImageFile(fileRequired: msg.FileRequired());
     }
 }
