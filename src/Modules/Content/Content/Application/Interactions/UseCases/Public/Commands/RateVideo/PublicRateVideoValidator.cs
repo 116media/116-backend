@@ -15,6 +15,6 @@ public class PublicRateVideoValidator : AbstractValidator<PublicRateVideoCommand
     /// <param name="msg">Article interaction validation error messages.</param>
     public PublicRateVideoValidator(ArticleInteractionErrorMessage msg)
     {
-        RuleFor(x => x.Stars).ValidVideoStarRating(msg);
+        RuleFor(x => x.Stars).ValidVideoStarRating(invalidStarRating: msg.InvalidStarRating());
     }
 }
