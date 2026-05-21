@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using FluentValidation;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteVideo;
@@ -16,7 +17,16 @@ public class AdminForceUnpromoteVideoValidator : AbstractValidator<AdminForceUnp
     /// <param name="videoMsg">Video validation error messages.</param>
     public AdminForceUnpromoteVideoValidator(ArticleErrorMessage articleMsg, VideoErrorMessage videoMsg)
     {
-        RuleFor(x => x.Slug).ValidVideoSlug(videoMsg);
-        RuleFor(x => x.Reason).ValidUnpromoteReason(articleMsg);
+        RuleFor(x => x.Slug)
+            .ValidVideoSlug(
+                slugRequired: videoMsg.SlugRequired(),
+                slugTooLong: videoMsg.SlugTooLong(ContentConstants.MaxSlugLength),
+                slugInvalidFormat: videoMsg.SlugInvalidFormat()
+            );
+        RuleFor(x => x.Reason)
+            .ValidUnpromoteReason(
+                reasonRequired: articleMsg.RejectionReasonRequired(),
+                reasonTooLong: articleMsg.RejectionReasonTooLong(ContentConstants.MaxRejectionReasonLength)
+            );
     }
 }
