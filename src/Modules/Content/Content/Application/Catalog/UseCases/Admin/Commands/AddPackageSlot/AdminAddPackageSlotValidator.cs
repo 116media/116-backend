@@ -17,6 +17,6 @@ public class AdminAddPackageSlotValidator : AbstractValidator<AdminAddPackageSlo
     public AdminAddPackageSlotValidator(PackageErrorMessage msg)
     {
         RuleFor(x => x.PackageId).IsValidGuid("Package ID");
-        RuleFor(x => x.Quantity).ValidSlotQuantity(msg);
+        RuleFor(x => x.Quantity).ValidSlotQuantity(msg.SlotQuantityMustBePositive());
     }
 }
