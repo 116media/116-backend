@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using FluentValidation;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePricingTier;
@@ -15,7 +16,15 @@ public class AdminCreatePricingTierValidator : AbstractValidator<AdminCreatePric
     /// <param name="msg">Pricing tier validation error messages.</param>
     public AdminCreatePricingTierValidator(PricingTierErrorMessage msg)
     {
-        RuleFor(x => x.Name).ValidPricingTierName(msg);
-        RuleFor(x => x.Description).ValidPricingTierDescription(msg);
+        RuleFor(x => x.Name)
+            .ValidPricingTierName(
+                nameRequired: msg.NameRequired(),
+                nameTooLong: msg.NameTooLong(ContentConstants.MaxPricingTierNameLength)
+            );
+        RuleFor(x => x.Description)
+            .ValidPricingTierDescription(
+                descriptionRequired: msg.DescriptionRequired(),
+                descriptionTooLong: msg.DescriptionTooLong(ContentConstants.MaxPricingTierDescriptionLength)
+            );
     }
 }
