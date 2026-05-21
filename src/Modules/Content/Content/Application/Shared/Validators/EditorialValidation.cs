@@ -1,6 +1,5 @@
 using System.Text.RegularExpressions;
 using _116.BuildingBlocks.Constants;
-using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
@@ -17,10 +16,10 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the category ID property.</param>
-    /// <param name="msg">The article error message provider.</param>
-    public static void ValidArticleCategoryId<T>(this IRuleBuilder<T, Guid> ruleBuilder, ArticleErrorMessage msg)
+    /// <param name="categoryIdRequired">Error message used when the category ID is empty.</param>
+    public static void ValidArticleCategoryId<T>(this IRuleBuilder<T, Guid> ruleBuilder, string categoryIdRequired)
     {
-        ruleBuilder.NotEmpty().WithMessage(msg.TitleRequired());
+        ruleBuilder.NotEmpty().WithMessage(categoryIdRequired);
     }
 
     /// <summary>
@@ -28,12 +27,14 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the title property.</param>
-    /// <param name="msg">The article error message provider.</param>
+    /// <param name="titleRequired">Error message used when the title is empty.</param>
+    /// <param name="titleTooLong">Error message used when the title exceeds the maximum length.</param>
     /// <param name="isRequired">Whether the title is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidArticleTitle<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        ArticleErrorMessage msg,
+        string titleRequired,
+        string titleTooLong,
         bool isRequired = true
     )
     {
@@ -42,15 +43,15 @@ public static partial class EditorialValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage(msg.TitleRequired())
+                .WithMessage(titleRequired)
                 .MaximumLength(maximumLength: ContentConstants.MaxTitleLength)
-                .WithMessage(msg.TitleTooLong(ContentConstants.MaxTitleLength));
+                .WithMessage(titleTooLong);
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: ContentConstants.MaxTitleLength)
-            .WithMessage(msg.TitleTooLong(ContentConstants.MaxTitleLength))
+            .WithMessage(titleTooLong)
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Title")));
     }
 
@@ -59,12 +60,16 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the slug property.</param>
-    /// <param name="msg">The article error message provider.</param>
+    /// <param name="slugRequired">Error message used when the slug is empty.</param>
+    /// <param name="slugTooLong">Error message used when the slug exceeds the maximum length.</param>
+    /// <param name="slugInvalidFormat">Error message used when the slug does not match the expected format.</param>
     /// <param name="isRequired">Whether the slug is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidArticleSlug<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        ArticleErrorMessage msg,
+        string slugRequired,
+        string slugTooLong,
+        string slugInvalidFormat,
         bool isRequired = true
     )
     {
@@ -73,19 +78,19 @@ public static partial class EditorialValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage(msg.SlugRequired())
+                .WithMessage(slugRequired)
                 .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
-                .WithMessage(msg.SlugTooLong(ContentConstants.MaxSlugLength))
+                .WithMessage(slugTooLong)
                 .Matches(SlugRegex())
-                .WithMessage(msg.SlugInvalidFormat());
+                .WithMessage(slugInvalidFormat);
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
-            .WithMessage(msg.SlugTooLong(ContentConstants.MaxSlugLength))
+            .WithMessage(slugTooLong)
             .Matches(SlugRegex())
-            .WithMessage(msg.SlugInvalidFormat())
+            .WithMessage(slugInvalidFormat)
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Slug")));
     }
 
@@ -94,21 +99,25 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the headline property.</param>
-    /// <param name="msg">The article error message provider.</param>
+    /// <param name="headlineRequired">Error message used when the headline is empty.</param>
+    /// <param name="headlineTooShort">Error message used when the headline is below the minimum length.</param>
+    /// <param name="headlineTooLong">Error message used when the headline exceeds the maximum length.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidArticleHeadline<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        ArticleErrorMessage msg
+        string headlineRequired,
+        string headlineTooShort,
+        string headlineTooLong
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(msg.HeadlineRequired())
+            .WithMessage(headlineRequired)
             .MinimumLength(minimumLength: ContentConstants.MinHeadlineLength)
-            .WithMessage(msg.HeadlineTooShort(ContentConstants.MinHeadlineLength))
+            .WithMessage(headlineTooShort)
             .MaximumLength(maximumLength: ContentConstants.MaxHeadlineLength)
-            .WithMessage(msg.HeadlineTooLong(ContentConstants.MaxHeadlineLength));
+            .WithMessage(headlineTooLong);
     }
 
     /// <summary>
@@ -116,14 +125,14 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the body property.</param>
-    /// <param name="msg">The article error message provider.</param>
+    /// <param name="bodyRequired">Error message used when the body is empty.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidArticleBody<T>(
         this IRuleBuilder<T, string?> ruleBuilder,
-        ArticleErrorMessage msg
+        string bodyRequired
     )
     {
-        return ruleBuilder.NotEmpty().WithMessage(msg.BodyRequired());
+        return ruleBuilder.NotEmpty().WithMessage(bodyRequired);
     }
 
     /// <summary>
@@ -131,14 +140,14 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the description property.</param>
-    /// <param name="msg">The video error message provider.</param>
+    /// <param name="descriptionRequired">Error message used when the description is empty.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidVideoDescription<T>(
         this IRuleBuilder<T, string?> ruleBuilder,
-        VideoErrorMessage msg
+        string descriptionRequired
     )
     {
-        return ruleBuilder.NotEmpty().WithMessage(msg.DescriptionRequired());
+        return ruleBuilder.NotEmpty().WithMessage(descriptionRequired);
     }
 
     /// <summary>
@@ -147,14 +156,14 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the order item ID property.</param>
-    /// <param name="msg">The content order error message provider.</param>
+    /// <param name="orderItemIdRequired">Error message used when the order item ID is empty.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, Guid?> ValidOrderItemId<T>(
         this IRuleBuilder<T, Guid?> ruleBuilder,
-        ContentOrderErrorMessage msg
+        string orderItemIdRequired
     )
     {
-        return ruleBuilder.NotEmpty().WithMessage(msg.AdminUserIdRequired());
+        return ruleBuilder.NotEmpty().WithMessage(orderItemIdRequired);
     }
 
     /// <summary>
@@ -163,14 +172,14 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the customer ID property.</param>
-    /// <param name="msg">The customer error message provider.</param>
+    /// <param name="customerIdRequired">Error message used when the customer ID is empty.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, Guid?> ValidCustomerId<T>(
         this IRuleBuilder<T, Guid?> ruleBuilder,
-        CustomerErrorMessage msg
+        string customerIdRequired
     )
     {
-        return ruleBuilder.NotEmpty().WithMessage(msg.FullNameRequired());
+        return ruleBuilder.NotEmpty().WithMessage(customerIdRequired);
     }
 
     /// <summary>
@@ -178,19 +187,21 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the reason property.</param>
-    /// <param name="msg">The article error message provider.</param>
+    /// <param name="reasonRequired">Error message used when the reason is empty.</param>
+    /// <param name="reasonTooLong">Error message used when the reason exceeds the maximum length.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidUnpromoteReason<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        ArticleErrorMessage msg
+        string reasonRequired,
+        string reasonTooLong
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(msg.BodyRequired())
+            .WithMessage(reasonRequired)
             .MaximumLength(maximumLength: ContentConstants.MaxRejectionReasonLength)
-            .WithMessage(msg.TitleTooLong(ContentConstants.MaxRejectionReasonLength));
+            .WithMessage(reasonTooLong);
     }
 
     /// <summary>
@@ -201,19 +212,21 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the meta title property.</param>
-    /// <param name="msg">The article error message provider.</param>
+    /// <param name="metaTitleTooShort">Error message used when the meta title is below the minimum length.</param>
+    /// <param name="metaTitleTooLong">Error message used when the meta title exceeds the maximum length.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidMetaTitle<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        ArticleErrorMessage msg
+        string metaTitleTooShort,
+        string metaTitleTooLong
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MinimumLength(minimumLength: ContentConstants.MinMetaTitleLength)
-            .WithMessage(msg.HeadlineTooShort(ContentConstants.MinMetaTitleLength))
+            .WithMessage(metaTitleTooShort)
             .MaximumLength(maximumLength: ContentConstants.MaxMetaTitleLength)
-            .WithMessage(msg.TitleTooLong(ContentConstants.MaxMetaTitleLength));
+            .WithMessage(metaTitleTooLong);
     }
 
     /// <summary>
@@ -224,19 +237,21 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the meta description property.</param>
-    /// <param name="msg">The article error message provider.</param>
+    /// <param name="metaDescriptionTooShort">Error message used when the meta description is below the minimum length.</param>
+    /// <param name="metaDescriptionTooLong">Error message used when the meta description exceeds the maximum length.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidMetaDescription<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        ArticleErrorMessage msg
+        string metaDescriptionTooShort,
+        string metaDescriptionTooLong
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MinimumLength(minimumLength: ContentConstants.MinMetaDescriptionLength)
-            .WithMessage(msg.HeadlineTooShort(ContentConstants.MinMetaDescriptionLength))
+            .WithMessage(metaDescriptionTooShort)
             .MaximumLength(maximumLength: ContentConstants.MaxMetaDescriptionLength)
-            .WithMessage(msg.TitleTooLong(ContentConstants.MaxMetaDescriptionLength));
+            .WithMessage(metaDescriptionTooLong);
     }
 
     /// <summary>
@@ -244,19 +259,21 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the rejection reason property.</param>
-    /// <param name="msg">The article error message provider.</param>
+    /// <param name="reasonRequired">Error message used when the reason is empty.</param>
+    /// <param name="reasonTooLong">Error message used when the reason exceeds the maximum length.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidRejectionReason<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        ArticleErrorMessage msg
+        string reasonRequired,
+        string reasonTooLong
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(msg.BodyRequired())
+            .WithMessage(reasonRequired)
             .MaximumLength(maximumLength: ContentConstants.MaxRejectionReasonLength)
-            .WithMessage(msg.TitleTooLong(ContentConstants.MaxRejectionReasonLength));
+            .WithMessage(reasonTooLong);
     }
 
     /// <summary>
@@ -264,19 +281,23 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the YouTube video URL property.</param>
-    /// <param name="msg">The video error message provider.</param>
+    /// <param name="youtubeUrlRequired">Error message used when the URL is empty.</param>
+    /// <param name="youtubeUrlTooLong">Error message used when the URL exceeds the maximum length.</param>
+    /// <param name="youtubeUrlInvalidFormat">Error message used when the URL is not a recognised YouTube URL.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidYoutubeVideoUrl<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        VideoErrorMessage msg
+        string youtubeUrlRequired,
+        string youtubeUrlTooLong,
+        string youtubeUrlInvalidFormat
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(msg.YoutubeUrlRequired())
+            .WithMessage(youtubeUrlRequired)
             .MaximumLength(maximumLength: ContentConstants.MaxYoutubeVideoUrlLength)
-            .WithMessage(msg.YoutubeUrlTooLong(ContentConstants.MaxYoutubeVideoUrlLength))
+            .WithMessage(youtubeUrlTooLong)
             .Must(url =>
                 url is not null
                 && (
@@ -286,7 +307,7 @@ public static partial class EditorialValidation
                     || url.Contains("youtube.com/shorts/")
                 )
             )
-            .WithMessage(msg.YoutubeUrlInvalidFormat());
+            .WithMessage(youtubeUrlInvalidFormat);
     }
 
     /// <summary>
@@ -294,12 +315,14 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the title property.</param>
-    /// <param name="msg">The video error message provider.</param>
+    /// <param name="titleRequired">Error message used when the title is empty.</param>
+    /// <param name="titleTooLong">Error message used when the title exceeds the maximum length.</param>
     /// <param name="isRequired">Whether the title is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidVideoTitle<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        VideoErrorMessage msg,
+        string titleRequired,
+        string titleTooLong,
         bool isRequired = true
     )
     {
@@ -308,15 +331,15 @@ public static partial class EditorialValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage(msg.TitleRequired())
+                .WithMessage(titleRequired)
                 .MaximumLength(maximumLength: ContentConstants.MaxTitleLength)
-                .WithMessage(msg.TitleTooLong(ContentConstants.MaxTitleLength));
+                .WithMessage(titleTooLong);
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: ContentConstants.MaxTitleLength)
-            .WithMessage(msg.TitleTooLong(ContentConstants.MaxTitleLength))
+            .WithMessage(titleTooLong)
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Title")));
     }
 
@@ -325,12 +348,16 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the slug property.</param>
-    /// <param name="msg">The video error message provider.</param>
+    /// <param name="slugRequired">Error message used when the slug is empty.</param>
+    /// <param name="slugTooLong">Error message used when the slug exceeds the maximum length.</param>
+    /// <param name="slugInvalidFormat">Error message used when the slug does not match the expected format.</param>
     /// <param name="isRequired">Whether the slug is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidVideoSlug<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        VideoErrorMessage msg,
+        string slugRequired,
+        string slugTooLong,
+        string slugInvalidFormat,
         bool isRequired = true
     )
     {
@@ -339,19 +366,19 @@ public static partial class EditorialValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage(msg.SlugRequired())
+                .WithMessage(slugRequired)
                 .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
-                .WithMessage(msg.SlugTooLong(ContentConstants.MaxSlugLength))
+                .WithMessage(slugTooLong)
                 .Matches(SlugRegex())
-                .WithMessage(msg.SlugInvalidFormat());
+                .WithMessage(slugInvalidFormat);
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
-            .WithMessage(msg.SlugTooLong(ContentConstants.MaxSlugLength))
+            .WithMessage(slugTooLong)
             .Matches(SlugRegex())
-            .WithMessage(msg.SlugInvalidFormat())
+            .WithMessage(slugInvalidFormat)
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Slug")));
     }
 
@@ -360,21 +387,25 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the slug property.</param>
-    /// <param name="msg">The short video error message provider.</param>
+    /// <param name="slugRequired">Error message used when the slug is empty.</param>
+    /// <param name="slugTooLong">Error message used when the slug exceeds the maximum length.</param>
+    /// <param name="slugInvalidFormat">Error message used when the slug does not match the expected format.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidShortVideoSlug<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        ShortVideoErrorMessage msg
+        string slugRequired,
+        string slugTooLong,
+        string slugInvalidFormat
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(msg.SlugRequired())
+            .WithMessage(slugRequired)
             .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
-            .WithMessage(msg.SlugTooLong(ContentConstants.MaxSlugLength))
+            .WithMessage(slugTooLong)
             .Matches(SlugRegex())
-            .WithMessage(msg.SlugInvalidFormat());
+            .WithMessage(slugInvalidFormat);
     }
 
     /// <summary>
@@ -382,43 +413,50 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the title property.</param>
-    /// <param name="msg">The short video error message provider.</param>
+    /// <param name="titleRequired">Error message used when the title is empty.</param>
+    /// <param name="titleTooLong">Error message used when the title exceeds the maximum length.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidShortVideoTitle<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        ShortVideoErrorMessage msg
+        string titleRequired,
+        string titleTooLong
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(msg.TitleRequired())
+            .WithMessage(titleRequired)
             .MaximumLength(maximumLength: ContentConstants.MaxShortVideoTitleLength)
-            .WithMessage(msg.TitleTooLong(ContentConstants.MaxShortVideoTitleLength));
+            .WithMessage(titleTooLong);
     }
 
     /// <summary>
-    /// Validates a short video file: required, non-empty, max 100 MB, video formats only.
+    /// Validates a short video file: required, non-empty, within the caller-supplied size limit, and an allowed extension.
+    /// The calling validator is responsible for computing the human-readable size and extension strings from
+    /// <see cref="FileConstants"/> before passing them as error messages.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the video file property.</param>
-    /// <param name="msg">The short video error message provider.</param>
+    /// <param name="fileRequired">Error message used when the file is null.</param>
+    /// <param name="fileEmpty">Error message used when the file has zero bytes.</param>
+    /// <param name="fileTooLarge">Error message used when the file exceeds the maximum allowed size.</param>
+    /// <param name="fileInvalidExtension">Error message used when the file extension is not allowed.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, IFormFile?> ValidShortVideoFile<T>(
         this IRuleBuilder<T, IFormFile?> ruleBuilder,
-        ShortVideoErrorMessage msg
+        string fileRequired,
+        string fileEmpty,
+        string fileTooLarge,
+        string fileInvalidExtension
     )
     {
-        long maxMb = FileConstants.MaxVideoFileSizeBytes / (1024 * 1024);
-        string allowedExts = string.Join(", ", FileConstants.AllowedVideoExtensions);
-
         return ruleBuilder
             .NotNull()
-            .WithMessage(msg.FileRequired())
+            .WithMessage(fileRequired)
             .Must(file => file is null || file.Length > 0)
-            .WithMessage(msg.FileEmpty())
+            .WithMessage(fileEmpty)
             .Must(file => file is null || file.Length <= FileConstants.MaxVideoFileSizeBytes)
-            .WithMessage(msg.FileTooLarge(maxMb))
+            .WithMessage(fileTooLarge)
             .Must(file =>
             {
                 if (file is null)
@@ -429,7 +467,7 @@ public static partial class EditorialValidation
                 string ext = Path.GetExtension(file.FileName).ToLowerInvariant();
                 return FileConstants.AllowedVideoExtensions.Contains(ext);
             })
-            .WithMessage(msg.FileInvalidExtension(allowedExts));
+            .WithMessage(fileInvalidExtension);
     }
 
     /// <summary>
@@ -437,19 +475,21 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the song title property.</param>
-    /// <param name="msg">The lyrics error message provider.</param>
+    /// <param name="songTitleRequired">Error message used when the song title is empty.</param>
+    /// <param name="songTitleTooLong">Error message used when the song title exceeds the maximum length.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidSongTitle<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        LyricsErrorMessage msg
+        string songTitleRequired,
+        string songTitleTooLong
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(msg.SongTitleRequired())
+            .WithMessage(songTitleRequired)
             .MaximumLength(maximumLength: ContentConstants.MaxSongTitleLength)
-            .WithMessage(msg.SongTitleTooLong(ContentConstants.MaxSongTitleLength));
+            .WithMessage(songTitleTooLong);
     }
 
     /// <summary>
@@ -457,19 +497,21 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the artist name property.</param>
-    /// <param name="msg">The lyrics error message provider.</param>
+    /// <param name="artistNameRequired">Error message used when the artist name is empty.</param>
+    /// <param name="artistNameTooLong">Error message used when the artist name exceeds the maximum length.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidArtistName<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        LyricsErrorMessage msg
+        string artistNameRequired,
+        string artistNameTooLong
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(msg.ArtistNameRequired())
+            .WithMessage(artistNameRequired)
             .MaximumLength(maximumLength: ContentConstants.MaxArtistNameLength)
-            .WithMessage(msg.ArtistNameTooLong(ContentConstants.MaxArtistNameLength));
+            .WithMessage(artistNameTooLong);
     }
 
     /// <summary>
@@ -477,14 +519,14 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the lyrics text property.</param>
-    /// <param name="msg">The lyrics error message provider.</param>
+    /// <param name="lyricsTextRequired">Error message used when the lyrics text is empty.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidLyricsText<T>(
         this IRuleBuilder<T, string?> ruleBuilder,
-        LyricsErrorMessage msg
+        string lyricsTextRequired
     )
     {
-        return ruleBuilder.NotEmpty().WithMessage(msg.LyricsTextRequired());
+        return ruleBuilder.NotEmpty().WithMessage(lyricsTextRequired);
     }
 
     /// <summary>
@@ -492,19 +534,21 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the language property.</param>
-    /// <param name="msg">The lyrics error message provider.</param>
+    /// <param name="languageRequired">Error message used when the language code is empty.</param>
+    /// <param name="languageTooLong">Error message used when the language code exceeds the maximum length.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidLyricsLanguage<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        LyricsErrorMessage msg
+        string languageRequired,
+        string languageTooLong
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(msg.LanguageRequired())
+            .WithMessage(languageRequired)
             .MaximumLength(maximumLength: ContentConstants.MaxLyricsLanguageLength)
-            .WithMessage(msg.LanguageTooLong(ContentConstants.MaxLyricsLanguageLength));
+            .WithMessage(languageTooLong);
     }
 
     /// <summary>
@@ -527,14 +571,14 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the file property.</param>
-    /// <param name="msg">The article error message provider.</param>
+    /// <param name="fileRequired">Error message used when the image file is null.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, IFormFile?> ValidArticleImageFile<T>(
         this IRuleBuilder<T, IFormFile?> ruleBuilder,
-        ArticleErrorMessage msg
+        string fileRequired
     )
     {
-        return ruleBuilder.NotNull().WithMessage(msg.BodyRequired());
+        return ruleBuilder.NotNull().WithMessage(fileRequired);
     }
 
     /// <summary>
@@ -542,10 +586,10 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the article ID property.</param>
-    /// <param name="msg">The article error message provider.</param>
-    public static void ValidArticleId<T>(this IRuleBuilder<T, Guid> ruleBuilder, ArticleErrorMessage msg)
+    /// <param name="articleIdRequired">Error message used when the article ID is empty.</param>
+    public static void ValidArticleId<T>(this IRuleBuilder<T, Guid> ruleBuilder, string articleIdRequired)
     {
-        ruleBuilder.NotEmpty().WithMessage(msg.TitleRequired());
+        ruleBuilder.NotEmpty().WithMessage(articleIdRequired);
     }
 
     /// <summary>
@@ -553,10 +597,10 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the video ID property.</param>
-    /// <param name="msg">The video error message provider.</param>
-    public static void ValidVideoId<T>(this IRuleBuilder<T, Guid> ruleBuilder, VideoErrorMessage msg)
+    /// <param name="videoIdRequired">Error message used when the video ID is empty.</param>
+    public static void ValidVideoId<T>(this IRuleBuilder<T, Guid> ruleBuilder, string videoIdRequired)
     {
-        ruleBuilder.NotEmpty().WithMessage(msg.TitleRequired());
+        ruleBuilder.NotEmpty().WithMessage(videoIdRequired);
     }
 
     /// <summary>
@@ -564,10 +608,10 @@ public static partial class EditorialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the lyrics ID property.</param>
-    /// <param name="msg">The lyrics error message provider.</param>
-    public static void ValidLyricsId<T>(this IRuleBuilder<T, Guid> ruleBuilder, LyricsErrorMessage msg)
+    /// <param name="lyricsIdRequired">Error message used when the lyrics ID is empty.</param>
+    public static void ValidLyricsId<T>(this IRuleBuilder<T, Guid> ruleBuilder, string lyricsIdRequired)
     {
-        ruleBuilder.NotEmpty().WithMessage(msg.SongTitleRequired());
+        ruleBuilder.NotEmpty().WithMessage(lyricsIdRequired);
     }
 
     /// <summary>
