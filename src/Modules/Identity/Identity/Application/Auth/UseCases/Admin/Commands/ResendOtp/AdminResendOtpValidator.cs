@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
@@ -17,10 +18,18 @@ public class AdminResendOtpValidator : AbstractValidator<AdminResendOtpCommand>
     /// <summary>
     /// Initializes a new instance of <see cref="AdminResendOtpValidator" /> with validation rules.
     /// </summary>
-    /// <param name="msg">Validation error messages for rule configuration.</param>
+    /// <param name="msg">
+    /// Validation error messages for rule configuration.
+    /// </param>
     public AdminResendOtpValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.Email).ValidEmail(msg);
-        RuleFor(x => x.Purpose).ValidOtpPurpose(msg);
+        RuleFor(x => x.Email)
+            .ValidEmail(
+                emailRequired: msg.EmailRequired(),
+                emailTooLong: msg.EmailTooLong(UserConstants.MaxEmailLength),
+                invalidEmailFormat: msg.InvalidEmailFormatMsg()
+            );
+        RuleFor(x => x.Purpose)
+            .ValidOtpPurpose(otpPurposeRequired: msg.OtpPurposeRequired(), otpPurposeInvalid: msg.OtpPurposeInvalid());
     }
 }
