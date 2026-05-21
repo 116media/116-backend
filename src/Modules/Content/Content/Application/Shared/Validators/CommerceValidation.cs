@@ -1,4 +1,3 @@
-using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Enums;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
@@ -15,19 +14,21 @@ public static class CommerceValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the receipt URL property.</param>
-    /// <param name="msg">The error message provider for content order validation messages.</param>
+    /// <param name="receiptUrlRequired">Error message used when the receipt URL is empty.</param>
+    /// <param name="receiptUrlTooLong">Error message used when the receipt URL exceeds the maximum length.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidReceiptUrl<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        ContentOrderErrorMessage msg
+        string receiptUrlRequired,
+        string receiptUrlTooLong
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(msg.ReceiptUrlRequired())
+            .WithMessage(receiptUrlRequired)
             .MaximumLength(500)
-            .WithMessage(msg.ReceiptUrlTooLong(500));
+            .WithMessage(receiptUrlTooLong);
     }
 
     /// <summary>
@@ -36,14 +37,14 @@ public static class CommerceValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the payment proof file property.</param>
-    /// <param name="msg">The error message provider for content order validation messages.</param>
+    /// <param name="paymentProofRequired">Error message used when the payment proof file is null.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, IFormFile?> ValidPaymentProofFile<T>(
         this IRuleBuilder<T, IFormFile?> ruleBuilder,
-        ContentOrderErrorMessage msg
+        string paymentProofRequired
     )
     {
-        return ruleBuilder.NotNull().WithMessage(msg.PaymentProofRequired());
+        return ruleBuilder.NotNull().WithMessage(paymentProofRequired);
     }
 
     /// <summary>
@@ -51,16 +52,16 @@ public static class CommerceValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the content kind property.</param>
-    /// <param name="msg">The error message provider for content order validation messages.</param>
+    /// <param name="invalidOrderItemContentKind">Error message used when the content kind is not Article or Video.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, EnumCoreContentType> ValidOrderItemContentKind<T>(
         this IRuleBuilder<T, EnumCoreContentType> ruleBuilder,
-        ContentOrderErrorMessage msg
+        string invalidOrderItemContentKind
     )
     {
         return ruleBuilder
             .Must(kind => kind is EnumCoreContentType.Article or EnumCoreContentType.Video)
-            .WithMessage(msg.InvalidOrderItemContentKind());
+            .WithMessage(invalidOrderItemContentKind);
     }
 
     /// <summary>
@@ -68,14 +69,14 @@ public static class CommerceValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the admin user ID property.</param>
-    /// <param name="msg">The error message provider for content order validation messages.</param>
+    /// <param name="adminUserIdRequired">Error message used when the admin user ID is empty.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, Guid> ValidAdminUserId<T>(
         this IRuleBuilder<T, Guid> ruleBuilder,
-        ContentOrderErrorMessage msg
+        string adminUserIdRequired
     )
     {
-        return ruleBuilder.NotEmpty().WithMessage(msg.AdminUserIdRequired());
+        return ruleBuilder.NotEmpty().WithMessage(adminUserIdRequired);
     }
 
     /// <summary>
@@ -83,13 +84,13 @@ public static class CommerceValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the payment method property.</param>
-    /// <param name="msg">The error message provider for content order validation messages.</param>
+    /// <param name="invalidPaymentMethod">Error message used when the payment method is not a valid enum value.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, EnumPaymentMethod> ValidPaymentMethod<T>(
         this IRuleBuilder<T, EnumPaymentMethod> ruleBuilder,
-        ContentOrderErrorMessage msg
+        string invalidPaymentMethod
     )
     {
-        return ruleBuilder.IsInEnum().WithMessage(msg.InvalidPaymentMethod());
+        return ruleBuilder.IsInEnum().WithMessage(invalidPaymentMethod);
     }
 }
