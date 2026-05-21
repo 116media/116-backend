@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using FluentValidation;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.EditArticleComment;
@@ -15,6 +16,10 @@ public class PublicEditArticleCommentValidator : AbstractValidator<PublicEditArt
     /// <param name="msg">Article interaction validation error messages.</param>
     public PublicEditArticleCommentValidator(ArticleInteractionErrorMessage msg)
     {
-        RuleFor(x => x.Body).ValidCommentBody(msg);
+        RuleFor(x => x.Body)
+            .ValidCommentBody(
+                commentBodyRequired: msg.CommentBodyRequired(),
+                commentBodyTooLong: msg.CommentBodyTooLong(ContentConstants.MaxCommentBodyLength)
+            );
     }
 }
