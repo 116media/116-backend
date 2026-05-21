@@ -21,6 +21,9 @@ public class AdminEditOrderItemValidator : AbstractValidator<AdminEditOrderItemC
 
         When(x => x.CategoryId is not null, () => RuleFor(x => x.CategoryId!).IsValidGuid("Category ID"));
 
-        When(x => x.ContentKind.HasValue, () => RuleFor(x => x.ContentKind!.Value).ValidOrderItemContentKind(msg));
+        When(
+            x => x.ContentKind.HasValue,
+            () => RuleFor(x => x.ContentKind!.Value).ValidOrderItemContentKind(msg.InvalidOrderItemContentKind())
+        );
     }
 }
