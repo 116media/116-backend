@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -17,9 +18,16 @@ public class AdminUpdatePromotionLevelValidator : AbstractValidator<AdminUpdateP
     public AdminUpdatePromotionLevelValidator(PromotionLevelErrorMessage msg)
     {
         RuleFor(x => x.Id).IsValidGuid("Promotion level ID");
-        RuleFor(x => x.Name).ValidPromotionLevelName(msg);
-        RuleFor(x => x.DurationDays).ValidDurationDays(msg);
-        RuleFor(x => x.PriceUsd).ValidPriceUsd(msg);
-        When(x => x.SpotPriority.HasValue, () => RuleFor(x => x.SpotPriority).ValidSpotPriority(msg));
+        RuleFor(x => x.Name)
+            .ValidPromotionLevelName(
+                nameRequired: msg.NameRequired(),
+                nameTooLong: msg.NameTooLong(ContentConstants.MaxPromotionLevelNameLength)
+            );
+        RuleFor(x => x.DurationDays).ValidDurationDays(msg.DurationMustBePositive());
+        RuleFor(x => x.PriceUsd).ValidPriceUsd(msg.PriceMustBeNonNegative());
+        When(
+            x => x.SpotPriority.HasValue,
+            () => RuleFor(x => x.SpotPriority).ValidSpotPriority(msg.InvalidSpotPriority())
+        );
     }
 }
