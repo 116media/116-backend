@@ -18,6 +18,6 @@ public class AdminUpdateCategoryPricingValidator : AbstractValidator<AdminUpdate
     {
         RuleFor(x => x.CategoryId).IsValidGuid("Category ID");
         RuleFor(x => x.PricingTierId).IsValidGuid("Pricing tier ID");
-        RuleFor(x => x.PriceUsd).ValidCategoryPriceUsd(msg);
+        RuleFor(x => x.PriceUsd).ValidCategoryPriceUsd(msg.PriceMustBeNonNegative());
     }
 }
