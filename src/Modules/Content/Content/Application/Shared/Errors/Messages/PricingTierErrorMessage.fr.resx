@@ -13,27 +13,27 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AlreadyExists" xml:space="preserve">
-    <value>Le niveau de tarification « {0} » existe déjà</value>
+    <value>Le niveau de tarification « {0} » existe déjà.</value>
   </data>
   <data name="AlreadyActive" xml:space="preserve">
-    <value>Le niveau de tarification est déjà actif</value>
+    <value>Le niveau de tarification est déjà actif.</value>
   </data>
   <data name="AlreadyInactive" xml:space="preserve">
-    <value>Le niveau de tarification est déjà inactif</value>
+    <value>Le niveau de tarification est déjà inactif.</value>
   </data>
   <data name="IsInactive" xml:space="preserve">
-    <value>Impossible d'utiliser un niveau de tarification inactif</value>
+    <value>Impossible d'utiliser un niveau de tarification inactif.</value>
   </data>
   <data name="NameRequired" xml:space="preserve">
-    <value>Le nom du niveau de tarification est obligatoire</value>
+    <value>Le nom du niveau de tarification est obligatoire.</value>
   </data>
   <data name="NameTooLong" xml:space="preserve">
-    <value>Le nom du niveau de tarification ne doit pas dépasser {0} caractères</value>
+    <value>Le nom du niveau de tarification ne doit pas dépasser {0} caractères.</value>
   </data>
   <data name="DescriptionRequired" xml:space="preserve">
-    <value>La description du niveau de tarification est obligatoire</value>
+    <value>La description du niveau de tarification est obligatoire.</value>
   </data>
   <data name="DescriptionTooLong" xml:space="preserve">
-    <value>La description du niveau de tarification ne doit pas dépasser {0} caractères</value>
+    <value>La description du niveau de tarification ne doit pas dépasser {0} caractères.</value>
   </data>
 </root>
