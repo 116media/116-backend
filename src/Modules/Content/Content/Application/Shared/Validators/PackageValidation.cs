@@ -1,4 +1,3 @@
-using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
 using FluentValidation;
 
@@ -14,19 +13,21 @@ public static class PackageValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the name property.</param>
-    /// <param name="msg">The error message provider for package validation messages.</param>
+    /// <param name="nameRequired">Error message used when the name is empty.</param>
+    /// <param name="nameTooLong">Error message used when the name exceeds the maximum length.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidPackageName<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        PackageErrorMessage msg
+        string nameRequired,
+        string nameTooLong
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(msg.NameRequired())
+            .WithMessage(nameRequired)
             .MaximumLength(maximumLength: ContentConstants.MaxPackageNameLength)
-            .WithMessage(msg.NameTooLong(ContentConstants.MaxPackageNameLength));
+            .WithMessage(nameTooLong);
     }
 
     /// <summary>
@@ -34,19 +35,21 @@ public static class PackageValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the description property.</param>
-    /// <param name="msg">The error message provider for package validation messages.</param>
+    /// <param name="descriptionRequired">Error message used when the description is empty.</param>
+    /// <param name="descriptionTooLong">Error message used when the description exceeds the maximum length.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidPackageDescription<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        PackageErrorMessage msg
+        string descriptionRequired,
+        string descriptionTooLong
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(msg.DescriptionRequired())
+            .WithMessage(descriptionRequired)
             .MaximumLength(maximumLength: ContentConstants.MaxPackageDescriptionLength)
-            .WithMessage(msg.DescriptionTooLong(ContentConstants.MaxPackageDescriptionLength));
+            .WithMessage(descriptionTooLong);
     }
 
     /// <summary>
@@ -54,13 +57,13 @@ public static class PackageValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the slot quantity property.</param>
-    /// <param name="msg">The error message provider for package validation messages.</param>
+    /// <param name="slotQuantityMustBePositive">Error message used when the slot quantity is not positive.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, int> ValidSlotQuantity<T>(
         this IRuleBuilder<T, int> ruleBuilder,
-        PackageErrorMessage msg
+        string slotQuantityMustBePositive
     )
     {
-        return ruleBuilder.GreaterThan(valueToCompare: 0).WithMessage(msg.SlotQuantityMustBePositive());
+        return ruleBuilder.GreaterThan(valueToCompare: 0).WithMessage(slotQuantityMustBePositive);
     }
 }
