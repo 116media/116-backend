@@ -13,27 +13,30 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AlreadyExists" xml:space="preserve">
-    <value>Lyrics for '{0}' by '{1}' already exist</value>
+    <value>Lyrics for '{0}' by '{1}' already exist.</value>
   </data>
   <data name="SongTitleRequired" xml:space="preserve">
-    <value>Song title is required</value>
+    <value>Song title is required.</value>
   </data>
   <data name="ArtistNameRequired" xml:space="preserve">
-    <value>Artist name is required</value>
+    <value>Artist name is required.</value>
   </data>
   <data name="LyricsTextRequired" xml:space="preserve">
-    <value>Lyrics text is required</value>
+    <value>Lyrics text is required.</value>
   </data>
   <data name="SongTitleTooLong" xml:space="preserve">
-    <value>Song title must not exceed {0} characters</value>
+    <value>Song title must not exceed {0} characters.</value>
   </data>
   <data name="ArtistNameTooLong" xml:space="preserve">
-    <value>Artist name must not exceed {0} characters</value>
+    <value>Artist name must not exceed {0} characters.</value>
   </data>
   <data name="LanguageRequired" xml:space="preserve">
-    <value>Lyrics language is required</value>
+    <value>Lyrics language is required.</value>
   </data>
   <data name="LanguageTooLong" xml:space="preserve">
-    <value>Lyrics language must not exceed {0} characters</value>
+    <value>Lyrics language must not exceed {0} characters.</value>
+  </data>
+  <data name="LyricsIdRequired" xml:space="preserve">
+    <value>Lyrics ID is required.</value>
   </data>
 </root>
