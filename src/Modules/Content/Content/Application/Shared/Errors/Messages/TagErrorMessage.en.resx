@@ -13,21 +13,21 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="SlugAlreadyExists" xml:space="preserve">
-    <value>Tag with slug '{0}' already exists</value>
+    <value>Tag with slug '{0}' already exists.</value>
   </data>
   <data name="NameRequired" xml:space="preserve">
-    <value>Tag name is required</value>
+    <value>Tag name is required.</value>
   </data>
   <data name="SlugRequired" xml:space="preserve">
-    <value>Tag slug is required</value>
+    <value>Tag slug is required.</value>
   </data>
   <data name="NameTooLong" xml:space="preserve">
-    <value>Tag name must not exceed {0} characters</value>
+    <value>Tag name must not exceed {0} characters.</value>
   </data>
   <data name="SlugTooLong" xml:space="preserve">
-    <value>Tag slug must not exceed {0} characters</value>
+    <value>Tag slug must not exceed {0} characters.</value>
   </data>
   <data name="SlugInvalidFormat" xml:space="preserve">
-    <value>Tag slug must be lowercase and contain only letters, numbers, and hyphens</value>
+    <value>Tag slug must be lowercase and contain only letters, numbers, and hyphens.</value>
   </data>
 </root>
