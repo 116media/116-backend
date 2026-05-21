@@ -18,6 +18,6 @@ public class AdminAddOrderItemValidator : AbstractValidator<AdminAddOrderItemCom
     {
         RuleFor(x => x.OrderId).IsValidGuid("Order ID");
         RuleFor(x => x.CategoryId).IsValidGuid("Category ID");
-        RuleFor(x => x.ContentKind).ValidOrderItemContentKind(msg);
+        RuleFor(x => x.ContentKind).ValidOrderItemContentKind(msg.InvalidOrderItemContentKind());
     }
 }
