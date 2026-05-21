@@ -13,39 +13,39 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AlreadyExists" xml:space="preserve">
-    <value>Category with slug '{0}' already exists</value>
+    <value>Category with slug '{0}' already exists.</value>
   </data>
   <data name="AlreadyActive" xml:space="preserve">
-    <value>Category is already active</value>
+    <value>Category is already active.</value>
   </data>
   <data name="AlreadyInactive" xml:space="preserve">
-    <value>Category is already inactive</value>
+    <value>Category is already inactive.</value>
   </data>
   <data name="NameRequired" xml:space="preserve">
-    <value>Category name is required</value>
+    <value>Category name is required.</value>
   </data>
   <data name="SlugRequired" xml:space="preserve">
-    <value>Category slug is required</value>
+    <value>Category slug is required.</value>
   </data>
   <data name="PricingAlreadyExists" xml:space="preserve">
-    <value>This pricing tier is already configured for the category</value>
+    <value>This pricing tier is already configured for the category.</value>
   </data>
   <data name="PriceMustBeNonNegative" xml:space="preserve">
-    <value>Price must be zero or greater</value>
+    <value>Price must be zero or greater.</value>
   </data>
   <data name="NameTooLong" xml:space="preserve">
-    <value>Category name must not exceed {0} characters</value>
+    <value>Category name must not exceed {0} characters.</value>
   </data>
   <data name="SlugTooLong" xml:space="preserve">
-    <value>Category slug must not exceed {0} characters</value>
+    <value>Category slug must not exceed {0} characters.</value>
   </data>
   <data name="SlugInvalidFormat" xml:space="preserve">
-    <value>Category slug must be lowercase and contain only letters, numbers, and hyphens</value>
+    <value>Category slug must be lowercase and contain only letters, numbers, and hyphens.</value>
   </data>
   <data name="DescriptionRequired" xml:space="preserve">
-    <value>Category description is required</value>
+    <value>Category description is required.</value>
   </data>
   <data name="DescriptionTooLong" xml:space="preserve">
-    <value>Category description must not exceed {0} characters</value>
+    <value>Category description must not exceed {0} characters.</value>
   </data>
 </root>
