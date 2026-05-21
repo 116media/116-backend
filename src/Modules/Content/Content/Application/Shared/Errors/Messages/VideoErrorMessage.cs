@@ -179,4 +179,9 @@ public class VideoErrorMessage(IStringLocalizer<VideoErrorMessage> localizer)
     /// Gets an error message for when a YouTube URL is not a valid YouTube URL.
     /// </summary>
     public string YoutubeUrlInvalidFormat() => localizer["YoutubeUrlInvalidFormat"];
+
+    /// <summary>
+    /// Gets an error message for when a video ID is required.
+    /// </summary>
+    public string VideoIdRequired() => localizer["VideoIdRequired"];
 }
