@@ -17,7 +17,7 @@ public class AdminAttachPaymentProofValidator : AbstractValidator<AdminAttachPay
     public AdminAttachPaymentProofValidator(ContentOrderErrorMessage msg)
     {
         RuleFor(x => x.OrderId).IsValidGuid("Order ID");
-        RuleFor(x => x.File).ValidPaymentProofFile(msg);
-        RuleFor(x => x.PaymentMethod).ValidPaymentMethod(msg);
+        RuleFor(x => x.File).ValidPaymentProofFile(msg.PaymentProofRequired());
+        RuleFor(x => x.PaymentMethod).ValidPaymentMethod(msg.InvalidPaymentMethod());
     }
 }
