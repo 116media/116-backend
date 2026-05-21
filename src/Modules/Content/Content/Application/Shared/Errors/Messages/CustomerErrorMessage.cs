@@ -76,4 +76,9 @@ public class CustomerErrorMessage(IStringLocalizer<CustomerErrorMessage> localiz
     /// </summary>
     /// <param name="max">The maximum allowed length.</param>
     public string NotesTooLong(int max) => string.Format(localizer["NotesTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a customer ID is required.
+    /// </summary>
+    public string CustomerIdRequired() => localizer["CustomerIdRequired"];
 }
