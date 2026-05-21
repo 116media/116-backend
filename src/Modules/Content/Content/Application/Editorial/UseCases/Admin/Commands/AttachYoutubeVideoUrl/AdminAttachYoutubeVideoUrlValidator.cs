@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -18,6 +19,11 @@ public class AdminAttachYoutubeVideoUrlValidator : AbstractValidator<AdminAttach
     {
         RuleFor(x => x.VideoId).IsValidGuid("Video ID");
 
-        RuleFor(x => x.YoutubeVideoUrl).ValidYoutubeVideoUrl(msg);
+        RuleFor(x => x.YoutubeVideoUrl)
+            .ValidYoutubeVideoUrl(
+                youtubeUrlRequired: msg.YoutubeUrlRequired(),
+                youtubeUrlTooLong: msg.YoutubeUrlTooLong(ContentConstants.MaxYoutubeVideoUrlLength),
+                youtubeUrlInvalidFormat: msg.YoutubeUrlInvalidFormat()
+            );
     }
 }
