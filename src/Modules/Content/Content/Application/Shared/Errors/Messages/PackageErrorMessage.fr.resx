@@ -13,27 +13,27 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NameRequired" xml:space="preserve">
-    <value>Le nom du forfait est obligatoire</value>
+    <value>Le nom du forfait est obligatoire.</value>
   </data>
   <data name="PriceMustBeNonNegative" xml:space="preserve">
-    <value>Le prix du forfait doit être supérieur ou égal à zéro</value>
+    <value>Le prix du forfait doit être supérieur ou égal à zéro.</value>
   </data>
   <data name="AlreadyActive" xml:space="preserve">
-    <value>Le forfait est déjà actif</value>
+    <value>Le forfait est déjà actif.</value>
   </data>
   <data name="AlreadyInactive" xml:space="preserve">
-    <value>Le forfait est déjà inactif</value>
+    <value>Le forfait est déjà inactif.</value>
   </data>
   <data name="SlotQuantityMustBePositive" xml:space="preserve">
-    <value>La quantité de créneaux doit être supérieure à zéro</value>
+    <value>La quantité de créneaux doit être supérieure à zéro.</value>
   </data>
   <data name="NameTooLong" xml:space="preserve">
-    <value>Le nom du forfait ne doit pas dépasser {0} caractères</value>
+    <value>Le nom du forfait ne doit pas dépasser {0} caractères.</value>
   </data>
   <data name="DescriptionRequired" xml:space="preserve">
-    <value>La description du forfait est obligatoire</value>
+    <value>La description du forfait est obligatoire.</value>
   </data>
   <data name="DescriptionTooLong" xml:space="preserve">
-    <value>La description du forfait ne doit pas dépasser {0} caractères</value>
+    <value>La description du forfait ne doit pas dépasser {0} caractères.</value>
   </data>
 </root>
