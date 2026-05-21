@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -24,23 +25,60 @@ public class AdminUpdateArticleValidator : AbstractValidator<AdminUpdateArticleC
     {
         RuleFor(x => x.Id).IsValidGuid("Article ID");
 
-        RuleFor(x => x.CategoryId).ValidArticleCategoryId(articleMsg);
+        RuleFor(x => x.CategoryId).ValidArticleCategoryId(articleMsg.CategoryIdRequired());
 
-        RuleFor(x => x.Title).ValidArticleTitle(articleMsg);
+        RuleFor(x => x.Title)
+            .ValidArticleTitle(
+                titleRequired: articleMsg.TitleRequired(),
+                titleTooLong: articleMsg.TitleTooLong(ContentConstants.MaxTitleLength)
+            );
 
-        RuleFor(x => x.Slug).ValidArticleSlug(articleMsg);
+        RuleFor(x => x.Slug)
+            .ValidArticleSlug(
+                slugRequired: articleMsg.SlugRequired(),
+                slugTooLong: articleMsg.SlugTooLong(ContentConstants.MaxSlugLength),
+                slugInvalidFormat: articleMsg.SlugInvalidFormat()
+            );
 
-        RuleFor(x => x.Headline).ValidArticleHeadline(articleMsg);
+        RuleFor(x => x.Headline)
+            .ValidArticleHeadline(
+                headlineRequired: articleMsg.HeadlineRequired(),
+                headlineTooShort: articleMsg.HeadlineTooShort(ContentConstants.MinHeadlineLength),
+                headlineTooLong: articleMsg.HeadlineTooLong(ContentConstants.MaxHeadlineLength)
+            );
 
-        RuleFor(x => x.Body).ValidArticleBody(articleMsg);
+        RuleFor(x => x.Body).ValidArticleBody(bodyRequired: articleMsg.BodyRequired());
 
-        When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId(orderMsg));
-        When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId(customerMsg));
+        When(
+            x => x.CustomerId.HasValue,
+            () => RuleFor(x => x.OrderItemId).ValidOrderItemId(orderMsg.OrderItemIdRequired())
+        );
+        When(
+            x => x.OrderItemId.HasValue,
+            () => RuleFor(x => x.CustomerId).ValidCustomerId(customerMsg.CustomerIdRequired())
+        );
 
-        When(x => x.MetaTitle is not null, () => RuleFor(x => x.MetaTitle).ValidMetaTitle(articleMsg));
+        When(
+            x => x.MetaTitle is not null,
+            () =>
+                RuleFor(x => x.MetaTitle)
+                    .ValidMetaTitle(
+                        metaTitleTooShort: articleMsg.MetaTitleTooShort(ContentConstants.MinMetaTitleLength),
+                        metaTitleTooLong: articleMsg.MetaTitleTooLong(ContentConstants.MaxMetaTitleLength)
+                    )
+        );
         When(
             x => x.MetaDescription is not null,
-            () => RuleFor(x => x.MetaDescription).ValidMetaDescription(articleMsg)
+            () =>
+                RuleFor(x => x.MetaDescription)
+                    .ValidMetaDescription(
+                        metaDescriptionTooShort: articleMsg.MetaDescriptionTooShort(
+                            ContentConstants.MinMetaDescriptionLength
+                        ),
+                        metaDescriptionTooLong: articleMsg.MetaDescriptionTooLong(
+                            ContentConstants.MaxMetaDescriptionLength
+                        )
+                    )
         );
     }
 }
