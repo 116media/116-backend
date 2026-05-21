@@ -13,27 +13,27 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NameRequired" xml:space="preserve">
-    <value>Package name is required</value>
+    <value>Package name is required.</value>
   </data>
   <data name="PriceMustBeNonNegative" xml:space="preserve">
-    <value>Package price must be zero or greater</value>
+    <value>Package price must be zero or greater.</value>
   </data>
   <data name="AlreadyActive" xml:space="preserve">
-    <value>Package is already active</value>
+    <value>Package is already active.</value>
   </data>
   <data name="AlreadyInactive" xml:space="preserve">
-    <value>Package is already inactive</value>
+    <value>Package is already inactive.</value>
   </data>
   <data name="SlotQuantityMustBePositive" xml:space="preserve">
-    <value>Slot quantity must be greater than zero</value>
+    <value>Slot quantity must be greater than zero.</value>
   </data>
   <data name="NameTooLong" xml:space="preserve">
-    <value>Package name must not exceed {0} characters</value>
+    <value>Package name must not exceed {0} characters.</value>
   </data>
   <data name="DescriptionRequired" xml:space="preserve">
-    <value>Package description is required</value>
+    <value>Package description is required.</value>
   </data>
   <data name="DescriptionTooLong" xml:space="preserve">
-    <value>Package description must not exceed {0} characters</value>
+    <value>Package description must not exceed {0} characters.</value>
   </data>
 </root>
