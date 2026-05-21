@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -18,6 +19,10 @@ public class AdminUpdateVideoTagsValidator : AbstractValidator<AdminUpdateVideoT
     public AdminUpdateVideoTagsValidator(TagErrorMessage msg)
     {
         RuleFor(x => x.VideoId).IsValidGuid("Video ID");
-        RuleForEach(x => x.TagNames).ValidTagNameItem(msg);
+        RuleForEach(x => x.TagNames)
+            .ValidTagNameItem(
+                nameRequired: msg.NameRequired(),
+                nameTooLong: msg.NameTooLong(ContentConstants.MaxTagNameLength)
+            );
     }
 }
