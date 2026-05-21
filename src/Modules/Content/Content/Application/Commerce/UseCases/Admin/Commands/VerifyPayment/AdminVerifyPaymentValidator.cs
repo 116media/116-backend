@@ -17,7 +17,11 @@ public class AdminVerifyPaymentValidator : AbstractValidator<AdminVerifyPaymentC
     public AdminVerifyPaymentValidator(ContentOrderErrorMessage msg)
     {
         RuleFor(x => x.OrderId).IsValidGuid("Order ID");
-        RuleFor(x => x.ReceiptUrl).ValidReceiptUrl(msg);
-        RuleFor(x => x.AdminUserId).ValidAdminUserId(msg);
+        RuleFor(x => x.ReceiptUrl)
+            .ValidReceiptUrl(
+                receiptUrlRequired: msg.ReceiptUrlRequired(),
+                receiptUrlTooLong: msg.ReceiptUrlTooLong(500)
+            );
+        RuleFor(x => x.AdminUserId).ValidAdminUserId(msg.AdminUserIdRequired());
     }
 }
