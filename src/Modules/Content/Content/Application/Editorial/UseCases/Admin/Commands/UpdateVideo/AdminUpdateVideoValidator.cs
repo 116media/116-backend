@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -26,21 +27,53 @@ public class AdminUpdateVideoValidator : AbstractValidator<AdminUpdateVideoComma
     {
         RuleFor(x => x.Id).IsValidGuid("Video ID");
 
-        RuleFor(x => x.CategoryId).ValidArticleCategoryId(articleMsg);
+        RuleFor(x => x.CategoryId).ValidArticleCategoryId(articleMsg.CategoryIdRequired());
 
-        RuleFor(x => x.Title).ValidVideoTitle(videoMsg);
+        RuleFor(x => x.Title)
+            .ValidVideoTitle(
+                titleRequired: videoMsg.TitleRequired(),
+                titleTooLong: videoMsg.TitleTooLong(ContentConstants.MaxTitleLength)
+            );
 
-        RuleFor(x => x.Slug).ValidVideoSlug(videoMsg);
+        RuleFor(x => x.Slug)
+            .ValidVideoSlug(
+                slugRequired: videoMsg.SlugRequired(),
+                slugTooLong: videoMsg.SlugTooLong(ContentConstants.MaxSlugLength),
+                slugInvalidFormat: videoMsg.SlugInvalidFormat()
+            );
 
-        RuleFor(x => x.Description).ValidVideoDescription(videoMsg);
+        RuleFor(x => x.Description).ValidVideoDescription(descriptionRequired: videoMsg.DescriptionRequired());
 
-        When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId(orderMsg));
-        When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId(customerMsg));
+        When(
+            x => x.CustomerId.HasValue,
+            () => RuleFor(x => x.OrderItemId).ValidOrderItemId(orderMsg.OrderItemIdRequired())
+        );
+        When(
+            x => x.OrderItemId.HasValue,
+            () => RuleFor(x => x.CustomerId).ValidCustomerId(customerMsg.CustomerIdRequired())
+        );
 
-        When(x => x.MetaTitle is not null, () => RuleFor(x => x.MetaTitle).ValidMetaTitle(articleMsg));
+        When(
+            x => x.MetaTitle is not null,
+            () =>
+                RuleFor(x => x.MetaTitle)
+                    .ValidMetaTitle(
+                        metaTitleTooShort: articleMsg.MetaTitleTooShort(ContentConstants.MinMetaTitleLength),
+                        metaTitleTooLong: articleMsg.MetaTitleTooLong(ContentConstants.MaxMetaTitleLength)
+                    )
+        );
         When(
             x => x.MetaDescription is not null,
-            () => RuleFor(x => x.MetaDescription).ValidMetaDescription(articleMsg)
+            () =>
+                RuleFor(x => x.MetaDescription)
+                    .ValidMetaDescription(
+                        metaDescriptionTooShort: articleMsg.MetaDescriptionTooShort(
+                            ContentConstants.MinMetaDescriptionLength
+                        ),
+                        metaDescriptionTooLong: articleMsg.MetaDescriptionTooLong(
+                            ContentConstants.MaxMetaDescriptionLength
+                        )
+                    )
         );
     }
 }
