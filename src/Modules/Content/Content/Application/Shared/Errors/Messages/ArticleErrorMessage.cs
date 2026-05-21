@@ -152,4 +152,49 @@ public class ArticleErrorMessage(IStringLocalizer<ArticleErrorMessage> localizer
     /// Gets an error message for when an article body is required.
     /// </summary>
     public string BodyRequired() => localizer["BodyRequired"];
+
+    /// <summary>
+    /// Gets an error message for when an article rejection reason is required.
+    /// </summary>
+    public string RejectionReasonRequired() => localizer["RejectionReasonRequired"];
+
+    /// <summary>
+    /// Gets an error message for when an article rejection reason exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string RejectionReasonTooLong(int max) => string.Format(localizer["RejectionReasonTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a meta title is too short.
+    /// </summary>
+    /// <param name="min">The minimum required length.</param>
+    public string MetaTitleTooShort(int min) => string.Format(localizer["MetaTitleTooShort"], min);
+
+    /// <summary>
+    /// Gets an error message for when a meta title exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string MetaTitleTooLong(int max) => string.Format(localizer["MetaTitleTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a meta description is too short.
+    /// </summary>
+    /// <param name="min">The minimum required length.</param>
+    public string MetaDescriptionTooShort(int min) => string.Format(localizer["MetaDescriptionTooShort"], min);
+
+    /// <summary>
+    /// Gets an error message for when a meta description exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string MetaDescriptionTooLong(int max) => string.Format(localizer["MetaDescriptionTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when an article image file is required.
+    /// </summary>
+    public string FileRequired() => localizer["FileRequired"];
+
+    /// <summary>
+    /// Gets an error message for when a category ID is required.
+    /// </summary>
+    public string CategoryIdRequired() => localizer["CategoryIdRequired"];
 }
