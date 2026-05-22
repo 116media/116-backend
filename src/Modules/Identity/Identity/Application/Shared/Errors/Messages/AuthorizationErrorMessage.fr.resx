@@ -19,6 +19,6 @@
     <value>Le compte associé à « {0} » n'est pas vérifié. Veuillez compléter le processus de vérification pour continuer.</value>
   </data>
   <data name="AccessDenied" xml:space="preserve">
-    <value>Accès refusé. Vous ne disposez pas des permissions suffisantes pour accéder à cette ressource</value>
+    <value>Accès refusé. Vous ne disposez pas des permissions suffisantes pour accéder à cette ressource.</value>
   </data>
 </root>
