@@ -20,6 +20,6 @@ public class PublicSignOutValidator : AbstractValidator<PublicSignOutCommand>
     /// </param>
     public PublicSignOutValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.RefreshToken).ValidRefreshToken(msg);
+        RuleFor(x => x.RefreshToken).ValidRefreshToken(refreshTokenRequired: msg.RefreshTokenRequired());
     }
 }
