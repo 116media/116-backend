@@ -13,21 +13,21 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="InvalidCredentials" xml:space="preserve">
-    <value>Adresse e-mail ou mot de passe invalide</value>
+    <value>Adresse e-mail ou mot de passe invalide.</value>
   </data>
   <data name="InvalidUserAuthentication" xml:space="preserve">
-    <value>Utilisateur non authentifié ou identifiant utilisateur invalide</value>
+    <value>Utilisateur non authentifié ou identifiant utilisateur invalide.</value>
   </data>
   <data name="InsufficientPermissions" xml:space="preserve">
-    <value>Accès refusé. Permissions insuffisantes pour cette opération</value>
+    <value>Accès refusé. Permissions insuffisantes pour cette opération.</value>
   </data>
   <data name="JwtTokenRequired" xml:space="preserve">
-    <value>Authentification requise. Veuillez fournir un jeton valide</value>
+    <value>Authentification requise. Veuillez fournir un jeton valide.</value>
   </data>
   <data name="InvalidRefreshToken" xml:space="preserve">
-    <value>Session invalide ou expirée. Veuillez vous reconnecter</value>
+    <value>Session invalide ou expirée. Veuillez vous reconnecter.</value>
   </data>
   <data name="DeviceIdRequired" xml:space="preserve">
-    <value>L'identifiant de l'appareil est obligatoire. Veuillez fournir l'en-tête X-Device-Id</value>
+    <value>L'identifiant de l'appareil est obligatoire. Veuillez fournir l'en-tête X-Device-Id.</value>
   </data>
 </root>
