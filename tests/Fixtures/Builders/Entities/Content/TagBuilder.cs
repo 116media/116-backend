@@ -1,5 +1,6 @@
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
@@ -59,6 +60,6 @@ internal class TagBuilder
     /// </summary>
     public TagEntity Build()
     {
-        return TagEntity.Create(_id, _name, _slug);
+        return TagEntity.Create(_id, _name, _slug, TestErrorsFactory.CreateTagErrors());
     }
 }
