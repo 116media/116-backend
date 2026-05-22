@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
@@ -19,8 +20,27 @@ public class AdminUpdatePermissionValidator : AbstractValidator<AdminUpdatePermi
     public AdminUpdatePermissionValidator(ValidationErrorMessage msg)
     {
         RuleFor(x => x.PermissionId).IsValidGuid("Permission ID");
-        RuleFor(x => x.Action).ValidPermissionAction(msg, false);
-        RuleFor(x => x.Resource).ValidPermissionResource(msg, false);
-        RuleFor(x => x.Description).ValidPermissionDescription(msg, false);
+        RuleFor(x => x.Action)
+            .ValidPermissionAction(
+                permissionActionRequired: msg.PermissionActionRequired(),
+                permissionActionTooLong: msg.PermissionActionTooLong(PermissionConstants.MaxPermissionActionLength),
+                isRequired: false
+            );
+        RuleFor(x => x.Resource)
+            .ValidPermissionResource(
+                permissionResourceRequired: msg.PermissionResourceRequired(),
+                permissionResourceTooLong: msg.PermissionResourceTooLong(
+                    PermissionConstants.MaxPermissionResourceLength
+                ),
+                isRequired: false
+            );
+        RuleFor(x => x.Description)
+            .ValidPermissionDescription(
+                permissionDescriptionRequired: msg.PermissionDescriptionRequired(),
+                permissionDescriptionTooLong: msg.PermissionDescriptionTooLong(
+                    PermissionConstants.MaxPermissionDescriptionLength
+                ),
+                isRequired: false
+            );
     }
 }
