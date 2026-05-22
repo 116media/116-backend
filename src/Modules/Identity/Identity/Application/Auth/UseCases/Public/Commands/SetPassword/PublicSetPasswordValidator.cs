@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
@@ -21,6 +22,11 @@ public class PublicSetPasswordValidator : AbstractValidator<PublicSetPasswordCom
     /// </param>
     public PublicSetPasswordValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.Password).ValidPassword(msg);
+        RuleFor(x => x.Password)
+            .ValidPassword(
+                passwordRequired: msg.PasswordRequired(),
+                passwordTooShort: msg.PasswordTooShort("Password", UserConstants.MinPasswordLength),
+                passwordComplexity: msg.PasswordComplexity("Password")
+            );
     }
 }
