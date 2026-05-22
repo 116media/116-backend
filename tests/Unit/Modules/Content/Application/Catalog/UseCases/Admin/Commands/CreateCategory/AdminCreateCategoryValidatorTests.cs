@@ -1,5 +1,7 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -11,7 +13,9 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminCreateCategoryValidatorTests
 {
-    private readonly AdminCreateCategoryValidator _validator = new();
+    private readonly AdminCreateCategoryValidator _validator = new(
+        LocalizerFactory.CreateMessage<CategoryErrorMessage>()
+    );
 
     #region Valid Command Tests
 
