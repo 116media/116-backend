@@ -1,5 +1,6 @@
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
@@ -68,7 +69,7 @@ internal class PricingTierBuilder
     /// </summary>
     public PricingTierEntity Build()
     {
-        var entity = PricingTierEntity.Create(_id, _name, _description);
+        var entity = PricingTierEntity.Create(_id, _name, _description, TestErrorsFactory.CreatePricingTierErrors());
 
         if (!_isActive)
         {
