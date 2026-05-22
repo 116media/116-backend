@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
@@ -25,11 +26,36 @@ public class PublicUpdateOwnProfileValidator : AbstractValidator<PublicUpdateOwn
     /// </param>
     public PublicUpdateOwnProfileValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.Email).ValidEmail(msg, false);
-        RuleFor(x => x.UserName).ValidUsername(msg, false);
-        RuleFor(x => x.CountryName).ValidCountryName(msg);
-        RuleFor(x => x.CountryIsoCode).ValidCountryIsoCode(msg);
-        RuleFor(x => x.CountryDialCode).ValidCountryDialCode(msg);
-        RuleFor(x => x.PartialPhoneNumber).ValidPartialPhoneNumber(msg);
+        RuleFor(x => x.Email)
+            .ValidEmail(
+                emailRequired: msg.EmailRequired(),
+                emailTooLong: msg.EmailTooLong(UserConstants.MaxEmailLength),
+                invalidEmailFormat: msg.InvalidEmailFormatMsg(),
+                isRequired: false
+            );
+        RuleFor(x => x.UserName)
+            .ValidUsername(
+                usernameRequired: msg.UsernameRequired(),
+                usernameTooShort: msg.UsernameTooShort(UserConstants.MinUserNameLength),
+                usernameTooLong: msg.UsernameTooLong(UserConstants.MaxUserNameLength),
+                usernameInvalidChars: msg.UsernameInvalidChars(),
+                isRequired: false
+            );
+        RuleFor(x => x.CountryName)
+            .ValidCountryName(countryNameTooLong: msg.CountryNameTooLong(UserConstants.MaxCountryNameLength));
+        RuleFor(x => x.CountryIsoCode)
+            .ValidCountryIsoCode(
+                countryIsoCodeTooLong: msg.CountryIsoCodeTooLong(UserConstants.MaxCountryIsoCodeLength),
+                countryIsoCodeInvalid: msg.CountryIsoCodeInvalid()
+            );
+        RuleFor(x => x.CountryDialCode)
+            .ValidCountryDialCode(
+                countryDialCodeTooLong: msg.CountryDialCodeTooLong(UserConstants.MaxCountryDialCodeLength),
+                countryDialCodeInvalid: msg.CountryDialCodeInvalid(UserConstants.MaxCountryDialCodeLength)
+            );
+        RuleFor(x => x.PartialPhoneNumber)
+            .ValidPartialPhoneNumber(
+                partialPhoneNumberTooLong: msg.PartialPhoneNumberTooLong(UserConstants.MaxPartialPhoneNumberLength)
+            );
     }
 }
