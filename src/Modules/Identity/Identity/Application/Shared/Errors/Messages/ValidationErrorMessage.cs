@@ -25,7 +25,7 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     /// <summary>
     /// Error message indicating that an email address has an invalid format (validator-level).
     /// </summary>
-    public string InvalidEmailFormatMsg() => localizer["InvalidEmailFormat"];
+    public string InvalidEmailFormatMsg() => localizer["InvalidEmailFormatSimple"];
 
     /// <summary>
     /// Error message indicating that a password is required.
@@ -167,6 +167,11 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     /// Error message indicating that the avatar URL is not a valid HTTP/HTTPS URL.
     /// </summary>
     public string AvatarUrlInvalid() => localizer["AvatarUrlInvalid"];
+
+    /// <summary>
+    /// Error message indicating that the auth provider is required.
+    /// </summary>
+    public string AuthProviderRequired() => localizer["AuthProviderRequired"];
 
     /// <summary>
     /// Error message indicating that the auth provider is invalid.
