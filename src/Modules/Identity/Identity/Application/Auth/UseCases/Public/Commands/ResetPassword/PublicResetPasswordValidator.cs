@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
@@ -23,8 +24,23 @@ public class PublicResetPasswordValidator : AbstractValidator<PublicResetPasswor
     /// </param>
     public PublicResetPasswordValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.Email).ValidEmail(msg);
-        RuleFor(x => x.Code).ValidOtpCode(msg);
-        RuleFor(x => x.NewPassword).ValidPassword(msg, "New password");
+        RuleFor(x => x.Email)
+            .ValidEmail(
+                emailRequired: msg.EmailRequired(),
+                emailTooLong: msg.EmailTooLong(UserConstants.MaxEmailLength),
+                invalidEmailFormat: msg.InvalidEmailFormatMsg()
+            );
+        RuleFor(x => x.Code)
+            .ValidOtpCode(
+                otpCodeRequired: msg.OtpCodeRequired(),
+                otpCodeWrongLength: msg.OtpCodeWrongLength(UserConstants.OtpCodeLength),
+                otpCodeNotNumeric: msg.OtpCodeNotNumeric()
+            );
+        RuleFor(x => x.NewPassword)
+            .ValidPassword(
+                passwordRequired: msg.PasswordRequired(),
+                passwordTooShort: msg.PasswordTooShort("New password", UserConstants.MinPasswordLength),
+                passwordComplexity: msg.PasswordComplexity("New password")
+            );
     }
 }
