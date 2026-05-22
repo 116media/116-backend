@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
@@ -20,6 +21,11 @@ public class PublicForgotPasswordValidator : AbstractValidator<PublicForgotPassw
     /// </param>
     public PublicForgotPasswordValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.Email).ValidEmail(msg);
+        RuleFor(x => x.Email)
+            .ValidEmail(
+                emailRequired: msg.EmailRequired(),
+                emailTooLong: msg.EmailTooLong(UserConstants.MaxEmailLength),
+                invalidEmailFormat: msg.InvalidEmailFormatMsg()
+            );
     }
 }
