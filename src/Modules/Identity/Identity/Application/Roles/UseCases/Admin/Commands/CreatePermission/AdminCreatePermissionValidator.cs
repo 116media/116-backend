@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
@@ -17,8 +18,24 @@ public class AdminCreatePermissionValidator : AbstractValidator<AdminCreatePermi
     /// </param>
     public AdminCreatePermissionValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.Resource).ValidPermissionResource(msg);
-        RuleFor(x => x.Action).ValidPermissionAction(msg);
-        RuleFor(x => x.Description).ValidPermissionDescription(msg);
+        RuleFor(x => x.Resource)
+            .ValidPermissionResource(
+                permissionResourceRequired: msg.PermissionResourceRequired(),
+                permissionResourceTooLong: msg.PermissionResourceTooLong(
+                    PermissionConstants.MaxPermissionResourceLength
+                )
+            );
+        RuleFor(x => x.Action)
+            .ValidPermissionAction(
+                permissionActionRequired: msg.PermissionActionRequired(),
+                permissionActionTooLong: msg.PermissionActionTooLong(PermissionConstants.MaxPermissionActionLength)
+            );
+        RuleFor(x => x.Description)
+            .ValidPermissionDescription(
+                permissionDescriptionRequired: msg.PermissionDescriptionRequired(),
+                permissionDescriptionTooLong: msg.PermissionDescriptionTooLong(
+                    PermissionConstants.MaxPermissionDescriptionLength
+                )
+            );
     }
 }
