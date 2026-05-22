@@ -1,5 +1,6 @@
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
@@ -107,6 +108,7 @@ internal class ShortVideoBuilder
     /// </summary>
     public ShortVideoEntity Build()
     {
+        var errors = TestErrorsFactory.CreateShortVideoErrors();
         ShortVideoEntity entity = _videoId.HasValue
             ? ShortVideoEntity.CreateTeaser(
                 id: _id,
@@ -115,7 +117,8 @@ internal class ShortVideoBuilder
                 videoUrl: _videoUrl,
                 videoStorageKey: _videoStorageKey,
                 videoId: _videoId.Value,
-                authorId: _authorId
+                authorId: _authorId,
+                errors: errors
             )
             : ShortVideoEntity.CreateStandalone(
                 id: _id,
@@ -123,7 +126,8 @@ internal class ShortVideoBuilder
                 slug: _slug,
                 videoUrl: _videoUrl,
                 videoStorageKey: _videoStorageKey,
-                authorId: _authorId
+                authorId: _authorId,
+                errors: errors
             );
 
         if (_thumbnailUrl is not null && _thumbnailStorageKey is not null)
