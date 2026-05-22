@@ -13,48 +13,48 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="EmailAlreadyExists" xml:space="preserve">
-    <value>Un utilisateur avec l'adresse e-mail « {0} » existe déjà</value>
+    <value>Un utilisateur avec l'adresse e-mail « {0} » existe déjà.</value>
   </data>
   <data name="UsernameAlreadyExists" xml:space="preserve">
-    <value>Le nom d'utilisateur « {0} » est déjà pris</value>
+    <value>Le nom d'utilisateur « {0} » est déjà pris.</value>
   </data>
   <data name="PhoneNumberAlreadyExists" xml:space="preserve">
-    <value>Le numéro de téléphone « {0} » est déjà pris</value>
+    <value>Le numéro de téléphone « {0} » est déjà pris.</value>
   </data>
   <data name="RoleAlreadyExists" xml:space="preserve">
-    <value>Le rôle « {0} » existe déjà</value>
+    <value>Le rôle « {0} » existe déjà.</value>
   </data>
   <data name="PermissionAlreadyExists" xml:space="preserve">
-    <value>La permission « {0}.{1} » existe déjà</value>
+    <value>La permission « {0}.{1} » existe déjà.</value>
   </data>
   <data name="RoleAlreadyAssignedToUser" xml:space="preserve">
-    <value>Le rôle est déjà attribué à cet utilisateur</value>
+    <value>Le rôle est déjà attribué à cet utilisateur.</value>
   </data>
   <data name="PermissionAlreadyAssignedToRole" xml:space="preserve">
-    <value>La permission est déjà attribuée à ce rôle</value>
+    <value>La permission est déjà attribuée à ce rôle.</value>
   </data>
   <data name="RoleAlreadyActive" xml:space="preserve">
-    <value>Le rôle est déjà actif</value>
+    <value>Le rôle est déjà actif.</value>
   </data>
   <data name="RoleAlreadyInactive" xml:space="preserve">
-    <value>Le rôle est déjà inactif</value>
+    <value>Le rôle est déjà inactif.</value>
   </data>
   <data name="RoleAlreadyDeleted" xml:space="preserve">
-    <value>Le rôle est déjà supprimé</value>
+    <value>Le rôle est déjà supprimé.</value>
   </data>
   <data name="RoleNotDeleted" xml:space="preserve">
-    <value>Le rôle n'est pas supprimé et ne peut pas être restauré</value>
+    <value>Le rôle n'est pas supprimé et ne peut pas être restauré.</value>
   </data>
   <data name="PermissionAlreadyActive" xml:space="preserve">
-    <value>La permission est déjà active</value>
+    <value>La permission est déjà active.</value>
   </data>
   <data name="PermissionAlreadyInactive" xml:space="preserve">
-    <value>La permission est déjà inactive</value>
+    <value>La permission est déjà inactive.</value>
   </data>
   <data name="PermissionAlreadyDeleted" xml:space="preserve">
-    <value>La permission est déjà supprimée</value>
+    <value>La permission est déjà supprimée.</value>
   </data>
   <data name="PermissionNotDeleted" xml:space="preserve">
-    <value>La permission n'est pas supprimée et ne peut pas être restaurée</value>
+    <value>La permission n'est pas supprimée et ne peut pas être restaurée.</value>
   </data>
 </root>
