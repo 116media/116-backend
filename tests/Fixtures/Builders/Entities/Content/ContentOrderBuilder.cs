@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Tests.Fixtures.Helpers;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
@@ -54,21 +55,22 @@ internal class ContentOrderBuilder
 
     public ContentOrderEntity Build()
     {
+        var errors = TestErrorsFactory.CreateContentOrderErrors();
         var order = ContentOrderEntity.Create(_id, _customerId, _packageId);
 
         if (_submitted)
         {
-            order.Submit();
+            order.Submit(errors);
         }
 
         if (_paid)
         {
-            order.MarkPaid();
+            order.MarkPaid(errors);
         }
 
         if (_cancelled)
         {
-            order.Cancel();
+            order.Cancel(errors);
         }
 
         return order;
