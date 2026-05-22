@@ -1,6 +1,5 @@
 using System.Text.RegularExpressions;
 using _116.BuildingBlocks.Constants;
-using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Enums;
 using FluentValidation;
 
@@ -16,21 +15,25 @@ public static partial class OtpValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the OTP code property.</param>
-    /// <param name="msg">The validation error message provider.</param>
+    /// <param name="otpCodeRequired">Error message when OTP code is missing.</param>
+    /// <param name="otpCodeWrongLength">Error message when OTP code has wrong length.</param>
+    /// <param name="otpCodeNotNumeric">Error message when OTP code contains non-numeric characters.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string> ValidOtpCode<T>(
         this IRuleBuilderInitial<T, string> ruleBuilder,
-        ValidationErrorMessage msg
+        string otpCodeRequired,
+        string otpCodeWrongLength,
+        string otpCodeNotNumeric
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(msg.OtpCodeRequired())
+            .WithMessage(otpCodeRequired)
             .Length(exactLength: UserConstants.OtpCodeLength)
-            .WithMessage(msg.OtpCodeWrongLength(UserConstants.OtpCodeLength))
+            .WithMessage(otpCodeWrongLength)
             .Matches(OtpCodeRegex())
-            .WithMessage(msg.OtpCodeNotNumeric());
+            .WithMessage(otpCodeNotNumeric);
     }
 
     /// <summary>
@@ -38,19 +41,21 @@ public static partial class OtpValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the OTP purpose property.</param>
-    /// <param name="msg">The validation error message provider.</param>
+    /// <param name="otpPurposeRequired">Error message when OTP purpose is missing.</param>
+    /// <param name="otpPurposeInvalid">Error message when OTP purpose is not a valid enum value.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string> ValidOtpPurpose<T>(
         this IRuleBuilderInitial<T, string> ruleBuilder,
-        ValidationErrorMessage msg
+        string otpPurposeRequired,
+        string otpPurposeInvalid
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(msg.OtpPurposeRequired())
+            .WithMessage(otpPurposeRequired)
             .Must(purpose => purpose != null && Enum.IsDefined(typeof(EnumOtpPurpose), value: purpose))
-            .WithMessage(msg.OtpPurposeInvalid());
+            .WithMessage(otpPurposeInvalid);
     }
 
     /// <summary>
