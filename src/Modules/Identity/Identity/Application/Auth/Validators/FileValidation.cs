@@ -1,6 +1,5 @@
 using System.Reflection;
 using _116.BuildingBlocks.Constants;
-using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 
@@ -13,44 +12,48 @@ public static class FileValidation
 {
     /// <summary>
     /// Validates the avatar file with size, type, and extension constraints.
+    /// The caller is responsible for pre-computing the error message strings using the
+    /// relevant <see cref="FileConstants"/> values before invoking this extension.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the avatar file property.</param>
-    /// <param name="msg">The validation error message provider.</param>
+    /// <param name="avatarFileRequired">Error message when the avatar file is missing (only used when isRequired is true).</param>
+    /// <param name="avatarFileTooLarge">Error message when the avatar file exceeds the maximum allowed size.</param>
+    /// <param name="avatarFileInvalidType">Error message when the avatar file has an unsupported MIME type.</param>
+    /// <param name="avatarFileInvalidExtension">Error message when the avatar file has an unsupported extension.</param>
     /// <param name="isRequired">Whether the avatar file is required (default: false).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, IFormFile?> ValidAvatar<T>(
         this IRuleBuilderInitial<T, IFormFile?> ruleBuilder,
-        ValidationErrorMessage msg,
+        string avatarFileRequired,
+        string avatarFileTooLarge,
+        string avatarFileInvalidType,
+        string avatarFileInvalidExtension,
         bool isRequired = false
     )
     {
-        long maxMb = FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024);
-        string allowedTypes = string.Join(", ", value: FileConstants.AllowedAvatarMimeTypes);
-        string allowedExtensions = string.Join(", ", value: FileConstants.AllowedAvatarExtensions);
-
         if (isRequired)
         {
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotNull()
-                .WithMessage(msg.AvatarFileRequired())
+                .WithMessage(avatarFileRequired)
                 .Must(predicate: BeValidFileSize)
-                .WithMessage(msg.AvatarFileTooLarge(maxMb))
+                .WithMessage(avatarFileTooLarge)
                 .Must(predicate: BeValidImageType)
-                .WithMessage(msg.AvatarFileInvalidType(allowedTypes))
+                .WithMessage(avatarFileInvalidType)
                 .Must(predicate: BeValidFileExtension)
-                .WithMessage(msg.AvatarFileInvalidExtension(allowedExtensions));
+                .WithMessage(avatarFileInvalidExtension);
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .Must(predicate: BeValidFileSize)
-            .WithMessage(msg.AvatarFileTooLarge(maxMb))
+            .WithMessage(avatarFileTooLarge)
             .Must(predicate: BeValidImageType)
-            .WithMessage(msg.AvatarFileInvalidType(allowedTypes))
+            .WithMessage(avatarFileInvalidType)
             .Must(predicate: BeValidFileExtension)
-            .WithMessage(msg.AvatarFileInvalidExtension(allowedExtensions))
+            .WithMessage(avatarFileInvalidExtension)
             .When(x => GetAvatarFileValue(instance: x) != null);
     }
 
