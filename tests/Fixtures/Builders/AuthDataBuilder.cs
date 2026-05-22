@@ -2,7 +2,7 @@ using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login.Contracts;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.Contracts;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.Contracts;
 using _116.Identity.Domain.Entities;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Tests.Fixtures.Builders;
 
