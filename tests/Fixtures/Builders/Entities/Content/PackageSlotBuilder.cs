@@ -1,5 +1,6 @@
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
@@ -75,6 +76,13 @@ internal class PackageSlotBuilder
     /// </summary>
     public PackageSlotEntity Build()
     {
-        return PackageSlotEntity.Create(_id, _packageId, _categoryId, _isRequired, _quantity);
+        return PackageSlotEntity.Create(
+            _id,
+            _packageId,
+            _categoryId,
+            _isRequired,
+            _quantity,
+            TestErrorsFactory.CreatePackageErrors()
+        );
     }
 }
