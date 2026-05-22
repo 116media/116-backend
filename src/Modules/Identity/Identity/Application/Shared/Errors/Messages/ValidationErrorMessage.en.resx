@@ -13,49 +13,46 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="EmailRequired" xml:space="preserve">
-    <value>Email is required</value>
+    <value>Email is required.</value>
   </data>
   <data name="EmailTooLong" xml:space="preserve">
-    <value>Email cannot exceed {0} characters</value>
-  </data>
-  <data name="InvalidEmailFormat" xml:space="preserve">
-    <value>Invalid email format</value>
+    <value>Email cannot exceed {0} characters.</value>
   </data>
   <data name="PasswordRequired" xml:space="preserve">
-    <value>Password is required</value>
+    <value>Password is required.</value>
   </data>
   <data name="PasswordTooShort" xml:space="preserve">
-    <value>{0} must be at least {1} characters long</value>
+    <value>{0} must be at least {1} characters long.</value>
   </data>
   <data name="PasswordComplexity" xml:space="preserve">
-    <value>{0} must contain at least one lowercase letter, one uppercase letter, and one number</value>
+    <value>{0} must contain at least one lowercase letter, one uppercase letter, and one number.</value>
   </data>
   <data name="UsernameRequired" xml:space="preserve">
-    <value>Username is required</value>
+    <value>Username is required.</value>
   </data>
   <data name="UsernameTooShort" xml:space="preserve">
-    <value>Username must be at least {0} characters long</value>
+    <value>Username must be at least {0} characters long.</value>
   </data>
   <data name="UsernameTooLong" xml:space="preserve">
-    <value>Username cannot exceed {0} characters</value>
+    <value>Username cannot exceed {0} characters.</value>
   </data>
   <data name="UsernameInvalidChars" xml:space="preserve">
-    <value>Username can only contain letters, numbers, spaces, and hyphens</value>
+    <value>Username can only contain letters, numbers, spaces, and hyphens.</value>
   </data>
   <data name="CurrentPasswordRequired" xml:space="preserve">
-    <value>Current password is required</value>
+    <value>Current password is required.</value>
   </data>
   <data name="EmailOrUsernameRequired" xml:space="preserve">
     <value>Email or username is required.</value>
   </data>
   <data name="OtpCodeRequired" xml:space="preserve">
-    <value>Verification code is required</value>
+    <value>Verification code is required.</value>
   </data>
   <data name="OtpCodeWrongLength" xml:space="preserve">
-    <value>Verification code must be exactly {0} characters long</value>
+    <value>Verification code must be exactly {0} characters long.</value>
   </data>
   <data name="OtpCodeNotNumeric" xml:space="preserve">
-    <value>Verification code must contain only numbers</value>
+    <value>Verification code must contain only numbers.</value>
   </data>
   <data name="OtpPurposeRequired" xml:space="preserve">
     <value>OTP purpose is required.</value>
@@ -64,127 +61,133 @@
     <value>Invalid OTP purpose specified.</value>
   </data>
   <data name="CountryNameTooLong" xml:space="preserve">
-    <value>Country name cannot exceed {0} characters</value>
+    <value>Country name cannot exceed {0} characters.</value>
   </data>
   <data name="CountryIsoCodeTooLong" xml:space="preserve">
-    <value>Country ISO code cannot exceed {0} characters</value>
+    <value>Country ISO code cannot exceed {0} characters.</value>
   </data>
   <data name="CountryIsoCodeInvalid" xml:space="preserve">
-    <value>Country ISO code must contain only uppercase letters</value>
+    <value>Country ISO code must contain only uppercase letters.</value>
   </data>
   <data name="CountryDialCodeTooLong" xml:space="preserve">
-    <value>Country dial code cannot exceed {0} characters</value>
+    <value>Country dial code cannot exceed {0} characters.</value>
   </data>
   <data name="CountryDialCodeInvalid" xml:space="preserve">
-    <value>Country dial code must start with + followed by 1-{0} digits</value>
+    <value>Country dial code must start with + followed by 1-{0} digits.</value>
   </data>
   <data name="PartialPhoneNumberTooLong" xml:space="preserve">
-    <value>Partial phone number cannot exceed {0} characters</value>
+    <value>Partial phone number cannot exceed {0} characters.</value>
   </data>
   <data name="AvatarFileRequired" xml:space="preserve">
-    <value>Avatar file is required</value>
+    <value>Avatar file is required.</value>
   </data>
   <data name="AvatarFileTooLarge" xml:space="preserve">
-    <value>File size must not exceed {0}MB</value>
+    <value>File size must not exceed {0}MB.</value>
   </data>
   <data name="AvatarFileInvalidType" xml:space="preserve">
-    <value>Only image files are allowed: {0}</value>
+    <value>Only image files are allowed: {0}.</value>
   </data>
   <data name="AvatarFileInvalidExtension" xml:space="preserve">
-    <value>Only these extensions are allowed: {0}</value>
+    <value>Only these extensions are allowed: {0}.</value>
   </data>
   <data name="AvatarUrlInvalid" xml:space="preserve">
-    <value>Avatar URL must be a valid HTTP or HTTPS URL</value>
+    <value>Avatar URL must be a valid HTTP or HTTPS URL.</value>
+  </data>
+  <data name="AuthProviderRequired" xml:space="preserve">
+    <value>Authentication provider is required.</value>
   </data>
   <data name="AuthProviderInvalid" xml:space="preserve">
-    <value>Invalid authentication provider specified</value>
+    <value>Invalid authentication provider specified.</value>
   </data>
   <data name="RefreshTokenRequired" xml:space="preserve">
-    <value>Refresh token is required</value>
+    <value>Refresh token is required.</value>
   </data>
   <data name="PermissionResourceRequired" xml:space="preserve">
-    <value>Permission resource is required</value>
+    <value>Permission resource is required.</value>
   </data>
   <data name="PermissionResourceTooLong" xml:space="preserve">
-    <value>Permission resource cannot exceed {0} characters</value>
+    <value>Permission resource cannot exceed {0} characters.</value>
   </data>
   <data name="PermissionActionRequired" xml:space="preserve">
-    <value>Permission action is required</value>
+    <value>Permission action is required.</value>
   </data>
   <data name="PermissionActionTooLong" xml:space="preserve">
-    <value>Permission action cannot exceed {0} characters</value>
+    <value>Permission action cannot exceed {0} characters.</value>
   </data>
   <data name="PermissionDescriptionRequired" xml:space="preserve">
-    <value>Permission description is required</value>
+    <value>Permission description is required.</value>
   </data>
   <data name="PermissionDescriptionTooLong" xml:space="preserve">
-    <value>Permission description cannot exceed {0} characters</value>
+    <value>Permission description cannot exceed {0} characters.</value>
   </data>
   <data name="RoleNameRequired" xml:space="preserve">
-    <value>Role name is required</value>
+    <value>Role name is required.</value>
   </data>
   <data name="RoleNameTooLong" xml:space="preserve">
-    <value>Role name cannot exceed {0} characters</value>
+    <value>Role name cannot exceed {0} characters.</value>
   </data>
   <data name="RoleDescriptionRequired" xml:space="preserve">
-    <value>Role description is required</value>
+    <value>Role description is required.</value>
   </data>
   <data name="RoleDescriptionTooLong" xml:space="preserve">
-    <value>Role description cannot exceed {0} characters</value>
+    <value>Role description cannot exceed {0} characters.</value>
   </data>
   <data name="CoreRoleCannotBeModified" xml:space="preserve">
-    <value>Core role '{0}' cannot be modified</value>
+    <value>Core role '{0}' cannot be modified.</value>
   </data>
   <data name="CoreRoleCannotBeDeleted" xml:space="preserve">
-    <value>Core role '{0}' cannot be deleted</value>
+    <value>Core role '{0}' cannot be deleted.</value>
   </data>
   <data name="RoleIsInactive" xml:space="preserve">
-    <value>Cannot assign an inactive role to a user</value>
+    <value>Cannot assign an inactive role to a user.</value>
   </data>
   <data name="RoleIsDeleted" xml:space="preserve">
-    <value>Cannot use a deleted role</value>
+    <value>Cannot use a deleted role.</value>
   </data>
   <data name="PermissionIsInactive" xml:space="preserve">
-    <value>Cannot assign an inactive permission to a role</value>
+    <value>Cannot assign an inactive permission to a role.</value>
   </data>
   <data name="PermissionIsDeleted" xml:space="preserve">
-    <value>Cannot use a deleted permission</value>
+    <value>Cannot use a deleted permission.</value>
   </data>
   <data name="PermissionNotAssignedToRole" xml:space="preserve">
-    <value>Permission is not assigned to this role</value>
+    <value>Permission is not assigned to this role.</value>
   </data>
   <data name="RoleNotAssignedToUser" xml:space="preserve">
-    <value>Role is not assigned to this user</value>
+    <value>Role is not assigned to this user.</value>
   </data>
   <data name="InvalidEmailFormat" xml:space="preserve">
-    <value>Invalid email format: {0}</value>
+    <value>Invalid email format: {0}.</value>
+  </data>
+  <data name="InvalidEmailFormatSimple" xml:space="preserve">
+    <value>Invalid email format.</value>
   </data>
   <data name="InvalidPasswordFormat" xml:space="preserve">
-    <value>Password does not meet security requirements</value>
+    <value>Password does not meet security requirements.</value>
   </data>
   <data name="InvalidUsernameFormat" xml:space="preserve">
-    <value>Username '{0}' does not meet requirements</value>
+    <value>Username '{0}' does not meet requirements.</value>
   </data>
   <data name="AccountAlreadyVerified" xml:space="preserve">
-    <value>Account is already verified</value>
+    <value>Account is already verified.</value>
   </data>
   <data name="NoValidOtpFound" xml:space="preserve">
-    <value>No valid verification code found. Please request a new verification code</value>
+    <value>No valid verification code found. Please request a new verification code.</value>
   </data>
   <data name="InvalidOtpCode" xml:space="preserve">
-    <value>Invalid verification code. Please check and try again</value>
+    <value>Invalid verification code. Please check and try again.</value>
   </data>
   <data name="OtpExpired" xml:space="preserve">
-    <value>Verification code has expired. Please request a new verification code</value>
+    <value>Verification code has expired. Please request a new verification code.</value>
   </data>
   <data name="MaxOtpAttemptsReached" xml:space="preserve">
-    <value>Maximum verification attempts reached. Please request a new verification code</value>
+    <value>Maximum verification attempts reached. Please request a new verification code.</value>
   </data>
   <data name="OtpNotYetVerified" xml:space="preserve">
-    <value>Please complete the verification step before proceeding</value>
+    <value>Please complete the verification step before proceeding.</value>
   </data>
   <data name="NewPasswordSameAsOld" xml:space="preserve">
-    <value>New password must be different from your current password</value>
+    <value>New password must be different from your current password.</value>
   </data>
   <data name="PasswordNotConfigured" xml:space="preserve">
     <value>This account was created via {0}. Please set a password before changing it.</value>
@@ -193,7 +196,7 @@
     <value>The current password you entered is incorrect.</value>
   </data>
   <data name="EmailRequiredToSetPassword" xml:space="preserve">
-    <value>An email address is required to set a password</value>
+    <value>An email address is required to set a password.</value>
   </data>
   <data name="PasswordOnlyForExternalAuth" xml:space="preserve">
     <value>Setting password is only allowed for Google or Facebook users.</value>
