@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
@@ -21,6 +22,17 @@ public class AdminUpdateAvatarValidator : AbstractValidator<AdminUpdateAvatarCom
     /// </param>
     public AdminUpdateAvatarValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.AvatarFile).ValidAvatar(msg, true);
+        RuleFor(x => x.AvatarFile)
+            .ValidAvatar(
+                avatarFileRequired: msg.AvatarFileRequired(),
+                avatarFileTooLarge: msg.AvatarFileTooLarge(FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)),
+                avatarFileInvalidType: msg.AvatarFileInvalidType(
+                    string.Join(", ", FileConstants.AllowedAvatarMimeTypes)
+                ),
+                avatarFileInvalidExtension: msg.AvatarFileInvalidExtension(
+                    string.Join(", ", FileConstants.AllowedAvatarExtensions)
+                ),
+                isRequired: true
+            );
     }
 }
