@@ -1,6 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
@@ -165,6 +166,7 @@ internal class ArticleBuilder
     /// </summary>
     public ArticleEntity Build()
     {
+        var errors = TestErrorsFactory.CreateArticleErrors();
         ArticleEntity entity = _customerId.HasValue
             ? ArticleEntity.CreatePaid(
                 id: _id,
@@ -173,14 +175,16 @@ internal class ArticleBuilder
                 categoryId: _categoryId,
                 title: _title,
                 slug: _slug,
-                authorId: _authorId
+                authorId: _authorId,
+                errors: errors
             )
             : ArticleEntity.CreateFree(
                 id: _id,
                 categoryId: _categoryId,
                 title: _title,
                 slug: _slug,
-                authorId: _authorId
+                authorId: _authorId,
+                errors: errors
             );
 
         ApplyStatusTransition(entity);
