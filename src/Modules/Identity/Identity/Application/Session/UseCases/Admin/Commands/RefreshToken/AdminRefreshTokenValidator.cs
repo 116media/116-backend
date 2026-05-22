@@ -10,10 +10,13 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Commands.RefreshToken
 public class AdminRefreshTokenValidator : AbstractValidator<AdminRefreshTokenCommand>
 {
     /// <summary>
-    /// Configure validation rules for admin refresh token requests.
+    /// Initializes a new instance of <see cref="AdminRefreshTokenValidator" /> with validation rules.
     /// </summary>
+    /// <param name="msg">
+    /// Validation error messages for rule configuration.
+    /// </param>
     public AdminRefreshTokenValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.RefreshToken).ValidRefreshToken(msg);
+        RuleFor(x => x.RefreshToken).ValidRefreshToken(refreshTokenRequired: msg.RefreshTokenRequired());
     }
 }
