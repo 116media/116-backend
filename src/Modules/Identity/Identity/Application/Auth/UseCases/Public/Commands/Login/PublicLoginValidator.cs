@@ -20,7 +20,7 @@ public class PublicLoginValidator : AbstractValidator<PublicLoginCommand>
     /// </param>
     public PublicLoginValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.Credentials).ValidCredentials(msg);
-        RuleFor(x => x.Password).ValidPassword(msg, isStrong: false);
+        RuleFor(x => x.Credentials).ValidCredentials(emailOrUsernameRequired: msg.EmailOrUsernameRequired());
+        RuleFor(x => x.Password).ValidPassword(passwordRequired: msg.PasswordRequired(), isStrong: false);
     }
 }
