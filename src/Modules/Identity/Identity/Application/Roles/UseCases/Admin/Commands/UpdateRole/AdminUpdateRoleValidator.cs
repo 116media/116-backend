@@ -1,3 +1,4 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
@@ -19,7 +20,17 @@ public class AdminUpdateRoleValidator : AbstractValidator<AdminUpdateRoleCommand
     public AdminUpdateRoleValidator(ValidationErrorMessage msg)
     {
         RuleFor(x => x.RoleId).IsValidGuid("Role ID");
-        RuleFor(x => x.Name).ValidRoleName(msg, false);
-        RuleFor(x => x.Description).ValidRoleDescription(msg, false);
+        RuleFor(x => x.Name)
+            .ValidRoleName(
+                roleNameRequired: msg.RoleNameRequired(),
+                roleNameTooLong: msg.RoleNameTooLong(RoleConstants.MaxRoleNameLength),
+                isRequired: false
+            );
+        RuleFor(x => x.Description)
+            .ValidRoleDescription(
+                roleDescriptionRequired: msg.RoleDescriptionRequired(),
+                roleDescriptionTooLong: msg.RoleDescriptionTooLong(RoleConstants.MaxRoleDescriptionLength),
+                isRequired: false
+            );
     }
 }
