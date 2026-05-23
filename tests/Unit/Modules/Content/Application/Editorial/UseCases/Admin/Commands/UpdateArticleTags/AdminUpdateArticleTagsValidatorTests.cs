@@ -1,4 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticleTags;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -10,7 +12,9 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateArticleTagsValidatorTests
 {
-    private readonly AdminUpdateArticleTagsValidator _validator = new();
+    private readonly AdminUpdateArticleTagsValidator _validator = new(
+        LocalizerFactory.CreateMessage<TagErrorMessage>()
+    );
 
     #region Valid Command Tests
 
