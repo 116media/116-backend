@@ -92,6 +92,18 @@ public class FeaturedVideoSpecification : Specification<VideoEntity>
 }
 
 /// <summary>
+/// Specification that matches active videos — excludes Archived and Rejected statuses.
+/// </summary>
+public class ActiveVideoSpecification : Specification<VideoEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<VideoEntity, bool>> ToExpression()
+    {
+        return video => video.Status != EnumContentStatus.Archived && video.Status != EnumContentStatus.Rejected;
+    }
+}
+
+/// <summary>
 /// Specification that matches a video by its associated order item identifier.
 /// </summary>
 public class VideoByOrderItemIdSpecification(Guid orderItemId) : Specification<VideoEntity>

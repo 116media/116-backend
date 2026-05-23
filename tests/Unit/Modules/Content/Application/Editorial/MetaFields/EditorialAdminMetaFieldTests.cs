@@ -31,6 +31,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideoTags
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArticleImage;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadShortVideoThumbnail;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadVideoThumbnail;
+using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetActiveVideos;
 using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllArticles;
 using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllLyrics;
 using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllShorts;
@@ -250,6 +251,13 @@ public class EditorialAdminMetaFieldTests
     public void AdminGetAllVideosMetaField_ShouldBeInitialized()
     {
         RouteMetadata metadata = AdminGetAllVideosMetaField.AdminGetAllVideos;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void AdminGetActiveVideosMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = AdminGetActiveVideosMetaField.AdminGetActiveVideos;
         metadata.Should().NotBeNull();
     }
 

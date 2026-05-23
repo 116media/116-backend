@@ -114,4 +114,10 @@ public static class EditorialRouteConstants
     /// Example: /api/v1/public/articles/featured.
     /// </summary>
     public const string Featured = "featured";
+
+    /// <summary>
+    /// Route segment for retrieving active editorial entities.
+    /// Example: /api/v1/admin/videos/active.
+    /// </summary>
+    public const string Active = "active";
 }
