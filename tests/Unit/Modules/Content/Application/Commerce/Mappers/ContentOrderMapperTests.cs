@@ -7,8 +7,9 @@ using _116.Content.Infrastructure.Repositories;
 using _116.Core.Application.Shared.DTOs;
 using _116.Core.Domain.Entities;
 using _116.Identity.Contracts.Application;
-using _116.Tests.Fixtures.Factories;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
@@ -33,7 +34,7 @@ public class ContentOrderMapperTests : BaseContentHandlerTest, IDisposable
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
         _context = new ContentDbContext(options);
-        _repository = new ContentOrderRepository(_context);
+        _repository = new ContentOrderRepository(_context, TestErrorsFactory.CreateContentOrderErrors());
         _userLookupMock = MockUserLookupService.Create();
     }
 
