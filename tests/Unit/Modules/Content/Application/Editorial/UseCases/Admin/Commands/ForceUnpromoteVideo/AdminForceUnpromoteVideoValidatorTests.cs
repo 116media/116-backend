@@ -1,4 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteVideo;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -10,7 +12,10 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminForceUnpromoteVideoValidatorTests
 {
-    private readonly AdminForceUnpromoteVideoValidator _validator = new();
+    private readonly AdminForceUnpromoteVideoValidator _validator = new(
+        LocalizerFactory.CreateMessage<ArticleErrorMessage>(),
+        LocalizerFactory.CreateMessage<VideoErrorMessage>()
+    );
 
     #region Valid Command Tests
 
@@ -73,7 +78,7 @@ public class AdminForceUnpromoteVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminForceUnpromoteVideoCommand.Reason)
-                && e.ErrorMessage == "Reason is required."
+                && e.ErrorMessage == "Rejection reason is required."
             );
     }
 
@@ -92,7 +97,7 @@ public class AdminForceUnpromoteVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminForceUnpromoteVideoCommand.Reason)
-                && e.ErrorMessage == "Reason must not exceed 500 characters."
+                && e.ErrorMessage == "Rejection reason must not exceed 500 characters."
             );
     }
 
