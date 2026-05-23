@@ -1,4 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteArticle;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -10,7 +12,9 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminForceUnpromoteArticleValidatorTests
 {
-    private readonly AdminForceUnpromoteArticleValidator _validator = new();
+    private readonly AdminForceUnpromoteArticleValidator _validator = new(
+        LocalizerFactory.CreateMessage<ArticleErrorMessage>()
+    );
 
     #region Valid Command Tests
 
@@ -73,7 +77,7 @@ public class AdminForceUnpromoteArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminForceUnpromoteArticleCommand.Reason)
-                && e.ErrorMessage == "Reason is required."
+                && e.ErrorMessage == "Rejection reason is required."
             );
     }
 
@@ -92,7 +96,7 @@ public class AdminForceUnpromoteArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminForceUnpromoteArticleCommand.Reason)
-                && e.ErrorMessage == "Reason must not exceed 500 characters."
+                && e.ErrorMessage == "Rejection reason must not exceed 500 characters."
             );
     }
 
