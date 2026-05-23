@@ -1,5 +1,7 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCustomer;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -11,7 +13,9 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminUpdateCustomerValidatorTests
 {
-    private readonly AdminUpdateCustomerValidator _validator = new();
+    private readonly AdminUpdateCustomerValidator _validator = new(
+        LocalizerFactory.CreateMessage<CustomerErrorMessage>()
+    );
 
     #region Valid Command Tests
 
