@@ -1,9 +1,11 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoBySlug;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -19,13 +21,14 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly PublicGetVideoBySlugHandler _handler;
+    private readonly VideoErrors _videoErrors = TestErrorsFactory.CreateVideoErrors();
 
     private static readonly Guid CategoryId = Guid.NewGuid();
 
     public PublicGetVideoBySlugHandlerTests()
     {
         _videoRepositoryMock = MockVideoRepository.Create();
-        _handler = new PublicGetVideoBySlugHandler(_videoRepositoryMock.Object, Mapper);
+        _handler = new PublicGetVideoBySlugHandler(_videoRepositoryMock.Object, Mapper, _videoErrors);
     }
 
     [Fact]
@@ -35,10 +38,10 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
         CategoryEntity category = CategoryFactory.Create(CategoryId);
         VideoEntity video = VideoFactory.CreateWithCategory(CategoryId, category);
         // Manually transition to Published for the slug lookup
-        video.AttachYoutubeVideoUrl(TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl, _videoErrors);
         video.MarkPendingReview();
         video.Approve();
-        video.Publish();
+        video.Publish(_videoErrors);
 
         string slug = video.Slug;
         var query = new PublicGetVideoBySlugQuery(Slug: slug);
