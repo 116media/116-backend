@@ -281,7 +281,8 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.Headline)
-                && e.ErrorMessage == "Article headline must not exceed 300 characters."
+                && e.ErrorMessage
+                    == $"Article headline must not exceed {TestConstants.Content.Editorial.Article.HeadlineMaxLength} characters."
             );
     }
 
