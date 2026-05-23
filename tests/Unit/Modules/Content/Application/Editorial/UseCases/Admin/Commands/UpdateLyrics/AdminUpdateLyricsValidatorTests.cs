@@ -1,5 +1,7 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyrics;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -11,7 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateLyricsValidatorTests
 {
-    private readonly AdminUpdateLyricsValidator _validator = new();
+    private readonly AdminUpdateLyricsValidator _validator = new(LocalizerFactory.CreateMessage<LyricsErrorMessage>());
 
     private static AdminUpdateLyricsCommand ValidCommand() =>
         new(
