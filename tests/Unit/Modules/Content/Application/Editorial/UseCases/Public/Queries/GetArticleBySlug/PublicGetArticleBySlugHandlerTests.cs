@@ -4,6 +4,7 @@ using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -25,7 +26,11 @@ public class PublicGetArticleBySlugHandlerTests : BaseContentHandlerTest
     public PublicGetArticleBySlugHandlerTests()
     {
         _articleRepositoryMock = MockArticleRepository.Create();
-        _handler = new PublicGetArticleBySlugHandler(_articleRepositoryMock.Object, Mapper);
+        _handler = new PublicGetArticleBySlugHandler(
+            _articleRepositoryMock.Object,
+            Mapper,
+            TestErrorsFactory.CreateArticleErrors()
+        );
     }
 
     [Fact]
