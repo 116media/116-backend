@@ -39,6 +39,7 @@ public class PublicGetVideoBySlugEndpointV1Tests
             Status: EnumContentStatus.Published,
             RejectionReason: null,
             YoutubeVideoUrl: null,
+            SocialBoost: false,
             IsFeatured: false,
             FeaturedUntil: null,
             HasLyrics: false,

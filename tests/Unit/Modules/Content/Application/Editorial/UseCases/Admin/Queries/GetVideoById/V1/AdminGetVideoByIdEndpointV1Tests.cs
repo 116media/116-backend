@@ -39,6 +39,7 @@ public class AdminGetVideoByIdEndpointV1Tests
             Status: EnumContentStatus.Draft,
             RejectionReason: null,
             YoutubeVideoUrl: null,
+            SocialBoost: false,
             IsFeatured: false,
             FeaturedUntil: null,
             HasLyrics: false,

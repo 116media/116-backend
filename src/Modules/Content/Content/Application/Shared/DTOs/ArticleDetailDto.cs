@@ -18,6 +18,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="AuthorId">The identity user UUID of the author.</param>
 /// <param name="Status">The current editorial workflow status.</param>
 /// <param name="RejectionReason">The rejection reason, if the article was rejected.</param>
+/// <param name="SocialBoost">Whether the article is flagged for social media promotion.</param>
 /// <param name="IsFeatured">Whether the article has an active featured placement.</param>
 /// <param name="FeaturedUntil">When the featured placement expires, or null.</param>
 /// <param name="PublishedAt">When the article was published, or null if not yet published.</param>
@@ -42,6 +43,7 @@ public record ArticleDetailDto(
     string AuthorId,
     EnumContentStatus Status,
     string? RejectionReason,
+    bool SocialBoost,
     bool IsFeatured,
     DateTimeOffset? FeaturedUntil,
     DateTimeOffset? PublishedAt,

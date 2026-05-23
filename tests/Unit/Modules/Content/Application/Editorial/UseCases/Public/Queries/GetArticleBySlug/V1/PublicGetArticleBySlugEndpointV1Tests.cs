@@ -38,6 +38,7 @@ public class PublicGetArticleBySlugEndpointV1Tests
             AuthorId: "Test",
             Status: EnumContentStatus.Published,
             RejectionReason: null,
+            SocialBoost: false,
             IsFeatured: false,
             FeaturedUntil: null,
             PublishedAt: null,
