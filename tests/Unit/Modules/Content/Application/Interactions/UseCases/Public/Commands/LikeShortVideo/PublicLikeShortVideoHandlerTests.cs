@@ -4,6 +4,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -25,7 +26,11 @@ public class PublicLikeShortVideoHandlerTests
     {
         _shortVideoRepositoryMock = MockShortVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new PublicLikeShortVideoHandler(_shortVideoRepositoryMock.Object, _unitOfWorkMock.Object);
+        _handler = new PublicLikeShortVideoHandler(
+            _shortVideoRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            TestErrorsFactory.CreateShortVideoInteractionErrors()
+        );
     }
 
     #region Success Cases
