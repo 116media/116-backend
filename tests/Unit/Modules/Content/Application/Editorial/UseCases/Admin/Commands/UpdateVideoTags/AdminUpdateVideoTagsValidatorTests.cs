@@ -1,4 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideoTags;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -10,7 +12,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateVideoTagsValidatorTests
 {
-    private readonly AdminUpdateVideoTagsValidator _validator = new();
+    private readonly AdminUpdateVideoTagsValidator _validator = new(LocalizerFactory.CreateMessage<TagErrorMessage>());
 
     #region Valid Command Tests
 
