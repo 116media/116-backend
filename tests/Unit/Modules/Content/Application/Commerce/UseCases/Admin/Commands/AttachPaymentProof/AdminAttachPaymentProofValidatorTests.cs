@@ -1,5 +1,6 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymentProof;
 using _116.Content.Domain.Enums;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
@@ -13,7 +14,9 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminAttachPaymentProofValidatorTests
 {
-    private readonly AdminAttachPaymentProofValidator _validator = new();
+    private readonly AdminAttachPaymentProofValidator _validator = new(
+        LocalizerFactory.CreateMessage<_116.Content.Application.Shared.Errors.Messages.ContentOrderErrorMessage>("en")
+    );
 
     #region Valid Command Tests
 
