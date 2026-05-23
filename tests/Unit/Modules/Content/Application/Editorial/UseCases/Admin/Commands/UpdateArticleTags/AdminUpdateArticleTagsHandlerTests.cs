@@ -79,8 +79,8 @@ public class AdminUpdateArticleTagsHandlerTests
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
         _articleRepositoryMock.SetupGetTagsByArticleId(article.Id, new List<ArticleTagEntity>());
-        _lookupRepositoryMock.SetupGetTagBySlug("fally-ipupa", tag1);
-        _lookupRepositoryMock.SetupGetTagBySlug("kinshasa", tag2);
+        _lookupRepositoryMock.SetupGetTagByName("Fally Ipupa", tag1);
+        _lookupRepositoryMock.SetupGetTagByName("Kinshasa", tag2);
 
         // Act
         AdminUpdateArticleTagsResult result = await _handler.Handle(command, CancellationToken.None);
@@ -105,8 +105,8 @@ public class AdminUpdateArticleTagsHandlerTests
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
         _articleRepositoryMock.SetupGetTagsByArticleId(article.Id, new List<ArticleTagEntity>());
-        _lookupRepositoryMock.SetupGetTagBySlug("afrobeats", null);
-        _lookupRepositoryMock.SetupGetTagBySlug("rumba", null);
+        _lookupRepositoryMock.SetupGetTagByName("Afrobeats", null);
+        _lookupRepositoryMock.SetupGetTagByName("Rumba", null);
 
         // Act
         AdminUpdateArticleTagsResult result = await _handler.Handle(command, CancellationToken.None);
@@ -135,8 +135,8 @@ public class AdminUpdateArticleTagsHandlerTests
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
         _articleRepositoryMock.SetupGetTagsByArticleId(article.Id, new List<ArticleTagEntity>());
-        _lookupRepositoryMock.SetupGetTagBySlug("fally-ipupa", existingTag);
-        _lookupRepositoryMock.SetupGetTagBySlug("newartist", null);
+        _lookupRepositoryMock.SetupGetTagByName("Fally Ipupa", existingTag);
+        _lookupRepositoryMock.SetupGetTagByName("NewArtist", null);
 
         // Act
         AdminUpdateArticleTagsResult result = await _handler.Handle(command, CancellationToken.None);
@@ -163,14 +163,17 @@ public class AdminUpdateArticleTagsHandlerTests
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
         _articleRepositoryMock.SetupGetTagsByArticleId(article.Id, new List<ArticleTagEntity>());
-        _lookupRepositoryMock.SetupGetTagBySlug("cafe-creme", null);
+        _lookupRepositoryMock.SetupGetTagByName("Café & Crème", null);
 
         // Act
         AdminUpdateArticleTagsResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        _lookupRepositoryMock.Verify(x => x.GetTagBySlugAsync("cafe-creme", It.IsAny<CancellationToken>()), Times.Once);
+        _lookupRepositoryMock.Verify(
+            x => x.GetTagByNameAsync("Café & Crème", It.IsAny<CancellationToken>()),
+            Times.Once
+        );
         _lookupRepositoryMock.Verify(
             x => x.AddTagAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()),
             Times.Once
@@ -194,7 +197,7 @@ public class AdminUpdateArticleTagsHandlerTests
 
         _articleRepositoryMock.SetupGetByIdOrThrow(article);
         _articleRepositoryMock.SetupGetTagsByArticleId(article.Id, new List<ArticleTagEntity> { existingArticleTag });
-        _lookupRepositoryMock.SetupGetTagBySlug("kinshasa", newTag);
+        _lookupRepositoryMock.SetupGetTagByName("Kinshasa", newTag);
 
         // Act
         AdminUpdateArticleTagsResult result = await _handler.Handle(command, CancellationToken.None);

@@ -159,6 +159,14 @@ public interface ILookupRepository : IRepository<ContentTypeEntity>
     Task<TagEntity?> GetTagBySlugAsync(string slug, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a tag by its exact display name (case-insensitive).
+    /// </summary>
+    /// <param name="name">The tag display name to look up.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The tag entity if found, otherwise null.</returns>
+    Task<TagEntity?> GetTagByNameAsync(string name, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Removes a tag entity from the repository.
     /// </summary>
     /// <param name="entity">The tag entity to remove.</param>
