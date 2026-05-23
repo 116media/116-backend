@@ -1,6 +1,8 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.AddArticleComment;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -12,7 +14,9 @@ namespace _116.Unit.Tests.Modules.Content.Application.Interactions.UseCases.Publ
 /// </summary>
 public class PublicAddArticleCommentValidatorTests
 {
-    private readonly PublicAddArticleCommentValidator _validator = new();
+    private readonly PublicAddArticleCommentValidator _validator = new(
+        LocalizerFactory.CreateMessage<ArticleInteractionErrorMessage>("en")
+    );
 
     #region Valid Command Tests
 
