@@ -6,8 +6,9 @@ using _116.Core.Domain.Entities;
 using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
-using _116.Tests.Fixtures.Factories;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using _116.Unit.Tests.Common.Mocks.Services;
@@ -36,7 +37,8 @@ public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
             _orderRepositoryMock.Object,
             _fileRepositoryMock.Object,
             Mapper,
-            _userLookupMock.Object
+            _userLookupMock.Object,
+            TestErrorsFactory.CreateContentOrderErrors()
         );
     }
 
