@@ -1,5 +1,6 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -11,7 +12,9 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminVerifyPaymentValidatorTests
 {
-    private readonly AdminVerifyPaymentValidator _validator = new();
+    private readonly AdminVerifyPaymentValidator _validator = new(
+        LocalizerFactory.CreateMessage<_116.Content.Application.Shared.Errors.Messages.ContentOrderErrorMessage>("en")
+    );
 
     #region Valid Command Tests
 
