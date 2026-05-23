@@ -27,6 +27,7 @@ using _116.Content.Application.Interactions.UseCases.Public.Queries.GetPlaylistB
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Metadata;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -249,7 +250,8 @@ public class InteractionsMetaFieldTests
     public void ArticleInteractionErrorMessage_CommentNotFound_ShouldReturnFormattedMessage()
     {
         Guid commentId = Guid.NewGuid();
-        string message = ArticleInteractionErrorMessage.CommentNotFound(commentId);
+        ArticleInteractionErrorMessage msg = LocalizerFactory.CreateMessage<ArticleInteractionErrorMessage>("en");
+        string message = msg.CommentNotFound(commentId);
         message.Should().Contain(commentId.ToString());
     }
 
@@ -257,7 +259,8 @@ public class InteractionsMetaFieldTests
     public void PlaylistErrorMessage_NotFound_ShouldReturnFormattedMessage()
     {
         Guid id = Guid.NewGuid();
-        string message = PlaylistErrorMessage.NotFound(id);
+        PlaylistErrorMessage msg = LocalizerFactory.CreateMessage<PlaylistErrorMessage>("en");
+        string message = msg.NotFound(id);
         message.Should().Contain(id.ToString());
     }
 
