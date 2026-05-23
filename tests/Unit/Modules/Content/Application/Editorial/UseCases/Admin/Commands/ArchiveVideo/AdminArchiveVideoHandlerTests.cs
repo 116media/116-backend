@@ -4,6 +4,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -27,7 +28,11 @@ public class AdminArchiveVideoHandlerTests
     {
         _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminArchiveVideoHandler(_videoRepositoryMock.Object, _unitOfWorkMock.Object);
+        _handler = new AdminArchiveVideoHandler(
+            _videoRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            TestErrorsFactory.CreateVideoErrors()
+        );
     }
 
     [Fact]
