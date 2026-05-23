@@ -1,5 +1,7 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategoryPricing;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -11,7 +13,9 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminUpdateCategoryPricingValidatorTests
 {
-    private readonly AdminUpdateCategoryPricingValidator _validator = new();
+    private readonly AdminUpdateCategoryPricingValidator _validator = new(
+        LocalizerFactory.CreateMessage<CategoryErrorMessage>()
+    );
 
     #region Valid Command Tests
 
@@ -127,7 +131,7 @@ public class AdminUpdateCategoryPricingValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateCategoryPricingCommand.PriceUsd)
-                && e.ErrorMessage == "Category price must be zero or greater."
+                && e.ErrorMessage == "Price must be zero or greater."
             );
     }
 
