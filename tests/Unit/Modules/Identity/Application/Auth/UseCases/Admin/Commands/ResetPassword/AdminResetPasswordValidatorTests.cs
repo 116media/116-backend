@@ -1,6 +1,8 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -12,7 +14,9 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Comma
 /// </summary>
 public class AdminResetPasswordValidatorTests
 {
-    private readonly AdminResetPasswordValidator _validator = new();
+    private readonly AdminResetPasswordValidator _validator = new(
+        LocalizerFactory.CreateMessage<ValidationErrorMessage>()
+    );
 
     #region Valid Command Tests
 
@@ -113,7 +117,7 @@ public class AdminResetPasswordValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.Code)
-            .WithErrorMessage($"Verification code must be exactly {UserConstants.OtpCodeLength} characters long");
+            .WithErrorMessage($"Verification code must be exactly {UserConstants.OtpCodeLength} characters long.");
     }
 
     [Fact]
@@ -151,7 +155,7 @@ public class AdminResetPasswordValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.Code)
-            .WithErrorMessage("Verification code must contain only numbers");
+            .WithErrorMessage("Verification code must contain only numbers.");
     }
 
     #endregion
