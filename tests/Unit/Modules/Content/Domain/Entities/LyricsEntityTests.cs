@@ -1,6 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -30,7 +31,8 @@ public class LyricsEntityTests
             TestConstants.Content.Editorial.Lyrics.ValidArtistName,
             TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
             TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateLyricsErrors()
         );
 
         // Assert
@@ -56,7 +58,8 @@ public class LyricsEntityTests
             TestConstants.Content.Editorial.Lyrics.ValidArtistName,
             TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
             TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateLyricsErrors()
         );
 
         // Assert
@@ -77,7 +80,8 @@ public class LyricsEntityTests
                 TestConstants.Content.Editorial.Lyrics.ValidArtistName,
                 TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
                 TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-                AuthorId
+                AuthorId,
+                TestErrorsFactory.CreateLyricsErrors()
             );
 
         // Assert
@@ -98,7 +102,8 @@ public class LyricsEntityTests
                 invalidArtistName!,
                 TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
                 TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-                AuthorId
+                AuthorId,
+                TestErrorsFactory.CreateLyricsErrors()
             );
 
         // Assert
@@ -119,7 +124,8 @@ public class LyricsEntityTests
                 TestConstants.Content.Editorial.Lyrics.ValidArtistName,
                 invalidLyricsText!,
                 TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-                AuthorId
+                AuthorId,
+                TestErrorsFactory.CreateLyricsErrors()
             );
 
         // Assert
@@ -140,7 +146,8 @@ public class LyricsEntityTests
             TestConstants.Content.Editorial.Lyrics.ValidArtistName,
             TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
             TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateLyricsErrors()
         );
         const string newSongTitle = "Eloko Oyo";
         const string newArtistName = "Fally Ipupa";
@@ -149,7 +156,14 @@ public class LyricsEntityTests
         var newVideoId = Guid.NewGuid();
 
         // Act
-        lyrics.Update(newSongTitle, newArtistName, newLyricsText, newLanguage, newVideoId);
+        lyrics.Update(
+            newSongTitle,
+            newArtistName,
+            newLyricsText,
+            newLanguage,
+            newVideoId,
+            TestErrorsFactory.CreateLyricsErrors()
+        );
 
         // Assert
         lyrics.SongTitle.Should().Be(newSongTitle);
@@ -172,7 +186,8 @@ public class LyricsEntityTests
             TestConstants.Content.Editorial.Lyrics.ValidArtistName,
             TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
             TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateLyricsErrors()
         );
 
         // Act
@@ -182,7 +197,8 @@ public class LyricsEntityTests
                 TestConstants.Content.Editorial.Lyrics.ValidArtistName,
                 TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
                 TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-                null
+                null,
+                TestErrorsFactory.CreateLyricsErrors()
             );
 
         // Assert
@@ -202,7 +218,8 @@ public class LyricsEntityTests
             TestConstants.Content.Editorial.Lyrics.ValidArtistName,
             TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
             TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateLyricsErrors()
         );
 
         // Act
@@ -212,7 +229,8 @@ public class LyricsEntityTests
                 invalidArtistName!,
                 TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
                 TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-                null
+                null,
+                TestErrorsFactory.CreateLyricsErrors()
             );
 
         // Assert
@@ -232,7 +250,8 @@ public class LyricsEntityTests
             TestConstants.Content.Editorial.Lyrics.ValidArtistName,
             TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
             TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateLyricsErrors()
         );
 
         // Act
@@ -242,7 +261,8 @@ public class LyricsEntityTests
                 TestConstants.Content.Editorial.Lyrics.ValidArtistName,
                 invalidText!,
                 TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-                null
+                null,
+                TestErrorsFactory.CreateLyricsErrors()
             );
 
         // Assert
@@ -263,7 +283,8 @@ public class LyricsEntityTests
             TestConstants.Content.Editorial.Lyrics.ValidArtistName,
             TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
             TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateLyricsErrors()
         );
 
         // Act
