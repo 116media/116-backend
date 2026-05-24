@@ -1,6 +1,8 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ChangePassword;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -12,7 +14,9 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Comm
 /// </summary>
 public class PublicChangePasswordValidatorTests
 {
-    private readonly PublicChangePasswordValidator _validator = new();
+    private readonly PublicChangePasswordValidator _validator = new(
+        LocalizerFactory.CreateMessage<ValidationErrorMessage>()
+    );
 
     #region Valid Command Tests
 
@@ -99,7 +103,7 @@ public class PublicChangePasswordValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.NewPassword)
-            .WithErrorMessage($"New password must be at least {UserConstants.MinPasswordLength} characters long");
+            .WithErrorMessage($"New password must be at least {UserConstants.MinPasswordLength} characters long.");
     }
 
     [Fact]
