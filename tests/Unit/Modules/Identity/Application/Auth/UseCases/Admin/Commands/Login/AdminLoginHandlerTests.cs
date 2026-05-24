@@ -5,7 +5,7 @@ using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
