@@ -1,8 +1,10 @@
+using _116.Core.Application.Shared.Errors;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Core.Infrastructure.Persistence;
 using _116.Core.Infrastructure.Repositories;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Core;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +18,7 @@ namespace _116.Unit.Tests.Modules.Core.Infrastructure.Repositories;
 /// </summary>
 public class FileRepositoryTests : IDisposable
 {
+    private readonly CoreErrors _coreErrors = TestErrorsFactory.CreateCoreErrors();
     private readonly CoreDbContext _context;
     private readonly Mock<IFileService> _mockFileService;
     private readonly FileRepository _repository;
@@ -28,7 +31,10 @@ public class FileRepositoryTests : IDisposable
 
         _context = new CoreDbContext(options);
         _mockFileService = new Mock<IFileService>();
-        _repository = new FileRepository(_context, _mockFileService.Object);
+
+        CoreErrors coreErrors = TestErrorsFactory.CreateCoreErrors();
+
+        _repository = new FileRepository(_context, _mockFileService.Object, coreErrors);
     }
 
     public void Dispose()
@@ -118,7 +124,7 @@ public class FileRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         const string newUrl = "https://new-storage-url.com/file.jpg";
-        file.UpdateStorageUrl(newUrl);
+        file.UpdateStorageUrl(newUrl, _coreErrors);
 
         // Act
         await _repository.UpdateAsync(file);
