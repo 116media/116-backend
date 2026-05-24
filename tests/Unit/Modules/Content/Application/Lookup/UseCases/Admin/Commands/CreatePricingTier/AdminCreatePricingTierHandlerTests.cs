@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -25,7 +26,12 @@ public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
     {
         _lookupRepositoryMock = MockLookupRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminCreatePricingTierHandler(_lookupRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
+        _handler = new AdminCreatePricingTierHandler(
+            _lookupRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            Mapper,
+            TestErrorsFactory.CreatePricingTierErrors()
+        );
     }
 
     #region Success Cases
