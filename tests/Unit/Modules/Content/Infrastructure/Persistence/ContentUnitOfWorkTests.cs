@@ -1,6 +1,7 @@
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -105,7 +106,11 @@ public class ContentUnitOfWorkTests
         await using var context = new ContentDbContext(options);
         var unitOfWork = new ContentUnitOfWork(context);
 
-        var contentType = ContentTypeEntity.Create(id: Guid.NewGuid(), name: "Video");
+        var contentType = ContentTypeEntity.Create(
+            id: Guid.NewGuid(),
+            name: "Video",
+            errors: TestErrorsFactory.CreateContentTypeErrors()
+        );
         await context.ContentTypes.AddAsync(contentType);
 
         // Act
