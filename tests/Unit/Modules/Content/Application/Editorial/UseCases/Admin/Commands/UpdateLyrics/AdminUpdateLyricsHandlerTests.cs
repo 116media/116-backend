@@ -30,10 +30,12 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
     {
         _lyricsRepositoryMock = MockLyricsRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
+        Mock<IVideoRepository> videoRepositoryMock = MockVideoRepository.Create();
         Mock<IUserLookupService> userLookupMock = MockUserLookupService.Create();
         Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
         _handler = new AdminUpdateLyricsHandler(
             _lyricsRepositoryMock.Object,
+            videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
             userLookupMock.Object,
             fileRepositoryMock.Object,

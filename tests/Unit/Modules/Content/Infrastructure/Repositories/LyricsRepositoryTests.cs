@@ -172,6 +172,37 @@ public class LyricsRepositoryTests : IDisposable
 
     #endregion
 
+    #region GetByVideoIdAsync Tests
+
+    [Fact]
+    public async Task GetByVideoIdAsync_WhenLyricsLinked_ShouldReturnLyrics()
+    {
+        // Arrange
+        Guid videoId = Guid.NewGuid();
+        LyricsEntity lyrics = LyricsFactory.CreateForVideo(videoId);
+        _context.Lyrics.Add(lyrics);
+        await _context.SaveChangesAsync();
+
+        // Act
+        LyricsEntity? result = await _repository.GetByVideoIdAsync(videoId);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.VideoId.Should().Be(videoId);
+    }
+
+    [Fact]
+    public async Task GetByVideoIdAsync_WhenNoLyricsLinked_ShouldReturnNull()
+    {
+        // Act
+        LyricsEntity? result = await _repository.GetByVideoIdAsync(Guid.NewGuid());
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
     #region Update Tests
 
     [Fact]
@@ -187,6 +218,27 @@ public class LyricsRepositoryTests : IDisposable
 
         // Assert — update marks the entity; EF tracks it as Modified
         _context.Entry(lyrics).State.Should().Be(EntityState.Modified);
+    }
+
+    #endregion
+
+    #region Remove Tests
+
+    [Fact]
+    public async Task Remove_ShouldDeleteLyricsFromContext()
+    {
+        // Arrange
+        LyricsEntity lyrics = LyricsFactory.Create();
+        _context.Lyrics.Add(lyrics);
+        await _context.SaveChangesAsync();
+
+        // Act
+        _repository.Remove(lyrics);
+        await _context.SaveChangesAsync();
+
+        // Assert
+        LyricsEntity? result = await _context.Lyrics.FirstOrDefaultAsync(l => l.Id == lyrics.Id);
+        result.Should().BeNull();
     }
 
     #endregion

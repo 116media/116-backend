@@ -63,6 +63,53 @@ public class LyricsSpecificationsTests
 
     #endregion
 
+    #region LyricsByVideoIdSpecification
+
+    [Fact]
+    public void LyricsByVideoIdSpecification_WithMatchingVideoId_ShouldReturnTrue()
+    {
+        // Arrange
+        Guid videoId = Guid.NewGuid();
+        LyricsEntity lyrics = LyricsFactory.CreateForVideo(videoId);
+        var spec = new LyricsByVideoIdSpecification(videoId);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(lyrics);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void LyricsByVideoIdSpecification_WithDifferentVideoId_ShouldReturnFalse()
+    {
+        // Arrange
+        LyricsEntity lyrics = LyricsFactory.CreateForVideo(Guid.NewGuid());
+        var spec = new LyricsByVideoIdSpecification(Guid.NewGuid());
+
+        // Act
+        bool result = spec.IsSatisfiedBy(lyrics);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void LyricsByVideoIdSpecification_WithStandaloneLyrics_ShouldReturnFalse()
+    {
+        // Arrange
+        LyricsEntity lyrics = LyricsFactory.Create();
+        var spec = new LyricsByVideoIdSpecification(Guid.NewGuid());
+
+        // Act
+        bool result = spec.IsSatisfiedBy(lyrics);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
     #region LyricsBySongAndArtistSpecification
 
     // ILike: requires PostgreSQL provider — compile-only

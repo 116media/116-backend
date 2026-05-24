@@ -10,6 +10,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShortVide
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeactivateShortVideo;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteArticle;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteLyrics;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteShortVideo;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteVideo;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishArticle;
@@ -340,6 +341,13 @@ public class EditorialAdminMetaFieldTests
     public void AdminCreateLyricsMetaField_ShouldBeInitialized()
     {
         RouteMetadata metadata = AdminCreateLyricsMetaField.AdminCreateLyrics;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void AdminDeleteLyricsMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = AdminDeleteLyricsMetaField.AdminDeleteLyrics;
         metadata.Should().NotBeNull();
     }
 

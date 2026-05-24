@@ -77,6 +77,16 @@ public class LyricsRepository(ContentDbContext context) : ILyricsRepository
     }
 
     /// <inheritdoc />
+    public async Task<LyricsEntity?> GetByVideoIdAsync(Guid videoId, CancellationToken cancellationToken = default)
+    {
+        var specification = new LyricsByVideoIdSpecification(videoId: videoId);
+        return await context.Lyrics.FirstOrDefaultBySpecificationAsync(
+            specification: specification,
+            cancellationToken: cancellationToken
+        );
+    }
+
+    /// <inheritdoc />
     public async Task AddAsync(LyricsEntity lyrics, CancellationToken cancellationToken = default)
     {
         await context.Lyrics.AddAsync(lyrics, cancellationToken);
@@ -86,5 +96,11 @@ public class LyricsRepository(ContentDbContext context) : ILyricsRepository
     public void Update(LyricsEntity lyrics)
     {
         context.Lyrics.Update(lyrics);
+    }
+
+    /// <inheritdoc />
+    public void Remove(LyricsEntity lyrics)
+    {
+        context.Lyrics.Remove(lyrics);
     }
 }

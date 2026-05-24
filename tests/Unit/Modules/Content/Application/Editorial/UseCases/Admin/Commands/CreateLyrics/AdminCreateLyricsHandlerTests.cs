@@ -23,17 +23,20 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<ILyricsRepository> _lyricsRepositoryMock;
+    private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminCreateLyricsHandler _handler;
 
     public AdminCreateLyricsHandlerTests()
     {
         _lyricsRepositoryMock = MockLyricsRepository.Create();
+        _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         Mock<IUserLookupService> userLookupMock = MockUserLookupService.Create();
         Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
         _handler = new AdminCreateLyricsHandler(
             _lyricsRepositoryMock.Object,
+            _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
             userLookupMock.Object,
             fileRepositoryMock.Object,
@@ -79,11 +82,14 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task Handle_WhenLyricsForVideo_ShouldCreateAndReturnLyrics()
+    public async Task Handle_WhenLyricsForVideo_ShouldCreateAndMarkVideoHasLyrics()
     {
         // Arrange
-        Guid videoId = Guid.NewGuid();
-        var command = BuildCommand(videoId: videoId);
+        var command = BuildCommand(videoId: Guid.NewGuid());
+        VideoEntity video = VideoFactory.Create(Guid.NewGuid());
+        _videoRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(video);
 
         LyricsEntity? capturedEntity = null;
         _lyricsRepositoryMock
@@ -100,7 +106,9 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
         // Assert
         result.Should().NotBeNull();
         result.Lyrics.Should().NotBeNull();
+        video.HasLyrics.Should().BeTrue();
         _lyricsRepositoryMock.VerifyAddCalled();
+        _videoRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

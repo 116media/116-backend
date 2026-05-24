@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleBySlu
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetFeaturedArticles;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetFeaturedVideos;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBySlug;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsByVideoId;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicShortBySlug;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicShorts;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishedArticles;
@@ -93,6 +94,13 @@ public class EditorialPublicMetaFieldTests
     public void PublicGetLyricsBySlugMetaField_ShouldBeInitialized()
     {
         RouteMetadata metadata = PublicGetLyricsBySlugMetaField.PublicGetLyricsBySlug;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void PublicGetLyricsByVideoIdMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = PublicGetLyricsByVideoIdMetaField.PublicGetLyricsByVideoId;
         metadata.Should().NotBeNull();
     }
 

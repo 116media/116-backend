@@ -361,6 +361,11 @@ public class VideoEntity : Aggregate<Guid>
     public void MarkHasLyrics() => HasLyrics = true;
 
     /// <summary>
+    /// Clears the lyrics link flag when no lyrics page references this video.
+    /// </summary>
+    public void UnmarkHasLyrics() => HasLyrics = false;
+
+    /// <summary>
     /// Transitions a paid video from <c>Draft</c> → <c>PendingPayment</c>.
     /// </summary>
     /// <returns><c>true</c> if submitted; <c>false</c> if already pending payment.</returns>
