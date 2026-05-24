@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -10,6 +11,8 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 /// </summary>
 public class PackageErrorsTests
 {
+    private readonly PackageErrors _errors = TestErrorsFactory.CreatePackageErrors();
+
     [Fact]
     public void NotFound_WithId_ShouldReturnNotFoundException()
     {
@@ -17,7 +20,7 @@ public class PackageErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = PackageErrors.NotFound(id);
+        NotFoundException exception = _errors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
@@ -28,7 +31,7 @@ public class PackageErrorsTests
     public void AlreadyActive_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = PackageErrors.AlreadyActive();
+        ConflictException exception = _errors.AlreadyActive();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -39,7 +42,7 @@ public class PackageErrorsTests
     public void AlreadyInactive_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = PackageErrors.AlreadyInactive();
+        ConflictException exception = _errors.AlreadyInactive();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -50,7 +53,7 @@ public class PackageErrorsTests
     public void NameRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = PackageErrors.NameRequired();
+        BadRequestException exception = _errors.NameRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -61,7 +64,7 @@ public class PackageErrorsTests
     public void PriceMustBeNonNegative_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = PackageErrors.PriceMustBeNonNegative();
+        BadRequestException exception = _errors.PriceMustBeNonNegative();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -72,7 +75,7 @@ public class PackageErrorsTests
     public void SlotQuantityMustBePositive_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = PackageErrors.SlotQuantityMustBePositive();
+        BadRequestException exception = _errors.SlotQuantityMustBePositive();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -86,7 +89,7 @@ public class PackageErrorsTests
         var slotId = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = PackageErrors.SlotNotFound(slotId);
+        NotFoundException exception = _errors.SlotNotFound(slotId);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
