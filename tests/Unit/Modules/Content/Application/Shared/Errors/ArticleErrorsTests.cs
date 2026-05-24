@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -10,6 +11,8 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 /// </summary>
 public class ArticleErrorsTests
 {
+    private readonly ArticleErrors _errors = TestErrorsFactory.CreateArticleErrors();
+
     [Fact]
     public void NotFound_WithId_ShouldReturnNotFoundException()
     {
@@ -17,7 +20,7 @@ public class ArticleErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = ArticleErrors.NotFound(id);
+        NotFoundException exception = _errors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
@@ -31,7 +34,7 @@ public class ArticleErrorsTests
         const string slug = "fally-ipupa-profile";
 
         // Act
-        ConflictException exception = ArticleErrors.SlugAlreadyExists(slug);
+        ConflictException exception = _errors.SlugAlreadyExists(slug);
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -42,7 +45,7 @@ public class ArticleErrorsTests
     public void TitleRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = ArticleErrors.TitleRequired();
+        BadRequestException exception = _errors.TitleRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -53,7 +56,7 @@ public class ArticleErrorsTests
     public void SlugRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = ArticleErrors.SlugRequired();
+        BadRequestException exception = _errors.SlugRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -64,7 +67,7 @@ public class ArticleErrorsTests
     public void AlreadySubmitted_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = ArticleErrors.AlreadySubmitted();
+        ConflictException exception = _errors.AlreadySubmitted();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -75,7 +78,7 @@ public class ArticleErrorsTests
     public void AlreadyPendingReview_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = ArticleErrors.AlreadyPendingReview();
+        ConflictException exception = _errors.AlreadyPendingReview();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -86,7 +89,7 @@ public class ArticleErrorsTests
     public void AlreadyApproved_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = ArticleErrors.AlreadyApproved();
+        ConflictException exception = _errors.AlreadyApproved();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -97,7 +100,7 @@ public class ArticleErrorsTests
     public void AlreadyPublished_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = ArticleErrors.AlreadyPublished();
+        ConflictException exception = _errors.AlreadyPublished();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -108,7 +111,7 @@ public class ArticleErrorsTests
     public void AlreadyRejected_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = ArticleErrors.AlreadyRejected();
+        ConflictException exception = _errors.AlreadyRejected();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -119,7 +122,7 @@ public class ArticleErrorsTests
     public void AlreadyArchived_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = ArticleErrors.AlreadyArchived();
+        ConflictException exception = _errors.AlreadyArchived();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -130,7 +133,7 @@ public class ArticleErrorsTests
     public void InvalidStatusTransition_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = ArticleErrors.InvalidStatusTransition("Draft", "Published");
+        BadRequestException exception = _errors.InvalidStatusTransition("Draft", "Published");
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -141,7 +144,7 @@ public class ArticleErrorsTests
     public void CannotDeletePublishedArticle_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = ArticleErrors.CannotDeletePublishedArticle();
+        BadRequestException exception = _errors.CannotDeletePublishedArticle();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
