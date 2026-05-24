@@ -1,7 +1,9 @@
+using _116.Core.Application.Shared.Errors;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Core;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -12,6 +14,8 @@ namespace _116.Unit.Tests.Modules.Core.Domain.Entities;
 /// </summary>
 public class FileEntityTests
 {
+    private readonly CoreErrors _coreErrors = TestErrorsFactory.CreateCoreErrors();
+
     #region Create Tests
 
     [Fact]
@@ -26,7 +30,7 @@ public class FileEntityTests
         long sizeInBytes = TestConstants.File.ValidSizeInBytes;
 
         // Act
-        var file = FileEntity.Create(id, fileName, originalFileName, mimeType, storageUrl, sizeInBytes);
+        var file = FileEntity.Create(id, fileName, originalFileName, mimeType, storageUrl, sizeInBytes, _coreErrors);
 
         // Assert
         file.Id.Should().Be(id);
@@ -56,7 +60,8 @@ public class FileEntityTests
                 TestConstants.File.ValidOriginalFileName,
                 TestConstants.File.ValidMimeType,
                 TestConstants.File.ValidStorageUrl,
-                TestConstants.File.ValidSizeInBytes
+                TestConstants.File.ValidSizeInBytes,
+                _coreErrors
             );
 
         // Assert
@@ -80,7 +85,8 @@ public class FileEntityTests
                 invalidOriginalFileName!,
                 TestConstants.File.ValidMimeType,
                 TestConstants.File.ValidStorageUrl,
-                TestConstants.File.ValidSizeInBytes
+                TestConstants.File.ValidSizeInBytes,
+                _coreErrors
             );
 
         // Assert
@@ -104,7 +110,8 @@ public class FileEntityTests
                 TestConstants.File.ValidOriginalFileName,
                 invalidMimeType!,
                 TestConstants.File.ValidStorageUrl,
-                TestConstants.File.ValidSizeInBytes
+                TestConstants.File.ValidSizeInBytes,
+                _coreErrors
             );
 
         // Assert
@@ -128,7 +135,8 @@ public class FileEntityTests
                 TestConstants.File.ValidOriginalFileName,
                 TestConstants.File.ValidMimeType,
                 invalidStorageUrl!,
-                TestConstants.File.ValidSizeInBytes
+                TestConstants.File.ValidSizeInBytes,
+                _coreErrors
             );
 
         // Assert
@@ -152,7 +160,8 @@ public class FileEntityTests
                 TestConstants.File.ValidOriginalFileName,
                 TestConstants.File.ValidMimeType,
                 TestConstants.File.ValidStorageUrl,
-                invalidSize
+                invalidSize,
+                _coreErrors
             );
 
         // Assert
@@ -171,7 +180,7 @@ public class FileEntityTests
         string newStorageUrl = "https://newcloud.example.com/files/new-file.jpg";
 
         // Act
-        file.UpdateStorageUrl(newStorageUrl);
+        file.UpdateStorageUrl(newStorageUrl, _coreErrors);
 
         // Assert
         file.StorageUrl.Should().Be(newStorageUrl);
@@ -187,7 +196,7 @@ public class FileEntityTests
         FileEntity file = FileFactory.Create();
 
         // Act
-        Action act = () => file.UpdateStorageUrl(invalidUrl!);
+        Action act = () => file.UpdateStorageUrl(invalidUrl!, _coreErrors);
 
         // Assert
         act.Should().Throw<BadRequestException>();
