@@ -26,6 +26,7 @@ public class ContentModuleTests : IDisposable
     {
         _services = [];
         _services.AddLogging();
+        _services.AddLocalization();
         _services.AddDbContext<ContentDbContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
     }
 
