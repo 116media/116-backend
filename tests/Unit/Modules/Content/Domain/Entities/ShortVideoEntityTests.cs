@@ -1,6 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -32,7 +33,8 @@ public class ShortVideoEntityTests
             slug,
             videoUrl,
             storageKey,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
 
         // Assert
@@ -61,7 +63,8 @@ public class ShortVideoEntityTests
                 TestConstants.Content.Editorial.ShortVideo.ValidSlug,
                 TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl,
                 TestConstants.Content.Editorial.ShortVideo.ValidVideoStorageKey,
-                AuthorId
+                AuthorId,
+                TestErrorsFactory.CreateShortVideoErrors()
             );
 
         // Assert
@@ -86,7 +89,8 @@ public class ShortVideoEntityTests
             TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoStorageKey,
             videoId,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
 
         // Assert
@@ -109,7 +113,8 @@ public class ShortVideoEntityTests
                 TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl,
                 TestConstants.Content.Editorial.ShortVideo.ValidVideoStorageKey,
                 Guid.NewGuid(),
-                AuthorId
+                AuthorId,
+                TestErrorsFactory.CreateShortVideoErrors()
             );
 
         // Assert
@@ -130,7 +135,8 @@ public class ShortVideoEntityTests
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoStorageKey,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
 
         // Act
@@ -151,7 +157,8 @@ public class ShortVideoEntityTests
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoStorageKey,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
         shortVideo.Deactivate();
 
@@ -172,7 +179,8 @@ public class ShortVideoEntityTests
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoStorageKey,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
         shortVideo.Deactivate();
 
@@ -194,7 +202,8 @@ public class ShortVideoEntityTests
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoStorageKey,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
 
         // Act
@@ -218,7 +227,8 @@ public class ShortVideoEntityTests
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoStorageKey,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
         const string url = TestConstants.Content.Editorial.Cloudinary.ValidSecureUrl;
         const string storageKey = TestConstants.Content.Editorial.Cloudinary.ValidPublicId;
@@ -245,7 +255,8 @@ public class ShortVideoEntityTests
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoStorageKey,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
 
         // Act
@@ -265,7 +276,8 @@ public class ShortVideoEntityTests
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoStorageKey,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
 
         // Act
@@ -285,7 +297,8 @@ public class ShortVideoEntityTests
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoStorageKey,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
 
         // Act
@@ -305,7 +318,8 @@ public class ShortVideoEntityTests
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoStorageKey,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
 
         // Act
@@ -325,7 +339,8 @@ public class ShortVideoEntityTests
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoStorageKey,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
 
         // Act
@@ -345,7 +360,8 @@ public class ShortVideoEntityTests
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl,
             TestConstants.Content.Editorial.ShortVideo.ValidVideoStorageKey,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
 
         // Act
@@ -369,11 +385,12 @@ public class ShortVideoEntityTests
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             "https://cdn.test/video.mp4",
             "content/short-videos/abc",
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
 
         // Act
-        shortVideo.Update("New Title", null);
+        shortVideo.Update("New Title", null, TestErrorsFactory.CreateShortVideoErrors());
 
         // Assert
         shortVideo.Title.Should().Be("New Title");
@@ -392,12 +409,13 @@ public class ShortVideoEntityTests
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             "https://cdn.test/video.mp4",
             "content/short-videos/abc",
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
         Guid parentVideoId = Guid.NewGuid();
 
         // Act
-        shortVideo.Update("Updated", parentVideoId);
+        shortVideo.Update("Updated", parentVideoId, TestErrorsFactory.CreateShortVideoErrors());
 
         // Assert
         shortVideo.VideoId.Should().Be(parentVideoId);
@@ -416,11 +434,12 @@ public class ShortVideoEntityTests
             "https://cdn.test/video.mp4",
             "content/short-videos/abc",
             parentVideoId,
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
 
         // Act
-        shortVideo.Update("Standalone Now", null);
+        shortVideo.Update("Standalone Now", null, TestErrorsFactory.CreateShortVideoErrors());
 
         // Assert
         shortVideo.VideoId.Should().BeNull();
@@ -440,11 +459,12 @@ public class ShortVideoEntityTests
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             "https://cdn.test/video.mp4",
             "content/short-videos/abc",
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
 
         // Act
-        Action act = () => shortVideo.Update(invalidTitle!, null);
+        Action act = () => shortVideo.Update(invalidTitle!, null, TestErrorsFactory.CreateShortVideoErrors());
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -464,7 +484,8 @@ public class ShortVideoEntityTests
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
             "https://cdn.test/old-video.mp4",
             "content/short-videos/abc",
-            AuthorId
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
         );
         const string newUrl = "https://cdn.test/new-video.mp4";
 
