@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -10,6 +11,8 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 /// </summary>
 public class PricingTierErrorsTests
 {
+    private readonly PricingTierErrors _errors = TestErrorsFactory.CreatePricingTierErrors();
+
     [Fact]
     public void AlreadyExists_WithName_ShouldReturnConflictException()
     {
@@ -17,7 +20,7 @@ public class PricingTierErrorsTests
         string name = "base_upload";
 
         // Act
-        ConflictException exception = PricingTierErrors.AlreadyExists(name);
+        ConflictException exception = _errors.AlreadyExists(name);
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -31,7 +34,7 @@ public class PricingTierErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = PricingTierErrors.NotFound(id);
+        NotFoundException exception = _errors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
@@ -42,7 +45,7 @@ public class PricingTierErrorsTests
     public void AlreadyActive_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = PricingTierErrors.AlreadyActive();
+        ConflictException exception = _errors.AlreadyActive();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -53,7 +56,7 @@ public class PricingTierErrorsTests
     public void AlreadyInactive_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = PricingTierErrors.AlreadyInactive();
+        ConflictException exception = _errors.AlreadyInactive();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -64,7 +67,7 @@ public class PricingTierErrorsTests
     public void IsInactive_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = PricingTierErrors.IsInactive();
+        BadRequestException exception = _errors.IsInactive();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -75,7 +78,7 @@ public class PricingTierErrorsTests
     public void NameRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = PricingTierErrors.NameRequired();
+        BadRequestException exception = _errors.NameRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
