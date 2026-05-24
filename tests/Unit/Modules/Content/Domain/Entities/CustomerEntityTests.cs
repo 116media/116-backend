@@ -1,6 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -22,7 +23,15 @@ public class CustomerEntityTests
         string email = TestConstants.Content.Customer.ValidEmail;
 
         // Act
-        var entity = CustomerEntity.Create(id, fullName, email, null, null, null);
+        var entity = CustomerEntity.Create(
+            id,
+            fullName,
+            email,
+            null,
+            null,
+            null,
+            TestErrorsFactory.CreateCustomerErrors()
+        );
 
         // Assert
         entity.Id.Should().Be(id);
@@ -43,7 +52,8 @@ public class CustomerEntityTests
             TestConstants.Content.Customer.ValidEmail,
             TestConstants.Content.Customer.ValidPhone,
             TestConstants.Content.Customer.ValidCompany,
-            TestConstants.Content.Customer.ValidNotes
+            TestConstants.Content.Customer.ValidNotes,
+            TestErrorsFactory.CreateCustomerErrors()
         );
 
         // Assert
@@ -66,7 +76,8 @@ public class CustomerEntityTests
                 TestConstants.Content.Customer.ValidEmail,
                 null,
                 null,
-                null
+                null,
+                TestErrorsFactory.CreateCustomerErrors()
             );
 
         // Assert
@@ -87,7 +98,8 @@ public class CustomerEntityTests
                 invalidEmail!,
                 null,
                 null,
-                null
+                null,
+                TestErrorsFactory.CreateCustomerErrors()
             );
 
         // Assert
@@ -108,7 +120,8 @@ public class CustomerEntityTests
             TestConstants.Content.Customer.ValidEmail,
             null,
             null,
-            null
+            null,
+            TestErrorsFactory.CreateCustomerErrors()
         );
 
         // Act
@@ -117,7 +130,8 @@ public class CustomerEntityTests
             "new@example.com",
             TestConstants.Content.Customer.ValidPhone,
             "New Company",
-            "Some notes"
+            "Some notes",
+            TestErrorsFactory.CreateCustomerErrors()
         );
 
         // Assert
@@ -138,11 +152,12 @@ public class CustomerEntityTests
             TestConstants.Content.Customer.ValidEmail,
             null,
             null,
-            null
+            null,
+            TestErrorsFactory.CreateCustomerErrors()
         );
 
         // Act
-        entity.Update("New Name", "updated@example.com", null, null, null);
+        entity.Update("New Name", "updated@example.com", null, null, null, TestErrorsFactory.CreateCustomerErrors());
 
         // Assert
         entity.Email.Should().Be("updated@example.com");
@@ -161,11 +176,20 @@ public class CustomerEntityTests
             TestConstants.Content.Customer.ValidEmail,
             null,
             null,
-            null
+            null,
+            TestErrorsFactory.CreateCustomerErrors()
         );
 
         // Act
-        Action act = () => entity.Update(invalidFullName!, TestConstants.Content.Customer.ValidEmail, null, null, null);
+        Action act = () =>
+            entity.Update(
+                invalidFullName!,
+                TestConstants.Content.Customer.ValidEmail,
+                null,
+                null,
+                null,
+                TestErrorsFactory.CreateCustomerErrors()
+            );
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -184,11 +208,20 @@ public class CustomerEntityTests
             TestConstants.Content.Customer.ValidEmail,
             null,
             null,
-            null
+            null,
+            TestErrorsFactory.CreateCustomerErrors()
         );
 
         // Act
-        Action act = () => entity.Update(TestConstants.Content.Customer.ValidFullName, invalidEmail!, null, null, null);
+        Action act = () =>
+            entity.Update(
+                TestConstants.Content.Customer.ValidFullName,
+                invalidEmail!,
+                null,
+                null,
+                null,
+                TestErrorsFactory.CreateCustomerErrors()
+            );
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -204,11 +237,19 @@ public class CustomerEntityTests
             TestConstants.Content.Customer.ValidEmail,
             TestConstants.Content.Customer.ValidPhone,
             TestConstants.Content.Customer.ValidCompany,
-            TestConstants.Content.Customer.ValidNotes
+            TestConstants.Content.Customer.ValidNotes,
+            TestErrorsFactory.CreateCustomerErrors()
         );
 
         // Act
-        entity.Update("Updated Name", "updated@example.com", null, null, null);
+        entity.Update(
+            "Updated Name",
+            "updated@example.com",
+            null,
+            null,
+            null,
+            TestErrorsFactory.CreateCustomerErrors()
+        );
 
         // Assert
         entity.FullName.Should().Be("Updated Name");
