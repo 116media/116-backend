@@ -13,20 +13,30 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyrics.V1;
 
 /// <summary>
-/// Request model for updating lyrics text.
+/// Request model for updating lyrics.
 /// </summary>
-/// <param name="LyricsText">The new full lyrics text to replace the existing content.</param>
-public record AdminUpdateLyricsRequest(string LyricsText);
+/// <param name="SongTitle">The song title.</param>
+/// <param name="ArtistName">The performing artist name.</param>
+/// <param name="LyricsText">The full lyrics text.</param>
+/// <param name="Language">ISO 639-1 language code.</param>
+/// <param name="VideoId">Optional linked video UUID. Null to unlink.</param>
+public record AdminUpdateLyricsRequest(
+    string SongTitle,
+    string ArtistName,
+    string LyricsText,
+    string Language,
+    Guid? VideoId
+);
 
 /// <summary>
-/// Response model for successful lyrics text update.
+/// Response model for successful lyrics update.
 /// </summary>
 /// <param name="Lyrics">The updated lyrics information.</param>
 public record AdminUpdateLyricsResponse(LyricsDto Lyrics);
 
 /// <summary>
 /// Defines the admin update lyrics endpoint.
-/// Handles replacing the lyrics text of an existing lyrics page.
+/// Handles updating the content and metadata of an existing lyrics page.
 /// </summary>
 public class AdminUpdateLyricsEndpointV1 : ICarterModule
 {
@@ -46,7 +56,14 @@ public class AdminUpdateLyricsEndpointV1 : ICarterModule
                 "/{id}",
                 async (string id, AdminUpdateLyricsRequest request, IDispatcher dispatcher) =>
                 {
-                    var command = new AdminUpdateLyricsCommand(Id: id, LyricsText: request.LyricsText);
+                    var command = new AdminUpdateLyricsCommand(
+                        Id: id,
+                        SongTitle: request.SongTitle,
+                        ArtistName: request.ArtistName,
+                        LyricsText: request.LyricsText,
+                        Language: request.Language,
+                        VideoId: request.VideoId
+                    );
 
                     AdminUpdateLyricsResult result = await dispatcher.Send(request: command);
 

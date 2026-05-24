@@ -135,16 +135,31 @@ public class LyricsEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Replaces the lyrics text.
+    /// Updates the lyrics content and metadata fields.
     /// </summary>
-    public void UpdateLyrics(string lyricsText)
+    /// <param name="songTitle">
+    /// The song title.
+    /// </param>
+    /// <param name="artistName">
+    /// The performing artist name.
+    /// </param>
+    /// <param name="lyricsText">
+    /// The full lyrics text.
+    /// </param>
+    /// <param name="language">
+    /// ISO 639-1 language code.
+    /// </param>
+    /// <param name="videoId">
+    /// Optional linked video UUID.
+    /// </param>
+    public void Update(string songTitle, string artistName, string lyricsText, string language, Guid? videoId)
     {
-        if (string.IsNullOrWhiteSpace(value: lyricsText))
-        {
-            throw LyricsErrors.LyricsTextRequired();
-        }
-
+        ValidateRequiredFields(songTitle, artistName, lyricsText);
+        SongTitle = songTitle;
+        ArtistName = artistName;
         LyricsText = lyricsText;
+        Language = language;
+        VideoId = videoId;
     }
 
     /// <summary>

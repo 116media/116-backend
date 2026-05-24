@@ -128,10 +128,10 @@ public class LyricsEntityTests
 
     #endregion
 
-    #region UpdateLyrics Tests
+    #region Update Tests
 
     [Fact]
-    public void UpdateLyrics_WithValidText_ShouldUpdate()
+    public void Update_WithValidParams_ShouldUpdateAllFields()
     {
         // Arrange
         LyricsEntity lyrics = LyricsEntity.CreateStandalone(
@@ -142,20 +142,28 @@ public class LyricsEntityTests
             TestConstants.Content.Editorial.Lyrics.ValidLanguage,
             AuthorId
         );
+        const string newSongTitle = "Eloko Oyo";
+        const string newArtistName = "Fally Ipupa";
         const string newLyricsText = "Updated lyrics text here.";
+        const string newLanguage = "ln";
+        var newVideoId = Guid.NewGuid();
 
         // Act
-        lyrics.UpdateLyrics(newLyricsText);
+        lyrics.Update(newSongTitle, newArtistName, newLyricsText, newLanguage, newVideoId);
 
         // Assert
+        lyrics.SongTitle.Should().Be(newSongTitle);
+        lyrics.ArtistName.Should().Be(newArtistName);
         lyrics.LyricsText.Should().Be(newLyricsText);
+        lyrics.Language.Should().Be(newLanguage);
+        lyrics.VideoId.Should().Be(newVideoId);
     }
 
     [Theory]
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void UpdateLyrics_WithEmptyText_ShouldThrowBadRequestException(string? invalidText)
+    public void Update_WithEmptySongTitle_ShouldThrowBadRequestException(string? invalidSongTitle)
     {
         // Arrange
         LyricsEntity lyrics = LyricsEntity.CreateStandalone(
@@ -168,7 +176,74 @@ public class LyricsEntityTests
         );
 
         // Act
-        Action act = () => lyrics.UpdateLyrics(invalidText!);
+        Action act = () =>
+            lyrics.Update(
+                invalidSongTitle!,
+                TestConstants.Content.Editorial.Lyrics.ValidArtistName,
+                TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
+                TestConstants.Content.Editorial.Lyrics.ValidLanguage,
+                null
+            );
+
+        // Assert
+        act.Should().Throw<BadRequestException>();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Update_WithEmptyArtistName_ShouldThrowBadRequestException(string? invalidArtistName)
+    {
+        // Arrange
+        LyricsEntity lyrics = LyricsEntity.CreateStandalone(
+            Guid.NewGuid(),
+            TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
+            TestConstants.Content.Editorial.Lyrics.ValidArtistName,
+            TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
+            TestConstants.Content.Editorial.Lyrics.ValidLanguage,
+            AuthorId
+        );
+
+        // Act
+        Action act = () =>
+            lyrics.Update(
+                TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
+                invalidArtistName!,
+                TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
+                TestConstants.Content.Editorial.Lyrics.ValidLanguage,
+                null
+            );
+
+        // Assert
+        act.Should().Throw<BadRequestException>();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Update_WithEmptyLyricsText_ShouldThrowBadRequestException(string? invalidText)
+    {
+        // Arrange
+        LyricsEntity lyrics = LyricsEntity.CreateStandalone(
+            Guid.NewGuid(),
+            TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
+            TestConstants.Content.Editorial.Lyrics.ValidArtistName,
+            TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
+            TestConstants.Content.Editorial.Lyrics.ValidLanguage,
+            AuthorId
+        );
+
+        // Act
+        Action act = () =>
+            lyrics.Update(
+                TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
+                TestConstants.Content.Editorial.Lyrics.ValidArtistName,
+                invalidText!,
+                TestConstants.Content.Editorial.Lyrics.ValidLanguage,
+                null
+            );
 
         // Assert
         act.Should().Throw<BadRequestException>();

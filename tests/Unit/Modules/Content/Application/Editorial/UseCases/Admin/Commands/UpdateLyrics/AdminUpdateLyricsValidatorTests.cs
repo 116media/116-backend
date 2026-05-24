@@ -13,19 +13,23 @@ public class AdminUpdateLyricsValidatorTests
 {
     private readonly AdminUpdateLyricsValidator _validator = new();
 
+    private static AdminUpdateLyricsCommand ValidCommand() =>
+        new(
+            Id: Guid.NewGuid().ToString(),
+            SongTitle: TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
+            ArtistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
+            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
+            Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
+            VideoId: null
+        );
+
     #region Valid Command Tests
 
     [Fact]
     public async Task Validate_WithValidData_ShouldNotHaveErrors()
     {
-        // Arrange
-        var command = new AdminUpdateLyricsCommand(
-            Id: Guid.NewGuid().ToString(),
-            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText
-        );
-
         // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
+        ValidationResult result = await _validator.ValidateAsync(ValidCommand());
 
         // Assert
         result.IsValid.Should().BeTrue();
@@ -40,10 +44,10 @@ public class AdminUpdateLyricsValidatorTests
     public async Task Validate_WithEmptyId_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminUpdateLyricsCommand(
-            Id: string.Empty,
-            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText
-        );
+        var command = ValidCommand() with
+        {
+            Id = string.Empty,
+        };
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -61,10 +65,10 @@ public class AdminUpdateLyricsValidatorTests
     public async Task Validate_WithInvalidGuidId_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminUpdateLyricsCommand(
-            Id: "not-a-guid",
-            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText
-        );
+        var command = ValidCommand() with
+        {
+            Id = "not-a-guid",
+        };
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -86,7 +90,10 @@ public class AdminUpdateLyricsValidatorTests
     public async Task Validate_WithEmptyLyricsText_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminUpdateLyricsCommand(Id: Guid.NewGuid().ToString(), LyricsText: string.Empty);
+        var command = ValidCommand() with
+        {
+            LyricsText = string.Empty,
+        };
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);

@@ -2,6 +2,8 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Identity.Contracts.Application;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -12,10 +14,14 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyric
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
+/// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminUpdateLyricsSeoHandler(
     ILyricsRepository lyricsRepository,
     IContentUnitOfWork unitOfWork,
+    IUserLookupService userLookup,
+    IFileRepository fileRepository,
     IMapper mapper
 ) : ICommandHandler<AdminUpdateLyricsSeoCommand, AdminUpdateLyricsSeoResult>
 {
@@ -43,7 +49,7 @@ public class AdminUpdateLyricsSeoHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = updated.ToLyricsDto(mapper);
+        var dto = await updated.ToLyricsDtoAsync(mapper, userLookup, fileRepository, cancellationToken);
         return new AdminUpdateLyricsSeoResult(Lyrics: dto);
     }
 }

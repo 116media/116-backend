@@ -10,12 +10,18 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyric
 public class AdminUpdateLyricsValidator : AbstractValidator<AdminUpdateLyricsCommand>
 {
     /// <summary>
-    /// Configures validation rules for lyrics text update.
+    /// Configures validation rules for lyrics update.
     /// </summary>
     public AdminUpdateLyricsValidator()
     {
         RuleFor(x => x.Id).IsValidGuid("Lyrics ID");
 
+        RuleFor(x => x.SongTitle).ValidSongTitle();
+
+        RuleFor(x => x.ArtistName).ValidArtistName();
+
         RuleFor(x => x.LyricsText).ValidLyricsText();
+
+        RuleFor(x => x.Language).ValidLyricsLanguage();
     }
 }
