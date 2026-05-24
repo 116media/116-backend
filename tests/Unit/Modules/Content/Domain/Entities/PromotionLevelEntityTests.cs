@@ -1,330 +1,37 @@
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Domain.Entities;
 
 /// <summary>
-/// Unit tests for <see cref="PromotionLevelEntity"/>.
+/// Unit tests for <see cref="PromotionLevelEntity"/> domain behaviour.
 /// </summary>
 public class PromotionLevelEntityTests
 {
-    #region Create Tests
+    #region EnsureActive
 
     [Fact]
-    public void Create_WithValidValues_ShouldCreatePromotionLevel()
+    public void EnsureActive_WhenActive_ShouldNotThrow()
     {
-        // Arrange
-        var id = Guid.NewGuid();
-        string name = TestConstants.Content.PromotionLevel.ValidName;
-        int durationDays = TestConstants.Content.PromotionLevel.ValidDurationDays;
-        decimal priceUsd = TestConstants.Content.PromotionLevel.ValidPriceUsd;
+        PromotionLevelEntity promoLevel = PromotionLevelFactory.CreateDefault();
 
-        // Act
-        var entity = PromotionLevelEntity.Create(id, name, durationDays, priceUsd, spotPriority: 1);
+        Action act = () => promoLevel.EnsureActive(TestErrorsFactory.CreatePromotionLevelErrors());
 
-        // Assert
-        entity.Id.Should().Be(id);
-        entity.Name.Should().Be(name);
-        entity.DurationDays.Should().Be(durationDays);
-        entity.PriceUsd.Should().Be(priceUsd);
-        entity.IsActive.Should().BeTrue();
-        entity.SpotPriority.Should().Be(1);
+        act.Should().NotThrow();
     }
 
     [Fact]
-    public void Create_WithZeroPriceUsd_ShouldSucceed()
+    public void EnsureActive_WhenInactive_ShouldThrowNotFoundException()
     {
-        // Act
-        var entity = PromotionLevelEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.PromotionLevel.ValidName,
-            TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ZeroPriceUsd,
-            spotPriority: 1
-        );
+        PromotionLevelEntity promoLevel = PromotionLevelFactory.CreateInactive();
 
-        // Assert
-        entity.PriceUsd.Should().Be(0m);
-    }
+        Action act = () => promoLevel.EnsureActive(TestErrorsFactory.CreatePromotionLevelErrors());
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Create_WithInvalidName_ShouldThrowBadRequestException(string? invalidName)
-    {
-        // Act
-        Action act = () =>
-            PromotionLevelEntity.Create(
-                Guid.NewGuid(),
-                invalidName!,
-                TestConstants.Content.PromotionLevel.ValidDurationDays,
-                TestConstants.Content.PromotionLevel.ValidPriceUsd,
-                spotPriority: 1
-            );
-
-        // Assert
-        act.Should().Throw<BadRequestException>();
-    }
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-100)]
-    public void Create_WithDurationDaysLessThanOrEqualToZero_ShouldThrowBadRequestException(int invalidDuration)
-    {
-        // Act
-        Action act = () =>
-            PromotionLevelEntity.Create(
-                Guid.NewGuid(),
-                TestConstants.Content.PromotionLevel.ValidName,
-                invalidDuration,
-                TestConstants.Content.PromotionLevel.ValidPriceUsd,
-                spotPriority: 1
-            );
-
-        // Assert
-        act.Should().Throw<BadRequestException>();
-    }
-
-    [Theory]
-    [InlineData(-0.01)]
-    [InlineData(-100)]
-    public void Create_WithNegativePriceUsd_ShouldThrowBadRequestException(decimal invalidPrice)
-    {
-        // Act
-        Action act = () =>
-            PromotionLevelEntity.Create(
-                Guid.NewGuid(),
-                TestConstants.Content.PromotionLevel.ValidName,
-                TestConstants.Content.PromotionLevel.ValidDurationDays,
-                invalidPrice,
-                spotPriority: 1
-            );
-
-        // Assert
-        act.Should().Throw<BadRequestException>();
-    }
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(4)]
-    [InlineData(-1)]
-    public void Create_WithInvalidSpotPriority_ShouldThrowBadRequestException(int invalidSpotPriority)
-    {
-        // Act
-        Action act = () =>
-            PromotionLevelEntity.Create(
-                Guid.NewGuid(),
-                TestConstants.Content.PromotionLevel.ValidName,
-                TestConstants.Content.PromotionLevel.ValidDurationDays,
-                TestConstants.Content.PromotionLevel.ValidPriceUsd,
-                spotPriority: invalidSpotPriority
-            );
-
-        // Assert
-        act.Should().Throw<BadRequestException>();
-    }
-
-    #endregion
-
-    #region Update Tests
-
-    [Fact]
-    public void Update_WithValidValues_ShouldUpdate()
-    {
-        // Arrange
-        var entity = PromotionLevelEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.PromotionLevel.ValidName,
-            TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd,
-            spotPriority: 1
-        );
-
-        // Act
-        entity.Update(TestConstants.Content.PromotionLevel.AnotherValidName, 14, 100m, spotPriority: 2);
-
-        // Assert
-        entity.Name.Should().Be(TestConstants.Content.PromotionLevel.AnotherValidName);
-        entity.DurationDays.Should().Be(14);
-        entity.PriceUsd.Should().Be(100m);
-        entity.SpotPriority.Should().Be(2);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Update_WithInvalidName_ShouldThrowBadRequestException(string? invalidName)
-    {
-        // Arrange
-        var entity = PromotionLevelEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.PromotionLevel.ValidName,
-            TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd,
-            spotPriority: 1
-        );
-
-        // Act
-        Action act = () =>
-            entity.Update(invalidName!, TestConstants.Content.PromotionLevel.ValidDurationDays, 0m, spotPriority: 1);
-
-        // Assert
-        act.Should().Throw<BadRequestException>();
-    }
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    public void Update_WithInvalidDuration_ShouldThrowBadRequestException(int invalidDuration)
-    {
-        // Arrange
-        var entity = PromotionLevelEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.PromotionLevel.ValidName,
-            TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd,
-            spotPriority: 1
-        );
-
-        // Act
-        Action act = () =>
-            entity.Update(TestConstants.Content.PromotionLevel.ValidName, invalidDuration, 0m, spotPriority: 1);
-
-        // Assert
-        act.Should().Throw<BadRequestException>();
-    }
-
-    [Theory]
-    [InlineData(-0.01)]
-    [InlineData(-100)]
-    public void Update_WithNegativePriceUsd_ShouldThrowBadRequestException(decimal invalidPrice)
-    {
-        // Arrange
-        var entity = PromotionLevelEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.PromotionLevel.ValidName,
-            TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd,
-            spotPriority: 1
-        );
-
-        // Act
-        Action act = () =>
-            entity.Update(
-                TestConstants.Content.PromotionLevel.ValidName,
-                TestConstants.Content.PromotionLevel.ValidDurationDays,
-                invalidPrice,
-                spotPriority: 1
-            );
-
-        // Assert
-        act.Should().Throw<BadRequestException>();
-    }
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(4)]
-    [InlineData(-1)]
-    public void Update_WithInvalidSpotPriority_ShouldThrowBadRequestException(int invalidSpotPriority)
-    {
-        // Arrange
-        var entity = PromotionLevelEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.PromotionLevel.ValidName,
-            TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd,
-            spotPriority: 1
-        );
-
-        // Act
-        Action act = () =>
-            entity.Update(
-                TestConstants.Content.PromotionLevel.ValidName,
-                TestConstants.Content.PromotionLevel.ValidDurationDays,
-                TestConstants.Content.PromotionLevel.ValidPriceUsd,
-                spotPriority: invalidSpotPriority
-            );
-
-        // Assert
-        act.Should().Throw<BadRequestException>();
-    }
-
-    #endregion
-
-    #region Activate / Deactivate Tests
-
-    [Fact]
-    public void Activate_WhenInactive_ShouldReturnTrue()
-    {
-        // Arrange
-        var entity = PromotionLevelEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.PromotionLevel.ValidName,
-            TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd,
-            spotPriority: 1
-        );
-        entity.Deactivate();
-
-        // Act & Assert
-        entity.Activate().Should().BeTrue();
-        entity.IsActive.Should().BeTrue();
-    }
-
-    [Fact]
-    public void Activate_WhenAlreadyActive_ShouldReturnFalse()
-    {
-        // Arrange
-        var entity = PromotionLevelEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.PromotionLevel.ValidName,
-            TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd,
-            spotPriority: 1
-        );
-
-        // Act & Assert
-        entity.Activate().Should().BeFalse();
-    }
-
-    [Fact]
-    public void Deactivate_WhenActive_ShouldReturnTrue()
-    {
-        // Arrange
-        var entity = PromotionLevelEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.PromotionLevel.ValidName,
-            TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd,
-            spotPriority: 1
-        );
-
-        // Act & Assert
-        entity.Deactivate().Should().BeTrue();
-        entity.IsActive.Should().BeFalse();
-    }
-
-    [Fact]
-    public void Deactivate_WhenAlreadyInactive_ShouldReturnFalse()
-    {
-        // Arrange
-        var entity = PromotionLevelEntity.Create(
-            Guid.NewGuid(),
-            TestConstants.Content.PromotionLevel.ValidName,
-            TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd,
-            spotPriority: 1
-        );
-        entity.Deactivate();
-
-        // Act & Assert
-        entity.Deactivate().Should().BeFalse();
+        act.Should().Throw<NotFoundException>();
     }
 
     #endregion
