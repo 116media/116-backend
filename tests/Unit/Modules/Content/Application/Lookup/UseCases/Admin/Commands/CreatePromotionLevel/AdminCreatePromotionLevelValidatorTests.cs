@@ -1,5 +1,7 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotionLevel;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -11,7 +13,9 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminCreatePromotionLevelValidatorTests
 {
-    private readonly AdminCreatePromotionLevelValidator _validator = new();
+    private readonly AdminCreatePromotionLevelValidator _validator = new(
+        LocalizerFactory.CreateMessage<PromotionLevelErrorMessage>()
+    );
 
     #region Valid Command Tests
 
@@ -211,7 +215,7 @@ public class AdminCreatePromotionLevelValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreatePromotionLevelCommand.SpotPriority)
-                && e.ErrorMessage == "Spot priority must be 1, 2, or 3"
+                && e.ErrorMessage == "Spot priority must be 1, 2, or 3."
             );
     }
 
