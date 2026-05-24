@@ -32,6 +32,7 @@ public class AdminGetAllShortsEndpointV1Tests
             Slug: "test",
             VideoUrl: "Test",
             ThumbnailUrl: null,
+            VideoId: null,
             HasFullVideo: false,
             IsActive: false,
             ViewCount: 0,

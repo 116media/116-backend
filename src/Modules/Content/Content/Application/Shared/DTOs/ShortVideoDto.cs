@@ -10,6 +10,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="Slug">The URL-safe slug used as the short video permalink.</param>
 /// <param name="VideoUrl">The publicly accessible URL of the video file.</param>
 /// <param name="ThumbnailUrl">The URL of the thumbnail image, or null if not set.</param>
+/// <param name="VideoId">The parent full video UUID, or null for standalone shorts.</param>
 /// <param name="HasFullVideo">Whether this short is a teaser linked to a full-length video.</param>
 /// <param name="IsActive">Whether the short video is currently visible to users.</param>
 /// <param name="ViewCount">The cached view count.</param>
@@ -24,6 +25,7 @@ public record ShortVideoDto(
     string Slug,
     string VideoUrl,
     string? ThumbnailUrl,
+    Guid? VideoId,
     bool HasFullVideo,
     bool IsActive,
     int ViewCount,

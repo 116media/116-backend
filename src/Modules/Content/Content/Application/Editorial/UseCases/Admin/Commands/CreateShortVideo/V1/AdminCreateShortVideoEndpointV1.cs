@@ -77,7 +77,7 @@ public class AdminCreateShortVideoEndpointV1 : ICarterModule
             .WithSummary(summary: AdminCreateShortVideoMetaField.AdminCreateShortVideo.Summary)
             .WithDescription(description: AdminCreateShortVideoMetaField.AdminCreateShortVideo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
-            .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
+            .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.FileUpload)
             .DisableAntiforgery()
             .ProducesValidationProblem()

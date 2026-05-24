@@ -32,6 +32,7 @@ public class PublicGetPublicShortsEndpointV1Tests
             Slug: "test",
             VideoUrl: "Test",
             ThumbnailUrl: null,
+            VideoId: null,
             HasFullVideo: false,
             IsActive: false,
             ViewCount: 0,

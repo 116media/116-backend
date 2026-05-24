@@ -44,7 +44,6 @@ public class AdminCreateShortVideoHandler(
         CloudinaryUploadResult uploadResult = await cloudinaryService.UploadVideoAsync(
             file: command.VideoFile,
             publicId: storageKey,
-            folder: "content/short-videos",
             cancellationToken: cancellationToken
         );
 
@@ -74,6 +73,9 @@ public class AdminCreateShortVideoHandler(
             );
         }
 
+        string thumbnailUrl = GenerateThumbnailUrl(uploadResult.SecureUrl);
+        shortVideo.UpdateThumbnail(thumbnailUrl, uploadResult.PublicId);
+
         await shortVideoRepository.AddAsync(shortVideo: shortVideo, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
@@ -84,5 +86,22 @@ public class AdminCreateShortVideoHandler(
 
         var dto = created.ToShortVideoDto(mapper);
         return new AdminCreateShortVideoResult(ShortVideo: dto);
+    }
+
+    /// <summary>
+    /// Generates a thumbnail URL from a Cloudinary video URL by inserting
+    /// a <c>so_1</c> (screenshot at 1 second) transformation and changing
+    /// the extension to <c>.jpg</c>.
+    /// </summary>
+    /// <param name="videoUrl">
+    /// The Cloudinary secure URL of the uploaded video.
+    /// </param>
+    /// <returns>
+    /// A Cloudinary URL that returns a JPG frame from the video.
+    /// </returns>
+    private static string GenerateThumbnailUrl(string videoUrl)
+    {
+        string jpgUrl = Path.ChangeExtension(videoUrl, ".jpg");
+        return jpgUrl.Replace("/video/upload/", "/video/upload/so_1,q_auto,f_auto,w_720/");
     }
 }
