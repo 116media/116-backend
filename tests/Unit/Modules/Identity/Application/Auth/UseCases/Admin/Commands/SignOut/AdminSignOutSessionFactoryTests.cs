@@ -3,7 +3,7 @@ using _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
 using Moq;
 using Xunit;
 
