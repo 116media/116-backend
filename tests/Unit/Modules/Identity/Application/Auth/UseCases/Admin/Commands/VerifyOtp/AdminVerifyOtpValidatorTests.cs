@@ -1,7 +1,9 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.VerifyOtp;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -13,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Comma
 /// </summary>
 public class AdminVerifyOtpValidatorTests
 {
-    private readonly AdminVerifyOtpValidator _validator = new();
+    private readonly AdminVerifyOtpValidator _validator = new(LocalizerFactory.CreateMessage<ValidationErrorMessage>());
 
     #region Valid Command Tests
 
@@ -114,7 +116,7 @@ public class AdminVerifyOtpValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.Code)
-            .WithErrorMessage($"Verification code must be exactly {UserConstants.OtpCodeLength} characters long");
+            .WithErrorMessage($"Verification code must be exactly {UserConstants.OtpCodeLength} characters long.");
     }
 
     [Fact]
