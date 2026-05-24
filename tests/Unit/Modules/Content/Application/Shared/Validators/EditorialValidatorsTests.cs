@@ -1,5 +1,7 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using _116.Content.Domain.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation;
 using FluentValidation.Results;
@@ -16,17 +18,17 @@ internal record LyricsIdInput(Guid LyricsId);
 
 internal class ArticleIdValidator : AbstractValidator<ArticleIdInput>
 {
-    public ArticleIdValidator() => RuleFor(x => x.ArticleId).ValidArticleId();
+    public ArticleIdValidator() => RuleFor(x => x.ArticleId).ValidArticleId("Article ID is required.");
 }
 
 internal class VideoIdValidator : AbstractValidator<VideoIdInput>
 {
-    public VideoIdValidator() => RuleFor(x => x.VideoId).ValidVideoId();
+    public VideoIdValidator() => RuleFor(x => x.VideoId).ValidVideoId("Video ID is required.");
 }
 
 internal class LyricsIdValidator : AbstractValidator<LyricsIdInput>
 {
-    public LyricsIdValidator() => RuleFor(x => x.LyricsId).ValidLyricsId();
+    public LyricsIdValidator() => RuleFor(x => x.LyricsId).ValidLyricsId("Lyrics ID is required.");
 }
 
 // Records must expose "Title" and "Slug" properties so ValidationUtils.GetPropertyValue can find them.
@@ -40,22 +42,60 @@ internal record VideoOptionalSlugInput(string? Slug);
 
 internal class ArticleOptionalTitleValidator : AbstractValidator<ArticleOptionalTitleInput>
 {
-    public ArticleOptionalTitleValidator() => RuleFor(x => x.Title).ValidArticleTitle(isRequired: false);
+    public ArticleOptionalTitleValidator()
+    {
+        ArticleErrorMessage msg = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+        RuleFor(x => x.Title)
+            .ValidArticleTitle(
+                titleRequired: msg.TitleRequired(),
+                titleTooLong: msg.TitleTooLong(ContentConstants.MaxTitleLength),
+                isRequired: false
+            );
+    }
 }
 
 internal class ArticleOptionalSlugValidator : AbstractValidator<ArticleOptionalSlugInput>
 {
-    public ArticleOptionalSlugValidator() => RuleFor(x => x.Slug).ValidArticleSlug(isRequired: false);
+    public ArticleOptionalSlugValidator()
+    {
+        ArticleErrorMessage msg = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+        RuleFor(x => x.Slug)
+            .ValidArticleSlug(
+                slugRequired: msg.SlugRequired(),
+                slugTooLong: msg.SlugTooLong(ContentConstants.MaxSlugLength),
+                slugInvalidFormat: msg.SlugInvalidFormat(),
+                isRequired: false
+            );
+    }
 }
 
 internal class VideoOptionalTitleValidator : AbstractValidator<VideoOptionalTitleInput>
 {
-    public VideoOptionalTitleValidator() => RuleFor(x => x.Title).ValidVideoTitle(isRequired: false);
+    public VideoOptionalTitleValidator()
+    {
+        VideoErrorMessage msg = LocalizerFactory.CreateMessage<VideoErrorMessage>();
+        RuleFor(x => x.Title)
+            .ValidVideoTitle(
+                titleRequired: msg.TitleRequired(),
+                titleTooLong: msg.TitleTooLong(ContentConstants.MaxTitleLength),
+                isRequired: false
+            );
+    }
 }
 
 internal class VideoOptionalSlugValidator : AbstractValidator<VideoOptionalSlugInput>
 {
-    public VideoOptionalSlugValidator() => RuleFor(x => x.Slug).ValidVideoSlug(isRequired: false);
+    public VideoOptionalSlugValidator()
+    {
+        VideoErrorMessage msg = LocalizerFactory.CreateMessage<VideoErrorMessage>();
+        RuleFor(x => x.Slug)
+            .ValidVideoSlug(
+                slugRequired: msg.SlugRequired(),
+                slugTooLong: msg.SlugTooLong(ContentConstants.MaxSlugLength),
+                slugInvalidFormat: msg.SlugInvalidFormat(),
+                isRequired: false
+            );
+    }
 }
 
 /// <summary>
