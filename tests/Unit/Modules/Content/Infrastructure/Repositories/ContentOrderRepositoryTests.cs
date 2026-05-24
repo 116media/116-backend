@@ -1,9 +1,11 @@
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -17,6 +19,7 @@ public class ContentOrderRepositoryTests : IDisposable
 {
     private readonly ContentDbContext _context;
     private readonly ContentOrderRepository _repository;
+    private readonly ContentOrderErrors _errors = TestErrorsFactory.CreateContentOrderErrors();
 
     public ContentOrderRepositoryTests()
     {
@@ -25,7 +28,7 @@ public class ContentOrderRepositoryTests : IDisposable
             .Options;
 
         _context = new ContentDbContext(options);
-        _repository = new ContentOrderRepository(_context);
+        _repository = new ContentOrderRepository(_context, TestErrorsFactory.CreateContentOrderErrors());
     }
 
     public void Dispose()
@@ -152,7 +155,7 @@ public class ContentOrderRepositoryTests : IDisposable
         ContentOrderEntity order = await SeedOrderAsync();
 
         // Act
-        order.Submit();
+        order.Submit(_errors);
         await _repository.UpdateAsync(order);
         await _context.SaveChangesAsync();
 
@@ -170,7 +173,7 @@ public class ContentOrderRepositoryTests : IDisposable
     {
         // Arrange
         ContentOrderEntity order = await SeedOrderAsync();
-        order.Submit();
+        order.Submit(_errors);
         await _context.SaveChangesAsync();
 
         ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
@@ -178,7 +181,11 @@ public class ContentOrderRepositoryTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        payment.Verify(adminUserId: Guid.NewGuid(), receiptUrl: "https://receipts.example.com/test.pdf");
+        payment.Verify(
+            adminUserId: Guid.NewGuid(),
+            receiptUrl: "https://receipts.example.com/test.pdf",
+            errors: _errors
+        );
         await _repository.UpdatePaymentAsync(payment);
         await _context.SaveChangesAsync();
 
@@ -273,7 +280,7 @@ public class ContentOrderRepositoryTests : IDisposable
         // Arrange
         ContentOrderEntity draftOrder = await SeedOrderAsync();
         ContentOrderEntity submittedOrder = await SeedOrderAsync();
-        submittedOrder.Submit();
+        submittedOrder.Submit(_errors);
         await _repository.UpdateAsync(submittedOrder);
         await _context.SaveChangesAsync();
 
