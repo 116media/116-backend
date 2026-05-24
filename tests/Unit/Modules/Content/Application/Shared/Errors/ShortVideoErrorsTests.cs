@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -10,6 +11,8 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 /// </summary>
 public class ShortVideoErrorsTests
 {
+    private readonly ShortVideoErrors _errors = TestErrorsFactory.CreateShortVideoErrors();
+
     [Fact]
     public void NotFound_WithId_ShouldReturnNotFoundException()
     {
@@ -17,7 +20,7 @@ public class ShortVideoErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = ShortVideoErrors.NotFound(id);
+        NotFoundException exception = _errors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
@@ -28,7 +31,7 @@ public class ShortVideoErrorsTests
     public void AlreadyActive_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = ShortVideoErrors.AlreadyActive();
+        ConflictException exception = _errors.AlreadyActive();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -39,7 +42,7 @@ public class ShortVideoErrorsTests
     public void AlreadyInactive_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = ShortVideoErrors.AlreadyInactive();
+        ConflictException exception = _errors.AlreadyInactive();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -50,7 +53,7 @@ public class ShortVideoErrorsTests
     public void TitleRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = ShortVideoErrors.TitleRequired();
+        BadRequestException exception = _errors.TitleRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -64,7 +67,7 @@ public class ShortVideoErrorsTests
         const string slug = "teaser-fally-focus";
 
         // Act
-        ConflictException exception = ShortVideoErrors.SlugAlreadyExists(slug);
+        ConflictException exception = _errors.SlugAlreadyExists(slug);
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
