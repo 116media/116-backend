@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -10,6 +11,8 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 /// </summary>
 public class PromotionLevelErrorsTests
 {
+    private readonly PromotionLevelErrors _errors = TestErrorsFactory.CreatePromotionLevelErrors();
+
     [Fact]
     public void AlreadyExists_WithName_ShouldReturnConflictException()
     {
@@ -17,7 +20,7 @@ public class PromotionLevelErrorsTests
         string name = "Featured — 7 days";
 
         // Act
-        ConflictException exception = PromotionLevelErrors.AlreadyExists(name);
+        ConflictException exception = _errors.AlreadyExists(name);
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -31,7 +34,7 @@ public class PromotionLevelErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = PromotionLevelErrors.NotFound(id);
+        NotFoundException exception = _errors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
@@ -42,7 +45,7 @@ public class PromotionLevelErrorsTests
     public void AlreadyActive_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = PromotionLevelErrors.AlreadyActive();
+        ConflictException exception = _errors.AlreadyActive();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -53,7 +56,7 @@ public class PromotionLevelErrorsTests
     public void AlreadyInactive_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = PromotionLevelErrors.AlreadyInactive();
+        ConflictException exception = _errors.AlreadyInactive();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -64,7 +67,7 @@ public class PromotionLevelErrorsTests
     public void NameRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = PromotionLevelErrors.NameRequired();
+        BadRequestException exception = _errors.NameRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -75,7 +78,7 @@ public class PromotionLevelErrorsTests
     public void DurationMustBePositive_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = PromotionLevelErrors.DurationMustBePositive();
+        BadRequestException exception = _errors.DurationMustBePositive();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -86,7 +89,7 @@ public class PromotionLevelErrorsTests
     public void PriceMustBeNonNegative_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = PromotionLevelErrors.PriceMustBeNonNegative();
+        BadRequestException exception = _errors.PriceMustBeNonNegative();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
