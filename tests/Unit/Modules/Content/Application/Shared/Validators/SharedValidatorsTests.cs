@@ -1,5 +1,7 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using _116.Content.Domain.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation;
 using FluentValidation.Results;
@@ -19,42 +21,115 @@ internal record CategoryOptionalInput(string? Name, string? Slug);
 
 internal class ContentTypeOptionalNameValidator : AbstractValidator<ContentTypeOptionalNameInput>
 {
-    public ContentTypeOptionalNameValidator() => RuleFor(x => x.Name).ValidContentTypeName(isRequired: false);
+    public ContentTypeOptionalNameValidator()
+    {
+        ContentTypeErrorMessage msg = LocalizerFactory.CreateMessage<ContentTypeErrorMessage>();
+        RuleFor(x => x.Name)
+            .ValidContentTypeName(
+                nameRequired: msg.NameRequired(),
+                nameTooLong: msg.NameTooLong(ContentConstants.MaxContentTypeNameLength),
+                isRequired: false
+            );
+    }
 }
 
 internal class PricingTierOptionalNameValidator : AbstractValidator<PricingTierOptionalInput>
 {
-    public PricingTierOptionalNameValidator() => RuleFor(x => x.Name).ValidPricingTierName(isRequired: false);
+    public PricingTierOptionalNameValidator()
+    {
+        PricingTierErrorMessage msg = LocalizerFactory.CreateMessage<PricingTierErrorMessage>();
+        RuleFor(x => x.Name)
+            .ValidPricingTierName(
+                nameRequired: msg.NameRequired(),
+                nameTooLong: msg.NameTooLong(ContentConstants.MaxPricingTierNameLength),
+                isRequired: false
+            );
+    }
 }
 
 internal class PricingTierRequiredDescriptionValidator : AbstractValidator<PricingTierOptionalInput>
 {
-    public PricingTierRequiredDescriptionValidator() => RuleFor(x => x.Description).ValidPricingTierDescription();
+    public PricingTierRequiredDescriptionValidator()
+    {
+        PricingTierErrorMessage msg = LocalizerFactory.CreateMessage<PricingTierErrorMessage>();
+        RuleFor(x => x.Description)
+            .ValidPricingTierDescription(
+                descriptionRequired: msg.DescriptionRequired(),
+                descriptionTooLong: msg.DescriptionTooLong(ContentConstants.MaxPricingTierDescriptionLength)
+            );
+    }
 }
 
 internal class PromotionLevelOptionalNameValidator : AbstractValidator<PromotionLevelOptionalNameInput>
 {
-    public PromotionLevelOptionalNameValidator() => RuleFor(x => x.Name).ValidPromotionLevelName(isRequired: false);
+    public PromotionLevelOptionalNameValidator()
+    {
+        PromotionLevelErrorMessage msg = LocalizerFactory.CreateMessage<PromotionLevelErrorMessage>();
+        RuleFor(x => x.Name)
+            .ValidPromotionLevelName(
+                nameRequired: msg.NameRequired(),
+                nameTooLong: msg.NameTooLong(ContentConstants.MaxPromotionLevelNameLength),
+                isRequired: false
+            );
+    }
 }
 
 internal class TagOptionalNameValidator : AbstractValidator<TagOptionalInput>
 {
-    public TagOptionalNameValidator() => RuleFor(x => x.Name).ValidTagName(isRequired: false);
+    public TagOptionalNameValidator()
+    {
+        TagErrorMessage msg = LocalizerFactory.CreateMessage<TagErrorMessage>();
+        RuleFor(x => x.Name)
+            .ValidTagName(
+                nameRequired: msg.NameRequired(),
+                nameTooLong: msg.NameTooLong(ContentConstants.MaxTagNameLength),
+                isRequired: false
+            );
+    }
 }
 
 internal class TagOptionalSlugValidator : AbstractValidator<TagOptionalInput>
 {
-    public TagOptionalSlugValidator() => RuleFor(x => x.Slug).ValidTagSlug(isRequired: false);
+    public TagOptionalSlugValidator()
+    {
+        TagErrorMessage msg = LocalizerFactory.CreateMessage<TagErrorMessage>();
+        RuleFor(x => x.Slug)
+            .ValidTagSlug(
+                slugRequired: msg.SlugRequired(),
+                slugTooLong: msg.SlugTooLong(ContentConstants.MaxTagSlugLength),
+                slugInvalidFormat: msg.SlugInvalidFormat(),
+                isRequired: false
+            );
+    }
 }
 
 internal class CategoryOptionalNameValidator : AbstractValidator<CategoryOptionalInput>
 {
-    public CategoryOptionalNameValidator() => RuleFor(x => x.Name).ValidCategoryName(isRequired: false);
+    public CategoryOptionalNameValidator()
+    {
+        CategoryErrorMessage msg = LocalizerFactory.CreateMessage<CategoryErrorMessage>();
+        RuleFor(x => x.Name)
+            .ValidCategoryName(
+                nameRequired: msg.NameRequired(),
+                nameTooLong: msg.NameTooLong(ContentConstants.MaxCategoryNameLength),
+                isRequired: false
+            );
+    }
 }
 
 internal class CategoryOptionalSlugValidator : AbstractValidator<CategoryOptionalInput>
 {
-    public CategoryOptionalSlugValidator() => RuleFor(x => x.Slug).ValidCategorySlug(isRequired: false);
+    public CategoryOptionalSlugValidator()
+    {
+        CategoryErrorMessage msg = LocalizerFactory.CreateMessage<CategoryErrorMessage>();
+        RuleFor(x => x.Slug)
+            .ValidCategorySlug(
+                slugRequired: msg.SlugRequired(),
+                slugTooLong: msg.SlugTooLong(ContentConstants.MaxCategorySlugLength),
+                slugInvalidFormat: msg.SlugInvalidFormat(),
+                isRequired: false
+            );
+    }
 }
 
 /// <summary>
