@@ -37,8 +37,6 @@ public class LyricsConfiguration : IEntityTypeConfiguration<LyricsEntity>
             .HasMaxLength(ContentConstants.MaxMetaDescriptionLength)
             .IsRequired(false);
 
-        builder.Property(x => x.MetaKeywords).HasMaxLength(ContentConstants.MaxMetaKeywordsLength).IsRequired(false);
-
         // StructuredData is stored as JSONB in PostgreSQL for schema.org JSON-LD
         builder.Property(x => x.StructuredData).HasColumnType("jsonb").IsRequired(false);
 

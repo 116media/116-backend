@@ -192,12 +192,11 @@ public class LyricsEntityTests
         );
 
         // Act
-        lyrics.UpdateSeo("SEO Title", "SEO Description", "keyword1,keyword2", "{\"@type\":\"MusicComposition\"}");
+        lyrics.UpdateSeo("SEO Title", "SEO Description", "{\"@type\":\"MusicComposition\"}");
 
         // Assert
         lyrics.MetaTitle.Should().Be("SEO Title");
         lyrics.MetaDescription.Should().Be("SEO Description");
-        lyrics.MetaKeywords.Should().Be("keyword1,keyword2");
         lyrics.StructuredData.Should().Be("{\"@type\":\"MusicComposition\"}");
     }
 

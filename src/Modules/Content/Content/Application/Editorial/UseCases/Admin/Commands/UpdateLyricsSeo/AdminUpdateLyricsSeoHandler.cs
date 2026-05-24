@@ -32,7 +32,6 @@ public class AdminUpdateLyricsSeoHandler(
         lyrics.UpdateSeo(
             metaTitle: command.MetaTitle,
             metaDescription: command.MetaDescription,
-            metaKeywords: command.MetaKeywords,
             structuredData: command.StructuredData
         );
 

@@ -222,11 +222,6 @@ public static class ContentConstants
     public const string DefaultLyricsLanguage = "fr";
 
     /// <summary>
-    /// Maximum allowed length for SEO meta keywords on a lyrics page.
-    /// </summary>
-    public const int MaxMetaKeywordsLength = 300;
-
-    /// <summary>
     /// Maximum allowed length for an article comment body.
     /// </summary>
     public const int MaxCommentBodyLength = 1000;

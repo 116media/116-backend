@@ -67,12 +67,6 @@ public class LyricsEntity : Aggregate<Guid>
     public string? MetaDescription { get; private set; }
 
     /// <summary>
-    /// SEO meta keywords (comma-separated, max 300 chars).
-    /// </summary>
-    [MaxLength(length: ContentConstants.MaxMetaKeywordsLength)]
-    public string? MetaKeywords { get; private set; }
-
-    /// <summary>
     /// Schema.org JSON-LD structured data for enhanced Google search results.
     /// Stored as JSONB in PostgreSQL. Generated automatically or provided manually.
     /// </summary>
@@ -156,11 +150,10 @@ public class LyricsEntity : Aggregate<Guid>
     /// <summary>
     /// Updates the SEO metadata for this lyrics page.
     /// </summary>
-    public void UpdateSeo(string? metaTitle, string? metaDescription, string? metaKeywords, string? structuredData)
+    public void UpdateSeo(string? metaTitle, string? metaDescription, string? structuredData)
     {
         MetaTitle = metaTitle;
         MetaDescription = metaDescription;
-        MetaKeywords = metaKeywords;
         StructuredData = structuredData;
     }
 

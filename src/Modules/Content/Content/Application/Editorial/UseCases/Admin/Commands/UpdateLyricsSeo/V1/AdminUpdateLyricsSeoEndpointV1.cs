@@ -17,14 +17,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyric
 /// </summary>
 /// <param name="MetaTitle">Custom SEO meta title. Null clears the value.</param>
 /// <param name="MetaDescription">Custom SEO meta description. Null clears the value.</param>
-/// <param name="MetaKeywords">SEO meta keywords (comma-separated). Null clears the value.</param>
 /// <param name="StructuredData">Schema.org JSON-LD structured data. Null clears the value.</param>
-public record AdminUpdateLyricsSeoRequest(
-    string? MetaTitle,
-    string? MetaDescription,
-    string? MetaKeywords,
-    string? StructuredData
-);
+public record AdminUpdateLyricsSeoRequest(string? MetaTitle, string? MetaDescription, string? StructuredData);
 
 /// <summary>
 /// Response model for successful lyrics SEO update.
@@ -58,7 +52,6 @@ public class AdminUpdateLyricsSeoEndpointV1 : ICarterModule
                         Id: id,
                         MetaTitle: request.MetaTitle,
                         MetaDescription: request.MetaDescription,
-                        MetaKeywords: request.MetaKeywords,
                         StructuredData: request.StructuredData
                     );
 

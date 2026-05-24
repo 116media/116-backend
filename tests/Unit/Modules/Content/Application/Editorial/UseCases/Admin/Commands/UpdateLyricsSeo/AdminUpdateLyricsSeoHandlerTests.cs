@@ -38,7 +38,6 @@ public class AdminUpdateLyricsSeoHandlerTests : BaseContentHandlerTest
             Id: lyrics.Id.ToString(),
             MetaTitle: "Updated SEO Title",
             MetaDescription: "Updated SEO Description",
-            MetaKeywords: null,
             StructuredData: null
         );
 
@@ -65,7 +64,6 @@ public class AdminUpdateLyricsSeoHandlerTests : BaseContentHandlerTest
             Id: nonExistentId.ToString(),
             MetaTitle: null,
             MetaDescription: null,
-            MetaKeywords: null,
             StructuredData: null
         );
         _lyricsRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
