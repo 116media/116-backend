@@ -30,7 +30,12 @@ public class PermissionValidationTests
     {
         public TestResourceCommandValidator(bool isRequired = true)
         {
-            RuleFor(x => x.Resource).ValidPermissionResource(isRequired);
+            RuleFor(x => x.Resource)
+                .ValidPermissionResource(
+                    permissionResourceRequired: "Permission resource is required.",
+                    permissionResourceTooLong: $"Permission resource cannot exceed {PermissionConstants.MaxPermissionResourceLength} characters.",
+                    isRequired: isRequired
+                );
         }
     }
 
@@ -38,7 +43,12 @@ public class PermissionValidationTests
     {
         public TestActionCommandValidator(bool isRequired = true)
         {
-            RuleFor(x => x.Action).ValidPermissionAction(isRequired);
+            RuleFor(x => x.Action)
+                .ValidPermissionAction(
+                    permissionActionRequired: "Permission action is required.",
+                    permissionActionTooLong: $"Permission action cannot exceed {PermissionConstants.MaxPermissionActionLength} characters.",
+                    isRequired: isRequired
+                );
         }
     }
 
@@ -46,7 +56,12 @@ public class PermissionValidationTests
     {
         public TestDescriptionCommandValidator(bool isRequired = true)
         {
-            RuleFor(x => x.Description).ValidPermissionDescription(isRequired);
+            RuleFor(x => x.Description)
+                .ValidPermissionDescription(
+                    permissionDescriptionRequired: "Permission description is required.",
+                    permissionDescriptionTooLong: $"Permission description cannot exceed {PermissionConstants.MaxPermissionDescriptionLength} characters.",
+                    isRequired: isRequired
+                );
         }
     }
 
@@ -85,7 +100,7 @@ public class PermissionValidationTests
 
         TestValidationResult<TestResourceCommand> result = validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.Resource).WithErrorMessage("Permission resource is required");
+        result.ShouldHaveValidationErrorFor(x => x.Resource).WithErrorMessage("Permission resource is required.");
     }
 
     [Fact]
@@ -96,7 +111,7 @@ public class PermissionValidationTests
 
         TestValidationResult<TestResourceCommand> result = validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.Resource).WithErrorMessage("Permission resource is required");
+        result.ShouldHaveValidationErrorFor(x => x.Resource).WithErrorMessage("Permission resource is required.");
     }
 
     [Fact]
@@ -107,7 +122,7 @@ public class PermissionValidationTests
 
         TestValidationResult<TestResourceCommand> result = validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.Resource).WithErrorMessage("Permission resource is required");
+        result.ShouldHaveValidationErrorFor(x => x.Resource).WithErrorMessage("Permission resource is required.");
     }
 
     [Fact]
@@ -124,7 +139,7 @@ public class PermissionValidationTests
         result
             .ShouldHaveValidationErrorFor(x => x.Resource)
             .WithErrorMessage(
-                $"Permission resource cannot exceed {PermissionConstants.MaxPermissionResourceLength} characters"
+                $"Permission resource cannot exceed {PermissionConstants.MaxPermissionResourceLength} characters."
             );
     }
 
@@ -190,7 +205,7 @@ public class PermissionValidationTests
         result
             .ShouldHaveValidationErrorFor(x => x.Resource)
             .WithErrorMessage(
-                $"Permission resource cannot exceed {PermissionConstants.MaxPermissionResourceLength} characters"
+                $"Permission resource cannot exceed {PermissionConstants.MaxPermissionResourceLength} characters."
             );
     }
 
@@ -228,7 +243,7 @@ public class PermissionValidationTests
 
         TestValidationResult<TestActionCommand> result = validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.Action).WithErrorMessage("Permission action is required");
+        result.ShouldHaveValidationErrorFor(x => x.Action).WithErrorMessage("Permission action is required.");
     }
 
     [Fact]
@@ -239,7 +254,7 @@ public class PermissionValidationTests
 
         TestValidationResult<TestActionCommand> result = validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.Action).WithErrorMessage("Permission action is required");
+        result.ShouldHaveValidationErrorFor(x => x.Action).WithErrorMessage("Permission action is required.");
     }
 
     [Fact]
@@ -250,7 +265,7 @@ public class PermissionValidationTests
 
         TestValidationResult<TestActionCommand> result = validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.Action).WithErrorMessage("Permission action is required");
+        result.ShouldHaveValidationErrorFor(x => x.Action).WithErrorMessage("Permission action is required.");
     }
 
     [Fact]
@@ -267,7 +282,7 @@ public class PermissionValidationTests
         result
             .ShouldHaveValidationErrorFor(x => x.Action)
             .WithErrorMessage(
-                $"Permission action cannot exceed {PermissionConstants.MaxPermissionActionLength} characters"
+                $"Permission action cannot exceed {PermissionConstants.MaxPermissionActionLength} characters."
             );
     }
 
@@ -333,7 +348,7 @@ public class PermissionValidationTests
         result
             .ShouldHaveValidationErrorFor(x => x.Action)
             .WithErrorMessage(
-                $"Permission action cannot exceed {PermissionConstants.MaxPermissionActionLength} characters"
+                $"Permission action cannot exceed {PermissionConstants.MaxPermissionActionLength} characters."
             );
     }
 
@@ -374,7 +389,7 @@ public class PermissionValidationTests
 
         TestValidationResult<TestDescriptionCommand> result = validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.Description).WithErrorMessage("Permission description is required");
+        result.ShouldHaveValidationErrorFor(x => x.Description).WithErrorMessage("Permission description is required.");
     }
 
     [Fact]
@@ -385,7 +400,7 @@ public class PermissionValidationTests
 
         TestValidationResult<TestDescriptionCommand> result = validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.Description).WithErrorMessage("Permission description is required");
+        result.ShouldHaveValidationErrorFor(x => x.Description).WithErrorMessage("Permission description is required.");
     }
 
     [Fact]
@@ -396,7 +411,7 @@ public class PermissionValidationTests
 
         TestValidationResult<TestDescriptionCommand> result = validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.Description).WithErrorMessage("Permission description is required");
+        result.ShouldHaveValidationErrorFor(x => x.Description).WithErrorMessage("Permission description is required.");
     }
 
     [Fact]
@@ -413,7 +428,7 @@ public class PermissionValidationTests
         result
             .ShouldHaveValidationErrorFor(x => x.Description)
             .WithErrorMessage(
-                $"Permission description cannot exceed {PermissionConstants.MaxPermissionDescriptionLength} characters"
+                $"Permission description cannot exceed {PermissionConstants.MaxPermissionDescriptionLength} characters."
             );
     }
 
@@ -479,7 +494,7 @@ public class PermissionValidationTests
         result
             .ShouldHaveValidationErrorFor(x => x.Description)
             .WithErrorMessage(
-                $"Permission description cannot exceed {PermissionConstants.MaxPermissionDescriptionLength} characters"
+                $"Permission description cannot exceed {PermissionConstants.MaxPermissionDescriptionLength} characters."
             );
     }
 
