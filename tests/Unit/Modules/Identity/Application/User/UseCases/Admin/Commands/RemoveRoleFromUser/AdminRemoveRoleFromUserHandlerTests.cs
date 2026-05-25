@@ -1,9 +1,11 @@
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.UseCases.Admin.Commands.RemoveRoleFromUser;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -20,14 +22,21 @@ public class AdminRemoveRoleFromUserHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IUserRoleRepository> _userRoleRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
+    private readonly UserErrors _userErrors;
     private readonly AdminRemoveRoleFromUserHandler _handler;
 
     public AdminRemoveRoleFromUserHandlerTests()
     {
         _userRoleRepositoryMock = MockUserRoleRepository.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
+        _userErrors = TestErrorsFactory.CreateUserErrors();
 
-        _handler = new AdminRemoveRoleFromUserHandler(_userRoleRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
+        _handler = new AdminRemoveRoleFromUserHandler(
+            _userRoleRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            Mapper,
+            _userErrors
+        );
     }
 
     #region Success Cases
