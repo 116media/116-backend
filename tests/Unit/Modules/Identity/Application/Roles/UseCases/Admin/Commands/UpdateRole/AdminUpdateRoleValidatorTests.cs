@@ -1,7 +1,9 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdateRole;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Builders.Commands.Roles;
 using _116.Tests.Fixtures.Constants;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -13,7 +15,9 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Comm
 /// </summary>
 public class AdminUpdateRoleValidatorTests
 {
-    private readonly AdminUpdateRoleValidator _validator = new();
+    private readonly AdminUpdateRoleValidator _validator = new(
+        LocalizerFactory.CreateMessage<ValidationErrorMessage>("en")
+    );
     private readonly Guid _validRoleId = Guid.NewGuid();
 
     #region Valid Command Tests
