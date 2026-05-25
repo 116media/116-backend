@@ -27,7 +27,12 @@ public class OtpValidationTests
     {
         public TestOtpCodeCommandValidator()
         {
-            RuleFor(x => x.OtpCode).ValidOtpCode();
+            RuleFor(x => x.OtpCode)
+                .ValidOtpCode(
+                    otpCodeRequired: "Verification code is required.",
+                    otpCodeWrongLength: $"Verification code must be exactly {UserConstants.OtpCodeLength} characters long.",
+                    otpCodeNotNumeric: "Verification code must contain only numbers."
+                );
         }
     }
 
@@ -35,7 +40,11 @@ public class OtpValidationTests
     {
         public TestOtpPurposeCommandValidator()
         {
-            RuleFor(x => x.OtpPurpose).ValidOtpPurpose();
+            RuleFor(x => x.OtpPurpose)
+                .ValidOtpPurpose(
+                    otpPurposeRequired: "OTP purpose is required.",
+                    otpPurposeInvalid: "Invalid OTP purpose specified."
+                );
         }
     }
 
@@ -71,7 +80,7 @@ public class OtpValidationTests
 
         TestValidationResult<TestOtpCodeCommand> result = validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.OtpCode).WithErrorMessage("Verification code is required");
+        result.ShouldHaveValidationErrorFor(x => x.OtpCode).WithErrorMessage("Verification code is required.");
     }
 
     [Fact]
@@ -96,7 +105,7 @@ public class OtpValidationTests
 
         result
             .ShouldHaveValidationErrorFor(x => x.OtpCode)
-            .WithErrorMessage($"Verification code must be exactly {UserConstants.OtpCodeLength} characters long");
+            .WithErrorMessage($"Verification code must be exactly {UserConstants.OtpCodeLength} characters long.");
     }
 
     [Fact]
@@ -109,7 +118,7 @@ public class OtpValidationTests
 
         result
             .ShouldHaveValidationErrorFor(x => x.OtpCode)
-            .WithErrorMessage($"Verification code must be exactly {UserConstants.OtpCodeLength} characters long");
+            .WithErrorMessage($"Verification code must be exactly {UserConstants.OtpCodeLength} characters long.");
     }
 
     [Fact]
@@ -122,7 +131,7 @@ public class OtpValidationTests
 
         result
             .ShouldHaveValidationErrorFor(x => x.OtpCode)
-            .WithErrorMessage("Verification code must contain only numbers");
+            .WithErrorMessage("Verification code must contain only numbers.");
     }
 
     [Fact]
@@ -135,7 +144,7 @@ public class OtpValidationTests
 
         result
             .ShouldHaveValidationErrorFor(x => x.OtpCode)
-            .WithErrorMessage("Verification code must contain only numbers");
+            .WithErrorMessage("Verification code must contain only numbers.");
     }
 
     #endregion
