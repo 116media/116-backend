@@ -1,10 +1,12 @@
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -18,13 +20,15 @@ public class PublicUpdateProfileAuthFactoryTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
+    private readonly UserErrors _userErrors;
     private readonly PublicUpdateProfileAuthFactory _factory;
 
     public PublicUpdateProfileAuthFactoryTests()
     {
         _authRepositoryMock = new Mock<IAuthRepository>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
-        _factory = new PublicUpdateProfileAuthFactory(_authRepositoryMock.Object, _unitOfWorkMock.Object);
+        _userErrors = TestErrorsFactory.CreateUserErrors();
+        _factory = new PublicUpdateProfileAuthFactory(_authRepositoryMock.Object, _unitOfWorkMock.Object, _userErrors);
     }
 
     #region UpdateProfileAsync Tests
