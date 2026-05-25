@@ -1,4 +1,5 @@
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -13,7 +14,9 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.UseCases.Admin.Comma
 /// </summary>
 public class AdminUpdateAvatarValidatorTests
 {
-    private readonly AdminUpdateAvatarValidator _validator = new();
+    private readonly AdminUpdateAvatarValidator _validator = new(
+        LocalizerFactory.CreateMessage<ValidationErrorMessage>("en")
+    );
 
     #region Valid Command Tests
 
@@ -70,7 +73,7 @@ public class AdminUpdateAvatarValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.AvatarFile).WithErrorMessage("Avatar file is required");
+        result.ShouldHaveValidationErrorFor(x => x.AvatarFile).WithErrorMessage("Avatar file is required.");
     }
 
     #endregion
@@ -99,7 +102,7 @@ public class AdminUpdateAvatarValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.AvatarFile)
-            .WithErrorMessage($"File size must not exceed {FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)}MB");
+            .WithErrorMessage($"File size must not exceed {FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)}MB.");
     }
 
     [Fact]
@@ -144,7 +147,7 @@ public class AdminUpdateAvatarValidatorTests
         result
             .ShouldHaveValidationErrorFor(x => x.AvatarFile)
             .WithErrorMessage(
-                $"Only image files are allowed: {string.Join(", ", FileConstants.AllowedAvatarMimeTypes)}"
+                $"Only image files are allowed: {string.Join(", ", FileConstants.AllowedAvatarMimeTypes)}."
             );
     }
 
@@ -194,7 +197,7 @@ public class AdminUpdateAvatarValidatorTests
         result
             .ShouldHaveValidationErrorFor(x => x.AvatarFile)
             .WithErrorMessage(
-                $"Only these extensions are allowed: {string.Join(", ", FileConstants.AllowedAvatarExtensions)}"
+                $"Only these extensions are allowed: {string.Join(", ", FileConstants.AllowedAvatarExtensions)}."
             );
     }
 
