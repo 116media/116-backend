@@ -4,15 +4,17 @@ using _116.Identity.Application.Session.Factories;
 using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.Results;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
-using SessionFactory = _116.Tests.Fixtures.Factories.SessionFactory;
+using SessionFactory = _116.Tests.Fixtures.Factories.Identity.SessionFactory;
 using SessionsFactory = _116.Identity.Application.Session.Factories.SessionFactory;
 
 namespace _116.Unit.Tests.Modules.Identity.Application.Session.Factories;
@@ -38,12 +40,16 @@ public class SessionFactoryTests
         _sessionRepositoryMock = new Mock<ISessionRepository>();
         _sessionMetadataServiceMock = new Mock<ISessionMetadataService>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
+
+        SessionErrors sessionErrors = TestErrorsFactory.CreateSessionErrors();
+
         _factory = new SessionsFactory(
             _jwtServiceMock.Object,
             _refreshTokenServiceMock.Object,
             _sessionRepositoryMock.Object,
             _sessionMetadataServiceMock.Object,
-            _unitOfWorkMock.Object
+            _unitOfWorkMock.Object,
+            sessionErrors
         );
     }
 
