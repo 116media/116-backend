@@ -1,5 +1,7 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using FluentValidation;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -11,6 +13,8 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.Validators;
 /// </summary>
 public class RoleValidationTests
 {
+    private readonly ValidationErrorMessage _enMsg = LocalizerFactory.CreateMessage<ValidationErrorMessage>("en");
+
     private class TestNameCommand
     {
         public string? Name { get; set; }
@@ -23,17 +27,27 @@ public class RoleValidationTests
 
     private class TestNameCommandValidator : AbstractValidator<TestNameCommand>
     {
-        public TestNameCommandValidator(bool isRequired = true)
+        public TestNameCommandValidator(ValidationErrorMessage msg, bool isRequired = true)
         {
-            RuleFor(x => x.Name).ValidRoleName(isRequired);
+            RuleFor(x => x.Name)
+                .ValidRoleName(
+                    roleNameRequired: msg.RoleNameRequired(),
+                    roleNameTooLong: msg.RoleNameTooLong(RoleConstants.MaxRoleNameLength),
+                    isRequired: isRequired
+                );
         }
     }
 
     private class TestDescriptionCommandValidator : AbstractValidator<TestDescriptionCommand>
     {
-        public TestDescriptionCommandValidator(bool isRequired = true)
+        public TestDescriptionCommandValidator(ValidationErrorMessage msg, bool isRequired = true)
         {
-            RuleFor(x => x.Description).ValidRoleDescription(isRequired);
+            RuleFor(x => x.Description)
+                .ValidRoleDescription(
+                    roleDescriptionRequired: msg.RoleDescriptionRequired(),
+                    roleDescriptionTooLong: msg.RoleDescriptionTooLong(RoleConstants.MaxRoleDescriptionLength),
+                    isRequired: isRequired
+                );
         }
     }
 
@@ -43,7 +57,7 @@ public class RoleValidationTests
     public void ValidRoleName_WithValidName_ShouldPass()
     {
         // Arrange
-        var validator = new TestNameCommandValidator();
+        var validator = new TestNameCommandValidator(_enMsg);
         var command = new TestNameCommand { Name = "Admin" };
 
         // Act
@@ -57,7 +71,7 @@ public class RoleValidationTests
     public void ValidRoleName_WithMaxLengthName_ShouldPass()
     {
         // Arrange
-        var validator = new TestNameCommandValidator();
+        var validator = new TestNameCommandValidator(_enMsg);
         var command = new TestNameCommand { Name = new string('a', RoleConstants.MaxRoleNameLength) };
 
         // Act
@@ -71,49 +85,49 @@ public class RoleValidationTests
     public void ValidRoleName_WithNullName_ShouldFail()
     {
         // Arrange
-        var validator = new TestNameCommandValidator();
+        var validator = new TestNameCommandValidator(_enMsg);
         var command = new TestNameCommand { Name = null };
 
         // Act
         TestValidationResult<TestNameCommand> result = validator.TestValidate(command);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.Name).WithErrorMessage("Role name is required");
+        result.ShouldHaveValidationErrorFor(x => x.Name).WithErrorMessage(_enMsg.RoleNameRequired());
     }
 
     [Fact]
     public void ValidRoleName_WithEmptyName_ShouldFail()
     {
         // Arrange
-        var validator = new TestNameCommandValidator();
+        var validator = new TestNameCommandValidator(_enMsg);
         var command = new TestNameCommand { Name = string.Empty };
 
         // Act
         TestValidationResult<TestNameCommand> result = validator.TestValidate(command);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.Name).WithErrorMessage("Role name is required");
+        result.ShouldHaveValidationErrorFor(x => x.Name).WithErrorMessage(_enMsg.RoleNameRequired());
     }
 
     [Fact]
     public void ValidRoleName_WithWhitespaceName_ShouldFail()
     {
         // Arrange
-        var validator = new TestNameCommandValidator();
+        var validator = new TestNameCommandValidator(_enMsg);
         var command = new TestNameCommand { Name = "   " };
 
         // Act
         TestValidationResult<TestNameCommand> result = validator.TestValidate(command);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.Name).WithErrorMessage("Role name is required");
+        result.ShouldHaveValidationErrorFor(x => x.Name).WithErrorMessage(_enMsg.RoleNameRequired());
     }
 
     [Fact]
     public void ValidRoleName_WithNameExceedingMaxLength_ShouldFail()
     {
         // Arrange
-        var validator = new TestNameCommandValidator();
+        var validator = new TestNameCommandValidator(_enMsg);
         var command = new TestNameCommand { Name = new string('a', RoleConstants.MaxRoleNameLength + 1) };
 
         // Act
@@ -122,7 +136,7 @@ public class RoleValidationTests
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.Name)
-            .WithErrorMessage($"Role name cannot exceed {RoleConstants.MaxRoleNameLength} characters");
+            .WithErrorMessage(_enMsg.RoleNameTooLong(RoleConstants.MaxRoleNameLength));
     }
 
     #endregion
@@ -133,7 +147,7 @@ public class RoleValidationTests
     public void ValidRoleName_Optional_WithValidName_ShouldPass()
     {
         // Arrange
-        var validator = new TestNameCommandValidator(isRequired: false);
+        var validator = new TestNameCommandValidator(_enMsg, isRequired: false);
         var command = new TestNameCommand { Name = "Admin" };
 
         // Act
@@ -147,7 +161,7 @@ public class RoleValidationTests
     public void ValidRoleName_Optional_WithNullName_ShouldPass()
     {
         // Arrange
-        var validator = new TestNameCommandValidator(isRequired: false);
+        var validator = new TestNameCommandValidator(_enMsg, isRequired: false);
         var command = new TestNameCommand { Name = null };
 
         // Act
@@ -161,7 +175,7 @@ public class RoleValidationTests
     public void ValidRoleName_Optional_WithEmptyName_ShouldPass()
     {
         // Arrange
-        var validator = new TestNameCommandValidator(isRequired: false);
+        var validator = new TestNameCommandValidator(_enMsg, isRequired: false);
         var command = new TestNameCommand { Name = string.Empty };
 
         // Act
@@ -175,7 +189,7 @@ public class RoleValidationTests
     public void ValidRoleName_Optional_WithWhitespaceName_ShouldPass()
     {
         // Arrange
-        var validator = new TestNameCommandValidator(isRequired: false);
+        var validator = new TestNameCommandValidator(_enMsg, isRequired: false);
         var command = new TestNameCommand { Name = "   " };
 
         // Act
@@ -189,7 +203,7 @@ public class RoleValidationTests
     public void ValidRoleName_Optional_WithNameExceedingMaxLength_ShouldFail()
     {
         // Arrange
-        var validator = new TestNameCommandValidator(isRequired: false);
+        var validator = new TestNameCommandValidator(_enMsg, isRequired: false);
         var command = new TestNameCommand { Name = new string('a', RoleConstants.MaxRoleNameLength + 1) };
 
         // Act
@@ -198,7 +212,7 @@ public class RoleValidationTests
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.Name)
-            .WithErrorMessage($"Role name cannot exceed {RoleConstants.MaxRoleNameLength} characters");
+            .WithErrorMessage(_enMsg.RoleNameTooLong(RoleConstants.MaxRoleNameLength));
     }
 
     #endregion
@@ -209,7 +223,7 @@ public class RoleValidationTests
     public void ValidRoleDescription_WithValidDescription_ShouldPass()
     {
         // Arrange
-        var validator = new TestDescriptionCommandValidator();
+        var validator = new TestDescriptionCommandValidator(_enMsg);
         var command = new TestDescriptionCommand { Description = "A valid role description." };
 
         // Act
@@ -223,7 +237,7 @@ public class RoleValidationTests
     public void ValidRoleDescription_WithMaxLengthDescription_ShouldPass()
     {
         // Arrange
-        var validator = new TestDescriptionCommandValidator();
+        var validator = new TestDescriptionCommandValidator(_enMsg);
         var command = new TestDescriptionCommand
         {
             Description = new string('a', RoleConstants.MaxRoleDescriptionLength),
@@ -240,49 +254,49 @@ public class RoleValidationTests
     public void ValidRoleDescription_WithNullDescription_ShouldFail()
     {
         // Arrange
-        var validator = new TestDescriptionCommandValidator();
+        var validator = new TestDescriptionCommandValidator(_enMsg);
         var command = new TestDescriptionCommand { Description = null };
 
         // Act
         TestValidationResult<TestDescriptionCommand> result = validator.TestValidate(command);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.Description).WithErrorMessage("Role description is required");
+        result.ShouldHaveValidationErrorFor(x => x.Description).WithErrorMessage(_enMsg.RoleDescriptionRequired());
     }
 
     [Fact]
     public void ValidRoleDescription_WithEmptyDescription_ShouldFail()
     {
         // Arrange
-        var validator = new TestDescriptionCommandValidator();
+        var validator = new TestDescriptionCommandValidator(_enMsg);
         var command = new TestDescriptionCommand { Description = string.Empty };
 
         // Act
         TestValidationResult<TestDescriptionCommand> result = validator.TestValidate(command);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.Description).WithErrorMessage("Role description is required");
+        result.ShouldHaveValidationErrorFor(x => x.Description).WithErrorMessage(_enMsg.RoleDescriptionRequired());
     }
 
     [Fact]
     public void ValidRoleDescription_WithWhitespaceDescription_ShouldFail()
     {
         // Arrange
-        var validator = new TestDescriptionCommandValidator();
+        var validator = new TestDescriptionCommandValidator(_enMsg);
         var command = new TestDescriptionCommand { Description = "   " };
 
         // Act
         TestValidationResult<TestDescriptionCommand> result = validator.TestValidate(command);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.Description).WithErrorMessage("Role description is required");
+        result.ShouldHaveValidationErrorFor(x => x.Description).WithErrorMessage(_enMsg.RoleDescriptionRequired());
     }
 
     [Fact]
     public void ValidRoleDescription_WithDescriptionExceedingMaxLength_ShouldFail()
     {
         // Arrange
-        var validator = new TestDescriptionCommandValidator();
+        var validator = new TestDescriptionCommandValidator(_enMsg);
         var command = new TestDescriptionCommand
         {
             Description = new string('a', RoleConstants.MaxRoleDescriptionLength + 1),
@@ -294,7 +308,7 @@ public class RoleValidationTests
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.Description)
-            .WithErrorMessage($"Role description cannot exceed {RoleConstants.MaxRoleDescriptionLength} characters");
+            .WithErrorMessage(_enMsg.RoleDescriptionTooLong(RoleConstants.MaxRoleDescriptionLength));
     }
 
     #endregion
@@ -305,7 +319,7 @@ public class RoleValidationTests
     public void ValidRoleDescription_Optional_WithValidDescription_ShouldPass()
     {
         // Arrange
-        var validator = new TestDescriptionCommandValidator(isRequired: false);
+        var validator = new TestDescriptionCommandValidator(_enMsg, isRequired: false);
         var command = new TestDescriptionCommand { Description = "A valid role description." };
 
         // Act
@@ -319,7 +333,7 @@ public class RoleValidationTests
     public void ValidRoleDescription_Optional_WithNullDescription_ShouldPass()
     {
         // Arrange
-        var validator = new TestDescriptionCommandValidator(isRequired: false);
+        var validator = new TestDescriptionCommandValidator(_enMsg, isRequired: false);
         var command = new TestDescriptionCommand { Description = null };
 
         // Act
@@ -333,7 +347,7 @@ public class RoleValidationTests
     public void ValidRoleDescription_Optional_WithEmptyDescription_ShouldPass()
     {
         // Arrange
-        var validator = new TestDescriptionCommandValidator(isRequired: false);
+        var validator = new TestDescriptionCommandValidator(_enMsg, isRequired: false);
         var command = new TestDescriptionCommand { Description = string.Empty };
 
         // Act
@@ -347,7 +361,7 @@ public class RoleValidationTests
     public void ValidRoleDescription_Optional_WithWhitespaceDescription_ShouldPass()
     {
         // Arrange
-        var validator = new TestDescriptionCommandValidator(isRequired: false);
+        var validator = new TestDescriptionCommandValidator(_enMsg, isRequired: false);
         var command = new TestDescriptionCommand { Description = "   " };
 
         // Act
@@ -361,7 +375,7 @@ public class RoleValidationTests
     public void ValidRoleDescription_Optional_WithDescriptionExceedingMaxLength_ShouldFail()
     {
         // Arrange
-        var validator = new TestDescriptionCommandValidator(isRequired: false);
+        var validator = new TestDescriptionCommandValidator(_enMsg, isRequired: false);
         var command = new TestDescriptionCommand
         {
             Description = new string('a', RoleConstants.MaxRoleDescriptionLength + 1),
@@ -373,7 +387,7 @@ public class RoleValidationTests
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.Description)
-            .WithErrorMessage($"Role description cannot exceed {RoleConstants.MaxRoleDescriptionLength} characters");
+            .WithErrorMessage(_enMsg.RoleDescriptionTooLong(RoleConstants.MaxRoleDescriptionLength));
     }
 
     #endregion
