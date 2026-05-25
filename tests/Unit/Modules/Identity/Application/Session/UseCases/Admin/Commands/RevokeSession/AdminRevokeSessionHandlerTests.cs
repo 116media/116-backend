@@ -1,9 +1,11 @@
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.UseCases.Admin.Commands.RevokeSession;
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -25,7 +27,10 @@ public class AdminRevokeSessionHandlerTests
     {
         _sessionRepositoryMock = MockSessionRepository.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
-        _handler = new AdminRevokeSessionHandler(_sessionRepositoryMock.Object, _unitOfWorkMock.Object);
+
+        SessionErrors sessionErrors = TestErrorsFactory.CreateSessionErrors();
+
+        _handler = new AdminRevokeSessionHandler(_sessionRepositoryMock.Object, _unitOfWorkMock.Object, sessionErrors);
     }
 
     #region Success Cases
