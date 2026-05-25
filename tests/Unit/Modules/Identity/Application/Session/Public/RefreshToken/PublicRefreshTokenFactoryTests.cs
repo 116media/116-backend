@@ -1,9 +1,11 @@
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.Repositories;
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -28,10 +30,14 @@ public class RefreshTokenFactoryTests
         _sessionRepositoryMock = new Mock<ISessionRepository>();
         _refreshTokenServiceMock = new Mock<IRefreshTokenService>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
+
+        SessionErrors sessionErrors = TestErrorsFactory.CreateSessionErrors();
+
         _factory = new RefreshTokenFactory(
             _sessionRepositoryMock.Object,
             _refreshTokenServiceMock.Object,
-            _unitOfWorkMock.Object
+            _unitOfWorkMock.Object,
+            sessionErrors
         );
     }
 
