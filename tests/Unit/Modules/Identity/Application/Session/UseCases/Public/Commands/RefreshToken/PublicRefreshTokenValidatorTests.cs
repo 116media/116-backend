@@ -1,5 +1,7 @@
 using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -11,7 +13,9 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Session.UseCases.Public.C
 /// </summary>
 public class PublicRefreshTokenValidatorTests
 {
-    private readonly PublicRefreshTokenValidator _validator = new();
+    private readonly PublicRefreshTokenValidator _validator = new(
+        LocalizerFactory.CreateMessage<ValidationErrorMessage>()
+    );
 
     #region Valid Command Tests
 
