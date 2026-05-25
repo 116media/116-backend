@@ -2,6 +2,7 @@ using _116.BuildingBlocks.Constants.Authorization.Policies;
 using _116.Identity.Application.Shared.Authorizations.Configuration;
 using _116.Identity.Application.Shared.Authorizations.Extensions;
 using _116.Identity.Application.Shared.Authorizations.Handlers;
+using _116.Identity.Application.Shared.Errors.Messages;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -208,6 +209,20 @@ public class AuthorizationExtensionsTests
 
     #region ConfigureJwtBearerEvents Tests
 
+    /// <summary>
+    /// Builds a service provider that can resolve <see cref="AuthenticationErrorMessage"/>
+    /// and <see cref="AuthorizationErrorMessage"/> for JWT bearer event tests.
+    /// </summary>
+    private static ServiceProvider BuildJwtEventServiceProvider()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddLocalization();
+        services.AddScoped<AuthenticationErrorMessage>();
+        services.AddScoped<AuthorizationErrorMessage>();
+        return services.BuildServiceProvider();
+    }
+
     [Fact]
     public void ConfigureJwtBearerEvents_ShouldConfigureEvents()
     {
@@ -255,6 +270,7 @@ public class AuthorizationExtensionsTests
         options.ConfigureJwtBearerEvents();
 
         DefaultHttpContext httpContext = new() { Response = { Body = new MemoryStream() } };
+        httpContext.RequestServices = BuildJwtEventServiceProvider();
 
         Mock<AuthenticationScheme> schemeMock = new("Bearer", "Bearer", typeof(JwtBearerHandler));
 
@@ -289,6 +305,7 @@ public class AuthorizationExtensionsTests
         options.ConfigureJwtBearerEvents();
 
         DefaultHttpContext httpContext = new() { Response = { Body = new MemoryStream() } };
+        httpContext.RequestServices = BuildJwtEventServiceProvider();
 
         Mock<AuthenticationScheme> schemeMock = new("Bearer", "Bearer", typeof(JwtBearerHandler));
 
@@ -317,6 +334,7 @@ public class AuthorizationExtensionsTests
         options.ConfigureJwtBearerEvents();
 
         DefaultHttpContext httpContext = new() { Response = { Body = new MemoryStream() } };
+        httpContext.RequestServices = BuildJwtEventServiceProvider();
 
         Mock<AuthenticationScheme> schemeMock = new("Bearer", "Bearer", typeof(JwtBearerHandler));
 
@@ -346,6 +364,7 @@ public class AuthorizationExtensionsTests
         options.ConfigureJwtBearerEvents();
 
         DefaultHttpContext httpContext = new() { Response = { Body = new MemoryStream() } };
+        httpContext.RequestServices = BuildJwtEventServiceProvider();
 
         Mock<AuthenticationScheme> schemeMock = new("Bearer", "Bearer", typeof(JwtBearerHandler));
 
