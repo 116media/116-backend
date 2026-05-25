@@ -3,6 +3,7 @@ using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -13,6 +14,8 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Shared.Errors;
 /// </summary>
 public class UserErrorsTests
 {
+    private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
+
     [Fact]
     public void EmailAlreadyExists_ShouldReturnConflictException()
     {
@@ -20,7 +23,7 @@ public class UserErrorsTests
         string email = "test@example.com";
 
         // Act
-        ConflictException exception = UserErrors.EmailAlreadyExists(email);
+        ConflictException exception = _userErrors.EmailAlreadyExists(email);
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -34,7 +37,7 @@ public class UserErrorsTests
         string username = "testuser";
 
         // Act
-        ConflictException exception = UserErrors.UsernameAlreadyExists(username);
+        ConflictException exception = _userErrors.UsernameAlreadyExists(username);
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -48,7 +51,7 @@ public class UserErrorsTests
         string phoneNumber = "+1234567890";
 
         // Act
-        ConflictException exception = UserErrors.PhoneNumberAlreadyExists(phoneNumber);
+        ConflictException exception = _userErrors.PhoneNumberAlreadyExists(phoneNumber);
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -62,7 +65,7 @@ public class UserErrorsTests
         string roleName = "Admin";
 
         // Act
-        ConflictException exception = UserErrors.RoleAlreadyExists(roleName);
+        ConflictException exception = _userErrors.RoleAlreadyExists(roleName);
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -73,7 +76,7 @@ public class UserErrorsTests
     public void RoleAlreadyAssignedToUser_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = UserErrors.RoleAlreadyAssignedToUser();
+        ConflictException exception = _userErrors.RoleAlreadyAssignedToUser();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -86,7 +89,7 @@ public class UserErrorsTests
         string roleName = "NonExistent";
 
         // Act
-        NotFoundException exception = UserErrors.RoleNotFoundByName(roleName);
+        NotFoundException exception = _userErrors.RoleNotFoundByName(roleName);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
@@ -101,7 +104,7 @@ public class UserErrorsTests
         string action = "create";
 
         // Act
-        ConflictException exception = UserErrors.PermissionAlreadyExists(resource, action);
+        ConflictException exception = _userErrors.PermissionAlreadyExists(resource, action);
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -112,7 +115,7 @@ public class UserErrorsTests
     public void PermissionAlreadyAssignedToRole_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = UserErrors.PermissionAlreadyAssignedToRole();
+        ConflictException exception = _userErrors.PermissionAlreadyAssignedToRole();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -122,7 +125,7 @@ public class UserErrorsTests
     public void RoleAlreadyActive_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = UserErrors.RoleAlreadyActive();
+        ConflictException exception = _userErrors.RoleAlreadyActive();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -132,7 +135,7 @@ public class UserErrorsTests
     public void RoleAlreadyInactive_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = UserErrors.RoleAlreadyInactive();
+        ConflictException exception = _userErrors.RoleAlreadyInactive();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -142,7 +145,7 @@ public class UserErrorsTests
     public void RoleAlreadyDeleted_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = UserErrors.RoleAlreadyDeleted();
+        ConflictException exception = _userErrors.RoleAlreadyDeleted();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -152,7 +155,7 @@ public class UserErrorsTests
     public void RoleNotDeleted_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = UserErrors.RoleNotDeleted();
+        ConflictException exception = _userErrors.RoleNotDeleted();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -162,7 +165,7 @@ public class UserErrorsTests
     public void PermissionAlreadyActive_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = UserErrors.PermissionAlreadyActive();
+        ConflictException exception = _userErrors.PermissionAlreadyActive();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -172,7 +175,7 @@ public class UserErrorsTests
     public void PermissionAlreadyInactive_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = UserErrors.PermissionAlreadyInactive();
+        ConflictException exception = _userErrors.PermissionAlreadyInactive();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -182,7 +185,7 @@ public class UserErrorsTests
     public void PermissionAlreadyDeleted_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = UserErrors.PermissionAlreadyDeleted();
+        ConflictException exception = _userErrors.PermissionAlreadyDeleted();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -192,7 +195,7 @@ public class UserErrorsTests
     public void PermissionNotDeleted_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = UserErrors.PermissionNotDeleted();
+        ConflictException exception = _userErrors.PermissionNotDeleted();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -205,7 +208,7 @@ public class UserErrorsTests
         string roleName = "SuperAdmin";
 
         // Act
-        BadRequestException exception = UserErrors.CoreRoleCannotBeModified(roleName);
+        BadRequestException exception = _userErrors.CoreRoleCannotBeModified(roleName);
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -219,7 +222,7 @@ public class UserErrorsTests
         string roleName = "Admin";
 
         // Act
-        BadRequestException exception = UserErrors.CoreRoleCannotBeDeleted(roleName);
+        BadRequestException exception = _userErrors.CoreRoleCannotBeDeleted(roleName);
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -230,7 +233,7 @@ public class UserErrorsTests
     public void RoleIsInactive_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = UserErrors.RoleIsInactive();
+        BadRequestException exception = _userErrors.RoleIsInactive();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -240,7 +243,7 @@ public class UserErrorsTests
     public void RoleIsDeleted_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = UserErrors.RoleIsDeleted();
+        BadRequestException exception = _userErrors.RoleIsDeleted();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -250,7 +253,7 @@ public class UserErrorsTests
     public void PermissionIsInactive_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = UserErrors.PermissionIsInactive();
+        BadRequestException exception = _userErrors.PermissionIsInactive();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -260,7 +263,7 @@ public class UserErrorsTests
     public void PermissionIsDeleted_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = UserErrors.PermissionIsDeleted();
+        BadRequestException exception = _userErrors.PermissionIsDeleted();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -270,7 +273,7 @@ public class UserErrorsTests
     public void PermissionNotAssignedToRole_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = UserErrors.PermissionNotAssignedToRole();
+        BadRequestException exception = _userErrors.PermissionNotAssignedToRole();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -280,7 +283,7 @@ public class UserErrorsTests
     public void RoleNotAssignedToUser_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = UserErrors.RoleNotAssignedToUser();
+        BadRequestException exception = _userErrors.RoleNotAssignedToUser();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -293,7 +296,7 @@ public class UserErrorsTests
         string email = "inactive@example.com";
 
         // Act
-        AccountInactiveException exception = UserErrors.AccountInactive(email);
+        AccountInactiveException exception = _userErrors.AccountInactive(email);
 
         // Assert
         exception.Should().BeOfType<AccountInactiveException>();
@@ -307,7 +310,7 @@ public class UserErrorsTests
         string email = "unverified@example.com";
 
         // Act
-        AccountNotVerifiedException exception = UserErrors.AccountNotVerified(email);
+        AccountNotVerifiedException exception = _userErrors.AccountNotVerified(email);
 
         // Assert
         exception.Should().BeOfType<AccountNotVerifiedException>();
@@ -318,7 +321,7 @@ public class UserErrorsTests
     public void InvalidCredentials_ShouldReturnAuthenticationException()
     {
         // Act
-        AuthenticationException exception = UserErrors.InvalidCredentials();
+        AuthenticationException exception = _userErrors.InvalidCredentials();
 
         // Assert
         exception.Should().BeOfType<AuthenticationException>();
@@ -331,7 +334,7 @@ public class UserErrorsTests
         string email = "invalid-email";
 
         // Act
-        AuthenticationException exception = UserErrors.InvalidEmailFormat(email);
+        AuthenticationException exception = _userErrors.InvalidEmailFormat(email);
 
         // Assert
         exception.Should().BeOfType<AuthenticationException>();
@@ -342,7 +345,7 @@ public class UserErrorsTests
     public void InvalidPasswordFormat_ShouldReturnAuthenticationException()
     {
         // Act
-        AuthenticationException exception = UserErrors.InvalidPasswordFormat();
+        AuthenticationException exception = _userErrors.InvalidPasswordFormat();
 
         // Assert
         exception.Should().BeOfType<AuthenticationException>();
@@ -355,7 +358,7 @@ public class UserErrorsTests
         string username = "bad@user";
 
         // Act
-        BadRequestException exception = UserErrors.InvalidUsernameFormat(username);
+        BadRequestException exception = _userErrors.InvalidUsernameFormat(username);
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -366,7 +369,7 @@ public class UserErrorsTests
     public void PermissionResourceRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = UserErrors.PermissionResourceRequired();
+        BadRequestException exception = _userErrors.PermissionResourceRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -376,7 +379,7 @@ public class UserErrorsTests
     public void PermissionActionRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = UserErrors.PermissionActionRequired();
+        BadRequestException exception = _userErrors.PermissionActionRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -386,7 +389,7 @@ public class UserErrorsTests
     public void PermissionDescriptionRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = UserErrors.PermissionDescriptionRequired();
+        BadRequestException exception = _userErrors.PermissionDescriptionRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -396,7 +399,7 @@ public class UserErrorsTests
     public void RoleNameRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = UserErrors.RoleNameRequired();
+        BadRequestException exception = _userErrors.RoleNameRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -406,7 +409,7 @@ public class UserErrorsTests
     public void RoleDescriptionRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = UserErrors.RoleDescriptionRequired();
+        BadRequestException exception = _userErrors.RoleDescriptionRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -419,7 +422,7 @@ public class UserErrorsTests
         string message = "Custom error";
 
         // Act
-        BadRequestException exception = UserErrors.BadRequest(message);
+        BadRequestException exception = _userErrors.BadRequest(message);
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -430,7 +433,7 @@ public class UserErrorsTests
     public void AccountAlreadyVerified_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = UserErrors.AccountAlreadyVerified();
+        ConflictException exception = _userErrors.AccountAlreadyVerified();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -440,7 +443,7 @@ public class UserErrorsTests
     public void NoValidOtpFound_ShouldReturnNotFoundException()
     {
         // Act
-        NotFoundException exception = UserErrors.NoValidOtpFound();
+        NotFoundException exception = _userErrors.NoValidOtpFound();
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
@@ -450,7 +453,7 @@ public class UserErrorsTests
     public void InvalidOtpCode_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = UserErrors.InvalidOtpCode();
+        BadRequestException exception = _userErrors.InvalidOtpCode();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -460,7 +463,7 @@ public class UserErrorsTests
     public void OtpExpired_ShouldReturnOtpExpirationException()
     {
         // Act
-        OtpExpirationException exception = UserErrors.OtpExpired();
+        OtpExpirationException exception = _userErrors.OtpExpired();
 
         // Assert
         exception.Should().BeOfType<OtpExpirationException>();
@@ -470,7 +473,7 @@ public class UserErrorsTests
     public void MaxOtpAttemptsReached_ShouldReturnOtpAttemptsLimitException()
     {
         // Act
-        OtpAttemptsLimitException exception = UserErrors.MaxOtpAttemptsReached();
+        OtpAttemptsLimitException exception = _userErrors.MaxOtpAttemptsReached();
 
         // Assert
         exception.Should().BeOfType<OtpAttemptsLimitException>();
@@ -480,7 +483,7 @@ public class UserErrorsTests
     public void OtpNotYetVerified_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = UserErrors.OtpNotYetVerified();
+        BadRequestException exception = _userErrors.OtpNotYetVerified();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -490,7 +493,7 @@ public class UserErrorsTests
     public void InvalidUserAuthentication_ShouldReturnAuthenticationException()
     {
         // Act
-        AuthenticationException exception = UserErrors.InvalidUserAuthentication();
+        AuthenticationException exception = _userErrors.InvalidUserAuthentication();
 
         // Assert
         exception.Should().BeOfType<AuthenticationException>();
@@ -500,7 +503,7 @@ public class UserErrorsTests
     public void InsufficientPermissions_ShouldReturnAccessDeniedException()
     {
         // Act
-        AccessDeniedException exception = UserErrors.InsufficientPermissions();
+        AccessDeniedException exception = _userErrors.InsufficientPermissions();
 
         // Assert
         exception.Should().BeOfType<AccessDeniedException>();
@@ -510,7 +513,7 @@ public class UserErrorsTests
     public void NewPasswordSameAsOld_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = UserErrors.NewPasswordSameAsOld();
+        ConflictException exception = _userErrors.NewPasswordSameAsOld();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -523,7 +526,7 @@ public class UserErrorsTests
         var provider = EnumAuthProvider.Google;
 
         // Act
-        BadRequestException exception = UserErrors.PasswordNotConfigured(provider);
+        BadRequestException exception = _userErrors.PasswordNotConfigured(provider);
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -534,7 +537,7 @@ public class UserErrorsTests
     public void IncorrectCurrentPassword_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = UserErrors.IncorrectCurrentPassword();
+        BadRequestException exception = _userErrors.IncorrectCurrentPassword();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -544,7 +547,7 @@ public class UserErrorsTests
     public void EmailRequiredToSetPassword_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = UserErrors.EmailRequiredToSetPassword();
+        BadRequestException exception = _userErrors.EmailRequiredToSetPassword();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -554,7 +557,7 @@ public class UserErrorsTests
     public void PasswordOnlyForExternalAuth_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = UserErrors.PasswordOnlyForExternalAuth();
+        BadRequestException exception = _userErrors.PasswordOnlyForExternalAuth();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
