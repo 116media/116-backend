@@ -25,7 +25,7 @@ public class SocialLoginValidationTests
     {
         public TestAvatarUrlCommandValidator()
         {
-            RuleFor(x => x.AvatarUrl).ValidAvatarUrl();
+            RuleFor(x => x.AvatarUrl).ValidAvatarUrl(avatarUrlInvalid: "Avatar URL must be a valid HTTP or HTTPS URL.");
         }
     }
 
@@ -33,7 +33,11 @@ public class SocialLoginValidationTests
     {
         public TestAuthProviderCommandValidator()
         {
-            RuleFor(x => x.Provider).ValidAuthProvider();
+            RuleFor(x => x.Provider)
+                .ValidAuthProvider(
+                    authProviderRequired: "Authentication provider is required.",
+                    authProviderInvalid: "Invalid authentication provider specified."
+                );
         }
     }
 
@@ -82,7 +86,7 @@ public class SocialLoginValidationTests
 
         result
             .ShouldHaveValidationErrorFor(x => x.AvatarUrl)
-            .WithErrorMessage("Avatar must be a valid URL when provided");
+            .WithErrorMessage("Avatar URL must be a valid HTTP or HTTPS URL.");
     }
 
     [Fact]
@@ -130,7 +134,7 @@ public class SocialLoginValidationTests
 
         TestValidationResult<TestAuthProviderCommand> result = validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.Provider).WithErrorMessage("Auth provider is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Provider).WithErrorMessage("Authentication provider is required.");
     }
 
     [Fact]
@@ -141,7 +145,7 @@ public class SocialLoginValidationTests
 
         TestValidationResult<TestAuthProviderCommand> result = validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.Provider).WithErrorMessage("Auth provider is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Provider).WithErrorMessage("Authentication provider is required.");
     }
 
     [Fact]
@@ -165,7 +169,7 @@ public class SocialLoginValidationTests
 
         result
             .ShouldHaveValidationErrorFor(x => x.Provider)
-            .WithErrorMessage("Auth provider must be Facebook or Google");
+            .WithErrorMessage("Invalid authentication provider specified.");
     }
 
     [Fact]
@@ -189,7 +193,7 @@ public class SocialLoginValidationTests
 
         result
             .ShouldHaveValidationErrorFor(x => x.Provider)
-            .WithErrorMessage("Auth provider must be Facebook or Google");
+            .WithErrorMessage("Invalid authentication provider specified.");
     }
 
     #endregion
