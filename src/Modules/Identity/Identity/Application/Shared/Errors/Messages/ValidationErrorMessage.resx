@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="EmailRequired" xml:space="preserve">
+    <value>L'adresse e-mail est obligatoire.</value>
+  </data>
+  <data name="EmailTooLong" xml:space="preserve">
+    <value>L'adresse e-mail ne peut pas dépasser {0} caractères.</value>
+  </data>
+  <data name="InvalidEmailFormatSimple" xml:space="preserve">
+    <value>Format d'adresse e-mail invalide.</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Le mot de passe est obligatoire.</value>
+  </data>
+  <data name="PasswordTooShort" xml:space="preserve">
+    <value>{0} doit comporter au moins {1} caractères.</value>
+  </data>
+  <data name="PasswordComplexity" xml:space="preserve">
+    <value>{0} doit contenir au moins une lettre minuscule, une lettre majuscule et un chiffre.</value>
+  </data>
+  <data name="UsernameRequired" xml:space="preserve">
+    <value>Le nom d'utilisateur est obligatoire.</value>
+  </data>
+  <data name="UsernameTooShort" xml:space="preserve">
+    <value>Le nom d'utilisateur doit comporter au moins {0} caractères.</value>
+  </data>
+  <data name="UsernameTooLong" xml:space="preserve">
+    <value>Le nom d'utilisateur ne peut pas dépasser {0} caractères.</value>
+  </data>
+  <data name="UsernameInvalidChars" xml:space="preserve">
+    <value>Le nom d'utilisateur ne peut contenir que des lettres, des chiffres, des espaces et des tirets.</value>
+  </data>
+  <data name="CurrentPasswordRequired" xml:space="preserve">
+    <value>Le mot de passe actuel est obligatoire.</value>
+  </data>
+  <data name="EmailOrUsernameRequired" xml:space="preserve">
+    <value>L'adresse e-mail ou le nom d'utilisateur est obligatoire.</value>
+  </data>
+  <data name="OtpCodeRequired" xml:space="preserve">
+    <value>Le code de vérification est obligatoire.</value>
+  </data>
+  <data name="OtpCodeWrongLength" xml:space="preserve">
+    <value>Le code de vérification doit comporter exactement {0} caractères.</value>
+  </data>
+  <data name="OtpCodeNotNumeric" xml:space="preserve">
+    <value>Le code de vérification ne doit contenir que des chiffres.</value>
+  </data>
+  <data name="OtpPurposeRequired" xml:space="preserve">
+    <value>L'objet du code OTP est obligatoire.</value>
+  </data>
+  <data name="OtpPurposeInvalid" xml:space="preserve">
+    <value>Objet du code OTP invalide.</value>
+  </data>
+  <data name="CountryNameTooLong" xml:space="preserve">
+    <value>Le nom du pays ne peut pas dépasser {0} caractères.</value>
+  </data>
+  <data name="CountryIsoCodeTooLong" xml:space="preserve">
+    <value>Le code ISO du pays ne peut pas dépasser {0} caractères.</value>
+  </data>
+  <data name="CountryIsoCodeInvalid" xml:space="preserve">
+    <value>Le code ISO du pays doit contenir uniquement des lettres majuscules.</value>
+  </data>
+  <data name="CountryDialCodeTooLong" xml:space="preserve">
+    <value>L'indicatif téléphonique ne peut pas dépasser {0} caractères.</value>
+  </data>
+  <data name="CountryDialCodeInvalid" xml:space="preserve">
+    <value>L'indicatif téléphonique doit commencer par + suivi de 1 à {0} chiffres.</value>
+  </data>
+  <data name="PartialPhoneNumberTooLong" xml:space="preserve">
+    <value>Le numéro de téléphone partiel ne peut pas dépasser {0} caractères.</value>
+  </data>
+  <data name="AvatarFileRequired" xml:space="preserve">
+    <value>Le fichier avatar est obligatoire.</value>
+  </data>
+  <data name="AvatarFileTooLarge" xml:space="preserve">
+    <value>La taille du fichier ne doit pas dépasser {0} Mo.</value>
+  </data>
+  <data name="AvatarFileInvalidType" xml:space="preserve">
+    <value>Seuls les fichiers image sont autorisés : {0}.</value>
+  </data>
+  <data name="AvatarFileInvalidExtension" xml:space="preserve">
+    <value>Seules ces extensions sont autorisées : {0}.</value>
+  </data>
+  <data name="AvatarUrlInvalid" xml:space="preserve">
+    <value>L'URL de l'avatar doit être une URL HTTP ou HTTPS valide.</value>
+  </data>
+  <data name="AuthProviderRequired" xml:space="preserve">
+    <value>Le fournisseur d'authentification est obligatoire.</value>
+  </data>
+  <data name="AuthProviderInvalid" xml:space="preserve">
+    <value>Fournisseur d'authentification invalide.</value>
+  </data>
+  <data name="RefreshTokenRequired" xml:space="preserve">
+    <value>Le jeton d'actualisation est obligatoire.</value>
+  </data>
+  <data name="PermissionResourceRequired" xml:space="preserve">
+    <value>La ressource de permission est obligatoire.</value>
+  </data>
+  <data name="PermissionResourceTooLong" xml:space="preserve">
+    <value>La ressource de permission ne peut pas dépasser {0} caractères.</value>
+  </data>
+  <data name="PermissionActionRequired" xml:space="preserve">
+    <value>L'action de permission est obligatoire.</value>
+  </data>
+  <data name="PermissionActionTooLong" xml:space="preserve">
+    <value>L'action de permission ne peut pas dépasser {0} caractères.</value>
+  </data>
+  <data name="PermissionDescriptionRequired" xml:space="preserve">
+    <value>La description de la permission est obligatoire.</value>
+  </data>
+  <data name="PermissionDescriptionTooLong" xml:space="preserve">
+    <value>La description de la permission ne peut pas dépasser {0} caractères.</value>
+  </data>
+  <data name="RoleNameRequired" xml:space="preserve">
+    <value>Le nom du rôle est obligatoire.</value>
+  </data>
+  <data name="RoleNameTooLong" xml:space="preserve">
+    <value>Le nom du rôle ne peut pas dépasser {0} caractères.</value>
+  </data>
+  <data name="RoleDescriptionRequired" xml:space="preserve">
+    <value>La description du rôle est obligatoire.</value>
+  </data>
+  <data name="RoleDescriptionTooLong" xml:space="preserve">
+    <value>La description du rôle ne peut pas dépasser {0} caractères.</value>
+  </data>
+  <data name="CoreRoleCannotBeModified" xml:space="preserve">
+    <value>Le rôle système « {0} » ne peut pas être modifié.</value>
+  </data>
+  <data name="CoreRoleCannotBeDeleted" xml:space="preserve">
+    <value>Le rôle système « {0} » ne peut pas être supprimé.</value>
+  </data>
+  <data name="RoleIsInactive" xml:space="preserve">
+    <value>Impossible d'attribuer un rôle inactif à un utilisateur.</value>
+  </data>
+  <data name="RoleIsDeleted" xml:space="preserve">
+    <value>Impossible d'utiliser un rôle supprimé.</value>
+  </data>
+  <data name="PermissionIsInactive" xml:space="preserve">
+    <value>Impossible d'attribuer une permission inactive à un rôle.</value>
+  </data>
+  <data name="PermissionIsDeleted" xml:space="preserve">
+    <value>Impossible d'utiliser une permission supprimée.</value>
+  </data>
+  <data name="PermissionNotAssignedToRole" xml:space="preserve">
+    <value>La permission n'est pas attribuée à ce rôle.</value>
+  </data>
+  <data name="RoleNotAssignedToUser" xml:space="preserve">
+    <value>Le rôle n'est pas attribué à cet utilisateur.</value>
+  </data>
+  <data name="InvalidEmailFormat" xml:space="preserve">
+    <value>Format d'adresse e-mail invalide : {0}.</value>
+  </data>
+  <data name="InvalidPasswordFormat" xml:space="preserve">
+    <value>Le mot de passe ne répond pas aux exigences de sécurité.</value>
+  </data>
+  <data name="InvalidUsernameFormat" xml:space="preserve">
+    <value>Le nom d'utilisateur « {0} » ne répond pas aux exigences.</value>
+  </data>
+  <data name="AccountAlreadyVerified" xml:space="preserve">
+    <value>Le compte est déjà vérifié.</value>
+  </data>
+  <data name="NoValidOtpFound" xml:space="preserve">
+    <value>Aucun code de vérification valide trouvé. Veuillez en demander un nouveau.</value>
+  </data>
+  <data name="InvalidOtpCode" xml:space="preserve">
+    <value>Code de vérification invalide. Veuillez vérifier et réessayer.</value>
+  </data>
+  <data name="OtpExpired" xml:space="preserve">
+    <value>Le code de vérification a expiré. Veuillez en demander un nouveau.</value>
+  </data>
+  <data name="MaxOtpAttemptsReached" xml:space="preserve">
+    <value>Nombre maximum de tentatives atteint. Veuillez demander un nouveau code de vérification.</value>
+  </data>
+  <data name="OtpNotYetVerified" xml:space="preserve">
+    <value>Veuillez compléter l'étape de vérification avant de continuer.</value>
+  </data>
+  <data name="NewPasswordSameAsOld" xml:space="preserve">
+    <value>Le nouveau mot de passe doit être différent de votre mot de passe actuel.</value>
+  </data>
+  <data name="PasswordNotConfigured" xml:space="preserve">
+    <value>Ce compte a été créé via {0}. Veuillez définir un mot de passe avant de le modifier.</value>
+  </data>
+  <data name="IncorrectCurrentPassword" xml:space="preserve">
+    <value>Le mot de passe actuel que vous avez saisi est incorrect.</value>
+  </data>
+  <data name="EmailRequiredToSetPassword" xml:space="preserve">
+    <value>Une adresse e-mail est requise pour définir un mot de passe.</value>
+  </data>
+  <data name="PasswordOnlyForExternalAuth" xml:space="preserve">
+    <value>La définition d'un mot de passe est uniquement autorisée pour les utilisateurs Google ou Facebook.</value>
+  </data>
+</root>
