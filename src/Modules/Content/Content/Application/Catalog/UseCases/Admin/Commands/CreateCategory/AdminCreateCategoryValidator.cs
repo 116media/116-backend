@@ -1,6 +1,5 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
-using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -14,25 +13,13 @@ public class AdminCreateCategoryValidator : AbstractValidator<AdminCreateCategor
     /// <summary>
     /// Initializes a new instance of <see cref="AdminCreateCategoryValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Category validation error messages.</param>
-    public AdminCreateCategoryValidator(CategoryErrorMessage msg)
+    /// <param name="i18n">Category validation error messages.</param>
+    /// <param name="contentTypeMsg">Content type validation error messages.</param>
+    public AdminCreateCategoryValidator(CategoryErrorMessage i18n, ContentTypeErrorMessage contentTypeMsg)
     {
-        RuleFor(x => x.ContentTypeId).IsValidGuid("Content type ID");
-        RuleFor(x => x.Name)
-            .ValidCategoryName(
-                nameRequired: msg.NameRequired(),
-                nameTooLong: msg.NameTooLong(ContentConstants.MaxCategoryNameLength)
-            );
-        RuleFor(x => x.Slug)
-            .ValidCategorySlug(
-                slugRequired: msg.SlugRequired(),
-                slugTooLong: msg.SlugTooLong(ContentConstants.MaxCategorySlugLength),
-                slugInvalidFormat: msg.SlugInvalidFormat()
-            );
-        RuleFor(x => x.Description)
-            .ValidCategoryDescription(
-                descriptionRequired: msg.DescriptionRequired(),
-                descriptionTooLong: msg.DescriptionTooLong(ContentConstants.MaxCategoryDescriptionLength)
-            );
+        RuleFor(x => x.ContentTypeId).IsValidGuid(contentTypeMsg.Localizer);
+        RuleFor(x => x.Name).ValidCategoryName(i18n);
+        RuleFor(x => x.Slug).ValidCategorySlug(i18n);
+        RuleFor(x => x.Description).ValidCategoryDescription(i18n);
     }
 }
