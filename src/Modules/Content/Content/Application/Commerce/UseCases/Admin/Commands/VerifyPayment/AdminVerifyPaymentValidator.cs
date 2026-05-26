@@ -13,15 +13,11 @@ public class AdminVerifyPaymentValidator : AbstractValidator<AdminVerifyPaymentC
     /// <summary>
     /// Initializes a new instance of <see cref="AdminVerifyPaymentValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Content order validation error messages.</param>
-    public AdminVerifyPaymentValidator(ContentOrderErrorMessage msg)
+    /// <param name="i18n">Content order validation error messages.</param>
+    public AdminVerifyPaymentValidator(ContentOrderErrorMessage i18n)
     {
-        RuleFor(x => x.OrderId).IsValidGuid("Order ID");
-        RuleFor(x => x.ReceiptUrl)
-            .ValidReceiptUrl(
-                receiptUrlRequired: msg.ReceiptUrlRequired(),
-                receiptUrlTooLong: msg.ReceiptUrlTooLong(500)
-            );
-        RuleFor(x => x.AdminUserId).ValidAdminUserId(msg.AdminUserIdRequired());
+        RuleFor(x => x.OrderId).IsValidGuid(i18n.Localizer);
+        RuleFor(x => x.ReceiptUrl).ValidReceiptUrl(i18n);
+        RuleFor(x => x.AdminUserId).ValidAdminUserId(i18n);
     }
 }
