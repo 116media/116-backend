@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SlugAlreadyExists" xml:space="preserve">
+    <value>Une vidéo avec le slug « {0} » existe déjà.</value>
+  </data>
+  <data name="TitleRequired" xml:space="preserve">
+    <value>Le titre de la vidéo est obligatoire.</value>
+  </data>
+  <data name="SlugRequired" xml:space="preserve">
+    <value>Le slug de la vidéo est obligatoire.</value>
+  </data>
+  <data name="CannotPublishWithoutYoutubeUrl" xml:space="preserve">
+    <value>Une URL YouTube doit être attachée avant que cette vidéo puisse être publiée.</value>
+  </data>
+  <data name="CannotDeletePublishedVideo" xml:space="preserve">
+    <value>Seules les vidéos en statut Brouillon ou Rejeté peuvent être supprimées définitivement. Archivez les vidéos publiées à la place.</value>
+  </data>
+  <data name="AlreadySubmitted" xml:space="preserve">
+    <value>La vidéo est déjà en attente de paiement.</value>
+  </data>
+  <data name="AlreadyPendingReview" xml:space="preserve">
+    <value>La vidéo est déjà en attente de révision.</value>
+  </data>
+  <data name="AlreadyApproved" xml:space="preserve">
+    <value>La vidéo est déjà approuvée.</value>
+  </data>
+  <data name="AlreadyPublished" xml:space="preserve">
+    <value>La vidéo est déjà publiée.</value>
+  </data>
+  <data name="AlreadyRejected" xml:space="preserve">
+    <value>La vidéo est déjà rejetée.</value>
+  </data>
+  <data name="AlreadyArchived" xml:space="preserve">
+    <value>La vidéo est déjà archivée.</value>
+  </data>
+  <data name="InvalidStatusTransition" xml:space="preserve">
+    <value>Impossible de faire passer la vidéo de « {0} » à « {1} ».</value>
+  </data>
+  <data name="CannotAttachYoutubeUrlBeforeShoot" xml:space="preserve">
+    <value>L'URL YouTube ne peut pas être ajoutée avant la date de tournage ({0}).</value>
+  </data>
+  <data name="TitleTooLong" xml:space="preserve">
+    <value>Le titre de la vidéo ne doit pas dépasser {0} caractères.</value>
+  </data>
+  <data name="SlugTooLong" xml:space="preserve">
+    <value>Le slug de la vidéo ne doit pas dépasser {0} caractères.</value>
+  </data>
+  <data name="SlugInvalidFormat" xml:space="preserve">
+    <value>Le slug de la vidéo doit être en minuscules et ne contenir que des lettres, des chiffres et des tirets.</value>
+  </data>
+  <data name="DescriptionRequired" xml:space="preserve">
+    <value>La description de la vidéo est obligatoire.</value>
+  </data>
+  <data name="YoutubeUrlRequired" xml:space="preserve">
+    <value>L'URL de la vidéo YouTube est obligatoire.</value>
+  </data>
+  <data name="YoutubeUrlTooLong" xml:space="preserve">
+    <value>L'URL de la vidéo YouTube ne doit pas dépasser {0} caractères.</value>
+  </data>
+  <data name="YoutubeUrlInvalidFormat" xml:space="preserve">
+    <value>Doit être une URL YouTube valide.</value>
+  </data>
+  <data name="VideoIdRequired" xml:space="preserve">
+    <value>L'identifiant de la vidéo est obligatoire.</value>
+  </data>
+</root>
