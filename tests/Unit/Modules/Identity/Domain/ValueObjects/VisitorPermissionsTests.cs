@@ -1,5 +1,7 @@
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -10,13 +12,15 @@ namespace _116.Unit.Tests.Modules.Identity.Domain.ValueObjects;
 /// </summary>
 public class VisitorPermissionsTests
 {
+    private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
+
     #region Content Permissions Tests
 
     [Fact]
     public void Content_ShouldContain3Permissions()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Content;
+        PermissionEntity[] permissions = VisitorPermissions.GetContent(_userErrors);
 
         // Assert
         permissions.Should().NotBeNull();
@@ -27,7 +31,7 @@ public class VisitorPermissionsTests
     public void Content_ShouldContainArticlesReadPermission()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Content;
+        PermissionEntity[] permissions = VisitorPermissions.GetContent(_userErrors);
 
         // Assert
         permissions.Should().Contain(p => p.Resource == "articles" && p.Action == "read");
@@ -37,7 +41,7 @@ public class VisitorPermissionsTests
     public void Content_ShouldContainVideosReadPermission()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Content;
+        PermissionEntity[] permissions = VisitorPermissions.GetContent(_userErrors);
 
         // Assert
         permissions.Should().Contain(p => p.Resource == "videos" && p.Action == "read");
@@ -47,7 +51,7 @@ public class VisitorPermissionsTests
     public void Content_ShouldContainContentsReadPermission()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Content;
+        PermissionEntity[] permissions = VisitorPermissions.GetContent(_userErrors);
 
         // Assert
         permissions.Should().Contain(p => p.Resource == "contents" && p.Action == "read");
@@ -61,7 +65,7 @@ public class VisitorPermissionsTests
     public void Profile_ShouldContain2Permissions()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Profile;
+        PermissionEntity[] permissions = VisitorPermissions.GetProfile(_userErrors);
 
         // Assert
         permissions.Should().NotBeNull();
@@ -72,7 +76,7 @@ public class VisitorPermissionsTests
     public void Profile_ShouldContainOwnProfileReadPermission()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Profile;
+        PermissionEntity[] permissions = VisitorPermissions.GetProfile(_userErrors);
 
         // Assert
         permissions.Should().Contain(p => p.Resource == "own_profile" && p.Action == "read");
@@ -82,7 +86,7 @@ public class VisitorPermissionsTests
     public void Profile_ShouldContainOwnProfileUpdatePermission()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Profile;
+        PermissionEntity[] permissions = VisitorPermissions.GetProfile(_userErrors);
 
         // Assert
         permissions.Should().Contain(p => p.Resource == "own_profile" && p.Action == "update");
@@ -96,7 +100,7 @@ public class VisitorPermissionsTests
     public void Likes_ShouldContain3Permissions()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Likes;
+        PermissionEntity[] permissions = VisitorPermissions.GetLikes(_userErrors);
 
         // Assert
         permissions.Should().NotBeNull();
@@ -111,7 +115,7 @@ public class VisitorPermissionsTests
     public void Comments_ShouldContain4Permissions()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Comments;
+        PermissionEntity[] permissions = VisitorPermissions.GetComments(_userErrors);
 
         // Assert
         permissions.Should().NotBeNull();
@@ -126,7 +130,7 @@ public class VisitorPermissionsTests
     public void Bookmarks_ShouldContain4Permissions()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Bookmarks;
+        PermissionEntity[] permissions = VisitorPermissions.GetBookmarks(_userErrors);
 
         // Assert
         permissions.Should().NotBeNull();
@@ -141,7 +145,7 @@ public class VisitorPermissionsTests
     public void Navigation_ShouldContain2Permissions()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Navigation;
+        PermissionEntity[] permissions = VisitorPermissions.GetNavigation(_userErrors);
 
         // Assert
         permissions.Should().NotBeNull();
@@ -152,7 +156,7 @@ public class VisitorPermissionsTests
     public void Navigation_ShouldContainTagsReadPermission()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Navigation;
+        PermissionEntity[] permissions = VisitorPermissions.GetNavigation(_userErrors);
 
         // Assert
         permissions.Should().Contain(p => p.Resource == "tags" && p.Action == "read");
@@ -162,7 +166,7 @@ public class VisitorPermissionsTests
     public void Navigation_ShouldContainCategoriesReadPermission()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Navigation;
+        PermissionEntity[] permissions = VisitorPermissions.GetNavigation(_userErrors);
 
         // Assert
         permissions.Should().Contain(p => p.Resource == "categories" && p.Action == "read");
@@ -176,7 +180,7 @@ public class VisitorPermissionsTests
     public void Playlists_ShouldContain4Permissions()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Playlists;
+        PermissionEntity[] permissions = VisitorPermissions.GetPlaylists(_userErrors);
 
         // Assert
         permissions.Should().NotBeNull();
@@ -191,7 +195,7 @@ public class VisitorPermissionsTests
     public void Ads_ShouldContain2Permissions()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Ads;
+        PermissionEntity[] permissions = VisitorPermissions.GetAds(_userErrors);
 
         // Assert
         permissions.Should().NotBeNull();
@@ -206,7 +210,7 @@ public class VisitorPermissionsTests
     public void Rates_ShouldContain2Permissions()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Rates;
+        PermissionEntity[] permissions = VisitorPermissions.GetRates(_userErrors);
 
         // Assert
         permissions.Should().NotBeNull();
@@ -221,7 +225,7 @@ public class VisitorPermissionsTests
     public void Shares_ShouldContain3Permissions()
     {
         // Act
-        PermissionEntity[] permissions = VisitorPermissions.Shares;
+        PermissionEntity[] permissions = VisitorPermissions.GetShares(_userErrors);
 
         // Assert
         permissions.Should().NotBeNull();
@@ -236,7 +240,7 @@ public class VisitorPermissionsTests
     public void GetAllPermissions_ShouldReturn29Permissions()
     {
         // Act
-        PermissionEntity[] allPermissions = VisitorPermissions.GetAllPermissions();
+        PermissionEntity[] allPermissions = VisitorPermissions.GetAllPermissions(_userErrors);
 
         // Assert
         allPermissions.Should().NotBeNull();
@@ -247,7 +251,7 @@ public class VisitorPermissionsTests
     public void GetAllPermissions_ShouldContainAllCategories()
     {
         // Act
-        PermissionEntity[] allPermissions = VisitorPermissions.GetAllPermissions();
+        PermissionEntity[] allPermissions = VisitorPermissions.GetAllPermissions(_userErrors);
 
         // Assert - check that permissions from each category are present
         allPermissions.Should().Contain(p => p.Resource == "articles");
@@ -266,7 +270,7 @@ public class VisitorPermissionsTests
     public void GetAllPermissions_ShouldNotContainDuplicates()
     {
         // Act
-        PermissionEntity[] allPermissions = VisitorPermissions.GetAllPermissions();
+        PermissionEntity[] allPermissions = VisitorPermissions.GetAllPermissions(_userErrors);
 
         // Assert - check unique count matches total count
         int uniqueCount = allPermissions.Distinct().Count();
@@ -277,7 +281,7 @@ public class VisitorPermissionsTests
     public void GetAllPermissions_AllPermissionsShouldHaveValidResourceAndAction()
     {
         // Act
-        PermissionEntity[] allPermissions = VisitorPermissions.GetAllPermissions();
+        PermissionEntity[] allPermissions = VisitorPermissions.GetAllPermissions(_userErrors);
 
         // Assert
         allPermissions
@@ -295,7 +299,7 @@ public class VisitorPermissionsTests
     public void GetAllPermissions_AllPermissionsShouldHaveDescriptions()
     {
         // Act
-        PermissionEntity[] allPermissions = VisitorPermissions.GetAllPermissions();
+        PermissionEntity[] allPermissions = VisitorPermissions.GetAllPermissions(_userErrors);
 
         // Assert
         allPermissions
