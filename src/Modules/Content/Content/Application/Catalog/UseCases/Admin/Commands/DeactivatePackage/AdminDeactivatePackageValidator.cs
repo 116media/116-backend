@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -9,10 +10,11 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivatePac
 public class AdminDeactivatePackageValidator : AbstractValidator<AdminDeactivatePackageCommand>
 {
     /// <summary>
-    /// Configures validation rules for package deactivation.
+    /// Initializes a new instance of <see cref="AdminDeactivatePackageValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminDeactivatePackageValidator()
+    /// <param name="i18n">Package validation error messages.</param>
+    public AdminDeactivatePackageValidator(PackageErrorMessage i18n)
     {
-        RuleFor(x => x.Id).IsValidGuid("Package ID");
+        RuleFor(x => x.Id).IsValidGuid(i18n.Localizer);
     }
 }
