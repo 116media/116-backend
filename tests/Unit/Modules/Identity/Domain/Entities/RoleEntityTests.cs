@@ -1,7 +1,9 @@
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -12,6 +14,8 @@ namespace _116.Unit.Tests.Modules.Identity.Domain.Entities;
 /// </summary>
 public class RoleEntityTests
 {
+    private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
+
     #region Create Tests
 
     [Fact]
@@ -23,7 +27,7 @@ public class RoleEntityTests
         string description = TestConstants.Role.ValidDescription;
 
         // Act
-        var role = RoleEntity.Create(id, name, description);
+        var role = RoleEntity.Create(id, name, description, TestErrorsFactory.CreateUserErrors());
 
         // Assert
         role.Id.Should().Be(id);
@@ -45,7 +49,7 @@ public class RoleEntityTests
         string description = TestConstants.Role.ValidDescription;
 
         // Act
-        Action act = () => RoleEntity.Create(id, invalidName!, description);
+        Action act = () => RoleEntity.Create(id, invalidName!, description, TestErrorsFactory.CreateUserErrors());
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -62,7 +66,7 @@ public class RoleEntityTests
         string name = TestConstants.Role.ValidName;
 
         // Act
-        Action act = () => RoleEntity.Create(id, name, invalidDescription!);
+        Action act = () => RoleEntity.Create(id, name, invalidDescription!, TestErrorsFactory.CreateUserErrors());
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -81,7 +85,7 @@ public class RoleEntityTests
         string newDescription = "Updated role description for testing purposes.";
 
         // Act
-        role.Update(newName, newDescription);
+        role.Update(newName, newDescription, _userErrors);
 
         // Assert
         role.Name.Should().Be(newName);
@@ -98,7 +102,7 @@ public class RoleEntityTests
         RoleEntity role = RoleFactory.Create();
 
         // Act
-        Action act = () => role.Update(invalidName!, TestConstants.Role.ValidDescription);
+        Action act = () => role.Update(invalidName!, TestConstants.Role.ValidDescription, _userErrors);
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -114,7 +118,7 @@ public class RoleEntityTests
         RoleEntity role = RoleFactory.Create();
 
         // Act
-        Action act = () => role.Update(TestConstants.Role.ValidName, invalidDescription!);
+        Action act = () => role.Update(TestConstants.Role.ValidName, invalidDescription!, _userErrors);
 
         // Assert
         act.Should().Throw<BadRequestException>();
