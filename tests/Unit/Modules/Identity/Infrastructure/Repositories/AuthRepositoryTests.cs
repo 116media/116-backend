@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Security.Claims;
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
@@ -7,7 +8,8 @@ using _116.Identity.Domain.ValueObjects;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -29,7 +31,11 @@ public class AuthRepositoryTests : IDisposable
             .Options;
 
         _context = new IdentityDbContext(options);
-        _repository = new AuthRepository(_context);
+
+        UserErrors userErrors = TestErrorsFactory.CreateUserErrors();
+        SessionErrors sessionErrors = TestErrorsFactory.CreateSessionErrors();
+
+        _repository = new AuthRepository(_context, userErrors, sessionErrors);
     }
 
     public void Dispose()
@@ -839,6 +845,7 @@ public class AuthRepositoryTests : IDisposable
             Guid.NewGuid(),
             "existinguser",
             EnumAuthProvider.Google,
+            TestErrorsFactory.CreateUserErrors(),
             "external@example.com"
         );
 
@@ -889,6 +896,7 @@ public class AuthRepositoryTests : IDisposable
             Guid.NewGuid(),
             "oldusername",
             EnumAuthProvider.Google,
+            TestErrorsFactory.CreateUserErrors(),
             "external@example.com"
         );
 
@@ -917,6 +925,7 @@ public class AuthRepositoryTests : IDisposable
             Guid.NewGuid(),
             "user1",
             EnumAuthProvider.Google,
+            TestErrorsFactory.CreateUserErrors(),
             "user1@example.com"
         );
         UserEntity existingUser2 = UserFactory.Create("second@example.com", "takenusername");
@@ -946,6 +955,7 @@ public class AuthRepositoryTests : IDisposable
             Guid.NewGuid(),
             "originalusername",
             EnumAuthProvider.Google,
+            TestErrorsFactory.CreateUserErrors(),
             "external@example.com"
         );
 
@@ -977,6 +987,7 @@ public class AuthRepositoryTests : IDisposable
             Guid.NewGuid(),
             "externaluser",
             EnumAuthProvider.Google,
+            TestErrorsFactory.CreateUserErrors(),
             "external@example.com"
         );
 
@@ -992,7 +1003,13 @@ public class AuthRepositoryTests : IDisposable
     public void SetPasswordForExternalUser_WhenUserHasNoEmail_ShouldThrowBadRequestException()
     {
         // Arrange - Create user without email by using reflection
-        var user = UserEntity.CreateExternal(Guid.NewGuid(), "user", EnumAuthProvider.Google, "temp@example.com");
+        var user = UserEntity.CreateExternal(
+            Guid.NewGuid(),
+            "user",
+            EnumAuthProvider.Google,
+            TestErrorsFactory.CreateUserErrors(),
+            "temp@example.com"
+        );
         // Set email to null using reflection
         PropertyInfo? emailProperty = typeof(UserEntity).GetProperty("Email");
         emailProperty!.SetValue(user, null);
