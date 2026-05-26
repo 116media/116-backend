@@ -13,11 +13,12 @@ public class AdminAddOrderItemValidator : AbstractValidator<AdminAddOrderItemCom
     /// <summary>
     /// Initializes a new instance of <see cref="AdminAddOrderItemValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Content order validation error messages.</param>
-    public AdminAddOrderItemValidator(ContentOrderErrorMessage msg)
+    /// <param name="i18n">Content order validation error messages.</param>
+    /// <param name="categoryMsg">Category validation error messages.</param>
+    public AdminAddOrderItemValidator(ContentOrderErrorMessage i18n, CategoryErrorMessage categoryMsg)
     {
-        RuleFor(x => x.OrderId).IsValidGuid("Order ID");
-        RuleFor(x => x.CategoryId).IsValidGuid("Category ID");
-        RuleFor(x => x.ContentKind).ValidOrderItemContentKind(msg.InvalidOrderItemContentKind());
+        RuleFor(x => x.OrderId).IsValidGuid(i18n.Localizer);
+        RuleFor(x => x.CategoryId).IsValidGuid(categoryMsg.Localizer);
+        RuleFor(x => x.ContentKind).ValidOrderItemContentKind(i18n);
     }
 }
