@@ -13,11 +13,12 @@ public class AdminUpdateCategoryPricingValidator : AbstractValidator<AdminUpdate
     /// <summary>
     /// Initializes a new instance of <see cref="AdminUpdateCategoryPricingValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Category validation error messages.</param>
-    public AdminUpdateCategoryPricingValidator(CategoryErrorMessage msg)
+    /// <param name="i18n">Category validation error messages.</param>
+    /// <param name="pricingTierMsg">Pricing tier validation error messages.</param>
+    public AdminUpdateCategoryPricingValidator(CategoryErrorMessage i18n, PricingTierErrorMessage pricingTierMsg)
     {
-        RuleFor(x => x.CategoryId).IsValidGuid("Category ID");
-        RuleFor(x => x.PricingTierId).IsValidGuid("Pricing tier ID");
-        RuleFor(x => x.PriceUsd).ValidCategoryPriceUsd(msg.PriceMustBeNonNegative());
+        RuleFor(x => x.CategoryId).IsValidGuid(i18n.Localizer);
+        RuleFor(x => x.PricingTierId).IsValidGuid(pricingTierMsg.Localizer);
+        RuleFor(x => x.PriceUsd).ValidCategoryPriceUsd(i18n);
     }
 }
