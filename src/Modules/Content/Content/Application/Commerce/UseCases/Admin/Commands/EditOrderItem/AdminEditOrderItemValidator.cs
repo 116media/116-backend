@@ -13,17 +13,15 @@ public class AdminEditOrderItemValidator : AbstractValidator<AdminEditOrderItemC
     /// <summary>
     /// Initializes a new instance of <see cref="AdminEditOrderItemValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Content order validation error messages.</param>
-    public AdminEditOrderItemValidator(ContentOrderErrorMessage msg)
+    /// <param name="i18n">Content order validation error messages.</param>
+    /// <param name="categoryMsg">Category validation error messages.</param>
+    public AdminEditOrderItemValidator(ContentOrderErrorMessage i18n, CategoryErrorMessage categoryMsg)
     {
-        RuleFor(x => x.OrderId).IsValidGuid("Order ID");
-        RuleFor(x => x.ItemId).IsValidGuid("Item ID");
+        RuleFor(x => x.OrderId).IsValidGuid(i18n.Localizer);
+        RuleFor(x => x.ItemId).IsValidGuid(i18n.Localizer, "ItemIdRequired", "ItemIdInvalid");
 
-        When(x => x.CategoryId is not null, () => RuleFor(x => x.CategoryId!).IsValidGuid("Category ID"));
+        When(x => x.CategoryId is not null, () => RuleFor(x => x.CategoryId!).IsValidGuid(categoryMsg.Localizer));
 
-        When(
-            x => x.ContentKind.HasValue,
-            () => RuleFor(x => x.ContentKind!.Value).ValidOrderItemContentKind(msg.InvalidOrderItemContentKind())
-        );
+        When(x => x.ContentKind.HasValue, () => RuleFor(x => x.ContentKind!.Value).ValidOrderItemContentKind(i18n));
     }
 }
