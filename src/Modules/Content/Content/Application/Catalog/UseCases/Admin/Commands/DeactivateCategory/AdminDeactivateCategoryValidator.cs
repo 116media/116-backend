@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -9,10 +10,11 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivateCat
 public class AdminDeactivateCategoryValidator : AbstractValidator<AdminDeactivateCategoryCommand>
 {
     /// <summary>
-    /// Configures validation rules for category deactivation.
+    /// Initializes a new instance of <see cref="AdminDeactivateCategoryValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminDeactivateCategoryValidator()
+    /// <param name="i18n">Category validation error messages.</param>
+    public AdminDeactivateCategoryValidator(CategoryErrorMessage i18n)
     {
-        RuleFor(x => x.Id).IsValidGuid("Category ID");
+        RuleFor(x => x.Id).IsValidGuid(i18n.Localizer);
     }
 }
