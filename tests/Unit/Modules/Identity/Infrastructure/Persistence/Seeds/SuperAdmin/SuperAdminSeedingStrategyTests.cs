@@ -1,7 +1,9 @@
 using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -19,6 +21,7 @@ public class SuperAdminSeedingStrategyTests
     private readonly Mock<ILogger<SuperAdminRepositoryManager>> _repositoryLoggerMock;
     private readonly Mock<ILogger<SuperAdminSeedingStrategy>> _loggerMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
+    private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
 
     public SuperAdminSeedingStrategyTests()
     {
@@ -49,7 +52,7 @@ public class SuperAdminSeedingStrategyTests
         await using var context = new IdentityDbContext(options);
 
         var repositoryManager = new SuperAdminRepositoryManager(context, _repositoryLoggerMock.Object);
-        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object);
+        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object, _userErrors);
         var strategy = new SuperAdminSeedingStrategy(entityFactory, repositoryManager, _loggerMock.Object);
 
         // Act
@@ -77,7 +80,7 @@ public class SuperAdminSeedingStrategyTests
         await using var context = new IdentityDbContext(options);
 
         var repositoryManager = new SuperAdminRepositoryManager(context, _repositoryLoggerMock.Object);
-        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object);
+        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object, _userErrors);
         var strategy = new SuperAdminSeedingStrategy(entityFactory, repositoryManager, _loggerMock.Object);
 
         // Act
@@ -99,12 +102,12 @@ public class SuperAdminSeedingStrategyTests
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed permission
-        var existingPermission = PermissionEntity.Create(Guid.NewGuid(), "system", "all", "Existing");
+        var existingPermission = PermissionEntity.Create(Guid.NewGuid(), "system", "all", "Existing", _userErrors);
         await context.Permissions.AddAsync(existingPermission);
         await context.SaveChangesAsync();
 
         var repositoryManager = new SuperAdminRepositoryManager(context, _repositoryLoggerMock.Object);
-        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object);
+        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object, _userErrors);
         var strategy = new SuperAdminSeedingStrategy(entityFactory, repositoryManager, _loggerMock.Object);
 
         // Act
@@ -124,7 +127,7 @@ public class SuperAdminSeedingStrategyTests
         await using var context = new IdentityDbContext(options);
 
         var repositoryManager = new SuperAdminRepositoryManager(context, _repositoryLoggerMock.Object);
-        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object);
+        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object, _userErrors);
         var strategy = new SuperAdminSeedingStrategy(entityFactory, repositoryManager, _loggerMock.Object);
 
         // Act
@@ -144,12 +147,12 @@ public class SuperAdminSeedingStrategyTests
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed role
-        var existingRole = RoleEntity.Create(Guid.NewGuid(), "SuperAdmin", "Existing");
+        var existingRole = RoleEntity.Create(Guid.NewGuid(), "SuperAdmin", "Existing", _userErrors);
         await context.Roles.AddAsync(existingRole);
         await context.SaveChangesAsync();
 
         var repositoryManager = new SuperAdminRepositoryManager(context, _repositoryLoggerMock.Object);
-        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object);
+        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object, _userErrors);
         var strategy = new SuperAdminSeedingStrategy(entityFactory, repositoryManager, _loggerMock.Object);
 
         // Act
@@ -169,7 +172,7 @@ public class SuperAdminSeedingStrategyTests
         await using var context = new IdentityDbContext(options);
 
         var repositoryManager = new SuperAdminRepositoryManager(context, _repositoryLoggerMock.Object);
-        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object);
+        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object, _userErrors);
         var strategy = new SuperAdminSeedingStrategy(entityFactory, repositoryManager, _loggerMock.Object);
 
         // Act
@@ -189,8 +192,8 @@ public class SuperAdminSeedingStrategyTests
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed everything
-        var permission = PermissionEntity.Create(Guid.NewGuid(), "system", "all", "Test");
-        var role = RoleEntity.Create(Guid.NewGuid(), "SuperAdmin", "Test");
+        var permission = PermissionEntity.Create(Guid.NewGuid(), "system", "all", "Test", _userErrors);
+        var role = RoleEntity.Create(Guid.NewGuid(), "SuperAdmin", "Test", _userErrors);
         var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission.Id);
         await context.Permissions.AddAsync(permission);
         await context.Roles.AddAsync(role);
@@ -198,7 +201,7 @@ public class SuperAdminSeedingStrategyTests
         await context.SaveChangesAsync();
 
         var repositoryManager = new SuperAdminRepositoryManager(context, _repositoryLoggerMock.Object);
-        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object);
+        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object, _userErrors);
         var strategy = new SuperAdminSeedingStrategy(entityFactory, repositoryManager, _loggerMock.Object);
 
         // Act
@@ -218,7 +221,7 @@ public class SuperAdminSeedingStrategyTests
         await using var context = new IdentityDbContext(options);
 
         var repositoryManager = new SuperAdminRepositoryManager(context, _repositoryLoggerMock.Object);
-        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object);
+        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object, _userErrors);
         var strategy = new SuperAdminSeedingStrategy(entityFactory, repositoryManager, _loggerMock.Object);
 
         // Act
@@ -239,7 +242,7 @@ public class SuperAdminSeedingStrategyTests
         await using var context = new IdentityDbContext(options);
 
         var repositoryManager = new SuperAdminRepositoryManager(context, _repositoryLoggerMock.Object);
-        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object);
+        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object, _userErrors);
         var strategy = new SuperAdminSeedingStrategy(entityFactory, repositoryManager, _loggerMock.Object);
 
         // Act
@@ -259,7 +262,7 @@ public class SuperAdminSeedingStrategyTests
         await using var context = new IdentityDbContext(options);
 
         var repositoryManager = new SuperAdminRepositoryManager(context, _repositoryLoggerMock.Object);
-        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object);
+        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object, _userErrors);
         var strategy = new SuperAdminSeedingStrategy(entityFactory, repositoryManager, _loggerMock.Object);
 
         // Act
@@ -287,7 +290,7 @@ public class SuperAdminSeedingStrategyTests
         await using var context = new IdentityDbContext(options);
 
         var repositoryManager = new SuperAdminRepositoryManager(context, _repositoryLoggerMock.Object);
-        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object);
+        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object, _userErrors);
         var strategy = new SuperAdminSeedingStrategy(entityFactory, repositoryManager, _loggerMock.Object);
 
         // Act
@@ -315,7 +318,7 @@ public class SuperAdminSeedingStrategyTests
         await using var context = new IdentityDbContext(options);
 
         var repositoryManager = new SuperAdminRepositoryManager(context, _repositoryLoggerMock.Object);
-        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object);
+        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object, _userErrors);
         var strategy = new SuperAdminSeedingStrategy(entityFactory, repositoryManager, _loggerMock.Object);
 
         // Act
@@ -343,7 +346,7 @@ public class SuperAdminSeedingStrategyTests
         await using var context = new IdentityDbContext(options);
 
         var repositoryManager = new SuperAdminRepositoryManager(context, _repositoryLoggerMock.Object);
-        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object);
+        var entityFactory = new SuperAdminEntityFactory(_passwordServiceMock.Object, _userErrors);
         var strategy = new SuperAdminSeedingStrategy(entityFactory, repositoryManager, _loggerMock.Object);
 
         // Act
