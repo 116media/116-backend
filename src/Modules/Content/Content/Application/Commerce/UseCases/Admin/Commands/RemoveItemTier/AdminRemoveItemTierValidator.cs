@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -9,12 +10,14 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.RemoveItemTi
 public class AdminRemoveItemTierValidator : AbstractValidator<AdminRemoveItemTierCommand>
 {
     /// <summary>
-    /// Configures validation rules for removing an item tier.
+    /// Initializes a new instance of <see cref="AdminRemoveItemTierValidator" /> with the specified error message providers.
     /// </summary>
-    public AdminRemoveItemTierValidator()
+    /// <param name="orderMsg">Content order validation error messages.</param>
+    /// <param name="pricingTierMsg">Pricing tier validation error messages.</param>
+    public AdminRemoveItemTierValidator(ContentOrderErrorMessage orderMsg, PricingTierErrorMessage pricingTierMsg)
     {
-        RuleFor(x => x.OrderId).IsValidGuid("Order ID");
-        RuleFor(x => x.ItemId).IsValidGuid("Item ID");
-        RuleFor(x => x.TierId).IsValidGuid("Tier ID");
+        RuleFor(x => x.OrderId).IsValidGuid(orderMsg.Localizer);
+        RuleFor(x => x.ItemId).IsValidGuid(orderMsg.Localizer, "ItemIdRequired", "ItemIdInvalid");
+        RuleFor(x => x.TierId).IsValidGuid(pricingTierMsg.Localizer);
     }
 }
