@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AlreadySubmitted" xml:space="preserve">
+    <value>La commande a déjà été soumise.</value>
+  </data>
+  <data name="AlreadyPaid" xml:space="preserve">
+    <value>La commande est déjà payée.</value>
+  </data>
+  <data name="AlreadyCancelled" xml:space="preserve">
+    <value>La commande a déjà été annulée.</value>
+  </data>
+  <data name="CannotCancelPaidOrder" xml:space="preserve">
+    <value>Une commande déjà payée ne peut pas être annulée.</value>
+  </data>
+  <data name="CannotAddItemToNonDraftOrder" xml:space="preserve">
+    <value>Cette commande ne peut être modifiée que lorsqu'elle est en statut Brouillon.</value>
+  </data>
+  <data name="MustHaveAtLeastOneItemWithTier" xml:space="preserve">
+    <value>La commande doit avoir au moins un article avec au moins un niveau de tarification avant de pouvoir être soumise.</value>
+  </data>
+  <data name="PaymentAlreadyVerified" xml:space="preserve">
+    <value>Le paiement a déjà été vérifié.</value>
+  </data>
+  <data name="PaymentAlreadyRejected" xml:space="preserve">
+    <value>Le paiement a déjà été rejeté.</value>
+  </data>
+  <data name="TierAlreadyAttached" xml:space="preserve">
+    <value>Ce niveau de tarification est déjà attaché à l'article.</value>
+  </data>
+  <data name="ReceiptUrlRequired" xml:space="preserve">
+    <value>L'URL du reçu est obligatoire.</value>
+  </data>
+  <data name="ReceiptUrlTooLong" xml:space="preserve">
+    <value>L'URL du reçu ne doit pas dépasser {0} caractères.</value>
+  </data>
+  <data name="PaymentProofRequired" xml:space="preserve">
+    <value>Le justificatif de paiement est obligatoire.</value>
+  </data>
+  <data name="InvalidOrderItemContentKind" xml:space="preserve">
+    <value>Le type de contenu doit être Article ou Vidéo.</value>
+  </data>
+  <data name="AdminUserIdRequired" xml:space="preserve">
+    <value>L'identifiant de l'utilisateur administrateur est obligatoire.</value>
+  </data>
+  <data name="InvalidPaymentMethod" xml:space="preserve">
+    <value>La méthode de paiement est invalide.</value>
+  </data>
+  <data name="OrderItemIdRequired" xml:space="preserve">
+    <value>L'identifiant de l'article de commande est obligatoire.</value>
+  </data>
+</root>
