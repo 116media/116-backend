@@ -17,8 +17,8 @@ public class AdminAddCategoryPricingValidator : AbstractValidator<AdminAddCatego
     /// <param name="pricingTierMsg">Pricing tier validation error messages.</param>
     public AdminAddCategoryPricingValidator(CategoryErrorMessage categoryMsg, PricingTierErrorMessage pricingTierMsg)
     {
-        RuleFor(x => x.CategoryId).IsValidGuid("Category ID");
-        RuleFor(x => x.PricingTierId).ValidPricingTierId(pricingTierMsg.NameRequired());
-        RuleFor(x => x.PriceUsd).ValidCategoryPriceUsd(categoryMsg.PriceMustBeNonNegative());
+        RuleFor(x => x.CategoryId).IsValidGuid(categoryMsg.Localizer);
+        RuleFor(x => x.PricingTierId).ValidPricingTierId(pricingTierMsg);
+        RuleFor(x => x.PriceUsd).ValidCategoryPriceUsd(categoryMsg);
     }
 }
