@@ -13,10 +13,10 @@ public class AdminAddPackageSlotValidator : AbstractValidator<AdminAddPackageSlo
     /// <summary>
     /// Initializes a new instance of <see cref="AdminAddPackageSlotValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Package validation error messages.</param>
-    public AdminAddPackageSlotValidator(PackageErrorMessage msg)
+    /// <param name="i18n">Package validation error messages.</param>
+    public AdminAddPackageSlotValidator(PackageErrorMessage i18n)
     {
-        RuleFor(x => x.PackageId).IsValidGuid("Package ID");
-        RuleFor(x => x.Quantity).ValidSlotQuantity(msg.SlotQuantityMustBePositive());
+        RuleFor(x => x.PackageId).IsValidGuid(i18n.Localizer);
+        RuleFor(x => x.Quantity).ValidSlotQuantity(i18n);
     }
 }
