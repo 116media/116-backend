@@ -7,7 +7,7 @@ namespace _116.Content.Application.Shared.Errors;
 /// Article domain error factory providing simple, readable exception creation.
 /// Usage: ArticleErrors.NotFound(id) or ArticleErrors.SlugAlreadyExists(slug)
 /// </summary>
-public class ArticleErrors(ArticleErrorMessage msg)
+public class ArticleErrors(ArticleErrorMessage i18n)
 {
     /// <summary>
     /// Throws when an article is not found by its identifier.
@@ -22,7 +22,7 @@ public class ArticleErrors(ArticleErrorMessage msg)
     /// </summary>
     public ConflictException SlugAlreadyExists(string slug)
     {
-        return new ConflictException(msg.SlugAlreadyExists(slug: slug));
+        return new ConflictException(i18n.SlugAlreadyExists(slug: slug));
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ public class ArticleErrors(ArticleErrorMessage msg)
     /// </summary>
     public BadRequestException TitleRequired()
     {
-        return new BadRequestException(msg.TitleRequired());
+        return new BadRequestException(i18n.TitleRequired());
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ public class ArticleErrors(ArticleErrorMessage msg)
     /// </summary>
     public BadRequestException SlugRequired()
     {
-        return new BadRequestException(msg.SlugRequired());
+        return new BadRequestException(i18n.SlugRequired());
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public class ArticleErrors(ArticleErrorMessage msg)
     /// </summary>
     public ConflictException AlreadySubmitted()
     {
-        return new ConflictException(msg.AlreadySubmitted());
+        return new ConflictException(i18n.AlreadySubmitted());
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public class ArticleErrors(ArticleErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyPendingReview()
     {
-        return new ConflictException(msg.AlreadyPendingReview());
+        return new ConflictException(i18n.AlreadyPendingReview());
     }
 
     /// <summary>
@@ -62,7 +62,7 @@ public class ArticleErrors(ArticleErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyApproved()
     {
-        return new ConflictException(msg.AlreadyApproved());
+        return new ConflictException(i18n.AlreadyApproved());
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ public class ArticleErrors(ArticleErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyPublished()
     {
-        return new ConflictException(msg.AlreadyPublished());
+        return new ConflictException(i18n.AlreadyPublished());
     }
 
     /// <summary>
@@ -78,7 +78,7 @@ public class ArticleErrors(ArticleErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyRejected()
     {
-        return new ConflictException(msg.AlreadyRejected());
+        return new ConflictException(i18n.AlreadyRejected());
     }
 
     /// <summary>
@@ -86,7 +86,7 @@ public class ArticleErrors(ArticleErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyArchived()
     {
-        return new ConflictException(msg.AlreadyArchived());
+        return new ConflictException(i18n.AlreadyArchived());
     }
 
     /// <summary>
@@ -94,7 +94,7 @@ public class ArticleErrors(ArticleErrorMessage msg)
     /// </summary>
     public BadRequestException InvalidStatusTransition(string from, string to)
     {
-        return new BadRequestException(msg.InvalidStatusTransition(from: from, to: to));
+        return new BadRequestException(i18n.InvalidStatusTransition(from: from, to: to));
     }
 
     /// <summary>
@@ -102,6 +102,6 @@ public class ArticleErrors(ArticleErrorMessage msg)
     /// </summary>
     public BadRequestException CannotDeletePublishedArticle()
     {
-        return new BadRequestException(msg.CannotDeletePublishedArticle());
+        return new BadRequestException(i18n.CannotDeletePublishedArticle());
     }
 }
