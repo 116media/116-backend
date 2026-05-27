@@ -1,6 +1,5 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
-using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -15,14 +14,11 @@ public class AdminUpdateVideoTagsValidator : AbstractValidator<AdminUpdateVideoT
     /// <summary>
     /// Initializes a new instance of <see cref="AdminUpdateVideoTagsValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Tag validation error messages.</param>
-    public AdminUpdateVideoTagsValidator(TagErrorMessage msg)
+    /// <param name="i18n">Tag validation error messages.</param>
+    /// <param name="videoMsg">Video validation error messages.</param>
+    public AdminUpdateVideoTagsValidator(TagErrorMessage i18n, VideoErrorMessage videoMsg)
     {
-        RuleFor(x => x.VideoId).IsValidGuid("Video ID");
-        RuleForEach(x => x.TagNames)
-            .ValidTagNameItem(
-                nameRequired: msg.NameRequired(),
-                nameTooLong: msg.NameTooLong(ContentConstants.MaxTagNameLength)
-            );
+        RuleFor(x => x.VideoId).IsValidGuid(videoMsg.Localizer);
+        RuleForEach(x => x.TagNames).ValidTagNameItem(i18n);
     }
 }
