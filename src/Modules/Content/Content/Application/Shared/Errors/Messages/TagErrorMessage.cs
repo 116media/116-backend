@@ -9,6 +9,11 @@ namespace _116.Content.Application.Shared.Errors.Messages;
 public class TagErrorMessage(IStringLocalizer<TagErrorMessage> localizer)
 {
     /// <summary>
+    /// Exposes the underlying localizer for shared validation extensions.
+    /// </summary>
+    public IStringLocalizer Localizer => localizer;
+
+    /// <summary>
     /// Gets an error message for when a tag with the given slug already exists.
     /// </summary>
     /// <param name="slug">The tag slug that caused the conflict.</param>
