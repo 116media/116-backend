@@ -90,4 +90,16 @@
   <data name="CategoryIdRequired" xml:space="preserve">
     <value>L'identifiant de la catégorie de l'article est obligatoire.</value>
   </data>
+  <data name="VideoIdRequired" xml:space="preserve">
+    <value>L'identifiant de la vidéo est obligatoire.</value>
+  </data>
+  <data name="VideoIdInvalid" xml:space="preserve">
+    <value>Identifiant de vidéo invalide.</value>
+  </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>L'identifiant de l'article est obligatoire.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>L'identifiant de l'article est invalide.</value>
+  </data>
 </root>
