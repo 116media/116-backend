@@ -48,4 +48,10 @@
   <data name="DescriptionTooLong" xml:space="preserve">
     <value>La description de la catégorie ne doit pas dépasser {0} caractères.</value>
   </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>L'identifiant de la catégorie est obligatoire.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>L'identifiant de la catégorie est invalide.</value>
+  </data>
 </root>
