@@ -7,7 +7,7 @@ namespace _116.Content.Application.Shared.Errors;
 /// Content order domain error factory providing simple, readable exception creation.
 /// Usage: ContentOrderErrors.NotFound(id) or ContentOrderErrors.AlreadySubmitted()
 /// </summary>
-public class ContentOrderErrors(ContentOrderErrorMessage msg)
+public class ContentOrderErrors(ContentOrderErrorMessage i18n)
 {
     /// <summary>
     /// Throws when a content order is not found by its identifier.
@@ -30,7 +30,7 @@ public class ContentOrderErrors(ContentOrderErrorMessage msg)
     /// </summary>
     public ConflictException TierAlreadyAttached()
     {
-        return new ConflictException(msg.TierAlreadyAttached());
+        return new ConflictException(i18n.TierAlreadyAttached());
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public class ContentOrderErrors(ContentOrderErrorMessage msg)
     /// </summary>
     public ConflictException AlreadySubmitted()
     {
-        return new ConflictException(msg.AlreadySubmitted());
+        return new ConflictException(i18n.AlreadySubmitted());
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public class ContentOrderErrors(ContentOrderErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyPaid()
     {
-        return new ConflictException(msg.AlreadyPaid());
+        return new ConflictException(i18n.AlreadyPaid());
     }
 
     /// <summary>
@@ -62,7 +62,7 @@ public class ContentOrderErrors(ContentOrderErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyCancelled()
     {
-        return new ConflictException(msg.AlreadyCancelled());
+        return new ConflictException(i18n.AlreadyCancelled());
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ public class ContentOrderErrors(ContentOrderErrorMessage msg)
     /// </summary>
     public BadRequestException CannotCancelPaidOrder()
     {
-        return new BadRequestException(msg.CannotCancelPaidOrder());
+        return new BadRequestException(i18n.CannotCancelPaidOrder());
     }
 
     /// <summary>
@@ -78,7 +78,7 @@ public class ContentOrderErrors(ContentOrderErrorMessage msg)
     /// </summary>
     public BadRequestException CannotAddItemToNonDraftOrder()
     {
-        return new BadRequestException(msg.CannotAddItemToNonDraftOrder());
+        return new BadRequestException(i18n.CannotAddItemToNonDraftOrder());
     }
 
     /// <summary>
@@ -86,7 +86,7 @@ public class ContentOrderErrors(ContentOrderErrorMessage msg)
     /// </summary>
     public BadRequestException MustHaveAtLeastOneItemWithTier()
     {
-        return new BadRequestException(msg.MustHaveAtLeastOneItemWithTier());
+        return new BadRequestException(i18n.MustHaveAtLeastOneItemWithTier());
     }
 
     /// <summary>
@@ -102,7 +102,7 @@ public class ContentOrderErrors(ContentOrderErrorMessage msg)
     /// </summary>
     public ConflictException PaymentAlreadyVerified()
     {
-        return new ConflictException(msg.PaymentAlreadyVerified());
+        return new ConflictException(i18n.PaymentAlreadyVerified());
     }
 
     /// <summary>
@@ -110,6 +110,6 @@ public class ContentOrderErrors(ContentOrderErrorMessage msg)
     /// </summary>
     public ConflictException PaymentAlreadyRejected()
     {
-        return new ConflictException(msg.PaymentAlreadyRejected());
+        return new ConflictException(i18n.PaymentAlreadyRejected());
     }
 }
