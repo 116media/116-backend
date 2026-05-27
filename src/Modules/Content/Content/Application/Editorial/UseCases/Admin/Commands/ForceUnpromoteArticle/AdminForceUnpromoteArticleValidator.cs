@@ -13,19 +13,14 @@ public class AdminForceUnpromoteArticleValidator : AbstractValidator<AdminForceU
     /// <summary>
     /// Initializes a new instance of <see cref="AdminForceUnpromoteArticleValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Article validation error messages.</param>
-    public AdminForceUnpromoteArticleValidator(ArticleErrorMessage msg)
+    /// <param name="i18n">Article validation error messages.</param>
+    public AdminForceUnpromoteArticleValidator(ArticleErrorMessage i18n)
     {
-        RuleFor(x => x.Slug)
-            .ValidArticleSlug(
-                slugRequired: msg.SlugRequired(),
-                slugTooLong: msg.SlugTooLong(ContentConstants.MaxSlugLength),
-                slugInvalidFormat: msg.SlugInvalidFormat()
-            );
+        RuleFor(x => x.Slug).ValidArticleSlug(i18n);
         RuleFor(x => x.Reason)
             .ValidUnpromoteReason(
-                reasonRequired: msg.RejectionReasonRequired(),
-                reasonTooLong: msg.RejectionReasonTooLong(ContentConstants.MaxRejectionReasonLength)
+                reasonRequired: i18n.RejectionReasonRequired(),
+                reasonTooLong: i18n.RejectionReasonTooLong(ContentConstants.MaxRejectionReasonLength)
             );
     }
 }
