@@ -8,6 +8,11 @@ namespace _116.Content.Application.Shared.Errors.Messages;
 public class ShortVideoInteractionErrorMessage(IStringLocalizer<ShortVideoInteractionErrorMessage> localizer)
 {
     /// <summary>
+    /// Exposes the underlying localizer for shared validation extensions.
+    /// </summary>
+    public IStringLocalizer Localizer => localizer;
+
+    /// <summary>
     /// Gets an error message for when a user has already liked a short video.
     /// </summary>
     /// <returns>
