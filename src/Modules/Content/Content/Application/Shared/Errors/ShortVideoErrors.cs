@@ -7,7 +7,7 @@ namespace _116.Content.Application.Shared.Errors;
 /// ShortVideo domain error factory providing simple, readable exception creation.
 /// Usage: ShortVideoErrors.NotFound(id) or ShortVideoErrors.AlreadyActive()
 /// </summary>
-public class ShortVideoErrors(ShortVideoErrorMessage msg)
+public class ShortVideoErrors(ShortVideoErrorMessage i18n)
 {
     /// <summary>
     /// Throws when a short video is not found by its identifier.
@@ -22,7 +22,7 @@ public class ShortVideoErrors(ShortVideoErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyActive()
     {
-        return new ConflictException(msg.AlreadyActive());
+        return new ConflictException(i18n.AlreadyActive());
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ public class ShortVideoErrors(ShortVideoErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyInactive()
     {
-        return new ConflictException(msg.AlreadyInactive());
+        return new ConflictException(i18n.AlreadyInactive());
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ public class ShortVideoErrors(ShortVideoErrorMessage msg)
     /// </summary>
     public BadRequestException TitleRequired()
     {
-        return new BadRequestException(msg.TitleRequired());
+        return new BadRequestException(i18n.TitleRequired());
     }
 
     /// <summary>
@@ -46,6 +46,6 @@ public class ShortVideoErrors(ShortVideoErrorMessage msg)
     /// </summary>
     public ConflictException SlugAlreadyExists(string slug)
     {
-        return new ConflictException(msg.SlugAlreadyExists(slug: slug));
+        return new ConflictException(i18n.SlugAlreadyExists(slug: slug));
     }
 }
