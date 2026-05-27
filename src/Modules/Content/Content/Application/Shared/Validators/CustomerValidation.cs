@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
 using FluentValidation;
 
@@ -13,21 +14,19 @@ public static class CustomerValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the full name property.</param>
-    /// <param name="fullNameRequired">Error message used when the full name is empty.</param>
-    /// <param name="fullNameTooLong">Error message used when the full name exceeds the maximum length.</param>
+    /// <param name="i18n">The customer error message provider.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidCustomerFullName<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        string fullNameRequired,
-        string fullNameTooLong
+        CustomerErrorMessage i18n
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(fullNameRequired)
+            .WithMessage(i18n.FullNameRequired())
             .MaximumLength(maximumLength: ContentConstants.MaxCustomerFullNameLength)
-            .WithMessage(fullNameTooLong);
+            .WithMessage(i18n.FullNameTooLong(ContentConstants.MaxCustomerFullNameLength));
     }
 
     /// <summary>
@@ -35,25 +34,21 @@ public static class CustomerValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the email property.</param>
-    /// <param name="emailRequired">Error message used when the email is empty.</param>
-    /// <param name="emailInvalidFormat">Error message used when the email format is invalid.</param>
-    /// <param name="emailTooLong">Error message used when the email exceeds the maximum length.</param>
+    /// <param name="i18n">The customer error message provider.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidCustomerEmail<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        string emailRequired,
-        string emailInvalidFormat,
-        string emailTooLong
+        CustomerErrorMessage i18n
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(emailRequired)
+            .WithMessage(i18n.EmailRequired())
             .EmailAddress()
-            .WithMessage(emailInvalidFormat)
+            .WithMessage(i18n.EmailInvalidFormat())
             .MaximumLength(maximumLength: ContentConstants.MaxCustomerEmailLength)
-            .WithMessage(emailTooLong);
+            .WithMessage(i18n.EmailTooLong(ContentConstants.MaxCustomerEmailLength));
     }
 
     /// <summary>
@@ -61,16 +56,16 @@ public static class CustomerValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the phone property.</param>
-    /// <param name="phoneTooLong">Error message used when the phone exceeds the maximum length.</param>
+    /// <param name="i18n">The customer error message provider.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidCustomerPhone<T>(
         this IRuleBuilder<T, string?> ruleBuilder,
-        string phoneTooLong
+        CustomerErrorMessage i18n
     )
     {
         return ruleBuilder
             .MaximumLength(maximumLength: ContentConstants.MaxCustomerPhoneLength)
-            .WithMessage(phoneTooLong)
+            .WithMessage(i18n.PhoneTooLong(ContentConstants.MaxCustomerPhoneLength))
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Phone")));
     }
 
@@ -79,16 +74,16 @@ public static class CustomerValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the company property.</param>
-    /// <param name="companyTooLong">Error message used when the company name exceeds the maximum length.</param>
+    /// <param name="i18n">The customer error message provider.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidCustomerCompany<T>(
         this IRuleBuilder<T, string?> ruleBuilder,
-        string companyTooLong
+        CustomerErrorMessage i18n
     )
     {
         return ruleBuilder
             .MaximumLength(maximumLength: ContentConstants.MaxCustomerCompanyLength)
-            .WithMessage(companyTooLong)
+            .WithMessage(i18n.CompanyTooLong(ContentConstants.MaxCustomerCompanyLength))
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Company")));
     }
 
@@ -97,16 +92,16 @@ public static class CustomerValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the notes property.</param>
-    /// <param name="notesTooLong">Error message used when the notes exceed the maximum length.</param>
+    /// <param name="i18n">The customer error message provider.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidCustomerNotes<T>(
         this IRuleBuilder<T, string?> ruleBuilder,
-        string notesTooLong
+        CustomerErrorMessage i18n
     )
     {
         return ruleBuilder
             .MaximumLength(maximumLength: ContentConstants.MaxCustomerNotesLength)
-            .WithMessage(notesTooLong)
+            .WithMessage(i18n.NotesTooLong(ContentConstants.MaxCustomerNotesLength))
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Notes")));
     }
 }
