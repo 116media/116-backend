@@ -42,4 +42,10 @@
   <data name="CustomerIdRequired" xml:space="preserve">
     <value>Customer ID is required.</value>
   </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>Customer ID is required.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>Customer ID is invalid.</value>
+  </data>
 </root>
