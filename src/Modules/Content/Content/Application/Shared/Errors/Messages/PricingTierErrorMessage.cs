@@ -9,6 +9,11 @@ namespace _116.Content.Application.Shared.Errors.Messages;
 public class PricingTierErrorMessage(IStringLocalizer<PricingTierErrorMessage> localizer)
 {
     /// <summary>
+    /// Exposes the underlying localizer for shared validation extensions.
+    /// </summary>
+    public IStringLocalizer Localizer => localizer;
+
+    /// <summary>
     /// Gets an error message for when a pricing tier with the given name already exists.
     /// </summary>
     /// <param name="name">The pricing tier name that caused the conflict.</param>
