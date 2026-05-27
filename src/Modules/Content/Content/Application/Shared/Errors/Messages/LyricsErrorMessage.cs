@@ -9,6 +9,11 @@ namespace _116.Content.Application.Shared.Errors.Messages;
 public class LyricsErrorMessage(IStringLocalizer<LyricsErrorMessage> localizer)
 {
     /// <summary>
+    /// Exposes the underlying localizer for shared validation extensions.
+    /// </summary>
+    public IStringLocalizer Localizer => localizer;
+
+    /// <summary>
     /// Gets an error message for when a lyrics entry already exists for the given song and artist.
     /// </summary>
     /// <param name="songTitle">The song title that caused the conflict.</param>
