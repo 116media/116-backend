@@ -9,6 +9,11 @@ namespace _116.Content.Application.Shared.Errors.Messages;
 public class VideoErrorMessage(IStringLocalizer<VideoErrorMessage> localizer)
 {
     /// <summary>
+    /// Exposes the underlying localizer for shared validation extensions.
+    /// </summary>
+    public IStringLocalizer Localizer => localizer;
+
+    /// <summary>
     /// Gets an error message for when a video with the given slug already exists.
     /// </summary>
     /// <param name="slug">The video slug that caused the conflict.</param>
@@ -184,4 +189,9 @@ public class VideoErrorMessage(IStringLocalizer<VideoErrorMessage> localizer)
     /// Gets an error message for when a video ID is required.
     /// </summary>
     public string VideoIdRequired() => localizer["VideoIdRequired"];
+
+    /// <summary>
+    /// Gets an error message for when the shooting scheduled date is not in the future.
+    /// </summary>
+    public string ShootingScheduledDateMustBeInFuture() => localizer["ShootingScheduledDateMustBeInFuture"];
 }
