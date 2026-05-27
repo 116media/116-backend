@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -9,10 +10,11 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivateCont
 public class AdminDeactivateContentTypeValidator : AbstractValidator<AdminDeactivateContentTypeCommand>
 {
     /// <summary>
-    /// Configures validation rules for content type deactivation.
+    /// Initializes a new instance of <see cref="AdminDeactivateContentTypeValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminDeactivateContentTypeValidator()
+    /// <param name="i18n">Content type validation error messages.</param>
+    public AdminDeactivateContentTypeValidator(ContentTypeErrorMessage i18n)
     {
-        RuleFor(x => x.Id).IsValidGuid("Content type ID");
+        RuleFor(x => x.Id).IsValidGuid(i18n.Localizer);
     }
 }
