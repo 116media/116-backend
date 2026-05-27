@@ -8,6 +8,11 @@ namespace _116.Content.Application.Shared.Errors.Messages;
 public class PlaylistErrorMessage(IStringLocalizer<PlaylistErrorMessage> localizer)
 {
     /// <summary>
+    /// Exposes the underlying localizer for shared validation extensions.
+    /// </summary>
+    public IStringLocalizer Localizer => localizer;
+
+    /// <summary>
     /// Gets an error message for when a playlist is not found by its identifier.
     /// </summary>
     /// <param name="id">The identifier of the playlist that was not found.</param>
