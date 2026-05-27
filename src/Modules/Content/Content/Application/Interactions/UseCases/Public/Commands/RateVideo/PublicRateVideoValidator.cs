@@ -12,9 +12,9 @@ public class PublicRateVideoValidator : AbstractValidator<PublicRateVideoCommand
     /// <summary>
     /// Initializes a new instance of <see cref="PublicRateVideoValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Article interaction validation error messages.</param>
-    public PublicRateVideoValidator(ArticleInteractionErrorMessage msg)
+    /// <param name="i18n">Article interaction validation error messages.</param>
+    public PublicRateVideoValidator(ArticleInteractionErrorMessage i18n)
     {
-        RuleFor(x => x.Stars).ValidVideoStarRating(invalidStarRating: msg.InvalidStarRating());
+        RuleFor(x => x.Stars).ValidVideoStarRating(i18n);
     }
 }
