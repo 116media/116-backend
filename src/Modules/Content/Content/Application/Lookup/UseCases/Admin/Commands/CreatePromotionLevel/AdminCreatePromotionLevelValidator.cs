@@ -1,6 +1,5 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
-using _116.Content.Domain.Constants;
 using FluentValidation;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotionLevel;
@@ -13,19 +12,12 @@ public class AdminCreatePromotionLevelValidator : AbstractValidator<AdminCreateP
     /// <summary>
     /// Initializes a new instance of <see cref="AdminCreatePromotionLevelValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Promotion level validation error messages.</param>
-    public AdminCreatePromotionLevelValidator(PromotionLevelErrorMessage msg)
+    /// <param name="i18n">Promotion level validation error messages.</param>
+    public AdminCreatePromotionLevelValidator(PromotionLevelErrorMessage i18n)
     {
-        RuleFor(x => x.Name)
-            .ValidPromotionLevelName(
-                nameRequired: msg.NameRequired(),
-                nameTooLong: msg.NameTooLong(ContentConstants.MaxPromotionLevelNameLength)
-            );
-        RuleFor(x => x.DurationDays).ValidDurationDays(msg.DurationMustBePositive());
-        RuleFor(x => x.PriceUsd).ValidPriceUsd(msg.PriceMustBeNonNegative());
-        When(
-            x => x.SpotPriority.HasValue,
-            () => RuleFor(x => x.SpotPriority).ValidSpotPriority(msg.InvalidSpotPriority())
-        );
+        RuleFor(x => x.Name).ValidPromotionLevelName(i18n);
+        RuleFor(x => x.DurationDays).ValidDurationDays(i18n);
+        RuleFor(x => x.PriceUsd).ValidPriceUsd(i18n);
+        When(x => x.SpotPriority.HasValue, () => RuleFor(x => x.SpotPriority).ValidSpotPriority(i18n));
     }
 }
