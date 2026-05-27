@@ -48,4 +48,10 @@
   <data name="DescriptionTooLong" xml:space="preserve">
     <value>Category description must not exceed {0} characters.</value>
   </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>Category ID is required.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>Category ID is invalid.</value>
+  </data>
 </root>
