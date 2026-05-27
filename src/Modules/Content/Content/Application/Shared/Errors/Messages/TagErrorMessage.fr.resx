@@ -30,4 +30,10 @@
   <data name="SlugInvalidFormat" xml:space="preserve">
     <value>Le slug du tag doit être en minuscules et ne contenir que des lettres, des chiffres et des tirets.</value>
   </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>L'identifiant du tag est obligatoire.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>L'identifiant du tag est invalide.</value>
+  </data>
 </root>
