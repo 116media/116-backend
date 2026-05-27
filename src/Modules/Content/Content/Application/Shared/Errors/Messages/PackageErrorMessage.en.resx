@@ -36,4 +36,16 @@
   <data name="DescriptionTooLong" xml:space="preserve">
     <value>Package description must not exceed {0} characters.</value>
   </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>Package ID is required.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>Package ID is invalid.</value>
+  </data>
+  <data name="SlotIdRequired" xml:space="preserve">
+    <value>Slot ID is required.</value>
+  </data>
+  <data name="SlotIdInvalid" xml:space="preserve">
+    <value>Slot ID is invalid.</value>
+  </data>
 </root>
