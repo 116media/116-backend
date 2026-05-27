@@ -9,6 +9,11 @@ namespace _116.Content.Application.Shared.Errors.Messages;
 public class CustomerErrorMessage(IStringLocalizer<CustomerErrorMessage> localizer)
 {
     /// <summary>
+    /// Exposes the underlying localizer for shared validation extensions.
+    /// </summary>
+    public IStringLocalizer Localizer => localizer;
+
+    /// <summary>
     /// Gets an error message for when a customer with the given email already exists.
     /// </summary>
     /// <param name="email">The customer email that caused the conflict.</param>
