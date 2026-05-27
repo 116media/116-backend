@@ -36,4 +36,10 @@
   <data name="NameTooLong" xml:space="preserve">
     <value>Le nom du niveau de promotion ne doit pas dépasser {0} caractères.</value>
   </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>L'identifiant du niveau de promotion est obligatoire.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>L'identifiant du niveau de promotion est invalide.</value>
+  </data>
 </root>
