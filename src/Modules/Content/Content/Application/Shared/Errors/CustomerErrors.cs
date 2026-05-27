@@ -7,14 +7,14 @@ namespace _116.Content.Application.Shared.Errors;
 /// Customer domain error factory providing simple, readable exception creation.
 /// Usage: CustomerErrors.AlreadyExists(email) or CustomerErrors.NotFound(id)
 /// </summary>
-public class CustomerErrors(CustomerErrorMessage msg)
+public class CustomerErrors(CustomerErrorMessage i18n)
 {
     /// <summary>
     /// Throws when a customer with the given email already exists.
     /// </summary>
     public ConflictException AlreadyExists(string email)
     {
-        return new ConflictException(msg.AlreadyExists(email: email));
+        return new ConflictException(i18n.AlreadyExists(email: email));
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ public class CustomerErrors(CustomerErrorMessage msg)
     /// </summary>
     public BadRequestException FullNameRequired()
     {
-        return new BadRequestException(msg.FullNameRequired());
+        return new BadRequestException(i18n.FullNameRequired());
     }
 
     /// <summary>
@@ -38,6 +38,6 @@ public class CustomerErrors(CustomerErrorMessage msg)
     /// </summary>
     public BadRequestException EmailRequired()
     {
-        return new BadRequestException(msg.EmailRequired());
+        return new BadRequestException(i18n.EmailRequired());
     }
 }
