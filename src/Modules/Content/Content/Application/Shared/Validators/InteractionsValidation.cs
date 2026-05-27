@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
 using FluentValidation;
 
@@ -13,21 +14,19 @@ public static class InteractionsValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the comment body property.</param>
-    /// <param name="commentBodyRequired">Error message used when the comment body is empty.</param>
-    /// <param name="commentBodyTooLong">Error message used when the comment body exceeds the maximum length.</param>
+    /// <param name="i18n">The article interaction error message provider.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidCommentBody<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        string commentBodyRequired,
-        string commentBodyTooLong
+        ArticleInteractionErrorMessage i18n
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(commentBodyRequired)
+            .WithMessage(i18n.CommentBodyRequired())
             .MaximumLength(maximumLength: ContentConstants.MaxCommentBodyLength)
-            .WithMessage(commentBodyTooLong);
+            .WithMessage(i18n.CommentBodyTooLong(ContentConstants.MaxCommentBodyLength));
     }
 
     /// <summary>
@@ -35,21 +34,19 @@ public static class InteractionsValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the playlist name property.</param>
-    /// <param name="nameRequired">Error message used when the playlist name is empty.</param>
-    /// <param name="nameTooLong">Error message used when the playlist name exceeds the maximum length.</param>
+    /// <param name="i18n">The playlist error message provider.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidPlaylistName<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        string nameRequired,
-        string nameTooLong
+        PlaylistErrorMessage i18n
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(nameRequired)
+            .WithMessage(i18n.NameRequired())
             .MaximumLength(maximumLength: ContentConstants.MaxPlaylistNameLength)
-            .WithMessage(nameTooLong);
+            .WithMessage(i18n.NameTooLong(ContentConstants.MaxPlaylistNameLength));
     }
 
     /// <summary>
@@ -57,13 +54,13 @@ public static class InteractionsValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the star rating property.</param>
-    /// <param name="invalidStarRating">Error message used when the star rating is outside the allowed range.</param>
+    /// <param name="i18n">The article interaction error message provider.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, short> ValidVideoStarRating<T>(
         this IRuleBuilder<T, short> ruleBuilder,
-        string invalidStarRating
+        ArticleInteractionErrorMessage i18n
     )
     {
-        return ruleBuilder.InclusiveBetween(from: (short)1, to: (short)5).WithMessage(invalidStarRating);
+        return ruleBuilder.InclusiveBetween(from: (short)1, to: (short)5).WithMessage(i18n.InvalidStarRating());
     }
 }
