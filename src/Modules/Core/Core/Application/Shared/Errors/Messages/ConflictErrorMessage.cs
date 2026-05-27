@@ -9,6 +9,11 @@ namespace _116.Core.Application.Shared.Errors.Messages;
 public class ConflictErrorMessage(IStringLocalizer<ConflictErrorMessage> localizer)
 {
     /// <summary>
+    /// Exposes the underlying localizer for shared validation extensions.
+    /// </summary>
+    public IStringLocalizer Localizer => localizer;
+
+    /// <summary>
     /// Gets error message for file upload failure.
     /// </summary>
     /// <param name="fileName">The name of the file that failed to upload.</param>
