@@ -7,14 +7,14 @@ namespace _116.Content.Application.Shared.Errors;
 /// ContentType domain error factory providing simple, readable exception creation.
 /// Usage: ContentTypeErrors.AlreadyExists(name) or ContentTypeErrors.NotFound(id)
 /// </summary>
-public class ContentTypeErrors(ContentTypeErrorMessage msg)
+public class ContentTypeErrors(ContentTypeErrorMessage i18n)
 {
     /// <summary>
     /// Throws when a content type with the given name already exists.
     /// </summary>
     public ConflictException AlreadyExists(string name)
     {
-        return new ConflictException(msg.AlreadyExists(name: name));
+        return new ConflictException(i18n.AlreadyExists(name: name));
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ public class ContentTypeErrors(ContentTypeErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyActive()
     {
-        return new ConflictException(msg.AlreadyActive());
+        return new ConflictException(i18n.AlreadyActive());
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ public class ContentTypeErrors(ContentTypeErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyInactive()
     {
-        return new ConflictException(msg.AlreadyInactive());
+        return new ConflictException(i18n.AlreadyInactive());
     }
 
     /// <summary>
@@ -46,6 +46,6 @@ public class ContentTypeErrors(ContentTypeErrorMessage msg)
     /// </summary>
     public BadRequestException NameRequired()
     {
-        return new BadRequestException(msg.NameRequired());
+        return new BadRequestException(i18n.NameRequired());
     }
 }
