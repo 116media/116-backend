@@ -8,6 +8,11 @@ namespace _116.Content.Application.Shared.Errors.Messages;
 public class ContentOrderErrorMessage(IStringLocalizer<ContentOrderErrorMessage> localizer)
 {
     /// <summary>
+    /// Exposes the underlying localizer for shared validation extensions.
+    /// </summary>
+    public IStringLocalizer Localizer => localizer;
+
+    /// <summary>
     /// Gets an error message for when the order has already been submitted.
     /// </summary>
     /// <returns>An error message indicating that the order has already been submitted.</returns>
