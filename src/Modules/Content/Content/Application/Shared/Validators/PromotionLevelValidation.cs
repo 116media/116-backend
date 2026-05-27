@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
 using FluentValidation;
 
@@ -13,14 +14,12 @@ public static class PromotionLevelValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the name property.</param>
-    /// <param name="nameRequired">Error message used when the name is empty.</param>
-    /// <param name="nameTooLong">Error message used when the name exceeds the maximum length.</param>
+    /// <param name="i18n">The promotion level error message provider.</param>
     /// <param name="isRequired">Whether the name is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidPromotionLevelName<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        string nameRequired,
-        string nameTooLong,
+        PromotionLevelErrorMessage i18n,
         bool isRequired = true
     )
     {
@@ -29,15 +28,15 @@ public static class PromotionLevelValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage(nameRequired)
+                .WithMessage(i18n.NameRequired())
                 .MaximumLength(maximumLength: ContentConstants.MaxPromotionLevelNameLength)
-                .WithMessage(nameTooLong);
+                .WithMessage(i18n.NameTooLong(ContentConstants.MaxPromotionLevelNameLength));
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: ContentConstants.MaxPromotionLevelNameLength)
-            .WithMessage(nameTooLong)
+            .WithMessage(i18n.NameTooLong(ContentConstants.MaxPromotionLevelNameLength))
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Name")));
     }
 
@@ -46,14 +45,14 @@ public static class PromotionLevelValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the duration days property.</param>
-    /// <param name="durationMustBePositive">Error message used when the duration is not a positive value.</param>
+    /// <param name="i18n">The promotion level error message provider.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, int> ValidDurationDays<T>(
         this IRuleBuilder<T, int> ruleBuilder,
-        string durationMustBePositive
+        PromotionLevelErrorMessage i18n
     )
     {
-        return ruleBuilder.GreaterThan(valueToCompare: 0).WithMessage(durationMustBePositive);
+        return ruleBuilder.GreaterThan(valueToCompare: 0).WithMessage(i18n.DurationMustBePositive());
     }
 
     /// <summary>
@@ -61,14 +60,14 @@ public static class PromotionLevelValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the price property.</param>
-    /// <param name="priceMustBeNonNegative">Error message used when the price is negative.</param>
+    /// <param name="i18n">The promotion level error message provider.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, decimal> ValidPriceUsd<T>(
         this IRuleBuilder<T, decimal> ruleBuilder,
-        string priceMustBeNonNegative
+        PromotionLevelErrorMessage i18n
     )
     {
-        return ruleBuilder.GreaterThanOrEqualTo(valueToCompare: 0).WithMessage(priceMustBeNonNegative);
+        return ruleBuilder.GreaterThanOrEqualTo(valueToCompare: 0).WithMessage(i18n.PriceMustBeNonNegative());
     }
 
     /// <summary>
@@ -76,13 +75,13 @@ public static class PromotionLevelValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the spot priority property.</param>
-    /// <param name="invalidSpotPriority">Error message used when the spot priority is outside the allowed range.</param>
+    /// <param name="i18n">The promotion level error message provider.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, int?> ValidSpotPriority<T>(
         this IRuleBuilder<T, int?> ruleBuilder,
-        string invalidSpotPriority
+        PromotionLevelErrorMessage i18n
     )
     {
-        return ruleBuilder.InclusiveBetween(from: 1, to: 3).WithMessage(invalidSpotPriority);
+        return ruleBuilder.InclusiveBetween(from: 1, to: 3).WithMessage(i18n.InvalidSpotPriority());
     }
 }
