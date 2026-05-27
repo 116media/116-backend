@@ -30,4 +30,10 @@
   <data name="SlugInvalidFormat" xml:space="preserve">
     <value>Tag slug must be lowercase and contain only letters, numbers, and hyphens.</value>
   </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>Tag ID is required.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>Tag ID is invalid.</value>
+  </data>
 </root>
