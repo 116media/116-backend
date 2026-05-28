@@ -13,10 +13,15 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminAddCategoryPricingValidatorTests
 {
-    private readonly AdminAddCategoryPricingValidator _validator = new(
-        LocalizerFactory.CreateMessage<CategoryErrorMessage>(),
-        LocalizerFactory.CreateMessage<PricingTierErrorMessage>()
-    );
+    private readonly CategoryErrorMessage _i18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>();
+    private readonly PricingTierErrorMessage _pricingTierI18n =
+        LocalizerFactory.CreateMessage<PricingTierErrorMessage>();
+    private readonly AdminAddCategoryPricingValidator _validator;
+
+    public AdminAddCategoryPricingValidatorTests()
+    {
+        _validator = new AdminAddCategoryPricingValidator(_i18n, _pricingTierI18n);
+    }
 
     #region Valid Command Tests
 
@@ -78,7 +83,7 @@ public class AdminAddCategoryPricingValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddCategoryPricingCommand.CategoryId)
-                && e.ErrorMessage == "Category ID is required."
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -105,7 +110,7 @@ public class AdminAddCategoryPricingValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddCategoryPricingCommand.PricingTierId)
-                && e.ErrorMessage == "Pricing tier name is required."
+                && e.ErrorMessage == _pricingTierI18n.NameRequired()
             );
     }
 
@@ -132,7 +137,39 @@ public class AdminAddCategoryPricingValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddCategoryPricingCommand.PriceUsd)
-                && e.ErrorMessage == "Price must be zero or greater."
+                && e.ErrorMessage == _i18n.PriceMustBeNonNegative()
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>(culture);
+        var pricingTierI18n = LocalizerFactory.CreateMessage<PricingTierErrorMessage>(culture);
+        var validator = new AdminAddCategoryPricingValidator(i18n, pricingTierI18n);
+        var command = new AdminAddCategoryPricingCommand(
+            CategoryId: "",
+            PricingTierId: Guid.NewGuid(),
+            PriceUsd: TestConstants.Content.CategoryPricing.ValidPriceUsd
+        );
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminAddCategoryPricingCommand.CategoryId)
+                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
             );
     }
 
