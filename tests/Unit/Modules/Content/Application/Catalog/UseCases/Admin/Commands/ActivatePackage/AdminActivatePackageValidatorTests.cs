@@ -1,4 +1,6 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.ActivatePackage;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -10,7 +12,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminActivatePackageValidatorTests
 {
-    private readonly AdminActivatePackageValidator _validator = new();
+    private readonly PackageErrorMessage _i18n = LocalizerFactory.CreateMessage<PackageErrorMessage>();
+    private readonly AdminActivatePackageValidator _validator;
+
+    public AdminActivatePackageValidatorTests()
+    {
+        _validator = new AdminActivatePackageValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -46,7 +54,35 @@ public class AdminActivatePackageValidatorTests
         result
             .Errors.Should()
             .ContainSingle(e =>
-                e.PropertyName == nameof(AdminActivatePackageCommand.Id) && e.ErrorMessage == "Package ID is required."
+                e.PropertyName == nameof(AdminActivatePackageCommand.Id)
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<PackageErrorMessage>(culture);
+        var validator = new AdminActivatePackageValidator(i18n);
+        var command = new AdminActivatePackageCommand(Id: "");
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminActivatePackageCommand.Id)
+                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
             );
     }
 
