@@ -1,4 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ScheduleShoot;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -10,7 +12,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminScheduleShootValidatorTests
 {
-    private readonly AdminScheduleShootValidator _validator = new();
+    private readonly VideoErrorMessage _i18n = LocalizerFactory.CreateMessage<VideoErrorMessage>();
+    private readonly AdminScheduleShootValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminScheduleShootValidatorTests"/>.
+    /// </summary>
+    public AdminScheduleShootValidatorTests()
+    {
+        _validator = new(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -52,7 +63,7 @@ public class AdminScheduleShootValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminScheduleShootCommand.VideoId) && e.ErrorMessage == "Video ID is required."
+                e.PropertyName == nameof(AdminScheduleShootCommand.VideoId) && e.ErrorMessage == _i18n.VideoIdRequired()
             );
     }
 
@@ -73,7 +84,8 @@ public class AdminScheduleShootValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminScheduleShootCommand.VideoId) && e.ErrorMessage == "Video ID is invalid."
+                e.PropertyName == nameof(AdminScheduleShootCommand.VideoId)
+                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
             );
     }
 
@@ -99,7 +111,7 @@ public class AdminScheduleShootValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminScheduleShootCommand.ShootingScheduledAt)
-                && e.ErrorMessage == "Shooting scheduled date must be in the future."
+                && e.ErrorMessage == _i18n.ShootingScheduledDateMustBeInFuture()
             );
     }
 
