@@ -1,4 +1,5 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,9 +13,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminVerifyPaymentValidatorTests
 {
-    private readonly AdminVerifyPaymentValidator _validator = new(
-        LocalizerFactory.CreateMessage<_116.Content.Application.Shared.Errors.Messages.ContentOrderErrorMessage>("en")
-    );
+    private readonly ContentOrderErrorMessage _i18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>();
+    private readonly AdminVerifyPaymentValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminVerifyPaymentValidatorTests"/>.
+    /// </summary>
+    public AdminVerifyPaymentValidatorTests()
+    {
+        _validator = new AdminVerifyPaymentValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -58,7 +66,8 @@ public class AdminVerifyPaymentValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminVerifyPaymentCommand.OrderId) && e.ErrorMessage == "Order ID is invalid."
+                e.PropertyName == nameof(AdminVerifyPaymentCommand.OrderId)
+                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
             );
     }
 
@@ -85,7 +94,7 @@ public class AdminVerifyPaymentValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminVerifyPaymentCommand.ReceiptUrl)
-                && e.ErrorMessage == "Receipt URL is required."
+                && e.ErrorMessage == _i18n.ReceiptUrlRequired()
             );
     }
 
@@ -112,7 +121,38 @@ public class AdminVerifyPaymentValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminVerifyPaymentCommand.AdminUserId)
-                && e.ErrorMessage == "Admin user ID is required."
+                && e.ErrorMessage == _i18n.AdminUserIdRequired()
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>(culture);
+        var validator = new AdminVerifyPaymentValidator(i18n);
+        var command = new AdminVerifyPaymentCommand(
+            OrderId: Guid.NewGuid().ToString(),
+            ReceiptUrl: string.Empty,
+            AdminUserId: Guid.NewGuid()
+        );
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminVerifyPaymentCommand.ReceiptUrl)
+                && e.ErrorMessage == i18n.ReceiptUrlRequired()
             );
     }
 
