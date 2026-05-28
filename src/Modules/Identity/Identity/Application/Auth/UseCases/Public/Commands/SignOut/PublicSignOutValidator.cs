@@ -15,11 +15,11 @@ public class PublicSignOutValidator : AbstractValidator<PublicSignOutCommand>
     /// <summary>
     /// Initializes a new instance of <see cref="PublicSignOutValidator" /> with validation rules.
     /// </summary>
-    /// <param name="msg">
+    /// <param name="i18n">
     /// Validation error messages for rule configuration.
     /// </param>
-    public PublicSignOutValidator(ValidationErrorMessage msg)
+    public PublicSignOutValidator(ValidationErrorMessage i18n)
     {
-        RuleFor(x => x.RefreshToken).ValidRefreshToken(refreshTokenRequired: msg.RefreshTokenRequired());
+        RuleFor(x => x.RefreshToken).ValidRefreshToken(i18n);
     }
 }
