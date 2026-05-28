@@ -16,9 +16,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminCreateShortVideoValidatorTests
 {
-    private readonly AdminCreateShortVideoValidator _validator = new(
-        LocalizerFactory.CreateMessage<ShortVideoErrorMessage>()
-    );
+    private readonly ShortVideoErrorMessage _i18n = LocalizerFactory.CreateMessage<ShortVideoErrorMessage>();
+
+    private readonly AdminCreateShortVideoValidator _validator;
+
+    public AdminCreateShortVideoValidatorTests()
+    {
+        _validator = new AdminCreateShortVideoValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -68,8 +73,7 @@ public class AdminCreateShortVideoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreateShortVideoCommand.Title)
-                && e.ErrorMessage == "Short video title is required."
+                e.PropertyName == nameof(AdminCreateShortVideoCommand.Title) && e.ErrorMessage == _i18n.TitleRequired()
             );
     }
 
@@ -95,7 +99,7 @@ public class AdminCreateShortVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateShortVideoCommand.Title)
-                && e.ErrorMessage == "Short video title must not exceed 200 characters."
+                && e.ErrorMessage == _i18n.TitleTooLong(TestConstants.Content.Editorial.ShortVideo.TitleMaxLength)
             );
     }
 
@@ -124,8 +128,7 @@ public class AdminCreateShortVideoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreateShortVideoCommand.Slug)
-                && e.ErrorMessage == "Short video slug is required."
+                e.PropertyName == nameof(AdminCreateShortVideoCommand.Slug) && e.ErrorMessage == _i18n.SlugRequired()
             );
     }
 
@@ -151,8 +154,7 @@ public class AdminCreateShortVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateShortVideoCommand.Slug)
-                && e.ErrorMessage
-                    == "Short video slug must be lowercase and contain only letters, numbers, and hyphens."
+                && e.ErrorMessage == _i18n.SlugInvalidFormat()
             );
     }
 
@@ -182,7 +184,7 @@ public class AdminCreateShortVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateShortVideoCommand.VideoFile)
-                && e.ErrorMessage == "Short video file is required."
+                && e.ErrorMessage == _i18n.FileRequired()
             );
     }
 
@@ -207,8 +209,7 @@ public class AdminCreateShortVideoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreateShortVideoCommand.VideoFile)
-                && e.ErrorMessage == "Short video file must not be empty."
+                e.PropertyName == nameof(AdminCreateShortVideoCommand.VideoFile) && e.ErrorMessage == _i18n.FileEmpty()
             );
     }
 
@@ -235,8 +236,7 @@ public class AdminCreateShortVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateShortVideoCommand.VideoFile)
-                && e.ErrorMessage
-                    == $"Short video file must not exceed {FileConstants.MaxVideoFileSizeBytes / (1024 * 1024)} MB."
+                && e.ErrorMessage == _i18n.FileTooLarge(FileConstants.MaxVideoFileSizeBytes / (1024 * 1024))
             );
     }
 
@@ -262,8 +262,7 @@ public class AdminCreateShortVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateShortVideoCommand.VideoFile)
-                && e.ErrorMessage
-                    == $"Short video file must be one of: {string.Join(", ", FileConstants.AllowedVideoExtensions)}."
+                && e.ErrorMessage == _i18n.FileInvalidExtension(string.Join(", ", FileConstants.AllowedVideoExtensions))
             );
     }
 
@@ -315,6 +314,39 @@ public class AdminCreateShortVideoValidatorTests
 
         // Assert
         result.IsValid.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ShortVideoErrorMessage>(culture);
+        var validator = new AdminCreateShortVideoValidator(i18n);
+        IFormFile fileMock = FileTestHelpers.CreateMockVideoFile();
+        var command = new AdminCreateShortVideoCommand(
+            Title: string.Empty,
+            Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            VideoFile: fileMock,
+            AuthorId: Guid.NewGuid(),
+            VideoId: null
+        );
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreateShortVideoCommand.Title) && e.ErrorMessage == i18n.TitleRequired()
+            );
     }
 
     #endregion
