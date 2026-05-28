@@ -1,4 +1,3 @@
-using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
@@ -21,34 +20,15 @@ public class AdminUpdateOwnProfileValidator : AbstractValidator<AdminUpdateOwnPr
     /// <summary>
     /// Initializes a new instance of <see cref="AdminUpdateOwnProfileValidator" /> with validation rules.
     /// </summary>
-    /// <param name="msg">
+    /// <param name="i18n">
     /// Validation error messages for rule configuration.
     /// </param>
-    public AdminUpdateOwnProfileValidator(ValidationErrorMessage msg)
+    public AdminUpdateOwnProfileValidator(ValidationErrorMessage i18n)
     {
-        RuleFor(x => x.UserName)
-            .ValidUsername(
-                usernameRequired: msg.UsernameRequired(),
-                usernameTooShort: msg.UsernameTooShort(UserConstants.MinUserNameLength),
-                usernameTooLong: msg.UsernameTooLong(UserConstants.MaxUserNameLength),
-                usernameInvalidChars: msg.UsernameInvalidChars(),
-                isRequired: false
-            );
-        RuleFor(x => x.CountryName)
-            .ValidCountryName(countryNameTooLong: msg.CountryNameTooLong(UserConstants.MaxCountryNameLength));
-        RuleFor(x => x.CountryIsoCode)
-            .ValidCountryIsoCode(
-                countryIsoCodeTooLong: msg.CountryIsoCodeTooLong(UserConstants.MaxCountryIsoCodeLength),
-                countryIsoCodeInvalid: msg.CountryIsoCodeInvalid()
-            );
-        RuleFor(x => x.CountryDialCode)
-            .ValidCountryDialCode(
-                countryDialCodeTooLong: msg.CountryDialCodeTooLong(UserConstants.MaxCountryDialCodeLength),
-                countryDialCodeInvalid: msg.CountryDialCodeInvalid(UserConstants.MaxCountryDialCodeLength)
-            );
-        RuleFor(x => x.PartialPhoneNumber)
-            .ValidPartialPhoneNumber(
-                partialPhoneNumberTooLong: msg.PartialPhoneNumberTooLong(UserConstants.MaxPartialPhoneNumberLength)
-            );
+        RuleFor(x => x.UserName).ValidUsername(i18n, isRequired: false);
+        RuleFor(x => x.CountryName).ValidCountryName(i18n);
+        RuleFor(x => x.CountryIsoCode).ValidCountryIsoCode(i18n);
+        RuleFor(x => x.CountryDialCode).ValidCountryDialCode(i18n);
+        RuleFor(x => x.PartialPhoneNumber).ValidPartialPhoneNumber(i18n);
     }
 }
