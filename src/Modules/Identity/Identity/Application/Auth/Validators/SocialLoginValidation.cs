@@ -1,3 +1,4 @@
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Enums;
 using FluentValidation;
 
@@ -14,14 +15,14 @@ public static class SocialLoginValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the avatar URL property.</param>
-    /// <param name="avatarUrlInvalid">Error message when avatar URL format is invalid.</param>
+    /// <param name="i18n">Validation error messages for rule configuration.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidAvatarUrl<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        string avatarUrlInvalid
+        ValidationErrorMessage i18n
     )
     {
-        return ruleBuilder.Must(predicate: ValidationUtils.ValidUrl).WithMessage(avatarUrlInvalid);
+        return ruleBuilder.Must(predicate: ValidationUtils.ValidUrl).WithMessage(i18n.AvatarUrlInvalid());
     }
 
     /// <summary>
@@ -29,20 +30,18 @@ public static class SocialLoginValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the auth provider property.</param>
-    /// <param name="authProviderRequired">Error message when auth provider is missing.</param>
-    /// <param name="authProviderInvalid">Error message when auth provider is not a valid enum value.</param>
+    /// <param name="i18n">Validation error messages for rule configuration.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string> ValidAuthProvider<T>(
         this IRuleBuilderInitial<T, string> ruleBuilder,
-        string authProviderRequired,
-        string authProviderInvalid
+        ValidationErrorMessage i18n
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(authProviderRequired)
+            .WithMessage(i18n.AuthProviderRequired())
             .Must(provider => provider != null && Enum.IsDefined(typeof(EnumAuthProvider), value: provider))
-            .WithMessage(authProviderInvalid);
+            .WithMessage(i18n.AuthProviderInvalid());
     }
 }
