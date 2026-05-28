@@ -1,4 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ActivateShortVideo;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -10,7 +12,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminActivateShortVideoValidatorTests
 {
-    private readonly AdminActivateShortVideoValidator _validator = new();
+    private readonly ShortVideoErrorMessage _i18n = LocalizerFactory.CreateMessage<ShortVideoErrorMessage>();
+
+    private readonly AdminActivateShortVideoValidator _validator;
+
+    public AdminActivateShortVideoValidatorTests()
+    {
+        _validator = new AdminActivateShortVideoValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -47,7 +56,7 @@ public class AdminActivateShortVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminActivateShortVideoCommand.Id)
-                && e.ErrorMessage == "Short Video ID is required."
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -66,7 +75,34 @@ public class AdminActivateShortVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminActivateShortVideoCommand.Id)
-                && e.ErrorMessage == "Short Video ID is invalid."
+                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ShortVideoErrorMessage>(culture);
+        var validator = new AdminActivateShortVideoValidator(i18n);
+        var command = new AdminActivateShortVideoCommand(Id: string.Empty);
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminActivateShortVideoCommand.Id)
+                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
             );
     }
 
