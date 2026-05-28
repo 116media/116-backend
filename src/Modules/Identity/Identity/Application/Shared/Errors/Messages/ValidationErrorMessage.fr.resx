@@ -201,4 +201,46 @@
   <data name="PasswordOnlyForExternalAuth" xml:space="preserve">
     <value>La définition d'un mot de passe est uniquement autorisée pour les utilisateurs Google ou Facebook.</value>
   </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>L'identifiant est requis.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>L'identifiant est invalide.</value>
+  </data>
+  <data name="SessionIdRequired" xml:space="preserve">
+    <value>L'identifiant de la session est requis.</value>
+  </data>
+  <data name="SessionIdInvalid" xml:space="preserve">
+    <value>L'identifiant de la session est invalide.</value>
+  </data>
+  <data name="UserIdRequired" xml:space="preserve">
+    <value>L'identifiant de l'utilisateur est requis.</value>
+  </data>
+  <data name="UserIdInvalid" xml:space="preserve">
+    <value>L'identifiant de l'utilisateur est invalide.</value>
+  </data>
+  <data name="RoleIdRequired" xml:space="preserve">
+    <value>L'identifiant du rôle est requis.</value>
+  </data>
+  <data name="RoleIdInvalid" xml:space="preserve">
+    <value>L'identifiant du rôle est invalide.</value>
+  </data>
+  <data name="PermissionIdRequired" xml:space="preserve">
+    <value>L'identifiant de la permission est requis.</value>
+  </data>
+  <data name="PermissionIdInvalid" xml:space="preserve">
+    <value>L'identifiant de la permission est invalide.</value>
+  </data>
+  <data name="ExportColumnsInvalid" xml:space="preserve">
+    <value>Nom(s) de colonne invalide(s). Les colonnes valides sont : {0}.</value>
+  </data>
+  <data name="ExportFormatInvalid" xml:space="preserve">
+    <value>Le format doit être l'un des suivants : Csv, Xlsx.</value>
+  </data>
+  <data name="ExportStatusInvalid" xml:space="preserve">
+    <value>Le statut doit être soit 'active' soit 'expired'.</value>
+  </data>
+  <data name="ExportDateRangeInvalid" xml:space="preserve">
+    <value>La date de fin doit être supérieure ou égale à la date de début.</value>
+  </data>
 </root>
