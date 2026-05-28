@@ -10,6 +10,11 @@ namespace _116.Identity.Application.Shared.Errors.Messages;
 public class AuthorizationErrorMessage(IStringLocalizer<AuthorizationErrorMessage> localizer)
 {
     /// <summary>
+    /// Exposes the underlying localizer for shared validation extensions.
+    /// </summary>
+    public IStringLocalizer Localizer => localizer;
+
+    /// <summary>
     /// Gets an error message for when an account is inactive.
     /// </summary>
     /// <param name="email">The email of the inactive account.</param>
