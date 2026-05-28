@@ -1,4 +1,3 @@
-using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
@@ -17,22 +16,11 @@ public class PublicUpdateAvatarValidator : AbstractValidator<PublicUpdateAvatarC
     /// <summary>
     /// Initializes a new instance of <see cref="PublicUpdateAvatarValidator" /> with validation rules.
     /// </summary>
-    /// <param name="msg">
+    /// <param name="i18n">
     /// Validation error messages for rule configuration.
     /// </param>
-    public PublicUpdateAvatarValidator(ValidationErrorMessage msg)
+    public PublicUpdateAvatarValidator(ValidationErrorMessage i18n)
     {
-        RuleFor(x => x.AvatarFile)
-            .ValidAvatar(
-                avatarFileRequired: msg.AvatarFileRequired(),
-                avatarFileTooLarge: msg.AvatarFileTooLarge(FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)),
-                avatarFileInvalidType: msg.AvatarFileInvalidType(
-                    string.Join(", ", FileConstants.AllowedAvatarMimeTypes)
-                ),
-                avatarFileInvalidExtension: msg.AvatarFileInvalidExtension(
-                    string.Join(", ", FileConstants.AllowedAvatarExtensions)
-                ),
-                isRequired: true
-            );
+        RuleFor(x => x.AvatarFile).ValidAvatar(i18n, isRequired: true);
     }
 }
