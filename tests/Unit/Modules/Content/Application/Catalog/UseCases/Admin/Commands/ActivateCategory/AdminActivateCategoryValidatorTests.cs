@@ -1,4 +1,6 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.ActivateCategory;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -10,7 +12,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminActivateCategoryValidatorTests
 {
-    private readonly AdminActivateCategoryValidator _validator = new();
+    private readonly CategoryErrorMessage _i18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>();
+    private readonly AdminActivateCategoryValidator _validator;
+
+    public AdminActivateCategoryValidatorTests()
+    {
+        _validator = new AdminActivateCategoryValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -47,7 +55,34 @@ public class AdminActivateCategoryValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminActivateCategoryCommand.Id)
-                && e.ErrorMessage == "Category ID is required."
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>(culture);
+        var validator = new AdminActivateCategoryValidator(i18n);
+        var command = new AdminActivateCategoryCommand(Id: "");
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminActivateCategoryCommand.Id)
+                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
             );
     }
 
