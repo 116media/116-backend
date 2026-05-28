@@ -9,6 +9,11 @@ namespace _116.Identity.Application.Shared.Errors.Messages;
 /// </summary>
 public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> localizer)
 {
+    /// <summary>
+    /// Exposes the underlying localizer for shared validation extensions.
+    /// </summary>
+    public IStringLocalizer Localizer => localizer;
+
     // ── Validator-level messages (used by FluentValidation extensions) ──────
 
     /// <summary>
@@ -460,4 +465,26 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     {
         return localizer["RoleNotAssignedToUser"];
     }
+
+    /// <summary>
+    /// Error message indicating that one or more export column names are invalid.
+    /// </summary>
+    /// <param name="validColumns">Comma-separated list of valid column names.</param>
+    public string ExportColumnsInvalid(string validColumns) =>
+        string.Format(localizer["ExportColumnsInvalid"], validColumns);
+
+    /// <summary>
+    /// Error message indicating that the export format is invalid.
+    /// </summary>
+    public string ExportFormatInvalid() => localizer["ExportFormatInvalid"];
+
+    /// <summary>
+    /// Error message indicating that the export session status filter is invalid.
+    /// </summary>
+    public string ExportStatusInvalid() => localizer["ExportStatusInvalid"];
+
+    /// <summary>
+    /// Error message indicating that ToDate must be greater than or equal to FromDate.
+    /// </summary>
+    public string ExportDateRangeInvalid() => localizer["ExportDateRangeInvalid"];
 }
