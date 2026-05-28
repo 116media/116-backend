@@ -1,4 +1,6 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.RemoveOrderItem;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -10,7 +12,9 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminRemoveOrderItemValidatorTests
 {
-    private readonly AdminRemoveOrderItemValidator _validator = new();
+    private readonly AdminRemoveOrderItemValidator _validator = new(
+        LocalizerFactory.CreateMessage<ContentOrderErrorMessage>()
+    );
 
     #region Validate
 
