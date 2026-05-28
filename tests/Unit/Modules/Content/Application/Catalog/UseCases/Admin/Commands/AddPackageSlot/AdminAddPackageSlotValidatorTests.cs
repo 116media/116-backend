@@ -13,9 +13,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminAddPackageSlotValidatorTests
 {
-    private readonly AdminAddPackageSlotValidator _validator = new(
-        LocalizerFactory.CreateMessage<PackageErrorMessage>()
-    );
+    private readonly PackageErrorMessage _i18n = LocalizerFactory.CreateMessage<PackageErrorMessage>();
+    private readonly AdminAddPackageSlotValidator _validator;
+
+    public AdminAddPackageSlotValidatorTests()
+    {
+        _validator = new AdminAddPackageSlotValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -80,7 +84,7 @@ public class AdminAddPackageSlotValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddPackageSlotCommand.PackageId)
-                && e.ErrorMessage == "Package ID is required."
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -108,7 +112,7 @@ public class AdminAddPackageSlotValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddPackageSlotCommand.Quantity)
-                && e.ErrorMessage == "Slot quantity must be greater than zero."
+                && e.ErrorMessage == _i18n.SlotQuantityMustBePositive()
             );
     }
 
@@ -132,7 +136,39 @@ public class AdminAddPackageSlotValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddPackageSlotCommand.Quantity)
-                && e.ErrorMessage == "Slot quantity must be greater than zero."
+                && e.ErrorMessage == _i18n.SlotQuantityMustBePositive()
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<PackageErrorMessage>(culture);
+        var validator = new AdminAddPackageSlotValidator(i18n);
+        var command = new AdminAddPackageSlotCommand(
+            PackageId: "",
+            CategoryId: null,
+            IsRequired: false,
+            Quantity: TestConstants.Content.PackageSlot.ValidQuantity
+        );
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminAddPackageSlotCommand.PackageId)
+                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
             );
     }
 
