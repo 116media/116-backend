@@ -1,3 +1,4 @@
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -11,8 +12,11 @@ public class AdminDeactivateRoleValidator : AbstractValidator<AdminDeactivateRol
     /// <summary>
     /// Configure validation rules for role deactivation.
     /// </summary>
-    public AdminDeactivateRoleValidator()
+    /// <param name="i18n">
+    /// Validation error messages for rule configuration.
+    /// </param>
+    public AdminDeactivateRoleValidator(ValidationErrorMessage i18n)
     {
-        RuleFor(x => x.RoleId).IsValidGuid("Role ID");
+        RuleFor(x => x.RoleId).IsValidGuid(i18n.Localizer, "RoleIdRequired", "RoleIdInvalid");
     }
 }
