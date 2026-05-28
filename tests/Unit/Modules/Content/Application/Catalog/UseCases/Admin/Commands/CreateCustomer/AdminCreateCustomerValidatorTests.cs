@@ -13,9 +13,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminCreateCustomerValidatorTests
 {
-    private readonly AdminCreateCustomerValidator _validator = new(
-        LocalizerFactory.CreateMessage<CustomerErrorMessage>()
-    );
+    private readonly CustomerErrorMessage _i18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>();
+    private readonly AdminCreateCustomerValidator _validator;
+
+    public AdminCreateCustomerValidatorTests()
+    {
+        _validator = new AdminCreateCustomerValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -83,7 +87,7 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.FullName)
-                && e.ErrorMessage == "Customer full name is required."
+                && e.ErrorMessage == _i18n.FullNameRequired()
             );
     }
 
@@ -108,7 +112,7 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.FullName)
-                && e.ErrorMessage == "Customer full name must not exceed 100 characters."
+                && e.ErrorMessage == _i18n.FullNameTooLong(TestConstants.Content.Customer.FullNameMaxLength)
             );
     }
 
@@ -136,8 +140,7 @@ public class AdminCreateCustomerValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreateCustomerCommand.Email)
-                && e.ErrorMessage == "Customer email is required."
+                e.PropertyName == nameof(AdminCreateCustomerCommand.Email) && e.ErrorMessage == _i18n.EmailRequired()
             );
     }
 
@@ -162,7 +165,7 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.Email)
-                && e.ErrorMessage == "Customer email must be a valid email address."
+                && e.ErrorMessage == _i18n.EmailInvalidFormat()
             );
     }
 
@@ -211,7 +214,7 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.Phone)
-                && e.ErrorMessage == "Customer phone must not exceed 30 characters."
+                && e.ErrorMessage == _i18n.PhoneTooLong(TestConstants.Content.Customer.PhoneMaxLength)
             );
     }
 
@@ -236,7 +239,7 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.Company)
-                && e.ErrorMessage == "Customer company must not exceed 100 characters."
+                && e.ErrorMessage == _i18n.CompanyTooLong(TestConstants.Content.Customer.CompanyMaxLength)
             );
     }
 
@@ -261,7 +264,40 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.Notes)
-                && e.ErrorMessage == "Customer notes must not exceed 500 characters."
+                && e.ErrorMessage == _i18n.NotesTooLong(TestConstants.Content.Customer.NotesMaxLength)
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>(culture);
+        var validator = new AdminCreateCustomerValidator(i18n);
+        var command = new AdminCreateCustomerCommand(
+            FullName: string.Empty,
+            Email: TestConstants.Content.Customer.ValidEmail,
+            Phone: null,
+            Company: null,
+            Notes: null
+        );
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreateCustomerCommand.FullName)
+                && e.ErrorMessage == i18n.FullNameRequired()
             );
     }
 
