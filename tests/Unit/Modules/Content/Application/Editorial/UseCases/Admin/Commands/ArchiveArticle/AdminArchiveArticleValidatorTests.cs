@@ -1,4 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveArticle;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -10,7 +12,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminArchiveArticleValidatorTests
 {
-    private readonly AdminArchiveArticleValidator _validator = new();
+    private readonly ArticleErrorMessage _i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+
+    private readonly AdminArchiveArticleValidator _validator;
+
+    public AdminArchiveArticleValidatorTests()
+    {
+        _validator = new AdminArchiveArticleValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -46,7 +55,8 @@ public class AdminArchiveArticleValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminArchiveArticleCommand.Id) && e.ErrorMessage == "Article ID is required."
+                e.PropertyName == nameof(AdminArchiveArticleCommand.Id)
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -64,7 +74,35 @@ public class AdminArchiveArticleValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminArchiveArticleCommand.Id) && e.ErrorMessage == "Article ID is invalid."
+                e.PropertyName == nameof(AdminArchiveArticleCommand.Id)
+                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
+        var validator = new AdminArchiveArticleValidator(i18n);
+        var command = new AdminArchiveArticleCommand(Id: string.Empty);
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminArchiveArticleCommand.Id)
+                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
             );
     }
 
