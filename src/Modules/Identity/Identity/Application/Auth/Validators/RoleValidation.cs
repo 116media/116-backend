@@ -1,4 +1,5 @@
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.Validators;
@@ -13,14 +14,12 @@ public static class RoleValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the role name property.</param>
-    /// <param name="roleNameRequired">Error message when role name is missing.</param>
-    /// <param name="roleNameTooLong">Error message when role name exceeds maximum length.</param>
+    /// <param name="i18n">Validation error messages for rule configuration.</param>
     /// <param name="isRequired">Whether the role name is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidRoleName<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        string roleNameRequired,
-        string roleNameTooLong,
+        ValidationErrorMessage i18n,
         bool isRequired = true
     )
     {
@@ -29,15 +28,15 @@ public static class RoleValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage(roleNameRequired)
+                .WithMessage(i18n.RoleNameRequired())
                 .MaximumLength(maximumLength: RoleConstants.MaxRoleNameLength)
-                .WithMessage(roleNameTooLong);
+                .WithMessage(i18n.RoleNameTooLong(RoleConstants.MaxRoleNameLength));
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: RoleConstants.MaxRoleNameLength)
-            .WithMessage(roleNameTooLong)
+            .WithMessage(i18n.RoleNameTooLong(RoleConstants.MaxRoleNameLength))
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Name")));
     }
 
@@ -46,14 +45,12 @@ public static class RoleValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the role description property.</param>
-    /// <param name="roleDescriptionRequired">Error message when role description is missing.</param>
-    /// <param name="roleDescriptionTooLong">Error message when role description exceeds maximum length.</param>
+    /// <param name="i18n">Validation error messages for rule configuration.</param>
     /// <param name="isRequired">Whether the role description is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidRoleDescription<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        string roleDescriptionRequired,
-        string roleDescriptionTooLong,
+        ValidationErrorMessage i18n,
         bool isRequired = true
     )
     {
@@ -62,15 +59,15 @@ public static class RoleValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage(roleDescriptionRequired)
+                .WithMessage(i18n.RoleDescriptionRequired())
                 .MaximumLength(maximumLength: RoleConstants.MaxRoleDescriptionLength)
-                .WithMessage(roleDescriptionTooLong);
+                .WithMessage(i18n.RoleDescriptionTooLong(RoleConstants.MaxRoleDescriptionLength));
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: RoleConstants.MaxRoleDescriptionLength)
-            .WithMessage(roleDescriptionTooLong)
+            .WithMessage(i18n.RoleDescriptionTooLong(RoleConstants.MaxRoleDescriptionLength))
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Description")));
     }
 }
