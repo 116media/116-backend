@@ -13,12 +13,17 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateVideoValidatorTests
 {
-    private readonly AdminUpdateVideoValidator _validator = new(
-        LocalizerFactory.CreateMessage<ArticleErrorMessage>(),
-        LocalizerFactory.CreateMessage<VideoErrorMessage>(),
-        LocalizerFactory.CreateMessage<ContentOrderErrorMessage>(),
-        LocalizerFactory.CreateMessage<CustomerErrorMessage>()
-    );
+    private readonly ArticleErrorMessage _articleI18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+    private readonly VideoErrorMessage _videoI18n = LocalizerFactory.CreateMessage<VideoErrorMessage>();
+    private readonly ContentOrderErrorMessage _orderI18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>();
+    private readonly CustomerErrorMessage _customerI18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>();
+
+    private readonly AdminUpdateVideoValidator _validator;
+
+    public AdminUpdateVideoValidatorTests()
+    {
+        _validator = new AdminUpdateVideoValidator(_articleI18n, _videoI18n, _orderI18n, _customerI18n);
+    }
 
     private static AdminUpdateVideoCommand ValidCommand() =>
         new(
@@ -71,7 +76,8 @@ public class AdminUpdateVideoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateVideoCommand.Id) && e.ErrorMessage == "Video ID is required."
+                e.PropertyName == nameof(AdminUpdateVideoCommand.Id)
+                && e.ErrorMessage == _videoI18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -92,7 +98,8 @@ public class AdminUpdateVideoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateVideoCommand.Id) && e.ErrorMessage == "Video ID is invalid."
+                e.PropertyName == nameof(AdminUpdateVideoCommand.Id)
+                && e.ErrorMessage == _videoI18n.Localizer["IdInvalid"].Value
             );
     }
 
@@ -118,7 +125,7 @@ public class AdminUpdateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoCommand.CategoryId)
-                && e.ErrorMessage == "Article category ID is required."
+                && e.ErrorMessage == _articleI18n.CategoryIdRequired()
             );
     }
 
@@ -143,7 +150,7 @@ public class AdminUpdateVideoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateVideoCommand.Title) && e.ErrorMessage == "Video title is required."
+                e.PropertyName == nameof(AdminUpdateVideoCommand.Title) && e.ErrorMessage == _videoI18n.TitleRequired()
             );
     }
 
@@ -165,7 +172,7 @@ public class AdminUpdateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoCommand.Title)
-                && e.ErrorMessage == "Video title must not exceed 100 characters."
+                && e.ErrorMessage == _videoI18n.TitleTooLong(TestConstants.Content.Editorial.Video.TitleMaxLength)
             );
     }
 
@@ -190,7 +197,7 @@ public class AdminUpdateVideoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateVideoCommand.Slug) && e.ErrorMessage == "Video slug is required."
+                e.PropertyName == nameof(AdminUpdateVideoCommand.Slug) && e.ErrorMessage == _videoI18n.SlugRequired()
             );
     }
 
@@ -212,7 +219,7 @@ public class AdminUpdateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoCommand.Slug)
-                && e.ErrorMessage == "Video slug must be lowercase and contain only letters, numbers, and hyphens."
+                && e.ErrorMessage == _videoI18n.SlugInvalidFormat()
             );
     }
 
@@ -238,7 +245,7 @@ public class AdminUpdateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoCommand.Description)
-                && e.ErrorMessage == "Video description is required."
+                && e.ErrorMessage == _videoI18n.DescriptionRequired()
             );
     }
 
@@ -265,7 +272,7 @@ public class AdminUpdateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoCommand.OrderItemId)
-                && e.ErrorMessage == "Order item ID is required."
+                && e.ErrorMessage == _orderI18n.OrderItemIdRequired()
             );
     }
 
@@ -288,7 +295,7 @@ public class AdminUpdateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoCommand.CustomerId)
-                && e.ErrorMessage == "Customer ID is required."
+                && e.ErrorMessage == _customerI18n.CustomerIdRequired()
             );
     }
 
@@ -314,7 +321,7 @@ public class AdminUpdateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoCommand.MetaTitle)
-                && e.ErrorMessage == "Meta title must be at least 10 characters."
+                && e.ErrorMessage == _articleI18n.MetaTitleTooShort(10)
             );
     }
 
@@ -336,7 +343,7 @@ public class AdminUpdateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoCommand.MetaTitle)
-                && e.ErrorMessage == "Meta title must not exceed 70 characters."
+                && e.ErrorMessage == _articleI18n.MetaTitleTooLong(70)
             );
     }
 
@@ -378,7 +385,7 @@ public class AdminUpdateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoCommand.MetaDescription)
-                && e.ErrorMessage == "Meta description must be at least 50 characters."
+                && e.ErrorMessage == _articleI18n.MetaDescriptionTooShort(50)
             );
     }
 
@@ -400,7 +407,7 @@ public class AdminUpdateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoCommand.MetaDescription)
-                && e.ErrorMessage == "Meta description must not exceed 160 characters."
+                && e.ErrorMessage == _articleI18n.MetaDescriptionTooLong(160)
             );
     }
 
@@ -418,6 +425,35 @@ public class AdminUpdateVideoValidatorTests
 
         // Assert
         result.IsValid.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var articleI18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
+        var videoI18n = LocalizerFactory.CreateMessage<VideoErrorMessage>(culture);
+        var orderI18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>(culture);
+        var customerI18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>(culture);
+        var validator = new AdminUpdateVideoValidator(articleI18n, videoI18n, orderI18n, customerI18n);
+        var command = ValidCommand() with { Title = string.Empty };
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateVideoCommand.Title) && e.ErrorMessage == videoI18n.TitleRequired()
+            );
     }
 
     #endregion
