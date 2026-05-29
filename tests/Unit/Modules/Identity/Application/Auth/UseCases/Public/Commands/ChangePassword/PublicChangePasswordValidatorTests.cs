@@ -14,9 +14,13 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Comm
 /// </summary>
 public class PublicChangePasswordValidatorTests
 {
-    private readonly PublicChangePasswordValidator _validator = new(
-        LocalizerFactory.CreateMessage<ValidationErrorMessage>()
-    );
+    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly PublicChangePasswordValidator _validator;
+
+    public PublicChangePasswordValidatorTests()
+    {
+        _validator = new PublicChangePasswordValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -103,7 +107,7 @@ public class PublicChangePasswordValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.NewPassword)
-            .WithErrorMessage($"New password must be at least {UserConstants.MinPasswordLength} characters long.");
+            .WithErrorMessage(_i18n.PasswordTooShort("New password", UserConstants.MinPasswordLength));
     }
 
     [Fact]
