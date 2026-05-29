@@ -13,7 +13,16 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Comm
 /// </summary>
 public class PublicLoginValidatorTests
 {
-    private readonly PublicLoginValidator _validator = new(LocalizerFactory.CreateMessage<ValidationErrorMessage>());
+    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly PublicLoginValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="PublicLoginValidatorTests"/>.
+    /// </summary>
+    public PublicLoginValidatorTests()
+    {
+        _validator = new PublicLoginValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -66,7 +75,7 @@ public class PublicLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Credentials).WithErrorMessage("Email or username is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Credentials).WithErrorMessage(_i18n.EmailOrUsernameRequired());
     }
 
     [Fact]
@@ -80,7 +89,7 @@ public class PublicLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Credentials).WithErrorMessage("Email or username is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Credentials).WithErrorMessage(_i18n.EmailOrUsernameRequired());
     }
 
     [Fact]
@@ -94,7 +103,7 @@ public class PublicLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Credentials).WithErrorMessage("Email or username is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Credentials).WithErrorMessage(_i18n.EmailOrUsernameRequired());
     }
 
     #endregion
@@ -112,7 +121,7 @@ public class PublicLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage(_i18n.PasswordRequired());
     }
 
     [Fact]
@@ -126,7 +135,7 @@ public class PublicLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage(_i18n.PasswordRequired());
     }
 
     [Fact]
@@ -140,7 +149,7 @@ public class PublicLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage(_i18n.PasswordRequired());
     }
 
     #endregion
@@ -161,6 +170,28 @@ public class PublicLoginValidatorTests
         result.Errors.Should().HaveCount(2);
         result.ShouldHaveValidationErrorFor(x => x.Credentials);
         result.ShouldHaveValidationErrorFor(x => x.Password);
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        var validator = new PublicLoginValidator(i18n);
+        var command = new PublicLoginCommand(Credentials: null!, Password: TestConstants.User.ValidPassword);
+
+        // Act
+        TestValidationResult<PublicLoginCommand>? result = await validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Credentials).WithErrorMessage(i18n.EmailOrUsernameRequired());
     }
 
     #endregion
