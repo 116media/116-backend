@@ -13,7 +13,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminCreateTagValidatorTests
 {
-    private readonly AdminCreateTagValidator _validator = new(LocalizerFactory.CreateMessage<TagErrorMessage>());
+    private readonly TagErrorMessage _i18n = LocalizerFactory.CreateMessage<TagErrorMessage>();
+    private readonly AdminCreateTagValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminCreateTagValidatorTests"/>.
+    /// </summary>
+    public AdminCreateTagValidatorTests()
+    {
+        _validator = new AdminCreateTagValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -82,7 +91,7 @@ public class AdminCreateTagValidatorTests
         result
             .Errors.Should()
             .ContainSingle(e =>
-                e.PropertyName == nameof(AdminCreateTagCommand.Name) && e.ErrorMessage == "Tag name is required."
+                e.PropertyName == nameof(AdminCreateTagCommand.Name) && e.ErrorMessage == _i18n.NameRequired()
             );
     }
 
@@ -100,7 +109,7 @@ public class AdminCreateTagValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreateTagCommand.Name) && e.ErrorMessage == "Tag name is required."
+                e.PropertyName == nameof(AdminCreateTagCommand.Name) && e.ErrorMessage == _i18n.NameRequired()
             );
     }
 
@@ -122,7 +131,7 @@ public class AdminCreateTagValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreateTagCommand.Name)
-                && e.ErrorMessage == "Tag name must not exceed 50 characters."
+                && e.ErrorMessage == _i18n.NameTooLong(TestConstants.Content.Tag.NameMaxLength)
             );
     }
 
@@ -144,7 +153,7 @@ public class AdminCreateTagValidatorTests
         result
             .Errors.Should()
             .ContainSingle(e =>
-                e.PropertyName == nameof(AdminCreateTagCommand.Slug) && e.ErrorMessage == "Tag slug is required."
+                e.PropertyName == nameof(AdminCreateTagCommand.Slug) && e.ErrorMessage == _i18n.SlugRequired()
             );
     }
 
@@ -164,7 +173,7 @@ public class AdminCreateTagValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreateTagCommand.Slug)
-                && e.ErrorMessage == "Tag slug must not exceed 60 characters."
+                && e.ErrorMessage == _i18n.SlugTooLong(TestConstants.Content.Tag.SlugMaxLength)
             );
     }
 
@@ -182,8 +191,7 @@ public class AdminCreateTagValidatorTests
         result
             .Errors.Should()
             .ContainSingle(e =>
-                e.PropertyName == nameof(AdminCreateTagCommand.Slug)
-                && e.ErrorMessage == "Tag slug must be lowercase and contain only letters, numbers, and hyphens."
+                e.PropertyName == nameof(AdminCreateTagCommand.Slug) && e.ErrorMessage == _i18n.SlugInvalidFormat()
             );
     }
 
@@ -201,8 +209,7 @@ public class AdminCreateTagValidatorTests
         result
             .Errors.Should()
             .ContainSingle(e =>
-                e.PropertyName == nameof(AdminCreateTagCommand.Slug)
-                && e.ErrorMessage == "Tag slug must be lowercase and contain only letters, numbers, and hyphens."
+                e.PropertyName == nameof(AdminCreateTagCommand.Slug) && e.ErrorMessage == _i18n.SlugInvalidFormat()
             );
     }
 
@@ -223,6 +230,32 @@ public class AdminCreateTagValidatorTests
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminCreateTagCommand.Name));
         result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminCreateTagCommand.Slug));
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<TagErrorMessage>(culture);
+        var validator = new AdminCreateTagValidator(i18n);
+        var command = new AdminCreateTagCommand(Name: "", Slug: TestConstants.Content.Tag.ValidSlug);
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreateTagCommand.Name) && e.ErrorMessage == i18n.NameRequired()
+            );
     }
 
     #endregion
