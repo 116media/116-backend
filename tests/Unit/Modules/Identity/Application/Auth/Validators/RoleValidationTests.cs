@@ -27,27 +27,17 @@ public class RoleValidationTests
 
     private class TestNameCommandValidator : AbstractValidator<TestNameCommand>
     {
-        public TestNameCommandValidator(ValidationErrorMessage msg, bool isRequired = true)
+        public TestNameCommandValidator(ValidationErrorMessage i18n, bool isRequired = true)
         {
-            RuleFor(x => x.Name)
-                .ValidRoleName(
-                    roleNameRequired: msg.RoleNameRequired(),
-                    roleNameTooLong: msg.RoleNameTooLong(RoleConstants.MaxRoleNameLength),
-                    isRequired: isRequired
-                );
+            RuleFor(x => x.Name).ValidRoleName(i18n, isRequired: isRequired);
         }
     }
 
     private class TestDescriptionCommandValidator : AbstractValidator<TestDescriptionCommand>
     {
-        public TestDescriptionCommandValidator(ValidationErrorMessage msg, bool isRequired = true)
+        public TestDescriptionCommandValidator(ValidationErrorMessage i18n, bool isRequired = true)
         {
-            RuleFor(x => x.Description)
-                .ValidRoleDescription(
-                    roleDescriptionRequired: msg.RoleDescriptionRequired(),
-                    roleDescriptionTooLong: msg.RoleDescriptionTooLong(RoleConstants.MaxRoleDescriptionLength),
-                    isRequired: isRequired
-                );
+            RuleFor(x => x.Description).ValidRoleDescription(i18n, isRequired: isRequired);
         }
     }
 
