@@ -13,9 +13,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateShortVideoValidatorTests
 {
-    private readonly AdminUpdateShortVideoValidator _validator = new(
-        LocalizerFactory.CreateMessage<ShortVideoErrorMessage>()
-    );
+    private readonly ShortVideoErrorMessage _i18n = LocalizerFactory.CreateMessage<ShortVideoErrorMessage>();
+
+    private readonly AdminUpdateShortVideoValidator _validator;
+
+    public AdminUpdateShortVideoValidatorTests()
+    {
+        _validator = new AdminUpdateShortVideoValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -103,8 +108,7 @@ public class AdminUpdateShortVideoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateShortVideoCommand.Title)
-                && e.ErrorMessage == "Short video title is required."
+                e.PropertyName == nameof(AdminUpdateShortVideoCommand.Title) && e.ErrorMessage == _i18n.TitleRequired()
             );
     }
 
@@ -128,7 +132,38 @@ public class AdminUpdateShortVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateShortVideoCommand.Title)
-                && e.ErrorMessage == "Short video title must not exceed 200 characters."
+                && e.ErrorMessage == _i18n.TitleTooLong(TestConstants.Content.Editorial.ShortVideo.TitleMaxLength)
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ShortVideoErrorMessage>(culture);
+        var validator = new AdminUpdateShortVideoValidator(i18n);
+        var command = new AdminUpdateShortVideoCommand(
+            Id: Guid.NewGuid().ToString(),
+            Title: string.Empty,
+            VideoId: null,
+            VideoFile: null
+        );
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateShortVideoCommand.Title) && e.ErrorMessage == i18n.TitleRequired()
             );
     }
 
