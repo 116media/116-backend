@@ -13,9 +13,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminUpdatePricingTierValidatorTests
 {
-    private readonly AdminUpdatePricingTierValidator _validator = new(
-        LocalizerFactory.CreateMessage<PricingTierErrorMessage>()
-    );
+    private readonly PricingTierErrorMessage _i18n = LocalizerFactory.CreateMessage<PricingTierErrorMessage>();
+    private readonly AdminUpdatePricingTierValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminUpdatePricingTierValidatorTests"/>.
+    /// </summary>
+    public AdminUpdatePricingTierValidatorTests()
+    {
+        _validator = new AdminUpdatePricingTierValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -78,7 +85,7 @@ public class AdminUpdatePricingTierValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminUpdatePricingTierCommand.Id)
-                && e.ErrorMessage == "Pricing tier ID is required."
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -104,8 +111,7 @@ public class AdminUpdatePricingTierValidatorTests
         result
             .Errors.Should()
             .ContainSingle(e =>
-                e.PropertyName == nameof(AdminUpdatePricingTierCommand.Name)
-                && e.ErrorMessage == "Pricing tier name is required."
+                e.PropertyName == nameof(AdminUpdatePricingTierCommand.Name) && e.ErrorMessage == _i18n.NameRequired()
             );
     }
 
@@ -128,7 +134,7 @@ public class AdminUpdatePricingTierValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminUpdatePricingTierCommand.Name)
-                && e.ErrorMessage == "Pricing tier name must not exceed 40 characters."
+                && e.ErrorMessage == _i18n.NameTooLong(TestConstants.Content.PricingTier.NameMaxLength)
             );
     }
 
@@ -178,7 +184,7 @@ public class AdminUpdatePricingTierValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminUpdatePricingTierCommand.Description)
-                && e.ErrorMessage == "Pricing tier description is required."
+                && e.ErrorMessage == _i18n.DescriptionRequired()
             );
     }
 
@@ -201,7 +207,7 @@ public class AdminUpdatePricingTierValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminUpdatePricingTierCommand.Description)
-                && e.ErrorMessage == "Pricing tier description is required."
+                && e.ErrorMessage == _i18n.DescriptionRequired()
             );
     }
 
@@ -224,7 +230,37 @@ public class AdminUpdatePricingTierValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminUpdatePricingTierCommand.Description)
-                && e.ErrorMessage == "Pricing tier description must not exceed 200 characters."
+                && e.ErrorMessage == _i18n.DescriptionTooLong(TestConstants.Content.PricingTier.DescriptionMaxLength)
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<PricingTierErrorMessage>(culture);
+        var validator = new AdminUpdatePricingTierValidator(i18n);
+        var command = new AdminUpdatePricingTierCommand(
+            Id: Guid.NewGuid().ToString(),
+            Name: "",
+            Description: TestConstants.Content.PricingTier.ValidDescription
+        );
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdatePricingTierCommand.Name) && e.ErrorMessage == i18n.NameRequired()
             );
     }
 
