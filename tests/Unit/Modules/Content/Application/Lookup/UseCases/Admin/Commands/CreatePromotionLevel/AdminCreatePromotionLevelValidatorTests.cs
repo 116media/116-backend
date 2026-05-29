@@ -13,9 +13,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminCreatePromotionLevelValidatorTests
 {
-    private readonly AdminCreatePromotionLevelValidator _validator = new(
-        LocalizerFactory.CreateMessage<PromotionLevelErrorMessage>()
-    );
+    private readonly PromotionLevelErrorMessage _i18n = LocalizerFactory.CreateMessage<PromotionLevelErrorMessage>();
+    private readonly AdminCreatePromotionLevelValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminCreatePromotionLevelValidatorTests"/>.
+    /// </summary>
+    public AdminCreatePromotionLevelValidatorTests()
+    {
+        _validator = new AdminCreatePromotionLevelValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -80,7 +87,7 @@ public class AdminCreatePromotionLevelValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePromotionLevelCommand.Name)
-                && e.ErrorMessage == "Promotion level name is required."
+                && e.ErrorMessage == _i18n.NameRequired()
             );
     }
 
@@ -104,7 +111,7 @@ public class AdminCreatePromotionLevelValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePromotionLevelCommand.Name)
-                && e.ErrorMessage == "Promotion level name must not exceed 40 characters."
+                && e.ErrorMessage == _i18n.NameTooLong(TestConstants.Content.PromotionLevel.NameMaxLength)
             );
     }
 
@@ -132,7 +139,7 @@ public class AdminCreatePromotionLevelValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePromotionLevelCommand.DurationDays)
-                && e.ErrorMessage == "Promotion level duration must be greater than zero."
+                && e.ErrorMessage == _i18n.DurationMustBePositive()
             );
     }
 
@@ -156,7 +163,7 @@ public class AdminCreatePromotionLevelValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePromotionLevelCommand.DurationDays)
-                && e.ErrorMessage == "Promotion level duration must be greater than zero."
+                && e.ErrorMessage == _i18n.DurationMustBePositive()
             );
     }
 
@@ -184,7 +191,7 @@ public class AdminCreatePromotionLevelValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePromotionLevelCommand.PriceUsd)
-                && e.ErrorMessage == "Promotion level price must be zero or greater."
+                && e.ErrorMessage == _i18n.PriceMustBeNonNegative()
             );
     }
 
@@ -215,7 +222,7 @@ public class AdminCreatePromotionLevelValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreatePromotionLevelCommand.SpotPriority)
-                && e.ErrorMessage == "Spot priority must be 1, 2, or 3."
+                && e.ErrorMessage == _i18n.InvalidSpotPriority()
             );
     }
 
@@ -240,6 +247,37 @@ public class AdminCreatePromotionLevelValidatorTests
         result
             .Errors.Should()
             .NotContain(e => e.PropertyName == nameof(AdminCreatePromotionLevelCommand.SpotPriority));
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<PromotionLevelErrorMessage>(culture);
+        var validator = new AdminCreatePromotionLevelValidator(i18n);
+        var command = new AdminCreatePromotionLevelCommand(
+            Name: "",
+            DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
+            PriceUsd: TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            SpotPriority: 1
+        );
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreatePromotionLevelCommand.Name) && e.ErrorMessage == i18n.NameRequired()
+            );
     }
 
     #endregion
