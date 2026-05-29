@@ -13,7 +13,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminUpdateTagValidatorTests
 {
-    private readonly AdminUpdateTagValidator _validator = new(LocalizerFactory.CreateMessage<TagErrorMessage>());
+    private readonly TagErrorMessage _i18n = LocalizerFactory.CreateMessage<TagErrorMessage>();
+    private readonly AdminUpdateTagValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminUpdateTagValidatorTests"/>.
+    /// </summary>
+    public AdminUpdateTagValidatorTests()
+    {
+        _validator = new AdminUpdateTagValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -97,7 +106,7 @@ public class AdminUpdateTagValidatorTests
         result
             .Errors.Should()
             .ContainSingle(e =>
-                e.PropertyName == nameof(AdminUpdateTagCommand.Name) && e.ErrorMessage == "Tag name is required."
+                e.PropertyName == nameof(AdminUpdateTagCommand.Name) && e.ErrorMessage == _i18n.NameRequired()
             );
     }
 
@@ -123,7 +132,7 @@ public class AdminUpdateTagValidatorTests
         result
             .Errors.Should()
             .ContainSingle(e =>
-                e.PropertyName == nameof(AdminUpdateTagCommand.Slug) && e.ErrorMessage == "Tag slug is required."
+                e.PropertyName == nameof(AdminUpdateTagCommand.Slug) && e.ErrorMessage == _i18n.SlugRequired()
             );
     }
 
@@ -145,6 +154,36 @@ public class AdminUpdateTagValidatorTests
         result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateTagCommand.Id));
         result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateTagCommand.Name));
         result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateTagCommand.Slug));
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<TagErrorMessage>(culture);
+        var validator = new AdminUpdateTagValidator(i18n);
+        var command = new AdminUpdateTagCommand(
+            Id: Guid.NewGuid().ToString(),
+            Name: "",
+            Slug: TestConstants.Content.Tag.ValidSlug
+        );
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateTagCommand.Name) && e.ErrorMessage == i18n.NameRequired()
+            );
     }
 
     #endregion
