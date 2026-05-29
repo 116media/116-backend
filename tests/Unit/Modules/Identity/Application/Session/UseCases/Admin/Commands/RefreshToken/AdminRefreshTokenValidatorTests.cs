@@ -13,9 +13,16 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Session.UseCases.Admin.Co
 /// </summary>
 public class AdminRefreshTokenValidatorTests
 {
-    private readonly AdminRefreshTokenValidator _validator = new(
-        LocalizerFactory.CreateMessage<ValidationErrorMessage>()
-    );
+    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly AdminRefreshTokenValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminRefreshTokenValidatorTests"/>.
+    /// </summary>
+    public AdminRefreshTokenValidatorTests()
+    {
+        _validator = new AdminRefreshTokenValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -48,7 +55,7 @@ public class AdminRefreshTokenValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage("Refresh token is required.");
+        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(_i18n.RefreshTokenRequired());
     }
 
     [Fact]
@@ -62,7 +69,7 @@ public class AdminRefreshTokenValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage("Refresh token is required.");
+        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(_i18n.RefreshTokenRequired());
     }
 
     [Fact]
@@ -76,7 +83,29 @@ public class AdminRefreshTokenValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage("Refresh token is required.");
+        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(_i18n.RefreshTokenRequired());
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        var validator = new AdminRefreshTokenValidator(i18n);
+        var command = new AdminRefreshTokenCommand(RefreshToken: "");
+
+        // Act
+        TestValidationResult<AdminRefreshTokenCommand>? result = await validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(i18n.RefreshTokenRequired());
     }
 
     #endregion
