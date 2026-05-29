@@ -14,7 +14,16 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Comma
 /// </summary>
 public class AdminLoginValidatorTests
 {
-    private readonly AdminLoginValidator _validator = new(LocalizerFactory.CreateMessage<ValidationErrorMessage>());
+    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly AdminLoginValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminLoginValidatorTests"/>.
+    /// </summary>
+    public AdminLoginValidatorTests()
+    {
+        _validator = new AdminLoginValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -65,7 +74,7 @@ public class AdminLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage("Email is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage(_i18n.EmailRequired());
     }
 
     [Fact]
@@ -79,7 +88,7 @@ public class AdminLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage("Email is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage(_i18n.EmailRequired());
     }
 
     [Fact]
@@ -93,7 +102,7 @@ public class AdminLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage("Email is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage(_i18n.EmailRequired());
     }
 
     [Fact]
@@ -107,7 +116,7 @@ public class AdminLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage("Invalid email format.");
+        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage(_i18n.InvalidEmailFormatMsg());
     }
 
     [Fact]
@@ -124,7 +133,7 @@ public class AdminLoginValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.Email)
-            .WithErrorMessage($"Email cannot exceed {UserConstants.MaxEmailLength} characters.");
+            .WithErrorMessage(_i18n.EmailTooLong(UserConstants.MaxEmailLength));
     }
 
     #endregion
@@ -142,7 +151,7 @@ public class AdminLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage(_i18n.PasswordRequired());
     }
 
     [Fact]
@@ -156,7 +165,7 @@ public class AdminLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage(_i18n.PasswordRequired());
     }
 
     [Fact]
@@ -170,7 +179,7 @@ public class AdminLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage(_i18n.PasswordRequired());
     }
 
     #endregion
@@ -191,6 +200,28 @@ public class AdminLoginValidatorTests
         result.Errors.Should().HaveCountGreaterThanOrEqualTo(2);
         result.ShouldHaveValidationErrorFor(x => x.Email);
         result.ShouldHaveValidationErrorFor(x => x.Password);
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        var validator = new AdminLoginValidator(i18n);
+        var command = new AdminLoginCommand(Email: null!, Password: TestConstants.User.ValidPassword);
+
+        // Act
+        TestValidationResult<AdminLoginCommand>? result = await validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage(i18n.EmailRequired());
     }
 
     #endregion
