@@ -15,9 +15,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUploadArticleImageValidatorTests
 {
-    private readonly AdminUploadArticleImageValidator _validator = new(
-        LocalizerFactory.CreateMessage<ArticleErrorMessage>()
-    );
+    private readonly ArticleErrorMessage _i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+
+    private readonly AdminUploadArticleImageValidator _validator;
+
+    public AdminUploadArticleImageValidatorTests()
+    {
+        _validator = new AdminUploadArticleImageValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -66,7 +71,7 @@ public class AdminUploadArticleImageValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUploadArticleImageCommand.ArticleId)
-                && e.ErrorMessage == "Article ID is required."
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -91,7 +96,7 @@ public class AdminUploadArticleImageValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUploadArticleImageCommand.ArticleId)
-                && e.ErrorMessage == "Article ID is invalid."
+                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
             );
     }
 
@@ -118,8 +123,38 @@ public class AdminUploadArticleImageValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUploadArticleImageCommand.File)
-                && e.ErrorMessage == "Article image file is required."
+                e.PropertyName == nameof(AdminUploadArticleImageCommand.File) && e.ErrorMessage == _i18n.FileRequired()
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
+        var validator = new AdminUploadArticleImageValidator(i18n);
+        var command = new AdminUploadArticleImageCommand(
+            ArticleId: string.Empty,
+            File: null!,
+            ImageType: EnumArticleImageType.Cover
+        );
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUploadArticleImageCommand.ArticleId)
+                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
             );
     }
 
