@@ -14,9 +14,16 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Comma
 /// </summary>
 public class AdminResetPasswordValidatorTests
 {
-    private readonly AdminResetPasswordValidator _validator = new(
-        LocalizerFactory.CreateMessage<ValidationErrorMessage>()
-    );
+    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly AdminResetPasswordValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminResetPasswordValidatorTests"/>.
+    /// </summary>
+    public AdminResetPasswordValidatorTests()
+    {
+        _validator = new AdminResetPasswordValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -117,7 +124,7 @@ public class AdminResetPasswordValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.Code)
-            .WithErrorMessage($"Verification code must be exactly {UserConstants.OtpCodeLength} characters long.");
+            .WithErrorMessage(_i18n.OtpCodeWrongLength(UserConstants.OtpCodeLength));
     }
 
     [Fact]
@@ -153,9 +160,7 @@ public class AdminResetPasswordValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.Code)
-            .WithErrorMessage("Verification code must contain only numbers.");
+        result.ShouldHaveValidationErrorFor(x => x.Code).WithErrorMessage(_i18n.OtpCodeNotNumeric());
     }
 
     #endregion
@@ -232,6 +237,32 @@ public class AdminResetPasswordValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCountGreaterThanOrEqualTo(3);
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        var validator = new AdminResetPasswordValidator(i18n);
+        var command = new AdminResetPasswordCommand(
+            Email: null!,
+            Code: TestConstants.Otp.ValidCode,
+            NewPassword: TestConstants.User.ValidPassword
+        );
+
+        // Act
+        TestValidationResult<AdminResetPasswordCommand>? result = await validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage(i18n.EmailRequired());
     }
 
     #endregion
