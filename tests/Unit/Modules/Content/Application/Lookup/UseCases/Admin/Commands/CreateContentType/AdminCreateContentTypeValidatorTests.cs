@@ -13,9 +13,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminCreateContentTypeValidatorTests
 {
-    private readonly AdminCreateContentTypeValidator _validator = new(
-        LocalizerFactory.CreateMessage<ContentTypeErrorMessage>()
-    );
+    private readonly ContentTypeErrorMessage _i18n = LocalizerFactory.CreateMessage<ContentTypeErrorMessage>();
+    private readonly AdminCreateContentTypeValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminCreateContentTypeValidatorTests"/>.
+    /// </summary>
+    public AdminCreateContentTypeValidatorTests()
+    {
+        _validator = new AdminCreateContentTypeValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -66,8 +73,7 @@ public class AdminCreateContentTypeValidatorTests
         result
             .Errors.Should()
             .ContainSingle(e =>
-                e.PropertyName == nameof(AdminCreateContentTypeCommand.Name)
-                && e.ErrorMessage == "Content type name is required."
+                e.PropertyName == nameof(AdminCreateContentTypeCommand.Name) && e.ErrorMessage == _i18n.NameRequired()
             );
     }
 
@@ -85,8 +91,7 @@ public class AdminCreateContentTypeValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreateContentTypeCommand.Name)
-                && e.ErrorMessage == "Content type name is required."
+                e.PropertyName == nameof(AdminCreateContentTypeCommand.Name) && e.ErrorMessage == _i18n.NameRequired()
             );
     }
 
@@ -107,7 +112,33 @@ public class AdminCreateContentTypeValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreateContentTypeCommand.Name)
-                && e.ErrorMessage == "Content type name must not exceed 30 characters."
+                && e.ErrorMessage == _i18n.NameTooLong(TestConstants.Content.ContentType.NameMaxLength)
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ContentTypeErrorMessage>(culture);
+        var validator = new AdminCreateContentTypeValidator(i18n);
+        var command = new AdminCreateContentTypeCommand(Name: "");
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreateContentTypeCommand.Name) && e.ErrorMessage == i18n.NameRequired()
             );
     }
 
