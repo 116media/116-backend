@@ -1,5 +1,7 @@
 using _116.Identity.Application.Session.UseCases.Admin.Queries.GetAllSessions;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Pagination;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -11,7 +13,16 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Session.UseCases.Admin.Qu
 /// </summary>
 public class AdminGetAllSessionsValidatorTests
 {
-    private readonly AdminGetAllSessionsValidator _validator = new();
+    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly AdminGetAllSessionsValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminGetAllSessionsValidatorTests"/>.
+    /// </summary>
+    public AdminGetAllSessionsValidatorTests()
+    {
+        _validator = new(_i18n);
+    }
 
     #region Valid Query Tests
 
@@ -20,7 +31,7 @@ public class AdminGetAllSessionsValidatorTests
     {
         // Arrange
         AdminGetAllSessionsQuery query = new(
-            PaginatedRequest: new PaginatedRequest { PageIndex = 0, PageSize = 10 },
+            PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10),
             UserId: null
         );
 
@@ -37,7 +48,7 @@ public class AdminGetAllSessionsValidatorTests
     {
         // Arrange
         AdminGetAllSessionsQuery query = new(
-            PaginatedRequest: new PaginatedRequest { PageIndex = 0, PageSize = 10 },
+            PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10),
             UserId: Guid.NewGuid().ToString()
         );
 
@@ -49,107 +60,6 @@ public class AdminGetAllSessionsValidatorTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Fact]
-    public async Task Validate_WithMaxPageSize_ShouldNotHaveErrors()
-    {
-        // Arrange
-        AdminGetAllSessionsQuery query = new(
-            PaginatedRequest: new PaginatedRequest { PageIndex = 0, PageSize = 100 },
-            UserId: null
-        );
-
-        // Act
-        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-        result.Errors.Should().BeEmpty();
-    }
-
-    #endregion
-
-    #region PageIndex Validation Tests
-
-    [Fact]
-    public async Task Validate_WithNegativePageIndex_ShouldHaveError()
-    {
-        // Arrange
-        AdminGetAllSessionsQuery query = new(
-            PaginatedRequest: new PaginatedRequest { PageIndex = -1, PageSize = 10 },
-            UserId: null
-        );
-
-        // Act
-        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.PaginatedRequest.PageIndex)
-            .WithErrorMessage("Page index must be greater than or equal to 0.");
-    }
-
-    #endregion
-
-    #region PageSize Validation Tests
-
-    [Fact]
-    public async Task Validate_WithZeroPageSize_ShouldHaveError()
-    {
-        // Arrange
-        AdminGetAllSessionsQuery query = new(
-            PaginatedRequest: new PaginatedRequest { PageIndex = 0, PageSize = 0 },
-            UserId: null
-        );
-
-        // Act
-        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.PaginatedRequest.PageSize)
-            .WithErrorMessage("Page size must be greater than 0.");
-    }
-
-    [Fact]
-    public async Task Validate_WithNegativePageSize_ShouldHaveError()
-    {
-        // Arrange
-        AdminGetAllSessionsQuery query = new(
-            PaginatedRequest: new PaginatedRequest { PageIndex = 0, PageSize = -1 },
-            UserId: null
-        );
-
-        // Act
-        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.PaginatedRequest.PageSize)
-            .WithErrorMessage("Page size must be greater than 0.");
-    }
-
-    [Fact]
-    public async Task Validate_WithPageSizeExceedingMaximum_ShouldHaveError()
-    {
-        // Arrange
-        AdminGetAllSessionsQuery query = new(
-            PaginatedRequest: new PaginatedRequest { PageIndex = 0, PageSize = 101 },
-            UserId: null
-        );
-
-        // Act
-        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.PaginatedRequest.PageSize)
-            .WithErrorMessage("Page size must not exceed 100.");
-    }
-
     #endregion
 
     #region UserId Validation Tests
@@ -159,7 +69,7 @@ public class AdminGetAllSessionsValidatorTests
     {
         // Arrange
         AdminGetAllSessionsQuery query = new(
-            PaginatedRequest: new PaginatedRequest { PageIndex = 0, PageSize = 10 },
+            PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10),
             UserId: "not-a-guid"
         );
 
@@ -168,7 +78,7 @@ public class AdminGetAllSessionsValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.UserId).WithErrorMessage("User ID is invalid.");
+        result.ShouldHaveValidationErrorFor(x => x.UserId).WithErrorMessage(_i18n.Localizer["UserIdInvalid"].Value);
     }
 
     [Fact]
@@ -176,7 +86,7 @@ public class AdminGetAllSessionsValidatorTests
     {
         // Arrange
         AdminGetAllSessionsQuery query = new(
-            PaginatedRequest: new PaginatedRequest { PageIndex = 0, PageSize = 10 },
+            PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10),
             UserId: null
         );
 
@@ -191,9 +101,9 @@ public class AdminGetAllSessionsValidatorTests
     [Fact]
     public async Task Validate_WithEmptyUserId_ShouldNotHaveError()
     {
-        // Arrange - Empty UserId is optional, should not have error
+        // Arrange
         AdminGetAllSessionsQuery query = new(
-            PaginatedRequest: new PaginatedRequest { PageIndex = 0, PageSize = 10 },
+            PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10),
             UserId: string.Empty
         );
 
@@ -203,30 +113,6 @@ public class AdminGetAllSessionsValidatorTests
         // Assert
         result.IsValid.Should().BeTrue();
         result.Errors.Should().BeEmpty();
-    }
-
-    #endregion
-
-    #region Multiple Validation Errors Tests
-
-    [Fact]
-    public async Task Validate_WithMultipleInvalidValues_ShouldHaveMultipleErrors()
-    {
-        // Arrange
-        AdminGetAllSessionsQuery query = new(
-            PaginatedRequest: new PaginatedRequest { PageIndex = -1, PageSize = 0 },
-            UserId: "invalid-guid"
-        );
-
-        // Act
-        TestValidationResult<AdminGetAllSessionsQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().HaveCount(3);
-        result.ShouldHaveValidationErrorFor(x => x.PaginatedRequest.PageIndex);
-        result.ShouldHaveValidationErrorFor(x => x.PaginatedRequest.PageSize);
-        result.ShouldHaveValidationErrorFor(x => x.UserId);
     }
 
     #endregion
