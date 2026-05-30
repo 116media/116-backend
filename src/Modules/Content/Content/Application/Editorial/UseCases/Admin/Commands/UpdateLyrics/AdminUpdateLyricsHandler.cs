@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -20,7 +20,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyric
 /// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
 /// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="lyricsErrors">Lyrics domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminUpdateLyricsHandler(
     ILyricsRepository lyricsRepository,
     IVideoRepository videoRepository,
@@ -28,7 +28,7 @@ public class AdminUpdateLyricsHandler(
     IUserLookupService userLookup,
     IFileRepository fileRepository,
     IMapper mapper,
-    LyricsErrors lyricsErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminUpdateLyricsCommand, AdminUpdateLyricsResult>
 {
     /// <inheritdoc />
@@ -49,7 +49,7 @@ public class AdminUpdateLyricsHandler(
             lyricsText: command.LyricsText,
             language: command.Language,
             videoId: command.VideoId,
-            errors: lyricsErrors
+            errors: i18n.Lyrics
         );
 
         if (previousVideoId != command.VideoId && previousVideoId.HasValue)
