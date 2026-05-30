@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -15,12 +15,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnprom
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="currentActor">Provides the identity of the authenticated user from JWT claims.</param>
-/// <param name="videoErrors">Video domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminForceUnpromoteVideoHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
     ICurrentActor currentActor,
-    VideoErrors videoErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminForceUnpromoteVideoCommand, AdminForceUnpromoteVideoResult>
 {
     /// <inheritdoc />
@@ -36,7 +36,7 @@ public class AdminForceUnpromoteVideoHandler(
 
         if (video is null)
         {
-            throw videoErrors.NotFound(Guid.Empty);
+            throw i18n.Video.NotFound(Guid.Empty);
         }
 
         video.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason);
