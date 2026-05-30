@@ -43,6 +43,34 @@ public class LookupSpecificationsTests
 
     #endregion
 
+    #region ActiveContentTypeSpecification
+
+    [Fact]
+    public void ActiveContentTypeSpecification_WithActiveContentType_ShouldReturnTrue()
+    {
+        // Arrange
+        ContentTypeEntity contentType = ContentTypeFactory.CreateDefault();
+        var spec = new ActiveContentTypeSpecification();
+        Func<ContentTypeEntity, bool> predicate = spec.ToExpression().Compile();
+
+        // Act & Assert
+        predicate(contentType).Should().BeTrue();
+    }
+
+    [Fact]
+    public void ActiveContentTypeSpecification_WithInactiveContentType_ShouldReturnFalse()
+    {
+        // Arrange
+        ContentTypeEntity contentType = ContentTypeFactory.CreateInactive();
+        var spec = new ActiveContentTypeSpecification();
+        Func<ContentTypeEntity, bool> predicate = spec.ToExpression().Compile();
+
+        // Act & Assert
+        predicate(contentType).Should().BeFalse();
+    }
+
+    #endregion
+
     #region PricingTierByIdSpecification
 
     [Fact]
