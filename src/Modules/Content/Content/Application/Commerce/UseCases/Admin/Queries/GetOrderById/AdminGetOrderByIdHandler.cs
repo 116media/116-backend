@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -17,13 +17,13 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderById;
 /// <param name="fileRepository">Repository for resolving payment proof file metadata.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="userLookup">Cross-module service for resolving admin user names.</param>
-/// <param name="contentOrderErrors">Content order domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminGetOrderByIdHandler(
     IContentOrderRepository contentOrderRepository,
     IFileRepository fileRepository,
     IMapper mapper,
     IUserLookupService userLookup,
-    ContentOrderErrors contentOrderErrors
+    ContentI18n i18n
 ) : IQueryHandler<AdminGetOrderByIdQuery, AdminGetOrderByIdResult>
 {
     /// <inheritdoc />
@@ -53,6 +53,6 @@ public class AdminGetOrderByIdHandler(
             return new AdminGetOrderByIdResult(Order: dto);
         }
 
-        throw contentOrderErrors.NotFound(id: query.Id);
+        throw i18n.ContentOrder.NotFound(id: query.Id);
     }
 }
