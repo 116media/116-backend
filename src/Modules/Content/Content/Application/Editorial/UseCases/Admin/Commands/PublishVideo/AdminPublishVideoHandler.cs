@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -12,12 +12,9 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishVide
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="videoErrors">Video domain error factory.</param>
-public class AdminPublishVideoHandler(
-    IVideoRepository videoRepository,
-    IContentUnitOfWork unitOfWork,
-    VideoErrors videoErrors
-) : ICommandHandler<AdminPublishVideoCommand, AdminPublishVideoResult>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
+public class AdminPublishVideoHandler(IVideoRepository videoRepository, IContentUnitOfWork unitOfWork, ContentI18n i18n)
+    : ICommandHandler<AdminPublishVideoCommand, AdminPublishVideoResult>
 {
     /// <inheritdoc />
     public async Task<AdminPublishVideoResult> Handle(
@@ -31,18 +28,18 @@ public class AdminPublishVideoHandler(
 
         if (video.Status == EnumContentStatus.Published)
         {
-            throw videoErrors.AlreadyPublished();
+            throw i18n.Video.AlreadyPublished();
         }
 
         if (video.Status != EnumContentStatus.Approved)
         {
-            throw videoErrors.InvalidStatusTransition(
+            throw i18n.Video.InvalidStatusTransition(
                 from: video.Status.ToString(),
                 to: nameof(EnumContentStatus.Published)
             );
         }
 
-        video.Publish(videoErrors);
+        video.Publish(i18n.Video);
         videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
