@@ -95,4 +95,15 @@ public class PromotionLevelErrorsTests
         exception.Should().BeOfType<BadRequestException>();
         exception.Message.Should().NotBeNullOrEmpty();
     }
+
+    [Fact]
+    public void InvalidSpotPriority_ShouldReturnBadRequestException()
+    {
+        // Act
+        BadRequestException exception = _errors.InvalidSpotPriority();
+
+        // Assert
+        exception.Should().BeOfType<BadRequestException>();
+        exception.Message.Should().NotBeNullOrEmpty();
+    }
 }
