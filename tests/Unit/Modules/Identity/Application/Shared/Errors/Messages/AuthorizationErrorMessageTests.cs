@@ -15,6 +15,12 @@ public class AuthorizationErrorMessageTests
     );
 
     [Fact]
+    public void Localizer_ShouldNotBeNull()
+    {
+        _message.Localizer.Should().NotBeNull();
+    }
+
+    [Fact]
     public void AccountInactive_WithEmail_ShouldReturnFormattedMessage()
     {
         // Arrange
