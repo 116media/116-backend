@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -13,12 +13,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.SubmitArtic
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="articleErrors">Article domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminSubmitArticleHandler(
     IArticleRepository articleRepository,
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
-    ArticleErrors articleErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminSubmitArticleCommand, AdminSubmitArticleResult>
 {
     /// <inheritdoc />
@@ -45,17 +45,17 @@ public class AdminSubmitArticleHandler(
 
             if (orderAlreadyPaid && !article.MarkPendingReview())
             {
-                throw articleErrors.AlreadyPendingReview();
+                throw i18n.Article.AlreadyPendingReview();
             }
 
             if (!orderAlreadyPaid && !article.Submit())
             {
-                throw articleErrors.AlreadySubmitted();
+                throw i18n.Article.AlreadySubmitted();
             }
         }
         else if (!article.CustomerId.HasValue && !article.MarkPendingReview())
         {
-            throw articleErrors.AlreadyPendingReview();
+            throw i18n.Article.AlreadyPendingReview();
         }
 
         articleRepository.Update(article: article);
