@@ -1,4 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticlePromotionFeed;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticlePromotionFeed.V1;
+using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Factories.Content;
@@ -266,6 +268,29 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
         result.Spot1.Articles.Should().BeEmpty();
         result.Spot2.Articles.Should().BeEmpty();
         result.GossipStrip.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region Response record
+
+    [Fact]
+    public void Response_ShouldMapFromResultFields()
+    {
+        // Arrange
+        var spot1 = new ArticlePromotionSpotDto(1, new List<ArticleSummaryDto>());
+        var spot2 = new ArticlePromotionSpotDto(2, new List<ArticleSummaryDto>());
+        var spot3 = new ArticlePromotionSpot3Dto(3, new List<ArticlePromotionSlotDto>());
+        IReadOnlyList<ArticleSummaryDto> gossipStrip = new List<ArticleSummaryDto>();
+
+        // Act
+        var response = new PublicGetArticlePromotionFeedResponse(spot1, spot2, spot3, gossipStrip);
+
+        // Assert
+        response.Spot1.Should().Be(spot1);
+        response.Spot2.Should().Be(spot2);
+        response.Spot3.Should().Be(spot3);
+        response.GossipStrip.Should().BeSameAs(gossipStrip);
     }
 
     #endregion
