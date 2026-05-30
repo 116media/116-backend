@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -14,12 +14,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivateCat
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="categoryErrors">Category domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminDeactivateCategoryHandler(
     ICategoryRepository categoryRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
-    CategoryErrors categoryErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminDeactivateCategoryCommand, AdminDeactivateCategoryResult>
 {
     /// <inheritdoc />
@@ -39,7 +39,7 @@ public class AdminDeactivateCategoryHandler(
 
         if (!deactivated)
         {
-            throw categoryErrors.AlreadyInactive();
+            throw i18n.Category.AlreadyInactive();
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
