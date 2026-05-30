@@ -1,4 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoPromotionFeed;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoPromotionFeed.V1;
+using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Factories.Content;
@@ -255,6 +257,29 @@ public class PublicGetVideoPromotionFeedHandlerTests : BaseContentHandlerTest
 
         // Assert — strip videos must not overlap with fallbacks
         stripIds.Should().NotContain(id => fallbackIds.Contains(id));
+    }
+
+    #endregion
+
+    #region Response record
+
+    [Fact]
+    public void Response_ShouldMapFromResultFields()
+    {
+        // Arrange
+        var spot1 = new VideoPromotionSpotDto(1, new List<VideoSummaryDto>());
+        var spot2 = new VideoPromotionSpotDto(2, new List<VideoSummaryDto>());
+        var spot3 = new VideoPromotionSpot3Dto(3, new List<VideoPromotionSlotDto>());
+        IReadOnlyList<VideoSummaryDto> freeVideoStrip = new List<VideoSummaryDto>();
+
+        // Act
+        var response = new PublicGetVideoPromotionFeedResponse(spot1, spot2, spot3, freeVideoStrip);
+
+        // Assert
+        response.Spot1.Should().Be(spot1);
+        response.Spot2.Should().Be(spot2);
+        response.Spot3.Should().Be(spot3);
+        response.FreeVideoStrip.Should().BeSameAs(freeVideoStrip);
     }
 
     #endregion
