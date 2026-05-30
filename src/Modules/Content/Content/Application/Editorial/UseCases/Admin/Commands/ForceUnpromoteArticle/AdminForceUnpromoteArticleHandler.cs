@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -15,12 +15,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnprom
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="currentActor">Provides the identity of the authenticated user from JWT claims.</param>
-/// <param name="articleErrors">Article domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminForceUnpromoteArticleHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
     ICurrentActor currentActor,
-    ArticleErrors articleErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminForceUnpromoteArticleCommand, AdminForceUnpromoteArticleResult>
 {
     /// <inheritdoc />
@@ -36,7 +36,7 @@ public class AdminForceUnpromoteArticleHandler(
 
         if (article is null)
         {
-            throw articleErrors.NotFound(Guid.Empty);
+            throw i18n.Article.NotFound(Guid.Empty);
         }
 
         article.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason);
