@@ -15,6 +15,12 @@ public class ValidationErrorMessageTests
     private readonly ValidationErrorMessage _message = LocalizerFactory.CreateMessage<ValidationErrorMessage>("en");
 
     [Fact]
+    public void Localizer_ShouldNotBeNull()
+    {
+        _message.Localizer.Should().NotBeNull();
+    }
+
+    [Fact]
     public void InvalidEmailFormat_WithEmail_ShouldReturnFormattedMessage()
     {
         // Arrange
