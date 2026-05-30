@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
@@ -12,15 +12,15 @@ public class AdminCreateLyricsValidator : AbstractValidator<AdminCreateLyricsCom
     /// <summary>
     /// Initializes a new instance of <see cref="AdminCreateLyricsValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="i18n">Lyrics validation error messages.</param>
-    public AdminCreateLyricsValidator(LyricsErrorMessage i18n)
+    /// <param name="i18n">Content module i18n facade.</param>
+    public AdminCreateLyricsValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.SongTitle).ValidSongTitle(i18n);
+        RuleFor(x => x.SongTitle).ValidSongTitle(i18n.Lyrics.Msg);
 
-        RuleFor(x => x.ArtistName).ValidArtistName(i18n);
+        RuleFor(x => x.ArtistName).ValidArtistName(i18n.Lyrics.Msg);
 
-        RuleFor(x => x.LyricsText).ValidLyricsText(i18n);
+        RuleFor(x => x.LyricsText).ValidLyricsText(i18n.Lyrics.Msg);
 
-        RuleFor(x => x.Language).ValidLyricsLanguage(i18n);
+        RuleFor(x => x.Language).ValidLyricsLanguage(i18n.Lyrics.Msg);
     }
 }
