@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -15,13 +15,13 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategor
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="categoryErrors">Category domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreateCategoryHandler(
     ILookupRepository lookupRepository,
     ICategoryRepository categoryRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
-    CategoryErrors categoryErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminCreateCategoryCommand, AdminCreateCategoryResult>
 {
     /// <inheritdoc />
@@ -41,7 +41,7 @@ public class AdminCreateCategoryHandler(
 
         if (existing is not null)
         {
-            throw categoryErrors.AlreadyExists(slug: command.Slug);
+            throw i18n.Category.AlreadyExists(slug: command.Slug);
         }
 
         var category = CategoryEntity.Create(
@@ -51,7 +51,7 @@ public class AdminCreateCategoryHandler(
             slug: command.Slug,
             description: command.Description,
             isFree: command.IsFree,
-            errors: categoryErrors,
+            errors: i18n.Category,
             isGossip: command.IsGossip
         );
 
