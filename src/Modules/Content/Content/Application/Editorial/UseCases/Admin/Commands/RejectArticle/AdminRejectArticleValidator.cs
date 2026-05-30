@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Validators;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
@@ -13,11 +13,11 @@ public class AdminRejectArticleValidator : AbstractValidator<AdminRejectArticleC
     /// <summary>
     /// Initializes a new instance of <see cref="AdminRejectArticleValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="i18n">Article validation error messages.</param>
-    public AdminRejectArticleValidator(ArticleErrorMessage i18n)
+    /// <param name="i18n">Content module i18n facade.</param>
+    public AdminRejectArticleValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.Id).IsValidGuid(i18n.Localizer);
+        RuleFor(x => x.Id).IsValidGuid(i18n.Article.Msg.Localizer);
 
-        RuleFor(x => x.Reason).ValidRejectionReason(i18n);
+        RuleFor(x => x.Reason).ValidRejectionReason(i18n.Article.Msg);
     }
 }
