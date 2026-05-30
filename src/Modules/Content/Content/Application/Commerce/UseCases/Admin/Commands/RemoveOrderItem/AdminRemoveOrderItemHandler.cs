@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -11,11 +11,11 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.RemoveOrderI
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="contentOrderErrors">Content order domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminRemoveOrderItemHandler(
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
-    ContentOrderErrors contentOrderErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminRemoveOrderItemCommand, AdminRemoveOrderItemResult>
 {
     /// <inheritdoc />
@@ -29,9 +29,9 @@ public class AdminRemoveOrderItemHandler(
 
         ContentOrderEntity order =
             await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
-            ?? throw contentOrderErrors.NotFound(id: orderId);
+            ?? throw i18n.ContentOrder.NotFound(id: orderId);
 
-        order.EnsureDraft(contentOrderErrors);
+        order.EnsureDraft(i18n.ContentOrder);
 
         ContentOrderItemEntity item = await contentOrderRepository.GetItemByIdOrThrowAsync(
             orderId: orderId,
@@ -44,7 +44,7 @@ public class AdminRemoveOrderItemHandler(
 
         ContentOrderEntity updated =
             await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
-            ?? throw contentOrderErrors.NotFound(id: orderId);
+            ?? throw i18n.ContentOrder.NotFound(id: orderId);
 
         updated.RecalculateTotalFromItems();
         await contentOrderRepository.UpdateAsync(order: updated, ct: cancellationToken);
