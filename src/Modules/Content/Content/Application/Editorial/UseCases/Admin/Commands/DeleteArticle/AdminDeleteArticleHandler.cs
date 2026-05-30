@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -15,12 +15,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteArtic
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="cloudinaryService">Service for deleting Cloudinary image assets.</param>
-/// <param name="articleErrors">Article domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminDeleteArticleHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
     ICloudinaryService cloudinaryService,
-    ArticleErrors articleErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminDeleteArticleCommand, AdminDeleteArticleResult>
 {
     /// <inheritdoc />
@@ -38,7 +38,7 @@ public class AdminDeleteArticleHandler(
 
         if (article.Status != EnumContentStatus.Draft && article.Status != EnumContentStatus.Rejected)
         {
-            throw articleErrors.CannotDeletePublishedArticle();
+            throw i18n.Article.CannotDeletePublishedArticle();
         }
 
         IReadOnlyList<ArticleImageEntity> images = await articleRepository.GetImagesByArticleIdAsync(
