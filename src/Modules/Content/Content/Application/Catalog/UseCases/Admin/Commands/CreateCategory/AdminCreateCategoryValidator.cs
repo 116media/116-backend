@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Validators;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
@@ -13,13 +13,12 @@ public class AdminCreateCategoryValidator : AbstractValidator<AdminCreateCategor
     /// <summary>
     /// Initializes a new instance of <see cref="AdminCreateCategoryValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="i18n">Category validation error messages.</param>
-    /// <param name="contentTypeMsg">Content type validation error messages.</param>
-    public AdminCreateCategoryValidator(CategoryErrorMessage i18n, ContentTypeErrorMessage contentTypeMsg)
+    /// <param name="i18n">Content module i18n facade.</param>
+    public AdminCreateCategoryValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.ContentTypeId).IsValidGuid(contentTypeMsg.Localizer);
-        RuleFor(x => x.Name).ValidCategoryName(i18n);
-        RuleFor(x => x.Slug).ValidCategorySlug(i18n);
-        RuleFor(x => x.Description).ValidCategoryDescription(i18n);
+        RuleFor(x => x.ContentTypeId).IsValidGuid(i18n.ContentType.Msg.Localizer);
+        RuleFor(x => x.Name).ValidCategoryName(i18n.Category.Msg);
+        RuleFor(x => x.Slug).ValidCategorySlug(i18n.Category.Msg);
+        RuleFor(x => x.Description).ValidCategoryDescription(i18n.Category.Msg);
     }
 }
