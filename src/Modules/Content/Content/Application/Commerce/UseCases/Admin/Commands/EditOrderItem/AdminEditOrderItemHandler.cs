@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -16,18 +16,14 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrderIte
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapper for entity-to-DTO conversion.</param>
-/// <param name="contentOrderErrors">Content order domain error factory.</param>
-/// <param name="categoryErrors">Category domain error factory.</param>
-/// <param name="promotionLevelErrors">Promotion level domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminEditOrderItemHandler(
     IContentOrderRepository contentOrderRepository,
     ICategoryRepository categoryRepository,
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
-    ContentOrderErrors contentOrderErrors,
-    CategoryErrors categoryErrors,
-    PromotionLevelErrors promotionLevelErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminEditOrderItemCommand, AdminEditOrderItemResult>
 {
     /// <inheritdoc />
@@ -41,9 +37,9 @@ public class AdminEditOrderItemHandler(
 
         ContentOrderEntity order =
             await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
-            ?? throw contentOrderErrors.NotFound(id: orderId);
+            ?? throw i18n.ContentOrder.NotFound(id: orderId);
 
-        order.EnsureDraft(contentOrderErrors);
+        order.EnsureDraft(i18n.ContentOrder);
 
         ContentOrderItemEntity item = await contentOrderRepository.GetItemByIdOrThrowAsync(
             orderId: orderId,
@@ -60,7 +56,7 @@ public class AdminEditOrderItemHandler(
                 cancellationToken: cancellationToken
             );
 
-            category.EnsureCommissionable(categoryErrors);
+            category.EnsureCommissionable(i18n.Category);
         }
 
         decimal? promoPriceSnapshot = null;
@@ -72,7 +68,7 @@ public class AdminEditOrderItemHandler(
                 cancellationToken: cancellationToken
             );
 
-            promoLevel.EnsureActive(promotionLevelErrors);
+            promoLevel.EnsureActive(i18n.PromotionLevel);
             promoPriceSnapshot = promoLevel.PriceUsd;
         }
 
