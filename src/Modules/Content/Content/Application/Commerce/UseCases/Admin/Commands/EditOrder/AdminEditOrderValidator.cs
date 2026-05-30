@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -10,14 +10,13 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrder;
 public class AdminEditOrderValidator : AbstractValidator<AdminEditOrderCommand>
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="AdminEditOrderValidator" /> with the specified error message providers.
+    /// Initializes a new instance of <see cref="AdminEditOrderValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="orderMsg">Content order validation error messages.</param>
-    /// <param name="customerMsg">Customer validation error messages.</param>
-    public AdminEditOrderValidator(ContentOrderErrorMessage orderMsg, CustomerErrorMessage customerMsg)
+    /// <param name="i18n">Content module i18n facade.</param>
+    public AdminEditOrderValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.OrderId).IsValidGuid(orderMsg.Localizer);
+        RuleFor(x => x.OrderId).IsValidGuid(i18n.ContentOrder.Msg.Localizer);
 
-        When(x => x.CustomerId is not null, () => RuleFor(x => x.CustomerId!).IsValidGuid(customerMsg.Localizer));
+        When(x => x.CustomerId is not null, () => RuleFor(x => x.CustomerId!).IsValidGuid(i18n.Customer.Msg.Localizer));
     }
 }
