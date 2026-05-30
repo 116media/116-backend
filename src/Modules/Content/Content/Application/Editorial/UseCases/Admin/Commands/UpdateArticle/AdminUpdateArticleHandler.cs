@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -22,14 +22,14 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="cloudinaryService">Service for deleting Cloudinary image assets.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="articleErrors">Article domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public partial class AdminUpdateArticleHandler(
     ICategoryRepository categoryRepository,
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
     ICloudinaryService cloudinaryService,
     IMapper mapper,
-    ArticleErrors articleErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminUpdateArticleCommand, AdminUpdateArticleResult>
 {
     private static readonly Regex CloudinaryUrlRegex = MyRegex();
@@ -49,7 +49,7 @@ public partial class AdminUpdateArticleHandler(
 
         if (article.Status is EnumContentStatus.Approved or EnumContentStatus.Published or EnumContentStatus.Archived)
         {
-            throw articleErrors.InvalidStatusTransition(
+            throw i18n.Article.InvalidStatusTransition(
                 from: article.Status.ToString(),
                 to: "Draft/PendingPayment/PendingReview/Rejected (editable)"
             );
@@ -66,7 +66,7 @@ public partial class AdminUpdateArticleHandler(
 
             if (slugConflict is not null && slugConflict.Id != article.Id)
             {
-                throw articleErrors.SlugAlreadyExists(slug: command.Slug);
+                throw i18n.Article.SlugAlreadyExists(slug: command.Slug);
             }
         }
 
