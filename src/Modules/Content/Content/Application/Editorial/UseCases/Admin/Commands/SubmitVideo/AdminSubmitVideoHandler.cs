@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -13,12 +13,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.SubmitVideo
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="videoErrors">Video domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminSubmitVideoHandler(
     IVideoRepository videoRepository,
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
-    VideoErrors videoErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminSubmitVideoCommand, AdminSubmitVideoResult>
 {
     /// <inheritdoc />
@@ -42,17 +42,17 @@ public class AdminSubmitVideoHandler(
 
             if (orderAlreadyPaid && !video.MarkPendingReview())
             {
-                throw videoErrors.AlreadyPendingReview();
+                throw i18n.Video.AlreadyPendingReview();
             }
 
             if (!orderAlreadyPaid && !video.Submit())
             {
-                throw videoErrors.AlreadySubmitted();
+                throw i18n.Video.AlreadySubmitted();
             }
         }
         else if (!video.CustomerId.HasValue && !video.MarkPendingReview())
         {
-            throw videoErrors.AlreadyPendingReview();
+            throw i18n.Video.AlreadyPendingReview();
         }
 
         videoRepository.Update(video: video);
