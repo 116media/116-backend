@@ -1,5 +1,5 @@
 using _116.Content.Application.Interactions.Persistence;
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
@@ -12,12 +12,9 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetPlayl
 /// </summary>
 /// <param name="playlistRepository">Repository for playlist data access operations.</param>
 /// <param name="mapper">The mapper used to project entities to DTOs.</param>
-/// <param name="playlistErrors">Playlist domain error factory.</param>
-public class PublicGetPlaylistByIdHandler(
-    IPlaylistRepository playlistRepository,
-    IMapper mapper,
-    PlaylistErrors playlistErrors
-) : IQueryHandler<PublicGetPlaylistByIdQuery, PublicGetPlaylistByIdResult>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
+public class PublicGetPlaylistByIdHandler(IPlaylistRepository playlistRepository, IMapper mapper, ContentI18n i18n)
+    : IQueryHandler<PublicGetPlaylistByIdQuery, PublicGetPlaylistByIdResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetPlaylistByIdResult> Handle(
@@ -34,13 +31,13 @@ public class PublicGetPlaylistByIdHandler(
         {
             if (playlist.UserId != query.UserId)
             {
-                throw playlistErrors.NotOwner();
+                throw i18n.Playlist.NotOwner();
             }
 
             var dto = playlist.ToPlaylistDetailDto(mapper);
             return new PublicGetPlaylistByIdResult(Playlist: dto);
         }
 
-        throw playlistErrors.NotFound(id: query.Id);
+        throw i18n.Playlist.NotFound(id: query.Id);
     }
 }
