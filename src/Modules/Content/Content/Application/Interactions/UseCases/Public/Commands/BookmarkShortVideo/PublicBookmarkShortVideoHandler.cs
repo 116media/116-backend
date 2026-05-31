@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -11,11 +11,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.Bookmar
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="shortVideoInteractionErrors">Short video interaction domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicBookmarkShortVideoHandler(
     IShortVideoRepository shortVideoRepository,
     IContentUnitOfWork unitOfWork,
-    ShortVideoInteractionErrors shortVideoInteractionErrors
+    ContentI18n i18n
 ) : ICommandHandler<PublicBookmarkShortVideoCommand, PublicBookmarkShortVideoResult>
 {
     /// <inheritdoc />
@@ -37,7 +37,7 @@ public class PublicBookmarkShortVideoHandler(
 
         if (alreadyBookmarked)
         {
-            throw shortVideoInteractionErrors.AlreadyBookmarked();
+            throw i18n.ShortVideoInteraction.AlreadyBookmarked();
         }
 
         var bookmark = ShortVideoBookmarkEntity.Create(
