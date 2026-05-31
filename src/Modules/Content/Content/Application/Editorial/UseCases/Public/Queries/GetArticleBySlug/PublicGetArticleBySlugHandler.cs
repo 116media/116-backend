@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -13,12 +13,9 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleB
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="articleErrors">Article domain error factory.</param>
-public class PublicGetArticleBySlugHandler(
-    IArticleRepository articleRepository,
-    IMapper mapper,
-    ArticleErrors articleErrors
-) : IQueryHandler<PublicGetArticleBySlugQuery, PublicGetArticleBySlugResult>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
+public class PublicGetArticleBySlugHandler(IArticleRepository articleRepository, IMapper mapper, ContentI18n i18n)
+    : IQueryHandler<PublicGetArticleBySlugQuery, PublicGetArticleBySlugResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetArticleBySlugResult> Handle(
@@ -33,7 +30,7 @@ public class PublicGetArticleBySlugHandler(
 
         if (article is null || article.Status != EnumContentStatus.Published)
         {
-            throw articleErrors.NotFound(Guid.Empty);
+            throw i18n.Article.NotFound(Guid.Empty);
         }
 
         var dto = article.ToArticleDetailDto(mapper);
