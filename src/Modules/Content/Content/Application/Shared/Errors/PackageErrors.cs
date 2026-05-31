@@ -10,6 +10,11 @@ namespace _116.Content.Application.Shared.Errors;
 public class PackageErrors(PackageErrorMessage i18n)
 {
     /// <summary>
+    /// Exposes the localized message provider for use in validator extensions.
+    /// </summary>
+    public PackageErrorMessage Msg => i18n;
+
+    /// <summary>
     /// Throws when a package is not found by its identifier.
     /// </summary>
     public NotFoundException NotFound(Guid id)
