@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using _116.BuildingBlocks.Constants;
-using _116.Core.Application.Shared.Errors;
+using _116.Core.Application.Shared.Errors.Facade;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
 
@@ -72,16 +72,16 @@ public class FileEntity : Aggregate<Guid>
         string mimeType,
         string storageUrl,
         long sizeInBytes,
-        CoreErrors errors
+        CoreI18n i18n
     )
     {
         BadRequestException? error = (fileName, originalFileName, mimeType, storageUrl, sizeInBytes) switch
         {
-            var (f, _, _, _, _) when string.IsNullOrWhiteSpace(f) => errors.FileNameRequired(),
-            var (_, o, _, _, _) when string.IsNullOrWhiteSpace(o) => errors.OriginalFileNameRequired(),
-            var (_, _, m, _, _) when string.IsNullOrWhiteSpace(m) => errors.MimeTypeRequired(),
-            var (_, _, _, s, _) when string.IsNullOrWhiteSpace(s) => errors.StorageUrlRequired(),
-            (_, _, _, _, <= 0) => errors.FileSizeMustBeGreaterThanZero(),
+            var (f, _, _, _, _) when string.IsNullOrWhiteSpace(f) => i18n.File.FileNameRequired(),
+            var (_, o, _, _, _) when string.IsNullOrWhiteSpace(o) => i18n.File.OriginalFileNameRequired(),
+            var (_, _, m, _, _) when string.IsNullOrWhiteSpace(m) => i18n.File.MimeTypeRequired(),
+            var (_, _, _, s, _) when string.IsNullOrWhiteSpace(s) => i18n.File.StorageUrlRequired(),
+            (_, _, _, _, <= 0) => i18n.File.FileSizeMustBeGreaterThanZero(),
             _ => null,
         };
 
@@ -105,11 +105,11 @@ public class FileEntity : Aggregate<Guid>
     /// Updates the storage URL of the file.
     /// </summary>
     /// <param name="newStorageUrl">The new storage URL.</param>
-    public void UpdateStorageUrl(string newStorageUrl, CoreErrors errors)
+    public void UpdateStorageUrl(string newStorageUrl, CoreI18n i18n)
     {
         if (string.IsNullOrWhiteSpace(newStorageUrl))
         {
-            throw errors.StorageUrlRequired();
+            throw i18n.File.StorageUrlRequired();
         }
 
         StorageUrl = newStorageUrl;
