@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
@@ -12,9 +12,9 @@ public class AdminCreateContentTypeValidator : AbstractValidator<AdminCreateCont
     /// <summary>
     /// Initializes a new instance of <see cref="AdminCreateContentTypeValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="i18n">Content type validation error messages.</param>
-    public AdminCreateContentTypeValidator(ContentTypeErrorMessage i18n)
+    /// <param name="i18n">Content module i18n facade.</param>
+    public AdminCreateContentTypeValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.Name).ValidContentTypeName(i18n);
+        RuleFor(x => x.Name).ValidContentTypeName(i18n.ContentType.Msg);
     }
 }
