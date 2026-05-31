@@ -1,4 +1,4 @@
-using _116.Core.Application.Shared.Errors;
+using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Application.Shared.Services;
 using _116.Shared.Application.Exceptions;
 using Microsoft.AspNetCore.Http;
@@ -11,7 +11,7 @@ namespace _116.Core.Infrastructure.Services;
 /// </summary>
 /// <param name="httpClient">HTTP client for downloading files from URLs.</param>
 /// <param name="cloudinaryService">Service for Cloudinary cloud storage operations.</param>
-public class FileService(HttpClient httpClient, ICloudinaryService cloudinaryService, CoreErrors errors) : IFileService
+public class FileService(HttpClient httpClient, ICloudinaryService cloudinaryService, CoreI18n i18n) : IFileService
 {
     /// <inheritdoc />
     public async Task<FileUploadResult> UploadFileAsync(
@@ -100,11 +100,11 @@ public class FileService(HttpClient httpClient, ICloudinaryService cloudinarySer
         }
         catch (HttpRequestException ex)
         {
-            throw errors.FileDownloadFailed(fileUrl, ex.Message);
+            throw i18n.File.FileDownloadFailed(fileUrl, ex.Message);
         }
         catch (Exception ex) when (ex is not ArgumentException and not BadRequestException)
         {
-            throw errors.FileStorageFailed(ex.Message);
+            throw i18n.File.FileStorageFailed(ex.Message);
         }
     }
 
@@ -115,12 +115,12 @@ public class FileService(HttpClient httpClient, ICloudinaryService cloudinarySer
     {
         if (string.IsNullOrWhiteSpace(fileUrl))
         {
-            throw errors.FileUrlRequired();
+            throw i18n.File.FileUrlRequired();
         }
 
         if (!Uri.TryCreate(fileUrl, UriKind.Absolute, out uri))
         {
-            throw errors.InvalidFileUrl(fileUrl);
+            throw i18n.File.InvalidFileUrl(fileUrl);
         }
     }
 
