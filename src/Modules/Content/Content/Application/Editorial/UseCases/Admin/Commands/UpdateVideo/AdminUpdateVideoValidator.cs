@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Validators;
 using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -12,39 +12,31 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 public class AdminUpdateVideoValidator : AbstractValidator<AdminUpdateVideoCommand>
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="AdminUpdateVideoValidator" /> with the specified error message providers.
+    /// Initializes a new instance of <see cref="AdminUpdateVideoValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="articleMsg">Article validation error messages.</param>
-    /// <param name="videoMsg">Video validation error messages.</param>
-    /// <param name="orderMsg">Content order validation error messages.</param>
-    /// <param name="customerMsg">Customer validation error messages.</param>
-    public AdminUpdateVideoValidator(
-        ArticleErrorMessage articleMsg,
-        VideoErrorMessage videoMsg,
-        ContentOrderErrorMessage orderMsg,
-        CustomerErrorMessage customerMsg
-    )
+    /// <param name="i18n">Content module i18n facade.</param>
+    public AdminUpdateVideoValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.Id).IsValidGuid(videoMsg.Localizer);
+        RuleFor(x => x.Id).IsValidGuid(i18n.Video.Msg.Localizer);
 
-        RuleFor(x => x.CategoryId).ValidArticleCategoryId(articleMsg.CategoryIdRequired());
+        RuleFor(x => x.CategoryId).ValidArticleCategoryId(i18n.Article.Msg.CategoryIdRequired());
 
-        RuleFor(x => x.Title).ValidVideoTitle(videoMsg);
+        RuleFor(x => x.Title).ValidVideoTitle(i18n.Video.Msg);
 
-        RuleFor(x => x.Slug).ValidVideoSlug(videoMsg);
+        RuleFor(x => x.Slug).ValidVideoSlug(i18n.Video.Msg);
 
-        RuleFor(x => x.Description).ValidVideoDescription(videoMsg);
+        RuleFor(x => x.Description).ValidVideoDescription(i18n.Video.Msg);
 
-        When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId(orderMsg));
-        When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId(customerMsg));
+        When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId(i18n.ContentOrder.Msg));
+        When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId(i18n.Customer.Msg));
 
         When(
             x => x.MetaTitle is not null,
             () =>
                 RuleFor(x => x.MetaTitle)
                     .ValidMetaTitle(
-                        metaTitleTooShort: articleMsg.MetaTitleTooShort(ContentConstants.MinMetaTitleLength),
-                        metaTitleTooLong: articleMsg.MetaTitleTooLong(ContentConstants.MaxMetaTitleLength)
+                        metaTitleTooShort: i18n.Article.Msg.MetaTitleTooShort(ContentConstants.MinMetaTitleLength),
+                        metaTitleTooLong: i18n.Article.Msg.MetaTitleTooLong(ContentConstants.MaxMetaTitleLength)
                     )
         );
         When(
@@ -52,10 +44,10 @@ public class AdminUpdateVideoValidator : AbstractValidator<AdminUpdateVideoComma
             () =>
                 RuleFor(x => x.MetaDescription)
                     .ValidMetaDescription(
-                        metaDescriptionTooShort: articleMsg.MetaDescriptionTooShort(
+                        metaDescriptionTooShort: i18n.Article.Msg.MetaDescriptionTooShort(
                             ContentConstants.MinMetaDescriptionLength
                         ),
-                        metaDescriptionTooLong: articleMsg.MetaDescriptionTooLong(
+                        metaDescriptionTooLong: i18n.Article.Msg.MetaDescriptionTooLong(
                             ContentConstants.MaxMetaDescriptionLength
                         )
                     )
