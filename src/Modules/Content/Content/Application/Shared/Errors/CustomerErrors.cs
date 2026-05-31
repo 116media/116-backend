@@ -10,6 +10,11 @@ namespace _116.Content.Application.Shared.Errors;
 public class CustomerErrors(CustomerErrorMessage i18n)
 {
     /// <summary>
+    /// Exposes the localized message provider for use in validator extensions.
+    /// </summary>
+    public CustomerErrorMessage Msg => i18n;
+
+    /// <summary>
     /// Throws when a customer with the given email already exists.
     /// </summary>
     public ConflictException AlreadyExists(string email)
