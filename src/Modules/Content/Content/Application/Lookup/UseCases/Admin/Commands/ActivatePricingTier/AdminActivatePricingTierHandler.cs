@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -14,12 +14,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.ActivatePricin
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="pricingTierErrors">Pricing tier domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminActivatePricingTierHandler(
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
-    PricingTierErrors pricingTierErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminActivatePricingTierCommand, AdminActivatePricingTierResult>
 {
     /// <inheritdoc />
@@ -39,7 +39,7 @@ public class AdminActivatePricingTierHandler(
 
         if (!activated)
         {
-            throw pricingTierErrors.AlreadyActive();
+            throw i18n.PricingTier.AlreadyActive();
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
