@@ -1,5 +1,5 @@
 using _116.Content.Application.Interactions.Persistence;
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
@@ -11,11 +11,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.RenameP
 /// </summary>
 /// <param name="playlistRepository">Repository for playlist data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="playlistErrors">Playlist domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicRenamePlaylistHandler(
     IPlaylistRepository playlistRepository,
     IContentUnitOfWork unitOfWork,
-    PlaylistErrors playlistErrors
+    ContentI18n i18n
 ) : ICommandHandler<PublicRenamePlaylistCommand, PublicRenamePlaylistResult>
 {
     /// <inheritdoc />
@@ -33,7 +33,7 @@ public class PublicRenamePlaylistHandler(
         {
             if (playlist.UserId != command.UserId)
             {
-                throw playlistErrors.NotOwner();
+                throw i18n.Playlist.NotOwner();
             }
 
             playlist.Rename(name: command.Name);
@@ -44,6 +44,6 @@ public class PublicRenamePlaylistHandler(
             return new PublicRenamePlaylistResult(IsSuccess: true);
         }
 
-        throw playlistErrors.NotFound(id: command.Id);
+        throw i18n.Playlist.NotFound(id: command.Id);
     }
 }
