@@ -1,5 +1,5 @@
 using _116.Identity.Application.Auth.Services;
-using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
@@ -15,12 +15,12 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword;
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="passwordService">Service for password hashing and verification operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+/// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class AdminChangePasswordHandler(
     IAuthRepository authRepository,
     IPasswordService passwordService,
     IIdentityUnitOfWork unitOfWork,
-    UserErrors userErrors
+    IdentityI18n i18n
 ) : ICommandHandler<AdminChangePasswordCommand, AdminChangePasswordResult>
 {
     /// <summary>
@@ -50,17 +50,17 @@ public class AdminChangePasswordHandler(
         // Verify old password
         if (!passwordService.Verify(password: command.OldPassword, hash: user!.PasswordHash))
         {
-            throw userErrors.IncorrectCurrentPassword();
+            throw i18n.User.IncorrectCurrentPassword();
         }
 
         // Check if new password is different from old password
         if (passwordService.Verify(password: command.NewPassword, hash: user.PasswordHash))
         {
-            throw userErrors.NewPasswordSameAsOld();
+            throw i18n.User.NewPasswordSameAsOld();
         }
 
         string hashedNewPassword = passwordService.Hash(password: command.NewPassword);
-        user.UpdatePassword(newPasswordHash: hashedNewPassword, errors: userErrors);
+        user.UpdatePassword(newPasswordHash: hashedNewPassword, errors: i18n.User);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminChangePasswordResult(IsSuccess: true);
