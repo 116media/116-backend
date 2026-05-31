@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -11,11 +11,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.EditArt
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="articleInteractionErrors">Article interaction domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicEditArticleCommentHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
-    ArticleInteractionErrors articleInteractionErrors
+    ContentI18n i18n
 ) : ICommandHandler<PublicEditArticleCommentCommand, PublicEditArticleCommentResult>
 {
     /// <inheritdoc />
@@ -33,7 +33,7 @@ public class PublicEditArticleCommentHandler(
         {
             if (comment.UserId != command.UserId)
             {
-                throw articleInteractionErrors.NotCommentOwner();
+                throw i18n.ArticleInteraction.NotCommentOwner();
             }
 
             comment.Edit(body: command.Body);
@@ -44,6 +44,6 @@ public class PublicEditArticleCommentHandler(
             return new PublicEditArticleCommentResult(IsSuccess: true);
         }
 
-        throw articleInteractionErrors.CommentNotFound(commentId: command.CommentId);
+        throw i18n.ArticleInteraction.CommentNotFound(commentId: command.CommentId);
     }
 }
