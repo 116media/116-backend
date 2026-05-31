@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
@@ -12,9 +12,9 @@ public class PublicAddArticleCommentValidator : AbstractValidator<PublicAddArtic
     /// <summary>
     /// Initializes a new instance of <see cref="PublicAddArticleCommentValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="i18n">Article interaction validation error messages.</param>
-    public PublicAddArticleCommentValidator(ArticleInteractionErrorMessage i18n)
+    /// <param name="i18n">Content module i18n facade.</param>
+    public PublicAddArticleCommentValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.Body).ValidCommentBody(i18n);
+        RuleFor(x => x.Body).ValidCommentBody(i18n.ArticleInteraction.Msg);
     }
 }
