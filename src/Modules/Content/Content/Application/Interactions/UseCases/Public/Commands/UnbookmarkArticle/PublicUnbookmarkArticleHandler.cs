@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -11,11 +11,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.Unbookm
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="articleInteractionErrors">Article interaction domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicUnbookmarkArticleHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
-    ArticleInteractionErrors articleInteractionErrors
+    ContentI18n i18n
 ) : ICommandHandler<PublicUnbookmarkArticleCommand, PublicUnbookmarkArticleResult>
 {
     /// <inheritdoc />
@@ -37,7 +37,7 @@ public class PublicUnbookmarkArticleHandler(
 
         if (!hasBookmarked)
         {
-            throw articleInteractionErrors.BookmarkNotFound();
+            throw i18n.ArticleInteraction.BookmarkNotFound();
         }
 
         await articleRepository.RemoveBookmarkAsync(
