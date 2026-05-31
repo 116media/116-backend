@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -11,11 +11,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeS
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="shortVideoInteractionErrors">Short video interaction domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicUnlikeShortVideoHandler(
     IShortVideoRepository shortVideoRepository,
     IContentUnitOfWork unitOfWork,
-    ShortVideoInteractionErrors shortVideoInteractionErrors
+    ContentI18n i18n
 ) : ICommandHandler<PublicUnlikeShortVideoCommand, PublicUnlikeShortVideoResult>
 {
     /// <inheritdoc />
@@ -37,7 +37,7 @@ public class PublicUnlikeShortVideoHandler(
 
         if (!hasLiked)
         {
-            throw shortVideoInteractionErrors.LikeNotFound();
+            throw i18n.ShortVideoInteraction.LikeNotFound();
         }
 
         await shortVideoRepository.RemoveLikeAsync(
