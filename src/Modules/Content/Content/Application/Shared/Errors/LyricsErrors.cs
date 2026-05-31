@@ -10,6 +10,11 @@ namespace _116.Content.Application.Shared.Errors;
 public class LyricsErrors(LyricsErrorMessage i18n)
 {
     /// <summary>
+    /// Exposes the localized message provider for use in validator extensions.
+    /// </summary>
+    public LyricsErrorMessage Msg => i18n;
+
+    /// <summary>
     /// Throws when a lyrics record is not found by its identifier.
     /// </summary>
     public NotFoundException NotFound(Guid id)
