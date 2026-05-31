@@ -10,6 +10,11 @@ namespace _116.Content.Application.Shared.Errors;
 public class ShortVideoInteractionErrors(ShortVideoInteractionErrorMessage i18n)
 {
     /// <summary>
+    /// Exposes the localized message provider for use in validator extensions.
+    /// </summary>
+    public ShortVideoInteractionErrorMessage Msg => i18n;
+
+    /// <summary>
     /// Throws when a user attempts to like a short video they have already liked.
     /// </summary>
     public ConflictException AlreadyLiked()
