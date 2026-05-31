@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Validators;
 using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
@@ -15,18 +15,18 @@ public class AdminUpdateVideoSeoValidator : AbstractValidator<AdminUpdateVideoSe
     /// <summary>
     /// Initializes a new instance of <see cref="AdminUpdateVideoSeoValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="i18n">Article validation error messages.</param>
-    public AdminUpdateVideoSeoValidator(ArticleErrorMessage i18n)
+    /// <param name="i18n">Content module i18n facade.</param>
+    public AdminUpdateVideoSeoValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.Id).IsValidGuid(i18n.Localizer, "VideoIdRequired", "VideoIdInvalid");
+        RuleFor(x => x.Id).IsValidGuid(i18n.Article.Msg.Localizer, "VideoIdRequired", "VideoIdInvalid");
 
         When(
             x => x.MetaTitle is not null,
             () =>
                 RuleFor(x => x.MetaTitle)
                     .ValidMetaTitle(
-                        metaTitleTooShort: i18n.MetaTitleTooShort(ContentConstants.MinMetaTitleLength),
-                        metaTitleTooLong: i18n.MetaTitleTooLong(ContentConstants.MaxMetaTitleLength)
+                        metaTitleTooShort: i18n.Article.Msg.MetaTitleTooShort(ContentConstants.MinMetaTitleLength),
+                        metaTitleTooLong: i18n.Article.Msg.MetaTitleTooLong(ContentConstants.MaxMetaTitleLength)
                     )
         );
         When(
@@ -34,10 +34,12 @@ public class AdminUpdateVideoSeoValidator : AbstractValidator<AdminUpdateVideoSe
             () =>
                 RuleFor(x => x.MetaDescription)
                     .ValidMetaDescription(
-                        metaDescriptionTooShort: i18n.MetaDescriptionTooShort(
+                        metaDescriptionTooShort: i18n.Article.Msg.MetaDescriptionTooShort(
                             ContentConstants.MinMetaDescriptionLength
                         ),
-                        metaDescriptionTooLong: i18n.MetaDescriptionTooLong(ContentConstants.MaxMetaDescriptionLength)
+                        metaDescriptionTooLong: i18n.Article.Msg.MetaDescriptionTooLong(
+                            ContentConstants.MaxMetaDescriptionLength
+                        )
                     )
         );
     }
