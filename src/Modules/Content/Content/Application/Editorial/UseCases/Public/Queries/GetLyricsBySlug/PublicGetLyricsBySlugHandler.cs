@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -12,8 +12,8 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBy
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="lyricsErrors">Lyrics domain error factory.</param>
-public class PublicGetLyricsBySlugHandler(ILyricsRepository lyricsRepository, IMapper mapper, LyricsErrors lyricsErrors)
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
+public class PublicGetLyricsBySlugHandler(ILyricsRepository lyricsRepository, IMapper mapper, ContentI18n i18n)
     : IQueryHandler<PublicGetLyricsBySlugQuery, PublicGetLyricsBySlugResult>
 {
     /// <inheritdoc />
@@ -34,6 +34,6 @@ public class PublicGetLyricsBySlugHandler(ILyricsRepository lyricsRepository, IM
             return new PublicGetLyricsBySlugResult(Lyrics: dto);
         }
 
-        throw lyricsErrors.NotFound(id: Guid.Empty);
+        throw i18n.Lyrics.NotFound(id: Guid.Empty);
     }
 }
