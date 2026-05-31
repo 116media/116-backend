@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -14,10 +15,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="lookupRepository">Repository for lookup entities including tags.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="cacheInvalidator">Invalidates the popular-tags cache after the tag graph changes.</param>
 public class AdminUpdateArticleTagsHandler(
     IArticleRepository articleRepository,
     ILookupRepository lookupRepository,
-    IContentUnitOfWork unitOfWork
+    IContentUnitOfWork unitOfWork,
+    IPopularTagsCacheInvalidator cacheInvalidator
 ) : ICommandHandler<AdminUpdateArticleTagsCommand, AdminUpdateArticleTagsResult>
 {
     /// <inheritdoc />
@@ -66,6 +69,9 @@ public class AdminUpdateArticleTagsHandler(
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        cacheInvalidator.Invalidate();
+
         return new AdminUpdateArticleTagsResult(IsSuccess: true);
     }
 }

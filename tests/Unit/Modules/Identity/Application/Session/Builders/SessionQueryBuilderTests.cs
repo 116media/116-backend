@@ -1,4 +1,5 @@
 using _116.Identity.Application.Session.Builders;
+using _116.Identity.Application.Session.Builders.Contracts;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Specifications;
 using AwesomeAssertions;

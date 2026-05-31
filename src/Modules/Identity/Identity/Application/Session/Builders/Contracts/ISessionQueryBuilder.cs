@@ -1,7 +1,7 @@
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Specifications;
 
-namespace _116.Identity.Application.Session.Builders;
+namespace _116.Identity.Application.Session.Builders.Contracts;
 
 /// <summary>
 /// Interface for building dynamic session queries using specifications.

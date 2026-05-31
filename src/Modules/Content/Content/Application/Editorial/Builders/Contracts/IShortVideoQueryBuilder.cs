@@ -1,7 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Specifications;
 
-namespace _116.Content.Application.Editorial.Builders;
+namespace _116.Content.Application.Editorial.Builders.Contracts;
 
 /// <summary>
 /// Interface for building dynamic short video queries using specifications.

@@ -1,4 +1,5 @@
 using _116.Content.Application.Commerce.Builders;
+using _116.Content.Application.Commerce.Builders.Contracts;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Shared.Application.Specifications;

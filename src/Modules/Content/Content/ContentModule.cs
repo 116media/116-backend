@@ -11,11 +11,13 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.Contracts;
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Interactions.Persistence;
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Constants;
 using _116.Content.Infrastructure.BackgroundJobs;
+using _116.Content.Infrastructure.Cache;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 using _116.Content.Infrastructure.Repositories;
@@ -64,6 +66,8 @@ public static class ContentModule
         TypeAdapterConfig mappingConfig = MappingRegistration.CreateConfiguration();
         services.AddSingleton(mappingConfig);
         services.AddScoped<IMapper>(sp => new Mapper(sp.GetRequiredService<TypeAdapterConfig>()));
+
+        services.AddSingleton<IPopularTagsCacheInvalidator, PopularTagsCacheInvalidator>();
 
         services.AddScoped<IContentUnitOfWork, ContentUnitOfWork>();
         services.AddScoped<ILookupRepository, LookupRepository>();

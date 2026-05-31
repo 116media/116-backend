@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
@@ -13,9 +14,14 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateTag;
 /// </summary>
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="cacheInvalidator">Invalidates the popular-tags cache after the tag graph changes.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminUpdateTagHandler(ILookupRepository lookupRepository, IContentUnitOfWork unitOfWork, IMapper mapper)
-    : ICommandHandler<AdminUpdateTagCommand, AdminUpdateTagResult>
+public class AdminUpdateTagHandler(
+    ILookupRepository lookupRepository,
+    IContentUnitOfWork unitOfWork,
+    IPopularTagsCacheInvalidator cacheInvalidator,
+    IMapper mapper
+) : ICommandHandler<AdminUpdateTagCommand, AdminUpdateTagResult>
 {
     /// <inheritdoc />
     public async Task<AdminUpdateTagResult> Handle(AdminUpdateTagCommand command, CancellationToken cancellationToken)
@@ -37,6 +43,8 @@ public class AdminUpdateTagHandler(ILookupRepository lookupRepository, IContentU
         tag.Update(name: command.Name, slug: command.Slug);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        cacheInvalidator.Invalidate();
 
         var dto = tag.ToTagDto(mapper);
         return new AdminUpdateTagResult(Tag: dto);

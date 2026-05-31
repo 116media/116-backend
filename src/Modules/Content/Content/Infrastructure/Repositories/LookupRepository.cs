@@ -1,6 +1,8 @@
+using _116.Content.Application.Lookup.Builders;
 using _116.Content.Application.Lookup.Specifications;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -214,5 +216,20 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
             : context.Tags.ApplySpecification(new TagSearchSpecification(search: search));
 
         return await query.OrderBy(x => x.Name).ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<TagEntity>> GetPopularTagsAsync(
+        int? limit,
+        EnumCoreContentType? contentType = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        IQueryable<TagEntity> query = new PopularTagsQueryBuilder()
+            .WithContentType(contentType)
+            .WithLimit(limit)
+            .Build(context);
+
+        return await query.ToListAsync(cancellationToken);
     }
 }
