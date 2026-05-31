@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Constants;
-using _116.Core.Application.Shared.Errors;
+using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Application.Shared.Services;
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions;
@@ -17,12 +17,12 @@ public class CloudinaryService : ICloudinaryService
 {
     private readonly Cloudinary _cloudinary;
     private readonly ILogger<CloudinaryService> _logger;
-    private readonly CoreErrors _errors;
+    private readonly CoreI18n _i18n;
 
-    public CloudinaryService(CloudinarySettings config, ILogger<CloudinaryService> logger, CoreErrors errors)
+    public CloudinaryService(CloudinarySettings config, ILogger<CloudinaryService> logger, CoreI18n i18n)
     {
         _logger = logger;
-        _errors = errors;
+        _i18n = i18n;
 
         // Initialize Cloudinary Account
         var account = new Account(config.CloudName, config.ApiKey, config.ApiSecret);
@@ -61,7 +61,7 @@ public class CloudinaryService : ICloudinaryService
             if (result.Error != null)
             {
                 _logger.LogError("Cloudinary upload failed: {ErrorMessage}", result.Error.Message);
-                throw _errors.FileUploadFailed(result.Error.Message);
+                throw _i18n.File.FileUploadFailed(result.Error.Message);
             }
 
             _logger.LogInformation(
@@ -83,7 +83,7 @@ public class CloudinaryService : ICloudinaryService
         catch (Exception ex) when (ex is not BadRequestException)
         {
             _logger.LogError(ex, "Unexpected error during Cloudinary upload");
-            throw _errors.FileUploadFailed(ex.Message);
+            throw _i18n.File.FileUploadFailed(ex.Message);
         }
     }
 
@@ -222,7 +222,7 @@ public class CloudinaryService : ICloudinaryService
                 if (result.Error != null)
                 {
                     _logger.LogError("Cloudinary upload failed: {ErrorMessage}", result.Error.Message);
-                    throw _errors.FileUploadFailed(result.Error.Message);
+                    throw _i18n.File.FileUploadFailed(result.Error.Message);
                 }
 
                 _logger.LogInformation(
@@ -258,7 +258,7 @@ public class CloudinaryService : ICloudinaryService
                 if (result.Error != null)
                 {
                     _logger.LogError("Cloudinary upload failed: {ErrorMessage}", result.Error.Message);
-                    throw _errors.FileUploadFailed(result.Error.Message);
+                    throw _i18n.File.FileUploadFailed(result.Error.Message);
                 }
 
                 _logger.LogInformation(
@@ -281,7 +281,7 @@ public class CloudinaryService : ICloudinaryService
         catch (Exception ex) when (ex is not BadRequestException)
         {
             _logger.LogError(ex, "Unexpected error during Cloudinary raw file upload");
-            throw _errors.FileUploadFailed(ex.Message);
+            throw _i18n.File.FileUploadFailed(ex.Message);
         }
     }
 
@@ -312,7 +312,7 @@ public class CloudinaryService : ICloudinaryService
             if (result.Error != null)
             {
                 _logger.LogError("Cloudinary video upload failed: {ErrorMessage}", result.Error.Message);
-                throw _errors.FileUploadFailed(result.Error.Message);
+                throw _i18n.File.FileUploadFailed(result.Error.Message);
             }
 
             _logger.LogInformation(
@@ -334,7 +334,7 @@ public class CloudinaryService : ICloudinaryService
         catch (Exception ex) when (ex is not BadRequestException)
         {
             _logger.LogError(ex, "Unexpected error during Cloudinary video upload");
-            throw _errors.FileUploadFailed(ex.Message);
+            throw _i18n.File.FileUploadFailed(ex.Message);
         }
     }
 
@@ -345,21 +345,21 @@ public class CloudinaryService : ICloudinaryService
     {
         if (file == null || file.Length == 0)
         {
-            throw _errors.FileRequired();
+            throw _i18n.File.FileRequired();
         }
 
         // Check file size
         if (file.Length > FileConstants.MaxAvatarFileSizeBytes)
         {
             const long maxSizeMb = FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024);
-            throw _errors.FileTooLarge(file.Length, FileConstants.MaxAvatarFileSizeBytes, maxSizeMb);
+            throw _i18n.File.FileTooLarge(file.Length, FileConstants.MaxAvatarFileSizeBytes, maxSizeMb);
         }
 
         // Check file extension first (more reliable than MIME type for mobile uploads)
         string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (!FileConstants.AllowedAvatarExtensions.Contains(extension))
         {
-            throw _errors.InvalidFileExtension(extension, string.Join(", ", FileConstants.AllowedAvatarExtensions));
+            throw _i18n.File.InvalidFileExtension(extension, string.Join(", ", FileConstants.AllowedAvatarExtensions));
         }
 
         // Extract content type without parameters (e.g., "image/jpeg" from "image/jpeg; boundary=...")
@@ -374,7 +374,7 @@ public class CloudinaryService : ICloudinaryService
 
         if (!isValidContentType)
         {
-            throw _errors.InvalidFileType(contentType, string.Join(", ", FileConstants.AllowedAvatarMimeTypes));
+            throw _i18n.File.InvalidFileType(contentType, string.Join(", ", FileConstants.AllowedAvatarMimeTypes));
         }
     }
 
@@ -385,19 +385,19 @@ public class CloudinaryService : ICloudinaryService
     {
         if (file == null || file.Length == 0)
         {
-            throw _errors.FileRequired();
+            throw _i18n.File.FileRequired();
         }
 
         if (file.Length > FileConstants.MaxRawFileSizeBytes)
         {
             const long maxSizeMb = FileConstants.MaxRawFileSizeBytes / (1024 * 1024);
-            throw _errors.FileTooLarge(file.Length, FileConstants.MaxRawFileSizeBytes, maxSizeMb);
+            throw _i18n.File.FileTooLarge(file.Length, FileConstants.MaxRawFileSizeBytes, maxSizeMb);
         }
 
         string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (!FileConstants.AllowedRawFileExtensions.Contains(extension))
         {
-            throw _errors.InvalidFileExtension(extension, string.Join(", ", FileConstants.AllowedRawFileExtensions));
+            throw _i18n.File.InvalidFileExtension(extension, string.Join(", ", FileConstants.AllowedRawFileExtensions));
         }
 
         string contentType = (file.ContentType?.Split(';')[0] ?? string.Empty).Trim().ToLowerInvariant();
@@ -410,7 +410,7 @@ public class CloudinaryService : ICloudinaryService
 
         if (!isValidContentType)
         {
-            throw _errors.InvalidFileType(contentType, string.Join(", ", FileConstants.AllowedRawFileMimeTypes));
+            throw _i18n.File.InvalidFileType(contentType, string.Join(", ", FileConstants.AllowedRawFileMimeTypes));
         }
     }
 
@@ -421,19 +421,19 @@ public class CloudinaryService : ICloudinaryService
     {
         if (file == null || file.Length == 0)
         {
-            throw _errors.FileRequired();
+            throw _i18n.File.FileRequired();
         }
 
         if (file.Length > FileConstants.MaxVideoFileSizeBytes)
         {
             const long maxSizeMb = FileConstants.MaxVideoFileSizeBytes / (1024 * 1024);
-            throw _errors.FileTooLarge(file.Length, FileConstants.MaxVideoFileSizeBytes, maxSizeMb);
+            throw _i18n.File.FileTooLarge(file.Length, FileConstants.MaxVideoFileSizeBytes, maxSizeMb);
         }
 
         string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (!FileConstants.AllowedVideoExtensions.Contains(extension))
         {
-            throw _errors.InvalidFileExtension(extension, string.Join(", ", FileConstants.AllowedVideoExtensions));
+            throw _i18n.File.InvalidFileExtension(extension, string.Join(", ", FileConstants.AllowedVideoExtensions));
         }
 
         string contentType = (file.ContentType?.Split(';')[0] ?? string.Empty).Trim().ToLowerInvariant();
@@ -446,7 +446,7 @@ public class CloudinaryService : ICloudinaryService
 
         if (!isValidContentType)
         {
-            throw _errors.InvalidFileType(contentType, string.Join(", ", FileConstants.AllowedVideoMimeTypes));
+            throw _i18n.File.InvalidFileType(contentType, string.Join(", ", FileConstants.AllowedVideoMimeTypes));
         }
     }
 }
