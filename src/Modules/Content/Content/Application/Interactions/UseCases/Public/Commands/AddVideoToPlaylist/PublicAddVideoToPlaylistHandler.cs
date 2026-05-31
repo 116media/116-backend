@@ -1,5 +1,5 @@
 using _116.Content.Application.Interactions.Persistence;
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -14,14 +14,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddVide
 /// <param name="playlistRepository">Repository for playlist data access operations.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="playlistErrors">Playlist domain error factory.</param>
-/// <param name="videoErrors">Video domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicAddVideoToPlaylistHandler(
     IPlaylistRepository playlistRepository,
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    PlaylistErrors playlistErrors,
-    VideoErrors videoErrors
+    ContentI18n i18n
 ) : ICommandHandler<PublicAddVideoToPlaylistCommand, PublicAddVideoToPlaylistResult>
 {
     /// <inheritdoc />
@@ -39,7 +37,7 @@ public class PublicAddVideoToPlaylistHandler(
         {
             if (playlist.UserId != command.UserId)
             {
-                throw playlistErrors.NotOwner();
+                throw i18n.Playlist.NotOwner();
             }
 
             VideoEntity video = await videoRepository.GetByIdOrThrowAsync(
@@ -49,7 +47,7 @@ public class PublicAddVideoToPlaylistHandler(
 
             if (video.Status != EnumContentStatus.Published)
             {
-                throw videoErrors.NotFound(id: command.VideoId);
+                throw i18n.Video.NotFound(id: command.VideoId);
             }
 
             bool alreadyExists = await playlistRepository.VideoExistsInPlaylistAsync(
@@ -60,7 +58,7 @@ public class PublicAddVideoToPlaylistHandler(
 
             if (alreadyExists)
             {
-                throw playlistErrors.VideoAlreadyInPlaylist();
+                throw i18n.Playlist.VideoAlreadyInPlaylist();
             }
 
             var playlistVideo = PlaylistVideoEntity.Create(
@@ -76,6 +74,6 @@ public class PublicAddVideoToPlaylistHandler(
             return new PublicAddVideoToPlaylistResult(IsSuccess: true);
         }
 
-        throw playlistErrors.NotFound(id: command.PlaylistId);
+        throw i18n.Playlist.NotFound(id: command.PlaylistId);
     }
 }
