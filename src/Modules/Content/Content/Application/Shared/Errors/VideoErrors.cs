@@ -10,6 +10,11 @@ namespace _116.Content.Application.Shared.Errors;
 public class VideoErrors(VideoErrorMessage i18n)
 {
     /// <summary>
+    /// Exposes the localized message provider for use in validator extensions.
+    /// </summary>
+    public VideoErrorMessage Msg => i18n;
+
+    /// <summary>
     /// Throws when a video is not found by its identifier.
     /// </summary>
     public NotFoundException NotFound(Guid id)
