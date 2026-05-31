@@ -1,5 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
-using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Errors.Facade;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword;
@@ -19,12 +19,13 @@ public class AdminResetPasswordValidator : AbstractValidator<AdminResetPasswordC
     /// Initializes a new instance of <see cref="AdminResetPasswordValidator" /> with validation rules.
     /// </summary>
     /// <param name="i18n">
-    /// Validation error messages for rule configuration.
+    /// Identity module i18n facade for rule configuration.
     /// </param>
-    public AdminResetPasswordValidator(ValidationErrorMessage i18n)
+    public AdminResetPasswordValidator(IdentityI18n i18n)
     {
-        RuleFor(x => x.Email).ValidEmail(i18n);
-        RuleFor(x => x.Code).ValidOtpCode(i18n);
-        RuleFor(x => x.NewPassword).ValidPassword(i18n, fieldName: "New password");
+        RuleFor(x => x.Email).ValidEmail(i18n.User.Validation);
+        RuleFor(x => x.Code).ValidOtpCode(i18n.User.Validation);
+        RuleFor(x => x.NewPassword)
+            .ValidPassword(i18n.User.Validation, fieldName: i18n.User.Validation.NewPasswordFieldName());
     }
 }
