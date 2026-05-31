@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -12,11 +12,11 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicSh
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="shortVideoErrors">Short video domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetPublicShortBySlugHandler(
     IShortVideoRepository shortVideoRepository,
     IMapper mapper,
-    ShortVideoErrors shortVideoErrors
+    ContentI18n i18n
 ) : IQueryHandler<PublicGetPublicShortBySlugQuery, PublicGetPublicShortBySlugResult>
 {
     /// <inheritdoc />
@@ -32,7 +32,7 @@ public class PublicGetPublicShortBySlugHandler(
 
         if (shortVideo is null || !shortVideo.IsActive)
         {
-            throw shortVideoErrors.NotFound(Guid.Empty);
+            throw i18n.ShortVideo.NotFound(Guid.Empty);
         }
 
         var dto = shortVideo.ToShortVideoDto(mapper);
