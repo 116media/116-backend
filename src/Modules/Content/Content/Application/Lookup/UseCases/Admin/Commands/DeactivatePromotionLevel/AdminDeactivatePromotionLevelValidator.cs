@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -12,9 +12,9 @@ public class AdminDeactivatePromotionLevelValidator : AbstractValidator<AdminDea
     /// <summary>
     /// Initializes a new instance of <see cref="AdminDeactivatePromotionLevelValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="i18n">Promotion level validation error messages.</param>
-    public AdminDeactivatePromotionLevelValidator(PromotionLevelErrorMessage i18n)
+    /// <param name="i18n">Content module i18n facade.</param>
+    public AdminDeactivatePromotionLevelValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.Id).IsValidGuid(i18n.Localizer);
+        RuleFor(x => x.Id).IsValidGuid(i18n.PromotionLevel.Msg.Localizer);
     }
 }
