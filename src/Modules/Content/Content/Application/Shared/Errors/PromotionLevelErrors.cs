@@ -10,6 +10,11 @@ namespace _116.Content.Application.Shared.Errors;
 public class PromotionLevelErrors(PromotionLevelErrorMessage i18n)
 {
     /// <summary>
+    /// Exposes the localized message provider for use in validator extensions.
+    /// </summary>
+    public PromotionLevelErrorMessage Msg => i18n;
+
+    /// <summary>
     /// Throws when a promotion level with the given name already exists.
     /// </summary>
     public ConflictException AlreadyExists(string name)
