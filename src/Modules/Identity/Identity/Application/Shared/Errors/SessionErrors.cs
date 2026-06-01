@@ -11,6 +11,11 @@ namespace _116.Identity.Application.Shared.Errors;
 public class SessionErrors(AuthenticationErrorMessage authentication)
 {
     /// <summary>
+    /// Exposes the localized message provider for use in validator extensions.
+    /// </summary>
+    public AuthenticationErrorMessage Msg => authentication;
+
+    /// <summary>
     /// Throws when a refresh token is invalid or expired.
     /// </summary>
     public RefreshTokenExpiryException InvalidRefreshToken()
