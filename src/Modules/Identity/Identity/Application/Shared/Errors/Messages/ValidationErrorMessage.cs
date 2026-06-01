@@ -38,6 +38,12 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     public string PasswordRequired() => localizer["PasswordRequired"];
 
     /// <summary>
+    /// Gets the localized display name for the new password field.
+    /// Used as the field label in password strength error messages.
+    /// </summary>
+    public string NewPasswordFieldName() => localizer["NewPasswordFieldName"];
+
+    /// <summary>
     /// Error message indicating that a password is too short.
     /// </summary>
     /// <param name="fieldName">The display name of the field.</param>
