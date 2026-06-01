@@ -1,5 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
-using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -14,12 +14,12 @@ public class AdminUpdateRoleValidator : AbstractValidator<AdminUpdateRoleCommand
     /// Initializes a new instance of <see cref="AdminUpdateRoleValidator" /> with validation rules.
     /// </summary>
     /// <param name="i18n">
-    /// Validation error messages for rule configuration.
+    /// Identity module i18n facade for rule configuration.
     /// </param>
-    public AdminUpdateRoleValidator(ValidationErrorMessage i18n)
+    public AdminUpdateRoleValidator(IdentityI18n i18n)
     {
-        RuleFor(x => x.RoleId).IsValidGuid(i18n.Localizer);
-        RuleFor(x => x.Name).ValidRoleName(i18n, isRequired: false);
-        RuleFor(x => x.Description).ValidRoleDescription(i18n, isRequired: false);
+        RuleFor(x => x.RoleId).IsValidGuid(i18n.User.Validation.Localizer);
+        RuleFor(x => x.Name).ValidRoleName(i18n.User.Validation, isRequired: false);
+        RuleFor(x => x.Description).ValidRoleDescription(i18n.User.Validation, isRequired: false);
     }
 }
