@@ -1,5 +1,5 @@
 using _116.Identity.Application.Shared.DTOs;
-using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
@@ -16,13 +16,13 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUse
 /// <param name="userRoleRepository">Repository for user-role data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+/// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class AdminAssignRoleToUserHandler(
     IRoleRepository roleRepository,
     IUserRoleRepository userRoleRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper,
-    UserErrors userErrors
+    IdentityI18n i18n
 ) : ICommandHandler<AdminAssignRoleToUserCommand, AdminAssignRoleToUserResult>
 {
     /// <summary>
@@ -47,13 +47,13 @@ public class AdminAssignRoleToUserHandler(
         // Check if role is active
         if (!role!.IsActive)
         {
-            throw userErrors.RoleIsInactive();
+            throw i18n.User.RoleIsInactive();
         }
 
         // Check if role is deleted
         if (role.IsDeleted)
         {
-            throw userErrors.RoleIsDeleted();
+            throw i18n.User.RoleIsDeleted();
         }
 
         // Check if role is already assigned to user
@@ -65,7 +65,7 @@ public class AdminAssignRoleToUserHandler(
 
         if (alreadyAssigned)
         {
-            throw userErrors.RoleAlreadyAssignedToUser();
+            throw i18n.User.RoleAlreadyAssignedToUser();
         }
 
         // Create the user-role association
