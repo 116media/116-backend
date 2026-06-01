@@ -163,7 +163,7 @@ internal class FileBuilder
             _mimeType,
             _storageUrl,
             _sizeInBytes,
-            TestErrorsFactory.CreateCoreErrors()
+            TestErrorsFactory.CreateCoreI18n()
         );
 
         if (_isDeleted)
