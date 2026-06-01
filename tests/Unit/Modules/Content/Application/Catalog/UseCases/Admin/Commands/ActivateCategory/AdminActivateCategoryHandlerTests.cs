@@ -31,7 +31,7 @@ public class AdminActivateCategoryHandlerTests : BaseContentHandlerTest
             _categoryRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
-            TestErrorsFactory.CreateCategoryErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
