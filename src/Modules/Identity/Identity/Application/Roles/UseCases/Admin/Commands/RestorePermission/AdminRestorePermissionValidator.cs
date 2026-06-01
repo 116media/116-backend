@@ -1,4 +1,4 @@
-using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -13,10 +13,11 @@ public class AdminRestorePermissionValidator : AbstractValidator<AdminRestorePer
     /// Configure validation rules for permission restoration.
     /// </summary>
     /// <param name="i18n">
-    /// Validation error messages for rule configuration.
+    /// Identity module i18n facade for rule configuration.
     /// </param>
-    public AdminRestorePermissionValidator(ValidationErrorMessage i18n)
+    public AdminRestorePermissionValidator(IdentityI18n i18n)
     {
-        RuleFor(x => x.PermissionId).IsValidGuid(i18n.Localizer, "PermissionIdRequired", "PermissionIdInvalid");
+        RuleFor(x => x.PermissionId)
+            .IsValidGuid(i18n.User.Validation.Localizer, "PermissionIdRequired", "PermissionIdInvalid");
     }
 }
