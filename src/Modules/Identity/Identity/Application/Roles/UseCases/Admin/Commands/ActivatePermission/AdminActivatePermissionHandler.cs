@@ -1,4 +1,4 @@
-using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
@@ -14,12 +14,12 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.ActivatePermis
 /// <param name="permissionRepository">Repository for permission data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+/// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class AdminActivatePermissionHandler(
     IPermissionRepository permissionRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper,
-    UserErrors userErrors
+    IdentityI18n i18n
 ) : ICommandHandler<AdminActivatePermissionCommand, AdminActivatePermissionResult>
 {
     /// <summary>
@@ -44,7 +44,7 @@ public class AdminActivatePermissionHandler(
 
         if (!wasActivated)
         {
-            throw userErrors.PermissionAlreadyActive();
+            throw i18n.User.PermissionAlreadyActive();
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
