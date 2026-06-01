@@ -1,5 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
-using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Errors.Facade;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
@@ -18,11 +18,11 @@ public class PublicResendOtpValidator : AbstractValidator<PublicResendOtpCommand
     /// Initializes a new instance of <see cref="PublicResendOtpValidator" /> with validation rules.
     /// </summary>
     /// <param name="i18n">
-    /// Validation error messages for rule configuration.
+    /// Identity module i18n facade for rule configuration.
     /// </param>
-    public PublicResendOtpValidator(ValidationErrorMessage i18n)
+    public PublicResendOtpValidator(IdentityI18n i18n)
     {
-        RuleFor(x => x.Email).ValidEmail(i18n);
-        RuleFor(x => x.Purpose).ValidOtpPurpose(i18n);
+        RuleFor(x => x.Email).ValidEmail(i18n.User.Validation);
+        RuleFor(x => x.Purpose).ValidOtpPurpose(i18n.User.Validation);
     }
 }
