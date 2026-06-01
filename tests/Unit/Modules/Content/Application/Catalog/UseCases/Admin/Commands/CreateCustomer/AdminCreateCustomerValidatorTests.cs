@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCustomer;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminCreateCustomerValidatorTests
 {
-    private readonly CustomerErrorMessage _i18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminCreateCustomerValidator _validator;
 
     public AdminCreateCustomerValidatorTests()
@@ -87,7 +89,7 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.FullName)
-                && e.ErrorMessage == _i18n.FullNameRequired()
+                && e.ErrorMessage == _i18n.Customer.Msg.FullNameRequired()
             );
     }
 
@@ -112,7 +114,8 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.FullName)
-                && e.ErrorMessage == _i18n.FullNameTooLong(TestConstants.Content.Customer.FullNameMaxLength)
+                && e.ErrorMessage
+                    == _i18n.Customer.Msg.FullNameTooLong(TestConstants.Content.Customer.FullNameMaxLength)
             );
     }
 
@@ -140,7 +143,8 @@ public class AdminCreateCustomerValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreateCustomerCommand.Email) && e.ErrorMessage == _i18n.EmailRequired()
+                e.PropertyName == nameof(AdminCreateCustomerCommand.Email)
+                && e.ErrorMessage == _i18n.Customer.Msg.EmailRequired()
             );
     }
 
@@ -165,7 +169,7 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.Email)
-                && e.ErrorMessage == _i18n.EmailInvalidFormat()
+                && e.ErrorMessage == _i18n.Customer.Msg.EmailInvalidFormat()
             );
     }
 
@@ -214,7 +218,7 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.Phone)
-                && e.ErrorMessage == _i18n.PhoneTooLong(TestConstants.Content.Customer.PhoneMaxLength)
+                && e.ErrorMessage == _i18n.Customer.Msg.PhoneTooLong(TestConstants.Content.Customer.PhoneMaxLength)
             );
     }
 
@@ -239,7 +243,7 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.Company)
-                && e.ErrorMessage == _i18n.CompanyTooLong(TestConstants.Content.Customer.CompanyMaxLength)
+                && e.ErrorMessage == _i18n.Customer.Msg.CompanyTooLong(TestConstants.Content.Customer.CompanyMaxLength)
             );
     }
 
@@ -264,7 +268,7 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.Notes)
-                && e.ErrorMessage == _i18n.NotesTooLong(TestConstants.Content.Customer.NotesMaxLength)
+                && e.ErrorMessage == _i18n.Customer.Msg.NotesTooLong(TestConstants.Content.Customer.NotesMaxLength)
             );
     }
 
@@ -278,8 +282,9 @@ public class AdminCreateCustomerValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>(culture);
-        var validator = new AdminCreateCustomerValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminCreateCustomerValidator(_i18n);
         var command = new AdminCreateCustomerCommand(
             FullName: string.Empty,
             Email: TestConstants.Content.Customer.ValidEmail,
@@ -297,7 +302,7 @@ public class AdminCreateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCustomerCommand.FullName)
-                && e.ErrorMessage == i18n.FullNameRequired()
+                && e.ErrorMessage == _i18n.Customer.Msg.FullNameRequired()
             );
     }
 
