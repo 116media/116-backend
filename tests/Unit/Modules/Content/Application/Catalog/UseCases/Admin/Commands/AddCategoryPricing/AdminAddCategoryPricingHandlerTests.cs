@@ -35,8 +35,7 @@ public class AdminAddCategoryPricingHandlerTests : BaseContentHandlerTest
             _lookupRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
-            TestErrorsFactory.CreatePricingTierErrors(),
-            TestErrorsFactory.CreateCategoryErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
