@@ -1,4 +1,4 @@
-using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -13,10 +13,10 @@ public class AdminForceLogoutUserValidator : AbstractValidator<AdminForceLogoutU
     /// Configure validation rules for force logout requests.
     /// </summary>
     /// <param name="i18n">
-    /// Validation error messages for rule configuration.
+    /// Identity module i18n facade for rule configuration.
     /// </param>
-    public AdminForceLogoutUserValidator(ValidationErrorMessage i18n)
+    public AdminForceLogoutUserValidator(IdentityI18n i18n)
     {
-        RuleFor(x => x.UserId).IsValidGuid(i18n.Localizer, "UserIdRequired", "UserIdInvalid");
+        RuleFor(x => x.UserId).IsValidGuid(i18n.User.Validation.Localizer, "UserIdRequired", "UserIdInvalid");
     }
 }
