@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.RemovePackageSlot;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminRemovePackageSlotValidatorTests
 {
-    private readonly PackageErrorMessage _i18n = LocalizerFactory.CreateMessage<PackageErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminRemovePackageSlotValidator _validator;
 
     public AdminRemovePackageSlotValidatorTests()
@@ -48,7 +50,7 @@ public class AdminRemovePackageSlotValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminRemovePackageSlotCommand.PackageId)
-                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Package.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -62,7 +64,7 @@ public class AdminRemovePackageSlotValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminRemovePackageSlotCommand.PackageId)
-                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.Package.Msg.Localizer["IdInvalid"].Value
             );
     }
 
@@ -80,7 +82,7 @@ public class AdminRemovePackageSlotValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminRemovePackageSlotCommand.SlotId)
-                && e.ErrorMessage == _i18n.Localizer["SlotIdRequired"].Value
+                && e.ErrorMessage == _i18n.Package.Msg.Localizer["SlotIdRequired"].Value
             );
     }
 
@@ -94,7 +96,7 @@ public class AdminRemovePackageSlotValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminRemovePackageSlotCommand.SlotId)
-                && e.ErrorMessage == _i18n.Localizer["SlotIdRequired"].Value
+                && e.ErrorMessage == _i18n.Package.Msg.Localizer["SlotIdRequired"].Value
             );
     }
 
@@ -108,7 +110,7 @@ public class AdminRemovePackageSlotValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminRemovePackageSlotCommand.SlotId)
-                && e.ErrorMessage == _i18n.Localizer["SlotIdInvalid"].Value
+                && e.ErrorMessage == _i18n.Package.Msg.Localizer["SlotIdInvalid"].Value
             );
     }
 
@@ -122,8 +124,9 @@ public class AdminRemovePackageSlotValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<PackageErrorMessage>(culture);
-        var validator = new AdminRemovePackageSlotValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminRemovePackageSlotValidator(_i18n);
         var command = new AdminRemovePackageSlotCommand(PackageId: "", SlotId: Guid.NewGuid().ToString());
 
         // Act
@@ -135,7 +138,7 @@ public class AdminRemovePackageSlotValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminRemovePackageSlotCommand.PackageId)
-                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Package.Msg.Localizer["IdRequired"].Value
             );
     }
 
