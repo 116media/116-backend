@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategory;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminUpdateCategoryValidatorTests
 {
-    private readonly CategoryErrorMessage _i18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminUpdateCategoryValidator _validator;
 
     public AdminUpdateCategoryValidatorTests()
@@ -68,7 +70,7 @@ public class AdminUpdateCategoryValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateCategoryCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Category.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -96,7 +98,8 @@ public class AdminUpdateCategoryValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateCategoryCommand.Name) && e.ErrorMessage == _i18n.NameRequired()
+                e.PropertyName == nameof(AdminUpdateCategoryCommand.Name)
+                && e.ErrorMessage == _i18n.Category.Msg.NameRequired()
             );
     }
 
@@ -121,7 +124,7 @@ public class AdminUpdateCategoryValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateCategoryCommand.Name)
-                && e.ErrorMessage == _i18n.NameTooLong(TestConstants.Content.Category.NameMaxLength)
+                && e.ErrorMessage == _i18n.Category.Msg.NameTooLong(TestConstants.Content.Category.NameMaxLength)
             );
     }
 
@@ -149,7 +152,8 @@ public class AdminUpdateCategoryValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateCategoryCommand.Slug) && e.ErrorMessage == _i18n.SlugInvalidFormat()
+                e.PropertyName == nameof(AdminUpdateCategoryCommand.Slug)
+                && e.ErrorMessage == _i18n.Category.Msg.SlugInvalidFormat()
             );
     }
 
@@ -163,8 +167,9 @@ public class AdminUpdateCategoryValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>(culture);
-        var validator = new AdminUpdateCategoryValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminUpdateCategoryValidator(_i18n);
         var command = new AdminUpdateCategoryCommand(
             Id: "",
             Name: TestConstants.Content.Category.ValidName,
@@ -182,7 +187,7 @@ public class AdminUpdateCategoryValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateCategoryCommand.Id)
-                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Category.Msg.Localizer["IdRequired"].Value
             );
     }
 
