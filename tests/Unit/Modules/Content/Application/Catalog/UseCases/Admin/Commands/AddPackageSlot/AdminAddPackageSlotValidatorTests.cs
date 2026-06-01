@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.AddPackageSlot;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminAddPackageSlotValidatorTests
 {
-    private readonly PackageErrorMessage _i18n = LocalizerFactory.CreateMessage<PackageErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminAddPackageSlotValidator _validator;
 
     public AdminAddPackageSlotValidatorTests()
@@ -84,7 +86,7 @@ public class AdminAddPackageSlotValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddPackageSlotCommand.PackageId)
-                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Package.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -112,7 +114,7 @@ public class AdminAddPackageSlotValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddPackageSlotCommand.Quantity)
-                && e.ErrorMessage == _i18n.SlotQuantityMustBePositive()
+                && e.ErrorMessage == _i18n.Package.Msg.SlotQuantityMustBePositive()
             );
     }
 
@@ -136,7 +138,7 @@ public class AdminAddPackageSlotValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddPackageSlotCommand.Quantity)
-                && e.ErrorMessage == _i18n.SlotQuantityMustBePositive()
+                && e.ErrorMessage == _i18n.Package.Msg.SlotQuantityMustBePositive()
             );
     }
 
@@ -150,8 +152,9 @@ public class AdminAddPackageSlotValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<PackageErrorMessage>(culture);
-        var validator = new AdminAddPackageSlotValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminAddPackageSlotValidator(_i18n);
         var command = new AdminAddPackageSlotCommand(
             PackageId: "",
             CategoryId: null,
@@ -168,7 +171,7 @@ public class AdminAddPackageSlotValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddPackageSlotCommand.PackageId)
-                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Package.Msg.Localizer["IdRequired"].Value
             );
     }
 
