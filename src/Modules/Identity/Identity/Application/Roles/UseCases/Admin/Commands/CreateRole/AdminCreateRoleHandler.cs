@@ -1,5 +1,5 @@
 using _116.Identity.Application.Shared.DTOs;
-using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
@@ -15,12 +15,12 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.CreateRole;
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+/// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class AdminCreateRoleHandler(
     IRoleRepository roleRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper,
-    UserErrors userErrors
+    IdentityI18n i18n
 ) : ICommandHandler<AdminCreateRoleCommand, AdminCreateRoleResult>
 {
     /// <summary>
@@ -38,14 +38,14 @@ public class AdminCreateRoleHandler(
 
         if (roleExists)
         {
-            throw userErrors.RoleAlreadyExists(roleName: command.Name);
+            throw i18n.User.RoleAlreadyExists(roleName: command.Name);
         }
 
         var role = RoleEntity.Create(
             id: Guid.NewGuid(),
             name: command.Name,
             description: command.Description,
-            errors: userErrors
+            errors: i18n.User
         );
 
         await roleRepository.AddAsync(role: role, cancellationToken: cancellationToken);
