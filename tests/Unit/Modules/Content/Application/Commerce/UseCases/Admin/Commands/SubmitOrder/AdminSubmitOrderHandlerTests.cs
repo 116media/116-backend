@@ -29,7 +29,7 @@ public class AdminSubmitOrderHandlerTests
         _handler = new AdminSubmitOrderHandler(
             _orderRepositoryMock.Object,
             _factoryMock.Object,
-            TestErrorsFactory.CreateContentOrderErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
