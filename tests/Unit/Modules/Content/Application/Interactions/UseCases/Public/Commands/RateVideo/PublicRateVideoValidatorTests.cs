@@ -1,4 +1,5 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.RateVideo;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,9 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Interactions.UseCases.Publ
 /// </summary>
 public class PublicRateVideoValidatorTests
 {
-    private readonly PublicRateVideoValidator _validator = new(
-        LocalizerFactory.CreateMessage<ArticleInteractionErrorMessage>("en")
-    );
+    private readonly PublicRateVideoValidator _validator = new(TestErrorsFactory.CreateContentI18n());
 
     #region Valid Command Tests
 
