@@ -44,7 +44,7 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
             _cloudinaryMock.Object,
             _youtubeThumbnailMock.Object,
             Mapper,
-            TestErrorsFactory.CreateVideoErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
