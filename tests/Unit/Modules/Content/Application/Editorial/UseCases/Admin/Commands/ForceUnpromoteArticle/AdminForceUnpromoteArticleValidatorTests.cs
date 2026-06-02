@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteArticle;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminForceUnpromoteArticleValidatorTests
 {
-    private readonly ArticleErrorMessage _i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private readonly AdminForceUnpromoteArticleValidator _validator;
 
@@ -59,7 +61,7 @@ public class AdminForceUnpromoteArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminForceUnpromoteArticleCommand.Slug)
-                && e.ErrorMessage == _i18n.SlugRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.SlugRequired()
             );
     }
 
@@ -82,7 +84,7 @@ public class AdminForceUnpromoteArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminForceUnpromoteArticleCommand.Reason)
-                && e.ErrorMessage == _i18n.RejectionReasonRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.RejectionReasonRequired()
             );
     }
 
@@ -101,7 +103,7 @@ public class AdminForceUnpromoteArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminForceUnpromoteArticleCommand.Reason)
-                && e.ErrorMessage == _i18n.RejectionReasonTooLong(500)
+                && e.ErrorMessage == _i18n.Article.Msg.RejectionReasonTooLong(500)
             );
     }
 
@@ -129,8 +131,9 @@ public class AdminForceUnpromoteArticleValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
-        var validator = new AdminForceUnpromoteArticleValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminForceUnpromoteArticleValidator(_i18n);
         var command = new AdminForceUnpromoteArticleCommand(Slug: "my-article-slug", Reason: string.Empty);
 
         // Act
@@ -142,7 +145,7 @@ public class AdminForceUnpromoteArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminForceUnpromoteArticleCommand.Reason)
-                && e.ErrorMessage == i18n.RejectionReasonRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.RejectionReasonRequired()
             );
     }
 
