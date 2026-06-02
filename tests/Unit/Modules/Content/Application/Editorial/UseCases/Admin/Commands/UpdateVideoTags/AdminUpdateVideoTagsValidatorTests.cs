@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideoTags;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,14 +14,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateVideoTagsValidatorTests
 {
-    private readonly TagErrorMessage _tagI18n = LocalizerFactory.CreateMessage<TagErrorMessage>();
-    private readonly VideoErrorMessage _videoI18n = LocalizerFactory.CreateMessage<VideoErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private readonly AdminUpdateVideoTagsValidator _validator;
 
     public AdminUpdateVideoTagsValidatorTests()
     {
-        _validator = new AdminUpdateVideoTagsValidator(_tagI18n, _videoI18n);
+        _validator = new AdminUpdateVideoTagsValidator(_i18n);
     }
 
     #region Valid Command Tests
@@ -74,7 +75,7 @@ public class AdminUpdateVideoTagsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoTagsCommand.VideoId)
-                && e.ErrorMessage == _videoI18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Video.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -93,7 +94,7 @@ public class AdminUpdateVideoTagsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoTagsCommand.VideoId)
-                && e.ErrorMessage == _videoI18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.Video.Msg.Localizer["IdInvalid"].Value
             );
     }
 
@@ -115,7 +116,7 @@ public class AdminUpdateVideoTagsValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == _tagI18n.NameRequired());
+        result.Errors.Should().Contain(e => e.ErrorMessage == _i18n.Tag.Msg.NameRequired());
     }
 
     [Fact]
@@ -132,7 +133,7 @@ public class AdminUpdateVideoTagsValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage.Contains(_tagI18n.NameTooLong(50)));
+        result.Errors.Should().Contain(e => e.ErrorMessage.Contains(_i18n.Tag.Msg.NameTooLong(50)));
     }
 
     #endregion
@@ -145,9 +146,9 @@ public class AdminUpdateVideoTagsValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var tagI18n = LocalizerFactory.CreateMessage<TagErrorMessage>(culture);
-        var videoI18n = LocalizerFactory.CreateMessage<VideoErrorMessage>(culture);
-        var validator = new AdminUpdateVideoTagsValidator(tagI18n, videoI18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminUpdateVideoTagsValidator(_i18n);
         var command = new AdminUpdateVideoTagsCommand(VideoId: string.Empty, TagNames: []);
 
         // Act
@@ -159,7 +160,7 @@ public class AdminUpdateVideoTagsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoTagsCommand.VideoId)
-                && e.ErrorMessage == videoI18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Video.Msg.Localizer["IdRequired"].Value
             );
     }
 
