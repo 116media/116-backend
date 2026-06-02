@@ -27,7 +27,7 @@ public class PublicGetLyricsBySlugHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetLyricsBySlugHandler(
             _lyricsRepositoryMock.Object,
             Mapper,
-            TestErrorsFactory.CreateLyricsErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
