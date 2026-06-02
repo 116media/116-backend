@@ -31,7 +31,7 @@ public class PublicEditArticleCommentHandlerTests
         _handler = new PublicEditArticleCommentHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateArticleInteractionErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
