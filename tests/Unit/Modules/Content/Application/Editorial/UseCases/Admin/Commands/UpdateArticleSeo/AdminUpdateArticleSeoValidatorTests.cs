@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticleSeo;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateArticleSeoValidatorTests
 {
-    private readonly ArticleErrorMessage _i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private readonly AdminUpdateArticleSeoValidator _validator;
 
@@ -60,7 +62,7 @@ public class AdminUpdateArticleSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleSeoCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -79,7 +81,7 @@ public class AdminUpdateArticleSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleSeoCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdInvalid"].Value
             );
     }
 
@@ -106,7 +108,7 @@ public class AdminUpdateArticleSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleSeoCommand.MetaTitle)
-                && e.ErrorMessage == _i18n.MetaTitleTooShort(10)
+                && e.ErrorMessage == _i18n.Article.Msg.MetaTitleTooShort(10)
             );
     }
 
@@ -129,7 +131,7 @@ public class AdminUpdateArticleSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleSeoCommand.MetaTitle)
-                && e.ErrorMessage == _i18n.MetaTitleTooLong(70)
+                && e.ErrorMessage == _i18n.Article.Msg.MetaTitleTooLong(70)
             );
     }
 
@@ -173,7 +175,7 @@ public class AdminUpdateArticleSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleSeoCommand.MetaDescription)
-                && e.ErrorMessage == _i18n.MetaDescriptionTooShort(50)
+                && e.ErrorMessage == _i18n.Article.Msg.MetaDescriptionTooShort(50)
             );
     }
 
@@ -196,7 +198,7 @@ public class AdminUpdateArticleSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleSeoCommand.MetaDescription)
-                && e.ErrorMessage == _i18n.MetaDescriptionTooLong(160)
+                && e.ErrorMessage == _i18n.Article.Msg.MetaDescriptionTooLong(160)
             );
     }
 
@@ -227,8 +229,9 @@ public class AdminUpdateArticleSeoValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
-        var validator = new AdminUpdateArticleSeoValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminUpdateArticleSeoValidator(_i18n);
         var command = new AdminUpdateArticleSeoCommand(Id: string.Empty, MetaTitle: null, MetaDescription: null);
 
         // Act
@@ -240,7 +243,7 @@ public class AdminUpdateArticleSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleSeoCommand.Id)
-                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdRequired"].Value
             );
     }
 
