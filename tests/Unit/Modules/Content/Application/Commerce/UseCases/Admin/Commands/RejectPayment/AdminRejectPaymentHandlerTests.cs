@@ -35,7 +35,7 @@ public class AdminRejectPaymentHandlerTests
             _orderPaymentFactoryMock.Object,
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentOrderErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
