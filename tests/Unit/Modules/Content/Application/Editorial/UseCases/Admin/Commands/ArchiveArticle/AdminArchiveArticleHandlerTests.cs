@@ -31,7 +31,7 @@ public class AdminArchiveArticleHandlerTests
         _handler = new AdminArchiveArticleHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateArticleErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
