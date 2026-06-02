@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsByVideoId;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 /// </summary>
 public class PublicGetLyricsByVideoIdValidatorTests
 {
-    private readonly VideoErrorMessage _i18n = LocalizerFactory.CreateMessage<VideoErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly PublicGetLyricsByVideoIdValidator _validator;
 
     public PublicGetLyricsByVideoIdValidatorTests()
@@ -55,7 +57,7 @@ public class PublicGetLyricsByVideoIdValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(PublicGetLyricsByVideoIdQuery.VideoId)
-                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Video.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -74,7 +76,7 @@ public class PublicGetLyricsByVideoIdValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(PublicGetLyricsByVideoIdQuery.VideoId)
-                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.Video.Msg.Localizer["IdInvalid"].Value
             );
     }
 
@@ -88,8 +90,9 @@ public class PublicGetLyricsByVideoIdValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<VideoErrorMessage>(culture);
-        var validator = new PublicGetLyricsByVideoIdValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new PublicGetLyricsByVideoIdValidator(_i18n);
         var query = new PublicGetLyricsByVideoIdQuery(VideoId: string.Empty);
 
         // Act
@@ -101,7 +104,7 @@ public class PublicGetLyricsByVideoIdValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(PublicGetLyricsByVideoIdQuery.VideoId)
-                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Video.Msg.Localizer["IdRequired"].Value
             );
     }
 
