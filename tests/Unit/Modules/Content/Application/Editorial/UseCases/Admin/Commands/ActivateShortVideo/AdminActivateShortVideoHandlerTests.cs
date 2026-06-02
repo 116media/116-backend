@@ -29,7 +29,7 @@ public class AdminActivateShortVideoHandlerTests
         _handler = new AdminActivateShortVideoHandler(
             _shortVideoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateShortVideoErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
