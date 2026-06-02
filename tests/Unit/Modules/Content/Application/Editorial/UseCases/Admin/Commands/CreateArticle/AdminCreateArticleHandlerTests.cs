@@ -38,7 +38,7 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
-            TestErrorsFactory.CreateArticleErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
