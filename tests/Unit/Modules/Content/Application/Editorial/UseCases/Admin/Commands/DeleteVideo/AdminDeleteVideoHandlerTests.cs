@@ -36,7 +36,7 @@ public class AdminDeleteVideoHandlerTests
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _cloudinaryMock.Object,
-            TestErrorsFactory.CreateVideoErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
