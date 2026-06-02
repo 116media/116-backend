@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArticle;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,15 +15,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminCreateArticleValidatorTests
 {
-    private readonly ArticleErrorMessage _articleI18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
-    private readonly ContentOrderErrorMessage _orderI18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>();
-    private readonly CustomerErrorMessage _customerI18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private readonly AdminCreateArticleValidator _validator;
 
     public AdminCreateArticleValidatorTests()
     {
-        _validator = new AdminCreateArticleValidator(_articleI18n, _orderI18n, _customerI18n);
+        _validator = new AdminCreateArticleValidator(_i18n);
     }
 
     #region Valid Command Tests
@@ -96,7 +96,7 @@ public class AdminCreateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateArticleCommand.CategoryId)
-                && e.ErrorMessage == _articleI18n.CategoryIdRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.CategoryIdRequired()
             );
     }
 
@@ -126,7 +126,7 @@ public class AdminCreateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateArticleCommand.Title)
-                && e.ErrorMessage == _articleI18n.TitleRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.TitleRequired()
             );
     }
 
@@ -152,7 +152,8 @@ public class AdminCreateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateArticleCommand.Title)
-                && e.ErrorMessage == _articleI18n.TitleTooLong(TestConstants.Content.Editorial.Article.TitleMaxLength)
+                && e.ErrorMessage
+                    == _i18n.Article.Msg.TitleTooLong(TestConstants.Content.Editorial.Article.TitleMaxLength)
             );
     }
 
@@ -182,7 +183,7 @@ public class AdminCreateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateArticleCommand.Slug)
-                && e.ErrorMessage == _articleI18n.SlugRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.SlugRequired()
             );
     }
 
@@ -208,7 +209,8 @@ public class AdminCreateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateArticleCommand.Slug)
-                && e.ErrorMessage == _articleI18n.SlugTooLong(TestConstants.Content.Editorial.Article.SlugMaxLength)
+                && e.ErrorMessage
+                    == _i18n.Article.Msg.SlugTooLong(TestConstants.Content.Editorial.Article.SlugMaxLength)
             );
     }
 
@@ -234,7 +236,7 @@ public class AdminCreateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateArticleCommand.Slug)
-                && e.ErrorMessage == _articleI18n.SlugInvalidFormat()
+                && e.ErrorMessage == _i18n.Article.Msg.SlugInvalidFormat()
             );
     }
 
@@ -264,7 +266,7 @@ public class AdminCreateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateArticleCommand.OrderItemId)
-                && e.ErrorMessage == _orderI18n.OrderItemIdRequired()
+                && e.ErrorMessage == _i18n.ContentOrder.Msg.OrderItemIdRequired()
             );
     }
 
@@ -290,7 +292,7 @@ public class AdminCreateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateArticleCommand.CustomerId)
-                && e.ErrorMessage == _customerI18n.CustomerIdRequired()
+                && e.ErrorMessage == _i18n.Customer.Msg.CustomerIdRequired()
             );
     }
 
@@ -304,10 +306,9 @@ public class AdminCreateArticleValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var articleI18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
-        var orderI18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>(culture);
-        var customerI18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>(culture);
-        var validator = new AdminCreateArticleValidator(articleI18n, orderI18n, customerI18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminCreateArticleValidator(_i18n);
         var command = new AdminCreateArticleCommand(
             CategoryId: Guid.NewGuid(),
             Title: string.Empty,
@@ -326,7 +327,7 @@ public class AdminCreateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateArticleCommand.Title)
-                && e.ErrorMessage == articleI18n.TitleRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.TitleRequired()
             );
     }
 
