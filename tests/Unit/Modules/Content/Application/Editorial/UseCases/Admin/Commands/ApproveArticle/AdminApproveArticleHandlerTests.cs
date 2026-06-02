@@ -31,7 +31,7 @@ public class AdminApproveArticleHandlerTests
         _handler = new AdminApproveArticleHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateArticleErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
