@@ -27,7 +27,7 @@ public class PublicGetPublicShortBySlugHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetPublicShortBySlugHandler(
             _shortVideoRepositoryMock.Object,
             Mapper,
-            TestErrorsFactory.CreateShortVideoErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
