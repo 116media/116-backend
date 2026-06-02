@@ -42,7 +42,7 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
             _unitOfWorkMock.Object,
             _cloudinaryMock.Object,
             Mapper,
-            TestErrorsFactory.CreateArticleErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
