@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteLyrics;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminDeleteLyricsValidatorTests
 {
-    private readonly LyricsErrorMessage _i18n = LocalizerFactory.CreateMessage<LyricsErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private readonly AdminDeleteLyricsValidator _validator;
 
@@ -56,7 +58,7 @@ public class AdminDeleteLyricsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminDeleteLyricsCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Lyrics.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -75,7 +77,7 @@ public class AdminDeleteLyricsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminDeleteLyricsCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.Lyrics.Msg.Localizer["IdInvalid"].Value
             );
     }
 
@@ -89,8 +91,9 @@ public class AdminDeleteLyricsValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<LyricsErrorMessage>(culture);
-        var validator = new AdminDeleteLyricsValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminDeleteLyricsValidator(_i18n);
         var command = new AdminDeleteLyricsCommand(Id: string.Empty);
 
         // Act
@@ -102,7 +105,7 @@ public class AdminDeleteLyricsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminDeleteLyricsCommand.Id)
-                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Lyrics.Msg.Localizer["IdRequired"].Value
             );
     }
 
