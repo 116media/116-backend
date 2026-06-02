@@ -29,7 +29,7 @@ public class AdminRemoveOrderItemHandlerTests
         _handler = new AdminRemoveOrderItemHandler(
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentOrderErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
