@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectVideo;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminRejectVideoValidatorTests
 {
-    private readonly ArticleErrorMessage _i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminRejectVideoValidator _validator;
 
     public AdminRejectVideoValidatorTests()
@@ -62,7 +64,7 @@ public class AdminRejectVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminRejectVideoCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["VideoIdRequired"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["VideoIdRequired"].Value
             );
     }
 
@@ -84,7 +86,7 @@ public class AdminRejectVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminRejectVideoCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["VideoIdInvalid"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["VideoIdInvalid"].Value
             );
     }
 
@@ -107,7 +109,7 @@ public class AdminRejectVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminRejectVideoCommand.Reason)
-                && e.ErrorMessage == _i18n.RejectionReasonRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.RejectionReasonRequired()
             );
     }
 
@@ -130,7 +132,9 @@ public class AdminRejectVideoValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminRejectVideoCommand.Reason)
                 && e.ErrorMessage
-                    == _i18n.RejectionReasonTooLong(TestConstants.Content.Editorial.Video.RejectionReasonMaxLength)
+                    == _i18n.Article.Msg.RejectionReasonTooLong(
+                        TestConstants.Content.Editorial.Video.RejectionReasonMaxLength
+                    )
             );
     }
 
@@ -144,8 +148,9 @@ public class AdminRejectVideoValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
-        var validator = new AdminRejectVideoValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminRejectVideoValidator(_i18n);
         var command = new AdminRejectVideoCommand(Id: string.Empty, Reason: string.Empty);
 
         // Act
@@ -157,13 +162,13 @@ public class AdminRejectVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminRejectVideoCommand.Id)
-                && e.ErrorMessage == i18n.Localizer["VideoIdRequired"].Value
+                && e.ErrorMessage == _i18n.Video.Msg.Localizer["VideoIdRequired"].Value
             );
         result
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminRejectVideoCommand.Reason)
-                && e.ErrorMessage == i18n.RejectionReasonRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.RejectionReasonRequired()
             );
     }
 
