@@ -29,7 +29,7 @@ public class AdminCancelOrderHandlerTests
         _handler = new AdminCancelOrderHandler(
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentOrderErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
