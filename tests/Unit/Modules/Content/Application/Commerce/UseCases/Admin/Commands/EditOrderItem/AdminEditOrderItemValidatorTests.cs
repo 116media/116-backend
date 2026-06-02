@@ -1,4 +1,5 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrderItem;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Helpers;
@@ -13,10 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminEditOrderItemValidatorTests
 {
-    private readonly AdminEditOrderItemValidator _validator = new(
-        LocalizerFactory.CreateMessage<ContentOrderErrorMessage>(),
-        LocalizerFactory.CreateMessage<CategoryErrorMessage>()
-    );
+    private readonly AdminEditOrderItemValidator _validator = new(TestErrorsFactory.CreateContentI18n());
 
     #region Validate
 
