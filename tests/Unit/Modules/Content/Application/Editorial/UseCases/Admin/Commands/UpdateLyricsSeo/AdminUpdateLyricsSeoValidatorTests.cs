@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyricsSeo;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateLyricsSeoValidatorTests
 {
-    private readonly LyricsErrorMessage _i18n = LocalizerFactory.CreateMessage<LyricsErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private readonly AdminUpdateLyricsSeoValidator _validator;
 
@@ -66,7 +68,7 @@ public class AdminUpdateLyricsSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateLyricsSeoCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Lyrics.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -90,7 +92,7 @@ public class AdminUpdateLyricsSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateLyricsSeoCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.Lyrics.Msg.Localizer["IdInvalid"].Value
             );
     }
 
@@ -104,8 +106,9 @@ public class AdminUpdateLyricsSeoValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<LyricsErrorMessage>(culture);
-        var validator = new AdminUpdateLyricsSeoValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminUpdateLyricsSeoValidator(_i18n);
         var command = new AdminUpdateLyricsSeoCommand(
             Id: string.Empty,
             MetaTitle: null,
@@ -122,7 +125,7 @@ public class AdminUpdateLyricsSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateLyricsSeoCommand.Id)
-                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Lyrics.Msg.Localizer["IdRequired"].Value
             );
     }
 
