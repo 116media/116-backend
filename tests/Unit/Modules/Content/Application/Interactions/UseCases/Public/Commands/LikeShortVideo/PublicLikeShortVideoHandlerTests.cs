@@ -29,7 +29,7 @@ public class PublicLikeShortVideoHandlerTests
         _handler = new PublicLikeShortVideoHandler(
             _shortVideoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateShortVideoInteractionErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
