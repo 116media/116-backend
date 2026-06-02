@@ -29,7 +29,7 @@ public class PublicGetArticleBySlugHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetArticleBySlugHandler(
             _articleRepositoryMock.Object,
             Mapper,
-            TestErrorsFactory.CreateArticleErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
