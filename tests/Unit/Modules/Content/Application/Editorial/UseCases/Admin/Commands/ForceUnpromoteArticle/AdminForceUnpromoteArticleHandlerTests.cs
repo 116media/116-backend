@@ -40,7 +40,7 @@ public class AdminForceUnpromoteArticleHandlerTests
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
             currentActor,
-            TestErrorsFactory.CreateArticleErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
