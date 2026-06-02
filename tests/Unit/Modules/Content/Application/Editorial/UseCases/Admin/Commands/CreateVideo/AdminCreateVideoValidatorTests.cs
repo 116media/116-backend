@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,16 +15,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminCreateVideoValidatorTests
 {
-    private readonly ArticleErrorMessage _articleI18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
-    private readonly VideoErrorMessage _videoI18n = LocalizerFactory.CreateMessage<VideoErrorMessage>();
-    private readonly ContentOrderErrorMessage _orderI18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>();
-    private readonly CustomerErrorMessage _customerI18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private readonly AdminCreateVideoValidator _validator;
 
     public AdminCreateVideoValidatorTests()
     {
-        _validator = new AdminCreateVideoValidator(_articleI18n, _videoI18n, _orderI18n, _customerI18n);
+        _validator = new AdminCreateVideoValidator(_i18n);
     }
 
     #region Valid Command Tests
@@ -101,7 +100,7 @@ public class AdminCreateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateVideoCommand.CategoryId)
-                && e.ErrorMessage == _articleI18n.CategoryIdRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.CategoryIdRequired()
             );
     }
 
@@ -132,7 +131,8 @@ public class AdminCreateVideoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreateVideoCommand.Title) && e.ErrorMessage == _videoI18n.TitleRequired()
+                e.PropertyName == nameof(AdminCreateVideoCommand.Title)
+                && e.ErrorMessage == _i18n.Video.Msg.TitleRequired()
             );
     }
 
@@ -160,7 +160,7 @@ public class AdminCreateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateVideoCommand.Title)
-                && e.ErrorMessage == _videoI18n.TitleTooLong(TestConstants.Content.Editorial.Video.TitleMaxLength)
+                && e.ErrorMessage == _i18n.Video.Msg.TitleTooLong(TestConstants.Content.Editorial.Video.TitleMaxLength)
             );
     }
 
@@ -191,7 +191,8 @@ public class AdminCreateVideoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreateVideoCommand.Slug) && e.ErrorMessage == _videoI18n.SlugRequired()
+                e.PropertyName == nameof(AdminCreateVideoCommand.Slug)
+                && e.ErrorMessage == _i18n.Video.Msg.SlugRequired()
             );
     }
 
@@ -219,7 +220,7 @@ public class AdminCreateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateVideoCommand.Slug)
-                && e.ErrorMessage == _videoI18n.SlugInvalidFormat()
+                && e.ErrorMessage == _i18n.Video.Msg.SlugInvalidFormat()
             );
     }
 
@@ -251,7 +252,7 @@ public class AdminCreateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateVideoCommand.OrderItemId)
-                && e.ErrorMessage == _orderI18n.OrderItemIdRequired()
+                && e.ErrorMessage == _i18n.ContentOrder.Msg.OrderItemIdRequired()
             );
     }
 
@@ -279,7 +280,7 @@ public class AdminCreateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateVideoCommand.CustomerId)
-                && e.ErrorMessage == _customerI18n.CustomerIdRequired()
+                && e.ErrorMessage == _i18n.Customer.Msg.CustomerIdRequired()
             );
     }
 
@@ -311,7 +312,7 @@ public class AdminCreateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateVideoCommand.Description)
-                && e.ErrorMessage == _videoI18n.DescriptionRequired()
+                && e.ErrorMessage == _i18n.Video.Msg.DescriptionRequired()
             );
     }
 
@@ -325,11 +326,9 @@ public class AdminCreateVideoValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var articleI18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
-        var videoI18n = LocalizerFactory.CreateMessage<VideoErrorMessage>(culture);
-        var orderI18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>(culture);
-        var customerI18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>(culture);
-        var validator = new AdminCreateVideoValidator(articleI18n, videoI18n, orderI18n, customerI18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminCreateVideoValidator(_i18n);
         var command = new AdminCreateVideoCommand(
             CategoryId: Guid.NewGuid(),
             Title: string.Empty,
@@ -349,7 +348,8 @@ public class AdminCreateVideoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreateVideoCommand.Title) && e.ErrorMessage == videoI18n.TitleRequired()
+                e.PropertyName == nameof(AdminCreateVideoCommand.Title)
+                && e.ErrorMessage == _i18n.Video.Msg.TitleRequired()
             );
     }
 
