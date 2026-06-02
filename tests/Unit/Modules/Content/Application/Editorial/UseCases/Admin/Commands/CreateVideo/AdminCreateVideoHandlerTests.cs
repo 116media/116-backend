@@ -38,7 +38,7 @@ public class AdminCreateVideoHandlerTests : BaseContentHandlerTest
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
-            TestErrorsFactory.CreateVideoErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
