@@ -38,9 +38,7 @@ public class AdminEditOrderItemHandlerTests : BaseContentHandlerTest
             _lookupRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
-            TestErrorsFactory.CreateContentOrderErrors(),
-            TestErrorsFactory.CreateCategoryErrors(),
-            TestErrorsFactory.CreatePromotionLevelErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
