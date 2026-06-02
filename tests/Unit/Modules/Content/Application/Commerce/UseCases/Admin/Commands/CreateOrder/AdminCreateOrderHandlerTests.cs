@@ -48,8 +48,7 @@ public class AdminCreateOrderHandlerTests
             _createOrderFactoryMock.Object,
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreatePackageErrors(),
-            TestErrorsFactory.CreateCustomerErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
