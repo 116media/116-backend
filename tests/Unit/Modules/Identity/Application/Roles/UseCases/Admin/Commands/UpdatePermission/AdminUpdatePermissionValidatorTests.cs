@@ -1,4 +1,5 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdatePermission;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
@@ -14,9 +15,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Comm
 /// </summary>
 public class AdminUpdatePermissionValidatorTests
 {
-    private readonly AdminUpdatePermissionValidator _validator = new(
-        LocalizerFactory.CreateMessage<ValidationErrorMessage>("en")
-    );
+    private readonly AdminUpdatePermissionValidator _validator = new(TestErrorsFactory.CreateIdentityI18n());
     private readonly Guid _validPermissionId = Guid.NewGuid();
 
     #region Valid Command Tests
