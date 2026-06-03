@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivatePromotionLevel;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminDeactivatePromotionLevelValidatorTests
 {
-    private readonly PromotionLevelErrorMessage _i18n = LocalizerFactory.CreateMessage<PromotionLevelErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminDeactivatePromotionLevelValidator _validator;
 
     /// <summary>
@@ -58,7 +60,7 @@ public class AdminDeactivatePromotionLevelValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminDeactivatePromotionLevelCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.PromotionLevel.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -72,8 +74,9 @@ public class AdminDeactivatePromotionLevelValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<PromotionLevelErrorMessage>(culture);
-        var validator = new AdminDeactivatePromotionLevelValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminDeactivatePromotionLevelValidator(_i18n);
         var command = new AdminDeactivatePromotionLevelCommand(Id: "");
 
         // Act
@@ -85,7 +88,7 @@ public class AdminDeactivatePromotionLevelValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminDeactivatePromotionLevelCommand.Id)
-                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.PromotionLevel.Msg.Localizer["IdRequired"].Value
             );
     }
 
