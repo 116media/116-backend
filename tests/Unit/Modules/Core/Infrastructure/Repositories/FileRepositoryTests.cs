@@ -1,4 +1,5 @@
 using _116.Core.Application.Shared.Errors;
+using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Core.Infrastructure.Persistence;
@@ -18,7 +19,7 @@ namespace _116.Unit.Tests.Modules.Core.Infrastructure.Repositories;
 /// </summary>
 public class FileRepositoryTests : IDisposable
 {
-    private readonly CoreErrors _coreErrors = TestErrorsFactory.CreateCoreErrors();
+    private readonly CoreI18n _coreErrors = TestErrorsFactory.CreateCoreI18n();
     private readonly CoreDbContext _context;
     private readonly Mock<IFileService> _mockFileService;
     private readonly FileRepository _repository;
@@ -32,9 +33,9 @@ public class FileRepositoryTests : IDisposable
         _context = new CoreDbContext(options);
         _mockFileService = new Mock<IFileService>();
 
-        CoreErrors coreErrors = TestErrorsFactory.CreateCoreErrors();
+        CoreI18n coreI18n = TestErrorsFactory.CreateCoreI18n();
 
-        _repository = new FileRepository(_context, _mockFileService.Object, coreErrors);
+        _repository = new FileRepository(_context, _mockFileService.Object, coreI18n);
     }
 
     public void Dispose()
