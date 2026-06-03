@@ -8,11 +8,11 @@ using Xunit;
 namespace _116.Unit.Tests.Modules.Core.Application.Shared.Errors;
 
 /// <summary>
-/// Unit tests for <see cref="CoreErrors"/>.
+/// Unit tests for <see cref="FileErrors"/>.
 /// </summary>
 public class CoreErrorsTests
 {
-    private readonly CoreErrors _coreErrors = TestErrorsFactory.CreateCoreErrors();
+    private readonly FileErrors _coreErrors = TestErrorsFactory.CreateFileErrors();
     private readonly ValidationErrorMessage _validationMessage = LocalizerFactory.CreateMessage<ValidationErrorMessage>(
         "en"
     );
