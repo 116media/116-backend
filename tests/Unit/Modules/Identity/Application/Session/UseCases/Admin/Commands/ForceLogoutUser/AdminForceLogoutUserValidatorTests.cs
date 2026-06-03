@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Identity.Application.Session.UseCases.Admin.Commands.ForceLogoutUser;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Session.UseCases.Admin.Co
 /// </summary>
 public class AdminForceLogoutUserValidatorTests
 {
-    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly IdentityI18n _i18n = TestErrorsFactory.CreateIdentityI18n();
     private readonly AdminForceLogoutUserValidator _validator;
 
     /// <summary>
@@ -54,7 +56,9 @@ public class AdminForceLogoutUserValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.UserId).WithErrorMessage(_i18n.Localizer["UserIdRequired"].Value);
+        result
+            .ShouldHaveValidationErrorFor(x => x.UserId)
+            .WithErrorMessage(_i18n.User.Validation.Localizer["UserIdRequired"].Value);
     }
 
     [Fact]
@@ -68,7 +72,9 @@ public class AdminForceLogoutUserValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.UserId).WithErrorMessage(_i18n.Localizer["UserIdRequired"].Value);
+        result
+            .ShouldHaveValidationErrorFor(x => x.UserId)
+            .WithErrorMessage(_i18n.User.Validation.Localizer["UserIdRequired"].Value);
     }
 
     [Fact]
@@ -82,7 +88,9 @@ public class AdminForceLogoutUserValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.UserId).WithErrorMessage(_i18n.Localizer["UserIdRequired"].Value);
+        result
+            .ShouldHaveValidationErrorFor(x => x.UserId)
+            .WithErrorMessage(_i18n.User.Validation.Localizer["UserIdRequired"].Value);
     }
 
     [Fact]
@@ -96,7 +104,9 @@ public class AdminForceLogoutUserValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.UserId).WithErrorMessage(_i18n.Localizer["UserIdInvalid"].Value);
+        result
+            .ShouldHaveValidationErrorFor(x => x.UserId)
+            .WithErrorMessage(_i18n.User.Validation.Localizer["UserIdInvalid"].Value);
     }
 
     #endregion
@@ -109,7 +119,9 @@ public class AdminForceLogoutUserValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var i18n = TestErrorsFactory.CreateIdentityI18n();
         var validator = new AdminForceLogoutUserValidator(i18n);
         var command = new AdminForceLogoutUserCommand(UserId: null!);
 
@@ -118,7 +130,9 @@ public class AdminForceLogoutUserValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.UserId).WithErrorMessage(i18n.Localizer["UserIdRequired"].Value);
+        result
+            .ShouldHaveValidationErrorFor(x => x.UserId)
+            .WithErrorMessage(i18n.User.Validation.Localizer["UserIdRequired"].Value);
     }
 
     #endregion
