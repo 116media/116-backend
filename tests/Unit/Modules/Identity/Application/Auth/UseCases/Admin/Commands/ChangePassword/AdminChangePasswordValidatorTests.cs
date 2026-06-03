@@ -1,5 +1,7 @@
+using System.Globalization;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -14,7 +16,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Comma
 /// </summary>
 public class AdminChangePasswordValidatorTests
 {
-    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly IdentityI18n _i18n = TestErrorsFactory.CreateIdentityI18n();
     private readonly AdminChangePasswordValidator _validator;
 
     /// <summary>
@@ -66,7 +68,9 @@ public class AdminChangePasswordValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.OldPassword).WithErrorMessage(_i18n.CurrentPasswordRequired());
+        result
+            .ShouldHaveValidationErrorFor(x => x.OldPassword)
+            .WithErrorMessage(_i18n.User.Validation.CurrentPasswordRequired());
     }
 
     [Fact]
@@ -129,7 +133,7 @@ public class AdminChangePasswordValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.NewPassword)
-            .WithErrorMessage(_i18n.PasswordTooShort("New password", UserConstants.MinPasswordLength));
+            .WithErrorMessage(_i18n.User.Validation.PasswordTooShort("New password", UserConstants.MinPasswordLength));
     }
 
     [Fact]
@@ -224,7 +228,9 @@ public class AdminChangePasswordValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var i18n = TestErrorsFactory.CreateIdentityI18n();
         var validator = new AdminChangePasswordValidator(i18n);
         var command = new AdminChangePasswordCommand(
             UserId: Guid.NewGuid(),
@@ -238,7 +244,9 @@ public class AdminChangePasswordValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.OldPassword).WithErrorMessage(i18n.CurrentPasswordRequired());
+        result
+            .ShouldHaveValidationErrorFor(x => x.OldPassword)
+            .WithErrorMessage(i18n.User.Validation.CurrentPasswordRequired());
     }
 
     #endregion
