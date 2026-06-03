@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignOut;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Comm
 /// </summary>
 public class PublicSignOutValidatorTests
 {
-    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly IdentityI18n _i18n = TestErrorsFactory.CreateIdentityI18n();
     private readonly PublicSignOutValidator _validator;
 
     /// <summary>
@@ -58,7 +60,9 @@ public class PublicSignOutValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(_i18n.RefreshTokenRequired());
+        result
+            .ShouldHaveValidationErrorFor(x => x.RefreshToken)
+            .WithErrorMessage(_i18n.User.Validation.RefreshTokenRequired());
     }
 
     [Fact]
@@ -72,7 +76,9 @@ public class PublicSignOutValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(_i18n.RefreshTokenRequired());
+        result
+            .ShouldHaveValidationErrorFor(x => x.RefreshToken)
+            .WithErrorMessage(_i18n.User.Validation.RefreshTokenRequired());
     }
 
     [Fact]
@@ -86,7 +92,9 @@ public class PublicSignOutValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(_i18n.RefreshTokenRequired());
+        result
+            .ShouldHaveValidationErrorFor(x => x.RefreshToken)
+            .WithErrorMessage(_i18n.User.Validation.RefreshTokenRequired());
     }
 
     #endregion
@@ -99,7 +107,9 @@ public class PublicSignOutValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var i18n = TestErrorsFactory.CreateIdentityI18n();
         var validator = new PublicSignOutValidator(i18n);
         var command = new PublicSignOutCommand(UserId: Guid.NewGuid(), RefreshToken: "");
 
@@ -108,7 +118,9 @@ public class PublicSignOutValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(i18n.RefreshTokenRequired());
+        result
+            .ShouldHaveValidationErrorFor(x => x.RefreshToken)
+            .WithErrorMessage(i18n.User.Validation.RefreshTokenRequired());
     }
 
     #endregion
