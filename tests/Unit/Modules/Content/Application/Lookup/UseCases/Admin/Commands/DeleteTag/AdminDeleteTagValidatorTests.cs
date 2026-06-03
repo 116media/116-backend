@@ -1,4 +1,5 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.DeleteTag;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,7 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminDeleteTagValidatorTests
 {
-    private readonly AdminDeleteTagValidator _validator = new(LocalizerFactory.CreateMessage<TagErrorMessage>());
+    private readonly AdminDeleteTagValidator _validator = new(TestErrorsFactory.CreateContentI18n());
 
     #region Valid Command Tests
 
