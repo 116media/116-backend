@@ -31,7 +31,7 @@ public class AdminDeactivatePromotionLevelHandlerTests : BaseContentHandlerTest
             _lookupRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
-            TestErrorsFactory.CreatePromotionLevelErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
