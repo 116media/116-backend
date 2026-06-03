@@ -1,5 +1,7 @@
+using System.Globalization;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.VerifyOtp;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
@@ -15,7 +17,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Comma
 /// </summary>
 public class AdminVerifyOtpValidatorTests
 {
-    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly IdentityI18n _i18n = TestErrorsFactory.CreateIdentityI18n();
     private readonly AdminVerifyOtpValidator _validator;
 
     /// <summary>
@@ -125,7 +127,7 @@ public class AdminVerifyOtpValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.Code)
-            .WithErrorMessage(_i18n.OtpCodeWrongLength(UserConstants.OtpCodeLength));
+            .WithErrorMessage(_i18n.User.Validation.OtpCodeWrongLength(UserConstants.OtpCodeLength));
     }
 
     [Fact]
@@ -165,7 +167,9 @@ public class AdminVerifyOtpValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Purpose).WithErrorMessage(_i18n.OtpPurposeRequired());
+        result
+            .ShouldHaveValidationErrorFor(x => x.Purpose)
+            .WithErrorMessage(_i18n.User.Validation.OtpPurposeRequired());
     }
 
     [Fact]
@@ -183,7 +187,7 @@ public class AdminVerifyOtpValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Purpose).WithErrorMessage(_i18n.OtpPurposeInvalid());
+        result.ShouldHaveValidationErrorFor(x => x.Purpose).WithErrorMessage(_i18n.User.Validation.OtpPurposeInvalid());
     }
 
     #endregion
@@ -214,7 +218,9 @@ public class AdminVerifyOtpValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var i18n = TestErrorsFactory.CreateIdentityI18n();
         var validator = new AdminVerifyOtpValidator(i18n);
         var command = new AdminVerifyOtpCommand(
             Email: TestConstants.User.ValidEmail,
@@ -227,7 +233,7 @@ public class AdminVerifyOtpValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Purpose).WithErrorMessage(i18n.OtpPurposeRequired());
+        result.ShouldHaveValidationErrorFor(x => x.Purpose).WithErrorMessage(i18n.User.Validation.OtpPurposeRequired());
     }
 
     #endregion
