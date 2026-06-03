@@ -1,5 +1,6 @@
 using System.Net;
 using _116.Core.Application.Shared.Errors;
+using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Infrastructure.Services;
 using _116.Shared.Application.Exceptions;
@@ -28,9 +29,9 @@ public class FileServiceTests
         var httpClient = new HttpClient(_httpMessageHandlerMock.Object);
         _cloudinaryServiceMock = new Mock<ICloudinaryService>();
 
-        CoreErrors coreErrors = TestErrorsFactory.CreateCoreErrors();
+        CoreI18n coreI18n = TestErrorsFactory.CreateCoreI18n();
 
-        _service = new FileService(httpClient, _cloudinaryServiceMock.Object, coreErrors);
+        _service = new FileService(httpClient, _cloudinaryServiceMock.Object, coreI18n);
     }
 
     #region UploadFileAsync Tests
