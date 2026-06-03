@@ -29,7 +29,7 @@ public class PublicRenamePlaylistHandlerTests
         _handler = new PublicRenamePlaylistHandler(
             _playlistRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreatePlaylistErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
