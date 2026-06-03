@@ -1,4 +1,5 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.RenamePlaylist;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
 using _116.Tests.Fixtures.Constants;
@@ -14,9 +15,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Interactions.UseCases.Publ
 /// </summary>
 public class PublicRenamePlaylistValidatorTests
 {
-    private readonly PublicRenamePlaylistValidator _validator = new(
-        LocalizerFactory.CreateMessage<PlaylistErrorMessage>("en")
-    );
+    private readonly PublicRenamePlaylistValidator _validator = new(TestErrorsFactory.CreateContentI18n());
 
     #region Valid Cases
 
