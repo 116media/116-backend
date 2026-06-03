@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePricingTier;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminUpdatePricingTierValidatorTests
 {
-    private readonly PricingTierErrorMessage _i18n = LocalizerFactory.CreateMessage<PricingTierErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminUpdatePricingTierValidator _validator;
 
     /// <summary>
@@ -85,7 +87,7 @@ public class AdminUpdatePricingTierValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminUpdatePricingTierCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.PricingTier.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -111,7 +113,8 @@ public class AdminUpdatePricingTierValidatorTests
         result
             .Errors.Should()
             .ContainSingle(e =>
-                e.PropertyName == nameof(AdminUpdatePricingTierCommand.Name) && e.ErrorMessage == _i18n.NameRequired()
+                e.PropertyName == nameof(AdminUpdatePricingTierCommand.Name)
+                && e.ErrorMessage == _i18n.PricingTier.Msg.NameRequired()
             );
     }
 
@@ -134,7 +137,7 @@ public class AdminUpdatePricingTierValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminUpdatePricingTierCommand.Name)
-                && e.ErrorMessage == _i18n.NameTooLong(TestConstants.Content.PricingTier.NameMaxLength)
+                && e.ErrorMessage == _i18n.PricingTier.Msg.NameTooLong(TestConstants.Content.PricingTier.NameMaxLength)
             );
     }
 
@@ -184,7 +187,7 @@ public class AdminUpdatePricingTierValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminUpdatePricingTierCommand.Description)
-                && e.ErrorMessage == _i18n.DescriptionRequired()
+                && e.ErrorMessage == _i18n.PricingTier.Msg.DescriptionRequired()
             );
     }
 
@@ -207,7 +210,7 @@ public class AdminUpdatePricingTierValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminUpdatePricingTierCommand.Description)
-                && e.ErrorMessage == _i18n.DescriptionRequired()
+                && e.ErrorMessage == _i18n.PricingTier.Msg.DescriptionRequired()
             );
     }
 
@@ -230,7 +233,8 @@ public class AdminUpdatePricingTierValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminUpdatePricingTierCommand.Description)
-                && e.ErrorMessage == _i18n.DescriptionTooLong(TestConstants.Content.PricingTier.DescriptionMaxLength)
+                && e.ErrorMessage
+                    == _i18n.PricingTier.Msg.DescriptionTooLong(TestConstants.Content.PricingTier.DescriptionMaxLength)
             );
     }
 
@@ -244,8 +248,9 @@ public class AdminUpdatePricingTierValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<PricingTierErrorMessage>(culture);
-        var validator = new AdminUpdatePricingTierValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminUpdatePricingTierValidator(_i18n);
         var command = new AdminUpdatePricingTierCommand(
             Id: Guid.NewGuid().ToString(),
             Name: "",
@@ -260,7 +265,8 @@ public class AdminUpdatePricingTierValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdatePricingTierCommand.Name) && e.ErrorMessage == i18n.NameRequired()
+                e.PropertyName == nameof(AdminUpdatePricingTierCommand.Name)
+                && e.ErrorMessage == _i18n.PricingTier.Msg.NameRequired()
             );
     }
 
