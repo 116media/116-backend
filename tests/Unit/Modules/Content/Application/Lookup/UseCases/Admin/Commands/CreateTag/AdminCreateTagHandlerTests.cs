@@ -36,7 +36,7 @@ public class AdminCreateTagHandlerTests : BaseContentHandlerTest
             _unitOfWorkMock.Object,
             _cacheInvalidatorMock.Object,
             Mapper,
-            TestErrorsFactory.CreateTagErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
