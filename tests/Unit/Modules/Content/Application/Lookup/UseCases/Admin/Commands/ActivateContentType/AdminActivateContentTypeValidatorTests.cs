@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.ActivateContentType;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminActivateContentTypeValidatorTests
 {
-    private readonly ContentTypeErrorMessage _i18n = LocalizerFactory.CreateMessage<ContentTypeErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminActivateContentTypeValidator _validator;
 
     /// <summary>
@@ -58,7 +60,7 @@ public class AdminActivateContentTypeValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminActivateContentTypeCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.ContentType.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -72,8 +74,9 @@ public class AdminActivateContentTypeValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ContentTypeErrorMessage>(culture);
-        var validator = new AdminActivateContentTypeValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminActivateContentTypeValidator(_i18n);
         var command = new AdminActivateContentTypeCommand(Id: "");
 
         // Act
@@ -85,7 +88,7 @@ public class AdminActivateContentTypeValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminActivateContentTypeCommand.Id)
-                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.ContentType.Msg.Localizer["IdRequired"].Value
             );
     }
 
