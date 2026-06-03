@@ -1,5 +1,7 @@
+using System.Globalization;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -14,7 +16,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Comma
 /// </summary>
 public class AdminResetPasswordValidatorTests
 {
-    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly IdentityI18n _i18n = TestErrorsFactory.CreateIdentityI18n();
     private readonly AdminResetPasswordValidator _validator;
 
     /// <summary>
@@ -124,7 +126,7 @@ public class AdminResetPasswordValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.Code)
-            .WithErrorMessage(_i18n.OtpCodeWrongLength(UserConstants.OtpCodeLength));
+            .WithErrorMessage(_i18n.User.Validation.OtpCodeWrongLength(UserConstants.OtpCodeLength));
     }
 
     [Fact]
@@ -160,7 +162,7 @@ public class AdminResetPasswordValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Code).WithErrorMessage(_i18n.OtpCodeNotNumeric());
+        result.ShouldHaveValidationErrorFor(x => x.Code).WithErrorMessage(_i18n.User.Validation.OtpCodeNotNumeric());
     }
 
     #endregion
@@ -249,7 +251,9 @@ public class AdminResetPasswordValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var i18n = TestErrorsFactory.CreateIdentityI18n();
         var validator = new AdminResetPasswordValidator(i18n);
         var command = new AdminResetPasswordCommand(
             Email: null!,
@@ -262,7 +266,7 @@ public class AdminResetPasswordValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage(i18n.EmailRequired());
+        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage(i18n.User.Validation.EmailRequired());
     }
 
     #endregion
