@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePricingTier;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminCreatePricingTierValidatorTests
 {
-    private readonly PricingTierErrorMessage _i18n = LocalizerFactory.CreateMessage<PricingTierErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminCreatePricingTierValidator _validator;
 
     /// <summary>
@@ -96,7 +98,8 @@ public class AdminCreatePricingTierValidatorTests
         result
             .Errors.Should()
             .ContainSingle(e =>
-                e.PropertyName == nameof(AdminCreatePricingTierCommand.Name) && e.ErrorMessage == _i18n.NameRequired()
+                e.PropertyName == nameof(AdminCreatePricingTierCommand.Name)
+                && e.ErrorMessage == _i18n.PricingTier.Msg.NameRequired()
             );
     }
 
@@ -117,7 +120,8 @@ public class AdminCreatePricingTierValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreatePricingTierCommand.Name) && e.ErrorMessage == _i18n.NameRequired()
+                e.PropertyName == nameof(AdminCreatePricingTierCommand.Name)
+                && e.ErrorMessage == _i18n.PricingTier.Msg.NameRequired()
             );
     }
 
@@ -139,7 +143,7 @@ public class AdminCreatePricingTierValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePricingTierCommand.Name)
-                && e.ErrorMessage == _i18n.NameTooLong(TestConstants.Content.PricingTier.NameMaxLength)
+                && e.ErrorMessage == _i18n.PricingTier.Msg.NameTooLong(TestConstants.Content.PricingTier.NameMaxLength)
             );
     }
 
@@ -165,7 +169,7 @@ public class AdminCreatePricingTierValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePricingTierCommand.Description)
-                && e.ErrorMessage == _i18n.DescriptionRequired()
+                && e.ErrorMessage == _i18n.PricingTier.Msg.DescriptionRequired()
             );
     }
 
@@ -187,7 +191,7 @@ public class AdminCreatePricingTierValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePricingTierCommand.Description)
-                && e.ErrorMessage == _i18n.DescriptionRequired()
+                && e.ErrorMessage == _i18n.PricingTier.Msg.DescriptionRequired()
             );
     }
 
@@ -209,7 +213,8 @@ public class AdminCreatePricingTierValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePricingTierCommand.Description)
-                && e.ErrorMessage == _i18n.DescriptionTooLong(TestConstants.Content.PricingTier.DescriptionMaxLength)
+                && e.ErrorMessage
+                    == _i18n.PricingTier.Msg.DescriptionTooLong(TestConstants.Content.PricingTier.DescriptionMaxLength)
             );
     }
 
@@ -223,8 +228,9 @@ public class AdminCreatePricingTierValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<PricingTierErrorMessage>(culture);
-        var validator = new AdminCreatePricingTierValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminCreatePricingTierValidator(_i18n);
         var command = new AdminCreatePricingTierCommand(
             Name: "",
             Description: TestConstants.Content.PricingTier.ValidDescription
@@ -238,7 +244,8 @@ public class AdminCreatePricingTierValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreatePricingTierCommand.Name) && e.ErrorMessage == i18n.NameRequired()
+                e.PropertyName == nameof(AdminCreatePricingTierCommand.Name)
+                && e.ErrorMessage == _i18n.PricingTier.Msg.NameRequired()
             );
     }
 
