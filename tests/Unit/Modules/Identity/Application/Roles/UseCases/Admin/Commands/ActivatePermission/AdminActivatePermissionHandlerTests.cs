@@ -1,5 +1,6 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.ActivatePermission;
 using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
@@ -23,14 +24,14 @@ public class AdminActivatePermissionHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IPermissionRepository> _permissionRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly UserErrors _userErrors;
+    private readonly IdentityI18n _userErrors;
     private readonly AdminActivatePermissionHandler _handler;
 
     public AdminActivatePermissionHandlerTests()
     {
         _permissionRepositoryMock = MockPermissionRepository.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
-        _userErrors = TestErrorsFactory.CreateUserErrors();
+        _userErrors = TestErrorsFactory.CreateIdentityI18n();
         _handler = new AdminActivatePermissionHandler(
             _permissionRepositoryMock.Object,
             _unitOfWorkMock.Object,
