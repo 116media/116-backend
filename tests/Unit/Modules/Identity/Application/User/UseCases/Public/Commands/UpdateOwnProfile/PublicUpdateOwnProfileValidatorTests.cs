@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
 using _116.Tests.Fixtures.Constants;
@@ -14,7 +16,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.UseCases.Public.Comm
 /// </summary>
 public class PublicUpdateOwnProfileValidatorTests
 {
-    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>("en");
+    private readonly IdentityI18n _i18n = TestErrorsFactory.CreateIdentityI18n();
     private readonly PublicUpdateOwnProfileValidator _validator;
 
     /// <summary>
@@ -223,7 +225,7 @@ public class PublicUpdateOwnProfileValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.CountryName)
-            .WithErrorMessage(_i18n.CountryNameTooLong(UserConstants.MaxCountryNameLength));
+            .WithErrorMessage(_i18n.User.Validation.CountryNameTooLong(UserConstants.MaxCountryNameLength));
     }
 
     #endregion
@@ -273,7 +275,9 @@ public class PublicUpdateOwnProfileValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.CountryIsoCode).WithErrorMessage(_i18n.CountryIsoCodeInvalid());
+        result
+            .ShouldHaveValidationErrorFor(x => x.CountryIsoCode)
+            .WithErrorMessage(_i18n.User.Validation.CountryIsoCodeInvalid());
     }
 
     [Fact]
@@ -418,7 +422,9 @@ public class PublicUpdateOwnProfileValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.PartialPhoneNumber)
-            .WithErrorMessage(_i18n.PartialPhoneNumberTooLong(UserConstants.MaxPartialPhoneNumberLength));
+            .WithErrorMessage(
+                _i18n.User.Validation.PartialPhoneNumberTooLong(UserConstants.MaxPartialPhoneNumberLength)
+            );
     }
 
     #endregion
@@ -458,7 +464,9 @@ public class PublicUpdateOwnProfileValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var i18n = TestErrorsFactory.CreateIdentityI18n();
         var validator = new PublicUpdateOwnProfileValidator(i18n);
         var command = new PublicUpdateOwnProfileCommand(
             UserId: Guid.NewGuid(),
@@ -478,7 +486,7 @@ public class PublicUpdateOwnProfileValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.CountryName)
-            .WithErrorMessage(i18n.CountryNameTooLong(UserConstants.MaxCountryNameLength));
+            .WithErrorMessage(i18n.User.Validation.CountryNameTooLong(UserConstants.MaxCountryNameLength));
     }
 
     #endregion
