@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,6 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class VideoErrorsTests
 {
     private readonly VideoErrors _errors = TestErrorsFactory.CreateVideoErrors();
+    private readonly VideoErrorMessage _message = LocalizerFactory.CreateMessage<VideoErrorMessage>("en");
 
     [Fact]
     public void NotFound_WithId_ShouldReturnNotFoundException()
@@ -44,122 +46,100 @@ public class VideoErrorsTests
     [Fact]
     public void TitleRequired_ShouldReturnBadRequestException()
     {
-        // Act
         BadRequestException exception = _errors.TitleRequired();
 
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.TitleRequired());
     }
 
     [Fact]
     public void SlugRequired_ShouldReturnBadRequestException()
     {
-        // Act
         BadRequestException exception = _errors.SlugRequired();
 
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.SlugRequired());
     }
 
     [Fact]
     public void CannotPublishWithoutYoutubeUrl_ShouldReturnBadRequestException()
     {
-        // Act
         BadRequestException exception = _errors.CannotPublishWithoutYoutubeUrl();
 
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.CannotPublishWithoutYoutubeUrl());
     }
 
     [Fact]
     public void CannotDeletePublishedVideo_ShouldReturnBadRequestException()
     {
-        // Act
         BadRequestException exception = _errors.CannotDeletePublishedVideo();
 
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.CannotDeletePublishedVideo());
     }
 
     [Fact]
     public void AlreadySubmitted_ShouldReturnConflictException()
     {
-        // Act
         ConflictException exception = _errors.AlreadySubmitted();
 
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadySubmitted());
     }
 
     [Fact]
     public void AlreadyPendingReview_ShouldReturnConflictException()
     {
-        // Act
         ConflictException exception = _errors.AlreadyPendingReview();
 
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadyPendingReview());
     }
 
     [Fact]
     public void AlreadyApproved_ShouldReturnConflictException()
     {
-        // Act
         ConflictException exception = _errors.AlreadyApproved();
 
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadyApproved());
     }
 
     [Fact]
     public void AlreadyPublished_ShouldReturnConflictException()
     {
-        // Act
         ConflictException exception = _errors.AlreadyPublished();
 
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadyPublished());
     }
 
     [Fact]
     public void AlreadyRejected_ShouldReturnConflictException()
     {
-        // Act
         ConflictException exception = _errors.AlreadyRejected();
 
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadyRejected());
     }
 
     [Fact]
     public void AlreadyArchived_ShouldReturnConflictException()
     {
-        // Act
         ConflictException exception = _errors.AlreadyArchived();
 
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadyArchived());
     }
 
     [Fact]
     public void InvalidStatusTransition_ShouldReturnBadRequestException()
     {
-        // Act
         BadRequestException exception = _errors.InvalidStatusTransition("Draft", "Published");
 
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.InvalidStatusTransition("Draft", "Published"));
     }
 
     [Fact]
@@ -172,7 +152,7 @@ public class VideoErrorsTests
         BadRequestException exception = _errors.CannotAttachYoutubeUrlBeforeShoot(shootDate);
 
         // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Contain("2026-06-15");
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.CannotAttachYoutubeUrlBeforeShoot(shootDate));
     }
 }
