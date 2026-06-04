@@ -66,8 +66,6 @@ public class AdminUpdateVideoHandler(
             customerId: command.CustomerId,
             orderItemId: command.OrderItemId,
             socialBoost: command.SocialBoost,
-            isFeatured: command.IsFeatured,
-            featuredUntil: command.FeaturedUntil,
             metaTitle: command.MetaTitle,
             metaDescription: command.MetaDescription
         );

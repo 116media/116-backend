@@ -37,7 +37,7 @@ public class PublicGetPublishedArticlesEndpointV1Tests
             CoverImageUrl: null,
             AuthorId: "Test",
             Status: EnumContentStatus.Published,
-            IsFeatured: false,
+            IsPromoted: false,
             PublishedAt: null
         );
 }

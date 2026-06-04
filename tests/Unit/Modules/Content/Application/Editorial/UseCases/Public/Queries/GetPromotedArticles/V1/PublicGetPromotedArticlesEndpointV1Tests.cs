@@ -1,24 +1,24 @@
-using _116.Content.Application.Editorial.UseCases.Public.Queries.GetFeaturedArticles.V1;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPromotedArticles.V1;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetFeaturedArticles.V1;
+namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetPromotedArticles.V1;
 
 /// <summary>
-/// Unit tests for <see cref="PublicGetFeaturedArticlesResponse"/>.
+/// Unit tests for <see cref="PublicGetPromotedArticlesResponse"/>.
 /// </summary>
-public class PublicGetFeaturedArticlesEndpointV1Tests
+public class PublicGetPromotedArticlesEndpointV1Tests
 {
     [Fact]
-    public void PublicGetFeaturedArticlesResponse_ShouldConstructCorrectly()
+    public void PublicGetPromotedArticlesResponse_ShouldConstructCorrectly()
     {
         // Arrange
         IReadOnlyList<ArticleSummaryDto> articles = [CreateArticleSummaryDto()];
 
         // Act
-        var response = new PublicGetFeaturedArticlesResponse(Articles: articles);
+        var response = new PublicGetPromotedArticlesResponse(Articles: articles);
 
         // Assert
         response.Should().NotBeNull();
@@ -36,7 +36,7 @@ public class PublicGetFeaturedArticlesEndpointV1Tests
             CoverImageUrl: null,
             AuthorId: "Test",
             Status: EnumContentStatus.Published,
-            IsFeatured: false,
+            IsPromoted: false,
             PublishedAt: null
         );
 }

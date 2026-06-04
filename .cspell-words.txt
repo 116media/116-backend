@@ -55,6 +55,9 @@ Swashbuckle
 TRUNC
 typeparam
 unlikes
+unpromote
+unpromoted
+unpromoting
 unrecognised
 upsell
 usecase

@@ -18,8 +18,8 @@ public static class AdminUpdateArticleMetaField
             in a mutable status — for example correcting a typo in the title of a rejected article.
             \n
             Covers metadata (title, slug, category), content (headline, body, cover image),
-            commerce fields (customer, order item), promotion flags (social boost, featured
-            placement), and SEO metadata (meta title, meta description).
+            commerce fields (customer, order item), promotion flags (social boost),
+            and SEO metadata (meta title, meta description).
             \n
             Allowed when the article status is <c>Draft</c>, <c>PendingPayment</c>,
             <c>PendingReview</c>, or <c>Rejected</c>. Attempting to update an article
@@ -37,8 +37,6 @@ public static class AdminUpdateArticleMetaField
             \n
             **Commerce fields:** <c>customerId</c> and <c>orderItemId</c> must be provided
             together or both omitted. Providing only one will return a 400 Bad Request.
-            \n
-            **Featured placement:** <c>featuredUntil</c> must be a future date when provided.
             \n
             **Authentication Requirements:**\n
             - User must be authenticated with a valid access token\n

@@ -1,24 +1,24 @@
-using _116.Content.Application.Editorial.UseCases.Public.Queries.GetFeaturedVideos.V1;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPromotedVideos.V1;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetFeaturedVideos.V1;
+namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetPromotedVideos.V1;
 
 /// <summary>
-/// Unit tests for <see cref="PublicGetFeaturedVideosResponse"/>.
+/// Unit tests for <see cref="PublicGetPromotedVideosResponse"/>.
 /// </summary>
-public class PublicGetFeaturedVideosEndpointV1Tests
+public class PublicGetPromotedVideosEndpointV1Tests
 {
     [Fact]
-    public void PublicGetFeaturedVideosResponse_ShouldConstructCorrectly()
+    public void PublicGetPromotedVideosResponse_ShouldConstructCorrectly()
     {
         // Arrange
         IReadOnlyList<VideoSummaryDto> videos = [CreateVideoSummaryDto()];
 
         // Act
-        var response = new PublicGetFeaturedVideosResponse(Videos: videos);
+        var response = new PublicGetPromotedVideosResponse(Videos: videos);
 
         // Assert
         response.Should().NotBeNull();
@@ -36,7 +36,7 @@ public class PublicGetFeaturedVideosEndpointV1Tests
             AuthorId: "Test",
             Status: EnumContentStatus.Published,
             YoutubeVideoUrl: null,
-            IsFeatured: false,
+            IsPromoted: false,
             HasLyrics: false,
             PublishedAt: null,
             ShootingScheduledAt: null

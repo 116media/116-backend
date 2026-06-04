@@ -49,8 +49,6 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
             CustomerId: null,
             OrderItemId: null,
             SocialBoost: false,
-            IsFeatured: false,
-            FeaturedUntil: null,
             MetaTitle: null,
             MetaDescription: null
         );

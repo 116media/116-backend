@@ -35,11 +35,6 @@ public class AdminUpdateVideoValidator : AbstractValidator<AdminUpdateVideoComma
             .When(x => x.OrderItemId.HasValue)
             .WithMessage("Customer ID is required when order item ID is provided.");
 
-        RuleFor(x => x.FeaturedUntil)
-            .GreaterThan(DateTimeOffset.UtcNow)
-            .When(x => x.FeaturedUntil.HasValue)
-            .WithMessage("Featured until date must be in the future.");
-
         RuleFor(x => x.MetaTitle)
             .MinimumLength(ContentConstants.MinMetaTitleLength)
             .MaximumLength(ContentConstants.MaxMetaTitleLength)

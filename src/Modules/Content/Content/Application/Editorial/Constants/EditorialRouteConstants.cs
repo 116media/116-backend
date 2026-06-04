@@ -110,14 +110,20 @@ public static class EditorialRouteConstants
     public const string Deactivate = "deactivate";
 
     /// <summary>
-    /// Route segment for retrieving featured editorial entities.
-    /// Example: /api/v1/public/articles/featured.
+    /// Route segment for retrieving promoted editorial entities.
+    /// Example: /api/v1/public/articles/promoted.
     /// </summary>
-    public const string Featured = "featured";
+    public const string Promoted = "promoted";
 
     /// <summary>
     /// Route segment for retrieving active editorial entities.
     /// Example: /api/v1/admin/videos/active.
     /// </summary>
     public const string Active = "active";
+
+    /// <summary>
+    /// Route segment for force-unpromoting a promoted editorial entity (SuperAdmin only).
+    /// Example: /api/v1/admin/articles/{slug}/unpromote.
+    /// </summary>
+    public const string Unpromote = "unpromote";
 }

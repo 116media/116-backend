@@ -25,6 +25,7 @@ internal class VideoBuilder
     private DateTimeOffset? _shootingScheduledAt;
     private EnumContentStatus _targetStatus = EnumContentStatus.Draft;
     private string? _rejectionReason;
+    private DateTimeOffset? _promotedUntil;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VideoBuilder"/> class with a required category ID.
@@ -179,6 +180,15 @@ internal class VideoBuilder
     }
 
     /// <summary>
+    /// Stamps the video as promoted until the specified date.
+    /// </summary>
+    public VideoBuilder AsPromoted(DateTimeOffset until)
+    {
+        _promotedUntil = until;
+        return this;
+    }
+
+    /// <summary>
     /// Transitions the video to Archived status (requires YouTube URL; auto-set if not provided).
     /// </summary>
     public VideoBuilder AsArchived()
@@ -234,6 +244,11 @@ internal class VideoBuilder
         }
 
         ApplyStatusTransition(entity);
+
+        if (_promotedUntil.HasValue)
+        {
+            entity.StampPromotion(_promotedUntil.Value);
+        }
 
         entity.CreatedAt = DateTime.UtcNow;
 

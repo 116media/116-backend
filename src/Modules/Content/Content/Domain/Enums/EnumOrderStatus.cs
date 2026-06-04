@@ -19,7 +19,7 @@ public enum EnumOrderStatus
 
     /// <summary>
     /// Payment has been verified. Content creation can now begin.
-    /// Social boost and featured stamps are applied to linked articles and videos.
+    /// Social boost and promoted stamps are applied to linked articles and videos.
     /// </summary>
     Paid,
 

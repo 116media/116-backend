@@ -6,7 +6,7 @@ namespace _116.Content.Domain.Entities;
 /// <summary>
 /// Represents a single commissioned content item within a <see cref="ContentOrderEntity" />.
 /// Each item specifies what category the content belongs to, what kind of content it is
-/// (Article or Video), and optional promotion options (social boost, featured placement).
+/// (Article or Video), and optional promotion options (social boost, promoted placement).
 /// After payment is verified, the admin creates the actual article or video and links it
 /// back to this order item via <c>order_item_id</c>.
 /// </summary>
@@ -31,7 +31,7 @@ public class ContentOrderItemEntity : Aggregate<Guid>
 
     /// <summary>
     /// The optional homepage promotion level applied to this item.
-    /// When set, the linked article or video will be stamped as featured after payment.
+    /// When set, the linked article or video will be stamped as promoted after payment.
     /// </summary>
     public Guid? PromotionLevelId { get; private set; }
 

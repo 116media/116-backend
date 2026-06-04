@@ -16,7 +16,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="CoverImageUrl">The URL of the cover image, or null if not set.</param>
 /// <param name="AuthorId">The identity user UUID of the author.</param>
 /// <param name="Status">The current editorial workflow status.</param>
-/// <param name="IsFeatured">Whether the article has an active featured placement.</param>
+/// <param name="IsPromoted">Whether the article has an active paid promotion.</param>
 /// <param name="PublishedAt">When the article was published, or null if not yet published.</param>
 public record ArticleSummaryDto(
     Guid Id,
@@ -28,6 +28,6 @@ public record ArticleSummaryDto(
     string? CoverImageUrl,
     string AuthorId,
     EnumContentStatus Status,
-    bool IsFeatured,
+    bool IsPromoted,
     DateTimeOffset? PublishedAt
 ) : AuditableDto;

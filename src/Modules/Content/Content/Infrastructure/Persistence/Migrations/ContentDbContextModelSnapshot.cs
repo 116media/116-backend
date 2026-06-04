@@ -174,10 +174,6 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("customer_id");
 
-                    b.Property<DateTimeOffset?>("FeaturedUntil")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("featured_until");
-
                     b.Property<string>("Headline")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -186,11 +182,11 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasDefaultValue("")
                         .HasColumnName("headline");
 
-                    b.Property<bool>("IsFeatured")
+                    b.Property<bool>("IsPromoted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
-                        .HasColumnName("is_featured");
+                        .HasColumnName("is_promoted");
 
                     b.Property<int>("LikeCount")
                         .ValueGeneratedOnAdd()
@@ -211,6 +207,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("OrderItemId")
                         .HasColumnType("uuid")
                         .HasColumnName("order_item_id");
+
+                    b.Property<DateTimeOffset?>("PromotedUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("promoted_until");
 
                     b.Property<DateTimeOffset?>("PublishedAt")
                         .HasColumnType("timestamp with time zone")
@@ -251,6 +251,19 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("title");
+
+                    b.Property<DateTimeOffset?>("UnpromotedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("unpromoted_at");
+
+                    b.Property<string>("UnpromotedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("unpromoted_by");
+
+                    b.Property<string>("UnpromotedReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("unpromoted_reason");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1621,21 +1634,17 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
-                    b.Property<DateTimeOffset?>("FeaturedUntil")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("featured_until");
-
                     b.Property<bool>("HasLyrics")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("has_lyrics");
 
-                    b.Property<bool>("IsFeatured")
+                    b.Property<bool>("IsPromoted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
-                        .HasColumnName("is_featured");
+                        .HasColumnName("is_promoted");
 
                     b.Property<string>("MetaDescription")
                         .HasMaxLength(160)
@@ -1650,6 +1659,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("OrderItemId")
                         .HasColumnType("uuid")
                         .HasColumnName("order_item_id");
+
+                    b.Property<DateTimeOffset?>("PromotedUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("promoted_until");
 
                     b.Property<DateTimeOffset?>("PublishedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1716,6 +1729,19 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("title");
+
+                    b.Property<DateTimeOffset?>("UnpromotedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("unpromoted_at");
+
+                    b.Property<string>("UnpromotedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("unpromoted_by");
+
+                    b.Property<string>("UnpromotedReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("unpromoted_reason");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")

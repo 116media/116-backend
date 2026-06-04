@@ -25,8 +25,6 @@ public class AdminUpdateArticleValidatorTests
             CustomerId: null,
             OrderItemId: null,
             SocialBoost: false,
-            IsFeatured: false,
-            FeaturedUntil: null,
             MetaTitle: null,
             MetaDescription: null
         );
@@ -359,28 +357,6 @@ public class AdminUpdateArticleValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.CustomerId)
                 && e.ErrorMessage == "Customer ID is required when order item ID is provided."
-            );
-    }
-
-    [Fact]
-    public async Task Validate_WithPastFeaturedUntil_ShouldHaveError()
-    {
-        // Arrange
-        var command = ValidCommand() with
-        {
-            FeaturedUntil = DateTimeOffset.UtcNow.AddDays(-1),
-        };
-
-        // Act
-        ValidationResult result = await _validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateArticleCommand.FeaturedUntil)
-                && e.ErrorMessage == "Featured until date must be in the future."
             );
     }
 

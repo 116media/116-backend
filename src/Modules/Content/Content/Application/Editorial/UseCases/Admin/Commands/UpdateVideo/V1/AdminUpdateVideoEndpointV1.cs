@@ -22,8 +22,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 /// <param name="CustomerId">The B2B customer who commissioned this video. <c>null</c> for free content.</param>
 /// <param name="OrderItemId">The order item this video fulfils. Required when <c>CustomerId</c> is set.</param>
 /// <param name="SocialBoost">Whether to flag this video for manual social media promotion.</param>
-/// <param name="IsFeatured">Whether to activate a featured homepage placement.</param>
-/// <param name="FeaturedUntil">When the featured placement expires.</param>
 /// <param name="MetaTitle">Custom SEO meta title.</param>
 /// <param name="MetaDescription">Custom SEO meta description.</param>
 public record AdminUpdateVideoRequest(
@@ -34,8 +32,6 @@ public record AdminUpdateVideoRequest(
     Guid? CustomerId,
     Guid? OrderItemId,
     bool SocialBoost,
-    bool IsFeatured,
-    DateTimeOffset? FeaturedUntil,
     string? MetaTitle,
     string? MetaDescription
 );
@@ -77,8 +73,6 @@ public class AdminUpdateVideoEndpointV1 : ICarterModule
                         CustomerId: request.CustomerId,
                         OrderItemId: request.OrderItemId,
                         SocialBoost: request.SocialBoost,
-                        IsFeatured: request.IsFeatured,
-                        FeaturedUntil: request.FeaturedUntil,
                         MetaTitle: request.MetaTitle,
                         MetaDescription: request.MetaDescription
                     );

@@ -75,20 +75,20 @@ public class ArticleSearchSpecification(string search) : Specification<ArticleEn
 }
 
 /// <summary>
-/// Specification that matches articles that are currently featured and published.
-/// Featured articles must have <c>IsFeatured = true</c>, a future or null <c>FeaturedUntil</c>,
+/// Specification that matches articles that currently have an active paid promotion and are published.
+/// Promoted articles must have <c>IsPromoted = true</c>, a future or null <c>PromotedUntil</c>,
 /// and <c>Status = Published</c>.
 /// </summary>
-public class FeaturedArticleSpecification : Specification<ArticleEntity>
+public class PromotedArticleSpecification : Specification<ArticleEntity>
 {
     /// <inheritdoc />
     public override Expression<Func<ArticleEntity, bool>> ToExpression()
     {
         DateTimeOffset now = DateTimeOffset.UtcNow;
         return article =>
-            article.IsFeatured
+            article.IsPromoted
             && article.Status == EnumContentStatus.Published
-            && (article.FeaturedUntil == null || article.FeaturedUntil > now);
+            && (article.PromotedUntil == null || article.PromotedUntil > now);
     }
 }
 

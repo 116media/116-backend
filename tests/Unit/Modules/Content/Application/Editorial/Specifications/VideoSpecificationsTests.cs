@@ -148,14 +148,14 @@ public class VideoSpecificationsTests
 
     #endregion
 
-    #region FeaturedVideoSpecification
+    #region PromotedVideoSpecification
 
     [Fact]
-    public void FeaturedVideoSpecification_WithFeaturedPublishedVideo_ShouldReturnTrue()
+    public void PromotedVideoSpecification_WithPromotedPublishedVideo_ShouldReturnTrue()
     {
         // Arrange
-        VideoEntity video = VideoFactory.CreateFeatured(CategoryId);
-        var spec = new FeaturedVideoSpecification();
+        VideoEntity video = VideoFactory.CreatePromoted(CategoryId);
+        var spec = new PromotedVideoSpecification();
 
         // Act
         bool result = spec.IsSatisfiedBy(video);
@@ -165,11 +165,11 @@ public class VideoSpecificationsTests
     }
 
     [Fact]
-    public void FeaturedVideoSpecification_WithNonFeaturedPublishedVideo_ShouldReturnFalse()
+    public void PromotedVideoSpecification_WithNonPromotedPublishedVideo_ShouldReturnFalse()
     {
         // Arrange
         VideoEntity video = VideoFactory.CreatePublished(CategoryId);
-        var spec = new FeaturedVideoSpecification();
+        var spec = new PromotedVideoSpecification();
 
         // Act
         bool result = spec.IsSatisfiedBy(video);
@@ -179,12 +179,12 @@ public class VideoSpecificationsTests
     }
 
     [Fact]
-    public void FeaturedVideoSpecification_WithFeaturedDraftVideo_ShouldReturnFalse()
+    public void PromotedVideoSpecification_WithPromotedDraftVideo_ShouldReturnFalse()
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
-        video.StampFeatured(DateTimeOffset.UtcNow.AddDays(7));
-        var spec = new FeaturedVideoSpecification();
+        video.StampPromotion(DateTimeOffset.UtcNow.AddDays(7));
+        var spec = new PromotedVideoSpecification();
 
         // Act
         bool result = spec.IsSatisfiedBy(video);

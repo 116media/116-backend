@@ -60,9 +60,9 @@ public class AdminVerifyPaymentFactory(
                     cancellationToken: cancellationToken
                 );
 
-                DateTimeOffset featuredUntil = DateTimeOffset.UtcNow.AddDays(promoLevel.DurationDays);
-                article?.StampFeatured(until: featuredUntil);
-                video?.StampFeatured(until: featuredUntil);
+                DateTimeOffset promotedUntil = DateTimeOffset.UtcNow.AddDays(promoLevel.DurationDays);
+                article?.StampPromotion(until: promotedUntil);
+                video?.StampPromotion(until: promotedUntil);
             }
 
             article?.MarkPendingReview();

@@ -66,14 +66,10 @@ public static class VideoFactory
         Enumerable.Range(0, count).Select(_ => CreatePublished(categoryId)).ToList();
 
     /// <summary>
-    /// Creates a featured published video with a future expiry.
+    /// Creates a promoted published video with a future expiry.
     /// </summary>
-    public static VideoEntity CreateFeatured(Guid categoryId)
-    {
-        VideoEntity entity = new VideoBuilder(categoryId).AsPublished().Build();
-        entity.StampFeatured(DateTimeOffset.UtcNow.AddDays(7));
-        return entity;
-    }
+    public static VideoEntity CreatePromoted(Guid categoryId) =>
+        new VideoBuilder(categoryId).AsPublished().AsPromoted(DateTimeOffset.UtcNow.AddDays(7)).Build();
 
     /// <summary>
     /// Creates a free video in PendingReview status.

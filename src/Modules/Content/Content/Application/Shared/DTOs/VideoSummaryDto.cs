@@ -16,7 +16,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="AuthorId">The identity user UUID of the author.</param>
 /// <param name="Status">The current editorial workflow status.</param>
 /// <param name="YoutubeVideoUrl">The full YouTube video URL, or null if not yet attached.</param>
-/// <param name="IsFeatured">Whether the video has an active featured placement.</param>
+/// <param name="IsPromoted">Whether the video has an active paid promotion.</param>
 /// <param name="HasLyrics">Whether a lyrics page is linked to this video.</param>
 /// <param name="PublishedAt">When the video was published, or null if not yet published.</param>
 /// <param name="ShootingScheduledAt">
@@ -33,7 +33,7 @@ public record VideoSummaryDto(
     string AuthorId,
     EnumContentStatus Status,
     string? YoutubeVideoUrl,
-    bool IsFeatured,
+    bool IsPromoted,
     bool HasLyrics,
     DateTimeOffset? PublishedAt,
     DateTimeOffset? ShootingScheduledAt

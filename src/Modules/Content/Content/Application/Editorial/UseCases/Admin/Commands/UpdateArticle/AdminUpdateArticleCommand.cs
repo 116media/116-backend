@@ -18,8 +18,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 /// <param name="CustomerId">Optional B2B customer who commissioned this article.</param>
 /// <param name="OrderItemId">Optional order item this article fulfils.</param>
 /// <param name="SocialBoost">Whether the article is flagged for social media promotion.</param>
-/// <param name="IsFeatured">Whether the article has an active featured/À-la-Une placement.</param>
-/// <param name="FeaturedUntil">When the featured placement expires. <c>null</c> if not featured.</param>
 /// <param name="MetaTitle">Optional SEO meta title (max 70 chars).</param>
 /// <param name="MetaDescription">Optional SEO meta description (max 160 chars).</param>
 public record AdminUpdateArticleCommand(
@@ -33,8 +31,6 @@ public record AdminUpdateArticleCommand(
     Guid? CustomerId,
     Guid? OrderItemId,
     bool SocialBoost,
-    bool IsFeatured,
-    DateTimeOffset? FeaturedUntil,
     string? MetaTitle,
     string? MetaDescription
 ) : ICommand<AdminUpdateArticleResult>;

@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Enums;
+using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -15,7 +16,7 @@ namespace _116.Content.Domain.Entities;
 /// Approved → attach YouTube ID (thumbnail auto-downloaded) → publish → Published.
 /// </para>
 /// <para>
-/// <c>social_boost</c>, <c>is_featured</c>, and <c>featured_until</c> are stamped
+/// <c>social_boost</c>, <c>is_promoted</c>, and <c>promoted_until</c> are stamped
 /// automatically by the Commerce payment verification flow — never through video endpoints.
 /// </para>
 /// </summary>
@@ -94,15 +95,33 @@ public class VideoEntity : Aggregate<Guid>
     public bool SocialBoost { get; private set; }
 
     /// <summary>
-    /// Whether this video has an active featured homepage placement.
+    /// Whether this video has an active paid promotion placement.
     /// Stamped by Commerce payment verification — never set through video endpoints.
     /// </summary>
-    public bool IsFeatured { get; private set; }
+    public bool IsPromoted { get; private set; }
 
     /// <summary>
-    /// When the featured placement expires. <c>null</c> if not featured.
+    /// When the paid promotion expires. <c>null</c> if not promoted.
+    /// Set to <c>payment.verified_at + promotion_level.duration_days</c> by the Commerce flow.
     /// </summary>
-    public DateTimeOffset? FeaturedUntil { get; private set; }
+    public DateTimeOffset? PromotedUntil { get; private set; }
+
+    /// <summary>
+    /// When a SuperAdmin force-unpromoted this video. <c>null</c> if never force-unpromoted.
+    /// </summary>
+    public DateTimeOffset? UnpromotedAt { get; private set; }
+
+    /// <summary>
+    /// Identity of the SuperAdmin who applied the force-unpromote. <c>null</c> if never force-unpromoted.
+    /// </summary>
+    public string? UnpromotedBy { get; private set; }
+
+    /// <summary>
+    /// Reason recorded when a SuperAdmin force-unpromoted this video (max 500 chars).
+    /// Used as evidence for future refund processing.
+    /// </summary>
+    [MaxLength(500)]
+    public string? UnpromotedReason { get; private set; }
 
     /// <summary>
     /// Whether a lyrics page is linked to this video.
@@ -283,8 +302,6 @@ public class VideoEntity : Aggregate<Guid>
         Guid? customerId,
         Guid? orderItemId,
         bool socialBoost,
-        bool isFeatured,
-        DateTimeOffset? featuredUntil,
         string? metaTitle,
         string? metaDescription
     )
@@ -296,8 +313,6 @@ public class VideoEntity : Aggregate<Guid>
         CustomerId = customerId;
         OrderItemId = orderItemId;
         SocialBoost = socialBoost;
-        IsFeatured = isFeatured;
-        FeaturedUntil = featuredUntil;
         MetaTitle = metaTitle;
         MetaDescription = metaDescription;
     }
@@ -472,12 +487,43 @@ public class VideoEntity : Aggregate<Guid>
     public void StampSocialBoost() => SocialBoost = true;
 
     /// <summary>
-    /// Activates featured placement. Called by Commerce only.
+    /// Activates the video's paid promotion placement until the given date.
+    /// Called by the Commerce payment verification flow only.
     /// </summary>
-    public void StampFeatured(DateTimeOffset until)
+    /// <param name="until">
+    /// When the promotion expires (<c>payment.verified_at + promotion_level.duration_days</c>).
+    /// </param>
+    public void StampPromotion(DateTimeOffset until)
     {
-        IsFeatured = true;
-        FeaturedUntil = until;
+        IsPromoted = true;
+        PromotedUntil = until;
+    }
+
+    /// <summary>
+    /// Force-removes the active paid promotion. SuperAdmin only.
+    /// Records the audit trail needed for future pro-rata refund calculation.
+    /// </summary>
+    /// <param name="unpromotedBy">
+    /// Identity of the SuperAdmin performing the force-unpromote, read from JWT claims.
+    /// </param>
+    /// <param name="reason">
+    /// Mandatory reason for the force-unpromote (e.g. "government request", "policy violation").
+    /// </param>
+    /// <exception cref="BadRequestException">
+    /// Thrown when the video does not have an active promotion.
+    /// </exception>
+    public void ForceUnpromote(string unpromotedBy, string reason)
+    {
+        if (!IsPromoted)
+        {
+            throw new BadRequestException("Video is not currently promoted.");
+        }
+
+        IsPromoted = false;
+        PromotedUntil = null;
+        UnpromotedAt = DateTimeOffset.UtcNow;
+        UnpromotedBy = unpromotedBy;
+        UnpromotedReason = reason;
     }
 
     /// <summary>

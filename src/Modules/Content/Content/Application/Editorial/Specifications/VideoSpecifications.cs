@@ -74,20 +74,20 @@ public class VideoSearchSpecification(string search) : Specification<VideoEntity
 }
 
 /// <summary>
-/// Specification that matches videos that are currently featured and published.
-/// Featured videos must have <c>IsFeatured = true</c>, a future or null <c>FeaturedUntil</c>,
+/// Specification that matches videos that currently have an active paid promotion and are published.
+/// Promoted videos must have <c>IsPromoted = true</c>, a future or null <c>PromotedUntil</c>,
 /// and <c>Status = Published</c>.
 /// </summary>
-public class FeaturedVideoSpecification : Specification<VideoEntity>
+public class PromotedVideoSpecification : Specification<VideoEntity>
 {
     /// <inheritdoc />
     public override Expression<Func<VideoEntity, bool>> ToExpression()
     {
         DateTimeOffset now = DateTimeOffset.UtcNow;
         return video =>
-            video.IsFeatured
+            video.IsPromoted
             && video.Status == EnumContentStatus.Published
-            && (video.FeaturedUntil == null || video.FeaturedUntil > now);
+            && (video.PromotedUntil == null || video.PromotedUntil > now);
     }
 }
 

@@ -20,8 +20,8 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="RejectionReason">The rejection reason, if the video was rejected.</param>
 /// <param name="YoutubeVideoUrl">The full YouTube video URL, or null if not yet attached.</param>
 /// <param name="SocialBoost">Whether the video is flagged for social media promotion.</param>
-/// <param name="IsFeatured">Whether the video has an active featured placement.</param>
-/// <param name="FeaturedUntil">When the featured placement expires, or null.</param>
+/// <param name="IsPromoted">Whether the video has an active paid promotion.</param>
+/// <param name="PromotedUntil">When the paid promotion expires, or null.</param>
 /// <param name="HasLyrics">Whether a lyrics page is linked to this video.</param>
 /// <param name="ShootingScheduledAt">The scheduled shooting date, or null.</param>
 /// <param name="PublishedAt">When the video was published, or null if not yet published.</param>
@@ -46,8 +46,8 @@ public record VideoDetailDto(
     string? RejectionReason,
     string? YoutubeVideoUrl,
     bool SocialBoost,
-    bool IsFeatured,
-    DateTimeOffset? FeaturedUntil,
+    bool IsPromoted,
+    DateTimeOffset? PromotedUntil,
     bool HasLyrics,
     DateTimeOffset? ShootingScheduledAt,
     DateTimeOffset? PublishedAt,

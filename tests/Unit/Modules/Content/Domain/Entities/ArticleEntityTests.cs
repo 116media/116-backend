@@ -433,7 +433,7 @@ public class ArticleEntityTests
     }
 
     [Fact]
-    public void StampFeatured_ShouldSetIsFeaturedAndFeaturedUntil()
+    public void StampPromotion_ShouldSetIsPromotedAndPromotedUntil()
     {
         // Arrange
         ArticleEntity article = ArticleEntity.CreateFree(
@@ -446,11 +446,91 @@ public class ArticleEntityTests
         DateTimeOffset until = DateTimeOffset.UtcNow.AddDays(7);
 
         // Act
-        article.StampFeatured(until);
+        article.StampPromotion(until);
 
         // Assert
-        article.IsFeatured.Should().BeTrue();
-        article.FeaturedUntil.Should().Be(until);
+        article.IsPromoted.Should().BeTrue();
+        article.PromotedUntil.Should().Be(until);
+    }
+
+    #endregion
+
+    #region ForceUnpromote Tests
+
+    [Fact]
+    public void ForceUnpromote_WhenArticleIsPromoted_ShouldClearPromotionAndRecordAudit()
+    {
+        // Arrange
+        const string superAdminId = "super-admin-uuid";
+        const string reason = "government takedown request";
+
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Article.ValidTitle,
+            TestConstants.Content.Editorial.Article.ValidSlug,
+            AuthorId
+        );
+        article.StampPromotion(DateTimeOffset.UtcNow.AddDays(7));
+
+        DateTimeOffset before = DateTimeOffset.UtcNow;
+
+        // Act
+        article.ForceUnpromote(superAdminId, reason);
+
+        // Assert
+        article.IsPromoted.Should().BeFalse();
+        article.PromotedUntil.Should().BeNull();
+        article.UnpromotedBy.Should().Be(superAdminId);
+        article.UnpromotedReason.Should().Be(reason);
+        article.UnpromotedAt.Should().NotBeNull();
+        article.UnpromotedAt!.Value.Should().BeCloseTo(before, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void ForceUnpromote_WhenArticleIsNotPromoted_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Article.ValidTitle,
+            TestConstants.Content.Editorial.Article.ValidSlug,
+            AuthorId
+        );
+
+        // Act
+        Action act = () => article.ForceUnpromote("super-admin-uuid", "reason");
+
+        // Assert
+        act.Should().Throw<BadRequestException>();
+    }
+
+    [Fact]
+    public void ForceUnpromote_ShouldNotAffectOtherFields()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Article.ValidTitle,
+            TestConstants.Content.Editorial.Article.ValidSlug,
+            AuthorId
+        );
+        article.MarkPendingReview();
+        article.Approve();
+        article.Publish();
+        article.StampSocialBoost();
+        article.StampPromotion(DateTimeOffset.UtcNow.AddDays(7));
+
+        // Act
+        article.ForceUnpromote("super-admin-uuid", "reason");
+
+        // Assert
+        article.Status.Should().Be(EnumContentStatus.Published);
+        article.SocialBoost.Should().BeTrue();
+        article.Title.Should().Be(TestConstants.Content.Editorial.Article.ValidTitle);
+        article.Slug.Should().Be(TestConstants.Content.Editorial.Article.ValidSlug);
     }
 
     #endregion
@@ -668,7 +748,6 @@ public class ArticleEntityTests
         Guid newCategoryId = Guid.NewGuid();
         Guid customerId = Guid.NewGuid();
         Guid orderItemId = Guid.NewGuid();
-        DateTimeOffset featuredUntil = DateTimeOffset.UtcNow.AddDays(7);
 
         // Act
         article.Update(
@@ -681,8 +760,6 @@ public class ArticleEntityTests
             customerId: customerId,
             orderItemId: orderItemId,
             socialBoost: true,
-            isFeatured: true,
-            featuredUntil: featuredUntil,
             metaTitle: "Updated Meta",
             metaDescription: "Updated description"
         );
@@ -697,8 +774,6 @@ public class ArticleEntityTests
         article.CustomerId.Should().Be(customerId);
         article.OrderItemId.Should().Be(orderItemId);
         article.SocialBoost.Should().BeTrue();
-        article.IsFeatured.Should().BeTrue();
-        article.FeaturedUntil.Should().Be(featuredUntil);
         article.MetaTitle.Should().Be("Updated Meta");
         article.MetaDescription.Should().Be("Updated description");
     }

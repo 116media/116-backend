@@ -37,7 +37,7 @@ public class AdminGetAllArticlesEndpointV1Tests
             CoverImageUrl: null,
             AuthorId: "Test",
             Status: EnumContentStatus.Draft,
-            IsFeatured: false,
+            IsPromoted: false,
             PublishedAt: null
         );
 }

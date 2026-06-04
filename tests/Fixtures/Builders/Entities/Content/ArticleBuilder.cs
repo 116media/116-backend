@@ -20,7 +20,7 @@ internal class ArticleBuilder
     private EnumContentStatus _targetStatus = EnumContentStatus.Draft;
     private string? _rejectionReason;
     private bool _stampSocialBoost;
-    private DateTimeOffset? _featuredUntil;
+    private DateTimeOffset? _promotedUntil;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ArticleBuilder"/> class with a required category ID.
@@ -150,11 +150,11 @@ internal class ArticleBuilder
     }
 
     /// <summary>
-    /// Stamps the article as featured until the specified date.
+    /// Stamps the article as promoted until the specified date.
     /// </summary>
-    public ArticleBuilder AsFeatured(DateTimeOffset until)
+    public ArticleBuilder AsPromoted(DateTimeOffset until)
     {
-        _featuredUntil = until;
+        _promotedUntil = until;
         return this;
     }
 
@@ -188,9 +188,9 @@ internal class ArticleBuilder
             entity.StampSocialBoost();
         }
 
-        if (_featuredUntil.HasValue)
+        if (_promotedUntil.HasValue)
         {
-            entity.StampFeatured(_featuredUntil.Value);
+            entity.StampPromotion(_promotedUntil.Value);
         }
 
         entity.CreatedAt = DateTime.UtcNow;

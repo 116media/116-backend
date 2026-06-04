@@ -49,7 +49,13 @@ public class ArticleConfiguration : IEntityTypeConfiguration<ArticleEntity>
 
         builder.Property(x => x.SocialBoost).HasDefaultValue(false).IsRequired();
 
-        builder.Property(x => x.IsFeatured).HasDefaultValue(false).IsRequired();
+        builder.Property(x => x.IsPromoted).HasDefaultValue(false).IsRequired();
+
+        builder.Property(x => x.UnpromotedAt).IsRequired(false);
+
+        builder.Property(x => x.UnpromotedBy).IsRequired(false);
+
+        builder.Property(x => x.UnpromotedReason).HasMaxLength(500).IsRequired(false);
 
         builder.Property(x => x.LikeCount).HasDefaultValue(0).IsRequired();
 
