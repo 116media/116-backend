@@ -14,8 +14,6 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     /// </summary>
     public IStringLocalizer Localizer => localizer;
 
-    // ── Validator-level messages (used by FluentValidation extensions) ──────
-
     /// <summary>
     /// Error message indicating that an email address is required.
     /// </summary>
@@ -224,8 +222,6 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     /// </summary>
     /// <param name="max">The maximum allowed length.</param>
     public string RoleDescriptionTooLong(int max) => string.Format(localizer["RoleDescriptionTooLong"], max);
-
-    // ── Domain-level messages (used by use-case handlers) ───────────────────
 
     /// <summary>
     /// Gets an error message for when an email has an invalid format.
