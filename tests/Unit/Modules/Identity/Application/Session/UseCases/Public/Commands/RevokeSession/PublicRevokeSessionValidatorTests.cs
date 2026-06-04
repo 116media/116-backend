@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RevokeSession;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Session.UseCases.Public.C
 /// </summary>
 public class PublicRevokeSessionValidatorTests
 {
-    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly IdentityI18n _i18n = TestErrorsFactory.CreateIdentityI18n();
     private readonly PublicRevokeSessionValidator _validator;
 
     /// <summary>
@@ -56,7 +58,7 @@ public class PublicRevokeSessionValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.SessionId)
-            .WithErrorMessage(_i18n.Localizer["SessionIdRequired"].Value);
+            .WithErrorMessage(_i18n.User.Validation.Localizer["SessionIdRequired"].Value);
     }
 
     [Fact]
@@ -72,7 +74,7 @@ public class PublicRevokeSessionValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.SessionId)
-            .WithErrorMessage(_i18n.Localizer["SessionIdRequired"].Value);
+            .WithErrorMessage(_i18n.User.Validation.Localizer["SessionIdRequired"].Value);
     }
 
     [Fact]
@@ -88,7 +90,7 @@ public class PublicRevokeSessionValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.SessionId)
-            .WithErrorMessage(_i18n.Localizer["SessionIdRequired"].Value);
+            .WithErrorMessage(_i18n.User.Validation.Localizer["SessionIdRequired"].Value);
     }
 
     [Fact]
@@ -104,7 +106,7 @@ public class PublicRevokeSessionValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.SessionId)
-            .WithErrorMessage(_i18n.Localizer["SessionIdInvalid"].Value);
+            .WithErrorMessage(_i18n.User.Validation.Localizer["SessionIdInvalid"].Value);
     }
 
     #endregion
@@ -117,7 +119,9 @@ public class PublicRevokeSessionValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var i18n = TestErrorsFactory.CreateIdentityI18n();
         var validator = new PublicRevokeSessionValidator(i18n);
         var command = new PublicRevokeSessionCommand(UserId: Guid.NewGuid(), SessionId: null!);
 
@@ -128,7 +132,7 @@ public class PublicRevokeSessionValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.SessionId)
-            .WithErrorMessage(i18n.Localizer["SessionIdRequired"].Value);
+            .WithErrorMessage(i18n.User.Validation.Localizer["SessionIdRequired"].Value);
     }
 
     #endregion
