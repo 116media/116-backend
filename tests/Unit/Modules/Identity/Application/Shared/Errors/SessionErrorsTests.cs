@@ -1,4 +1,5 @@
 using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Helpers;
