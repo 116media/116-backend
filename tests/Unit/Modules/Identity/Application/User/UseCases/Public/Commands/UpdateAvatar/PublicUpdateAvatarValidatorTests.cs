@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
 using _116.Tests.Fixtures.Helpers;
@@ -14,7 +16,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.UseCases.Public.Comm
 /// </summary>
 public class PublicUpdateAvatarValidatorTests
 {
-    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>("en");
+    private readonly IdentityI18n _i18n = TestErrorsFactory.CreateIdentityI18n();
     private readonly PublicUpdateAvatarValidator _validator;
 
     /// <summary>
@@ -80,7 +82,9 @@ public class PublicUpdateAvatarValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.AvatarFile).WithErrorMessage(_i18n.AvatarFileRequired());
+        result
+            .ShouldHaveValidationErrorFor(x => x.AvatarFile)
+            .WithErrorMessage(_i18n.User.Validation.AvatarFileRequired());
     }
 
     #endregion
@@ -109,7 +113,9 @@ public class PublicUpdateAvatarValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.AvatarFile)
-            .WithErrorMessage(_i18n.AvatarFileTooLarge(FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)));
+            .WithErrorMessage(
+                _i18n.User.Validation.AvatarFileTooLarge(FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024))
+            );
     }
 
     [Fact]
@@ -153,7 +159,9 @@ public class PublicUpdateAvatarValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.AvatarFile)
-            .WithErrorMessage(_i18n.AvatarFileInvalidType(string.Join(", ", FileConstants.AllowedAvatarMimeTypes)));
+            .WithErrorMessage(
+                _i18n.User.Validation.AvatarFileInvalidType(string.Join(", ", FileConstants.AllowedAvatarMimeTypes))
+            );
     }
 
     [Theory]
@@ -202,7 +210,9 @@ public class PublicUpdateAvatarValidatorTests
         result
             .ShouldHaveValidationErrorFor(x => x.AvatarFile)
             .WithErrorMessage(
-                _i18n.AvatarFileInvalidExtension(string.Join(", ", FileConstants.AllowedAvatarExtensions))
+                _i18n.User.Validation.AvatarFileInvalidExtension(
+                    string.Join(", ", FileConstants.AllowedAvatarExtensions)
+                )
             );
     }
 
@@ -266,7 +276,9 @@ public class PublicUpdateAvatarValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var i18n = TestErrorsFactory.CreateIdentityI18n();
         var validator = new PublicUpdateAvatarValidator(i18n);
         var command = new PublicUpdateAvatarCommand(
             UserId: Guid.NewGuid(),
@@ -279,7 +291,9 @@ public class PublicUpdateAvatarValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.AvatarFile).WithErrorMessage(i18n.AvatarFileRequired());
+        result
+            .ShouldHaveValidationErrorFor(x => x.AvatarFile)
+            .WithErrorMessage(i18n.User.Validation.AvatarFileRequired());
     }
 
     #endregion
