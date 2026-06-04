@@ -1,5 +1,5 @@
 using _116.Identity.Application.Shared.Errors;
-using _116.Identity.Application.Shared.Errors.Facade;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Helpers;
@@ -13,18 +13,18 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Shared.Errors;
 /// </summary>
 public class SessionErrorsTests
 {
-    private readonly SessionErrors _sessionErrors = TestErrorsFactory.CreateSessionErrors();
+    private readonly SessionErrors _errors = TestErrorsFactory.CreateSessionErrors();
+    private readonly AuthenticationErrorMessage _i18n = LocalizerFactory.CreateMessage<AuthenticationErrorMessage>(
+        "en"
+    );
 
     [Fact]
     public void InvalidRefreshToken_ShouldReturnRefreshTokenExpiryException()
     {
-        // Act
-        RefreshTokenExpiryException exception = _sessionErrors.InvalidRefreshToken();
+        RefreshTokenExpiryException exception = _errors.InvalidRefreshToken();
 
-        // Assert
-        exception.Should().NotBeNull();
         exception.Should().BeOfType<RefreshTokenExpiryException>();
-        exception.Message.Should().Be("Invalid or expired session. Please log in again.");
+        exception.Message.Should().Be(_i18n.InvalidRefreshToken());
     }
 
     [Fact]
@@ -34,10 +34,9 @@ public class SessionErrorsTests
         var sessionId = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = _sessionErrors.SessionNotFound(sessionId);
+        NotFoundException exception = _errors.SessionNotFound(sessionId);
 
         // Assert
-        exception.Should().NotBeNull();
         exception.Should().BeOfType<NotFoundException>();
         exception.Message.Should().Contain("Session");
         exception.Message.Should().Contain(sessionId.ToString());
@@ -46,12 +45,17 @@ public class SessionErrorsTests
     [Fact]
     public void DeviceIdRequired_ShouldReturnBadRequestException()
     {
-        // Act
-        BadRequestException exception = _sessionErrors.DeviceIdRequired();
+        BadRequestException exception = _errors.DeviceIdRequired();
 
-        // Assert
-        exception.Should().NotBeNull();
         exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be("Device ID is required. Please provide X-Device-Id header.");
+        exception.Message.Should().Be(_i18n.DeviceIdRequired());
+    }
+
+    [Fact]
+    public void Msg_ShouldReturnAuthenticationErrorMessage()
+    {
+        AuthenticationErrorMessage msg = _errors.Msg;
+
+        msg.Should().NotBeNull();
     }
 }
