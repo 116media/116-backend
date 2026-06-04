@@ -14,11 +14,6 @@ public class FileErrors(
 )
 {
     /// <summary>
-    /// Exposes all localized message providers for use in validator extensions.
-    /// </summary>
-    public FileErrorMessages Msg => new(conflict, validation, internalServer);
-
-    /// <summary>
     /// Throws when file upload fails.
     /// </summary>
     public ConflictException FileUploadFailed(string fileName, string reason) =>
@@ -120,39 +115,30 @@ public class FileErrors(
     public BadRequestException BadRequest(string message) => new(message);
 
     /// <summary>
-    /// Error for when no file is provided in the upload request.
+    /// Throws when no file is provided in the upload request.
     /// </summary>
-    public BadRequestException FileRequired() => new("No file was provided for upload");
+    public BadRequestException FileRequired() => new(validation.FileRequired());
 
     /// <summary>
-    /// Error for when the uploaded file exceeds size limits (overload with detailed info).
+    /// Throws when the uploaded file exceeds size limits (overload with MB display).
     /// </summary>
     public BadRequestException FileTooLarge(long actualSize, long maxSize, long maxSizeMB) =>
-        new($"File size exceeds the maximum allowed size of {maxSizeMB} MB");
+        new(validation.FileTooLargeWithLimit(maxSizeMB));
 
     /// <summary>
-    /// Error for Invalid filetype.
+    /// Throws when the file type is not allowed.
     /// </summary>
     public BadRequestException InvalidFileType(string providedType, string allowedTypes) =>
-        new($"File type '{providedType}' is not allowed. Allowed types: {allowedTypes}");
+        new(validation.InvalidFileType(providedType, allowedTypes));
 
     /// <summary>
-    /// Error for invalid file extension.
+    /// Throws when the file extension is not allowed.
     /// </summary>
     public BadRequestException InvalidFileExtension(string providedExtension, string allowedExtensions) =>
-        new($"File extension '{providedExtension}' is not allowed. Allowed extensions: {allowedExtensions}");
+        new(validation.InvalidFileExtension(providedExtension, allowedExtensions));
 
     /// <summary>
-    /// Error for file upload failures (overload with just reason).
+    /// Throws when a file upload fails (overload with just reason).
     /// </summary>
-    public BadGatewayException FileUploadFailed(string reason) => new($"File upload failed: {reason}");
+    public BadGatewayException FileUploadFailed(string reason) => new(validation.FileUploadFailed(reason));
 }
-
-/// <summary>
-/// Groups all localized message providers for <see cref="FileErrors"/>.
-/// </summary>
-public record FileErrorMessages(
-    ConflictErrorMessage Conflict,
-    ValidationErrorMessage Validation,
-    InternalServerErrorMessage InternalServer
-);
