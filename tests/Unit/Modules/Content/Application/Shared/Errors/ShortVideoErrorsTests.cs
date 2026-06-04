@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,6 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class ShortVideoErrorsTests
 {
     private readonly ShortVideoErrors _errors = TestErrorsFactory.CreateShortVideoErrors();
+    private readonly ShortVideoErrorMessage _message = LocalizerFactory.CreateMessage<ShortVideoErrorMessage>("en");
 
     [Fact]
     public void NotFound_WithId_ShouldReturnNotFoundException()
@@ -30,34 +32,28 @@ public class ShortVideoErrorsTests
     [Fact]
     public void AlreadyActive_ShouldReturnConflictException()
     {
-        // Act
         ConflictException exception = _errors.AlreadyActive();
 
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadyActive());
     }
 
     [Fact]
     public void AlreadyInactive_ShouldReturnConflictException()
     {
-        // Act
         ConflictException exception = _errors.AlreadyInactive();
 
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadyInactive());
     }
 
     [Fact]
     public void TitleRequired_ShouldReturnBadRequestException()
     {
-        // Act
         BadRequestException exception = _errors.TitleRequired();
 
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.TitleRequired());
     }
 
     [Fact]
