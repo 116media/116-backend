@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Session.UseCases.Public.C
 /// </summary>
 public class PublicRefreshTokenValidatorTests
 {
-    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly IdentityI18n _i18n = TestErrorsFactory.CreateIdentityI18n();
     private readonly PublicRefreshTokenValidator _validator;
 
     /// <summary>
@@ -55,7 +57,9 @@ public class PublicRefreshTokenValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(_i18n.RefreshTokenRequired());
+        result
+            .ShouldHaveValidationErrorFor(x => x.RefreshToken)
+            .WithErrorMessage(_i18n.User.Validation.RefreshTokenRequired());
     }
 
     [Fact]
@@ -69,7 +73,9 @@ public class PublicRefreshTokenValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(_i18n.RefreshTokenRequired());
+        result
+            .ShouldHaveValidationErrorFor(x => x.RefreshToken)
+            .WithErrorMessage(_i18n.User.Validation.RefreshTokenRequired());
     }
 
     [Fact]
@@ -83,7 +89,9 @@ public class PublicRefreshTokenValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(_i18n.RefreshTokenRequired());
+        result
+            .ShouldHaveValidationErrorFor(x => x.RefreshToken)
+            .WithErrorMessage(_i18n.User.Validation.RefreshTokenRequired());
     }
 
     #endregion
@@ -96,7 +104,9 @@ public class PublicRefreshTokenValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var i18n = TestErrorsFactory.CreateIdentityI18n();
         var validator = new PublicRefreshTokenValidator(i18n);
         var command = new PublicRefreshTokenCommand(RefreshToken: "");
 
@@ -105,7 +115,9 @@ public class PublicRefreshTokenValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(i18n.RefreshTokenRequired());
+        result
+            .ShouldHaveValidationErrorFor(x => x.RefreshToken)
+            .WithErrorMessage(i18n.User.Validation.RefreshTokenRequired());
     }
 
     #endregion
