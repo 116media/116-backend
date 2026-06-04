@@ -1,4 +1,5 @@
 using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
