@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,6 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class LyricsErrorsTests
 {
     private readonly LyricsErrors _errors = TestErrorsFactory.CreateLyricsErrors();
+    private readonly LyricsErrorMessage _message = LocalizerFactory.CreateMessage<LyricsErrorMessage>("en");
 
     [Fact]
     public void NotFound_WithId_ShouldReturnNotFoundException()
@@ -38,40 +40,34 @@ public class LyricsErrorsTests
         ConflictException exception = _errors.AlreadyExists(songTitle, artistName);
 
         // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadyExists(songTitle, artistName));
     }
 
     [Fact]
     public void SongTitleRequired_ShouldReturnBadRequestException()
     {
-        // Act
         BadRequestException exception = _errors.SongTitleRequired();
 
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.SongTitleRequired());
     }
 
     [Fact]
     public void ArtistNameRequired_ShouldReturnBadRequestException()
     {
-        // Act
         BadRequestException exception = _errors.ArtistNameRequired();
 
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.ArtistNameRequired());
     }
 
     [Fact]
     public void LyricsTextRequired_ShouldReturnBadRequestException()
     {
-        // Act
         BadRequestException exception = _errors.LyricsTextRequired();
 
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.LyricsTextRequired());
     }
 }
