@@ -7,9 +7,13 @@ namespace _116.Identity.Application.Shared.Errors.Facade;
 /// </summary>
 public class IdentityI18n(UserErrors user, SessionErrors session)
 {
-    /// <summary>User domain errors and messages.</summary>
+    /// <summary>
+    /// User domain errors and messages.
+    /// </summary>
     public UserErrors User => user;
 
-    /// <summary>Session domain errors and messages.</summary>
+    /// <summary>
+    /// Session domain errors and messages.
+    /// </summary>
     public SessionErrors Session => session;
 }
