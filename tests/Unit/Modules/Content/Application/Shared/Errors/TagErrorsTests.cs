@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,6 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class TagErrorsTests
 {
     private readonly TagErrors _errors = TestErrorsFactory.CreateTagErrors();
+    private readonly TagErrorMessage _message = LocalizerFactory.CreateMessage<TagErrorMessage>("en");
 
     [Fact]
     public void SlugAlreadyExists_WithSlug_ShouldReturnConflictException()
@@ -44,22 +46,18 @@ public class TagErrorsTests
     [Fact]
     public void NameRequired_ShouldReturnBadRequestException()
     {
-        // Act
         BadRequestException exception = _errors.NameRequired();
 
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.NameRequired());
     }
 
     [Fact]
     public void SlugRequired_ShouldReturnBadRequestException()
     {
-        // Act
         BadRequestException exception = _errors.SlugRequired();
 
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.SlugRequired());
     }
 }
