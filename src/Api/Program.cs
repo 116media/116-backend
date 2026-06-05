@@ -4,6 +4,7 @@ using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Extensions;
 using Asp.Versioning;
 using Carter;
+using DotNetEnv;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Serilog;
@@ -12,8 +13,8 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, config) => config.ReadFrom.Configuration(context.Configuration));
 
-DotNetEnv.Env.Load();
-DotNetEnv.Env.TraversePath().Load();
+Env.Load();
+Env.TraversePath().Load();
 
 // Load Cloudinary configuration from environment variables
 builder.Services.AddCloudinaryConfiguration();
