@@ -316,5 +316,44 @@ public static class MockArticleRepository
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.AddCommentAsync(It.IsAny<ArticleCommentEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        mock.Setup(x => x.GetActivePromotedBySpotAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ArticleEntity>());
+        mock.Setup(x =>
+                x.GetGossipFallbackAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<int>(),
+                    It.IsAny<IEnumerable<Guid>>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(new List<ArticleEntity>());
+    }
+
+    public static Mock<IArticleRepository> SetupGetActivePromotedBySpot(
+        this Mock<IArticleRepository> mock,
+        int spotPriority,
+        IReadOnlyList<ArticleEntity> articles
+    )
+    {
+        mock.Setup(x => x.GetActivePromotedBySpotAsync(spotPriority, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(articles);
+        return mock;
+    }
+
+    public static Mock<IArticleRepository> SetupGetGossipFallback(
+        this Mock<IArticleRepository> mock,
+        IReadOnlyList<ArticleEntity> articles
+    )
+    {
+        mock.Setup(x =>
+                x.GetGossipFallbackAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<int>(),
+                    It.IsAny<IEnumerable<Guid>>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(articles);
+        return mock;
     }
 }

@@ -77,3 +77,17 @@ public class CategoryByContentTypeSpecification(Guid contentTypeId) : Specificat
         return category => category.ContentTypeId == contentTypeId;
     }
 }
+
+/// <summary>
+/// Specification that matches the single active gossip category.
+/// Published articles belonging to this category populate the homepage gossip strip
+/// and serve as fallback content for empty promotion spots.
+/// </summary>
+public class GossipCategorySpecification : Specification<CategoryEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<CategoryEntity, bool>> ToExpression()
+    {
+        return category => category.IsGossip && category.IsActive;
+    }
+}

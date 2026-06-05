@@ -9,7 +9,8 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotio
 /// <param name="Name">The display name of the promotion level (e.g., "Featured — 7 days").</param>
 /// <param name="DurationDays">The homepage placement duration in days (must be greater than zero).</param>
 /// <param name="PriceUsd">The price of this promotion level in USD (must be zero or greater).</param>
-public record AdminCreatePromotionLevelCommand(string Name, int DurationDays, decimal PriceUsd)
+/// <param name="SpotPriority">The homepage grid spot this promotion level maps to (1, 2, or 3).</param>
+public record AdminCreatePromotionLevelCommand(string Name, int DurationDays, decimal PriceUsd, int SpotPriority)
     : ICommand<AdminCreatePromotionLevelResult>;
 
 /// <summary>

@@ -37,7 +37,12 @@ public class AdminCreatePromotionLevelHandlerTests : BaseContentHandlerTest
         string name = TestConstants.Content.PromotionLevel.ValidName;
         int durationDays = TestConstants.Content.PromotionLevel.ValidDurationDays;
         decimal priceUsd = TestConstants.Content.PromotionLevel.ValidPriceUsd;
-        var command = new AdminCreatePromotionLevelCommand(Name: name, DurationDays: durationDays, PriceUsd: priceUsd);
+        var command = new AdminCreatePromotionLevelCommand(
+            Name: name,
+            DurationDays: durationDays,
+            PriceUsd: priceUsd,
+            SpotPriority: 1
+        );
 
         _lookupRepositoryMock.SetupPromotionLevelExistsByName(name, false);
 
@@ -62,7 +67,12 @@ public class AdminCreatePromotionLevelHandlerTests : BaseContentHandlerTest
         string name = TestConstants.Content.PromotionLevel.ValidName;
         int durationDays = TestConstants.Content.PromotionLevel.ValidDurationDays;
         decimal priceUsd = TestConstants.Content.PromotionLevel.ZeroPriceUsd;
-        var command = new AdminCreatePromotionLevelCommand(Name: name, DurationDays: durationDays, PriceUsd: priceUsd);
+        var command = new AdminCreatePromotionLevelCommand(
+            Name: name,
+            DurationDays: durationDays,
+            PriceUsd: priceUsd,
+            SpotPriority: 1
+        );
 
         _lookupRepositoryMock.SetupPromotionLevelExistsByName(name, false);
 
@@ -83,7 +93,12 @@ public class AdminCreatePromotionLevelHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         string name = TestConstants.Content.PromotionLevel.ValidName;
-        var command = new AdminCreatePromotionLevelCommand(Name: name, DurationDays: 7, PriceUsd: 49.99m);
+        var command = new AdminCreatePromotionLevelCommand(
+            Name: name,
+            DurationDays: 7,
+            PriceUsd: 49.99m,
+            SpotPriority: 1
+        );
 
         _lookupRepositoryMock.SetupPromotionLevelExistsByName(name, true);
 
@@ -99,7 +114,12 @@ public class AdminCreatePromotionLevelHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         string name = TestConstants.Content.PromotionLevel.ValidName;
-        var command = new AdminCreatePromotionLevelCommand(Name: name, DurationDays: 7, PriceUsd: 49.99m);
+        var command = new AdminCreatePromotionLevelCommand(
+            Name: name,
+            DurationDays: 7,
+            PriceUsd: 49.99m,
+            SpotPriority: 1
+        );
 
         _lookupRepositoryMock.SetupPromotionLevelExistsByName(name, true);
 
@@ -127,7 +147,12 @@ public class AdminCreatePromotionLevelHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         string name = TestConstants.Content.PromotionLevel.ValidName;
-        var command = new AdminCreatePromotionLevelCommand(Name: name, DurationDays: 7, PriceUsd: 49.99m);
+        var command = new AdminCreatePromotionLevelCommand(
+            Name: name,
+            DurationDays: 7,
+            PriceUsd: 49.99m,
+            SpotPriority: 1
+        );
         using var cts = new CancellationTokenSource();
 
         _lookupRepositoryMock.SetupPromotionLevelExistsByName(name, false);

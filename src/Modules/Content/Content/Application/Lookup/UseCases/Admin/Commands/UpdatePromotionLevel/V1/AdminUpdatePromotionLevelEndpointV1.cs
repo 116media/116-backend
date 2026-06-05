@@ -18,7 +18,8 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePromotio
 /// <param name="Name">The new name for the promotion level.</param>
 /// <param name="DurationDays">The new promotion duration in days.</param>
 /// <param name="PriceUsd">The new price in US dollars.</param>
-public record AdminUpdatePromotionLevelRequest(string Name, int DurationDays, decimal PriceUsd);
+/// <param name="SpotPriority">The homepage grid spot this promotion level maps to (1, 2, or 3).</param>
+public record AdminUpdatePromotionLevelRequest(string Name, int DurationDays, decimal PriceUsd, int SpotPriority);
 
 /// <summary>
 /// Response model for a successful promotion level update.
@@ -52,7 +53,8 @@ public class AdminUpdatePromotionLevelEndpointV1 : ICarterModule
                         Id: id,
                         Name: request.Name,
                         DurationDays: request.DurationDays,
-                        PriceUsd: request.PriceUsd
+                        PriceUsd: request.PriceUsd,
+                        SpotPriority: request.SpotPriority
                     );
 
                     AdminUpdatePromotionLevelResult result = await dispatcher.Send(request: command);

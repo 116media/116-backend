@@ -126,4 +126,10 @@ public static class EditorialRouteConstants
     /// Example: /api/v1/admin/articles/{slug}/unpromote.
     /// </summary>
     public const string Unpromote = "unpromote";
+
+    /// <summary>
+    /// Route segment for the homepage promotion feed endpoint.
+    /// Example: /api/v1/public/articles/promotion/feed.
+    /// </summary>
+    public const string PromotionFeed = "promotion/feed";
 }

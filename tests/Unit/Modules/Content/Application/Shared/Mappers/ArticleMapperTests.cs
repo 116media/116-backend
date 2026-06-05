@@ -1,7 +1,6 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
-using _116.Content.Domain.Enums;
 using _116.Shared.Application.DTOs;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
@@ -23,11 +22,193 @@ public class ArticleMapperTests : BaseContentHandlerTest
     [Fact]
     public void Register_ShouldNotThrowException()
     {
-        // Act
         Action act = () => MappingRegistration.CreateConfiguration();
 
-        // Assert
         act.Should().NotThrow();
+    }
+
+    #endregion
+
+    #region ToArticleSummaryDto — category name
+
+    [Fact]
+    public void ToArticleSummaryDto_WhenCategoryIsNull_ShouldMapCategoryNameAsEmptyString()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        // Category nav property is null by default (not loaded)
+
+        // Act
+        ArticleSummaryDto dto = article.ToArticleSummaryDto(Mapper);
+
+        // Assert
+        dto.CategoryName.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ToArticleSummaryDto_WhenCategoryIsLoaded_ShouldMapCategoryName()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        article.GetType().GetProperty("Category")!.SetValue(article, category);
+
+        // Act
+        ArticleSummaryDto dto = article.ToArticleSummaryDto(Mapper);
+
+        // Assert
+        dto.CategoryName.Should().Be(category.Name);
+    }
+
+    #endregion
+
+    #region ToArticleSummaryDto — core fields
+
+    [Fact]
+    public void ToArticleSummaryDto_ShouldMapCoreFields()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+
+        // Act
+        ArticleSummaryDto dto = article.ToArticleSummaryDto(Mapper);
+
+        // Assert
+        dto.Id.Should().Be(article.Id);
+        dto.CategoryId.Should().Be(article.CategoryId);
+        dto.Title.Should().Be(article.Title);
+        dto.Slug.Should().Be(article.Slug);
+        dto.Headline.Should().Be(article.Headline);
+        dto.CoverImageUrl.Should().Be(article.CoverImageUrl);
+        dto.AuthorId.Should().Be(article.AuthorId.ToString());
+        dto.Status.Should().Be(article.Status);
+        dto.IsPromoted.Should().Be(article.IsPromoted);
+        dto.PublishedAt.Should().Be(article.PublishedAt);
+    }
+
+    #endregion
+
+    #region ToArticleSummaryDto — AuditableDto fields
+
+    [Fact]
+    public void ToArticleSummaryDto_ShouldInheritAuditableDto()
+    {
+        typeof(ArticleSummaryDto).Should().BeAssignableTo<AuditableDto>();
+    }
+
+    [Fact]
+    public void ToArticleSummaryDto_ShouldMapAuditFields()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        article.CreatedAt = new DateTime(2025, 3, 1, 8, 0, 0, DateTimeKind.Utc);
+        article.CreatedBy = "creator";
+        article.UpdatedAt = new DateTime(2025, 6, 1, 12, 0, 0, DateTimeKind.Utc);
+        article.UpdatedBy = "updater";
+
+        // Act
+        ArticleSummaryDto dto = article.ToArticleSummaryDto(Mapper);
+
+        // Assert
+        dto.CreatedAt.Should().Be(article.CreatedAt);
+        dto.CreatedBy.Should().Be("creator");
+        dto.UpdatedAt.Should().Be(article.UpdatedAt);
+        dto.UpdatedBy.Should().Be("updater");
+    }
+
+    #endregion
+
+    #region ToArticleSummaryDto — promoted fields
+
+    [Fact]
+    public void ToArticleSummaryDto_WhenPromoted_ShouldMapIsPromotedTrue()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.CreatePromoted(CategoryId);
+
+        // Act
+        ArticleSummaryDto dto = article.ToArticleSummaryDto(Mapper);
+
+        // Assert
+        dto.IsPromoted.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ToArticleSummaryDto_WhenNotPromoted_ShouldMapIsPromotedFalse()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+
+        // Act
+        ArticleSummaryDto dto = article.ToArticleSummaryDto(Mapper);
+
+        // Assert
+        dto.IsPromoted.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region ToArticleSummaryDto — PromotionLevel nav property null safety
+
+    [Fact]
+    public void ToArticleSummaryDto_WhenPromotionLevelIsNull_ShouldNotThrow()
+    {
+        // Arrange — article with IsPromoted=true but PromotionLevel nav not loaded (null)
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
+        // PromotionLevel nav property remains null (EF not loaded)
+
+        // Act
+        Action act = () => article.ToArticleSummaryDto(Mapper);
+
+        // Assert — must not NPE
+        act.Should().NotThrow();
+    }
+
+    #endregion
+
+    #region ToArticleSummaryDtos — list mapping
+
+    [Fact]
+    public void ToArticleSummaryDtos_ShouldMapAllEntities()
+    {
+        // Arrange
+        IReadOnlyList<ArticleEntity> articles = ArticleFactory.CreateMany(CategoryId, 3);
+
+        // Act
+        IReadOnlyList<ArticleSummaryDto> dtos = articles.ToArticleSummaryDtos(Mapper);
+
+        // Assert
+        dtos.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public void ToArticleSummaryDtos_WhenEmpty_ShouldReturnEmptyList()
+    {
+        // Arrange
+        IReadOnlyList<ArticleEntity> articles = [];
+
+        // Act
+        IReadOnlyList<ArticleSummaryDto> dtos = articles.ToArticleSummaryDtos(Mapper);
+
+        // Assert
+        dtos.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ToArticleSummaryDtos_ShouldPreserveOrder()
+    {
+        // Arrange
+        ArticleEntity first = ArticleFactory.Create(CategoryId);
+        ArticleEntity second = ArticleFactory.Create(CategoryId);
+        IReadOnlyList<ArticleEntity> articles = [first, second];
+
+        // Act
+        IReadOnlyList<ArticleSummaryDto> dtos = articles.ToArticleSummaryDtos(Mapper);
+
+        // Assert
+        dtos[0].Id.Should().Be(first.Id);
+        dtos[1].Id.Should().Be(second.Id);
     }
 
     #endregion
@@ -113,10 +294,93 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
         // Assert
         dto.Id.Should().Be(article.Id);
+        dto.CategoryId.Should().Be(article.CategoryId);
         dto.AuthorId.Should().Be(article.AuthorId.ToString());
         dto.Status.Should().Be(article.Status);
         dto.Title.Should().Be(article.Title);
         dto.Slug.Should().Be(article.Slug);
+        dto.Headline.Should().Be(article.Headline);
+        dto.Body.Should().Be(article.Body);
+        dto.CoverImageUrl.Should().Be(article.CoverImageUrl);
+        dto.PublishedAt.Should().Be(article.PublishedAt);
+    }
+
+    #endregion
+
+    #region ToArticleDetailDto — category name
+
+    [Fact]
+    public void ToArticleDetailDto_WhenCategoryIsNull_ShouldMapCategoryNameAsEmptyString()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+
+        // Act
+        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+
+        // Assert
+        dto.CategoryName.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ToArticleDetailDto_WhenCategoryIsLoaded_ShouldMapCategoryName()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        article.GetType().GetProperty("Category")!.SetValue(article, category);
+
+        // Act
+        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+
+        // Assert
+        dto.CategoryName.Should().Be(category.Name);
+    }
+
+    #endregion
+
+    #region ToArticleDetailDto — promotion fields
+
+    [Fact]
+    public void ToArticleDetailDto_WhenPromoted_ShouldMapPromotionFields()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.CreatePromoted(CategoryId);
+
+        // Act
+        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+
+        // Assert
+        dto.IsPromoted.Should().BeTrue();
+        dto.PromotedUntil.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ToArticleDetailDto_WhenNotPromoted_ShouldMapPromotionFieldsAsDefault()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+
+        // Act
+        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+
+        // Assert
+        dto.IsPromoted.Should().BeFalse();
+        dto.PromotedUntil.Should().BeNull();
+    }
+
+    [Fact]
+    public void ToArticleDetailDto_WhenPromotionLevelIsNull_ShouldNotThrow()
+    {
+        // Arrange — article has IsPromoted=true but PromotionLevel nav not loaded
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
+
+        // Act
+        Action act = () => article.ToArticleDetailDto(Mapper);
+
+        // Assert — must not NPE
+        act.Should().NotThrow();
     }
 
     #endregion
@@ -124,31 +388,34 @@ public class ArticleMapperTests : BaseContentHandlerTest
     #region ToArticleDetailDto — read time computation
 
     [Fact]
-    public void ToArticleDetailDto_ShouldComputeReadTimeInMinutes()
+    public void ToArticleDetailDto_WhenBodyIsEmpty_ShouldReturnReadTimeOfOne()
     {
-        // Arrange — 200 words → 1 min, 400 words → 2 min
-        ArticleEntity article200 = ArticleFactory.Create(CategoryId);
-        article200.Update(
-            categoryId: CategoryId,
-            title: article200.Title,
-            slug: article200.Slug,
-            headline: "headline",
-            body: string.Join(" ", Enumerable.Repeat("word", 200)),
-            coverImageUrl: null,
-            customerId: null,
-            orderItemId: null,
-            socialBoost: false,
-            metaTitle: null,
-            metaDescription: null
-        );
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        // Body is empty string by default on new articles
 
-        ArticleEntity article400 = ArticleFactory.Create(CategoryId);
-        article400.Update(
+        // Act
+        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+
+        // Assert — Math.Max(1, ceil(0/200)) = 1
+        dto.ReadTimeInMinutes.Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData(200, 1)]
+    [InlineData(201, 2)]
+    [InlineData(400, 2)]
+    [InlineData(401, 3)]
+    public void ToArticleDetailDto_ShouldComputeReadTimeInMinutes(int wordCount, int expectedMinutes)
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        article.Update(
             categoryId: CategoryId,
-            title: article400.Title,
-            slug: article400.Slug,
+            title: article.Title,
+            slug: article.Slug,
             headline: "headline",
-            body: string.Join(" ", Enumerable.Repeat("word", 400)),
+            body: string.Join(" ", Enumerable.Repeat("word", wordCount)),
             coverImageUrl: null,
             customerId: null,
             orderItemId: null,
@@ -158,12 +425,103 @@ public class ArticleMapperTests : BaseContentHandlerTest
         );
 
         // Act
-        ArticleDetailDto dto200 = article200.ToArticleDetailDto(Mapper);
-        ArticleDetailDto dto400 = article400.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
 
         // Assert
-        dto200.ReadTimeInMinutes.Should().Be(1);
-        dto400.ReadTimeInMinutes.Should().Be(2);
+        dto.ReadTimeInMinutes.Should().Be(expectedMinutes);
+    }
+
+    #endregion
+
+    #region ToArticleDetailDto — SEO and optional fields
+
+    [Fact]
+    public void ToArticleDetailDto_ShouldMapRejectionReasonAndSocialBoost()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        article.Update(
+            categoryId: CategoryId,
+            title: article.Title,
+            slug: article.Slug,
+            headline: "headline",
+            body: "body",
+            coverImageUrl: null,
+            customerId: null,
+            orderItemId: null,
+            socialBoost: true,
+            metaTitle: "SEO Title",
+            metaDescription: "SEO Description"
+        );
+
+        // Act
+        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+
+        // Assert
+        dto.SocialBoost.Should().BeTrue();
+        dto.MetaTitle.Should().Be("SEO Title");
+        dto.MetaDescription.Should().Be("SEO Description");
+    }
+
+    #endregion
+
+    #region ToArticleDetailDto — customer and order item mapping
+
+    [Fact]
+    public void ToArticleDetailDto_WhenFreeArticle_ShouldMapCustomerFieldsAsNull()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        article.GetType().GetProperty("Category")!.SetValue(article, category);
+
+        // Act
+        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+
+        // Assert
+        dto.CustomerId.Should().BeNull();
+        dto.CustomerName.Should().BeNull();
+        dto.OrderItemId.Should().BeNull();
+    }
+
+    [Fact]
+    public void ToArticleDetailDto_WhenPaidArticle_ShouldMapCustomerAndOrderItemId()
+    {
+        // Arrange
+        Guid customerId = Guid.NewGuid();
+        Guid orderItemId = Guid.NewGuid();
+
+        ArticleEntity article = ArticleFactory.CreatePaid(CategoryId, customerId, orderItemId);
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        CustomerEntity customer = CustomerFactory.Create();
+
+        article.GetType().GetProperty("Category")!.SetValue(article, category);
+        article.GetType().GetProperty("Customer")!.SetValue(article, customer);
+
+        // Act
+        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+
+        // Assert
+        dto.CustomerId.Should().Be(customerId);
+        dto.CustomerName.Should().Be(customer.FullName);
+        dto.OrderItemId.Should().Be(orderItemId);
+    }
+
+    [Fact]
+    public void ToArticleDetailDto_WhenCustomerNavIsNull_ShouldMapCustomerNameAsNull()
+    {
+        // Arrange — CustomerId is set but Customer nav not loaded
+        Guid customerId = Guid.NewGuid();
+        Guid orderItemId = Guid.NewGuid();
+        ArticleEntity article = ArticleFactory.CreatePaid(CategoryId, customerId, orderItemId);
+        // Customer nav property left null
+
+        // Act
+        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+
+        // Assert
+        dto.CustomerId.Should().Be(customerId);
+        dto.CustomerName.Should().BeNull();
     }
 
     #endregion
@@ -227,48 +585,17 @@ public class ArticleMapperTests : BaseContentHandlerTest
         dtos[1].Body.Should().BeNull();
     }
 
-    #endregion
-
-    #region ToArticleDetailDto — customer and order item mapping
-
     [Fact]
-    public void ToArticleDetailDto_WhenFreeArticle_ShouldMapCustomerFieldsAsNull()
+    public void ToArticleCommentDtos_WhenEmpty_ShouldReturnEmptyList()
     {
         // Arrange
-        ArticleEntity article = ArticleFactory.Create(CategoryId);
-        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
-        article.GetType().GetProperty("Category")!.SetValue(article, category);
+        IReadOnlyList<ArticleCommentEntity> comments = [];
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        IReadOnlyList<ArticleCommentDto> dtos = comments.ToArticleCommentDtos(Mapper);
 
         // Assert
-        dto.CustomerId.Should().BeNull();
-        dto.CustomerName.Should().BeNull();
-        dto.OrderItemId.Should().BeNull();
-    }
-
-    [Fact]
-    public void ToArticleDetailDto_WhenPaidArticle_ShouldMapCustomerAndOrderItemId()
-    {
-        // Arrange
-        Guid customerId = Guid.NewGuid();
-        Guid orderItemId = Guid.NewGuid();
-
-        ArticleEntity article = ArticleFactory.CreatePaid(CategoryId, customerId, orderItemId);
-        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
-        CustomerEntity customer = CustomerFactory.Create();
-
-        article.GetType().GetProperty("Category")!.SetValue(article, category);
-        article.GetType().GetProperty("Customer")!.SetValue(article, customer);
-
-        // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
-
-        // Assert
-        dto.CustomerId.Should().Be(customerId);
-        dto.CustomerName.Should().Be(customer.FullName);
-        dto.OrderItemId.Should().Be(orderItemId);
+        dtos.Should().BeEmpty();
     }
 
     #endregion

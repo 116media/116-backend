@@ -183,7 +183,7 @@ public class ArticleSpecificationsTests
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
-        article.StampPromotion(DateTimeOffset.UtcNow.AddDays(7));
+        article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
         var spec = new PromotedArticleSpecification();
 
         // Act

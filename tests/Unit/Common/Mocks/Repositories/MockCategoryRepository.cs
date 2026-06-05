@@ -150,5 +150,15 @@ public static class MockCategoryRepository
             .ReturnsAsync(new List<CategoryPricingEntity>());
         mock.Setup(x => x.GetPricingAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((CategoryPricingEntity?)null);
+        mock.Setup(x => x.GetGossipCategoryAsync(It.IsAny<CancellationToken>())).ReturnsAsync((CategoryEntity?)null);
+    }
+
+    public static Mock<ICategoryRepository> SetupGetGossipCategory(
+        this Mock<ICategoryRepository> mock,
+        CategoryEntity? category
+    )
+    {
+        mock.Setup(x => x.GetGossipCategoryAsync(It.IsAny<CancellationToken>())).ReturnsAsync(category);
+        return mock;
     }
 }

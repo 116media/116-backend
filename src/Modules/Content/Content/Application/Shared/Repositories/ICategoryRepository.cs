@@ -98,4 +98,14 @@ public interface ICategoryRepository : IRepository<CategoryEntity>
     /// Removes a category pricing row from the repository.
     /// </summary>
     void RemovePricing(CategoryPricingEntity pricing);
+
+    /// <summary>
+    /// Retrieves the single active category designated as the gossip fallback source for
+    /// the homepage article promotion feed. Returns null if no such category is configured.
+    /// </summary>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>
+    /// The gossip fallback category entity if one exists, otherwise null.
+    /// </returns>
+    Task<CategoryEntity?> GetGossipCategoryAsync(CancellationToken cancellationToken = default);
 }

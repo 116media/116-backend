@@ -13,7 +13,17 @@ public static class ArticleMapper
     /// <summary>
     /// Registers Article and ArticleImage entity mappings into the provided TypeAdapterConfig.
     /// </summary>
-    /// <param name="config">The TypeAdapterConfig to register mappings into.</param>
+    /// <remarks>
+    /// <c>ArticleEntity → ArticleSummaryDto</c> and <c>ArticleEntity → ArticleDetailDto</c> are
+    /// intentionally NOT registered here. Registering them causes Mapster to auto-flatten the
+    /// <c>PromotionLevel</c> navigation property (which shares field names like <c>Id</c>,
+    /// <c>CreatedAt</c>, <c>CreatedBy</c> with the destination DTO base) and then NPEs at runtime
+    /// when <c>PromotionLevel</c> is null. Those two mappings are handled as plain C# in the
+    /// extension methods below.
+    /// </remarks>
+    /// <param name="config">
+    /// The TypeAdapterConfig to register mappings into.
+    /// </param>
     public static void Register(TypeAdapterConfig config)
     {
         config.NewConfig<ArticleImageEntity, ArticleImageDto>();
@@ -23,25 +33,6 @@ public static class ArticleMapper
             .Map(dest => dest.Id, src => src.Tag.Id)
             .Map(dest => dest.Name, src => src.Tag.Name)
             .Map(dest => dest.Slug, src => src.Tag.Slug);
-
-        config.NewConfig<ArticleEntity, ArticleSummaryDto>().Map(dest => dest.CategoryName, src => src.Category.Name);
-
-        config
-            .NewConfig<ArticleEntity, ArticleDetailDto>()
-            .Map(dest => dest.CategoryName, src => src.Category.Name)
-            .Map(dest => dest.Images, src => src.Images)
-            .Map(dest => dest.Tags, src => src.Tags)
-            .Map(
-                dest => dest.ReadTimeInMinutes,
-                src =>
-                    Math.Max(
-                        1,
-                        (int)Math.Ceiling(src.Body.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length / 200.0)
-                    )
-            )
-            .Map(dest => dest.CustomerId, src => src.CustomerId)
-            .Map(dest => dest.CustomerName, src => src.Customer != null ? src.Customer.FullName : null)
-            .Map(dest => dest.OrderItemId, src => src.OrderItemId);
 
         config
             .NewConfig<ArticleCommentEntity, ArticleCommentDto>()
@@ -53,7 +44,25 @@ public static class ArticleMapper
     /// </summary>
     public static ArticleSummaryDto ToArticleSummaryDto(this ArticleEntity entity, IMapper mapper)
     {
-        return mapper.Map<ArticleSummaryDto>(entity);
+        return new ArticleSummaryDto(
+            entity.Id,
+            entity.CategoryId,
+            entity.Category != null ? entity.Category.Name : string.Empty,
+            entity.Title,
+            entity.Slug,
+            entity.Headline,
+            entity.CoverImageUrl,
+            entity.AuthorId.ToString(),
+            entity.Status,
+            entity.IsPromoted,
+            entity.PublishedAt
+        )
+        {
+            CreatedAt = entity.CreatedAt,
+            CreatedBy = entity.CreatedBy,
+            UpdatedAt = entity.UpdatedAt,
+            UpdatedBy = entity.UpdatedBy,
+        };
     }
 
     /// <summary>
@@ -61,15 +70,39 @@ public static class ArticleMapper
     /// </summary>
     public static ArticleDetailDto ToArticleDetailDto(this ArticleEntity entity, IMapper mapper)
     {
-        var dto = mapper.Map<ArticleDetailDto>(entity);
-        return dto with
-        {
-            Images = mapper.Map<IReadOnlyList<ArticleImageDto>>(entity.Images),
-            Tags = mapper.Map<IReadOnlyList<TagDto>>(entity.Tags),
-            ReadTimeInMinutes = Math.Max(
+        return new ArticleDetailDto(
+            entity.Id,
+            entity.CategoryId,
+            entity.Category != null ? entity.Category.Name : string.Empty,
+            entity.Title,
+            entity.Slug,
+            entity.Headline,
+            entity.Body,
+            entity.CoverImageUrl,
+            entity.AuthorId.ToString(),
+            entity.Status,
+            entity.RejectionReason,
+            entity.SocialBoost,
+            entity.IsPromoted,
+            entity.PromotedUntil,
+            entity.PublishedAt,
+            entity.MetaTitle,
+            entity.MetaDescription,
+            mapper.Map<IReadOnlyList<ArticleImageDto>>(entity.Images),
+            mapper.Map<IReadOnlyList<TagDto>>(entity.Tags),
+            Math.Max(
                 1,
                 (int)Math.Ceiling(entity.Body.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length / 200.0)
             ),
+            entity.CustomerId,
+            entity.Customer != null ? entity.Customer.FullName : null,
+            entity.OrderItemId
+        )
+        {
+            CreatedAt = entity.CreatedAt,
+            CreatedBy = entity.CreatedBy,
+            UpdatedAt = entity.UpdatedAt,
+            UpdatedBy = entity.UpdatedBy,
         };
     }
 
@@ -81,7 +114,7 @@ public static class ArticleMapper
         IMapper mapper
     )
     {
-        return mapper.Map<IReadOnlyList<ArticleSummaryDto>>(entities);
+        return entities.Select(e => e.ToArticleSummaryDto(mapper)).ToList();
     }
 
     /// <summary>

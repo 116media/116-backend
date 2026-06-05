@@ -446,7 +446,7 @@ public class ArticleEntityTests
         DateTimeOffset until = DateTimeOffset.UtcNow.AddDays(7);
 
         // Act
-        article.StampPromotion(until);
+        article.StampPromotion(Guid.NewGuid(), until);
 
         // Assert
         article.IsPromoted.Should().BeTrue();
@@ -471,7 +471,7 @@ public class ArticleEntityTests
             TestConstants.Content.Editorial.Article.ValidSlug,
             AuthorId
         );
-        article.StampPromotion(DateTimeOffset.UtcNow.AddDays(7));
+        article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
         DateTimeOffset before = DateTimeOffset.UtcNow;
 
@@ -521,7 +521,7 @@ public class ArticleEntityTests
         article.Approve();
         article.Publish();
         article.StampSocialBoost();
-        article.StampPromotion(DateTimeOffset.UtcNow.AddDays(7));
+        article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
         // Act
         article.ForceUnpromote("super-admin-uuid", "reason");

@@ -204,4 +204,35 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     {
         await context.VideoShares.AddAsync(share, cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<VideoEntity>> GetActivePromotedBySpotAsync(
+        int spotPriority,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new VideoBySpotPrioritySpecification(spotPriority: spotPriority);
+        return await context
+            .Videos.ApplySpecification(specification: specification)
+            .Include(v => v.Category)
+            .Include(v => v.PromotionLevel)
+            .OrderByDescending(v => v.PublishedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<VideoEntity>> GetFreeVideosAsync(
+        int limit,
+        IEnumerable<Guid> excludeIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new FreeVideoSpecification();
+        return await context
+            .Videos.ApplySpecification(specification: specification)
+            .Where(v => !excludeIds.Contains(v.Id))
+            .Include(v => v.Category)
+            .Take(limit)
+            .ToListAsync(cancellationToken);
+    }
 }

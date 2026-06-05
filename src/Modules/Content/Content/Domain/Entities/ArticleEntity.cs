@@ -102,6 +102,18 @@ public class ArticleEntity : Aggregate<Guid>
     public bool IsPromoted { get; private set; }
 
     /// <summary>
+    /// The promotion level purchased for this article's homepage placement.
+    /// Determines which grid spot the article appears in (<see cref="PromotionLevelEntity.SpotPriority"/>).
+    /// <c>null</c> if the article has never been promoted.
+    /// </summary>
+    public Guid? PromotionLevelId { get; private set; }
+
+    /// <summary>
+    /// Navigation property to the promotion level entity.
+    /// </summary>
+    public PromotionLevelEntity? PromotionLevel { get; private set; }
+
+    /// <summary>
     /// When the paid promotion expires. <c>null</c> if not promoted.
     /// Set to <c>payment.verified_at + promotion_level.duration_days</c> by the Commerce flow.
     /// </summary>
@@ -454,12 +466,16 @@ public class ArticleEntity : Aggregate<Guid>
     /// Activates the article's paid promotion (À-la-Une) placement until the given date.
     /// Called by the Commerce payment verification flow only.
     /// </summary>
+    /// <param name="promotionLevelId">
+    /// The promotion level purchased, used to determine the homepage grid spot.
+    /// </param>
     /// <param name="until">
     /// When the promotion expires (<c>payment.verified_at + promotion_level.duration_days</c>).
     /// </param>
-    public void StampPromotion(DateTimeOffset until)
+    public void StampPromotion(Guid promotionLevelId, DateTimeOffset until)
     {
         IsPromoted = true;
+        PromotionLevelId = promotionLevelId;
         PromotedUntil = until;
     }
 

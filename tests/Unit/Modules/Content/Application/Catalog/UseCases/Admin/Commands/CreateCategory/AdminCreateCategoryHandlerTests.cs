@@ -52,7 +52,8 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Name: name,
             Slug: slug,
             Description: TestConstants.Content.Category.ValidDescription,
-            IsFree: false
+            IsFree: false,
+            IsGossip: false
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
@@ -87,7 +88,8 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Name: TestConstants.Content.Category.ValidName,
             Slug: slug,
             Description: TestConstants.Content.Category.ValidDescription,
-            IsFree: true
+            IsFree: true,
+            IsGossip: false
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
@@ -115,7 +117,8 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Name: TestConstants.Content.Category.ValidName,
             Slug: slug,
             Description: TestConstants.Content.Category.ValidDescription,
-            IsFree: false
+            IsFree: false,
+            IsGossip: false
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
@@ -151,7 +154,8 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
-            IsFree: false
+            IsFree: false,
+            IsGossip: false
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrowNotFound(nonExistentId);
@@ -175,7 +179,8 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Name: TestConstants.Content.Category.ValidName,
             Slug: slug,
             Description: TestConstants.Content.Category.ValidDescription,
-            IsFree: false
+            IsFree: false,
+            IsGossip: false
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
@@ -202,7 +207,8 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Name: TestConstants.Content.Category.ValidName,
             Slug: slug,
             Description: TestConstants.Content.Category.ValidDescription,
-            IsFree: false
+            IsFree: false,
+            IsGossip: false
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);

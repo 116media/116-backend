@@ -18,7 +18,8 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategor
 /// <param name="Name">The new display name for the category.</param>
 /// <param name="Slug">The new URL-safe slug for the category.</param>
 /// <param name="Description">The new description.</param>
-public record AdminUpdateCategoryRequest(string Name, string Slug, string Description);
+/// <param name="IsGossip">Whether this is the gossip category used for homepage feed fallbacks and the gossip strip.</param>
+public record AdminUpdateCategoryRequest(string Name, string Slug, string Description, bool IsGossip);
 
 /// <summary>
 /// Response model for a successful category update.
@@ -52,7 +53,8 @@ public class AdminUpdateCategoryEndpointV1 : ICarterModule
                         Id: id,
                         Name: request.Name,
                         Slug: request.Slug,
-                        Description: request.Description
+                        Description: request.Description,
+                        IsGossip: request.IsGossip
                     );
 
                     AdminUpdateCategoryResult result = await dispatcher.Send(request: command);

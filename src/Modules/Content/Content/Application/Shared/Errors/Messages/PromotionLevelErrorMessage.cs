@@ -72,4 +72,15 @@ public static class PromotionLevelErrorMessage
     {
         return "Promotion level price must be zero or greater";
     }
+
+    /// <summary>
+    /// Gets an error message for when the spot priority is not a valid grid position.
+    /// </summary>
+    /// <returns>
+    /// An error message indicating that spot priority must be 1, 2, or 3.
+    /// </returns>
+    public static string InvalidSpotPriority()
+    {
+        return "Spot priority must be 1, 2, or 3";
+    }
 }

@@ -23,7 +23,7 @@ public class PromotionLevelEntityTests
         decimal priceUsd = TestConstants.Content.PromotionLevel.ValidPriceUsd;
 
         // Act
-        var entity = PromotionLevelEntity.Create(id, name, durationDays, priceUsd);
+        var entity = PromotionLevelEntity.Create(id, name, durationDays, priceUsd, spotPriority: 1);
 
         // Assert
         entity.Id.Should().Be(id);
@@ -31,6 +31,7 @@ public class PromotionLevelEntityTests
         entity.DurationDays.Should().Be(durationDays);
         entity.PriceUsd.Should().Be(priceUsd);
         entity.IsActive.Should().BeTrue();
+        entity.SpotPriority.Should().Be(1);
     }
 
     [Fact]
@@ -41,7 +42,8 @@ public class PromotionLevelEntityTests
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ZeroPriceUsd
+            TestConstants.Content.PromotionLevel.ZeroPriceUsd,
+            spotPriority: 1
         );
 
         // Assert
@@ -60,7 +62,8 @@ public class PromotionLevelEntityTests
                 Guid.NewGuid(),
                 invalidName!,
                 TestConstants.Content.PromotionLevel.ValidDurationDays,
-                TestConstants.Content.PromotionLevel.ValidPriceUsd
+                TestConstants.Content.PromotionLevel.ValidPriceUsd,
+                spotPriority: 1
             );
 
         // Assert
@@ -79,7 +82,8 @@ public class PromotionLevelEntityTests
                 Guid.NewGuid(),
                 TestConstants.Content.PromotionLevel.ValidName,
                 invalidDuration,
-                TestConstants.Content.PromotionLevel.ValidPriceUsd
+                TestConstants.Content.PromotionLevel.ValidPriceUsd,
+                spotPriority: 1
             );
 
         // Assert
@@ -97,7 +101,28 @@ public class PromotionLevelEntityTests
                 Guid.NewGuid(),
                 TestConstants.Content.PromotionLevel.ValidName,
                 TestConstants.Content.PromotionLevel.ValidDurationDays,
-                invalidPrice
+                invalidPrice,
+                spotPriority: 1
+            );
+
+        // Assert
+        act.Should().Throw<BadRequestException>();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(4)]
+    [InlineData(-1)]
+    public void Create_WithInvalidSpotPriority_ShouldThrowBadRequestException(int invalidSpotPriority)
+    {
+        // Act
+        Action act = () =>
+            PromotionLevelEntity.Create(
+                Guid.NewGuid(),
+                TestConstants.Content.PromotionLevel.ValidName,
+                TestConstants.Content.PromotionLevel.ValidDurationDays,
+                TestConstants.Content.PromotionLevel.ValidPriceUsd,
+                spotPriority: invalidSpotPriority
             );
 
         // Assert
@@ -116,16 +141,18 @@ public class PromotionLevelEntityTests
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd
+            TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            spotPriority: 1
         );
 
         // Act
-        entity.Update(TestConstants.Content.PromotionLevel.AnotherValidName, 14, 100m);
+        entity.Update(TestConstants.Content.PromotionLevel.AnotherValidName, 14, 100m, spotPriority: 2);
 
         // Assert
         entity.Name.Should().Be(TestConstants.Content.PromotionLevel.AnotherValidName);
         entity.DurationDays.Should().Be(14);
         entity.PriceUsd.Should().Be(100m);
+        entity.SpotPriority.Should().Be(2);
     }
 
     [Theory]
@@ -139,11 +166,13 @@ public class PromotionLevelEntityTests
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd
+            TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            spotPriority: 1
         );
 
         // Act
-        Action act = () => entity.Update(invalidName!, TestConstants.Content.PromotionLevel.ValidDurationDays, 0m);
+        Action act = () =>
+            entity.Update(invalidName!, TestConstants.Content.PromotionLevel.ValidDurationDays, 0m, spotPriority: 1);
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -159,11 +188,13 @@ public class PromotionLevelEntityTests
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd
+            TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            spotPriority: 1
         );
 
         // Act
-        Action act = () => entity.Update(TestConstants.Content.PromotionLevel.ValidName, invalidDuration, 0m);
+        Action act = () =>
+            entity.Update(TestConstants.Content.PromotionLevel.ValidName, invalidDuration, 0m, spotPriority: 1);
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -179,7 +210,8 @@ public class PromotionLevelEntityTests
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd
+            TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            spotPriority: 1
         );
 
         // Act
@@ -187,7 +219,36 @@ public class PromotionLevelEntityTests
             entity.Update(
                 TestConstants.Content.PromotionLevel.ValidName,
                 TestConstants.Content.PromotionLevel.ValidDurationDays,
-                invalidPrice
+                invalidPrice,
+                spotPriority: 1
+            );
+
+        // Assert
+        act.Should().Throw<BadRequestException>();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(4)]
+    [InlineData(-1)]
+    public void Update_WithInvalidSpotPriority_ShouldThrowBadRequestException(int invalidSpotPriority)
+    {
+        // Arrange
+        var entity = PromotionLevelEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.PromotionLevel.ValidName,
+            TestConstants.Content.PromotionLevel.ValidDurationDays,
+            TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            spotPriority: 1
+        );
+
+        // Act
+        Action act = () =>
+            entity.Update(
+                TestConstants.Content.PromotionLevel.ValidName,
+                TestConstants.Content.PromotionLevel.ValidDurationDays,
+                TestConstants.Content.PromotionLevel.ValidPriceUsd,
+                spotPriority: invalidSpotPriority
             );
 
         // Assert
@@ -206,7 +267,8 @@ public class PromotionLevelEntityTests
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd
+            TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            spotPriority: 1
         );
         entity.Deactivate();
 
@@ -223,7 +285,8 @@ public class PromotionLevelEntityTests
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd
+            TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            spotPriority: 1
         );
 
         // Act & Assert
@@ -238,7 +301,8 @@ public class PromotionLevelEntityTests
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd
+            TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            spotPriority: 1
         );
 
         // Act & Assert
@@ -254,7 +318,8 @@ public class PromotionLevelEntityTests
             Guid.NewGuid(),
             TestConstants.Content.PromotionLevel.ValidName,
             TestConstants.Content.PromotionLevel.ValidDurationDays,
-            TestConstants.Content.PromotionLevel.ValidPriceUsd
+            TestConstants.Content.PromotionLevel.ValidPriceUsd,
+            spotPriority: 1
         );
         entity.Deactivate();
 

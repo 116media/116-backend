@@ -26,6 +26,7 @@ internal class VideoBuilder
     private EnumContentStatus _targetStatus = EnumContentStatus.Draft;
     private string? _rejectionReason;
     private DateTimeOffset? _promotedUntil;
+    private Guid _promotionLevelId = Guid.NewGuid();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VideoBuilder"/> class with a required category ID.
@@ -182,9 +183,10 @@ internal class VideoBuilder
     /// <summary>
     /// Stamps the video as promoted until the specified date.
     /// </summary>
-    public VideoBuilder AsPromoted(DateTimeOffset until)
+    public VideoBuilder AsPromoted(DateTimeOffset until, Guid? promotionLevelId = null)
     {
         _promotedUntil = until;
+        _promotionLevelId = promotionLevelId ?? Guid.NewGuid();
         return this;
     }
 
@@ -247,7 +249,7 @@ internal class VideoBuilder
 
         if (_promotedUntil.HasValue)
         {
-            entity.StampPromotion(_promotedUntil.Value);
+            entity.StampPromotion(_promotionLevelId, _promotedUntil.Value);
         }
 
         entity.CreatedAt = DateTime.UtcNow;

@@ -21,6 +21,7 @@ internal class ArticleBuilder
     private string? _rejectionReason;
     private bool _stampSocialBoost;
     private DateTimeOffset? _promotedUntil;
+    private Guid _promotionLevelId = Guid.NewGuid();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ArticleBuilder"/> class with a required category ID.
@@ -152,9 +153,10 @@ internal class ArticleBuilder
     /// <summary>
     /// Stamps the article as promoted until the specified date.
     /// </summary>
-    public ArticleBuilder AsPromoted(DateTimeOffset until)
+    public ArticleBuilder AsPromoted(DateTimeOffset until, Guid? promotionLevelId = null)
     {
         _promotedUntil = until;
+        _promotionLevelId = promotionLevelId ?? Guid.NewGuid();
         return this;
     }
 
@@ -190,7 +192,7 @@ internal class ArticleBuilder
 
         if (_promotedUntil.HasValue)
         {
-            entity.StampPromotion(_promotedUntil.Value);
+            entity.StampPromotion(_promotionLevelId, _promotedUntil.Value);
         }
 
         entity.CreatedAt = DateTime.UtcNow;

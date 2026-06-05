@@ -35,7 +35,8 @@ public class AdminCreateCategoryEndpointV1Tests
             Name: "Technology",
             Slug: "technology",
             Description: "Tech articles",
-            IsFree: true
+            IsFree: true,
+            IsGossip: false
         );
 
         // Assert
@@ -54,7 +55,8 @@ public class AdminCreateCategoryEndpointV1Tests
             Name: "Technology",
             Slug: "technology",
             Description: "Test category description",
-            IsFree: false
+            IsFree: false,
+            IsGossip: false
         );
 
         // Assert
@@ -71,6 +73,7 @@ public class AdminCreateCategoryEndpointV1Tests
             "Test category description",
             true,
             true,
+            false,
             []
         );
 }

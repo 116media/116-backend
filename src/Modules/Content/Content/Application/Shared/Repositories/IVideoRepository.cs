@@ -139,4 +139,35 @@ public interface IVideoRepository : IRepository<VideoEntity>
     /// Adds a share record to the repository.
     /// </summary>
     Task AddShareAsync(VideoShareEntity share, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves all currently active promoted published videos assigned to the given
+    /// <paramref name="spotPriority" /> via their linked promotion level.
+    /// </summary>
+    /// <param name="spotPriority">The spot priority (1, 2, or 3) to filter by.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>
+    /// A read-only list of promoted video entities for the specified spot.
+    /// </returns>
+    Task<IReadOnlyList<VideoEntity>> GetActivePromotedBySpotAsync(
+        int spotPriority,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Retrieves published free videos (no associated customer), excluding IDs already used
+    /// elsewhere on the feed. Results are returned in an arbitrary order so the caller can
+    /// apply an in-memory random shuffle.
+    /// </summary>
+    /// <param name="limit">The maximum number of videos to return.</param>
+    /// <param name="excludeIds">Video identifiers to exclude from the result set.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>
+    /// A read-only list of free video entities.
+    /// </returns>
+    Task<IReadOnlyList<VideoEntity>> GetFreeVideosAsync(
+        int limit,
+        IEnumerable<Guid> excludeIds,
+        CancellationToken cancellationToken = default
+    );
 }

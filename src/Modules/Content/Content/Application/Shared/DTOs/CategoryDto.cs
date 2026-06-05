@@ -11,6 +11,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="Description">The description of the category.</param>
 /// <param name="IsFree">Whether content in this category requires no payment.</param>
 /// <param name="IsActive">Whether the category is currently active.</param>
+/// <param name="IsGossip">Whether this is the gossip category used for homepage feed fallbacks and the gossip strip.</param>
 /// <param name="Pricing">The pricing tiers configured for this category.</param>
 public record CategoryDto(
     Guid Id,
@@ -21,5 +22,6 @@ public record CategoryDto(
     string Description,
     bool IsFree,
     bool IsActive,
+    bool IsGossip,
     IReadOnlyList<CategoryPricingDto> Pricing
 );

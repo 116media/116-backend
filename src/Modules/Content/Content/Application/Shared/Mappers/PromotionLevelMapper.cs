@@ -18,7 +18,16 @@ public static class PromotionLevelMapper
     /// <param name="config">The TypeAdapterConfig to register mappings into.</param>
     public static void Register(TypeAdapterConfig config)
     {
-        config.NewConfig<PromotionLevelEntity, PromotionLevelDto>();
+        config
+            .NewConfig<PromotionLevelEntity, PromotionLevelDto>()
+            .MapWith(src => new PromotionLevelDto(
+                src.Id,
+                src.Name,
+                src.DurationDays,
+                src.PriceUsd,
+                src.IsActive,
+                src.SpotPriority
+            ));
     }
 
     /// <summary>

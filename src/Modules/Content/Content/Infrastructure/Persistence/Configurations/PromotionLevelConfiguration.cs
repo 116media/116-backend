@@ -24,6 +24,12 @@ public class PromotionLevelConfiguration : IEntityTypeConfiguration<PromotionLev
 
         builder.Property(x => x.IsActive).IsRequired().HasDefaultValue(true);
 
+        builder.Property(x => x.SpotPriority).IsRequired();
+
         builder.HasIndex(x => x.Name).IsUnique();
+
+        builder.ToTable(t =>
+            t.HasCheckConstraint(name: "ck_promotion_levels_spot_priority", sql: "spot_priority IN (1, 2, 3)")
+        );
     }
 }

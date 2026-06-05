@@ -48,7 +48,8 @@ public class AdminCreateCategoryHandler(
             name: command.Name,
             slug: command.Slug,
             description: command.Description,
-            isFree: command.IsFree
+            isFree: command.IsFree,
+            isGossip: command.IsGossip
         );
 
         await categoryRepository.AddAsync(category: category, cancellationToken: cancellationToken);
