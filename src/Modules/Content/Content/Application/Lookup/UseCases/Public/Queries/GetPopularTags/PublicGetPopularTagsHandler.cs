@@ -6,6 +6,7 @@ using _116.Content.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 
 namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetPopularTags;
 
@@ -63,9 +64,7 @@ public class PublicGetPopularTagsHandler(
 
         var options = new MemoryCacheEntryOptions()
             .SetAbsoluteExpiration(CacheTtl)
-            .AddExpirationToken(
-                new Microsoft.Extensions.Primitives.CancellationChangeToken(cacheInvalidator.GetEvictionToken())
-            );
+            .AddExpirationToken(new CancellationChangeToken(cacheInvalidator.GetEvictionToken()));
 
         cache.Set(cacheKey, dtoList, options);
 
