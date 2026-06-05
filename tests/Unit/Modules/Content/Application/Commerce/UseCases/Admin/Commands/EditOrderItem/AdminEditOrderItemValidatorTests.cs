@@ -1,6 +1,4 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrderItem;
-using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
