@@ -1,5 +1,4 @@
 using _116.Identity.Domain.Entities;
-using _116.Tests.Fixtures.Builders.Entities.Identity;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
 using Bogus;
