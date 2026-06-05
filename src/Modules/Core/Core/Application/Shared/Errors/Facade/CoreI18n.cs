@@ -1,5 +1,3 @@
-using _116.Core.Application.Shared.Errors;
-
 namespace _116.Core.Application.Shared.Errors.Facade;
 
 /// <summary>
