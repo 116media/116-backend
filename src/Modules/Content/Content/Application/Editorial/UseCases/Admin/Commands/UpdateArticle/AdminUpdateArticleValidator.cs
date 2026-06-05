@@ -1,5 +1,4 @@
 using _116.Content.Application.Shared.Validators;
-using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -27,24 +26,10 @@ public class AdminUpdateArticleValidator : AbstractValidator<AdminUpdateArticleC
 
         RuleFor(x => x.Body).ValidArticleBody();
 
-        RuleFor(x => x.OrderItemId)
-            .NotEmpty()
-            .When(x => x.CustomerId.HasValue)
-            .WithMessage("Order item ID is required when customer ID is provided.");
+        When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId());
+        When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId());
 
-        RuleFor(x => x.CustomerId)
-            .NotEmpty()
-            .When(x => x.OrderItemId.HasValue)
-            .WithMessage("Customer ID is required when order item ID is provided.");
-
-        RuleFor(x => x.MetaTitle)
-            .MinimumLength(ContentConstants.MinMetaTitleLength)
-            .MaximumLength(ContentConstants.MaxMetaTitleLength)
-            .When(x => x.MetaTitle is not null);
-
-        RuleFor(x => x.MetaDescription)
-            .MinimumLength(ContentConstants.MinMetaDescriptionLength)
-            .MaximumLength(ContentConstants.MaxMetaDescriptionLength)
-            .When(x => x.MetaDescription is not null);
+        When(x => x.MetaTitle is not null, () => RuleFor(x => x.MetaTitle).ValidMetaTitle());
+        When(x => x.MetaDescription is not null, () => RuleFor(x => x.MetaDescription).ValidMetaDescription());
     }
 }

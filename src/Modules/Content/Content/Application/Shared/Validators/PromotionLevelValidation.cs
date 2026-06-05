@@ -66,4 +66,15 @@ public static class PromotionLevelValidation
             .GreaterThanOrEqualTo(valueToCompare: 0)
             .WithMessage("Promotion level price must be zero or greater.");
     }
+
+    /// <summary>
+    /// Validates that the spot priority is an integer between 1 and 3 (inclusive).
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the spot priority property.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, int> ValidSpotPriority<T>(this IRuleBuilder<T, int> ruleBuilder)
+    {
+        return ruleBuilder.InclusiveBetween(from: 1, to: 3).WithMessage("Spot priority must be 1, 2, or 3");
+    }
 }

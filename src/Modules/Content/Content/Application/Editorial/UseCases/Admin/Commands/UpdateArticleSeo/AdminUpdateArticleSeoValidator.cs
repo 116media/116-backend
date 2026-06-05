@@ -1,4 +1,4 @@
-using _116.Content.Domain.Constants;
+using _116.Content.Application.Shared.Validators;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -17,14 +17,7 @@ public class AdminUpdateArticleSeoValidator : AbstractValidator<AdminUpdateArtic
     {
         RuleFor(x => x.Id).IsValidGuid("Article ID");
 
-        RuleFor(x => x.MetaTitle)
-            .MinimumLength(ContentConstants.MinMetaTitleLength)
-            .MaximumLength(ContentConstants.MaxMetaTitleLength)
-            .When(x => x.MetaTitle is not null);
-
-        RuleFor(x => x.MetaDescription)
-            .MinimumLength(ContentConstants.MinMetaDescriptionLength)
-            .MaximumLength(ContentConstants.MaxMetaDescriptionLength)
-            .When(x => x.MetaDescription is not null);
+        When(x => x.MetaTitle is not null, () => RuleFor(x => x.MetaTitle).ValidMetaTitle());
+        When(x => x.MetaDescription is not null, () => RuleFor(x => x.MetaDescription).ValidMetaDescription());
     }
 }

@@ -1,4 +1,4 @@
-using _116.Content.Domain.Constants;
+using _116.Content.Application.Shared.Validators;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -16,10 +16,6 @@ public class AdminUpdateArticleTagsValidator : AbstractValidator<AdminUpdateArti
     public AdminUpdateArticleTagsValidator()
     {
         RuleFor(x => x.ArticleId).IsValidGuid("Article ID");
-        RuleForEach(x => x.TagNames)
-            .NotEmpty()
-            .WithMessage("Tag name is required.")
-            .MaximumLength(ContentConstants.MaxTagNameLength)
-            .WithMessage($"Tag name must not exceed {ContentConstants.MaxTagNameLength} characters.");
+        RuleForEach(x => x.TagNames).ValidTagNameItem();
     }
 }

@@ -44,4 +44,22 @@ public static class CommerceValidation
             .Must(kind => kind is EnumCoreContentType.Article or EnumCoreContentType.Video)
             .WithMessage("Content kind must be Article or Video.");
     }
+
+    /// <summary>
+    /// Validates that the admin user ID is not empty.
+    /// </summary>
+    public static IRuleBuilderOptions<T, Guid> ValidAdminUserId<T>(this IRuleBuilder<T, Guid> ruleBuilder)
+    {
+        return ruleBuilder.NotEmpty().WithMessage("Admin user ID is required.");
+    }
+
+    /// <summary>
+    /// Validates that the payment method is a defined <see cref="EnumPaymentMethod"/> value.
+    /// </summary>
+    public static IRuleBuilderOptions<T, EnumPaymentMethod> ValidPaymentMethod<T>(
+        this IRuleBuilder<T, EnumPaymentMethod> ruleBuilder
+    )
+    {
+        return ruleBuilder.IsInEnum().WithMessage("Payment method is invalid.");
+    }
 }

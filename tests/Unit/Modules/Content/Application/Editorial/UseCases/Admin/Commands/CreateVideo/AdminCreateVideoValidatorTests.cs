@@ -272,4 +272,36 @@ public class AdminCreateVideoValidatorTests
     }
 
     #endregion
+
+    #region Description Validation Tests
+
+    [Fact]
+    public async Task Validate_WithEmptyDescription_ShouldHaveError()
+    {
+        // Arrange
+        var command = new AdminCreateVideoCommand(
+            CategoryId: Guid.NewGuid(),
+            Title: TestConstants.Content.Editorial.Video.ValidTitle,
+            Slug: TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId: Guid.NewGuid(),
+            CustomerId: null,
+            OrderItemId: null,
+            Description: string.Empty,
+            ShootingScheduledAt: null
+        );
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreateVideoCommand.Description)
+                && e.ErrorMessage == "Video description is required."
+            );
+    }
+
+    #endregion
 }

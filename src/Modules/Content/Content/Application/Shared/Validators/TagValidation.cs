@@ -72,6 +72,22 @@ public static partial class TagValidation
     }
 
     /// <summary>
+    /// Validates each element of a tag name collection: not empty and within the max length.
+    /// Intended for use with <c>RuleForEach</c>.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for each element in the tag names collection.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string> ValidTagNameItem<T>(this IRuleBuilder<T, string> ruleBuilder)
+    {
+        return ruleBuilder
+            .NotEmpty()
+            .WithMessage("Tag name is required.")
+            .MaximumLength(maximumLength: ContentConstants.MaxTagNameLength)
+            .WithMessage($"Tag name must not exceed {ContentConstants.MaxTagNameLength} characters.");
+    }
+
+    /// <summary>
     /// Generated regex for slug validation — lowercase letters, numbers, and hyphens only.
     /// Uses compile-time generation for better performance, AOT compatibility, and reduced startup time.
     /// </summary>

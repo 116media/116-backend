@@ -17,14 +17,7 @@ public class AdminCreateArticleValidator : AbstractValidator<AdminCreateArticleC
         RuleFor(x => x.Title).ValidArticleTitle();
         RuleFor(x => x.Slug).ValidArticleSlug();
 
-        RuleFor(x => x.OrderItemId)
-            .NotEmpty()
-            .When(x => x.CustomerId.HasValue)
-            .WithMessage("Order item ID is required when customer ID is provided.");
-
-        RuleFor(x => x.CustomerId)
-            .NotEmpty()
-            .When(x => x.OrderItemId.HasValue)
-            .WithMessage("Customer ID is required when order item ID is provided.");
+        When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId());
+        When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId());
     }
 }

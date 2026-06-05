@@ -91,7 +91,12 @@ public class AdminUpdateArticleSeoValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateArticleSeoCommand.MetaTitle));
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateArticleSeoCommand.MetaTitle)
+                && e.ErrorMessage == "Meta title must be at least 10 characters."
+            );
     }
 
     [Fact]
@@ -109,7 +114,12 @@ public class AdminUpdateArticleSeoValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateArticleSeoCommand.MetaTitle));
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateArticleSeoCommand.MetaTitle)
+                && e.ErrorMessage == "Meta title must not exceed 70 characters."
+            );
     }
 
     [Fact]
@@ -148,7 +158,12 @@ public class AdminUpdateArticleSeoValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateArticleSeoCommand.MetaDescription));
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateArticleSeoCommand.MetaDescription)
+                && e.ErrorMessage == "Meta description must be at least 50 characters."
+            );
     }
 
     [Fact]
@@ -166,7 +181,12 @@ public class AdminUpdateArticleSeoValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateArticleSeoCommand.MetaDescription));
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateArticleSeoCommand.MetaDescription)
+                && e.ErrorMessage == "Meta description must not exceed 160 characters."
+            );
     }
 
     [Fact]

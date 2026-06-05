@@ -115,6 +115,99 @@ public static partial class EditorialValidation
     }
 
     /// <summary>
+    /// Validates that a video description is not empty.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the description property.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidVideoDescription<T>(this IRuleBuilder<T, string?> ruleBuilder)
+    {
+        return ruleBuilder.NotEmpty().WithMessage("Video description is required.");
+    }
+
+    /// <summary>
+    /// Validates that the order item ID is not empty. Intended for use inside a
+    /// <c>When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId())</c> block.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the order item ID property.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, Guid?> ValidOrderItemId<T>(this IRuleBuilder<T, Guid?> ruleBuilder)
+    {
+        return ruleBuilder.NotEmpty().WithMessage("Order item ID is required when customer ID is provided.");
+    }
+
+    /// <summary>
+    /// Validates that the customer ID is not empty. Intended for use inside a
+    /// <c>When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId())</c> block.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the customer ID property.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, Guid?> ValidCustomerId<T>(this IRuleBuilder<T, Guid?> ruleBuilder)
+    {
+        return ruleBuilder.NotEmpty().WithMessage("Customer ID is required when order item ID is provided.");
+    }
+
+    /// <summary>
+    /// Validates an unpromote reason: required and at most 500 characters.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the reason property.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidUnpromoteReason<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage("Reason is required.")
+            .MaximumLength(maximumLength: ContentConstants.MaxRejectionReasonLength)
+            .WithMessage($"Reason must not exceed {ContentConstants.MaxRejectionReasonLength} characters.");
+    }
+
+    /// <summary>
+    /// Validates an SEO meta title: between
+    /// <see cref="ContentConstants.MinMetaTitleLength"/> and <see cref="ContentConstants.MaxMetaTitleLength"/>
+    /// characters. Intended for use inside a
+    /// <c>When(x => x.MetaTitle is not null, () => RuleFor(x => x.MetaTitle).ValidMetaTitle())</c> block.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the meta title property.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidMetaTitle<T>(this IRuleBuilderInitial<T, string?> ruleBuilder)
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .MinimumLength(minimumLength: ContentConstants.MinMetaTitleLength)
+            .WithMessage($"Meta title must be at least {ContentConstants.MinMetaTitleLength} characters.")
+            .MaximumLength(maximumLength: ContentConstants.MaxMetaTitleLength)
+            .WithMessage($"Meta title must not exceed {ContentConstants.MaxMetaTitleLength} characters.");
+    }
+
+    /// <summary>
+    /// Validates an SEO meta description: between
+    /// <see cref="ContentConstants.MinMetaDescriptionLength"/> and <see cref="ContentConstants.MaxMetaDescriptionLength"/>
+    /// characters. Intended for use inside a
+    /// <c>When(x => x.MetaDescription is not null, () => RuleFor(x => x.MetaDescription).ValidMetaDescription())</c> block.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the meta description property.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidMetaDescription<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .MinimumLength(minimumLength: ContentConstants.MinMetaDescriptionLength)
+            .WithMessage($"Meta description must be at least {ContentConstants.MinMetaDescriptionLength} characters.")
+            .MaximumLength(maximumLength: ContentConstants.MaxMetaDescriptionLength)
+            .WithMessage($"Meta description must not exceed {ContentConstants.MaxMetaDescriptionLength} characters.");
+    }
+
+    /// <summary>
     /// Validates a rejection reason with length constraints.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>

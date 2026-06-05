@@ -211,6 +211,32 @@ public class AdminUpdateVideoValidatorTests
 
     #endregion
 
+    #region Description Validation Tests
+
+    [Fact]
+    public async Task Validate_WithEmptyDescription_ShouldHaveError()
+    {
+        // Arrange
+        var command = ValidCommand() with
+        {
+            Description = string.Empty,
+        };
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateVideoCommand.Description)
+                && e.ErrorMessage == "Video description is required."
+            );
+    }
+
+    #endregion
+
     #region Conditional Validation Tests
 
     [Fact]
@@ -277,7 +303,12 @@ public class AdminUpdateVideoValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateVideoCommand.MetaTitle));
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateVideoCommand.MetaTitle)
+                && e.ErrorMessage == "Meta title must be at least 10 characters."
+            );
     }
 
     [Fact]
@@ -294,7 +325,12 @@ public class AdminUpdateVideoValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateVideoCommand.MetaTitle));
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateVideoCommand.MetaTitle)
+                && e.ErrorMessage == "Meta title must not exceed 70 characters."
+            );
     }
 
     [Fact]
@@ -331,7 +367,12 @@ public class AdminUpdateVideoValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateVideoCommand.MetaDescription));
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateVideoCommand.MetaDescription)
+                && e.ErrorMessage == "Meta description must be at least 50 characters."
+            );
     }
 
     [Fact]
@@ -348,7 +389,12 @@ public class AdminUpdateVideoValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminUpdateVideoCommand.MetaDescription));
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateVideoCommand.MetaDescription)
+                && e.ErrorMessage == "Meta description must not exceed 160 characters."
+            );
     }
 
     [Fact]
