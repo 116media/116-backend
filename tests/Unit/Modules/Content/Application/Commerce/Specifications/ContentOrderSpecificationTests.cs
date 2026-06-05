@@ -1,7 +1,6 @@
 using _116.Content.Application.Commerce.Specifications;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
-using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using AwesomeAssertions;
 using Xunit;
