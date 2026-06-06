@@ -8,7 +8,7 @@ using Xunit;
 namespace _116.Unit.Tests.Shared.Application.Decorators;
 
 /// <summary>
-/// Unit tests for <see cref="LoggingDecorator{TRequest, TResponse}"/>.
+/// Unit tests for <see cref="LoggingDecorator{TRequest,TResponse}"/>.
 /// </summary>
 public class LoggingDecoratorTests
 {
