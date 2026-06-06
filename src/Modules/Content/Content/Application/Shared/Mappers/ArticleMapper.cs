@@ -85,6 +85,8 @@ public static class ArticleMapper
             entity.SocialBoost,
             entity.IsPromoted,
             entity.PromotedUntil,
+            entity.PromotionLevelId,
+            entity.PromotionLevel?.Name,
             entity.PublishedAt,
             entity.MetaTitle,
             entity.MetaDescription,

@@ -21,6 +21,8 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="SocialBoost">Whether the article is flagged for social media promotion.</param>
 /// <param name="IsPromoted">Whether the article has an active paid promotion.</param>
 /// <param name="PromotedUntil">When the paid promotion expires, or null.</param>
+/// <param name="PromotionLevelId">The UUID of the applied promotion level, or null if not promoted.</param>
+/// <param name="PromotionLevelName">The display name of the applied promotion level, or null if not promoted.</param>
 /// <param name="PublishedAt">When the article was published, or null if not yet published.</param>
 /// <param name="MetaTitle">Custom SEO meta title, or null to fall back to <paramref name="Title"/>.</param>
 /// <param name="MetaDescription">Custom SEO meta description, or null.</param>
@@ -46,6 +48,8 @@ public record ArticleDetailDto(
     bool SocialBoost,
     bool IsPromoted,
     DateTimeOffset? PromotedUntil,
+    Guid? PromotionLevelId,
+    string? PromotionLevelName,
     DateTimeOffset? PublishedAt,
     string? MetaTitle,
     string? MetaDescription,

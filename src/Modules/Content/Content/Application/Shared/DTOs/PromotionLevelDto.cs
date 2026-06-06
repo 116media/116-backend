@@ -8,12 +8,12 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="DurationDays">The homepage placement duration in days.</param>
 /// <param name="PriceUsd">The price of this promotion level in USD.</param>
 /// <param name="IsActive">Whether the promotion level is currently active.</param>
-/// <param name="SpotPriority">The homepage grid spot this promotion level maps to (1, 2, or 3).</param>
+/// <param name="SpotPriority">The homepage grid spot this promotion level maps to (1, 2, or 3). Null means no specific spot.</param>
 public record PromotionLevelDto(
     Guid Id,
     string Name,
     int DurationDays,
     decimal PriceUsd,
     bool IsActive,
-    int SpotPriority
+    int? SpotPriority
 );

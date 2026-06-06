@@ -1309,7 +1309,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("numeric(10,2)")
                         .HasColumnName("price_usd");
 
-                    b.Property<int>("SpotPriority")
+                    b.Property<int?>("SpotPriority")
                         .HasColumnType("integer")
                         .HasColumnName("spot_priority");
 
@@ -1330,7 +1330,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
                     b.ToTable("promotion_levels", "content", t =>
                         {
-                            t.HasCheckConstraint("ck_promotion_levels_spot_priority", "spot_priority IN (1, 2, 3)");
+                            t.HasCheckConstraint("ck_promotion_levels_spot_priority", "spot_priority IS NULL OR spot_priority IN (1, 2, 3)");
                         });
                 });
 

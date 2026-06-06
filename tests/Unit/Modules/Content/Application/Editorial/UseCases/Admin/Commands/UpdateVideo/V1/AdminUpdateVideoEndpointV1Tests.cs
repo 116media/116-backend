@@ -100,6 +100,8 @@ public class AdminUpdateVideoEndpointV1Tests
             SocialBoost: false,
             IsPromoted: false,
             PromotedUntil: null,
+            PromotionLevelId: null,
+            PromotionLevelName: null,
             HasLyrics: false,
             ShootingScheduledAt: null,
             PublishedAt: null,

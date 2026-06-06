@@ -71,6 +71,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
             .Include(v => v.Tags)
                 .ThenInclude(t => t.Tag)
             .Include(v => v.Customer)
+            .Include(v => v.PromotionLevel)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -84,6 +85,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
             .Include(v => v.Tags)
                 .ThenInclude(t => t.Tag)
             .Include(v => v.Customer)
+            .Include(v => v.PromotionLevel)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
@@ -96,6 +98,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
             .Include(v => v.Category)
             .Include(v => v.Tags)
                 .ThenInclude(t => t.Tag)
+            .Include(v => v.PromotionLevel)
             .FirstOrDefaultAsync(cancellationToken);
     }
 

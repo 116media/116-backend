@@ -61,6 +61,7 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
             .Include(a => a.Tags)
                 .ThenInclude(t => t.Tag)
             .Include(a => a.Customer)
+            .Include(a => a.PromotionLevel)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -75,6 +76,7 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
             .Include(a => a.Tags)
                 .ThenInclude(t => t.Tag)
             .Include(a => a.Customer)
+            .Include(a => a.PromotionLevel)
             .FirstDefaultOrThrowAsync(keyValue: id, cancellationToken: cancellationToken);
     }
 
@@ -88,6 +90,7 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
             .Include(a => a.Images)
             .Include(a => a.Tags)
                 .ThenInclude(t => t.Tag)
+            .Include(a => a.PromotionLevel)
             .FirstOrDefaultAsync(cancellationToken);
     }
 

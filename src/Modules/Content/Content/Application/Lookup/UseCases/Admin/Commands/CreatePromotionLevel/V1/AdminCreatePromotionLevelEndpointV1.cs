@@ -19,8 +19,11 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotio
 /// <param name="Name">The display name of the promotion level.</param>
 /// <param name="DurationDays">The homepage placement duration in days.</param>
 /// <param name="PriceUsd">The price of this promotion level in USD.</param>
-/// <param name="SpotPriority">The homepage grid spot this promotion level maps to (1, 2, or 3).</param>
-public record AdminCreatePromotionLevelRequest(string Name, int DurationDays, decimal PriceUsd, int SpotPriority);
+/// <param name="SpotPriority">
+/// The homepage grid spot this promotion level maps to (1, 2, or 3).
+/// Optional — when omitted the promotion level has no dedicated grid spot.
+/// </param>
+public record AdminCreatePromotionLevelRequest(string Name, int DurationDays, decimal PriceUsd, int? SpotPriority);
 
 /// <summary>
 /// Response model for successful promotion level creation.

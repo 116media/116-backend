@@ -84,6 +84,8 @@ public class AdminCreateArticleEndpointV1Tests
             SocialBoost: false,
             IsPromoted: false,
             PromotedUntil: null,
+            PromotionLevelId: null,
+            PromotionLevelName: null,
             PublishedAt: null,
             MetaTitle: null,
             MetaDescription: null,

@@ -119,6 +119,10 @@ jobs:
                   recreate: true
                   path: ./coverage/report/SummaryGithub.md
 
+            - name: Import Codecov GPG key
+              run: |
+                  curl -fsSL https://uploader.codecov.io/verification.gpg | gpg --import
+
             - name: Upload to Codecov
               uses: codecov/codecov-action@v5
               with:
