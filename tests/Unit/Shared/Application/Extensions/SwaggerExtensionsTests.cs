@@ -1,6 +1,5 @@
 using _116.Shared.Application.Extensions;
 using AwesomeAssertions;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Xunit;
