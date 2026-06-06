@@ -3,7 +3,6 @@ using _116.Shared.Application.Extensions;
 using _116.Shared.Application.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using AwesomeAssertions;
-using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
