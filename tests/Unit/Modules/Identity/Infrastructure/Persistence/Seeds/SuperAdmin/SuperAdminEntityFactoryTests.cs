@@ -1,6 +1,5 @@
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Shared.Errors;
-using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.Tests.Fixtures.Helpers;
