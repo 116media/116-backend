@@ -1,6 +1,5 @@
 using _116.Identity.Application.Session.UseCases.Admin.Queries.GetAllSessions;
 using _116.Identity.Application.Shared.Errors.Facade;
-using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
