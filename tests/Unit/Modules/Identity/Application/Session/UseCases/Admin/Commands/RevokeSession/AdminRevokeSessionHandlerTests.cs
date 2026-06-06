@@ -1,6 +1,5 @@
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.UseCases.Admin.Commands.RevokeSession;
-using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
