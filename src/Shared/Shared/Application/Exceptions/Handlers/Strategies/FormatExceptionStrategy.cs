@@ -1,6 +1,8 @@
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
+using _116.Shared.Application.Exceptions.Messages;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace _116.Shared.Application.Exceptions.Handlers.Strategies;
 
@@ -13,9 +15,11 @@ public sealed class FormatExceptionStrategy : BaseExceptionStrategy<FormatExcept
     /// <inheritdoc />
     public override ProblemDetails CreateProblemDetails(FormatException exception, HttpContext context)
     {
+        var msg = context.RequestServices.GetRequiredService<SharedExceptionMessage>();
+
         return CreateStandardProblemDetails(
             title: nameof(InvalidFormatException),
-            detail: "The provided identifier is invalid.",
+            detail: msg.InvalidIdentifier(),
             statusCode: StatusCodes.Status400BadRequest,
             context: context
         );
