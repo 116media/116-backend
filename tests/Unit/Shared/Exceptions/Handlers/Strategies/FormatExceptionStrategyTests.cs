@@ -138,6 +138,12 @@ public class FormatExceptionStrategyTests
         problemDetails.Detail.Should().NotBe(enDetail);
     }
 
+    [Fact]
+    public void SharedExceptionMessage_Localizer_InvalidIdentifier_ShouldReturnLocalizedString()
+    {
+        i18n.Localizer["InvalidIdentifier"].Value.Should().Be(i18n.InvalidIdentifier());
+    }
+
     #endregion
 
     #region InvalidFormatException Tests
