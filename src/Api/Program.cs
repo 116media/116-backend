@@ -97,11 +97,11 @@ app.UseSerilogRequestLogging();
 app.UseAppExceptionHandler();
 app.UseCors();
 app.UseRateLimiter();
+app.UseAppLocalization();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseApiVersioning();
-app.UseAppLocalization();
 
 app.MapCarter();
 app.UseResourceNotFoundHandler();
