@@ -31,6 +31,11 @@ RUN --mount=type=cache,target=/root/.nuget/packages \
 
 # Runtime stage (smallest possible image)
 FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
+
+# Install ICU libraries for globalization support (localization, cultures)
+RUN apk add --no-cache icu-libs
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+
 WORKDIR /app
 
 # Copy only published output
