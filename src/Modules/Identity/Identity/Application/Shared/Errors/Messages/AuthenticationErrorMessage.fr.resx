@@ -22,7 +22,7 @@
     <value>Accès refusé. Permissions insuffisantes pour cette opération.</value>
   </data>
   <data name="JwtTokenRequired" xml:space="preserve">
-    <value>Authentification requise. Veuillez fournir un jeton valide.</value>
+    <value>Authentification requise. Veuillez fournir un token valide.</value>
   </data>
   <data name="InvalidRefreshToken" xml:space="preserve">
     <value>Session invalide ou expirée. Veuillez vous reconnecter.</value>
