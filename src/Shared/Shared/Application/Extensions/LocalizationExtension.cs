@@ -1,3 +1,4 @@
+using _116.Shared.Application.Exceptions.Messages;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,6 +40,9 @@ public static class LocalizationExtension
 
             options.RequestCultureProviders = [new AcceptLanguageHeaderRequestCultureProvider()];
         });
+
+        // Register shared exception message class (IStringLocalizer-backed)
+        services.AddScoped<SharedExceptionMessage>();
 
         return services;
     }
