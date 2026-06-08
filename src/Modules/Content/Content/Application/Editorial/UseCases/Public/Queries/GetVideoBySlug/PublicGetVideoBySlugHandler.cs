@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -12,10 +13,15 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoByS
 /// Handles the <see cref="PublicGetVideoBySlugQuery" /> to retrieve a single published video by its slug.
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
+/// <param name="fileRepository">Repository for resolving file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
-public class PublicGetVideoBySlugHandler(IVideoRepository videoRepository, IMapper mapper, ContentI18n i18n)
-    : IQueryHandler<PublicGetVideoBySlugQuery, PublicGetVideoBySlugResult>
+public class PublicGetVideoBySlugHandler(
+    IVideoRepository videoRepository,
+    IFileRepository fileRepository,
+    IMapper mapper,
+    ContentI18n i18n
+) : IQueryHandler<PublicGetVideoBySlugQuery, PublicGetVideoBySlugResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetVideoBySlugResult> Handle(
@@ -33,7 +39,7 @@ public class PublicGetVideoBySlugHandler(IVideoRepository videoRepository, IMapp
             throw i18n.Video.NotFound(Guid.Empty);
         }
 
-        var dto = video.ToVideoDetailDto(mapper);
+        var dto = await video.ToVideoDetailDtoAsync(mapper, fileRepository, cancellationToken);
         return new PublicGetVideoBySlugResult(Video: dto);
     }
 }
