@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -13,9 +14,13 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 /// Handles the <see cref="PublicGetPublishedVideosQuery" /> to retrieve a paginated list of published videos.
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
+/// <param name="fileRepository">Repository for resolving file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetPublishedVideosHandler(IVideoRepository videoRepository, IMapper mapper)
-    : IQueryHandler<PublicGetPublishedVideosQuery, PublicGetPublishedVideosResult>
+public class PublicGetPublishedVideosHandler(
+    IVideoRepository videoRepository,
+    IFileRepository fileRepository,
+    IMapper mapper
+) : IQueryHandler<PublicGetPublishedVideosQuery, PublicGetPublishedVideosResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetPublishedVideosResult> Handle(
@@ -35,7 +40,11 @@ public class PublicGetPublishedVideosHandler(IVideoRepository videoRepository, I
             cancellationToken: cancellationToken
         );
 
-        List<VideoSummaryDto> dtoList = videos.Select(v => v.ToVideoSummaryDto(mapper)).ToList();
+        IReadOnlyList<VideoSummaryDto> dtoList = await videos.ToVideoSummaryDtosAsync(
+            mapper,
+            fileRepository,
+            cancellationToken
+        );
 
         var paginatedResult = new PaginatedResult<VideoSummaryDto>(
             pageIndex: pageIndex,
