@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllVideos;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
@@ -18,6 +19,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Q
 public class AdminGetAllVideosHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly AdminGetAllVideosHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -25,7 +27,8 @@ public class AdminGetAllVideosHandlerTests : BaseContentHandlerTest
     public AdminGetAllVideosHandlerTests()
     {
         _videoRepositoryMock = MockVideoRepository.Create();
-        _handler = new AdminGetAllVideosHandler(_videoRepositoryMock.Object, Mapper);
+        _fileRepositoryMock = MockFileRepository.Create();
+        _handler = new AdminGetAllVideosHandler(_videoRepositoryMock.Object, _fileRepositoryMock.Object, Mapper);
     }
 
     [Fact]
