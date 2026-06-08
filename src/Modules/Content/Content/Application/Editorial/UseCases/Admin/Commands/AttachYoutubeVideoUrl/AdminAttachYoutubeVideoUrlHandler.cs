@@ -5,7 +5,8 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Services;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 using Microsoft.AspNetCore.Http;
@@ -14,7 +15,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutu
 
 /// <summary>
 /// Handles the <see cref="AdminAttachYoutubeVideoUrlCommand" /> to attach a YouTube video URL and
-/// automatically download and re-upload the YouTube thumbnail to Cloudinary.
+/// automatically download and re-upload the YouTube thumbnail via <see cref="FileEntity" />.
 /// </summary>
 /// <param name="videoRepository">
 /// Repository for video data access operations.
@@ -22,8 +23,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutu
 /// <param name="unitOfWork">
 /// Unit of Work for managing database transactions.
 /// </param>
-/// <param name="cloudinaryService">
-/// Service for uploading and deleting Cloudinary image assets.
+/// <param name="fileRepository">
+/// Repository for centralized file entity management.
 /// </param>
 /// <param name="youtubeThumbnailService">
 /// Service for downloading YouTube video thumbnails.
@@ -37,7 +38,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutu
 public class AdminAttachYoutubeVideoUrlHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    ICloudinaryService cloudinaryService,
+    IFileRepository fileRepository,
     IYoutubeThumbnailService youtubeThumbnailService,
     IMapper mapper,
     ContentI18n i18n
@@ -61,7 +62,6 @@ public class AdminAttachYoutubeVideoUrlHandler(
             cancellationToken: cancellationToken
         );
 
-        string? oldThumbnailStorageKey = video.ThumbnailStorageKey;
         string extractedId = ExtractVideoId(command.YoutubeVideoUrl);
 
         video.AttachYoutubeVideoUrl(youtubeVideoUrl: command.YoutubeVideoUrl, errors: i18n.Video);
@@ -71,34 +71,27 @@ public class AdminAttachYoutubeVideoUrlHandler(
             cancellationToken: cancellationToken
         );
 
-        string storageKey = videoId.ToString();
-
-        CloudinaryUploadResult uploadResult = await cloudinaryService.UploadImageAsync(
+        FileEntity fileEntity = await fileRepository.ReplaceImageFileAsync(
+            currentFileId: video.ThumbnailFileId,
             file: thumbnail,
-            publicId: storageKey,
+            publicId: videoId.ToString(),
             folder: "content/video-thumbnails",
+            originalFileName: $"{extractedId}-thumbnail.jpg",
+            mimeType: "image/jpeg",
             cancellationToken: cancellationToken
         );
 
-        video.UpdateThumbnail(thumbnailUrl: uploadResult.SecureUrl, thumbnailStorageKey: uploadResult.PublicId);
+        video.SetThumbnailFileId(thumbnailFileId: fileEntity.Id);
 
         videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        if (oldThumbnailStorageKey is not null)
-        {
-            await cloudinaryService.DeleteImageAsync(
-                publicId: oldThumbnailStorageKey,
-                cancellationToken: cancellationToken
-            );
-        }
 
         VideoEntity updated = await videoRepository.GetByIdOrThrowAsync(
             id: videoId,
             cancellationToken: cancellationToken
         );
 
-        var dto = updated.ToVideoDetailDto(mapper);
+        var dto = await updated.ToVideoDetailDtoAsync(mapper, fileRepository, cancellationToken);
         return new AdminAttachYoutubeVideoUrlResult(Video: dto);
     }
 
