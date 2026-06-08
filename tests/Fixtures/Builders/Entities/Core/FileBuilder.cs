@@ -20,6 +20,7 @@ internal class FileBuilder
     private string _storageUrl;
     private long _sizeInBytes;
     private bool _isDeleted;
+    private string? _storageKey;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileBuilder"/> class with random default values.
@@ -103,6 +104,17 @@ internal class FileBuilder
     }
 
     /// <summary>
+    /// Sets the storage key (Cloudinary public ID).
+    /// </summary>
+    /// <param name="storageKey">The storage key.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public FileBuilder WithStorageKey(string storageKey)
+    {
+        _storageKey = storageKey;
+        return this;
+    }
+
+    /// <summary>
     /// Marks the file as deleted.
     /// </summary>
     /// <returns>The builder instance for chaining.</returns>
@@ -161,7 +173,8 @@ internal class FileBuilder
             _mimeType,
             _storageUrl,
             _sizeInBytes,
-            TestErrorsFactory.CreateCoreI18n()
+            TestErrorsFactory.CreateCoreI18n(),
+            _storageKey
         );
 
         if (_isDeleted)
