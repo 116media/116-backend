@@ -521,7 +521,7 @@ public class VideoEntityTests
     }
 
     [Fact]
-    public void UpdateThumbnail_ShouldSetThumbnailUrlAndStorageKey()
+    public void SetThumbnailFileId_ShouldSetThumbnailFileId()
     {
         // Arrange
         VideoEntity video = VideoEntity.CreateFree(
@@ -533,15 +533,13 @@ public class VideoEntityTests
             Description,
             TestErrorsFactory.CreateVideoErrors()
         );
-        const string url = TestConstants.Content.Editorial.Cloudinary.ValidSecureUrl;
-        const string storageKey = TestConstants.Content.Editorial.Cloudinary.ValidPublicId;
+        Guid fileId = Guid.NewGuid();
 
         // Act
-        video.UpdateThumbnail(url, storageKey);
+        video.SetThumbnailFileId(fileId);
 
         // Assert
-        video.ThumbnailUrl.Should().Be(url);
-        video.ThumbnailStorageKey.Should().Be(storageKey);
+        video.ThumbnailFileId.Should().Be(fileId);
     }
 
     [Fact]
