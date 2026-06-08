@@ -31,7 +31,6 @@ public class AdminUpdateArticleValidatorTests
             Slug: TestConstants.Content.Editorial.Article.ValidSlug,
             Headline: TestConstants.Content.Editorial.Article.ValidHeadline,
             Body: TestConstants.Content.Editorial.Article.ValidBody,
-            CoverImageUrl: null,
             CustomerId: null,
             OrderItemId: null,
             SocialBoost: false,
