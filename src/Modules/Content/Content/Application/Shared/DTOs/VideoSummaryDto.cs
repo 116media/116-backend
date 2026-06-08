@@ -23,7 +23,8 @@ namespace _116.Content.Application.Shared.DTOs;
 /// The URL-safe slug used in public video URLs.
 /// </param>
 /// <param name="ThumbnailUrl">
-/// The URL of the video thumbnail, or null if not yet uploaded.
+/// The publicly accessible URL of the thumbnail image, resolved from the associated FileEntity.
+/// Null if no thumbnail has been uploaded.
 /// </param>
 /// <param name="AuthorId">
 /// The identity user UUID of the author.
