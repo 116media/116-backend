@@ -4,6 +4,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -17,12 +18,14 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="fileRepository">Repository for resolving file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminUpdateVideoHandler(
     ICategoryRepository categoryRepository,
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
+    IFileRepository fileRepository,
     IMapper mapper,
     ContentI18n i18n
 ) : ICommandHandler<AdminUpdateVideoCommand, AdminUpdateVideoResult>
@@ -80,7 +83,7 @@ public class AdminUpdateVideoHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = updated.ToVideoDetailDto(mapper);
+        var dto = await updated.ToVideoDetailDtoAsync(mapper, fileRepository, cancellationToken);
         return new AdminUpdateVideoResult(Video: dto);
     }
 }
