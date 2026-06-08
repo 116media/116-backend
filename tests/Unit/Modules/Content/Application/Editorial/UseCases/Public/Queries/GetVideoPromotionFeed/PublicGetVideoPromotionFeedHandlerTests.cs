@@ -3,6 +3,7 @@ using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoPromoti
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -18,6 +19,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 public class PublicGetVideoPromotionFeedHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetVideoPromotionFeedHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -25,7 +27,12 @@ public class PublicGetVideoPromotionFeedHandlerTests : BaseContentHandlerTest
     public PublicGetVideoPromotionFeedHandlerTests()
     {
         _videoRepositoryMock = MockVideoRepository.Create();
-        _handler = new PublicGetVideoPromotionFeedHandler(_videoRepositoryMock.Object, Mapper);
+        _fileRepositoryMock = MockFileRepository.Create();
+        _handler = new PublicGetVideoPromotionFeedHandler(
+            _videoRepositoryMock.Object,
+            _fileRepositoryMock.Object,
+            Mapper
+        );
     }
 
     #region All spots filled
