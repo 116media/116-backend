@@ -2,9 +2,12 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteShortVide
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using _116.Unit.Tests.Common.Mocks.Services;
@@ -20,18 +23,31 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 public class AdminDeleteShortVideoHandlerTests
 {
     private readonly Mock<IShortVideoRepository> _shortVideoRepositoryMock;
-    private readonly Mock<ICloudinaryService> _cloudinaryMock;
+    private readonly Mock<IFileService> _fileServiceMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminDeleteShortVideoHandler _handler;
+
+    private readonly FileEntity _videoFileEntity;
+    private readonly FileEntity _thumbnailFileEntity;
 
     public AdminDeleteShortVideoHandlerTests()
     {
         _shortVideoRepositoryMock = MockShortVideoRepository.Create();
-        _cloudinaryMock = MockCloudinaryService.Create();
+        _fileServiceMock = MockFileService.Create();
+        _fileRepositoryMock = MockFileRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
+
+        _videoFileEntity = FileFactory.CreateVideo();
+        _thumbnailFileEntity = FileFactory.CreateImage();
+
+        _fileRepositoryMock.SetupGetById(_videoFileEntity);
+        _fileRepositoryMock.SetupGetById(_thumbnailFileEntity);
+
         _handler = new AdminDeleteShortVideoHandler(
             _shortVideoRepositoryMock.Object,
-            _cloudinaryMock.Object,
+            _fileServiceMock.Object,
+            _fileRepositoryMock.Object,
             _unitOfWorkMock.Object
         );
     }
@@ -44,16 +60,19 @@ public class AdminDeleteShortVideoHandlerTests
         var command = new AdminDeleteShortVideoCommand(Id: shortVideo.Id.ToString());
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
 
+        _fileRepositoryMock
+            .Setup(x => x.GetByIdAsync(shortVideo.VideoFileId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_videoFileEntity);
+        _fileRepositoryMock
+            .Setup(x => x.GetByIdAsync(shortVideo.ThumbnailFileId!.Value, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_thumbnailFileEntity);
+
         // Act
         AdminDeleteShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        // thumbnail deleted + video deleted = 2 calls to DeleteImageAsync
-        _cloudinaryMock.Verify(
-            x => x.DeleteImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
-            Times.Exactly(2)
-        );
+        _fileServiceMock.VerifyDeleteFileCalled(Times.Exactly(2));
         _shortVideoRepositoryMock.VerifyRemoveCalled(shortVideo);
         _unitOfWorkMock.VerifyCommitCalled();
     }
@@ -62,17 +81,20 @@ public class AdminDeleteShortVideoHandlerTests
     public async Task Handle_WhenShortVideoHasNoThumbnail_ShouldDeleteOnlyVideoAssetAndReturnSuccess()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoFactory.Create(); // no thumbnail
+        ShortVideoEntity shortVideo = ShortVideoFactory.Create();
         var command = new AdminDeleteShortVideoCommand(Id: shortVideo.Id.ToString());
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
+
+        _fileRepositoryMock
+            .Setup(x => x.GetByIdAsync(shortVideo.VideoFileId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_videoFileEntity);
 
         // Act
         AdminDeleteShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        // only video deleted = 1 call to DeleteImageAsync
-        _cloudinaryMock.Verify(x => x.DeleteImageAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+        _fileServiceMock.VerifyDeleteFileCalled(Times.Once());
         _shortVideoRepositoryMock.VerifyRemoveCalled(shortVideo);
         _unitOfWorkMock.VerifyCommitCalled();
     }
