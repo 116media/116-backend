@@ -78,7 +78,8 @@ public class FileRepository(CoreDbContext context, IFileService fileService, Cor
             mimeType: mimeType,
             storageUrl: uploadResult.SecureUrl,
             sizeInBytes: uploadResult.Bytes,
-            i18n: i18n
+            i18n: i18n,
+            storageKey: uploadResult.PublicId
         );
 
         // Persist to the Database
@@ -240,12 +241,132 @@ public class FileRepository(CoreDbContext context, IFileService fileService, Cor
             mimeType: mimeType,
             storageUrl: uploadResult.SecureUrl,
             sizeInBytes: uploadResult.Bytes,
-            i18n: i18n
+            i18n: i18n,
+            storageKey: uploadResult.PublicId
         );
 
         await AddAsync(fileEntity, cancellationToken);
         await SaveChangesAsync(cancellationToken);
 
         return fileEntity;
+    }
+
+    /// <inheritdoc />
+    public async Task<FileEntity> UploadAndStoreImageFileAsync(
+        IFormFile file,
+        string publicId,
+        string folder,
+        string originalFileName,
+        string mimeType,
+        CancellationToken cancellationToken = default
+    )
+    {
+        FileUploadResult uploadResult = await fileService.UploadFileAsync(
+            file: file,
+            publicId: publicId,
+            folder: folder,
+            cancellationToken: cancellationToken
+        );
+
+        var fileEntity = FileEntity.Create(
+            id: uploadResult.FileId,
+            fileName: publicId,
+            originalFileName: originalFileName,
+            mimeType: mimeType,
+            storageUrl: uploadResult.SecureUrl,
+            sizeInBytes: uploadResult.Bytes,
+            i18n: i18n,
+            storageKey: uploadResult.PublicId
+        );
+
+        await AddAsync(fileEntity, cancellationToken);
+        await SaveChangesAsync(cancellationToken);
+
+        return fileEntity;
+    }
+
+    /// <inheritdoc />
+    public async Task<FileEntity> UploadAndStoreVideoFileAsync(
+        IFormFile file,
+        string publicId,
+        string folder,
+        string originalFileName,
+        string mimeType,
+        CancellationToken cancellationToken = default
+    )
+    {
+        FileUploadResult uploadResult = await fileService.UploadVideoFileAsync(
+            file: file,
+            publicId: publicId,
+            folder: folder,
+            cancellationToken: cancellationToken
+        );
+
+        var fileEntity = FileEntity.Create(
+            id: uploadResult.FileId,
+            fileName: publicId,
+            originalFileName: originalFileName,
+            mimeType: mimeType,
+            storageUrl: uploadResult.SecureUrl,
+            sizeInBytes: uploadResult.Bytes,
+            i18n: i18n,
+            storageKey: uploadResult.PublicId
+        );
+
+        await AddAsync(fileEntity, cancellationToken);
+        await SaveChangesAsync(cancellationToken);
+
+        return fileEntity;
+    }
+
+    /// <inheritdoc />
+    public async Task<FileEntity> ReplaceImageFileAsync(
+        Guid? currentFileId,
+        IFormFile file,
+        string publicId,
+        string folder,
+        string originalFileName,
+        string mimeType,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (currentFileId.HasValue)
+        {
+            FileEntity? oldFile = await GetByIdAsync(currentFileId.Value, cancellationToken);
+            if (oldFile?.StorageKey is not null)
+            {
+                await fileService.DeleteFileAsync(oldFile.StorageKey, cancellationToken);
+            }
+
+            await SoftDeleteByIdAsync(currentFileId.Value, cancellationToken);
+        }
+
+        return await UploadAndStoreImageFileAsync(
+            file,
+            publicId,
+            folder,
+            originalFileName,
+            mimeType,
+            cancellationToken
+        );
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> SoftDeleteByIdAsync(Guid fileId, CancellationToken cancellationToken = default)
+    {
+        FileEntity? file = await GetByIdAsync(fileId, cancellationToken);
+        if (file is null)
+        {
+            return false;
+        }
+
+        bool deleted = file.Delete();
+        if (deleted)
+        {
+            await UpdateAsync(file, cancellationToken);
+            await SaveChangesAsync(cancellationToken);
+        }
+
+        return deleted;
     }
 }
