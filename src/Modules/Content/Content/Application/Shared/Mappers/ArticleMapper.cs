@@ -1,5 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using Mapster;
 using MapsterMapper;
 
@@ -40,10 +42,18 @@ public static class ArticleMapper
     }
 
     /// <summary>
-    /// Maps an <see cref="ArticleEntity" /> to an <see cref="ArticleSummaryDto" />.
+    /// Maps an <see cref="ArticleEntity" /> to an <see cref="ArticleSummaryDto" />,
+    /// resolving the cover image URL from the associated FileEntity.
     /// </summary>
-    public static ArticleSummaryDto ToArticleSummaryDto(this ArticleEntity entity, IMapper mapper)
+    public static async Task<ArticleSummaryDto> ToArticleSummaryDtoAsync(
+        this ArticleEntity entity,
+        IMapper mapper,
+        IFileRepository fileRepository,
+        CancellationToken ct = default
+    )
     {
+        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
+
         return new ArticleSummaryDto(
             entity.Id,
             entity.CategoryId,
@@ -51,7 +61,7 @@ public static class ArticleMapper
             entity.Title,
             entity.Slug,
             entity.Headline,
-            entity.CoverImageUrl,
+            coverImageUrl,
             entity.AuthorId.ToString(),
             entity.Status,
             entity.IsPromoted,
@@ -70,10 +80,18 @@ public static class ArticleMapper
     }
 
     /// <summary>
-    /// Maps an <see cref="ArticleEntity" /> to an <see cref="ArticleDetailDto" />.
+    /// Maps an <see cref="ArticleEntity" /> to an <see cref="ArticleDetailDto" />,
+    /// resolving the cover image URL from the associated FileEntity.
     /// </summary>
-    public static ArticleDetailDto ToArticleDetailDto(this ArticleEntity entity, IMapper mapper)
+    public static async Task<ArticleDetailDto> ToArticleDetailDtoAsync(
+        this ArticleEntity entity,
+        IMapper mapper,
+        IFileRepository fileRepository,
+        CancellationToken ct = default
+    )
     {
+        string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
+
         return new ArticleDetailDto(
             entity.Id,
             entity.CategoryId,
@@ -82,7 +100,7 @@ public static class ArticleMapper
             entity.Slug,
             entity.Headline,
             entity.Body,
-            entity.CoverImageUrl,
+            coverImageUrl,
             entity.AuthorId.ToString(),
             entity.Status,
             entity.RejectionReason,
@@ -117,14 +135,22 @@ public static class ArticleMapper
     }
 
     /// <summary>
-    /// Maps a list of <see cref="ArticleEntity" /> to a list of <see cref="ArticleSummaryDto" />.
+    /// Maps a list of <see cref="ArticleEntity" /> to a list of <see cref="ArticleSummaryDto" />,
+    /// resolving cover image URLs from associated FileEntity records.
     /// </summary>
-    public static IReadOnlyList<ArticleSummaryDto> ToArticleSummaryDtos(
+    public static async Task<IReadOnlyList<ArticleSummaryDto>> ToArticleSummaryDtosAsync(
         this IReadOnlyList<ArticleEntity> entities,
-        IMapper mapper
+        IMapper mapper,
+        IFileRepository fileRepository,
+        CancellationToken ct = default
     )
     {
-        return entities.Select(e => e.ToArticleSummaryDto(mapper)).ToList();
+        var results = new List<ArticleSummaryDto>(entities.Count);
+        foreach (ArticleEntity entity in entities)
+        {
+            results.Add(await entity.ToArticleSummaryDtoAsync(mapper, fileRepository, ct));
+        }
+        return results;
     }
 
     /// <summary>
@@ -145,5 +171,24 @@ public static class ArticleMapper
     )
     {
         return entities.Select(e => e.ToArticleCommentDto(mapper)).ToList();
+    }
+
+    /// <summary>
+    /// Resolves the cover image URL from the associated FileEntity, or returns null
+    /// if no cover image has been uploaded.
+    /// </summary>
+    private static async Task<string?> ResolveCoverImageUrlAsync(
+        ArticleEntity entity,
+        IFileRepository fileRepository,
+        CancellationToken ct
+    )
+    {
+        if (!entity.CoverImageFileId.HasValue)
+        {
+            return null;
+        }
+
+        FileEntity? coverFile = await fileRepository.GetByIdAsync(entity.CoverImageFileId.Value, ct);
+        return coverFile?.StorageUrl;
     }
 }
