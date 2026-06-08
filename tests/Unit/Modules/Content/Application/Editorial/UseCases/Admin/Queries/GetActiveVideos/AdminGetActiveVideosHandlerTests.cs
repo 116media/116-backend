@@ -1,6 +1,7 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetActiveVideos;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -16,6 +17,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Q
 public class AdminGetActiveVideosHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly AdminGetActiveVideosHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -23,7 +25,8 @@ public class AdminGetActiveVideosHandlerTests : BaseContentHandlerTest
     public AdminGetActiveVideosHandlerTests()
     {
         _videoRepositoryMock = MockVideoRepository.Create();
-        _handler = new AdminGetActiveVideosHandler(_videoRepositoryMock.Object, Mapper);
+        _fileRepositoryMock = MockFileRepository.Create();
+        _handler = new AdminGetActiveVideosHandler(_videoRepositoryMock.Object, _fileRepositoryMock.Object, Mapper);
     }
 
     [Fact]
