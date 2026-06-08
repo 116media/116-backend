@@ -2,10 +2,12 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateShortVide
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Services;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -24,18 +26,23 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IShortVideoRepository> _shortVideoRepositoryMock;
-    private readonly Mock<ICloudinaryService> _cloudinaryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUpdateShortVideoHandler _handler;
 
     public AdminUpdateShortVideoHandlerTests()
     {
         _shortVideoRepositoryMock = MockShortVideoRepository.Create();
-        _cloudinaryMock = MockCloudinaryService.Create();
+        _fileRepositoryMock = MockFileRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
+
+        FileEntity videoFile = FileFactory.CreateVideo();
+        _fileRepositoryMock.SetupUploadAndStoreVideoFile(videoFile);
+        _fileRepositoryMock.SetupGetById(videoFile);
+
         _handler = new AdminUpdateShortVideoHandler(
             _shortVideoRepositoryMock.Object,
-            _cloudinaryMock.Object,
+            _fileRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
@@ -67,9 +74,6 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
         _shortVideoRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(existing);
-        _shortVideoRepositoryMock
-            .Setup(x => x.GetBySlugAsync("updated-slug", It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ShortVideoEntity?)null);
 
         // Act
         AdminUpdateShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
@@ -123,7 +127,7 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task Handle_WithVideoFile_ShouldUploadAndReplaceUrl()
+    public async Task Handle_WithVideoFile_ShouldUploadViaFileRepositoryAndReplaceFileId()
     {
         // Arrange
         ShortVideoEntity existing = ShortVideoFactory.Create();
@@ -139,7 +143,7 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Should().NotBeNull();
-        _cloudinaryMock.VerifyVideoUploadCalled();
+        _fileRepositoryMock.VerifyUploadAndStoreVideoFileCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -158,7 +162,7 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _cloudinaryMock.VerifyVideoUploadNotCalled();
+        _fileRepositoryMock.VerifyUploadAndStoreVideoFileNotCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
