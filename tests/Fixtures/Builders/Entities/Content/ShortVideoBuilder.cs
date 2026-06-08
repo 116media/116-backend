@@ -13,12 +13,10 @@ internal class ShortVideoBuilder
     private Guid _id = Guid.NewGuid();
     private string _title = TestConstants.Content.Editorial.ShortVideo.ValidTitle;
     private string _slug = TestConstants.Content.Editorial.ShortVideo.ValidSlug;
-    private string _videoUrl = TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl;
-    private string _videoStorageKey = TestConstants.Content.Editorial.ShortVideo.ValidVideoStorageKey;
     private Guid _authorId = Guid.NewGuid();
+    private Guid _videoFileId = Guid.NewGuid();
     private Guid? _videoId;
-    private string? _thumbnailUrl;
-    private string? _thumbnailStorageKey;
+    private Guid? _thumbnailFileId;
     private bool _isInactive;
 
     /// <summary>
@@ -49,29 +47,29 @@ internal class ShortVideoBuilder
     }
 
     /// <summary>
-    /// Sets the video CDN URL.
-    /// </summary>
-    public ShortVideoBuilder WithVideoUrl(string videoUrl)
-    {
-        _videoUrl = videoUrl;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the video storage key.
-    /// </summary>
-    public ShortVideoBuilder WithVideoStorageKey(string storageKey)
-    {
-        _videoStorageKey = storageKey;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the author ID.
     /// </summary>
     public ShortVideoBuilder WithAuthorId(Guid authorId)
     {
         _authorId = authorId;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the video file ID (FileEntity reference).
+    /// </summary>
+    public ShortVideoBuilder WithVideoFileId(Guid fileId)
+    {
+        _videoFileId = fileId;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the thumbnail file ID (FileEntity reference).
+    /// </summary>
+    public ShortVideoBuilder WithThumbnailFileId(Guid fileId)
+    {
+        _thumbnailFileId = fileId;
         return this;
     }
 
@@ -85,12 +83,11 @@ internal class ShortVideoBuilder
     }
 
     /// <summary>
-    /// Sets a thumbnail URL and storage key.
+    /// Sets a thumbnail file ID to simulate an uploaded thumbnail.
     /// </summary>
-    public ShortVideoBuilder WithThumbnail(string thumbnailUrl, string thumbnailStorageKey)
+    public ShortVideoBuilder WithThumbnail()
     {
-        _thumbnailUrl = thumbnailUrl;
-        _thumbnailStorageKey = thumbnailStorageKey;
+        _thumbnailFileId = Guid.NewGuid();
         return this;
     }
 
@@ -114,8 +111,7 @@ internal class ShortVideoBuilder
                 id: _id,
                 title: _title,
                 slug: _slug,
-                videoUrl: _videoUrl,
-                videoStorageKey: _videoStorageKey,
+                videoFileId: _videoFileId,
                 videoId: _videoId.Value,
                 authorId: _authorId,
                 errors: errors
@@ -124,15 +120,14 @@ internal class ShortVideoBuilder
                 id: _id,
                 title: _title,
                 slug: _slug,
-                videoUrl: _videoUrl,
-                videoStorageKey: _videoStorageKey,
+                videoFileId: _videoFileId,
                 authorId: _authorId,
                 errors: errors
             );
 
-        if (_thumbnailUrl is not null && _thumbnailStorageKey is not null)
+        if (_thumbnailFileId.HasValue)
         {
-            entity.UpdateThumbnail(_thumbnailUrl, _thumbnailStorageKey);
+            entity.SetThumbnailFileId(_thumbnailFileId);
         }
 
         if (_isInactive)
