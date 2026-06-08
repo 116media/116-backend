@@ -5,6 +5,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -21,6 +22,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="cloudinaryService">Service for deleting Cloudinary image assets.</param>
+/// <param name="fileRepository">Repository for resolving file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public partial class AdminUpdateArticleHandler(
@@ -28,6 +30,7 @@ public partial class AdminUpdateArticleHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
     ICloudinaryService cloudinaryService,
+    IFileRepository fileRepository,
     IMapper mapper,
     ContentI18n i18n
 ) : ICommandHandler<AdminUpdateArticleCommand, AdminUpdateArticleResult>
@@ -84,25 +87,12 @@ public partial class AdminUpdateArticleHandler(
             .Where(img => img.ImageType == EnumArticleImageType.Body && !newBodyUrls.Contains(img.Url))
             .ToList();
 
-        if (article.CoverImageUrl is not null && article.CoverImageUrl != command.CoverImageUrl)
-        {
-            ArticleImageEntity? oldCover = existingImages.FirstOrDefault(img =>
-                img.ImageType == EnumArticleImageType.Cover && img.Url == article.CoverImageUrl
-            );
-
-            if (oldCover is not null && !imagesToRemove.Contains(oldCover))
-            {
-                imagesToRemove.Add(oldCover);
-            }
-        }
-
         article.Update(
             categoryId: command.CategoryId,
             title: command.Title,
             slug: command.Slug,
             headline: command.Headline,
             body: command.Body,
-            coverImageUrl: command.CoverImageUrl,
             customerId: command.CustomerId,
             orderItemId: command.OrderItemId,
             socialBoost: command.SocialBoost,
@@ -127,7 +117,7 @@ public partial class AdminUpdateArticleHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = updated.ToArticleDetailDto(mapper);
+        var dto = await updated.ToArticleDetailDtoAsync(mapper, fileRepository, cancellationToken);
         return new AdminUpdateArticleResult(Article: dto);
     }
 
