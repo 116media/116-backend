@@ -188,6 +188,216 @@ public static class MockFileRepository
     }
 
     /// <summary>
+    /// Sets up UploadAndStoreImageFileAsync to return the specified file.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="file">The file to return.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IFileRepository> SetupUploadAndStoreImageFile(this Mock<IFileRepository> mock, FileEntity file)
+    {
+        mock.Setup(x =>
+                x.UploadAndStoreImageFileAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(file);
+        return mock;
+    }
+
+    /// <summary>
+    /// Sets up UploadAndStoreVideoFileAsync to return the specified file.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="file">The file to return.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IFileRepository> SetupUploadAndStoreVideoFile(this Mock<IFileRepository> mock, FileEntity file)
+    {
+        mock.Setup(x =>
+                x.UploadAndStoreVideoFileAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(file);
+        return mock;
+    }
+
+    /// <summary>
+    /// Sets up ReplaceImageFileAsync to return the specified file.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="file">The file to return.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IFileRepository> SetupReplaceImageFile(this Mock<IFileRepository> mock, FileEntity file)
+    {
+        mock.Setup(x =>
+                x.ReplaceImageFileAsync(
+                    It.IsAny<Guid?>(),
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(file);
+        return mock;
+    }
+
+    /// <summary>
+    /// Sets up SoftDeleteByIdAsync to return the specified result.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="result">The result to return.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IFileRepository> SetupSoftDeleteById(this Mock<IFileRepository> mock, bool result = true)
+    {
+        mock.Setup(x => x.SoftDeleteByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(result);
+        return mock;
+    }
+
+    /// <summary>
+    /// Sets up UploadAndStoreRawFileAsync to return the specified file.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="file">The file to return.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IFileRepository> SetupUploadAndStoreRawFile(this Mock<IFileRepository> mock, FileEntity file)
+    {
+        mock.Setup(x =>
+                x.UploadAndStoreRawFileAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(file);
+        return mock;
+    }
+
+    /// <summary>
+    /// Verifies that UploadAndStoreImageFileAsync was called.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    public static void VerifyUploadAndStoreImageFileCalled(this Mock<IFileRepository> mock)
+    {
+        mock.Verify(
+            x =>
+                x.UploadAndStoreImageFileAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
+    /// <summary>
+    /// Verifies that UploadAndStoreVideoFileAsync was called.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    public static void VerifyUploadAndStoreVideoFileCalled(this Mock<IFileRepository> mock)
+    {
+        mock.Verify(
+            x =>
+                x.UploadAndStoreVideoFileAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
+    /// <summary>
+    /// Verifies that UploadAndStoreVideoFileAsync was not called.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    public static void VerifyUploadAndStoreVideoFileNotCalled(this Mock<IFileRepository> mock)
+    {
+        mock.Verify(
+            x =>
+                x.UploadAndStoreVideoFileAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+    }
+
+    /// <summary>
+    /// Verifies that ReplaceImageFileAsync was called.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    public static void VerifyReplaceImageFileCalled(this Mock<IFileRepository> mock)
+    {
+        mock.Verify(
+            x =>
+                x.ReplaceImageFileAsync(
+                    It.IsAny<Guid?>(),
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
+    /// <summary>
+    /// Verifies that SoftDeleteByIdAsync was called with a specific file ID.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="fileId">The expected file ID.</param>
+    public static void VerifySoftDeleteByIdCalled(this Mock<IFileRepository> mock, Guid fileId)
+    {
+        mock.Verify(x => x.SoftDeleteByIdAsync(fileId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Verifies that SoftDeleteByIdAsync was called at least once.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    public static void VerifySoftDeleteByIdCalled(this Mock<IFileRepository> mock)
+    {
+        mock.Verify(x => x.SoftDeleteByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+    }
+
+    /// <summary>
+    /// Verifies that SoftDeleteByIdAsync was not called.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    public static void VerifySoftDeleteByIdNotCalled(this Mock<IFileRepository> mock)
+    {
+        mock.Verify(x => x.SoftDeleteByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    /// <summary>
     /// Verifies that AddAsync was called.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
