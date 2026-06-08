@@ -3,7 +3,10 @@ using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticlePromo
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -19,6 +22,7 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetArticlePromotionFeedHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -27,9 +31,13 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
     {
         _articleRepositoryMock = MockArticleRepository.Create();
         _categoryRepositoryMock = MockCategoryRepository.Create();
+        _fileRepositoryMock = MockFileRepository.Create();
+        FileEntity coverFile = FileFactory.CreateImage();
+        _fileRepositoryMock.SetupGetById(coverFile);
         _handler = new PublicGetArticlePromotionFeedHandler(
             _articleRepositoryMock.Object,
             _categoryRepositoryMock.Object,
+            _fileRepositoryMock.Object,
             Mapper
         );
     }
