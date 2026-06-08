@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteArticle;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
@@ -23,6 +24,7 @@ public class AdminDeleteArticleHandlerTests
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly Mock<ICloudinaryService> _cloudinaryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly AdminDeleteArticleHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -32,10 +34,12 @@ public class AdminDeleteArticleHandlerTests
         _articleRepositoryMock = MockArticleRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _cloudinaryMock = MockCloudinaryService.Create();
+        _fileRepositoryMock = MockFileRepository.Create();
         _handler = new AdminDeleteArticleHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _cloudinaryMock.Object,
+            _fileRepositoryMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
     }
