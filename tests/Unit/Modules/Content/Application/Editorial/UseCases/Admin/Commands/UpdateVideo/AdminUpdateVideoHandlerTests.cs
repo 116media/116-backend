@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
@@ -23,6 +24,7 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly AdminUpdateVideoHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -32,10 +34,12 @@ public class AdminUpdateVideoHandlerTests : BaseContentHandlerTest
         _categoryRepositoryMock = MockCategoryRepository.Create();
         _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _fileRepositoryMock = MockFileRepository.Create();
         _handler = new AdminUpdateVideoHandler(
             _categoryRepositoryMock.Object,
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
+            _fileRepositoryMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
         );
