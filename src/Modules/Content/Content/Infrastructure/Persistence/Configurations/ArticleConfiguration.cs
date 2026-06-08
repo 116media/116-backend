@@ -29,7 +29,7 @@ public class ArticleConfiguration : IEntityTypeConfiguration<ArticleEntity>
 
         builder.Property(x => x.Body).HasDefaultValue(string.Empty).IsRequired();
 
-        builder.Property(x => x.CoverImageUrl).HasMaxLength(ContentConstants.MaxCoverImageUrlLength).IsRequired(false);
+        builder.Property(x => x.CoverImageFileId).IsRequired(false);
 
         builder.Property(x => x.AuthorId).IsRequired();
 
