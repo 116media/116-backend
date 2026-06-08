@@ -3,7 +3,8 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Services;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -11,16 +12,16 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateShort
 
 /// <summary>
 /// Handles the <see cref="AdminUpdateShortVideoCommand" /> to update short video metadata
-/// and optionally replace the video file.
+/// and optionally replace the video file via <see cref="FileEntity" />.
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
-/// <param name="cloudinaryService">Service for uploading media assets to cloud storage.</param>
+/// <param name="fileRepository">Repository for centralized file entity management.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminUpdateShortVideoHandler(
     IShortVideoRepository shortVideoRepository,
-    ICloudinaryService cloudinaryService,
+    IFileRepository fileRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
     ContentI18n i18n
@@ -43,14 +44,16 @@ public class AdminUpdateShortVideoHandler(
 
         if (command.VideoFile is not null)
         {
-            CloudinaryUploadResult uploadResult = await cloudinaryService.UploadVideoAsync(
-                folder: null,
+            FileEntity videoFile = await fileRepository.UploadAndStoreVideoFileAsync(
                 file: command.VideoFile,
-                publicId: shortVideo.VideoStorageKey,
+                publicId: shortVideo.VideoFileId.ToString(),
+                folder: "content/short-videos",
+                originalFileName: command.VideoFile.FileName,
+                mimeType: command.VideoFile.ContentType,
                 cancellationToken: cancellationToken
             );
 
-            shortVideo.ReplaceVideoFile(videoUrl: uploadResult.SecureUrl);
+            shortVideo.ReplaceVideoFile(videoFileId: videoFile.Id);
         }
 
         shortVideoRepository.Update(shortVideo);
@@ -61,7 +64,7 @@ public class AdminUpdateShortVideoHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = updated.ToShortVideoDto(mapper);
+        var dto = await updated.ToShortVideoDtoAsync(mapper, fileRepository, cancellationToken);
         return new AdminUpdateShortVideoResult(ShortVideo: dto);
     }
 }
