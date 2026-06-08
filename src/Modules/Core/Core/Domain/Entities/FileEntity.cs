@@ -46,6 +46,13 @@ public class FileEntity : Aggregate<Guid>
     public long SizeInBytes { get; private set; }
 
     /// <summary>
+    /// Provider-agnostic storage key used to identify and delete the file
+    /// from cloud storage. For Cloudinary this is the public ID.
+    /// </summary>
+    [MaxLength(FileConstants.MaxStorageKeyLength)]
+    public string? StorageKey { get; private set; }
+
+    /// <summary>
     /// Indicates whether the file has been deleted (soft delete).
     /// </summary>
     public bool IsDeleted { get; private set; } = FileConstants.DefaultIsDeleted;
@@ -72,7 +79,8 @@ public class FileEntity : Aggregate<Guid>
         string mimeType,
         string storageUrl,
         long sizeInBytes,
-        CoreI18n i18n
+        CoreI18n i18n,
+        string? storageKey = null
     )
     {
         BadRequestException? error = (fileName, originalFileName, mimeType, storageUrl, sizeInBytes) switch
@@ -98,6 +106,7 @@ public class FileEntity : Aggregate<Guid>
             MimeType = mimeType,
             StorageUrl = storageUrl,
             SizeInBytes = sizeInBytes,
+            StorageKey = storageKey,
         };
     }
 
