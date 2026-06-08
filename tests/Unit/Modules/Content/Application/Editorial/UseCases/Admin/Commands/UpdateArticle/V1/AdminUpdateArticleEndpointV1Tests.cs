@@ -40,7 +40,6 @@ public class AdminUpdateArticleEndpointV1Tests
             Slug: "updated-slug",
             Headline: "Updated headline text for the article",
             Body: "<p>Updated body</p>",
-            CoverImageUrl: "https://example.com/cover.jpg",
             CustomerId: customerId,
             OrderItemId: orderItemId,
             SocialBoost: true,
@@ -55,7 +54,6 @@ public class AdminUpdateArticleEndpointV1Tests
         request.Slug.Should().Be("updated-slug");
         request.Headline.Should().Be("Updated headline text for the article");
         request.Body.Should().Be("<p>Updated body</p>");
-        request.CoverImageUrl.Should().Be("https://example.com/cover.jpg");
         request.CustomerId.Should().Be(customerId);
         request.OrderItemId.Should().Be(orderItemId);
         request.SocialBoost.Should().BeTrue();
@@ -73,7 +71,6 @@ public class AdminUpdateArticleEndpointV1Tests
             Slug: "updated-slug",
             Headline: "Updated headline",
             Body: "<p>Body</p>",
-            CoverImageUrl: null,
             CustomerId: null,
             OrderItemId: null,
             SocialBoost: false,
@@ -82,7 +79,6 @@ public class AdminUpdateArticleEndpointV1Tests
         );
 
         // Assert
-        request.CoverImageUrl.Should().BeNull();
         request.CustomerId.Should().BeNull();
         request.OrderItemId.Should().BeNull();
         request.MetaTitle.Should().BeNull();
