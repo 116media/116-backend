@@ -31,31 +31,16 @@ public class ShortVideoEntity : Aggregate<Guid>
     public string Slug { get; private set; } = null!;
 
     /// <summary>
-    /// Publicly accessible CDN URL for the video file.
+    /// ID of the uploaded video file tracked in the Core module.
+    /// The video URL and storage key are resolved from the associated FileEntity.
     /// </summary>
-    [MaxLength(length: ContentConstants.MaxShortVideoUrlLength)]
-    public string VideoUrl { get; private set; } = null!;
+    public Guid VideoFileId { get; private set; }
 
     /// <summary>
-    /// Provider-agnostic storage identifier for the video file asset.
-    /// Named <c>VideoStorageKey</c> (not <c>CloudinaryPublicId</c>) to avoid coupling
-    /// the entity to a specific CDN. Required — the video file must always be trackable
-    /// for deletion when the short video is hard deleted.
+    /// ID of the uploaded thumbnail file tracked in the Core module.
+    /// Null until a thumbnail is manually uploaded.
     /// </summary>
-    public string VideoStorageKey { get; private set; } = null!;
-
-    /// <summary>
-    /// Optional thumbnail image URL.
-    /// </summary>
-    [MaxLength(length: ContentConstants.MaxThumbnailUrlLength)]
-    public string? ThumbnailUrl { get; private set; }
-
-    /// <summary>
-    /// Provider-agnostic storage identifier for the thumbnail image.
-    /// Named <c>ThumbnailStorageKey</c> for the same CDN-agnostic reason as <c>VideoStorageKey</c>.
-    /// <c>null</c> until a thumbnail is uploaded.
-    /// </summary>
-    public string? ThumbnailStorageKey { get; private set; }
+    public Guid? ThumbnailFileId { get; private set; }
 
     /// <summary>
     /// Optional link to the parent full video (e.g., a 116 Le Focus episode this clip previews).
@@ -117,18 +102,17 @@ public class ShortVideoEntity : Aggregate<Guid>
     /// <param name="id">The unique identifier.</param>
     /// <param name="title">The display title.</param>
     /// <param name="slug">The URL-safe slug for the short video permalink.</param>
-    /// <param name="videoUrl">The CDN URL for the video file.</param>
-    /// <param name="videoStorageKey">
-    /// The provider-agnostic storage key used to delete the video file from media storage.
+    /// <param name="videoFileId">
+    /// The FileEntity ID for the uploaded video file in the Core module.
     /// </param>
     /// <param name="authorId">The identity user UUID of the admin uploading this short video.</param>
+    /// <param name="errors">The errors factory instance.</param>
     /// <returns>A new active <see cref="ShortVideoEntity" />.</returns>
     public static ShortVideoEntity CreateStandalone(
         Guid id,
         string title,
         string slug,
-        string videoUrl,
-        string videoStorageKey,
+        Guid videoFileId,
         Guid authorId,
         ShortVideoErrors errors
     )
@@ -143,8 +127,7 @@ public class ShortVideoEntity : Aggregate<Guid>
             Id = id,
             Title = title,
             Slug = slug,
-            VideoUrl = videoUrl,
-            VideoStorageKey = videoStorageKey,
+            VideoFileId = videoFileId,
             AuthorId = authorId,
             HasFullVideo = false,
             IsActive = true,
@@ -157,9 +140,8 @@ public class ShortVideoEntity : Aggregate<Guid>
     /// <param name="id">The unique identifier.</param>
     /// <param name="title">The display title.</param>
     /// <param name="slug">The URL-safe slug for the short video permalink.</param>
-    /// <param name="videoUrl">The CDN URL for the video file.</param>
-    /// <param name="videoStorageKey">
-    /// The provider-agnostic storage key used to delete the video file from media storage.
+    /// <param name="videoFileId">
+    /// The FileEntity ID for the uploaded video file in the Core module.
     /// </param>
     /// <param name="videoId">The parent full video this clip previews.</param>
     /// <param name="authorId">The identity user UUID of the admin uploading this short video.</param>
@@ -169,8 +151,7 @@ public class ShortVideoEntity : Aggregate<Guid>
         Guid id,
         string title,
         string slug,
-        string videoUrl,
-        string videoStorageKey,
+        Guid videoFileId,
         Guid videoId,
         Guid authorId,
         ShortVideoErrors errors
@@ -186,8 +167,7 @@ public class ShortVideoEntity : Aggregate<Guid>
             Id = id,
             Title = title,
             Slug = slug,
-            VideoUrl = videoUrl,
-            VideoStorageKey = videoStorageKey,
+            VideoFileId = videoFileId,
             VideoId = videoId,
             AuthorId = authorId,
             HasFullVideo = true,
@@ -215,27 +195,25 @@ public class ShortVideoEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Replaces the video file URL after a successful re-upload to cloud storage.
-    /// The storage key remains the same (Cloudinary overwrites in place).
+    /// Replaces the video file reference after a successful re-upload.
     /// </summary>
-    /// <param name="videoUrl">The new publicly accessible video URL.</param>
-    public void ReplaceVideoFile(string videoUrl)
+    /// <param name="videoFileId">
+    /// The new FileEntity ID for the re-uploaded video file.
+    /// </param>
+    public void ReplaceVideoFile(Guid videoFileId)
     {
-        VideoUrl = videoUrl;
+        VideoFileId = videoFileId;
     }
 
     /// <summary>
-    /// Sets or replaces the thumbnail for this short video.
-    /// Called by <c>UploadShortVideoThumbnailCommandHandler</c>.
+    /// Sets or replaces the thumbnail file reference for this short video.
     /// </summary>
-    /// <param name="thumbnailUrl">The new publicly accessible thumbnail URL.</param>
-    /// <param name="thumbnailStorageKey">
-    /// The new storage key used to delete the thumbnail from media storage when replaced or hard deleted.
+    /// <param name="thumbnailFileId">
+    /// The FileEntity ID for the uploaded thumbnail, or null to clear it.
     /// </param>
-    public void UpdateThumbnail(string thumbnailUrl, string thumbnailStorageKey)
+    public void SetThumbnailFileId(Guid? thumbnailFileId)
     {
-        ThumbnailUrl = thumbnailUrl;
-        ThumbnailStorageKey = thumbnailStorageKey;
+        ThumbnailFileId = thumbnailFileId;
     }
 
     /// <summary>
