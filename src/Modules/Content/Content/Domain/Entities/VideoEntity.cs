@@ -63,22 +63,10 @@ public class VideoEntity : Aggregate<Guid>
     public string Description { get; private set; } = null!;
 
     /// <summary>
-    /// URL of the video thumbnail image.
-    /// Initially set when a YouTube ID is attached (thumbnail auto-downloaded from YouTube
-    /// and re-uploaded to Cloudinary). Can be overridden via <c>POST /{id}/thumbnail</c>.
-    /// Never stores YouTube CDN URLs directly — the asset is always owned by the platform.
+    /// ID of the uploaded thumbnail file tracked in the Core module.
+    /// The thumbnail URL and storage key are resolved from the associated FileEntity.
     /// </summary>
-    [MaxLength(length: ContentConstants.MaxThumbnailUrlLength)]
-    public string? ThumbnailUrl { get; private set; }
-
-    /// <summary>
-    /// Provider-agnostic storage identifier for the thumbnail image asset.
-    /// Named <c>ThumbnailStorageKey</c> rather than <c>ThumbnailCloudinaryPublicId</c>
-    /// to remain CDN-agnostic (Cloudinary public_id, S3 key, and Bunny path all map cleanly).
-    /// Used to delete the old thumbnail when it is replaced or the video is hard deleted.
-    /// <c>null</c> until a thumbnail is uploaded.
-    /// </summary>
-    public string? ThumbnailStorageKey { get; private set; }
+    public Guid? ThumbnailFileId { get; private set; }
 
     /// <summary>
     /// The full YouTube video URL (e.g., "https://www.youtube.com/watch?v=dQw4w9WgXcQ").
@@ -333,20 +321,16 @@ public class VideoEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Sets or replaces the video thumbnail.
+    /// Sets or replaces the thumbnail file reference.
     /// Called when a thumbnail is uploaded via <c>POST /admin/videos/{id}/thumbnail</c>
-    /// or automatically after YouTube ID attachment (thumbnail downloaded and re-uploaded).
-    /// <para>
-    /// <c>ThumbnailStorageKey</c> is the provider-agnostic key used to delete the old
-    /// asset from media storage when the thumbnail is replaced or the video is hard deleted.
-    /// </para>
+    /// or automatically after YouTube URL attachment (thumbnail downloaded and re-uploaded).
     /// </summary>
-    /// <param name="thumbnailUrl">The new publicly accessible thumbnail URL.</param>
-    /// <param name="thumbnailStorageKey">The new storage key for the thumbnail asset.</param>
-    public void UpdateThumbnail(string thumbnailUrl, string thumbnailStorageKey)
+    /// <param name="thumbnailFileId">
+    /// The FileEntity ID for the uploaded thumbnail, or null to clear it.
+    /// </param>
+    public void SetThumbnailFileId(Guid? thumbnailFileId)
     {
-        ThumbnailUrl = thumbnailUrl;
-        ThumbnailStorageKey = thumbnailStorageKey;
+        ThumbnailFileId = thumbnailFileId;
     }
 
     /// <summary>
