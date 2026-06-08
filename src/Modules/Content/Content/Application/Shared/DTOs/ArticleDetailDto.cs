@@ -29,7 +29,8 @@ namespace _116.Content.Application.Shared.DTOs;
 /// The full rich-text HTML body of the article.
 /// </param>
 /// <param name="CoverImageUrl">
-/// The URL of the cover image, or null if not set.
+/// The publicly accessible URL of the cover image, resolved from the associated FileEntity.
+/// Null if no cover image has been uploaded.
 /// </param>
 /// <param name="AuthorId">
 /// The identity user UUID of the author.
