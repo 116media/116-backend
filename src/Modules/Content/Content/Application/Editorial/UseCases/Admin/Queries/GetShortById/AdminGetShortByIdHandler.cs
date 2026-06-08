@@ -3,7 +3,6 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
 using _116.Identity.Contracts.Application;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -28,39 +27,18 @@ public class AdminGetShortByIdHandler(
     /// <inheritdoc />
     public async Task<AdminGetShortByIdResult> Handle(AdminGetShortByIdQuery query, CancellationToken cancellationToken)
     {
-        ShortVideoEntity? shortVideo = await shortVideoRepository.GetByIdOrThrowAsync(
+        ShortVideoEntity shortVideo = await shortVideoRepository.GetByIdOrThrowAsync(
             id: query.Id,
             cancellationToken: cancellationToken
         );
 
-        var dto = shortVideo.ToShortVideoDto(mapper);
-
-        AuthorInfo? authorInfo = await userLookup.GetAuthorInfoByIdAsync(
-            userId: shortVideo.AuthorId,
-            ct: cancellationToken
+        ShortVideoDto dto = await shortVideo.ToShortVideoDtoAsync(
+            mapper,
+            userLookup,
+            fileRepository,
+            cancellationToken
         );
 
-        AuthorDto? author = null;
-        if (authorInfo is not null)
-        {
-            string? avatarUrl = null;
-            if (authorInfo.AvatarFileId.HasValue)
-            {
-                FileEntity? avatarFile = await fileRepository.GetByIdAsync(
-                    authorInfo.AvatarFileId.Value,
-                    cancellationToken
-                );
-                avatarUrl = avatarFile?.StorageUrl;
-            }
-
-            author = new AuthorDto(
-                UserName: authorInfo.UserName,
-                Email: authorInfo.Email,
-                AvatarUrl: avatarUrl,
-                Role: authorInfo.Role
-            );
-        }
-
-        return new AdminGetShortByIdResult(ShortVideo: dto with { Author = author });
+        return new AdminGetShortByIdResult(ShortVideo: dto);
     }
 }
