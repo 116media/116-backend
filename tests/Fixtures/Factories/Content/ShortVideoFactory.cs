@@ -35,12 +35,9 @@ public static class ShortVideoFactory
     public static ShortVideoEntity CreateWithSlug(string slug) => new ShortVideoBuilder().WithSlug(slug).Build();
 
     /// <summary>
-    /// Creates a short video with a thumbnail attached.
+    /// Creates a short video with a thumbnail file ID attached.
     /// </summary>
-    public static ShortVideoEntity CreateWithThumbnail(
-        string thumbnailUrl = TestConstants.Content.Editorial.ArticleImage.ValidUrl,
-        string thumbnailStorageKey = TestConstants.Content.Editorial.ArticleImage.ValidStorageKey
-    ) => new ShortVideoBuilder().WithThumbnail(thumbnailUrl, thumbnailStorageKey).Build();
+    public static ShortVideoEntity CreateWithThumbnail() => new ShortVideoBuilder().WithThumbnail().Build();
 
     /// <summary>
     /// Creates a list of standalone active short videos.
