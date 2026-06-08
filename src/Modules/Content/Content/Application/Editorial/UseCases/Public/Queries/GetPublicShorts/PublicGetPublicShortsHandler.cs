@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -12,9 +13,13 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicSh
 /// Handles the <see cref="PublicGetPublicShortsQuery" /> to retrieve a paginated list of active short videos.
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
+/// <param name="fileRepository">Repository for resolving video and thumbnail file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetPublicShortsHandler(IShortVideoRepository shortVideoRepository, IMapper mapper)
-    : IQueryHandler<PublicGetPublicShortsQuery, PublicGetPublicShortsResult>
+public class PublicGetPublicShortsHandler(
+    IShortVideoRepository shortVideoRepository,
+    IFileRepository fileRepository,
+    IMapper mapper
+) : IQueryHandler<PublicGetPublicShortsQuery, PublicGetPublicShortsResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetPublicShortsResult> Handle(
@@ -33,7 +38,11 @@ public class PublicGetPublicShortsHandler(IShortVideoRepository shortVideoReposi
             cancellationToken: cancellationToken
         );
 
-        List<ShortVideoDto> dtoList = shortVideos.Select(sv => sv.ToShortVideoDto(mapper)).ToList();
+        IReadOnlyList<ShortVideoDto> dtoList = await shortVideos.ToShortVideoDtosAsync(
+            mapper,
+            fileRepository,
+            cancellationToken
+        );
 
         var paginatedResult = new PaginatedResult<ShortVideoDto>(
             pageIndex: pageIndex,
