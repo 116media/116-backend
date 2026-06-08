@@ -25,9 +25,7 @@ public class VideoConfiguration : IEntityTypeConfiguration<VideoEntity>
 
         builder.Property(x => x.Description).IsRequired();
 
-        builder.Property(x => x.ThumbnailUrl).HasMaxLength(ContentConstants.MaxThumbnailUrlLength).IsRequired(false);
-
-        builder.Property(x => x.ThumbnailStorageKey).IsRequired(false);
+        builder.Property(x => x.ThumbnailFileId).IsRequired(false);
 
         builder
             .Property(x => x.YoutubeVideoUrl)
