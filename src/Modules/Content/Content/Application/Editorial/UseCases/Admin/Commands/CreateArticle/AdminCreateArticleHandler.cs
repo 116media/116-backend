@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -14,12 +15,14 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtic
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="fileRepository">Repository for resolving file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreateArticleHandler(
     ICategoryRepository categoryRepository,
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
+    IFileRepository fileRepository,
     IMapper mapper,
     ContentI18n i18n
 ) : ICommandHandler<AdminCreateArticleCommand, AdminCreateArticleResult>
@@ -52,7 +55,7 @@ public class AdminCreateArticleHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = created.ToArticleDetailDto(mapper);
+        var dto = await created.ToArticleDetailDtoAsync(mapper, fileRepository, cancellationToken);
         return new AdminCreateArticleResult(Article: dto);
     }
 
