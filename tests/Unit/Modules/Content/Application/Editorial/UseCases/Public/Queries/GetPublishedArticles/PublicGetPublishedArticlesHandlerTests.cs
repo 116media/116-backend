@@ -1,8 +1,11 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishedArticles;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -17,6 +20,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 public class PublicGetPublishedArticlesHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetPublishedArticlesHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -24,7 +28,14 @@ public class PublicGetPublishedArticlesHandlerTests : BaseContentHandlerTest
     public PublicGetPublishedArticlesHandlerTests()
     {
         _articleRepositoryMock = MockArticleRepository.Create();
-        _handler = new PublicGetPublishedArticlesHandler(_articleRepositoryMock.Object, Mapper);
+        _fileRepositoryMock = MockFileRepository.Create();
+        FileEntity coverFile = FileFactory.CreateImage();
+        _fileRepositoryMock.SetupGetById(coverFile);
+        _handler = new PublicGetPublishedArticlesHandler(
+            _articleRepositoryMock.Object,
+            _fileRepositoryMock.Object,
+            Mapper
+        );
     }
 
     [Fact]
