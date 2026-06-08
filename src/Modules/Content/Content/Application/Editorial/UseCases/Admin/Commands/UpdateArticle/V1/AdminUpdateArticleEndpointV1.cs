@@ -20,7 +20,6 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 /// <param name="Slug">The URL-safe slug. Must be unique across all articles.</param>
 /// <param name="Headline">The short teaser text (100–300 characters).</param>
 /// <param name="Body">The rich-text HTML body containing only Cloudinary image URLs.</param>
-/// <param name="CoverImageUrl">Optional URL of the article's primary cover image.</param>
 /// <param name="CustomerId">Optional B2B customer who commissioned this article.</param>
 /// <param name="OrderItemId">Optional order item this article fulfils.</param>
 /// <param name="SocialBoost">Whether the article is flagged for social media promotion.</param>
@@ -32,7 +31,6 @@ public record AdminUpdateArticleRequest(
     string Slug,
     string Headline,
     string Body,
-    string? CoverImageUrl,
     Guid? CustomerId,
     Guid? OrderItemId,
     bool SocialBoost,
@@ -76,7 +74,6 @@ public class AdminUpdateArticleEndpointV1 : ICarterModule
                         Slug: request.Slug,
                         Headline: request.Headline,
                         Body: request.Body,
-                        CoverImageUrl: request.CoverImageUrl,
                         CustomerId: request.CustomerId,
                         OrderItemId: request.OrderItemId,
                         SocialBoost: request.SocialBoost,
