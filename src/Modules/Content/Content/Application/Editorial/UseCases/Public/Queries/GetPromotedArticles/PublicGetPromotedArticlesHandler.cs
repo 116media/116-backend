@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -11,9 +12,13 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPromoted
 /// Handles the <see cref="PublicGetPromotedArticlesQuery" /> to retrieve all currently promoted published articles.
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="fileRepository">Repository for resolving file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetPromotedArticlesHandler(IArticleRepository articleRepository, IMapper mapper)
-    : IQueryHandler<PublicGetPromotedArticlesQuery, PublicGetPromotedArticlesResult>
+public class PublicGetPromotedArticlesHandler(
+    IArticleRepository articleRepository,
+    IFileRepository fileRepository,
+    IMapper mapper
+) : IQueryHandler<PublicGetPromotedArticlesQuery, PublicGetPromotedArticlesResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetPromotedArticlesResult> Handle(
@@ -25,7 +30,11 @@ public class PublicGetPromotedArticlesHandler(IArticleRepository articleReposito
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<ArticleSummaryDto> dtoList = articles.ToArticleSummaryDtos(mapper);
+        IReadOnlyList<ArticleSummaryDto> dtoList = await articles.ToArticleSummaryDtosAsync(
+            mapper,
+            fileRepository,
+            cancellationToken
+        );
 
         return new PublicGetPromotedArticlesResult(Articles: dtoList);
     }
