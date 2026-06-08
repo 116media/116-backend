@@ -3,9 +3,12 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -24,6 +27,7 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<ICloudinaryService> _cloudinaryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUploadArticleImageHandler _handler;
     private readonly IFormFile _mockFile;
@@ -34,10 +38,16 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
     {
         _articleRepositoryMock = MockArticleRepository.Create();
         _cloudinaryMock = MockCloudinaryService.Create();
+        _fileRepositoryMock = MockFileRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
+
+        FileEntity fileEntity = FileFactory.CreateImage();
+        _fileRepositoryMock.SetupReplaceImageFile(fileEntity);
+
         _handler = new AdminUploadArticleImageHandler(
             _articleRepositoryMock.Object,
             _cloudinaryMock.Object,
+            _fileRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper
         );
@@ -90,7 +100,7 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
         // Assert
         result.Should().NotBeNull();
         result.Image.Should().NotBeNull();
-        _cloudinaryMock.VerifyUploadCalled();
+        _fileRepositoryMock.VerifyReplaceImageFileCalled();
         _articleRepositoryMock.VerifyUpdateCalled();
         _articleRepositoryMock.VerifyAddImageCalled();
         _unitOfWorkMock.VerifyCommitCalled();
@@ -116,7 +126,7 @@ public class AdminUploadArticleImageHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Should().NotBeNull();
-        _cloudinaryMock.VerifyUploadCalled();
+        _fileRepositoryMock.VerifyReplaceImageFileCalled();
         _articleRepositoryMock.VerifyRemoveImagesCalled();
         _articleRepositoryMock.VerifyAddImageCalled();
         _unitOfWorkMock.VerifyCommitCalled();
