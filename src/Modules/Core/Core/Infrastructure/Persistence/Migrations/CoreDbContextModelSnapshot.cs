@@ -70,6 +70,11 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("size_in_bytes");
 
+                    b.Property<string>("StorageKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("storage_key");
+
                     b.Property<string>("StorageUrl")
                         .IsRequired()
                         .HasMaxLength(2048)
