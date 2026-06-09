@@ -38,6 +38,10 @@ public class AdminGetAllArticlesEndpointV1Tests
             AuthorId: "Test",
             Status: EnumContentStatus.Draft,
             IsPromoted: false,
-            PublishedAt: null
+            PublishedAt: null,
+            LikeCount: 0,
+            CommentCount: 0,
+            ShareCount: 0,
+            BookmarkCount: 0
         );
 }

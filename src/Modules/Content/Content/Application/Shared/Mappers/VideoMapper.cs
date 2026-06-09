@@ -51,7 +51,10 @@ public static class VideoMapper
             entity.IsPromoted,
             entity.HasLyrics,
             entity.PublishedAt,
-            entity.ShootingScheduledAt
+            entity.ShootingScheduledAt,
+            entity.ShareCount,
+            entity.RatingAverage,
+            entity.RatingCount
         )
         {
             CreatedAt = entity.CreatedAt,
@@ -90,6 +93,9 @@ public static class VideoMapper
             entity.MetaTitle,
             entity.MetaDescription,
             mapper.Map<IReadOnlyList<TagDto>>(entity.Tags),
+            entity.ShareCount,
+            entity.RatingAverage,
+            entity.RatingCount,
             entity.CustomerId,
             entity.Customer != null ? entity.Customer.FullName : null,
             entity.OrderItemId

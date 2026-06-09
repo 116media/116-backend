@@ -401,6 +401,79 @@ public class VideoMapperTests : BaseContentHandlerTest
 
     #endregion
 
+    #region ToVideoSummaryDto — engagement counters
+
+    [Fact]
+    public void ToVideoSummaryDto_ShouldMapEngagementCounters()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        video.IncrementShareCount();
+        video.IncrementShareCount();
+        video.UpdateRating(4.5m, 10);
+
+        // Act
+        VideoSummaryDto dto = video.ToVideoSummaryDto(Mapper);
+
+        // Assert
+        dto.ShareCount.Should().Be(2);
+        dto.RatingAverage.Should().Be(4.5m);
+        dto.RatingCount.Should().Be(10);
+    }
+
+    [Fact]
+    public void ToVideoSummaryDto_WhenNoInteractions_ShouldMapCountersAsZero()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+
+        // Act
+        VideoSummaryDto dto = video.ToVideoSummaryDto(Mapper);
+
+        // Assert
+        dto.ShareCount.Should().Be(0);
+        dto.RatingAverage.Should().Be(0m);
+        dto.RatingCount.Should().Be(0);
+    }
+
+    #endregion
+
+    #region ToVideoDetailDto — engagement counters
+
+    [Fact]
+    public void ToVideoDetailDto_ShouldMapEngagementCounters()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+        video.IncrementShareCount();
+        video.UpdateRating(3.8m, 5);
+
+        // Act
+        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+
+        // Assert
+        dto.ShareCount.Should().Be(1);
+        dto.RatingAverage.Should().Be(3.8m);
+        dto.RatingCount.Should().Be(5);
+    }
+
+    [Fact]
+    public void ToVideoDetailDto_WhenNoInteractions_ShouldMapCountersAsZero()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.Create(CategoryId);
+
+        // Act
+        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+
+        // Assert
+        dto.ShareCount.Should().Be(0);
+        dto.RatingAverage.Should().Be(0m);
+        dto.RatingCount.Should().Be(0);
+    }
+
+    #endregion
+
     #region ToVideoDetailDto — customer and order item mapping
 
     [Fact]

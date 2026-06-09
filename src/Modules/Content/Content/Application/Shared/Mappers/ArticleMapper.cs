@@ -55,7 +55,11 @@ public static class ArticleMapper
             entity.AuthorId.ToString(),
             entity.Status,
             entity.IsPromoted,
-            entity.PublishedAt
+            entity.PublishedAt,
+            entity.LikeCount,
+            entity.CommentCount,
+            entity.ShareCount,
+            entity.BookmarkCount
         )
         {
             CreatedAt = entity.CreatedAt,
@@ -96,6 +100,10 @@ public static class ArticleMapper
                 1,
                 (int)Math.Ceiling(entity.Body.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length / 200.0)
             ),
+            entity.LikeCount,
+            entity.CommentCount,
+            entity.ShareCount,
+            entity.BookmarkCount,
             entity.CustomerId,
             entity.Customer != null ? entity.Customer.FullName : null,
             entity.OrderItemId

@@ -91,6 +91,10 @@ public class AdminCreateArticleEndpointV1Tests
             MetaDescription: null,
             Images: [],
             Tags: [],
-            ReadTimeInMinutes: 0
+            ReadTimeInMinutes: 0,
+            LikeCount: 0,
+            CommentCount: 0,
+            ShareCount: 0,
+            BookmarkCount: 0
         );
 }

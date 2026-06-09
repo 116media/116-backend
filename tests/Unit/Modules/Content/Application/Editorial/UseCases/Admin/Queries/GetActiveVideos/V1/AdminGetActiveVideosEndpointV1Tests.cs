@@ -53,6 +53,9 @@ public class AdminGetActiveVideosEndpointV1Tests
             IsPromoted: false,
             HasLyrics: false,
             PublishedAt: null,
-            ShootingScheduledAt: null
+            ShootingScheduledAt: null,
+            ShareCount: 0,
+            RatingAverage: 0m,
+            RatingCount: 0
         );
 }
