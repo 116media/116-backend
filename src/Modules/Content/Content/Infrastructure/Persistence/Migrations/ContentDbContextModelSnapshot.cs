@@ -157,10 +157,9 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("comment_count");
 
-                    b.Property<string>("CoverImageUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("cover_image_url");
+                    b.Property<Guid?>("CoverImageFileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cover_image_file_id");
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1433,14 +1432,9 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(220)")
                         .HasColumnName("slug");
 
-                    b.Property<string>("ThumbnailStorageKey")
-                        .HasColumnType("text")
-                        .HasColumnName("thumbnail_storage_key");
-
-                    b.Property<string>("ThumbnailUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("thumbnail_url");
+                    b.Property<Guid?>("ThumbnailFileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("thumbnail_file_id");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -1456,20 +1450,13 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("updated_by");
 
+                    b.Property<Guid>("VideoFileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("video_file_id");
+
                     b.Property<Guid?>("VideoId")
                         .HasColumnType("uuid")
                         .HasColumnName("video_id");
-
-                    b.Property<string>("VideoStorageKey")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("video_storage_key");
-
-                    b.Property<string>("VideoUrl")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("video_url");
 
                     b.Property<int>("ViewCount")
                         .ValueGeneratedOnAdd()
@@ -1744,14 +1731,9 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasDefaultValue("Draft")
                         .HasColumnName("status");
 
-                    b.Property<string>("ThumbnailStorageKey")
-                        .HasColumnType("text")
-                        .HasColumnName("thumbnail_storage_key");
-
-                    b.Property<string>("ThumbnailUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("thumbnail_url");
+                    b.Property<Guid?>("ThumbnailFileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("thumbnail_file_id");
 
                     b.Property<string>("Title")
                         .IsRequired()
