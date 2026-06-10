@@ -20,6 +20,8 @@ internal class CategoryBuilder
     private string _description = "Default category description";
     private bool _isFree;
     private bool _isActive = true;
+    private bool _isExclusive;
+    private Guid? _posterFileId;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CategoryBuilder"/> class with random default values.
@@ -106,6 +108,24 @@ internal class CategoryBuilder
     }
 
     /// <summary>
+    /// Marks the category as exclusive.
+    /// </summary>
+    public CategoryBuilder WithIsExclusive(bool isExclusive = true)
+    {
+        _isExclusive = isExclusive;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the poster file ID.
+    /// </summary>
+    public CategoryBuilder WithPosterFileId(Guid? posterFileId = null)
+    {
+        _posterFileId = posterFileId ?? Guid.NewGuid();
+        return this;
+    }
+
+    /// <summary>
     /// Builds the <see cref="CategoryEntity"/> instance.
     /// </summary>
     public CategoryEntity Build()
@@ -117,12 +137,18 @@ internal class CategoryBuilder
             _slug,
             _description,
             _isFree,
-            TestErrorsFactory.CreateCategoryErrors()
+            TestErrorsFactory.CreateCategoryErrors(),
+            isExclusive: _isExclusive
         );
 
         if (!_isActive)
         {
             entity.Deactivate();
+        }
+
+        if (_posterFileId.HasValue)
+        {
+            entity.SetPosterFileId(_posterFileId);
         }
 
         return entity;
