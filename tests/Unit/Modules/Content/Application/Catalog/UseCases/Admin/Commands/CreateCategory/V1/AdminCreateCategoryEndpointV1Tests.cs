@@ -1,6 +1,7 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory.V1;
 using _116.Content.Application.Shared.DTOs;
 using AwesomeAssertions;
+using Microsoft.AspNetCore.Http;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory.V1;
@@ -36,7 +37,9 @@ public class AdminCreateCategoryEndpointV1Tests
             Slug: "technology",
             Description: "Tech articles",
             IsFree: true,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Assert
@@ -56,7 +59,9 @@ public class AdminCreateCategoryEndpointV1Tests
             Slug: "technology",
             Description: "Test category description",
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Assert
@@ -74,6 +79,8 @@ public class AdminCreateCategoryEndpointV1Tests
             true,
             true,
             false,
+            false,
+            null,
             []
         );
 }
