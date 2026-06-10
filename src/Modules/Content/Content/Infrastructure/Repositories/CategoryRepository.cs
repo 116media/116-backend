@@ -163,4 +163,14 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
             .Include(c => c.ContentType)
             .FirstOrDefaultAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<CategoryEntity?> GetExclusiveCategoryAsync(CancellationToken cancellationToken = default)
+    {
+        var specification = new ExclusiveCategorySpecification();
+        return await context
+            .Categories.ApplySpecification(specification: specification)
+            .Include(c => c.ContentType)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }
