@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -11,9 +12,13 @@ namespace _116.Content.Application.Catalog.UseCases.Public.Queries.GetActiveCate
 /// Handles the <see cref="PublicGetActiveCategoriesQuery" /> to retrieve the list of active public categories.
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
+/// <param name="fileRepository">Repository for file storage operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetActiveCategoriesHandler(ICategoryRepository categoryRepository, IMapper mapper)
-    : IQueryHandler<PublicGetActiveCategoriesQuery, PublicGetActiveCategoriesResult>
+public class PublicGetActiveCategoriesHandler(
+    ICategoryRepository categoryRepository,
+    IFileRepository fileRepository,
+    IMapper mapper
+) : IQueryHandler<PublicGetActiveCategoriesQuery, PublicGetActiveCategoriesResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetActiveCategoriesResult> Handle(
@@ -26,7 +31,11 @@ public class PublicGetActiveCategoriesHandler(ICategoryRepository categoryReposi
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<CategoryDto> dtoList = categories.Select(c => c.ToCategoryDto(mapper)).ToList();
+        IReadOnlyList<CategoryDto> dtoList = await categories.ToCategoryDtosAsync(
+            mapper,
+            fileRepository,
+            cancellationToken
+        );
 
         return new PublicGetActiveCategoriesResult(Categories: dtoList);
     }
