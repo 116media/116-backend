@@ -1,5 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using Mapster;
 using MapsterMapper;
 
@@ -7,11 +9,14 @@ namespace _116.Content.Application.Shared.Mappers;
 
 /// <summary>
 /// Mapster configuration for Category and CategoryPricing entity mappings.
+/// Poster URL is resolved from the associated FileEntity at mapping time
+/// rather than stored as a flat string on the entity.
 /// </summary>
 public static class CategoryMapper
 {
     /// <summary>
     /// Registers Category and CategoryPricing entity mappings into the provided TypeAdapterConfig.
+    /// Ignores <c>PosterUrl</c> since it is resolved at mapping time from the associated FileEntity.
     /// </summary>
     /// <param name="config">The TypeAdapterConfig to register mappings into.</param>
     public static void Register(TypeAdapterConfig config)
@@ -25,24 +30,55 @@ public static class CategoryMapper
         config
             .NewConfig<CategoryEntity, CategoryDto>()
             .Map(dest => dest.ContentTypeName, src => src.ContentType.Name)
+            .Map(dest => dest.PosterUrl, _ => (string?)null)
             .Map(dest => dest.Pricing, src => src.Pricing);
     }
 
     /// <summary>
-    /// Maps a <see cref="CategoryEntity" /> to a <see cref="CategoryDto" />.
+    /// Maps a <see cref="CategoryEntity" /> to a <see cref="CategoryDto" />,
+    /// resolving the poster URL from the associated FileEntity record.
     /// </summary>
-    public static CategoryDto ToCategoryDto(this CategoryEntity entity, IMapper mapper)
+    public static async Task<CategoryDto> ToCategoryDtoAsync(
+        this CategoryEntity entity,
+        IMapper mapper,
+        IFileRepository fileRepository,
+        CancellationToken ct = default
+    )
     {
         var dto = mapper.Map<CategoryDto>(entity);
-        return dto with { Pricing = mapper.Map<IReadOnlyList<CategoryPricingDto>>(entity.Pricing) };
+
+        string? posterUrl = null;
+        if (entity.PosterFileId.HasValue)
+        {
+            FileEntity? posterFile = await fileRepository.GetByIdAsync(entity.PosterFileId.Value, ct);
+            posterUrl = posterFile?.StorageUrl;
+        }
+
+        return dto with
+        {
+            PosterUrl = posterUrl,
+            Pricing = mapper.Map<IReadOnlyList<CategoryPricingDto>>(entity.Pricing),
+        };
     }
 
     /// <summary>
-    /// Maps a collection of <see cref="CategoryEntity" /> to a list of <see cref="CategoryDto" />.
+    /// Maps a collection of <see cref="CategoryEntity" /> to a list of <see cref="CategoryDto" />,
+    /// resolving poster URLs from associated FileEntity records.
     /// </summary>
-    public static IReadOnlyList<CategoryDto> ToCategoryDtos(this IReadOnlyList<CategoryEntity> entities, IMapper mapper)
+    public static async Task<IReadOnlyList<CategoryDto>> ToCategoryDtosAsync(
+        this IReadOnlyList<CategoryEntity> entities,
+        IMapper mapper,
+        IFileRepository fileRepository,
+        CancellationToken ct = default
+    )
     {
-        return entities.Select(e => e.ToCategoryDto(mapper)).ToList();
+        var results = new List<CategoryDto>(entities.Count);
+        foreach (CategoryEntity entity in entities)
+        {
+            results.Add(await entity.ToCategoryDtoAsync(mapper, fileRepository, ct));
+        }
+
+        return results;
     }
 
     /// <summary>
