@@ -19,7 +19,16 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategor
 /// <param name="Slug">The new URL-safe slug for the category.</param>
 /// <param name="Description">The new description.</param>
 /// <param name="IsGossip">Whether this is the gossip category used for homepage feed fallbacks and the gossip strip.</param>
-public record AdminUpdateCategoryRequest(string Name, string Slug, string Description, bool IsGossip);
+/// <param name="IsExclusive">Whether this category is the exclusive show featured on the homepage.</param>
+/// <param name="Poster">Optional poster image file for the show.</param>
+public record AdminUpdateCategoryRequest(
+    string Name,
+    string Slug,
+    string Description,
+    bool IsGossip,
+    bool IsExclusive,
+    IFormFile? Poster
+);
 
 /// <summary>
 /// Response model for a successful category update.
@@ -54,7 +63,9 @@ public class AdminUpdateCategoryEndpointV1 : ICarterModule
                         Name: request.Name,
                         Slug: request.Slug,
                         Description: request.Description,
-                        IsGossip: request.IsGossip
+                        IsGossip: request.IsGossip,
+                        IsExclusive: request.IsExclusive,
+                        Poster: request.Poster
                     );
 
                     AdminUpdateCategoryResult result = await dispatcher.Send(request: command);
