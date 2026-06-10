@@ -242,4 +242,46 @@ public class CatalogSpecificationsTests
     }
 
     #endregion
+
+    #region ExclusiveCategorySpecification
+
+    [Fact]
+    public void ExclusiveCategorySpecification_WithExclusiveAndActiveCategory_ShouldReturnTrue()
+    {
+        // Arrange
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        category.SetExclusive();
+        var spec = new ExclusiveCategorySpecification();
+        Func<CategoryEntity, bool> predicate = spec.ToExpression().Compile();
+
+        // Act & Assert
+        predicate(category).Should().BeTrue();
+    }
+
+    [Fact]
+    public void ExclusiveCategorySpecification_WithNonExclusiveCategory_ShouldReturnFalse()
+    {
+        // Arrange
+        CategoryEntity category = CategoryFactory.Create(ContentTypeId);
+        var spec = new ExclusiveCategorySpecification();
+        Func<CategoryEntity, bool> predicate = spec.ToExpression().Compile();
+
+        // Act & Assert
+        predicate(category).Should().BeFalse();
+    }
+
+    [Fact]
+    public void ExclusiveCategorySpecification_WithExclusiveButInactiveCategory_ShouldReturnFalse()
+    {
+        // Arrange
+        CategoryEntity category = CategoryFactory.CreateInactive(ContentTypeId);
+        category.SetExclusive();
+        var spec = new ExclusiveCategorySpecification();
+        Func<CategoryEntity, bool> predicate = spec.ToExpression().Compile();
+
+        // Act & Assert
+        predicate(category).Should().BeFalse();
+    }
+
+    #endregion
 }
