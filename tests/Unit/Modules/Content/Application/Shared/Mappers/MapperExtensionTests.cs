@@ -134,7 +134,7 @@ public class MapperExtensionTests : BaseContentHandlerTest
     #region CategoryMapper Extensions
 
     [Fact]
-    public void ToCategoryDtos_WithMultipleEntities_ShouldReturnMappedList()
+    public async Task ToCategoryDtosAsync_WithMultipleEntities_ShouldReturnMappedList()
     {
         // Arrange
         var contentTypeId = Guid.NewGuid();
@@ -143,9 +143,14 @@ public class MapperExtensionTests : BaseContentHandlerTest
             CategoryFactory.Create(contentTypeId),
             CategoryFactory.Create(contentTypeId),
         }.AsReadOnly();
+        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
 
         // Act
-        IReadOnlyList<CategoryDto> result = entities.ToCategoryDtos(Mapper);
+        IReadOnlyList<CategoryDto> result = await entities.ToCategoryDtosAsync(
+            Mapper,
+            fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         result.Should().HaveCount(2);
@@ -153,16 +158,101 @@ public class MapperExtensionTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToCategoryDtos_WithEmptyList_ShouldReturnEmptyList()
+    public async Task ToCategoryDtosAsync_WithEmptyList_ShouldReturnEmptyList()
     {
         // Arrange
         IReadOnlyList<CategoryEntity> entities = new List<CategoryEntity>().AsReadOnly();
+        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
 
         // Act
-        IReadOnlyList<CategoryDto> result = entities.ToCategoryDtos(Mapper);
+        IReadOnlyList<CategoryDto> result = await entities.ToCategoryDtosAsync(
+            Mapper,
+            fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ToCategoryDtoAsync_WithPosterFileId_ShouldResolvePosterUrl()
+    {
+        // Arrange
+        var contentTypeId = Guid.NewGuid();
+        CategoryEntity entity = CategoryFactory.Create(contentTypeId);
+        FileEntity posterFile = FileFactory.CreateWithStorageUrl("https://cloudinary.com/poster.jpg");
+        entity.SetPosterFileId(posterFile.Id);
+
+        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        fileRepositoryMock.SetupGetById(posterFile);
+
+        // Act
+        CategoryDto result = await entity.ToCategoryDtoAsync(Mapper, fileRepositoryMock.Object, CancellationToken.None);
+
+        // Assert
+        result.PosterUrl.Should().Be("https://cloudinary.com/poster.jpg");
+    }
+
+    [Fact]
+    public async Task ToCategoryDtoAsync_WithNoPosterFileId_ShouldReturnNullPosterUrl()
+    {
+        // Arrange
+        var contentTypeId = Guid.NewGuid();
+        CategoryEntity entity = CategoryFactory.Create(contentTypeId);
+        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+
+        // Act
+        CategoryDto result = await entity.ToCategoryDtoAsync(Mapper, fileRepositoryMock.Object, CancellationToken.None);
+
+        // Assert
+        result.PosterUrl.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ToCategoryDtoAsync_ShouldMapIsExclusive()
+    {
+        // Arrange
+        var contentTypeId = Guid.NewGuid();
+        CategoryEntity entity = CategoryFactory.Create(contentTypeId);
+        entity.SetExclusive();
+        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+
+        // Act
+        CategoryDto result = await entity.ToCategoryDtoAsync(Mapper, fileRepositoryMock.Object, CancellationToken.None);
+
+        // Assert
+        result.IsExclusive.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ToCategoryDtosAsync_ShouldResolveAllPosterUrls()
+    {
+        // Arrange
+        var contentTypeId = Guid.NewGuid();
+        CategoryEntity entity1 = CategoryFactory.Create(contentTypeId);
+        CategoryEntity entity2 = CategoryFactory.Create(contentTypeId);
+        FileEntity posterFile1 = FileFactory.CreateWithStorageUrl("https://cloudinary.com/poster1.jpg");
+        FileEntity posterFile2 = FileFactory.CreateWithStorageUrl("https://cloudinary.com/poster2.jpg");
+        entity1.SetPosterFileId(posterFile1.Id);
+        entity2.SetPosterFileId(posterFile2.Id);
+
+        IReadOnlyList<CategoryEntity> entities = new List<CategoryEntity> { entity1, entity2 }.AsReadOnly();
+        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        fileRepositoryMock.SetupGetById(posterFile1);
+        fileRepositoryMock.SetupGetById(posterFile2);
+
+        // Act
+        IReadOnlyList<CategoryDto> result = await entities.ToCategoryDtosAsync(
+            Mapper,
+            fileRepositoryMock.Object,
+            CancellationToken.None
+        );
+
+        // Assert
+        result.Should().HaveCount(2);
+        result[0].PosterUrl.Should().Be("https://cloudinary.com/poster1.jpg");
+        result[1].PosterUrl.Should().Be("https://cloudinary.com/poster2.jpg");
     }
 
     #endregion
