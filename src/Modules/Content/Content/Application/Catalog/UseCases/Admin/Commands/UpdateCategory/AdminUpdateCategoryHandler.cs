@@ -3,6 +3,8 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -13,11 +15,13 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategor
 /// </summary>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="fileRepository">Repository for file storage operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminUpdateCategoryHandler(
     ICategoryRepository categoryRepository,
     IContentUnitOfWork unitOfWork,
+    IFileRepository fileRepository,
     IMapper mapper,
     ContentI18n i18n
 ) : ICommandHandler<AdminUpdateCategoryCommand, AdminUpdateCategoryResult>
@@ -45,11 +49,44 @@ public class AdminUpdateCategoryHandler(
             throw i18n.Category.AlreadyExists(slug: command.Slug);
         }
 
+        if (command.IsExclusive && !category.IsActive)
+        {
+            throw i18n.Category.CannotMakeInactiveExclusive();
+        }
+
+        if (command.IsExclusive)
+        {
+            CategoryEntity? currentExclusive = await categoryRepository.GetExclusiveCategoryAsync(
+                cancellationToken: cancellationToken
+            );
+
+            if (currentExclusive is not null && currentExclusive.Id != category.Id)
+            {
+                currentExclusive.ClearExclusive();
+            }
+        }
+
+        if (command.Poster is not null)
+        {
+            FileEntity posterFile = await fileRepository.ReplaceImageFileAsync(
+                currentFileId: category.PosterFileId,
+                file: command.Poster,
+                publicId: category.Id.ToString(),
+                folder: "content/category-posters",
+                originalFileName: command.Poster.FileName,
+                mimeType: command.Poster.ContentType,
+                cancellationToken: cancellationToken
+            );
+
+            category.SetPosterFileId(posterFileId: posterFile.Id);
+        }
+
         category.Update(
             name: command.Name,
             slug: command.Slug,
             description: command.Description,
             isGossip: command.IsGossip,
+            isExclusive: command.IsExclusive,
             errors: i18n.Category
         );
 
@@ -60,7 +97,7 @@ public class AdminUpdateCategoryHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = updated.ToCategoryDto(mapper);
+        var dto = await updated.ToCategoryDtoAsync(mapper, fileRepository, cancellationToken);
         return new AdminUpdateCategoryResult(Category: dto);
     }
 }
