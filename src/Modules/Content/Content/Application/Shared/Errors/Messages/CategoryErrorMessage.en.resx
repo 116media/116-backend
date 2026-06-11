@@ -60,4 +60,10 @@
   <data name="FileRequired" xml:space="preserve">
     <value>A file is required.</value>
   </data>
+  <data name="OnlyVideoCategoryCanBeExclusive" xml:space="preserve">
+    <value>Only video categories can be marked as exclusive.</value>
+  </data>
+  <data name="NoExclusiveCategoryFound" xml:space="preserve">
+    <value>No exclusive category is currently set.</value>
+  </data>
 </root>
