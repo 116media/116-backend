@@ -32,9 +32,10 @@ internal class CategoryBuilder
     {
         _id = Guid.NewGuid();
         _contentTypeId = contentTypeId;
+        string suffix = Guid.NewGuid().ToString("N")[..8];
         string word = _faker.Lorem.Word().ToLower();
-        _name = word[..Math.Min(TestConstants.Content.Category.NameMaxLength, word.Length)];
-        _slug = word[..Math.Min(TestConstants.Content.Category.SlugMaxLength, word.Length)];
+        _name = $"{word}-{suffix}"[..Math.Min(TestConstants.Content.Category.NameMaxLength, $"{word}-{suffix}".Length)];
+        _slug = $"{word}-{suffix}"[..Math.Min(TestConstants.Content.Category.SlugMaxLength, $"{word}-{suffix}".Length)];
     }
 
     /// <summary>
