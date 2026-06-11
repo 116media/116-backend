@@ -1,3 +1,4 @@
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
@@ -14,7 +15,8 @@ namespace _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
 /// Creates the Visitor role as defined in EnumCoreUserRole.Visitor with permissions from VisitorPermissions.
 /// All permissions are exactly 8 words describing what the permission allows users to do.
 /// </remarks>
-public class VisitorRoleSeeder(IdentityDbContext context, ILogger<VisitorRoleSeeder> logger) : IDataSeeder
+public class VisitorRoleSeeder(IdentityDbContext context, ILogger<VisitorRoleSeeder> logger, UserErrors userErrors)
+    : IDataSeeder
 {
     /// <inheritdoc />
     public async Task SeedAllAsync()
@@ -50,10 +52,11 @@ public class VisitorRoleSeeder(IdentityDbContext context, ILogger<VisitorRoleSee
         var visitorRole = RoleEntity.Create(
             Guid.NewGuid(),
             nameof(EnumCoreUserRole.Visitor),
-            "Standard public/visitor user with content access and interaction permissions"
+            "Standard public/visitor user with content access and interaction permissions",
+            userErrors
         );
         // Get all visitor permissions from the typed permissions class
-        PermissionEntity[] visitorPermissions = VisitorPermissions.GetAllPermissions();
+        PermissionEntity[] visitorPermissions = VisitorPermissions.GetAllPermissions(userErrors);
         // Prepare role-permission associations
         RolePermissionEntity[] rolePermissions = visitorPermissions
             .Select(p => RolePermissionEntity.Create(Guid.NewGuid(), roleId: visitorRole.Id, permissionId: p.Id))

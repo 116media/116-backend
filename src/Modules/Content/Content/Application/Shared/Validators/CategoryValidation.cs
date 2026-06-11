@@ -12,8 +12,16 @@ public static partial class CategoryValidation
     /// <summary>
     /// Validates category name with length constraints.
     /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the name property.</param>
+    /// <param name="nameRequired">Error message used when the name is empty.</param>
+    /// <param name="nameTooLong">Error message used when the name exceeds the maximum length.</param>
+    /// <param name="isRequired">Whether the name is required (default: true).</param>
+    /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidCategoryName<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
+        string nameRequired,
+        string nameTooLong,
         bool isRequired = true
     )
     {
@@ -22,23 +30,33 @@ public static partial class CategoryValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage("Category name is required.")
+                .WithMessage(nameRequired)
                 .MaximumLength(maximumLength: ContentConstants.MaxCategoryNameLength)
-                .WithMessage($"Category name must not exceed {ContentConstants.MaxCategoryNameLength} characters.");
+                .WithMessage(nameTooLong);
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: ContentConstants.MaxCategoryNameLength)
-            .WithMessage($"Category name must not exceed {ContentConstants.MaxCategoryNameLength} characters.")
+            .WithMessage(nameTooLong)
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Name")));
     }
 
     /// <summary>
     /// Validates category slug with length and format constraints (lowercase, letters, numbers, hyphens).
     /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the slug property.</param>
+    /// <param name="slugRequired">Error message used when the slug is empty.</param>
+    /// <param name="slugTooLong">Error message used when the slug exceeds the maximum length.</param>
+    /// <param name="slugInvalidFormat">Error message used when the slug does not match the expected format.</param>
+    /// <param name="isRequired">Whether the slug is required (default: true).</param>
+    /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidCategorySlug<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
+        string slugRequired,
+        string slugTooLong,
+        string slugInvalidFormat,
         bool isRequired = true
     )
     {
@@ -47,47 +65,57 @@ public static partial class CategoryValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage("Category slug is required.")
+                .WithMessage(slugRequired)
                 .MaximumLength(maximumLength: ContentConstants.MaxCategorySlugLength)
-                .WithMessage($"Category slug must not exceed {ContentConstants.MaxCategorySlugLength} characters.")
+                .WithMessage(slugTooLong)
                 .Matches(SlugRegex())
-                .WithMessage("Category slug must be lowercase and contain only letters, numbers, and hyphens.");
+                .WithMessage(slugInvalidFormat);
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: ContentConstants.MaxCategorySlugLength)
-            .WithMessage($"Category slug must not exceed {ContentConstants.MaxCategorySlugLength} characters.")
+            .WithMessage(slugTooLong)
             .Matches(SlugRegex())
-            .WithMessage("Category slug must be lowercase and contain only letters, numbers, and hyphens.")
+            .WithMessage(slugInvalidFormat)
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Slug")));
     }
 
     /// <summary>
     /// Validates category description with required and length constraints.
     /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the description property.</param>
+    /// <param name="descriptionRequired">Error message used when the description is empty.</param>
+    /// <param name="descriptionTooLong">Error message used when the description exceeds the maximum length.</param>
+    /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidCategoryDescription<T>(
-        this IRuleBuilderInitial<T, string?> ruleBuilder
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        string descriptionRequired,
+        string descriptionTooLong
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage("Category description is required.")
+            .WithMessage(descriptionRequired)
             .MaximumLength(maximumLength: ContentConstants.MaxCategoryDescriptionLength)
-            .WithMessage(
-                $"Category description must not exceed {ContentConstants.MaxCategoryDescriptionLength} characters."
-            );
+            .WithMessage(descriptionTooLong);
     }
 
     /// <summary>
     /// Validates category pricing price ensuring it is zero or a positive value.
     /// </summary>
-    public static IRuleBuilderOptions<T, decimal> ValidCategoryPriceUsd<T>(this IRuleBuilder<T, decimal> ruleBuilder)
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the price property.</param>
+    /// <param name="priceMustBeNonNegative">Error message used when the price is negative.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, decimal> ValidCategoryPriceUsd<T>(
+        this IRuleBuilder<T, decimal> ruleBuilder,
+        string priceMustBeNonNegative
+    )
     {
-        return ruleBuilder
-            .GreaterThanOrEqualTo(valueToCompare: 0)
-            .WithMessage("Category price must be zero or greater.");
+        return ruleBuilder.GreaterThanOrEqualTo(valueToCompare: 0).WithMessage(priceMustBeNonNegative);
     }
 
     /// <summary>

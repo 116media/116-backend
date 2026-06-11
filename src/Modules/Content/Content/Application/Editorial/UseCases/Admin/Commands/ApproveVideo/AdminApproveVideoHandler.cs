@@ -12,8 +12,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveVide
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminApproveVideoHandler(IVideoRepository videoRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<AdminApproveVideoCommand, AdminApproveVideoResult>
+/// <param name="videoErrors">Video domain error factory.</param>
+public class AdminApproveVideoHandler(
+    IVideoRepository videoRepository,
+    IContentUnitOfWork unitOfWork,
+    VideoErrors videoErrors
+) : ICommandHandler<AdminApproveVideoCommand, AdminApproveVideoResult>
 {
     /// <inheritdoc />
     public async Task<AdminApproveVideoResult> Handle(
@@ -27,12 +31,12 @@ public class AdminApproveVideoHandler(IVideoRepository videoRepository, IContent
 
         if (video.Status == EnumContentStatus.Approved)
         {
-            throw VideoErrors.AlreadyApproved();
+            throw videoErrors.AlreadyApproved();
         }
 
         if (video.Status != EnumContentStatus.PendingReview)
         {
-            throw VideoErrors.InvalidStatusTransition(
+            throw videoErrors.InvalidStatusTransition(
                 from: video.Status.ToString(),
                 to: nameof(EnumContentStatus.Approved)
             );

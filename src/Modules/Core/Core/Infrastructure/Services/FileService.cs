@@ -11,7 +11,7 @@ namespace _116.Core.Infrastructure.Services;
 /// </summary>
 /// <param name="httpClient">HTTP client for downloading files from URLs.</param>
 /// <param name="cloudinaryService">Service for Cloudinary cloud storage operations.</param>
-public class FileService(HttpClient httpClient, ICloudinaryService cloudinaryService) : IFileService
+public class FileService(HttpClient httpClient, ICloudinaryService cloudinaryService, CoreErrors errors) : IFileService
 {
     /// <inheritdoc />
     public async Task<FileUploadResult> UploadFileAsync(
@@ -100,27 +100,27 @@ public class FileService(HttpClient httpClient, ICloudinaryService cloudinarySer
         }
         catch (HttpRequestException ex)
         {
-            throw CoreErrors.FileDownloadFailed(fileUrl, ex.Message);
+            throw errors.FileDownloadFailed(fileUrl, ex.Message);
         }
         catch (Exception ex) when (ex is not ArgumentException and not BadRequestException)
         {
-            throw CoreErrors.FileStorageFailed(ex.Message);
+            throw errors.FileStorageFailed(ex.Message);
         }
     }
 
     /// <summary>
     /// Validates the provided file URL and parses it into a <see cref="Uri"/>.
     /// </summary>
-    private static void ValidateFileUrl(string fileUrl, out Uri? uri)
+    private void ValidateFileUrl(string fileUrl, out Uri? uri)
     {
         if (string.IsNullOrWhiteSpace(fileUrl))
         {
-            throw CoreErrors.FileUrlRequired();
+            throw errors.FileUrlRequired();
         }
 
         if (!Uri.TryCreate(fileUrl, UriKind.Absolute, out uri))
         {
-            throw CoreErrors.InvalidFileUrl(fileUrl);
+            throw errors.InvalidFileUrl(fileUrl);
         }
     }
 

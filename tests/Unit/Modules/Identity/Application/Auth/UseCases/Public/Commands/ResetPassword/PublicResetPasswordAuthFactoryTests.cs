@@ -5,7 +5,8 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -30,7 +31,8 @@ public class PublicResetPasswordAuthFactoryTests
         _factory = new PublicResetPasswordAuthFactory(
             _authRepositoryMock.Object,
             _passwordServiceMock.Object,
-            _unitOfWorkMock.Object
+            _unitOfWorkMock.Object,
+            TestErrorsFactory.CreateUserErrors()
         );
     }
 

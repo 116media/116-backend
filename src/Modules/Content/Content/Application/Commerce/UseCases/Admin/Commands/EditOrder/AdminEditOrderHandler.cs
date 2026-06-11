@@ -15,11 +15,13 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrder;
 /// <param name="customerRepository">Repository for customer data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapper for entity-to-DTO conversion.</param>
+/// <param name="contentOrderErrors">Content order domain error factory.</param>
 public class AdminEditOrderHandler(
     IContentOrderRepository contentOrderRepository,
     ICustomerRepository customerRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    ContentOrderErrors contentOrderErrors
 ) : ICommandHandler<AdminEditOrderCommand, AdminEditOrderResult>
 {
     /// <inheritdoc />
@@ -29,7 +31,7 @@ public class AdminEditOrderHandler(
 
         ContentOrderEntity order =
             await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
-            ?? throw ContentOrderErrors.NotFound(id: orderId);
+            ?? throw contentOrderErrors.NotFound(id: orderId);
 
         Guid? newCustomerId = command.CustomerId is not null ? Guid.Parse(command.CustomerId) : null;
 
@@ -38,14 +40,14 @@ public class AdminEditOrderHandler(
             await customerRepository.GetByIdOrThrowAsync(id: newCustomerId.Value, cancellationToken: cancellationToken);
         }
 
-        order.Update(customerId: newCustomerId, packageId: command.PackageId);
+        order.Update(customerId: newCustomerId, packageId: command.PackageId, errors: contentOrderErrors);
 
         await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         ContentOrderEntity updated =
             await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
-            ?? throw ContentOrderErrors.NotFound(id: orderId);
+            ?? throw contentOrderErrors.NotFound(id: orderId);
 
         var dto = updated.ToContentOrderSummaryDto(mapper);
 

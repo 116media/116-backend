@@ -15,10 +15,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteArtic
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="cloudinaryService">Service for deleting Cloudinary image assets.</param>
+/// <param name="articleErrors">Article domain error factory.</param>
 public class AdminDeleteArticleHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
-    ICloudinaryService cloudinaryService
+    ICloudinaryService cloudinaryService,
+    ArticleErrors articleErrors
 ) : ICommandHandler<AdminDeleteArticleCommand, AdminDeleteArticleResult>
 {
     /// <inheritdoc />
@@ -36,7 +38,7 @@ public class AdminDeleteArticleHandler(
 
         if (article.Status != EnumContentStatus.Draft && article.Status != EnumContentStatus.Rejected)
         {
-            throw ArticleErrors.CannotDeletePublishedArticle();
+            throw articleErrors.CannotDeletePublishedArticle();
         }
 
         IReadOnlyList<ArticleImageEntity> images = await articleRepository.GetImagesByArticleIdAsync(

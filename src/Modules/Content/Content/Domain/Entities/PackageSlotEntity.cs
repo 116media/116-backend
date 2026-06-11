@@ -55,11 +55,18 @@ public class PackageSlotEntity : Aggregate<Guid>
     /// <param name="isRequired">Whether this slot is required to fulfill the package.</param>
     /// <param name="quantity">The number of content pieces required (must be > 0).</param>
     /// <returns>A new <see cref="PackageSlotEntity" /> instance.</returns>
-    public static PackageSlotEntity Create(Guid id, Guid packageId, Guid? categoryId, bool isRequired, int quantity)
+    public static PackageSlotEntity Create(
+        Guid id,
+        Guid packageId,
+        Guid? categoryId,
+        bool isRequired,
+        int quantity,
+        PackageErrors errors
+    )
     {
         if (quantity <= 0)
         {
-            throw PackageErrors.SlotQuantityMustBePositive();
+            throw errors.SlotQuantityMustBePositive();
         }
 
         return new PackageSlotEntity

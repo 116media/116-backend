@@ -1,5 +1,7 @@
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -11,7 +13,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Comma
 /// </summary>
 public class AdminSignOutValidatorTests
 {
-    private readonly AdminSignOutValidator _validator = new();
+    private readonly AdminSignOutValidator _validator = new(LocalizerFactory.CreateMessage<ValidationErrorMessage>());
 
     #region Valid Command Tests
 

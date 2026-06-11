@@ -14,10 +14,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePromotio
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="promotionLevelErrors">Promotion level domain error factory.</param>
 public class AdminUpdatePromotionLevelHandler(
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    PromotionLevelErrors promotionLevelErrors
 ) : ICommandHandler<AdminUpdatePromotionLevelCommand, AdminUpdatePromotionLevelResult>
 {
     /// <inheritdoc />
@@ -40,14 +42,15 @@ public class AdminUpdatePromotionLevelHandler(
 
         if (nameConflict && !string.Equals(promotionLevel.Name, command.Name, StringComparison.OrdinalIgnoreCase))
         {
-            throw PromotionLevelErrors.AlreadyExists(name: command.Name);
+            throw promotionLevelErrors.AlreadyExists(name: command.Name);
         }
 
         promotionLevel.Update(
             name: command.Name,
             durationDays: command.DurationDays,
             priceUsd: command.PriceUsd,
-            spotPriority: command.SpotPriority
+            spotPriority: command.SpotPriority,
+            errors: promotionLevelErrors
         );
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

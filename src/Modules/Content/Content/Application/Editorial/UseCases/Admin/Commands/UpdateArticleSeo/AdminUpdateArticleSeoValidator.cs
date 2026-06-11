@@ -1,4 +1,6 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -11,13 +13,30 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 public class AdminUpdateArticleSeoValidator : AbstractValidator<AdminUpdateArticleSeoCommand>
 {
     /// <summary>
-    /// Configures validation rules for article SEO update.
+    /// Initializes a new instance of <see cref="AdminUpdateArticleSeoValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminUpdateArticleSeoValidator()
+    /// <param name="msg">Article validation error messages.</param>
+    public AdminUpdateArticleSeoValidator(ArticleErrorMessage msg)
     {
         RuleFor(x => x.Id).IsValidGuid("Article ID");
 
-        When(x => x.MetaTitle is not null, () => RuleFor(x => x.MetaTitle).ValidMetaTitle());
-        When(x => x.MetaDescription is not null, () => RuleFor(x => x.MetaDescription).ValidMetaDescription());
+        When(
+            x => x.MetaTitle is not null,
+            () =>
+                RuleFor(x => x.MetaTitle)
+                    .ValidMetaTitle(
+                        metaTitleTooShort: msg.MetaTitleTooShort(ContentConstants.MinMetaTitleLength),
+                        metaTitleTooLong: msg.MetaTitleTooLong(ContentConstants.MaxMetaTitleLength)
+                    )
+        );
+        When(
+            x => x.MetaDescription is not null,
+            () =>
+                RuleFor(x => x.MetaDescription)
+                    .ValidMetaDescription(
+                        metaDescriptionTooShort: msg.MetaDescriptionTooShort(ContentConstants.MinMetaDescriptionLength),
+                        metaDescriptionTooLong: msg.MetaDescriptionTooLong(ContentConstants.MaxMetaDescriptionLength)
+                    )
+        );
     }
 }

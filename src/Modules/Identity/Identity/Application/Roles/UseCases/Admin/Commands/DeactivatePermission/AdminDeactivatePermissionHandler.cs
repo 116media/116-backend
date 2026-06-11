@@ -14,10 +14,12 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.DeactivatePerm
 /// <param name="permissionRepository">Repository for permission data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
 public class AdminDeactivatePermissionHandler(
     IPermissionRepository permissionRepository,
     IIdentityUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    UserErrors userErrors
 ) : ICommandHandler<AdminDeactivatePermissionCommand, AdminDeactivatePermissionResult>
 {
     /// <summary>
@@ -42,7 +44,7 @@ public class AdminDeactivatePermissionHandler(
 
         if (!wasDeactivated)
         {
-            throw UserErrors.PermissionAlreadyInactive();
+            throw userErrors.PermissionAlreadyInactive();
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

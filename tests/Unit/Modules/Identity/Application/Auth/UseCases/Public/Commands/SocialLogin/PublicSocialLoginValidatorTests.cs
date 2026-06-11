@@ -1,7 +1,9 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -13,7 +15,9 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Comm
 /// </summary>
 public class PublicSocialLoginValidatorTests
 {
-    private readonly PublicSocialLoginValidator _validator = new();
+    private readonly PublicSocialLoginValidator _validator = new(
+        LocalizerFactory.CreateMessage<ValidationErrorMessage>()
+    );
 
     #region Valid Command Tests
 
@@ -180,7 +184,7 @@ public class PublicSocialLoginValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.AvatarUrl)
-            .WithErrorMessage("Avatar must be a valid URL when provided");
+            .WithErrorMessage("Avatar URL must be a valid HTTP or HTTPS URL.");
     }
 
     #endregion
@@ -203,7 +207,7 @@ public class PublicSocialLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Provider).WithErrorMessage("Auth provider is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Provider).WithErrorMessage("Authentication provider is required.");
     }
 
     [Fact]
@@ -224,7 +228,7 @@ public class PublicSocialLoginValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.Provider)
-            .WithErrorMessage("Auth provider must be Facebook or Google");
+            .WithErrorMessage("Invalid authentication provider specified.");
     }
 
     #endregion

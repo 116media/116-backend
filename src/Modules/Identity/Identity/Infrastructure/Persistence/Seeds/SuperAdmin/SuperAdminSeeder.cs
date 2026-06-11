@@ -1,4 +1,5 @@
 using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Shared.Errors;
 using _116.Shared.Infrastructure.Seed;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,7 @@ public class SuperAdminSeeder : IDataSeeder
     public SuperAdminSeeder(
         IdentityDbContext context,
         IPasswordService passwordService,
+        UserErrors userErrors,
         ILogger<SuperAdminSeeder> logger,
         ILogger<SuperAdminRepositoryManager> repositoryLogger,
         ILogger<SuperAdminSeedingStrategy> strategyLogger
@@ -26,7 +28,7 @@ public class SuperAdminSeeder : IDataSeeder
     {
         _logger = logger;
         _repositoryManager = new SuperAdminRepositoryManager(context: context, logger: repositoryLogger);
-        var entityFactory = new SuperAdminEntityFactory(passwordService: passwordService);
+        var entityFactory = new SuperAdminEntityFactory(passwordService: passwordService, userErrors: userErrors);
         _seedingStrategy = new SuperAdminSeedingStrategy(
             entityFactory: entityFactory,
             repositoryManager: _repositoryManager,

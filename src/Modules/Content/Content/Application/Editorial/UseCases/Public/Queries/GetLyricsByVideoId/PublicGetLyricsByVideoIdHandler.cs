@@ -13,8 +13,12 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBy
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetLyricsByVideoIdHandler(ILyricsRepository lyricsRepository, IMapper mapper)
-    : IQueryHandler<PublicGetLyricsByVideoIdQuery, PublicGetLyricsByVideoIdResult>
+/// <param name="lyricsErrors">Lyrics domain error factory.</param>
+public class PublicGetLyricsByVideoIdHandler(
+    ILyricsRepository lyricsRepository,
+    IMapper mapper,
+    LyricsErrors lyricsErrors
+) : IQueryHandler<PublicGetLyricsByVideoIdQuery, PublicGetLyricsByVideoIdResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetLyricsByVideoIdResult> Handle(
@@ -35,6 +39,6 @@ public class PublicGetLyricsByVideoIdHandler(ILyricsRepository lyricsRepository,
             return new PublicGetLyricsByVideoIdResult(Lyrics: dto);
         }
 
-        throw LyricsErrors.NotFound(id: videoId);
+        throw lyricsErrors.NotFound(id: videoId);
     }
 }

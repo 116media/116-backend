@@ -11,8 +11,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.EditArt
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicEditArticleCommentHandler(IArticleRepository articleRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<PublicEditArticleCommentCommand, PublicEditArticleCommentResult>
+/// <param name="articleInteractionErrors">Article interaction domain error factory.</param>
+public class PublicEditArticleCommentHandler(
+    IArticleRepository articleRepository,
+    IContentUnitOfWork unitOfWork,
+    ArticleInteractionErrors articleInteractionErrors
+) : ICommandHandler<PublicEditArticleCommentCommand, PublicEditArticleCommentResult>
 {
     /// <inheritdoc />
     public async Task<PublicEditArticleCommentResult> Handle(
@@ -29,7 +33,7 @@ public class PublicEditArticleCommentHandler(IArticleRepository articleRepositor
         {
             if (comment.UserId != command.UserId)
             {
-                throw ArticleInteractionErrors.NotCommentOwner();
+                throw articleInteractionErrors.NotCommentOwner();
             }
 
             comment.Edit(body: command.Body);
@@ -40,6 +44,6 @@ public class PublicEditArticleCommentHandler(IArticleRepository articleRepositor
             return new PublicEditArticleCommentResult(IsSuccess: true);
         }
 
-        throw ArticleInteractionErrors.CommentNotFound(commentId: command.CommentId);
+        throw articleInteractionErrors.CommentNotFound(commentId: command.CommentId);
     }
 }

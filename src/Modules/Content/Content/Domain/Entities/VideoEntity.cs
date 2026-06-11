@@ -230,17 +230,18 @@ public class VideoEntity : Aggregate<Guid>
         string title,
         string slug,
         Guid authorId,
-        string description
+        string description,
+        VideoErrors errors
     )
     {
         if (string.IsNullOrWhiteSpace(value: title))
         {
-            throw VideoErrors.TitleRequired();
+            throw errors.TitleRequired();
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw VideoErrors.SlugRequired();
+            throw errors.SlugRequired();
         }
 
         return new VideoEntity
@@ -266,6 +267,7 @@ public class VideoEntity : Aggregate<Guid>
     /// <param name="slug">The URL-safe slug.</param>
     /// <param name="authorId">The identity user UUID from JWT claims.</param>
     /// <param name="description">The description.</param>
+    /// <param name="errors">The errors factory instance.</param>
     /// <returns>A new <see cref="VideoEntity" /> in <c>Draft</c> status.</returns>
     public static VideoEntity CreatePaid(
         Guid id,
@@ -275,17 +277,18 @@ public class VideoEntity : Aggregate<Guid>
         string title,
         string slug,
         Guid authorId,
-        string description
+        string description,
+        VideoErrors errors
     )
     {
         if (string.IsNullOrWhiteSpace(value: title))
         {
-            throw VideoErrors.TitleRequired();
+            throw errors.TitleRequired();
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw VideoErrors.SlugRequired();
+            throw errors.SlugRequired();
         }
 
         return new VideoEntity
@@ -358,11 +361,11 @@ public class VideoEntity : Aggregate<Guid>
     /// <exception cref="BadRequestException">
     /// Thrown when a shooting is scheduled in the future, meaning the video has not yet been shot.
     /// </exception>
-    public void AttachYoutubeVideoUrl(string youtubeVideoUrl)
+    public void AttachYoutubeVideoUrl(string youtubeVideoUrl, VideoErrors errors)
     {
         if (ShootingScheduledAt.HasValue && ShootingScheduledAt.Value > DateTimeOffset.UtcNow)
         {
-            throw VideoErrors.CannotAttachYoutubeUrlBeforeShoot(ShootingScheduledAt.Value);
+            throw errors.CannotAttachYoutubeUrlBeforeShoot(ShootingScheduledAt.Value);
         }
 
         YoutubeVideoUrl = youtubeVideoUrl;
@@ -444,7 +447,7 @@ public class VideoEntity : Aggregate<Guid>
     /// </summary>
     /// <returns><c>true</c> if published; <c>false</c> if already published.</returns>
     /// <exception cref="Exception">Thrown when <c>YoutubeVideoUrl</c> is null or empty.</exception>
-    public bool Publish()
+    public bool Publish(VideoErrors errors)
     {
         if (Status == EnumContentStatus.Published)
         {
@@ -453,7 +456,7 @@ public class VideoEntity : Aggregate<Guid>
 
         if (string.IsNullOrWhiteSpace(YoutubeVideoUrl))
         {
-            throw VideoErrors.CannotPublishWithoutYoutubeUrl();
+            throw errors.CannotPublishWithoutYoutubeUrl();
         }
 
         Status = EnumContentStatus.Published;

@@ -14,10 +14,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.ActivatePricin
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="pricingTierErrors">Pricing tier domain error factory.</param>
 public class AdminActivatePricingTierHandler(
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    PricingTierErrors pricingTierErrors
 ) : ICommandHandler<AdminActivatePricingTierCommand, AdminActivatePricingTierResult>
 {
     /// <inheritdoc />
@@ -37,7 +39,7 @@ public class AdminActivatePricingTierHandler(
 
         if (!activated)
         {
-            throw PricingTierErrors.AlreadyActive();
+            throw pricingTierErrors.AlreadyActive();
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

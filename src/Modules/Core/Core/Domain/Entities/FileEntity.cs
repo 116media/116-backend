@@ -71,16 +71,17 @@ public class FileEntity : Aggregate<Guid>
         string originalFileName,
         string mimeType,
         string storageUrl,
-        long sizeInBytes
+        long sizeInBytes,
+        CoreErrors errors
     )
     {
         BadRequestException? error = (fileName, originalFileName, mimeType, storageUrl, sizeInBytes) switch
         {
-            var (f, _, _, _, _) when string.IsNullOrWhiteSpace(f) => CoreErrors.FileNameRequired(),
-            var (_, o, _, _, _) when string.IsNullOrWhiteSpace(o) => CoreErrors.OriginalFileNameRequired(),
-            var (_, _, m, _, _) when string.IsNullOrWhiteSpace(m) => CoreErrors.MimeTypeRequired(),
-            var (_, _, _, s, _) when string.IsNullOrWhiteSpace(s) => CoreErrors.StorageUrlRequired(),
-            (_, _, _, _, <= 0) => CoreErrors.FileSizeMustBeGreaterThanZero(),
+            var (f, _, _, _, _) when string.IsNullOrWhiteSpace(f) => errors.FileNameRequired(),
+            var (_, o, _, _, _) when string.IsNullOrWhiteSpace(o) => errors.OriginalFileNameRequired(),
+            var (_, _, m, _, _) when string.IsNullOrWhiteSpace(m) => errors.MimeTypeRequired(),
+            var (_, _, _, s, _) when string.IsNullOrWhiteSpace(s) => errors.StorageUrlRequired(),
+            (_, _, _, _, <= 0) => errors.FileSizeMustBeGreaterThanZero(),
             _ => null,
         };
 
@@ -104,11 +105,11 @@ public class FileEntity : Aggregate<Guid>
     /// Updates the storage URL of the file.
     /// </summary>
     /// <param name="newStorageUrl">The new storage URL.</param>
-    public void UpdateStorageUrl(string newStorageUrl)
+    public void UpdateStorageUrl(string newStorageUrl, CoreErrors errors)
     {
         if (string.IsNullOrWhiteSpace(newStorageUrl))
         {
-            throw CoreErrors.StorageUrlRequired();
+            throw errors.StorageUrlRequired();
         }
 
         StorageUrl = newStorageUrl;

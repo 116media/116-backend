@@ -58,7 +58,7 @@ public class SuperAdminSeedingStrategy(
             return existingPermission;
         }
 
-        PermissionEntity systemPermission = SuperAdminEntityFactory.CreateSystemAllPermission();
+        PermissionEntity systemPermission = entityFactory.CreateSystemAllPermission();
         repositoryManager.AddPermission(permission: systemPermission);
         logger.LogDebug("Created new system permission");
         return systemPermission;
@@ -76,7 +76,7 @@ public class SuperAdminSeedingStrategy(
             return existingRole;
         }
 
-        RoleEntity superAdminRole = SuperAdminEntityFactory.CreateSuperAdminRole();
+        RoleEntity superAdminRole = entityFactory.CreateSuperAdminRole();
         repositoryManager.AddRole(role: superAdminRole);
         logger.LogDebug("Created new Super Admin role");
         return superAdminRole;

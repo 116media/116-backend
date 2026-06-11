@@ -1,6 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -25,7 +26,7 @@ public class ContentTypeSeederTests : IDisposable
 
         _context = new ContentDbContext(options);
         var loggerMock = new Mock<ILogger<ContentTypeSeeder>>();
-        _seeder = new ContentTypeSeeder(_context, loggerMock.Object);
+        _seeder = new ContentTypeSeeder(_context, loggerMock.Object, TestErrorsFactory.CreateContentTypeErrors());
     }
 
     public void Dispose()

@@ -11,8 +11,12 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.RemoveOrderI
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminRemoveOrderItemHandler(IContentOrderRepository contentOrderRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<AdminRemoveOrderItemCommand, AdminRemoveOrderItemResult>
+/// <param name="contentOrderErrors">Content order domain error factory.</param>
+public class AdminRemoveOrderItemHandler(
+    IContentOrderRepository contentOrderRepository,
+    IContentUnitOfWork unitOfWork,
+    ContentOrderErrors contentOrderErrors
+) : ICommandHandler<AdminRemoveOrderItemCommand, AdminRemoveOrderItemResult>
 {
     /// <inheritdoc />
     public async Task<AdminRemoveOrderItemResult> Handle(
@@ -25,9 +29,9 @@ public class AdminRemoveOrderItemHandler(IContentOrderRepository contentOrderRep
 
         ContentOrderEntity order =
             await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
-            ?? throw ContentOrderErrors.NotFound(id: orderId);
+            ?? throw contentOrderErrors.NotFound(id: orderId);
 
-        order.EnsureDraft();
+        order.EnsureDraft(contentOrderErrors);
 
         ContentOrderItemEntity item = await contentOrderRepository.GetItemByIdOrThrowAsync(
             orderId: orderId,
@@ -40,7 +44,7 @@ public class AdminRemoveOrderItemHandler(IContentOrderRepository contentOrderRep
 
         ContentOrderEntity updated =
             await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
-            ?? throw ContentOrderErrors.NotFound(id: orderId);
+            ?? throw contentOrderErrors.NotFound(id: orderId);
 
         updated.RecalculateTotalFromItems();
         await contentOrderRepository.UpdateAsync(order: updated, ct: cancellationToken);

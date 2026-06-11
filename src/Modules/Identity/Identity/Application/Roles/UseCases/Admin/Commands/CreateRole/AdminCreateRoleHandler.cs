@@ -15,8 +15,13 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.CreateRole;
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminCreateRoleHandler(IRoleRepository roleRepository, IIdentityUnitOfWork unitOfWork, IMapper mapper)
-    : ICommandHandler<AdminCreateRoleCommand, AdminCreateRoleResult>
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+public class AdminCreateRoleHandler(
+    IRoleRepository roleRepository,
+    IIdentityUnitOfWork unitOfWork,
+    IMapper mapper,
+    UserErrors userErrors
+) : ICommandHandler<AdminCreateRoleCommand, AdminCreateRoleResult>
 {
     /// <summary>
     /// Handles the role creation command.
@@ -33,10 +38,15 @@ public class AdminCreateRoleHandler(IRoleRepository roleRepository, IIdentityUni
 
         if (roleExists)
         {
-            throw UserErrors.RoleAlreadyExists(roleName: command.Name);
+            throw userErrors.RoleAlreadyExists(roleName: command.Name);
         }
 
-        var role = RoleEntity.Create(id: Guid.NewGuid(), name: command.Name, description: command.Description);
+        var role = RoleEntity.Create(
+            id: Guid.NewGuid(),
+            name: command.Name,
+            description: command.Description,
+            errors: userErrors
+        );
 
         await roleRepository.AddAsync(role: role, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

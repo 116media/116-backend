@@ -1,6 +1,8 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -12,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Comma
 /// </summary>
 public class AdminLoginValidatorTests
 {
-    private readonly AdminLoginValidator _validator = new();
+    private readonly AdminLoginValidator _validator = new(LocalizerFactory.CreateMessage<ValidationErrorMessage>());
 
     #region Valid Command Tests
 
@@ -63,7 +65,7 @@ public class AdminLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage("Email is required");
+        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage("Email is required.");
     }
 
     [Fact]
@@ -77,7 +79,7 @@ public class AdminLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage("Email is required");
+        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage("Email is required.");
     }
 
     [Fact]
@@ -91,7 +93,7 @@ public class AdminLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage("Email is required");
+        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage("Email is required.");
     }
 
     [Fact]
@@ -105,7 +107,7 @@ public class AdminLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage("Invalid email format");
+        result.ShouldHaveValidationErrorFor(x => x.Email).WithErrorMessage("Invalid email format.");
     }
 
     [Fact]
@@ -122,7 +124,7 @@ public class AdminLoginValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.Email)
-            .WithErrorMessage($"Email cannot exceed {UserConstants.MaxEmailLength} characters");
+            .WithErrorMessage($"Email cannot exceed {UserConstants.MaxEmailLength} characters.");
     }
 
     #endregion
@@ -140,7 +142,7 @@ public class AdminLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required.");
     }
 
     [Fact]
@@ -154,7 +156,7 @@ public class AdminLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required.");
     }
 
     [Fact]
@@ -168,7 +170,7 @@ public class AdminLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required.");
     }
 
     #endregion

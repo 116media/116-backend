@@ -4,6 +4,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -26,7 +27,12 @@ public class AdminActivatePromotionLevelHandlerTests : BaseContentHandlerTest
     {
         _lookupRepositoryMock = MockLookupRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminActivatePromotionLevelHandler(_lookupRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
+        _handler = new AdminActivatePromotionLevelHandler(
+            _lookupRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            Mapper,
+            TestErrorsFactory.CreatePromotionLevelErrors()
+        );
     }
 
     #region Success Cases

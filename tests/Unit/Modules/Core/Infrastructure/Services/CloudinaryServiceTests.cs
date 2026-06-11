@@ -1,7 +1,9 @@
 using _116.BuildingBlocks.Constants;
+using _116.Core.Application.Shared.Errors;
 using _116.Core.Infrastructure.Services;
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using AwesomeAssertions.Specialized;
 using Microsoft.AspNetCore.Http;
@@ -30,7 +32,7 @@ public class CloudinaryServiceTests
     public void Constructor_WithValidSettings_ShouldNotThrow()
     {
         // Act
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
 
         // Assert
         service.Should().NotBeNull();
@@ -47,7 +49,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithNullFile_ShouldThrowBadRequestException()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
 
         // Act & Assert
         Func<Task> act = async () => await service.UploadImageAsync(null!, "test-id");
@@ -58,7 +60,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithEmptyFile_ShouldThrowBadRequestException()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(0);
         fileMock.Setup(f => f.FileName).Returns("test.jpg");
@@ -71,7 +73,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithTooLargeFile_ShouldThrowBadRequestException()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(11 * 1024 * 1024); // 11MB, over limit
         fileMock.Setup(f => f.FileName).Returns("test.jpg");
@@ -85,7 +87,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithInvalidFileType_ShouldThrowBadRequestException()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("test.exe");
@@ -100,7 +102,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithInvalidExtension_ShouldThrowBadRequestException()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("test.pdf");
@@ -118,7 +120,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithJpgExtension_ShouldPassValidation()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("avatar.jpg");
@@ -135,7 +137,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithJpegExtension_ShouldPassValidation()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(2048);
         fileMock.Setup(f => f.FileName).Returns("photo.jpeg");
@@ -151,7 +153,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithPngExtension_ShouldPassValidation()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1536);
         fileMock.Setup(f => f.FileName).Returns("image.png");
@@ -167,7 +169,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithGifExtension_ShouldPassValidation()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(2048);
         fileMock.Setup(f => f.FileName).Returns("animation.gif");
@@ -183,7 +185,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithWebpExtension_ShouldPassValidation()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("modern.webp");
@@ -199,7 +201,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithContentTypeParameters_ShouldParseCorrectly()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("avatar.jpg");
@@ -215,7 +217,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithNullContentType_ShouldPassValidation()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("avatar.jpg");
@@ -231,7 +233,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithEmptyContentType_ShouldPassValidation()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("image.png");
@@ -247,7 +249,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithOctetStreamContentType_ShouldPassValidation()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("avatar.jpg");
@@ -263,7 +265,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithMultipartFormDataContentType_ShouldPassValidation()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("photo.jpeg");
@@ -279,7 +281,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithInvalidContentTypeButValidExtension_ShouldThrowBadRequestException()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("avatar.jpg");
@@ -297,7 +299,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithUppercaseExtension_ShouldNormalizeAndValidate()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("IMAGE.JPG");
@@ -313,7 +315,7 @@ public class CloudinaryServiceTests
     public async Task UploadImageAsync_WithMixedCaseContentType_ShouldNormalizeAndValidate()
     {
         // Arrange
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("photo.png");
@@ -332,7 +334,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadRawAsync_WithNullFile_ShouldThrowBadRequestException()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
 
         Func<Task> act = async () => await service.UploadRawAsync(null!, "test-id");
 
@@ -342,7 +344,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadRawAsync_WithEmptyFile_ShouldThrowBadRequestException()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(0);
         fileMock.Setup(f => f.FileName).Returns("test.pdf");
@@ -355,7 +357,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadRawAsync_WithTooLargeFile_ShouldThrowBadRequestException()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(6 * 1024 * 1024); // 6 MB, over the 5 MB limit
         fileMock.Setup(f => f.FileName).Returns("proof.pdf");
@@ -368,7 +370,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadRawAsync_WithInvalidExtension_ShouldThrowBadRequestException()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("proof.exe");
@@ -382,7 +384,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadRawAsync_WithInvalidContentType_ShouldThrowBadRequestException()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("proof.jpg");
@@ -396,7 +398,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadRawAsync_WithValidPdfFile_ShouldPassValidation()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("proof.pdf");
@@ -412,7 +414,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadRawAsync_WithValidImageFile_ShouldPassValidation()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("proof.jpg");
@@ -428,7 +430,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadRawAsync_WithNullContentType_ShouldPassValidation()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("proof.png");
@@ -443,7 +445,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadRawAsync_WithOctetStreamContentType_ShouldPassValidation()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1024);
         fileMock.Setup(f => f.FileName).Returns("proof.jpg");
@@ -462,7 +464,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadVideoAsync_WithNullFile_ShouldThrowBadRequestException()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
 
         Func<Task> act = async () => await service.UploadVideoAsync(null!, "test-id");
 
@@ -472,7 +474,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadVideoAsync_WithEmptyFile_ShouldThrowBadRequestException()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(0);
         fileMock.Setup(f => f.FileName).Returns("clip.mp4");
@@ -485,7 +487,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadVideoAsync_WithTooLargeFile_ShouldThrowBadRequestException()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(FileConstants.MaxVideoFileSizeBytes + 1);
         fileMock.Setup(f => f.FileName).Returns("clip.mp4");
@@ -498,7 +500,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadVideoAsync_WithInvalidExtension_ShouldThrowBadRequestException()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(5_000_000);
         fileMock.Setup(f => f.FileName).Returns("photo.jpg");
@@ -514,7 +516,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadVideoAsync_WithInvalidContentType_ShouldThrowBadRequestException()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(5_000_000);
         fileMock.Setup(f => f.FileName).Returns("clip.mp4");
@@ -536,7 +538,7 @@ public class CloudinaryServiceTests
     [InlineData("clip.3gp", "video/3gpp")]
     public async Task UploadVideoAsync_WithValidVideoFormats_ShouldPassValidation(string fileName, string contentType)
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(5_000_000);
         fileMock.Setup(f => f.FileName).Returns(fileName);
@@ -551,7 +553,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadVideoAsync_WithNullContentType_ShouldPassValidation()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(5_000_000);
         fileMock.Setup(f => f.FileName).Returns("clip.mp4");
@@ -566,7 +568,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadVideoAsync_WithOctetStreamContentType_ShouldPassValidation()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(5_000_000);
         fileMock.Setup(f => f.FileName).Returns("clip.mp4");
@@ -581,7 +583,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadVideoAsync_WithMultipartFormDataContentType_ShouldPassValidation()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(5_000_000);
         fileMock.Setup(f => f.FileName).Returns("clip.mov");
@@ -596,7 +598,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadVideoAsync_WithUppercaseExtension_ShouldNormalizeAndValidate()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(5_000_000);
         fileMock.Setup(f => f.FileName).Returns("CLIP.MP4");
@@ -611,7 +613,7 @@ public class CloudinaryServiceTests
     [Fact]
     public async Task UploadVideoAsync_AtExactMaxSize_ShouldPassValidation()
     {
-        var service = new CloudinaryService(_settings, _loggerMock.Object);
+        var service = new CloudinaryService(_settings, _loggerMock.Object, TestErrorsFactory.CreateCoreErrors());
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(100L * 1024 * 1024);
         fileMock.Setup(f => f.FileName).Returns("clip.mp4");

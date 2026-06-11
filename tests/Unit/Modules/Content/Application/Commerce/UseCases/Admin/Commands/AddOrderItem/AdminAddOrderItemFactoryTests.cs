@@ -3,6 +3,7 @@ using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -35,7 +36,10 @@ public class AdminAddOrderItemFactoryTests
             _lookupRepositoryMock.Object,
             _packageRepositoryMock.Object,
             _orderRepositoryMock.Object,
-            _unitOfWorkMock.Object
+            _unitOfWorkMock.Object,
+            TestErrorsFactory.CreateCategoryErrors(),
+            TestErrorsFactory.CreateContentOrderErrors(),
+            TestErrorsFactory.CreatePromotionLevelErrors()
         );
     }
 

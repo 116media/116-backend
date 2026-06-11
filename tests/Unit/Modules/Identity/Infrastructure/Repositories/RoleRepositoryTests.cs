@@ -2,7 +2,7 @@ using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;

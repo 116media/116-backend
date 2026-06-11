@@ -1,6 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -23,7 +24,13 @@ public class CategoryPricingEntityTests
         decimal price = TestConstants.Content.CategoryPricing.ValidPriceUsd;
 
         // Act
-        var entity = CategoryPricingEntity.Create(id, categoryId, tierId, price);
+        var entity = CategoryPricingEntity.Create(
+            id,
+            categoryId,
+            tierId,
+            price,
+            TestErrorsFactory.CreateCategoryErrors()
+        );
 
         // Assert
         entity.Id.Should().Be(id);
@@ -40,7 +47,8 @@ public class CategoryPricingEntityTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
-            TestConstants.Content.CategoryPricing.ZeroPriceUsd
+            TestConstants.Content.CategoryPricing.ZeroPriceUsd,
+            TestErrorsFactory.CreateCategoryErrors()
         );
 
         // Assert
@@ -53,7 +61,14 @@ public class CategoryPricingEntityTests
     public void Create_WithNegativePrice_ShouldThrowBadRequestException(decimal invalidPrice)
     {
         // Act
-        Action act = () => CategoryPricingEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), invalidPrice);
+        Action act = () =>
+            CategoryPricingEntity.Create(
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                invalidPrice,
+                TestErrorsFactory.CreateCategoryErrors()
+            );
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -71,11 +86,15 @@ public class CategoryPricingEntityTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
-            TestConstants.Content.CategoryPricing.ValidPriceUsd
+            TestConstants.Content.CategoryPricing.ValidPriceUsd,
+            TestErrorsFactory.CreateCategoryErrors()
         );
 
         // Act
-        entity.UpdatePrice(TestConstants.Content.CategoryPricing.UpdatedPriceUsd);
+        entity.UpdatePrice(
+            TestConstants.Content.CategoryPricing.UpdatedPriceUsd,
+            TestErrorsFactory.CreateCategoryErrors()
+        );
 
         // Assert
         entity.PriceUsd.Should().Be(TestConstants.Content.CategoryPricing.UpdatedPriceUsd);
@@ -89,11 +108,12 @@ public class CategoryPricingEntityTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
-            TestConstants.Content.CategoryPricing.ValidPriceUsd
+            TestConstants.Content.CategoryPricing.ValidPriceUsd,
+            TestErrorsFactory.CreateCategoryErrors()
         );
 
         // Act
-        entity.UpdatePrice(0m);
+        entity.UpdatePrice(0m, TestErrorsFactory.CreateCategoryErrors());
 
         // Assert
         entity.PriceUsd.Should().Be(0m);
@@ -109,11 +129,12 @@ public class CategoryPricingEntityTests
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
-            TestConstants.Content.CategoryPricing.ValidPriceUsd
+            TestConstants.Content.CategoryPricing.ValidPriceUsd,
+            TestErrorsFactory.CreateCategoryErrors()
         );
 
         // Act
-        Action act = () => entity.UpdatePrice(invalidPrice);
+        Action act = () => entity.UpdatePrice(invalidPrice, TestErrorsFactory.CreateCategoryErrors());
 
         // Assert
         act.Should().Throw<BadRequestException>();

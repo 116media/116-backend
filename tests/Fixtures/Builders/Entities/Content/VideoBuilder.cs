@@ -1,6 +1,8 @@
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
@@ -210,6 +212,7 @@ internal class VideoBuilder
     /// </summary>
     public VideoEntity Build()
     {
+        VideoErrors errors = TestErrorsFactory.CreateVideoErrors();
         VideoEntity entity = _customerId.HasValue
             ? VideoEntity.CreatePaid(
                 id: _id,
@@ -219,7 +222,8 @@ internal class VideoBuilder
                 title: _title,
                 slug: _slug,
                 authorId: _authorId,
-                description: _description
+                description: _description,
+                errors: errors
             )
             : VideoEntity.CreateFree(
                 id: _id,
@@ -227,7 +231,8 @@ internal class VideoBuilder
                 title: _title,
                 slug: _slug,
                 authorId: _authorId,
-                description: _description
+                description: _description,
+                errors: errors
             );
 
         if (_shootingScheduledAt.HasValue)
@@ -237,7 +242,7 @@ internal class VideoBuilder
 
         if (_youtubeVideoUrl is not null)
         {
-            entity.AttachYoutubeVideoUrl(_youtubeVideoUrl);
+            entity.AttachYoutubeVideoUrl(_youtubeVideoUrl, errors);
         }
 
         if (_thumbnailUrl is not null && _thumbnailStorageKey is not null)
@@ -245,7 +250,7 @@ internal class VideoBuilder
             entity.UpdateThumbnail(_thumbnailUrl, _thumbnailStorageKey);
         }
 
-        ApplyStatusTransition(entity);
+        ApplyStatusTransition(entity, errors);
 
         if (_promotedUntil.HasValue)
         {
@@ -257,7 +262,7 @@ internal class VideoBuilder
         return entity;
     }
 
-    private void ApplyStatusTransition(VideoEntity entity)
+    private void ApplyStatusTransition(VideoEntity entity, VideoErrors errors)
     {
         switch (_targetStatus)
         {
@@ -274,7 +279,7 @@ internal class VideoBuilder
             case EnumContentStatus.Published:
                 entity.MarkPendingReview();
                 entity.Approve();
-                entity.Publish();
+                entity.Publish(errors);
                 break;
             case EnumContentStatus.Rejected:
                 entity.Reject(_rejectionReason ?? TestConstants.Content.Editorial.Video.ValidRejectionReason);
@@ -282,7 +287,7 @@ internal class VideoBuilder
             case EnumContentStatus.Archived:
                 entity.MarkPendingReview();
                 entity.Approve();
-                entity.Publish();
+                entity.Publish(errors);
                 entity.Archive();
                 break;
         }

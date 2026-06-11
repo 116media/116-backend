@@ -92,10 +92,11 @@ public class LyricsEntity : Aggregate<Guid>
         string artistName,
         string lyricsText,
         string language,
-        Guid authorId
+        Guid authorId,
+        LyricsErrors errors
     )
     {
-        ValidateRequiredFields(songTitle: songTitle, artistName: artistName, lyricsText: lyricsText);
+        ValidateRequiredFields(songTitle: songTitle, artistName: artistName, lyricsText: lyricsText, errors: errors);
 
         return new LyricsEntity
         {
@@ -118,10 +119,11 @@ public class LyricsEntity : Aggregate<Guid>
         string artistName,
         string lyricsText,
         string language,
-        Guid authorId
+        Guid authorId,
+        LyricsErrors errors
     )
     {
-        ValidateRequiredFields(songTitle: songTitle, artistName: artistName, lyricsText: lyricsText);
+        ValidateRequiredFields(songTitle: songTitle, artistName: artistName, lyricsText: lyricsText, errors: errors);
 
         return new LyricsEntity
         {
@@ -152,9 +154,16 @@ public class LyricsEntity : Aggregate<Guid>
     /// <param name="videoId">
     /// Optional linked video UUID.
     /// </param>
-    public void Update(string songTitle, string artistName, string lyricsText, string language, Guid? videoId)
+    public void Update(
+        string songTitle,
+        string artistName,
+        string lyricsText,
+        string language,
+        Guid? videoId,
+        LyricsErrors errors
+    )
     {
-        ValidateRequiredFields(songTitle, artistName, lyricsText);
+        ValidateRequiredFields(songTitle, artistName, lyricsText, errors);
         SongTitle = songTitle;
         ArtistName = artistName;
         LyricsText = lyricsText;
@@ -172,21 +181,26 @@ public class LyricsEntity : Aggregate<Guid>
         StructuredData = structuredData;
     }
 
-    private static void ValidateRequiredFields(string songTitle, string artistName, string lyricsText)
+    private static void ValidateRequiredFields(
+        string songTitle,
+        string artistName,
+        string lyricsText,
+        LyricsErrors errors
+    )
     {
         if (string.IsNullOrWhiteSpace(value: songTitle))
         {
-            throw LyricsErrors.SongTitleRequired();
+            throw errors.SongTitleRequired();
         }
 
         if (string.IsNullOrWhiteSpace(value: artistName))
         {
-            throw LyricsErrors.ArtistNameRequired();
+            throw errors.ArtistNameRequired();
         }
 
         if (string.IsNullOrWhiteSpace(value: lyricsText))
         {
-            throw LyricsErrors.LyricsTextRequired();
+            throw errors.LyricsTextRequired();
         }
     }
 }

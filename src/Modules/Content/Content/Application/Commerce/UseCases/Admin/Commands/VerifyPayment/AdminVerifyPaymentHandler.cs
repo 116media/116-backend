@@ -13,10 +13,12 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPaymen
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="orderPaymentFactory">Shared factory for fetching and validating payment records.</param>
 /// <param name="verifyPaymentFactory">Factory for the full payment verification and content stamping flow.</param>
+/// <param name="contentOrderErrors">Content order domain error factory.</param>
 public class AdminVerifyPaymentHandler(
     IContentOrderRepository contentOrderRepository,
     IOrderPaymentFactory orderPaymentFactory,
-    IVerifyPaymentFactory verifyPaymentFactory
+    IVerifyPaymentFactory verifyPaymentFactory,
+    ContentOrderErrors contentOrderErrors
 ) : ICommandHandler<AdminVerifyPaymentCommand, AdminVerifyPaymentResult>
 {
     /// <inheritdoc />
@@ -50,6 +52,6 @@ public class AdminVerifyPaymentHandler(
             return new AdminVerifyPaymentResult(IsSuccess: true);
         }
 
-        throw ContentOrderErrors.NotFound(id: orderId);
+        throw contentOrderErrors.NotFound(id: orderId);
     }
 }

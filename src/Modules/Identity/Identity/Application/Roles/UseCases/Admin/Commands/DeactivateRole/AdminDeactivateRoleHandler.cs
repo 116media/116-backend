@@ -14,8 +14,13 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.DeactivateRole
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminDeactivateRoleHandler(IRoleRepository roleRepository, IIdentityUnitOfWork unitOfWork, IMapper mapper)
-    : ICommandHandler<AdminDeactivateRoleCommand, AdminDeactivateRoleResult>
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+public class AdminDeactivateRoleHandler(
+    IRoleRepository roleRepository,
+    IIdentityUnitOfWork unitOfWork,
+    IMapper mapper,
+    UserErrors userErrors
+) : ICommandHandler<AdminDeactivateRoleCommand, AdminDeactivateRoleResult>
 {
     /// <summary>
     /// Handles the role deactivation command.
@@ -39,7 +44,7 @@ public class AdminDeactivateRoleHandler(IRoleRepository roleRepository, IIdentit
 
         if (!wasDeactivated)
         {
-            throw UserErrors.RoleAlreadyInactive();
+            throw userErrors.RoleAlreadyInactive();
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

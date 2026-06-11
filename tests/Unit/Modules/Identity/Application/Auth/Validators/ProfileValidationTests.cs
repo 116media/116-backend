@@ -36,7 +36,10 @@ public class ProfileValidationTests
     {
         public TestCountryNameCommandValidator()
         {
-            RuleFor(x => x.CountryName).ValidCountryName();
+            RuleFor(x => x.CountryName)
+                .ValidCountryName(
+                    countryNameTooLong: $"Country name cannot exceed {UserConstants.MaxCountryNameLength} characters."
+                );
         }
     }
 
@@ -44,7 +47,11 @@ public class ProfileValidationTests
     {
         public TestCountryIsoCodeCommandValidator()
         {
-            RuleFor(x => x.CountryIsoCode).ValidCountryIsoCode();
+            RuleFor(x => x.CountryIsoCode)
+                .ValidCountryIsoCode(
+                    countryIsoCodeTooLong: $"Country ISO code cannot exceed {UserConstants.MaxCountryIsoCodeLength} characters.",
+                    countryIsoCodeInvalid: "Country ISO code must contain only uppercase letters."
+                );
         }
     }
 
@@ -52,7 +59,11 @@ public class ProfileValidationTests
     {
         public TestCountryDialCodeCommandValidator()
         {
-            RuleFor(x => x.CountryDialCode).ValidCountryDialCode();
+            RuleFor(x => x.CountryDialCode)
+                .ValidCountryDialCode(
+                    countryDialCodeTooLong: $"Country dial code must start with + followed by 1-{UserConstants.MaxCountryDialCodeLength} digits.",
+                    countryDialCodeInvalid: $"Country dial code must start with + followed by 1-{UserConstants.MaxCountryDialCodeLength} digits."
+                );
         }
     }
 
@@ -60,7 +71,10 @@ public class ProfileValidationTests
     {
         public TestPartialPhoneNumberCommandValidator()
         {
-            RuleFor(x => x.PartialPhoneNumber).ValidPartialPhoneNumber();
+            RuleFor(x => x.PartialPhoneNumber)
+                .ValidPartialPhoneNumber(
+                    partialPhoneNumberTooLong: $"Partial phone number cannot exceed {UserConstants.MaxPartialPhoneNumberLength} characters."
+                );
         }
     }
 
@@ -137,7 +151,7 @@ public class ProfileValidationTests
 
         result
             .ShouldHaveValidationErrorFor(x => x.CountryName)
-            .WithErrorMessage($"Country name cannot exceed {UserConstants.MaxCountryNameLength} characters");
+            .WithErrorMessage($"Country name cannot exceed {UserConstants.MaxCountryNameLength} characters.");
     }
 
     #endregion
@@ -198,7 +212,7 @@ public class ProfileValidationTests
 
         result
             .ShouldHaveValidationErrorFor(x => x.CountryIsoCode)
-            .WithErrorMessage("Country ISO code must contain only uppercase letters");
+            .WithErrorMessage("Country ISO code must contain only uppercase letters.");
     }
 
     [Fact]
@@ -211,7 +225,7 @@ public class ProfileValidationTests
 
         result
             .ShouldHaveValidationErrorFor(x => x.CountryIsoCode)
-            .WithErrorMessage($"Country ISO code cannot exceed {UserConstants.MaxCountryIsoCodeLength} characters");
+            .WithErrorMessage($"Country ISO code cannot exceed {UserConstants.MaxCountryIsoCodeLength} characters.");
     }
 
     [Fact]
@@ -224,7 +238,7 @@ public class ProfileValidationTests
 
         result
             .ShouldHaveValidationErrorFor(x => x.CountryIsoCode)
-            .WithErrorMessage("Country ISO code must contain only uppercase letters");
+            .WithErrorMessage("Country ISO code must contain only uppercase letters.");
     }
 
     #endregion
@@ -286,7 +300,7 @@ public class ProfileValidationTests
         result
             .ShouldHaveValidationErrorFor(x => x.CountryDialCode)
             .WithErrorMessage(
-                $"Country dial code must start with + followed by 1-{UserConstants.MaxCountryDialCodeLength} digits"
+                $"Country dial code must start with + followed by 1-{UserConstants.MaxCountryDialCodeLength} digits."
             );
     }
 
@@ -301,7 +315,7 @@ public class ProfileValidationTests
         result
             .ShouldHaveValidationErrorFor(x => x.CountryDialCode)
             .WithErrorMessage(
-                $"Country dial code must start with + followed by 1-{UserConstants.MaxCountryDialCodeLength} digits"
+                $"Country dial code must start with + followed by 1-{UserConstants.MaxCountryDialCodeLength} digits."
             );
     }
 
@@ -316,7 +330,7 @@ public class ProfileValidationTests
         result
             .ShouldHaveValidationErrorFor(x => x.CountryDialCode)
             .WithErrorMessage(
-                $"Country dial code must start with + followed by 1-{UserConstants.MaxCountryDialCodeLength} digits"
+                $"Country dial code must start with + followed by 1-{UserConstants.MaxCountryDialCodeLength} digits."
             );
     }
 
@@ -396,7 +410,7 @@ public class ProfileValidationTests
         result
             .ShouldHaveValidationErrorFor(x => x.PartialPhoneNumber)
             .WithErrorMessage(
-                $"Partial phone number cannot exceed {UserConstants.MaxPartialPhoneNumberLength} characters"
+                $"Partial phone number cannot exceed {UserConstants.MaxPartialPhoneNumberLength} characters."
             );
     }
 

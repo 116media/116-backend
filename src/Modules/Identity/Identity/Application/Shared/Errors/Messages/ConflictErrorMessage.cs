@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Identity.Application.Shared.Errors.Messages;
 
 /// <summary>
@@ -5,7 +7,7 @@ namespace _116.Identity.Application.Shared.Errors.Messages;
 /// These messages describe situations where an entity already exists
 /// and a create operation cannot proceed.
 /// </summary>
-public static class ConflictErrorMessage
+public class ConflictErrorMessage(IStringLocalizer<ConflictErrorMessage> localizer)
 {
     /// <summary>
     /// Gets an error message for when a user with the given email
@@ -16,9 +18,9 @@ public static class ConflictErrorMessage
     /// A formatted error message indicating that a user with the
     /// specified email already exists.
     /// </returns>
-    public static string EmailAlreadyExists(string email)
+    public string EmailAlreadyExists(string email)
     {
-        return $"User with email '{email}' already exists";
+        return string.Format(localizer["EmailAlreadyExists"], email);
     }
 
     /// <summary>
@@ -30,9 +32,9 @@ public static class ConflictErrorMessage
     /// A formatted error message indicating that the specified username
     /// is already taken.
     /// </returns>
-    public static string UsernameAlreadyExists(string username)
+    public string UsernameAlreadyExists(string username)
     {
-        return $"Username '{username}' is already taken";
+        return string.Format(localizer["UsernameAlreadyExists"], username);
     }
 
     /// <summary>
@@ -44,9 +46,9 @@ public static class ConflictErrorMessage
     /// A formatted error message indicating that the specified phone number
     /// is already taken.
     /// </returns>
-    public static string PhoneNumberAlreadyExists(string phoneNumber)
+    public string PhoneNumberAlreadyExists(string phoneNumber)
     {
-        return $"Phone number '{phoneNumber}' is already taken";
+        return string.Format(localizer["PhoneNumberAlreadyExists"], phoneNumber);
     }
 
     /// <summary>
@@ -58,9 +60,9 @@ public static class ConflictErrorMessage
     /// A formatted error message indicating that a role with the
     /// specified name already exists.
     /// </returns>
-    public static string RoleAlreadyExists(string name)
+    public string RoleAlreadyExists(string name)
     {
-        return $"Role '{name}' already exists";
+        return string.Format(localizer["RoleAlreadyExists"], name);
     }
 
     /// <summary>
@@ -73,9 +75,9 @@ public static class ConflictErrorMessage
     /// A formatted error message indicating that the specified
     /// resource-action permission already exists.
     /// </returns>
-    public static string PermissionAlreadyExists(string resource, string action)
+    public string PermissionAlreadyExists(string resource, string action)
     {
-        return $"Permission '{resource}.{action}' already exists";
+        return string.Format(localizer["PermissionAlreadyExists"], resource, action);
     }
 
     /// <summary>
@@ -84,9 +86,9 @@ public static class ConflictErrorMessage
     /// <returns>
     /// A formatted error message indicating that the role is already assigned to the user.
     /// </returns>
-    public static string RoleAlreadyAssignedToUser()
+    public string RoleAlreadyAssignedToUser()
     {
-        return "Role is already assigned to this user";
+        return localizer["RoleAlreadyAssignedToUser"];
     }
 
     /// <summary>
@@ -95,9 +97,9 @@ public static class ConflictErrorMessage
     /// <returns>
     /// A formatted error message indicating that the permission is already assigned to the role.
     /// </returns>
-    public static string PermissionAlreadyAssignedToRole()
+    public string PermissionAlreadyAssignedToRole()
     {
-        return "Permission is already assigned to this role";
+        return localizer["PermissionAlreadyAssignedToRole"];
     }
 
     /// <summary>
@@ -106,9 +108,9 @@ public static class ConflictErrorMessage
     /// <returns>
     /// A formatted error message indicating that the role is already active.
     /// </returns>
-    public static string RoleAlreadyActive()
+    public string RoleAlreadyActive()
     {
-        return "Role is already active";
+        return localizer["RoleAlreadyActive"];
     }
 
     /// <summary>
@@ -117,9 +119,9 @@ public static class ConflictErrorMessage
     /// <returns>
     /// A formatted error message indicating that the role is already inactive.
     /// </returns>
-    public static string RoleAlreadyInactive()
+    public string RoleAlreadyInactive()
     {
-        return "Role is already inactive";
+        return localizer["RoleAlreadyInactive"];
     }
 
     /// <summary>
@@ -128,9 +130,9 @@ public static class ConflictErrorMessage
     /// <returns>
     /// A formatted error message indicating that the role is already deleted.
     /// </returns>
-    public static string RoleAlreadyDeleted()
+    public string RoleAlreadyDeleted()
     {
-        return "Role is already deleted";
+        return localizer["RoleAlreadyDeleted"];
     }
 
     /// <summary>
@@ -139,9 +141,9 @@ public static class ConflictErrorMessage
     /// <returns>
     /// A formatted error message indicating that the role is not deleted.
     /// </returns>
-    public static string RoleNotDeleted()
+    public string RoleNotDeleted()
     {
-        return "Role is not deleted and cannot be restored";
+        return localizer["RoleNotDeleted"];
     }
 
     /// <summary>
@@ -150,9 +152,9 @@ public static class ConflictErrorMessage
     /// <returns>
     /// A formatted error message indicating that the permission is already active.
     /// </returns>
-    public static string PermissionAlreadyActive()
+    public string PermissionAlreadyActive()
     {
-        return "Permission is already active";
+        return localizer["PermissionAlreadyActive"];
     }
 
     /// <summary>
@@ -161,9 +163,9 @@ public static class ConflictErrorMessage
     /// <returns>
     /// A formatted error message indicating that the permission is already inactive.
     /// </returns>
-    public static string PermissionAlreadyInactive()
+    public string PermissionAlreadyInactive()
     {
-        return "Permission is already inactive";
+        return localizer["PermissionAlreadyInactive"];
     }
 
     /// <summary>
@@ -172,9 +174,9 @@ public static class ConflictErrorMessage
     /// <returns>
     /// A formatted error message indicating that the permission is already deleted.
     /// </returns>
-    public static string PermissionAlreadyDeleted()
+    public string PermissionAlreadyDeleted()
     {
-        return "Permission is already deleted";
+        return localizer["PermissionAlreadyDeleted"];
     }
 
     /// <summary>
@@ -183,8 +185,8 @@ public static class ConflictErrorMessage
     /// <returns>
     /// A formatted error message indicating that the permission is not deleted.
     /// </returns>
-    public static string PermissionNotDeleted()
+    public string PermissionNotDeleted()
     {
-        return "Permission is not deleted and cannot be restored";
+        return localizer["PermissionNotDeleted"];
     }
 }

@@ -14,10 +14,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePricingT
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="pricingTierErrors">Pricing tier domain error factory.</param>
 public class AdminCreatePricingTierHandler(
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    PricingTierErrors pricingTierErrors
 ) : ICommandHandler<AdminCreatePricingTierCommand, AdminCreatePricingTierResult>
 {
     /// <inheritdoc />
@@ -33,13 +35,14 @@ public class AdminCreatePricingTierHandler(
 
         if (exists)
         {
-            throw PricingTierErrors.AlreadyExists(name: command.Name);
+            throw pricingTierErrors.AlreadyExists(name: command.Name);
         }
 
         var pricingTier = PricingTierEntity.Create(
             id: Guid.NewGuid(),
             name: command.Name,
-            description: command.Description
+            description: command.Description,
+            errors: pricingTierErrors
         );
 
         await lookupRepository.AddPricingTierAsync(pricingTier: pricingTier, cancellationToken: cancellationToken);

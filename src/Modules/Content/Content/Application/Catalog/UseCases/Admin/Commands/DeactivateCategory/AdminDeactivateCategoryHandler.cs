@@ -14,10 +14,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivateCat
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="categoryErrors">Category domain error factory.</param>
 public class AdminDeactivateCategoryHandler(
     ICategoryRepository categoryRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    CategoryErrors categoryErrors
 ) : ICommandHandler<AdminDeactivateCategoryCommand, AdminDeactivateCategoryResult>
 {
     /// <inheritdoc />
@@ -37,7 +39,7 @@ public class AdminDeactivateCategoryHandler(
 
         if (!deactivated)
         {
-            throw CategoryErrors.AlreadyInactive();
+            throw categoryErrors.AlreadyInactive();
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

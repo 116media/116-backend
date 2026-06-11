@@ -67,13 +67,14 @@ public class PublicRefreshTokenEndpointV1 : ICarterModule
                 async (
                     PublicRefreshTokenRequest? request,
                     IDispatcher dispatcher,
-                    ITokenDeliveryService tokenDelivery
+                    ITokenDeliveryService tokenDelivery,
+                    SessionErrors sessionErrors
                 ) =>
                 {
                     string? refreshToken = tokenDelivery.ReadRefreshToken(bodyRefreshToken: request?.RefreshToken);
                     if (string.IsNullOrEmpty(refreshToken))
                     {
-                        throw SessionErrors.InvalidRefreshToken();
+                        throw sessionErrors.InvalidRefreshToken();
                     }
 
                     var command = new PublicRefreshTokenCommand(RefreshToken: refreshToken);

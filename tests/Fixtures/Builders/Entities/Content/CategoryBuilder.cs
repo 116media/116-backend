@@ -1,5 +1,6 @@
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
@@ -109,7 +110,15 @@ internal class CategoryBuilder
     /// </summary>
     public CategoryEntity Build()
     {
-        var entity = CategoryEntity.Create(_id, _contentTypeId, _name, _slug, _description, _isFree);
+        var entity = CategoryEntity.Create(
+            _id,
+            _contentTypeId,
+            _name,
+            _slug,
+            _description,
+            _isFree,
+            TestErrorsFactory.CreateCategoryErrors()
+        );
 
         if (!_isActive)
         {

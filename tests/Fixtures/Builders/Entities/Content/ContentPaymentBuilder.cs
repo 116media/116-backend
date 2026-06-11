@@ -1,6 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
@@ -63,6 +64,7 @@ internal class ContentPaymentBuilder
 
     public ContentPaymentEntity Build()
     {
+        var errors = TestErrorsFactory.CreateContentOrderErrors();
         var payment = ContentPaymentEntity.Create(_id, _orderId, _amountUsd);
 
         if (_proofFileId.HasValue && _paymentMethod.HasValue)
@@ -72,12 +74,12 @@ internal class ContentPaymentBuilder
 
         if (_verified)
         {
-            payment.Verify(_verifiedByAdminId, _receiptUrl);
+            payment.Verify(_verifiedByAdminId, _receiptUrl, errors);
         }
 
         if (_rejected)
         {
-            payment.Reject(_rejectionNotes);
+            payment.Reject(_rejectionNotes, errors);
         }
 
         return payment;

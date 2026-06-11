@@ -5,6 +5,7 @@ using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -36,7 +37,8 @@ public class AdminCreateArticleHandlerTests : BaseContentHandlerTest
             _categoryRepositoryMock.Object,
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            Mapper
+            Mapper,
+            TestErrorsFactory.CreateArticleErrors()
         );
     }
 

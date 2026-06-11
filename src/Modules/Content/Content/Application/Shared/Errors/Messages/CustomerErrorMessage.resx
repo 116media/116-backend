@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AlreadyExists" xml:space="preserve">
+    <value>Customer with email '{0}' already exists.</value>
+  </data>
+  <data name="FullNameRequired" xml:space="preserve">
+    <value>Customer full name is required.</value>
+  </data>
+  <data name="EmailRequired" xml:space="preserve">
+    <value>Customer email is required.</value>
+  </data>
+  <data name="FullNameTooLong" xml:space="preserve">
+    <value>Customer full name must not exceed {0} characters.</value>
+  </data>
+  <data name="EmailInvalidFormat" xml:space="preserve">
+    <value>Customer email must be a valid email address.</value>
+  </data>
+  <data name="EmailTooLong" xml:space="preserve">
+    <value>Customer email must not exceed {0} characters.</value>
+  </data>
+  <data name="PhoneTooLong" xml:space="preserve">
+    <value>Customer phone must not exceed {0} characters.</value>
+  </data>
+  <data name="CompanyTooLong" xml:space="preserve">
+    <value>Customer company must not exceed {0} characters.</value>
+  </data>
+  <data name="NotesTooLong" xml:space="preserve">
+    <value>Customer notes must not exceed {0} characters.</value>
+  </data>
+  <data name="CustomerIdRequired" xml:space="preserve">
+    <value>Customer ID is required.</value>
+  </data>
+</root>

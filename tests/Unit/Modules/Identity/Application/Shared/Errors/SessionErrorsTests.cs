@@ -1,6 +1,7 @@
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Exceptions;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -11,16 +12,18 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Shared.Errors;
 /// </summary>
 public class SessionErrorsTests
 {
+    private readonly SessionErrors _sessionErrors = TestErrorsFactory.CreateSessionErrors();
+
     [Fact]
     public void InvalidRefreshToken_ShouldReturnRefreshTokenExpiryException()
     {
         // Act
-        RefreshTokenExpiryException exception = SessionErrors.InvalidRefreshToken();
+        RefreshTokenExpiryException exception = _sessionErrors.InvalidRefreshToken();
 
         // Assert
         exception.Should().NotBeNull();
         exception.Should().BeOfType<RefreshTokenExpiryException>();
-        exception.Message.Should().Be("Invalid or expired session. Please log in again");
+        exception.Message.Should().Be("Invalid or expired session. Please log in again.");
     }
 
     [Fact]
@@ -30,7 +33,7 @@ public class SessionErrorsTests
         var sessionId = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = SessionErrors.SessionNotFound(sessionId);
+        NotFoundException exception = _sessionErrors.SessionNotFound(sessionId);
 
         // Assert
         exception.Should().NotBeNull();
@@ -43,11 +46,11 @@ public class SessionErrorsTests
     public void DeviceIdRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = SessionErrors.DeviceIdRequired();
+        BadRequestException exception = _sessionErrors.DeviceIdRequired();
 
         // Assert
         exception.Should().NotBeNull();
         exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be("Device ID is required. Please provide X-Device-Id header");
+        exception.Message.Should().Be("Device ID is required. Please provide X-Device-Id header.");
     }
 }

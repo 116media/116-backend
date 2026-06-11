@@ -13,10 +13,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.SubmitArtic
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="articleErrors">Article domain error factory.</param>
 public class AdminSubmitArticleHandler(
     IArticleRepository articleRepository,
     IContentOrderRepository contentOrderRepository,
-    IContentUnitOfWork unitOfWork
+    IContentUnitOfWork unitOfWork,
+    ArticleErrors articleErrors
 ) : ICommandHandler<AdminSubmitArticleCommand, AdminSubmitArticleResult>
 {
     /// <inheritdoc />
@@ -43,17 +45,17 @@ public class AdminSubmitArticleHandler(
 
             if (orderAlreadyPaid && !article.MarkPendingReview())
             {
-                throw ArticleErrors.AlreadyPendingReview();
+                throw articleErrors.AlreadyPendingReview();
             }
 
             if (!orderAlreadyPaid && !article.Submit())
             {
-                throw ArticleErrors.AlreadySubmitted();
+                throw articleErrors.AlreadySubmitted();
             }
         }
         else if (!article.CustomerId.HasValue && !article.MarkPendingReview())
         {
-            throw ArticleErrors.AlreadyPendingReview();
+            throw articleErrors.AlreadyPendingReview();
         }
 
         articleRepository.Update(article: article);

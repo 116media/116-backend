@@ -37,16 +37,16 @@ public class TagEntity : Aggregate<Guid>
     /// <param name="slug">The URL-safe slug for the tag (lowercase, hyphens only).</param>
     /// <returns>A new <see cref="TagEntity" /> instance.</returns>
     /// <exception cref="ArgumentException">Thrown when name or slug are empty or whitespace.</exception>
-    public static TagEntity Create(Guid id, string name, string slug)
+    public static TagEntity Create(Guid id, string name, string slug, TagErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw TagErrors.NameRequired();
+            throw errors.NameRequired();
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw TagErrors.SlugRequired();
+            throw errors.SlugRequired();
         }
 
         return new TagEntity
@@ -62,17 +62,18 @@ public class TagEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="name">The new display name for the tag.</param>
     /// <param name="slug">The new URL-safe slug for the tag.</param>
+    /// <param name="errors">The errors factory instance.</param>
     /// <exception cref="BadRequestException">Thrown when name or slug are empty or whitespace.</exception>
-    public void Update(string name, string slug)
+    public void Update(string name, string slug, TagErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw TagErrors.NameRequired();
+            throw errors.NameRequired();
         }
 
         if (string.IsNullOrWhiteSpace(value: slug))
         {
-            throw TagErrors.SlugRequired();
+            throw errors.SlugRequired();
         }
 
         Name = name;

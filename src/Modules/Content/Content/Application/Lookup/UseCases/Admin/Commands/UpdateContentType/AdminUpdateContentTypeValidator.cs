@@ -1,4 +1,6 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -10,11 +12,16 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateContentT
 public class AdminUpdateContentTypeValidator : AbstractValidator<AdminUpdateContentTypeCommand>
 {
     /// <summary>
-    /// Configures validation rules for content type update.
+    /// Initializes a new instance of <see cref="AdminUpdateContentTypeValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminUpdateContentTypeValidator()
+    /// <param name="msg">Content type validation error messages.</param>
+    public AdminUpdateContentTypeValidator(ContentTypeErrorMessage msg)
     {
         RuleFor(x => x.Id).IsValidGuid("Content type ID");
-        RuleFor(x => x.Name).ValidContentTypeName();
+        RuleFor(x => x.Name)
+            .ValidContentTypeName(
+                nameRequired: msg.NameRequired(),
+                nameTooLong: msg.NameTooLong(ContentConstants.MaxContentTypeNameLength)
+            );
     }
 }

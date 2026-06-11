@@ -1,22 +1,26 @@
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Application.Commerce.Errors;
 
 /// <summary>
-/// Unit tests for <see cref="ContentOrderErrors"/> static factory methods.
+/// Unit tests for <see cref="ContentOrderErrors"/> factory methods.
 /// </summary>
 public class ContentOrderErrorsTests
 {
+    private readonly ContentOrderErrors _errors = TestErrorsFactory.CreateContentOrderErrors();
+    private readonly ContentOrderErrorMessage _message = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>("en");
+
     [Fact]
     public void NotFound_ShouldReturnNotFoundException()
     {
         Guid id = Guid.NewGuid();
 
-        NotFoundException ex = ContentOrderErrors.NotFound(id);
+        NotFoundException ex = _errors.NotFound(id);
 
         ex.Should().NotBeNull();
         ex.Should().BeOfType<NotFoundException>();
@@ -27,7 +31,7 @@ public class ContentOrderErrorsTests
     {
         Guid itemId = Guid.NewGuid();
 
-        NotFoundException ex = ContentOrderErrors.ItemNotFound(itemId);
+        NotFoundException ex = _errors.ItemNotFound(itemId);
 
         ex.Should().NotBeNull();
         ex.Should().BeOfType<NotFoundException>();
@@ -38,7 +42,7 @@ public class ContentOrderErrorsTests
     {
         Guid orderId = Guid.NewGuid();
 
-        NotFoundException ex = ContentOrderErrors.PaymentNotFound(orderId);
+        NotFoundException ex = _errors.PaymentNotFound(orderId);
 
         ex.Should().NotBeNull();
         ex.Should().BeOfType<NotFoundException>();
@@ -47,72 +51,72 @@ public class ContentOrderErrorsTests
     [Fact]
     public void AlreadySubmitted_ShouldReturnConflictException()
     {
-        ConflictException ex = ContentOrderErrors.AlreadySubmitted();
+        ConflictException ex = _errors.AlreadySubmitted();
 
         ex.Should().NotBeNull();
-        ex.Message.Should().Contain(ContentOrderErrorMessage.AlreadySubmitted());
+        ex.Message.Should().Contain(_message.AlreadySubmitted());
     }
 
     [Fact]
     public void AlreadyPaid_ShouldReturnConflictException()
     {
-        ConflictException ex = ContentOrderErrors.AlreadyPaid();
+        ConflictException ex = _errors.AlreadyPaid();
 
         ex.Should().NotBeNull();
-        ex.Message.Should().Contain(ContentOrderErrorMessage.AlreadyPaid());
+        ex.Message.Should().Contain(_message.AlreadyPaid());
     }
 
     [Fact]
     public void AlreadyCancelled_ShouldReturnConflictException()
     {
-        ConflictException ex = ContentOrderErrors.AlreadyCancelled();
+        ConflictException ex = _errors.AlreadyCancelled();
 
         ex.Should().NotBeNull();
-        ex.Message.Should().Contain(ContentOrderErrorMessage.AlreadyCancelled());
+        ex.Message.Should().Contain(_message.AlreadyCancelled());
     }
 
     [Fact]
     public void CannotCancelPaidOrder_ShouldReturnBadRequestException()
     {
-        BadRequestException ex = ContentOrderErrors.CannotCancelPaidOrder();
+        BadRequestException ex = _errors.CannotCancelPaidOrder();
 
         ex.Should().NotBeNull();
-        ex.Message.Should().Contain(ContentOrderErrorMessage.CannotCancelPaidOrder());
+        ex.Message.Should().Contain(_message.CannotCancelPaidOrder());
     }
 
     [Fact]
     public void CannotAddItemToNonDraftOrder_ShouldReturnBadRequestException()
     {
-        BadRequestException ex = ContentOrderErrors.CannotAddItemToNonDraftOrder();
+        BadRequestException ex = _errors.CannotAddItemToNonDraftOrder();
 
         ex.Should().NotBeNull();
-        ex.Message.Should().Contain(ContentOrderErrorMessage.CannotAddItemToNonDraftOrder());
+        ex.Message.Should().Contain(_message.CannotAddItemToNonDraftOrder());
     }
 
     [Fact]
     public void MustHaveAtLeastOneItemWithTier_ShouldReturnBadRequestException()
     {
-        BadRequestException ex = ContentOrderErrors.MustHaveAtLeastOneItemWithTier();
+        BadRequestException ex = _errors.MustHaveAtLeastOneItemWithTier();
 
         ex.Should().NotBeNull();
-        ex.Message.Should().Contain(ContentOrderErrorMessage.MustHaveAtLeastOneItemWithTier());
+        ex.Message.Should().Contain(_message.MustHaveAtLeastOneItemWithTier());
     }
 
     [Fact]
     public void PaymentAlreadyVerified_ShouldReturnConflictException()
     {
-        ConflictException ex = ContentOrderErrors.PaymentAlreadyVerified();
+        ConflictException ex = _errors.PaymentAlreadyVerified();
 
         ex.Should().NotBeNull();
-        ex.Message.Should().Contain(ContentOrderErrorMessage.PaymentAlreadyVerified());
+        ex.Message.Should().Contain(_message.PaymentAlreadyVerified());
     }
 
     [Fact]
     public void PaymentAlreadyRejected_ShouldReturnConflictException()
     {
-        ConflictException ex = ContentOrderErrors.PaymentAlreadyRejected();
+        ConflictException ex = _errors.PaymentAlreadyRejected();
 
         ex.Should().NotBeNull();
-        ex.Message.Should().Contain(ContentOrderErrorMessage.PaymentAlreadyRejected());
+        ex.Message.Should().Contain(_message.PaymentAlreadyRejected());
     }
 }

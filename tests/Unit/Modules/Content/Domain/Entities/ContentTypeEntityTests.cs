@@ -1,6 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -21,7 +22,7 @@ public class ContentTypeEntityTests
         string name = TestConstants.Content.ContentType.ValidName;
 
         // Act
-        var entity = ContentTypeEntity.Create(id, name);
+        var entity = ContentTypeEntity.Create(id, name, TestErrorsFactory.CreateContentTypeErrors());
 
         // Assert
         entity.Id.Should().Be(id);
@@ -36,7 +37,8 @@ public class ContentTypeEntityTests
     public void Create_WithInvalidName_ShouldThrowBadRequestException(string? invalidName)
     {
         // Act
-        Action act = () => ContentTypeEntity.Create(Guid.NewGuid(), invalidName!);
+        Action act = () =>
+            ContentTypeEntity.Create(Guid.NewGuid(), invalidName!, TestErrorsFactory.CreateContentTypeErrors());
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -50,11 +52,15 @@ public class ContentTypeEntityTests
     public void Update_WithValidName_ShouldUpdateName()
     {
         // Arrange
-        var entity = ContentTypeEntity.Create(Guid.NewGuid(), TestConstants.Content.ContentType.ValidName);
+        var entity = ContentTypeEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.ContentType.ValidName,
+            TestErrorsFactory.CreateContentTypeErrors()
+        );
         string newName = TestConstants.Content.ContentType.AnotherValidName;
 
         // Act
-        entity.Update(newName);
+        entity.Update(newName, TestErrorsFactory.CreateContentTypeErrors());
 
         // Assert
         entity.Name.Should().Be(newName);
@@ -67,10 +73,14 @@ public class ContentTypeEntityTests
     public void Update_WithInvalidName_ShouldThrowBadRequestException(string? invalidName)
     {
         // Arrange
-        var entity = ContentTypeEntity.Create(Guid.NewGuid(), TestConstants.Content.ContentType.ValidName);
+        var entity = ContentTypeEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.ContentType.ValidName,
+            TestErrorsFactory.CreateContentTypeErrors()
+        );
 
         // Act
-        Action act = () => entity.Update(invalidName!);
+        Action act = () => entity.Update(invalidName!, TestErrorsFactory.CreateContentTypeErrors());
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -84,7 +94,11 @@ public class ContentTypeEntityTests
     public void Activate_WhenInactive_ShouldReturnTrueAndSetIsActiveTrue()
     {
         // Arrange
-        var entity = ContentTypeEntity.Create(Guid.NewGuid(), TestConstants.Content.ContentType.ValidName);
+        var entity = ContentTypeEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.ContentType.ValidName,
+            TestErrorsFactory.CreateContentTypeErrors()
+        );
         entity.Deactivate();
 
         // Act
@@ -99,7 +113,11 @@ public class ContentTypeEntityTests
     public void Activate_WhenAlreadyActive_ShouldReturnFalse()
     {
         // Arrange
-        var entity = ContentTypeEntity.Create(Guid.NewGuid(), TestConstants.Content.ContentType.ValidName);
+        var entity = ContentTypeEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.ContentType.ValidName,
+            TestErrorsFactory.CreateContentTypeErrors()
+        );
 
         // Act
         bool result = entity.Activate();
@@ -117,7 +135,11 @@ public class ContentTypeEntityTests
     public void Deactivate_WhenActive_ShouldReturnTrueAndSetIsActiveFalse()
     {
         // Arrange
-        var entity = ContentTypeEntity.Create(Guid.NewGuid(), TestConstants.Content.ContentType.ValidName);
+        var entity = ContentTypeEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.ContentType.ValidName,
+            TestErrorsFactory.CreateContentTypeErrors()
+        );
 
         // Act
         bool result = entity.Deactivate();
@@ -131,7 +153,11 @@ public class ContentTypeEntityTests
     public void Deactivate_WhenAlreadyInactive_ShouldReturnFalse()
     {
         // Arrange
-        var entity = ContentTypeEntity.Create(Guid.NewGuid(), TestConstants.Content.ContentType.ValidName);
+        var entity = ContentTypeEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.ContentType.ValidName,
+            TestErrorsFactory.CreateContentTypeErrors()
+        );
         entity.Deactivate();
 
         // Act

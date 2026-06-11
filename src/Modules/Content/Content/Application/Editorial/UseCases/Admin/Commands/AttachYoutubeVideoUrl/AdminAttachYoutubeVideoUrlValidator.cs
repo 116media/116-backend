@@ -1,4 +1,6 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -10,12 +12,18 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutu
 public class AdminAttachYoutubeVideoUrlValidator : AbstractValidator<AdminAttachYoutubeVideoUrlCommand>
 {
     /// <summary>
-    /// Configures validation rules for attaching a YouTube video Url.
+    /// Initializes a new instance of <see cref="AdminAttachYoutubeVideoUrlValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminAttachYoutubeVideoUrlValidator()
+    /// <param name="msg">Video validation error messages.</param>
+    public AdminAttachYoutubeVideoUrlValidator(VideoErrorMessage msg)
     {
         RuleFor(x => x.VideoId).IsValidGuid("Video ID");
 
-        RuleFor(x => x.YoutubeVideoUrl).ValidYoutubeVideoUrl();
+        RuleFor(x => x.YoutubeVideoUrl)
+            .ValidYoutubeVideoUrl(
+                youtubeUrlRequired: msg.YoutubeUrlRequired(),
+                youtubeUrlTooLong: msg.YoutubeUrlTooLong(ContentConstants.MaxYoutubeVideoUrlLength),
+                youtubeUrlInvalidFormat: msg.YoutubeUrlInvalidFormat()
+            );
     }
 }

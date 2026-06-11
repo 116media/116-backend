@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AlreadySubmitted" xml:space="preserve">
+    <value>Order has already been submitted.</value>
+  </data>
+  <data name="AlreadyPaid" xml:space="preserve">
+    <value>Order is already paid.</value>
+  </data>
+  <data name="AlreadyCancelled" xml:space="preserve">
+    <value>Order has already been cancelled.</value>
+  </data>
+  <data name="CannotCancelPaidOrder" xml:space="preserve">
+    <value>A paid order cannot be cancelled.</value>
+  </data>
+  <data name="CannotAddItemToNonDraftOrder" xml:space="preserve">
+    <value>This order can only be modified while in Draft status.</value>
+  </data>
+  <data name="MustHaveAtLeastOneItemWithTier" xml:space="preserve">
+    <value>The order must have at least one item with at least one pricing tier before it can be submitted.</value>
+  </data>
+  <data name="PaymentAlreadyVerified" xml:space="preserve">
+    <value>Payment has already been verified.</value>
+  </data>
+  <data name="PaymentAlreadyRejected" xml:space="preserve">
+    <value>Payment has already been rejected.</value>
+  </data>
+  <data name="TierAlreadyAttached" xml:space="preserve">
+    <value>This pricing tier is already attached to the item.</value>
+  </data>
+  <data name="ReceiptUrlRequired" xml:space="preserve">
+    <value>Receipt URL is required.</value>
+  </data>
+  <data name="ReceiptUrlTooLong" xml:space="preserve">
+    <value>Receipt URL must not exceed {0} characters.</value>
+  </data>
+  <data name="PaymentProofRequired" xml:space="preserve">
+    <value>Payment proof file is required.</value>
+  </data>
+  <data name="InvalidOrderItemContentKind" xml:space="preserve">
+    <value>Content kind must be Article or Video.</value>
+  </data>
+  <data name="AdminUserIdRequired" xml:space="preserve">
+    <value>Admin user ID is required.</value>
+  </data>
+  <data name="InvalidPaymentMethod" xml:space="preserve">
+    <value>Payment method is invalid.</value>
+  </data>
+  <data name="OrderItemIdRequired" xml:space="preserve">
+    <value>Order item ID is required.</value>
+  </data>
+</root>

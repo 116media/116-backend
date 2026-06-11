@@ -20,7 +20,7 @@ public class SessionValidationTests
     {
         public TestRefreshTokenCommandValidator()
         {
-            RuleFor(x => x.RefreshToken).ValidRefreshToken();
+            RuleFor(x => x.RefreshToken).ValidRefreshToken(refreshTokenRequired: "Refresh token is required.");
         }
     }
 

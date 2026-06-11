@@ -11,8 +11,12 @@ namespace _116.Content.Application.Interactions.UseCases.Admin.Commands.DeleteAr
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminDeleteArticleCommentHandler(IArticleRepository articleRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<AdminDeleteArticleCommentCommand, AdminDeleteArticleCommentResult>
+/// <param name="articleInteractionErrors">Article interaction domain error factory.</param>
+public class AdminDeleteArticleCommentHandler(
+    IArticleRepository articleRepository,
+    IContentUnitOfWork unitOfWork,
+    ArticleInteractionErrors articleInteractionErrors
+) : ICommandHandler<AdminDeleteArticleCommentCommand, AdminDeleteArticleCommentResult>
 {
     /// <inheritdoc />
     public async Task<AdminDeleteArticleCommentResult> Handle(
@@ -43,6 +47,6 @@ public class AdminDeleteArticleCommentHandler(IArticleRepository articleReposito
             return new AdminDeleteArticleCommentResult(IsSuccess: true);
         }
 
-        throw ArticleInteractionErrors.CommentNotFound(commentId: command.CommentId);
+        throw articleInteractionErrors.CommentNotFound(commentId: command.CommentId);
     }
 }

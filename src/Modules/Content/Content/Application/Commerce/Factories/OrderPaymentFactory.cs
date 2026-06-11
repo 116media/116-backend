@@ -8,7 +8,9 @@ namespace _116.Content.Application.Commerce.Factories;
 /// Factory implementation for fetching and validating order payment records.
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
-public class OrderPaymentFactory(IContentOrderRepository contentOrderRepository) : IOrderPaymentFactory
+/// <param name="contentOrderErrors">Content order domain error factory.</param>
+public class OrderPaymentFactory(IContentOrderRepository contentOrderRepository, ContentOrderErrors contentOrderErrors)
+    : IOrderPaymentFactory
 {
     /// <inheritdoc />
     public async Task<ContentPaymentEntity> GetByOrderIdOrThrowAsync(Guid orderId, CancellationToken ct = default)
@@ -20,6 +22,6 @@ public class OrderPaymentFactory(IContentOrderRepository contentOrderRepository)
             return payment;
         }
 
-        throw ContentOrderErrors.PaymentNotFound(orderId: orderId);
+        throw contentOrderErrors.PaymentNotFound(orderId: orderId);
     }
 }

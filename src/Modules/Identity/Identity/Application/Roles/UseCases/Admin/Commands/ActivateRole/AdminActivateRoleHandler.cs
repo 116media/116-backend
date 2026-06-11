@@ -14,8 +14,13 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.ActivateRole;
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class AdminActivateRoleHandler(IRoleRepository roleRepository, IIdentityUnitOfWork unitOfWork, IMapper mapper)
-    : ICommandHandler<AdminActivateRoleCommand, AdminActivateRoleResult>
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+public class AdminActivateRoleHandler(
+    IRoleRepository roleRepository,
+    IIdentityUnitOfWork unitOfWork,
+    IMapper mapper,
+    UserErrors userErrors
+) : ICommandHandler<AdminActivateRoleCommand, AdminActivateRoleResult>
 {
     /// <summary>
     /// Handles the role activation command.
@@ -39,7 +44,7 @@ public class AdminActivateRoleHandler(IRoleRepository roleRepository, IIdentityU
 
         if (!wasActivated)
         {
-            throw UserErrors.RoleAlreadyActive();
+            throw userErrors.RoleAlreadyActive();
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

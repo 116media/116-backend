@@ -1,5 +1,7 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPricing;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -11,7 +13,10 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminAddCategoryPricingValidatorTests
 {
-    private readonly AdminAddCategoryPricingValidator _validator = new();
+    private readonly AdminAddCategoryPricingValidator _validator = new(
+        LocalizerFactory.CreateMessage<CategoryErrorMessage>(),
+        LocalizerFactory.CreateMessage<PricingTierErrorMessage>()
+    );
 
     #region Valid Command Tests
 
@@ -100,7 +105,7 @@ public class AdminAddCategoryPricingValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddCategoryPricingCommand.PricingTierId)
-                && e.ErrorMessage == "Pricing tier ID is required."
+                && e.ErrorMessage == "Pricing tier name is required."
             );
     }
 
@@ -127,7 +132,7 @@ public class AdminAddCategoryPricingValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddCategoryPricingCommand.PriceUsd)
-                && e.ErrorMessage == "Category price must be zero or greater."
+                && e.ErrorMessage == "Price must be zero or greater."
             );
     }
 

@@ -16,11 +16,13 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUse
 /// <param name="userRoleRepository">Repository for user-role data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
 public class AdminAssignRoleToUserHandler(
     IRoleRepository roleRepository,
     IUserRoleRepository userRoleRepository,
     IIdentityUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    UserErrors userErrors
 ) : ICommandHandler<AdminAssignRoleToUserCommand, AdminAssignRoleToUserResult>
 {
     /// <summary>
@@ -45,13 +47,13 @@ public class AdminAssignRoleToUserHandler(
         // Check if role is active
         if (!role!.IsActive)
         {
-            throw UserErrors.RoleIsInactive();
+            throw userErrors.RoleIsInactive();
         }
 
         // Check if role is deleted
         if (role.IsDeleted)
         {
-            throw UserErrors.RoleIsDeleted();
+            throw userErrors.RoleIsDeleted();
         }
 
         // Check if role is already assigned to user
@@ -63,7 +65,7 @@ public class AdminAssignRoleToUserHandler(
 
         if (alreadyAssigned)
         {
-            throw UserErrors.RoleAlreadyAssignedToUser();
+            throw userErrors.RoleAlreadyAssignedToUser();
         }
 
         // Create the user-role association

@@ -15,10 +15,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteVideo
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="cloudinaryService">Service for deleting Cloudinary image assets.</param>
+/// <param name="videoErrors">Video domain error factory.</param>
 public class AdminDeleteVideoHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    ICloudinaryService cloudinaryService
+    ICloudinaryService cloudinaryService,
+    VideoErrors videoErrors
 ) : ICommandHandler<AdminDeleteVideoCommand, AdminDeleteVideoResult>
 {
     /// <inheritdoc />
@@ -33,7 +35,7 @@ public class AdminDeleteVideoHandler(
 
         if (video.Status != EnumContentStatus.Draft && video.Status != EnumContentStatus.Rejected)
         {
-            throw VideoErrors.CannotDeletePublishedVideo();
+            throw videoErrors.CannotDeletePublishedVideo();
         }
 
         if (video.ThumbnailStorageKey is not null)

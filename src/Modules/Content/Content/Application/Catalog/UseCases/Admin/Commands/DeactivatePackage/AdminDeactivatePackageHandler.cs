@@ -14,10 +14,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivatePac
 /// <param name="packageRepository">Repository for package data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="packageErrors">Package domain error factory.</param>
 public class AdminDeactivatePackageHandler(
     IPackageRepository packageRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    PackageErrors packageErrors
 ) : ICommandHandler<AdminDeactivatePackageCommand, AdminDeactivatePackageResult>
 {
     /// <inheritdoc />
@@ -37,7 +39,7 @@ public class AdminDeactivatePackageHandler(
 
         if (!deactivated)
         {
-            throw PackageErrors.AlreadyInactive();
+            throw packageErrors.AlreadyInactive();
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

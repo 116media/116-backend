@@ -19,13 +19,15 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyric
 /// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
 /// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="lyricsErrors">Lyrics domain error factory.</param>
 public class AdminCreateLyricsHandler(
     ILyricsRepository lyricsRepository,
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
     IUserLookupService userLookup,
     IFileRepository fileRepository,
-    IMapper mapper
+    IMapper mapper,
+    LyricsErrors lyricsErrors
 ) : ICommandHandler<AdminCreateLyricsCommand, AdminCreateLyricsResult>
 {
     /// <inheritdoc />
@@ -42,7 +44,7 @@ public class AdminCreateLyricsHandler(
 
         if (existing is not null)
         {
-            throw LyricsErrors.AlreadyExists(songTitle: command.SongTitle, artistName: command.ArtistName);
+            throw lyricsErrors.AlreadyExists(songTitle: command.SongTitle, artistName: command.ArtistName);
         }
 
         LyricsEntity lyrics;
@@ -56,7 +58,8 @@ public class AdminCreateLyricsHandler(
                 artistName: command.ArtistName,
                 lyricsText: command.LyricsText,
                 language: command.Language,
-                authorId: command.AuthorId
+                authorId: command.AuthorId,
+                errors: lyricsErrors
             );
 
             VideoEntity video = await videoRepository.GetByIdOrThrowAsync(
@@ -74,7 +77,8 @@ public class AdminCreateLyricsHandler(
                 artistName: command.ArtistName,
                 lyricsText: command.LyricsText,
                 language: command.Language,
-                authorId: command.AuthorId
+                authorId: command.AuthorId,
+                errors: lyricsErrors
             );
         }
 

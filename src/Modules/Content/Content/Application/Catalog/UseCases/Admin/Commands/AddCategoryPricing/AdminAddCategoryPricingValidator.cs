@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
@@ -10,12 +11,14 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPr
 public class AdminAddCategoryPricingValidator : AbstractValidator<AdminAddCategoryPricingCommand>
 {
     /// <summary>
-    /// Configures validation rules for category pricing creation.
+    /// Initializes a new instance of <see cref="AdminAddCategoryPricingValidator" /> with the specified error message providers.
     /// </summary>
-    public AdminAddCategoryPricingValidator()
+    /// <param name="categoryMsg">Category validation error messages.</param>
+    /// <param name="pricingTierMsg">Pricing tier validation error messages.</param>
+    public AdminAddCategoryPricingValidator(CategoryErrorMessage categoryMsg, PricingTierErrorMessage pricingTierMsg)
     {
         RuleFor(x => x.CategoryId).IsValidGuid("Category ID");
-        RuleFor(x => x.PricingTierId).ValidPricingTierId();
-        RuleFor(x => x.PriceUsd).ValidCategoryPriceUsd();
+        RuleFor(x => x.PricingTierId).ValidPricingTierId(pricingTierMsg.NameRequired());
+        RuleFor(x => x.PriceUsd).ValidCategoryPriceUsd(categoryMsg.PriceMustBeNonNegative());
     }
 }

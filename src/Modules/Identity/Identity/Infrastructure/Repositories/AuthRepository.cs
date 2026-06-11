@@ -19,7 +19,8 @@ namespace _116.Identity.Infrastructure.Repositories;
 /// <summary>
 /// Implementation of <see cref="IAuthRepository" /> using Entity Framework Core.
 /// </summary>
-public class AuthRepository(IdentityDbContext context) : IAuthRepository
+public class AuthRepository(IdentityDbContext context, UserErrors userErrors, SessionErrors sessionErrors)
+    : IAuthRepository
 {
     /// <inheritdoc />
     public async Task<UserEntity?> FindUserByIdOrThrow(Guid userId, CancellationToken cancellationToken = default)
@@ -162,7 +163,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     {
         if (!user.IsActive)
         {
-            throw UserErrors.AccountInactive(user.Email!);
+            throw userErrors.AccountInactive(user.Email!);
         }
 
         return true;
@@ -173,7 +174,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
     {
         if (user is { AuthProvider: EnumAuthProvider.Local, IsVerified: false })
         {
-            throw UserErrors.AccountNotVerified(user.Email!);
+            throw userErrors.AccountNotVerified(user.Email!);
         }
 
         return true;
@@ -190,7 +191,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
 
         if (session is null || !session.IsActive())
         {
-            throw SessionErrors.InvalidRefreshToken();
+            throw sessionErrors.InvalidRefreshToken();
         }
 
         return true;
@@ -202,7 +203,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         string? sessionIdClaim = user.FindFirst(type: JwtClaimsConstants.SessionId)?.Value;
         if (string.IsNullOrEmpty(value: sessionIdClaim) || !Guid.TryParse(input: sessionIdClaim, out Guid sessionId))
         {
-            throw UserErrors.InvalidUserAuthentication();
+            throw userErrors.InvalidUserAuthentication();
         }
 
         return sessionId;
@@ -214,7 +215,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         var adminRoleSpec = new UserHasAdminRoleSpecification();
         if (!adminRoleSpec.IsSatisfiedBy(entity: user))
         {
-            throw UserErrors.InsufficientPermissions();
+            throw userErrors.InsufficientPermissions();
         }
 
         return true;
@@ -236,7 +237,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
 
         if (emailExists)
         {
-            throw UserErrors.EmailAlreadyExists(email: email.Value);
+            throw userErrors.EmailAlreadyExists(email: email.Value);
         }
 
         // Check for existing username second using specification
@@ -248,7 +249,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
 
         if (usernameExists)
         {
-            throw UserErrors.UsernameAlreadyExists(username: userName);
+            throw userErrors.UsernameAlreadyExists(username: userName);
         }
     }
 
@@ -266,13 +267,13 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
 
         if (visitorRole == null)
         {
-            throw UserErrors.RoleNotFoundByName(nameof(EnumCoreUserRole.Visitor));
+            throw userErrors.RoleNotFoundByName(nameof(EnumCoreUserRole.Visitor));
         }
 
         // Create user-role association using the static factory method
         var userRole = UserRoleEntity.Create(Guid.NewGuid(), userId: userId, roleId: visitorRole.Id);
         // Use the domain method to assign the role
-        user?.AssignRole(userRole: userRole);
+        user?.AssignRole(userRole: userRole, errors: userErrors);
     }
 
     /// <inheritdoc cref="IClaimsProvider.GetUserIdFromClaims" />
@@ -281,7 +282,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         string? userIdClaim = user.FindFirst(type: ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(value: userIdClaim) || !Guid.TryParse(input: userIdClaim, out Guid userId))
         {
-            throw UserErrors.InvalidUserAuthentication();
+            throw userErrors.InvalidUserAuthentication();
         }
 
         return userId;
@@ -306,7 +307,7 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
             // Prevent social login if a local account exists
             if (user!.AuthProvider == EnumAuthProvider.Local)
             {
-                throw UserErrors.EmailAlreadyExists(email: email);
+                throw userErrors.EmailAlreadyExists(email: email);
             }
 
             // Update username if a new one is provided and it's different
@@ -319,16 +320,22 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
                 );
                 if (usernameExists)
                 {
-                    throw UserErrors.UsernameAlreadyExists(username: userName);
+                    throw userErrors.UsernameAlreadyExists(username: userName);
                 }
 
-                user.UpdateUserName(newUserName: userName);
+                user.UpdateUserName(newUserName: userName, errors: userErrors);
             }
         }
         catch (NotFoundException)
         {
             // User doesn't exist, create a new one
-            user = UserEntity.CreateExternal(Guid.NewGuid(), userName!, authProvider: authProvider.Value, email: email);
+            user = UserEntity.CreateExternal(
+                Guid.NewGuid(),
+                userName!,
+                authProvider: authProvider.Value,
+                errors: userErrors,
+                email: email
+            );
 
             await AddAsync(user: user, cancellationToken: cancellationToken);
             await AssignVisitorRoleAsync(userId: user.Id, cancellationToken: cancellationToken);
@@ -350,15 +357,15 @@ public class AuthRepository(IdentityDbContext context) : IAuthRepository
         // Check if user has an email address
         if (string.IsNullOrEmpty(value: user.Email))
         {
-            throw UserErrors.EmailRequiredToSetPassword();
+            throw userErrors.EmailRequiredToSetPassword();
         }
 
         // Check if user already has a password set
         if (user.AuthProvider == EnumAuthProvider.Local)
         {
-            throw UserErrors.PasswordOnlyForExternalAuth();
+            throw userErrors.PasswordOnlyForExternalAuth();
         }
 
-        user.SetPasswordAndChangeToLocal(passwordHash: hashedPassword);
+        user.SetPasswordAndChangeToLocal(passwordHash: hashedPassword, errors: userErrors);
     }
 }

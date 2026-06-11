@@ -12,8 +12,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveArti
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminArchiveArticleHandler(IArticleRepository articleRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<AdminArchiveArticleCommand, AdminArchiveArticleResult>
+/// <param name="articleErrors">Article domain error factory.</param>
+public class AdminArchiveArticleHandler(
+    IArticleRepository articleRepository,
+    IContentUnitOfWork unitOfWork,
+    ArticleErrors articleErrors
+) : ICommandHandler<AdminArchiveArticleCommand, AdminArchiveArticleResult>
 {
     /// <inheritdoc />
     public async Task<AdminArchiveArticleResult> Handle(
@@ -32,7 +36,7 @@ public class AdminArchiveArticleHandler(IArticleRepository articleRepository, IC
 
         if (!archived)
         {
-            throw ArticleErrors.AlreadyArchived();
+            throw articleErrors.AlreadyArchived();
         }
 
         articleRepository.Update(article: article);

@@ -1,18 +1,21 @@
 using _116.Content.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Application.Commerce.Errors;
 
 /// <summary>
-/// Unit tests for <see cref="ContentOrderErrorMessage"/> static message factory methods.
+/// Unit tests for <see cref="ContentOrderErrorMessage"/> message factory methods.
 /// </summary>
 public class ContentOrderErrorMessageTests
 {
+    private readonly ContentOrderErrorMessage _message = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>("en");
+
     [Fact]
     public void AlreadySubmitted_ShouldReturnExpectedMessage()
     {
-        string message = ContentOrderErrorMessage.AlreadySubmitted();
+        string message = _message.AlreadySubmitted();
 
         message.Should().Be("Order has already been submitted.");
     }
@@ -20,7 +23,7 @@ public class ContentOrderErrorMessageTests
     [Fact]
     public void AlreadyPaid_ShouldReturnExpectedMessage()
     {
-        string message = ContentOrderErrorMessage.AlreadyPaid();
+        string message = _message.AlreadyPaid();
 
         message.Should().Be("Order is already paid.");
     }
@@ -28,7 +31,7 @@ public class ContentOrderErrorMessageTests
     [Fact]
     public void AlreadyCancelled_ShouldReturnExpectedMessage()
     {
-        string message = ContentOrderErrorMessage.AlreadyCancelled();
+        string message = _message.AlreadyCancelled();
 
         message.Should().Be("Order has already been cancelled.");
     }
@@ -36,7 +39,7 @@ public class ContentOrderErrorMessageTests
     [Fact]
     public void CannotCancelPaidOrder_ShouldReturnExpectedMessage()
     {
-        string message = ContentOrderErrorMessage.CannotCancelPaidOrder();
+        string message = _message.CannotCancelPaidOrder();
 
         message.Should().Be("A paid order cannot be cancelled.");
     }
@@ -44,7 +47,7 @@ public class ContentOrderErrorMessageTests
     [Fact]
     public void CannotAddItemToNonDraftOrder_ShouldReturnExpectedMessage()
     {
-        string message = ContentOrderErrorMessage.CannotAddItemToNonDraftOrder();
+        string message = _message.CannotAddItemToNonDraftOrder();
 
         message.Should().Be("This order can only be modified while in Draft status.");
     }
@@ -52,7 +55,7 @@ public class ContentOrderErrorMessageTests
     [Fact]
     public void MustHaveAtLeastOneItemWithTier_ShouldReturnExpectedMessage()
     {
-        string message = ContentOrderErrorMessage.MustHaveAtLeastOneItemWithTier();
+        string message = _message.MustHaveAtLeastOneItemWithTier();
 
         message
             .Should()
@@ -62,7 +65,7 @@ public class ContentOrderErrorMessageTests
     [Fact]
     public void PaymentAlreadyVerified_ShouldReturnExpectedMessage()
     {
-        string message = ContentOrderErrorMessage.PaymentAlreadyVerified();
+        string message = _message.PaymentAlreadyVerified();
 
         message.Should().Be("Payment has already been verified.");
     }
@@ -70,7 +73,7 @@ public class ContentOrderErrorMessageTests
     [Fact]
     public void PaymentAlreadyRejected_ShouldReturnExpectedMessage()
     {
-        string message = ContentOrderErrorMessage.PaymentAlreadyRejected();
+        string message = _message.PaymentAlreadyRejected();
 
         message.Should().Be("Payment has already been rejected.");
     }

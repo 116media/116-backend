@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
@@ -10,12 +11,17 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPaymen
 public class AdminVerifyPaymentValidator : AbstractValidator<AdminVerifyPaymentCommand>
 {
     /// <summary>
-    /// Configures validation rules for verifying a payment.
+    /// Initializes a new instance of <see cref="AdminVerifyPaymentValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminVerifyPaymentValidator()
+    /// <param name="msg">Content order validation error messages.</param>
+    public AdminVerifyPaymentValidator(ContentOrderErrorMessage msg)
     {
         RuleFor(x => x.OrderId).IsValidGuid("Order ID");
-        RuleFor(x => x.ReceiptUrl).ValidReceiptUrl();
-        RuleFor(x => x.AdminUserId).ValidAdminUserId();
+        RuleFor(x => x.ReceiptUrl)
+            .ValidReceiptUrl(
+                receiptUrlRequired: msg.ReceiptUrlRequired(),
+                receiptUrlTooLong: msg.ReceiptUrlTooLong(500)
+            );
+        RuleFor(x => x.AdminUserId).ValidAdminUserId(msg.AdminUserIdRequired());
     }
 }

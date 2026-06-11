@@ -1,4 +1,6 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using FluentValidation;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddArticleComment;
@@ -9,10 +11,15 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddArti
 public class PublicAddArticleCommentValidator : AbstractValidator<PublicAddArticleCommentCommand>
 {
     /// <summary>
-    /// Configures validation rules for adding an article comment.
+    /// Initializes a new instance of <see cref="PublicAddArticleCommentValidator" /> with the specified error message provider.
     /// </summary>
-    public PublicAddArticleCommentValidator()
+    /// <param name="msg">Article interaction validation error messages.</param>
+    public PublicAddArticleCommentValidator(ArticleInteractionErrorMessage msg)
     {
-        RuleFor(x => x.Body).ValidCommentBody();
+        RuleFor(x => x.Body)
+            .ValidCommentBody(
+                commentBodyRequired: msg.CommentBodyRequired(),
+                commentBodyTooLong: msg.CommentBodyTooLong(ContentConstants.MaxCommentBodyLength)
+            );
     }
 }

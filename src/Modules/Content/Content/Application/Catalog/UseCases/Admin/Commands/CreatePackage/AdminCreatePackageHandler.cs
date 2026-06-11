@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -13,10 +14,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreatePackage
 /// <param name="packageRepository">Repository for package data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="packageErrors">Package domain error factory.</param>
 public class AdminCreatePackageHandler(
     IPackageRepository packageRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    PackageErrors packageErrors
 ) : ICommandHandler<AdminCreatePackageCommand, AdminCreatePackageResult>
 {
     /// <inheritdoc />
@@ -25,7 +28,12 @@ public class AdminCreatePackageHandler(
         CancellationToken cancellationToken
     )
     {
-        var package = PackageEntity.Create(id: Guid.NewGuid(), name: command.Name, description: command.Description);
+        var package = PackageEntity.Create(
+            id: Guid.NewGuid(),
+            name: command.Name,
+            description: command.Description,
+            errors: packageErrors
+        );
 
         await packageRepository.AddAsync(package: package, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

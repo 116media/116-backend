@@ -11,8 +11,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeA
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicUnlikeArticleHandler(IArticleRepository articleRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<PublicUnlikeArticleCommand, PublicUnlikeArticleResult>
+/// <param name="articleInteractionErrors">Article interaction domain error factory.</param>
+public class PublicUnlikeArticleHandler(
+    IArticleRepository articleRepository,
+    IContentUnitOfWork unitOfWork,
+    ArticleInteractionErrors articleInteractionErrors
+) : ICommandHandler<PublicUnlikeArticleCommand, PublicUnlikeArticleResult>
 {
     /// <inheritdoc />
     public async Task<PublicUnlikeArticleResult> Handle(
@@ -33,7 +37,7 @@ public class PublicUnlikeArticleHandler(IArticleRepository articleRepository, IC
 
         if (!hasLiked)
         {
-            throw ArticleInteractionErrors.LikeNotFound();
+            throw articleInteractionErrors.LikeNotFound();
         }
 
         await articleRepository.RemoveLikeAsync(

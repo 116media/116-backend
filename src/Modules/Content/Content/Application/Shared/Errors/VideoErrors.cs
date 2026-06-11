@@ -7,12 +7,12 @@ namespace _116.Content.Application.Shared.Errors;
 /// Video domain error factory providing simple, readable exception creation.
 /// Usage: VideoErrors.NotFound(id) or VideoErrors.SlugAlreadyExists(slug)
 /// </summary>
-public static class VideoErrors
+public class VideoErrors(VideoErrorMessage msg)
 {
     /// <summary>
     /// Throws when a video is not found by its identifier.
     /// </summary>
-    public static NotFoundException NotFound(Guid id)
+    public NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("Video", "id", keyValue: id);
     }
@@ -20,106 +20,104 @@ public static class VideoErrors
     /// <summary>
     /// Throws when a video with the given slug already exists.
     /// </summary>
-    public static ConflictException SlugAlreadyExists(string slug)
+    public ConflictException SlugAlreadyExists(string slug)
     {
-        return new ConflictException(VideoErrorMessage.SlugAlreadyExists(slug: slug));
+        return new ConflictException(msg.SlugAlreadyExists(slug: slug));
     }
 
     /// <summary>
     /// Throws when a video title is required but not provided.
     /// </summary>
-    public static BadRequestException TitleRequired()
+    public BadRequestException TitleRequired()
     {
-        return new BadRequestException(VideoErrorMessage.TitleRequired());
+        return new BadRequestException(msg.TitleRequired());
     }
 
     /// <summary>
     /// Throws when a video slug is required but not provided.
     /// </summary>
-    public static BadRequestException SlugRequired()
+    public BadRequestException SlugRequired()
     {
-        return new BadRequestException(VideoErrorMessage.SlugRequired());
+        return new BadRequestException(msg.SlugRequired());
     }
 
     /// <summary>
     /// Throws when a video cannot be published because no YouTube URL has been attached.
     /// </summary>
-    public static BadRequestException CannotPublishWithoutYoutubeUrl()
+    public BadRequestException CannotPublishWithoutYoutubeUrl()
     {
-        return new BadRequestException(VideoErrorMessage.CannotPublishWithoutYoutubeUrl());
+        return new BadRequestException(msg.CannotPublishWithoutYoutubeUrl());
     }
 
     /// <summary>
     /// Throws when a hard delete is attempted on a published or approved video.
     /// </summary>
-    public static BadRequestException CannotDeletePublishedVideo()
+    public BadRequestException CannotDeletePublishedVideo()
     {
-        return new BadRequestException(VideoErrorMessage.CannotDeletePublishedVideo());
+        return new BadRequestException(msg.CannotDeletePublishedVideo());
     }
 
     /// <summary>
     /// Throws when a video is already pending payment.
     /// </summary>
-    public static ConflictException AlreadySubmitted()
+    public ConflictException AlreadySubmitted()
     {
-        return new ConflictException(VideoErrorMessage.AlreadySubmitted());
+        return new ConflictException(msg.AlreadySubmitted());
     }
 
     /// <summary>
     /// Throws when a video is already pending review.
     /// </summary>
-    public static ConflictException AlreadyPendingReview()
+    public ConflictException AlreadyPendingReview()
     {
-        return new ConflictException(VideoErrorMessage.AlreadyPendingReview());
+        return new ConflictException(msg.AlreadyPendingReview());
     }
 
     /// <summary>
     /// Throws when a video is already approved.
     /// </summary>
-    public static ConflictException AlreadyApproved()
+    public ConflictException AlreadyApproved()
     {
-        return new ConflictException(VideoErrorMessage.AlreadyApproved());
+        return new ConflictException(msg.AlreadyApproved());
     }
 
     /// <summary>
     /// Throws when a video is already published.
     /// </summary>
-    public static ConflictException AlreadyPublished()
+    public ConflictException AlreadyPublished()
     {
-        return new ConflictException(VideoErrorMessage.AlreadyPublished());
+        return new ConflictException(msg.AlreadyPublished());
     }
 
     /// <summary>
     /// Throws when a video is already rejected.
     /// </summary>
-    public static ConflictException AlreadyRejected()
+    public ConflictException AlreadyRejected()
     {
-        return new ConflictException(VideoErrorMessage.AlreadyRejected());
+        return new ConflictException(msg.AlreadyRejected());
     }
 
     /// <summary>
     /// Throws when a video is already archived.
     /// </summary>
-    public static ConflictException AlreadyArchived()
+    public ConflictException AlreadyArchived()
     {
-        return new ConflictException(VideoErrorMessage.AlreadyArchived());
+        return new ConflictException(msg.AlreadyArchived());
     }
 
     /// <summary>
     /// Throws when an invalid status transition is attempted.
     /// </summary>
-    public static BadRequestException InvalidStatusTransition(string from, string to)
+    public BadRequestException InvalidStatusTransition(string from, string to)
     {
-        return new BadRequestException(VideoErrorMessage.InvalidStatusTransition(from: from, to: to));
+        return new BadRequestException(msg.InvalidStatusTransition(from: from, to: to));
     }
 
     /// <summary>
     /// Throws when a YouTube URL is attached before the scheduled shooting date has passed.
     /// </summary>
-    public static BadRequestException CannotAttachYoutubeUrlBeforeShoot(DateTimeOffset shootingScheduledAt)
+    public BadRequestException CannotAttachYoutubeUrlBeforeShoot(DateTimeOffset shootingScheduledAt)
     {
-        return new BadRequestException(
-            VideoErrorMessage.CannotAttachYoutubeUrlBeforeShoot(shootingScheduledAt: shootingScheduledAt)
-        );
+        return new BadRequestException(msg.CannotAttachYoutubeUrlBeforeShoot(shootingScheduledAt: shootingScheduledAt));
     }
 }

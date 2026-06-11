@@ -1,10 +1,12 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Content.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides error messages for the <c>Category</c> and <c>CategoryPricing</c> domains.
 /// Covers conflict situations and validation failures related to category operations.
 /// </summary>
-public static class CategoryErrorMessage
+public class CategoryErrorMessage(IStringLocalizer<CategoryErrorMessage> localizer)
 {
     /// <summary>
     /// Gets an error message for when a category with the given slug already exists.
@@ -13,9 +15,9 @@ public static class CategoryErrorMessage
     /// <returns>
     /// A formatted error message indicating that a category with the specified slug already exists.
     /// </returns>
-    public static string AlreadyExists(string slug)
+    public string AlreadyExists(string slug)
     {
-        return $"Category with slug '{slug}' already exists";
+        return string.Format(localizer["AlreadyExists"], slug);
     }
 
     /// <summary>
@@ -24,9 +26,9 @@ public static class CategoryErrorMessage
     /// <returns>
     /// An error message indicating that the category is already active.
     /// </returns>
-    public static string AlreadyActive()
+    public string AlreadyActive()
     {
-        return "Category is already active";
+        return localizer["AlreadyActive"];
     }
 
     /// <summary>
@@ -35,9 +37,9 @@ public static class CategoryErrorMessage
     /// <returns>
     /// An error message indicating that the category is already inactive.
     /// </returns>
-    public static string AlreadyInactive()
+    public string AlreadyInactive()
     {
-        return "Category is already inactive";
+        return localizer["AlreadyInactive"];
     }
 
     /// <summary>
@@ -46,9 +48,9 @@ public static class CategoryErrorMessage
     /// <returns>
     /// An error message indicating that the category name is required.
     /// </returns>
-    public static string NameRequired()
+    public string NameRequired()
     {
-        return "Category name is required";
+        return localizer["NameRequired"];
     }
 
     /// <summary>
@@ -57,9 +59,9 @@ public static class CategoryErrorMessage
     /// <returns>
     /// An error message indicating that the category slug is required.
     /// </returns>
-    public static string SlugRequired()
+    public string SlugRequired()
     {
-        return "Category slug is required";
+        return localizer["SlugRequired"];
     }
 
     /// <summary>
@@ -68,9 +70,9 @@ public static class CategoryErrorMessage
     /// <returns>
     /// An error message indicating that this pricing tier combination already exists for the category.
     /// </returns>
-    public static string PricingAlreadyExists()
+    public string PricingAlreadyExists()
     {
-        return "This pricing tier is already configured for the category";
+        return localizer["PricingAlreadyExists"];
     }
 
     /// <summary>
@@ -79,8 +81,36 @@ public static class CategoryErrorMessage
     /// <returns>
     /// An error message indicating that the price must be a non-negative value.
     /// </returns>
-    public static string PriceMustBeNonNegative()
+    public string PriceMustBeNonNegative()
     {
-        return "Price must be zero or greater";
+        return localizer["PriceMustBeNonNegative"];
     }
+
+    /// <summary>
+    /// Gets an error message for when a category name exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string NameTooLong(int max) => string.Format(localizer["NameTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a category slug exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string SlugTooLong(int max) => string.Format(localizer["SlugTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a category slug has an invalid format.
+    /// </summary>
+    public string SlugInvalidFormat() => localizer["SlugInvalidFormat"];
+
+    /// <summary>
+    /// Gets an error message for when a category description is required.
+    /// </summary>
+    public string DescriptionRequired() => localizer["DescriptionRequired"];
+
+    /// <summary>
+    /// Gets an error message for when a category description exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string DescriptionTooLong(int max) => string.Format(localizer["DescriptionTooLong"], max);
 }

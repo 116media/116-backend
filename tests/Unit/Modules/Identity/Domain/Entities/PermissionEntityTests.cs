@@ -1,7 +1,9 @@
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -12,6 +14,8 @@ namespace _116.Unit.Tests.Modules.Identity.Domain.Entities;
 /// </summary>
 public class PermissionEntityTests
 {
+    private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
+
     #region Create Tests
 
     [Fact]
@@ -24,7 +28,13 @@ public class PermissionEntityTests
         string description = TestConstants.Permission.ValidDescription;
 
         // Act
-        var permission = PermissionEntity.Create(id, resource, action, description);
+        var permission = PermissionEntity.Create(
+            id,
+            resource,
+            action,
+            description,
+            TestErrorsFactory.CreateUserErrors()
+        );
 
         // Assert
         permission.Id.Should().Be(id);
@@ -51,7 +61,8 @@ public class PermissionEntityTests
                 id,
                 invalidResource!,
                 TestConstants.Permission.ValidAction,
-                TestConstants.Permission.ValidDescription
+                TestConstants.Permission.ValidDescription,
+                TestErrorsFactory.CreateUserErrors()
             );
 
         // Assert
@@ -73,7 +84,8 @@ public class PermissionEntityTests
                 id,
                 TestConstants.Permission.ValidResource,
                 invalidAction!,
-                TestConstants.Permission.ValidDescription
+                TestConstants.Permission.ValidDescription,
+                TestErrorsFactory.CreateUserErrors()
             );
 
         // Assert
@@ -95,7 +107,8 @@ public class PermissionEntityTests
                 id,
                 TestConstants.Permission.ValidResource,
                 TestConstants.Permission.ValidAction,
-                invalidDescription!
+                invalidDescription!,
+                TestErrorsFactory.CreateUserErrors()
             );
 
         // Assert
@@ -116,7 +129,7 @@ public class PermissionEntityTests
         string newDescription = "Updated permission description for testing.";
 
         // Act
-        permission.Update(newResource, newAction, newDescription);
+        permission.Update(newResource, newAction, newDescription, _userErrors);
 
         // Assert
         permission.Resource.Should().Be(newResource);
@@ -138,7 +151,8 @@ public class PermissionEntityTests
             permission.Update(
                 invalidResource!,
                 TestConstants.Permission.ValidAction,
-                TestConstants.Permission.ValidDescription
+                TestConstants.Permission.ValidDescription,
+                _userErrors
             );
 
         // Assert
@@ -159,7 +173,8 @@ public class PermissionEntityTests
             permission.Update(
                 TestConstants.Permission.ValidResource,
                 invalidAction!,
-                TestConstants.Permission.ValidDescription
+                TestConstants.Permission.ValidDescription,
+                _userErrors
             );
 
         // Assert
@@ -180,7 +195,8 @@ public class PermissionEntityTests
             permission.Update(
                 TestConstants.Permission.ValidResource,
                 TestConstants.Permission.ValidAction,
-                invalidDescription!
+                invalidDescription!,
+                _userErrors
             );
 
         // Assert

@@ -13,10 +13,14 @@ public static class PermissionValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the permission resource property.</param>
+    /// <param name="permissionResourceRequired">Error message when permission resource is missing.</param>
+    /// <param name="permissionResourceTooLong">Error message when permission resource exceeds maximum length.</param>
     /// <param name="isRequired">Whether the permission resource is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidPermissionResource<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
+        string permissionResourceRequired,
+        string permissionResourceTooLong,
         bool isRequired = true
     )
     {
@@ -25,19 +29,15 @@ public static class PermissionValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage("Permission resource is required")
+                .WithMessage(permissionResourceRequired)
                 .MaximumLength(maximumLength: PermissionConstants.MaxPermissionResourceLength)
-                .WithMessage(
-                    $"Permission resource cannot exceed {PermissionConstants.MaxPermissionResourceLength} characters"
-                );
+                .WithMessage(permissionResourceTooLong);
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: PermissionConstants.MaxPermissionResourceLength)
-            .WithMessage(
-                $"Permission resource cannot exceed {PermissionConstants.MaxPermissionResourceLength} characters"
-            )
+            .WithMessage(permissionResourceTooLong)
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Resource")));
     }
 
@@ -46,10 +46,14 @@ public static class PermissionValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the permission action property.</param>
+    /// <param name="permissionActionRequired">Error message when permission action is missing.</param>
+    /// <param name="permissionActionTooLong">Error message when permission action exceeds maximum length.</param>
     /// <param name="isRequired">Whether the permission action is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidPermissionAction<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
+        string permissionActionRequired,
+        string permissionActionTooLong,
         bool isRequired = true
     )
     {
@@ -58,17 +62,15 @@ public static class PermissionValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage("Permission action is required")
+                .WithMessage(permissionActionRequired)
                 .MaximumLength(maximumLength: PermissionConstants.MaxPermissionActionLength)
-                .WithMessage(
-                    $"Permission action cannot exceed {PermissionConstants.MaxPermissionActionLength} characters"
-                );
+                .WithMessage(permissionActionTooLong);
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: PermissionConstants.MaxPermissionActionLength)
-            .WithMessage($"Permission action cannot exceed {PermissionConstants.MaxPermissionActionLength} characters")
+            .WithMessage(permissionActionTooLong)
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Action")));
     }
 
@@ -77,10 +79,14 @@ public static class PermissionValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the permission description property.</param>
+    /// <param name="permissionDescriptionRequired">Error message when permission description is missing.</param>
+    /// <param name="permissionDescriptionTooLong">Error message when permission description exceeds maximum length.</param>
     /// <param name="isRequired">Whether the permission description is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidPermissionDescription<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
+        string permissionDescriptionRequired,
+        string permissionDescriptionTooLong,
         bool isRequired = true
     )
     {
@@ -89,19 +95,15 @@ public static class PermissionValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage("Permission description is required")
+                .WithMessage(permissionDescriptionRequired)
                 .MaximumLength(maximumLength: PermissionConstants.MaxPermissionDescriptionLength)
-                .WithMessage(
-                    $"Permission description cannot exceed {PermissionConstants.MaxPermissionDescriptionLength} characters"
-                );
+                .WithMessage(permissionDescriptionTooLong);
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: PermissionConstants.MaxPermissionDescriptionLength)
-            .WithMessage(
-                $"Permission description cannot exceed {PermissionConstants.MaxPermissionDescriptionLength} characters"
-            )
+            .WithMessage(permissionDescriptionTooLong)
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Description")));
     }
 }

@@ -129,12 +129,13 @@ public class ShortVideoEntity : Aggregate<Guid>
         string slug,
         string videoUrl,
         string videoStorageKey,
-        Guid authorId
+        Guid authorId,
+        ShortVideoErrors errors
     )
     {
         if (string.IsNullOrWhiteSpace(value: title))
         {
-            throw ShortVideoErrors.TitleRequired();
+            throw errors.TitleRequired();
         }
 
         return new ShortVideoEntity
@@ -162,6 +163,7 @@ public class ShortVideoEntity : Aggregate<Guid>
     /// </param>
     /// <param name="videoId">The parent full video this clip previews.</param>
     /// <param name="authorId">The identity user UUID of the admin uploading this short video.</param>
+    /// <param name="errors">The errors factory instance.</param>
     /// <returns>A new active <see cref="ShortVideoEntity" /> linked to a parent video.</returns>
     public static ShortVideoEntity CreateTeaser(
         Guid id,
@@ -170,12 +172,13 @@ public class ShortVideoEntity : Aggregate<Guid>
         string videoUrl,
         string videoStorageKey,
         Guid videoId,
-        Guid authorId
+        Guid authorId,
+        ShortVideoErrors errors
     )
     {
         if (string.IsNullOrWhiteSpace(value: title))
         {
-            throw ShortVideoErrors.TitleRequired();
+            throw errors.TitleRequired();
         }
 
         return new ShortVideoEntity
@@ -198,11 +201,12 @@ public class ShortVideoEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="title">The new display title.</param>
     /// <param name="videoId">Optional parent full video ID. <c>null</c> to make standalone.</param>
-    public void Update(string title, Guid? videoId)
+    /// <param name="errors">The errors factory instance.</param>
+    public void Update(string title, Guid? videoId, ShortVideoErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: title))
         {
-            throw ShortVideoErrors.TitleRequired();
+            throw errors.TitleRequired();
         }
 
         Title = title;

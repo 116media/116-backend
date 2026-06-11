@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -10,6 +11,8 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 /// </summary>
 public class LyricsErrorsTests
 {
+    private readonly LyricsErrors _errors = TestErrorsFactory.CreateLyricsErrors();
+
     [Fact]
     public void NotFound_WithId_ShouldReturnNotFoundException()
     {
@@ -17,7 +20,7 @@ public class LyricsErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = LyricsErrors.NotFound(id);
+        NotFoundException exception = _errors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
@@ -32,7 +35,7 @@ public class LyricsErrorsTests
         const string artistName = "Fally Ipupa";
 
         // Act
-        ConflictException exception = LyricsErrors.AlreadyExists(songTitle, artistName);
+        ConflictException exception = _errors.AlreadyExists(songTitle, artistName);
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -43,7 +46,7 @@ public class LyricsErrorsTests
     public void SongTitleRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = LyricsErrors.SongTitleRequired();
+        BadRequestException exception = _errors.SongTitleRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -54,7 +57,7 @@ public class LyricsErrorsTests
     public void ArtistNameRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = LyricsErrors.ArtistNameRequired();
+        BadRequestException exception = _errors.ArtistNameRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -65,7 +68,7 @@ public class LyricsErrorsTests
     public void LyricsTextRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = LyricsErrors.LyricsTextRequired();
+        BadRequestException exception = _errors.LyricsTextRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();

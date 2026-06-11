@@ -41,11 +41,11 @@ public class PricingTierEntity : Aggregate<Guid>
     /// <param name="description">A description of what this tier covers.</param>
     /// <returns>A new <see cref="PricingTierEntity" /> instance.</returns>
     /// <exception cref="ArgumentException">Thrown when name is empty or whitespace.</exception>
-    public static PricingTierEntity Create(Guid id, string name, string description)
+    public static PricingTierEntity Create(Guid id, string name, string description, PricingTierErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw PricingTierErrors.NameRequired();
+            throw errors.NameRequired();
         }
 
         return new PricingTierEntity
@@ -61,11 +61,12 @@ public class PricingTierEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="name">The new name for the pricing tier.</param>
     /// <param name="description">The new description for the pricing tier.</param>
-    public void Update(string name, string description)
+    /// <param name="errors">The errors factory instance.</param>
+    public void Update(string name, string description, PricingTierErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
-            throw PricingTierErrors.NameRequired();
+            throw errors.NameRequired();
         }
 
         Name = name;

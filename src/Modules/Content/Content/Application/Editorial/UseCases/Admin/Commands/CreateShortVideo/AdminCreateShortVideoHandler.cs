@@ -16,11 +16,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShort
 /// <param name="cloudinaryService">Service for uploading and deleting media assets in cloud storage.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="shortVideoErrors">Short video domain error factory.</param>
 public class AdminCreateShortVideoHandler(
     IShortVideoRepository shortVideoRepository,
     ICloudinaryService cloudinaryService,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    ShortVideoErrors shortVideoErrors
 ) : ICommandHandler<AdminCreateShortVideoCommand, AdminCreateShortVideoResult>
 {
     /// <inheritdoc />
@@ -36,7 +38,7 @@ public class AdminCreateShortVideoHandler(
 
         if (existing is not null)
         {
-            throw ShortVideoErrors.SlugAlreadyExists(slug: command.Slug);
+            throw shortVideoErrors.SlugAlreadyExists(slug: command.Slug);
         }
 
         string storageKey = $"content/short-videos/{Guid.NewGuid()}";
@@ -58,7 +60,8 @@ public class AdminCreateShortVideoHandler(
                 videoUrl: uploadResult.SecureUrl,
                 videoStorageKey: uploadResult.PublicId,
                 videoId: command.VideoId.Value,
-                authorId: command.AuthorId
+                authorId: command.AuthorId,
+                errors: shortVideoErrors
             );
         }
         else
@@ -69,7 +72,8 @@ public class AdminCreateShortVideoHandler(
                 slug: command.Slug,
                 videoUrl: uploadResult.SecureUrl,
                 videoStorageKey: uploadResult.PublicId,
-                authorId: command.AuthorId
+                authorId: command.AuthorId,
+                errors: shortVideoErrors
             );
         }
 

@@ -63,17 +63,18 @@ public class CustomerEntity : Aggregate<Guid>
         string email,
         string? phone,
         string? company,
-        string? notes
+        string? notes,
+        CustomerErrors errors
     )
     {
         if (string.IsNullOrWhiteSpace(value: fullName))
         {
-            throw CustomerErrors.FullNameRequired();
+            throw errors.FullNameRequired();
         }
 
         if (string.IsNullOrWhiteSpace(value: email))
         {
-            throw CustomerErrors.EmailRequired();
+            throw errors.EmailRequired();
         }
 
         return new CustomerEntity
@@ -95,16 +96,24 @@ public class CustomerEntity : Aggregate<Guid>
     /// <param name="phone">The new optional phone number.</param>
     /// <param name="company">The new optional company name.</param>
     /// <param name="notes">The new optional internal notes.</param>
-    public void Update(string fullName, string email, string? phone, string? company, string? notes)
+    /// <param name="errors">The errors factory instance.</param>
+    public void Update(
+        string fullName,
+        string email,
+        string? phone,
+        string? company,
+        string? notes,
+        CustomerErrors errors
+    )
     {
         if (string.IsNullOrWhiteSpace(value: fullName))
         {
-            throw CustomerErrors.FullNameRequired();
+            throw errors.FullNameRequired();
         }
 
         if (string.IsNullOrWhiteSpace(value: email))
         {
-            throw CustomerErrors.EmailRequired();
+            throw errors.EmailRequired();
         }
 
         FullName = fullName;

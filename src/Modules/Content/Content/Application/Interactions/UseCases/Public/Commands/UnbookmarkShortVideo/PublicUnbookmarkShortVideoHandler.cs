@@ -11,9 +11,11 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.Unbookm
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="shortVideoInteractionErrors">Short video interaction domain error factory.</param>
 public class PublicUnbookmarkShortVideoHandler(
     IShortVideoRepository shortVideoRepository,
-    IContentUnitOfWork unitOfWork
+    IContentUnitOfWork unitOfWork,
+    ShortVideoInteractionErrors shortVideoInteractionErrors
 ) : ICommandHandler<PublicUnbookmarkShortVideoCommand, PublicUnbookmarkShortVideoResult>
 {
     /// <inheritdoc />
@@ -35,7 +37,7 @@ public class PublicUnbookmarkShortVideoHandler(
 
         if (!hasBookmarked)
         {
-            throw ShortVideoInteractionErrors.BookmarkNotFound();
+            throw shortVideoInteractionErrors.BookmarkNotFound();
         }
 
         await shortVideoRepository.RemoveBookmarkAsync(

@@ -15,10 +15,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.RemoveCategor
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="categoryErrors">Category domain error factory.</param>
 public class AdminRemoveCategoryPricingHandler(
     ICategoryRepository categoryRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    CategoryErrors categoryErrors
 ) : ICommandHandler<AdminRemoveCategoryPricingCommand, AdminRemoveCategoryPricingResult>
 {
     /// <inheritdoc />
@@ -50,6 +52,6 @@ public class AdminRemoveCategoryPricingHandler(
             return new AdminRemoveCategoryPricingResult(Pricing: dtoList, IsSuccess: true);
         }
 
-        throw CategoryErrors.PricingNotFound(categoryId: categoryId, tierId: pricingTierId);
+        throw categoryErrors.PricingNotFound(categoryId: categoryId, tierId: pricingTierId);
     }
 }

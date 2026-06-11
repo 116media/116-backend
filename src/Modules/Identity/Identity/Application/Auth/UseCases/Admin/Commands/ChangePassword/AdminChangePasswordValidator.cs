@@ -1,4 +1,6 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
+using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword;
@@ -15,11 +17,19 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword;
 public class AdminChangePasswordValidator : AbstractValidator<AdminChangePasswordCommand>
 {
     /// <summary>
-    /// Configure validation rules for admin password change.
+    /// Initializes a new instance of <see cref="AdminChangePasswordValidator" /> with validation rules.
     /// </summary>
-    public AdminChangePasswordValidator()
+    /// <param name="msg">
+    /// Validation error messages for rule configuration.
+    /// </param>
+    public AdminChangePasswordValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.OldPassword).ValidOldPassword();
-        RuleFor(x => x.NewPassword).ValidPassword("New password");
+        RuleFor(x => x.OldPassword).ValidOldPassword(currentPasswordRequired: msg.CurrentPasswordRequired());
+        RuleFor(x => x.NewPassword)
+            .ValidPassword(
+                passwordRequired: msg.PasswordRequired(),
+                passwordTooShort: msg.PasswordTooShort("New password", UserConstants.MinPasswordLength),
+                passwordComplexity: msg.PasswordComplexity("New password")
+            );
     }
 }

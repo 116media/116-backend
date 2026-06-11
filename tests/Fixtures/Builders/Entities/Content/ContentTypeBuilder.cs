@@ -1,5 +1,6 @@
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
@@ -58,7 +59,7 @@ internal class ContentTypeBuilder
     /// </summary>
     public ContentTypeEntity Build()
     {
-        var entity = ContentTypeEntity.Create(_id, _name);
+        var entity = ContentTypeEntity.Create(_id, _name, TestErrorsFactory.CreateContentTypeErrors());
 
         if (!_isActive)
         {

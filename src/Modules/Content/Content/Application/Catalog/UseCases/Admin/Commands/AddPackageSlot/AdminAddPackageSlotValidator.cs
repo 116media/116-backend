@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
@@ -10,11 +11,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.AddPackageSlo
 public class AdminAddPackageSlotValidator : AbstractValidator<AdminAddPackageSlotCommand>
 {
     /// <summary>
-    /// Configures validation rules for adding a package slot.
+    /// Initializes a new instance of <see cref="AdminAddPackageSlotValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminAddPackageSlotValidator()
+    /// <param name="msg">Package validation error messages.</param>
+    public AdminAddPackageSlotValidator(PackageErrorMessage msg)
     {
         RuleFor(x => x.PackageId).IsValidGuid("Package ID");
-        RuleFor(x => x.Quantity).ValidSlotQuantity();
+        RuleFor(x => x.Quantity).ValidSlotQuantity(msg.SlotQuantityMustBePositive());
     }
 }

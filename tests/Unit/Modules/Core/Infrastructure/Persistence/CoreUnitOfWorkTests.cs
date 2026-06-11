@@ -1,6 +1,8 @@
+using _116.Core.Application.Shared.Errors;
 using _116.Core.Domain.Entities;
 using _116.Core.Infrastructure.Persistence;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Core;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -12,6 +14,7 @@ namespace _116.Unit.Tests.Modules.Core.Infrastructure.Persistence;
 /// </summary>
 public class CoreUnitOfWorkTests : IDisposable
 {
+    private readonly CoreErrors _coreErrors = TestErrorsFactory.CreateCoreErrors();
     private readonly CoreDbContext _context;
     private readonly CoreUnitOfWork _unitOfWork;
 
@@ -88,7 +91,7 @@ public class CoreUnitOfWorkTests : IDisposable
         await _context.SaveChangesAsync();
 
         string newUrl = "https://new-storage-url.com/file.jpg";
-        file.UpdateStorageUrl(newUrl);
+        file.UpdateStorageUrl(newUrl, _coreErrors);
 
         // Act
         int result = await _unitOfWork.CommitAsync();
@@ -132,7 +135,7 @@ public class CoreUnitOfWorkTests : IDisposable
         FileEntity newFile = FileFactory.Create();
         _context.Files.Add(newFile);
 
-        existingFile.UpdateStorageUrl("https://updated-url.com/file.jpg");
+        existingFile.UpdateStorageUrl("https://updated-url.com/file.jpg", _coreErrors);
 
         // Act
         int result = await _unitOfWork.CommitAsync();

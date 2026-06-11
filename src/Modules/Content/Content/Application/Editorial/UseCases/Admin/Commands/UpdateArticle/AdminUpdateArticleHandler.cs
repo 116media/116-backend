@@ -22,12 +22,14 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="cloudinaryService">Service for deleting Cloudinary image assets.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="articleErrors">Article domain error factory.</param>
 public partial class AdminUpdateArticleHandler(
     ICategoryRepository categoryRepository,
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
     ICloudinaryService cloudinaryService,
-    IMapper mapper
+    IMapper mapper,
+    ArticleErrors articleErrors
 ) : ICommandHandler<AdminUpdateArticleCommand, AdminUpdateArticleResult>
 {
     private static readonly Regex CloudinaryUrlRegex = MyRegex();
@@ -47,7 +49,7 @@ public partial class AdminUpdateArticleHandler(
 
         if (article.Status is EnumContentStatus.Approved or EnumContentStatus.Published or EnumContentStatus.Archived)
         {
-            throw ArticleErrors.InvalidStatusTransition(
+            throw articleErrors.InvalidStatusTransition(
                 from: article.Status.ToString(),
                 to: "Draft/PendingPayment/PendingReview/Rejected (editable)"
             );
@@ -64,7 +66,7 @@ public partial class AdminUpdateArticleHandler(
 
             if (slugConflict is not null && slugConflict.Id != article.Id)
             {
-                throw ArticleErrors.SlugAlreadyExists(slug: command.Slug);
+                throw articleErrors.SlugAlreadyExists(slug: command.Slug);
             }
         }
 

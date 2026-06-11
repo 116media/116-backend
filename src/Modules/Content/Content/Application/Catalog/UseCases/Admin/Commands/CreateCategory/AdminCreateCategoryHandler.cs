@@ -15,11 +15,13 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategor
 /// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="categoryErrors">Category domain error factory.</param>
 public class AdminCreateCategoryHandler(
     ILookupRepository lookupRepository,
     ICategoryRepository categoryRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    CategoryErrors categoryErrors
 ) : ICommandHandler<AdminCreateCategoryCommand, AdminCreateCategoryResult>
 {
     /// <inheritdoc />
@@ -39,7 +41,7 @@ public class AdminCreateCategoryHandler(
 
         if (existing is not null)
         {
-            throw CategoryErrors.AlreadyExists(slug: command.Slug);
+            throw categoryErrors.AlreadyExists(slug: command.Slug);
         }
 
         var category = CategoryEntity.Create(
@@ -49,6 +51,7 @@ public class AdminCreateCategoryHandler(
             slug: command.Slug,
             description: command.Description,
             isFree: command.IsFree,
+            errors: categoryErrors,
             isGossip: command.IsGossip
         );
 

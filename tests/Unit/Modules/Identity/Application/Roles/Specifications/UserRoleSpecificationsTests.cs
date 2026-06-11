@@ -1,6 +1,7 @@
 using _116.Identity.Application.Roles.Specifications;
 using _116.Identity.Domain.Entities;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -180,7 +181,7 @@ public class UserRoleSpecificationsTests
         // Arrange
         RoleEntity adminRole = RoleFactory.CreateAdmin();
         UserEntity user = UserFactory.CreateInactive();
-        user.AssignRole(UserRoleFactory.Create(user.Id, adminRole.Id));
+        user.AssignRole(UserRoleFactory.Create(user.Id, adminRole.Id), TestErrorsFactory.CreateUserErrors());
         UserIsActiveAdminSpecification spec = new();
 
         // Act

@@ -1,6 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -22,7 +23,7 @@ public class PricingTierEntityTests
         string description = TestConstants.Content.PricingTier.ValidDescription;
 
         // Act
-        var entity = PricingTierEntity.Create(id, name, description);
+        var entity = PricingTierEntity.Create(id, name, description, TestErrorsFactory.CreatePricingTierErrors());
 
         // Assert
         entity.Id.Should().Be(id);
@@ -38,7 +39,12 @@ public class PricingTierEntityTests
         string description = TestConstants.Content.PricingTier.ValidDescription;
 
         // Act
-        var entity = PricingTierEntity.Create(Guid.NewGuid(), TestConstants.Content.PricingTier.ValidName, description);
+        var entity = PricingTierEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.Content.PricingTier.ValidName,
+            description,
+            TestErrorsFactory.CreatePricingTierErrors()
+        );
 
         // Assert
         entity.Description.Should().Be(description);
@@ -52,7 +58,12 @@ public class PricingTierEntityTests
     {
         // Act
         Action act = () =>
-            PricingTierEntity.Create(Guid.NewGuid(), invalidName!, TestConstants.Content.PricingTier.ValidDescription);
+            PricingTierEntity.Create(
+                Guid.NewGuid(),
+                invalidName!,
+                TestConstants.Content.PricingTier.ValidDescription,
+                TestErrorsFactory.CreatePricingTierErrors()
+            );
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -69,13 +80,15 @@ public class PricingTierEntityTests
         var entity = PricingTierEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.PricingTier.ValidName,
-            TestConstants.Content.PricingTier.ValidDescription
+            TestConstants.Content.PricingTier.ValidDescription,
+            TestErrorsFactory.CreatePricingTierErrors()
         );
 
         // Act
         entity.Update(
             TestConstants.Content.PricingTier.AnotherValidName,
-            TestConstants.Content.PricingTier.ValidDescription
+            TestConstants.Content.PricingTier.ValidDescription,
+            TestErrorsFactory.CreatePricingTierErrors()
         );
 
         // Assert
@@ -93,11 +106,17 @@ public class PricingTierEntityTests
         var entity = PricingTierEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.PricingTier.ValidName,
-            TestConstants.Content.PricingTier.ValidDescription
+            TestConstants.Content.PricingTier.ValidDescription,
+            TestErrorsFactory.CreatePricingTierErrors()
         );
 
         // Act
-        Action act = () => entity.Update(invalidName!, TestConstants.Content.PricingTier.ValidDescription);
+        Action act = () =>
+            entity.Update(
+                invalidName!,
+                TestConstants.Content.PricingTier.ValidDescription,
+                TestErrorsFactory.CreatePricingTierErrors()
+            );
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -110,12 +129,17 @@ public class PricingTierEntityTests
         var entity = PricingTierEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.PricingTier.ValidName,
-            TestConstants.Content.PricingTier.ValidDescription
+            TestConstants.Content.PricingTier.ValidDescription,
+            TestErrorsFactory.CreatePricingTierErrors()
         );
         const string newDescription = "Updated pricing tier description.";
 
         // Act
-        entity.Update(TestConstants.Content.PricingTier.ValidName, newDescription);
+        entity.Update(
+            TestConstants.Content.PricingTier.ValidName,
+            newDescription,
+            TestErrorsFactory.CreatePricingTierErrors()
+        );
 
         // Assert
         entity.Description.Should().Be(newDescription);
@@ -132,7 +156,8 @@ public class PricingTierEntityTests
         var entity = PricingTierEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.PricingTier.ValidName,
-            TestConstants.Content.PricingTier.ValidDescription
+            TestConstants.Content.PricingTier.ValidDescription,
+            TestErrorsFactory.CreatePricingTierErrors()
         );
         entity.Deactivate();
 
@@ -151,7 +176,8 @@ public class PricingTierEntityTests
         var entity = PricingTierEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.PricingTier.ValidName,
-            TestConstants.Content.PricingTier.ValidDescription
+            TestConstants.Content.PricingTier.ValidDescription,
+            TestErrorsFactory.CreatePricingTierErrors()
         );
 
         // Act
@@ -172,7 +198,8 @@ public class PricingTierEntityTests
         var entity = PricingTierEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.PricingTier.ValidName,
-            TestConstants.Content.PricingTier.ValidDescription
+            TestConstants.Content.PricingTier.ValidDescription,
+            TestErrorsFactory.CreatePricingTierErrors()
         );
 
         // Act
@@ -190,7 +217,8 @@ public class PricingTierEntityTests
         var entity = PricingTierEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.PricingTier.ValidName,
-            TestConstants.Content.PricingTier.ValidDescription
+            TestConstants.Content.PricingTier.ValidDescription,
+            TestErrorsFactory.CreatePricingTierErrors()
         );
         entity.Deactivate();
 

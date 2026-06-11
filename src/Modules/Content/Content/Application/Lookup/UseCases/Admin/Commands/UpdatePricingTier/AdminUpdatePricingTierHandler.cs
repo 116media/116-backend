@@ -14,10 +14,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePricingT
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="pricingTierErrors">Pricing tier domain error factory.</param>
 public class AdminUpdatePricingTierHandler(
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    PricingTierErrors pricingTierErrors
 ) : ICommandHandler<AdminUpdatePricingTierCommand, AdminUpdatePricingTierResult>
 {
     /// <inheritdoc />
@@ -40,10 +42,10 @@ public class AdminUpdatePricingTierHandler(
 
         if (nameConflict && !string.Equals(pricingTier.Name, command.Name, StringComparison.OrdinalIgnoreCase))
         {
-            throw PricingTierErrors.AlreadyExists(name: command.Name);
+            throw pricingTierErrors.AlreadyExists(name: command.Name);
         }
 
-        pricingTier.Update(name: command.Name, description: command.Description);
+        pricingTier.Update(name: command.Name, description: command.Description, errors: pricingTierErrors);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 

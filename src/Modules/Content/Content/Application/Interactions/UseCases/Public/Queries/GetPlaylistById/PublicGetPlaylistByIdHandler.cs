@@ -12,8 +12,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetPlayl
 /// </summary>
 /// <param name="playlistRepository">Repository for playlist data access operations.</param>
 /// <param name="mapper">The mapper used to project entities to DTOs.</param>
-public class PublicGetPlaylistByIdHandler(IPlaylistRepository playlistRepository, IMapper mapper)
-    : IQueryHandler<PublicGetPlaylistByIdQuery, PublicGetPlaylistByIdResult>
+/// <param name="playlistErrors">Playlist domain error factory.</param>
+public class PublicGetPlaylistByIdHandler(
+    IPlaylistRepository playlistRepository,
+    IMapper mapper,
+    PlaylistErrors playlistErrors
+) : IQueryHandler<PublicGetPlaylistByIdQuery, PublicGetPlaylistByIdResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetPlaylistByIdResult> Handle(
@@ -30,13 +34,13 @@ public class PublicGetPlaylistByIdHandler(IPlaylistRepository playlistRepository
         {
             if (playlist.UserId != query.UserId)
             {
-                throw PlaylistErrors.NotOwner();
+                throw playlistErrors.NotOwner();
             }
 
             var dto = playlist.ToPlaylistDetailDto(mapper);
             return new PublicGetPlaylistByIdResult(Playlist: dto);
         }
 
-        throw PlaylistErrors.NotFound(id: query.Id);
+        throw playlistErrors.NotFound(id: query.Id);
     }
 }

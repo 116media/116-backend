@@ -1,10 +1,12 @@
 using _116.Identity.Application.Auth.Exceptions;
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -26,7 +28,10 @@ public class OtpRepositoryTests : IDisposable
             .Options;
 
         _context = new IdentityDbContext(options);
-        _repository = new OtpRepository(_context);
+
+        UserErrors userErrors = TestErrorsFactory.CreateUserErrors();
+
+        _repository = new OtpRepository(_context, userErrors);
     }
 
     public void Dispose()

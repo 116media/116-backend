@@ -12,8 +12,12 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicSh
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetPublicShortBySlugHandler(IShortVideoRepository shortVideoRepository, IMapper mapper)
-    : IQueryHandler<PublicGetPublicShortBySlugQuery, PublicGetPublicShortBySlugResult>
+/// <param name="shortVideoErrors">Short video domain error factory.</param>
+public class PublicGetPublicShortBySlugHandler(
+    IShortVideoRepository shortVideoRepository,
+    IMapper mapper,
+    ShortVideoErrors shortVideoErrors
+) : IQueryHandler<PublicGetPublicShortBySlugQuery, PublicGetPublicShortBySlugResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetPublicShortBySlugResult> Handle(
@@ -28,7 +32,7 @@ public class PublicGetPublicShortBySlugHandler(IShortVideoRepository shortVideoR
 
         if (shortVideo is null || !shortVideo.IsActive)
         {
-            throw ShortVideoErrors.NotFound(Guid.Empty);
+            throw shortVideoErrors.NotFound(Guid.Empty);
         }
 
         var dto = shortVideo.ToShortVideoDto(mapper);

@@ -16,12 +16,18 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrderIte
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapper for entity-to-DTO conversion.</param>
+/// <param name="contentOrderErrors">Content order domain error factory.</param>
+/// <param name="categoryErrors">Category domain error factory.</param>
+/// <param name="promotionLevelErrors">Promotion level domain error factory.</param>
 public class AdminEditOrderItemHandler(
     IContentOrderRepository contentOrderRepository,
     ICategoryRepository categoryRepository,
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    ContentOrderErrors contentOrderErrors,
+    CategoryErrors categoryErrors,
+    PromotionLevelErrors promotionLevelErrors
 ) : ICommandHandler<AdminEditOrderItemCommand, AdminEditOrderItemResult>
 {
     /// <inheritdoc />
@@ -35,9 +41,9 @@ public class AdminEditOrderItemHandler(
 
         ContentOrderEntity order =
             await contentOrderRepository.GetByIdWithItemsAsync(id: orderId, ct: cancellationToken)
-            ?? throw ContentOrderErrors.NotFound(id: orderId);
+            ?? throw contentOrderErrors.NotFound(id: orderId);
 
-        order.EnsureDraft();
+        order.EnsureDraft(contentOrderErrors);
 
         ContentOrderItemEntity item = await contentOrderRepository.GetItemByIdOrThrowAsync(
             orderId: orderId,
@@ -54,7 +60,7 @@ public class AdminEditOrderItemHandler(
                 cancellationToken: cancellationToken
             );
 
-            category.EnsureCommissionable();
+            category.EnsureCommissionable(categoryErrors);
         }
 
         decimal? promoPriceSnapshot = null;
@@ -66,7 +72,7 @@ public class AdminEditOrderItemHandler(
                 cancellationToken: cancellationToken
             );
 
-            promoLevel.EnsureActive();
+            promoLevel.EnsureActive(promotionLevelErrors);
             promoPriceSnapshot = promoLevel.PriceUsd;
         }
 

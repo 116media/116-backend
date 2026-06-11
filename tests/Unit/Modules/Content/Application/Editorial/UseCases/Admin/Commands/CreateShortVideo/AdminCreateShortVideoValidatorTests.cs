@@ -1,5 +1,6 @@
 using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShortVideo;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -15,7 +16,9 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminCreateShortVideoValidatorTests
 {
-    private readonly AdminCreateShortVideoValidator _validator = new();
+    private readonly AdminCreateShortVideoValidator _validator = new(
+        LocalizerFactory.CreateMessage<ShortVideoErrorMessage>()
+    );
 
     #region Valid Command Tests
 

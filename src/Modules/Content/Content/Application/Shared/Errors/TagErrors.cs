@@ -7,20 +7,20 @@ namespace _116.Content.Application.Shared.Errors;
 /// Tag domain error factory providing simple, readable exception creation.
 /// Usage: TagErrors.SlugAlreadyExists(slug) or TagErrors.NotFound(id)
 /// </summary>
-public static class TagErrors
+public class TagErrors(TagErrorMessage msg)
 {
     /// <summary>
     /// Throws when a tag with the given slug already exists.
     /// </summary>
-    public static ConflictException SlugAlreadyExists(string slug)
+    public ConflictException SlugAlreadyExists(string slug)
     {
-        return new ConflictException(TagErrorMessage.SlugAlreadyExists(slug: slug));
+        return new ConflictException(msg.SlugAlreadyExists(slug: slug));
     }
 
     /// <summary>
     /// Throws when a tag is not found by its identifier.
     /// </summary>
-    public static NotFoundException NotFound(Guid id)
+    public NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("Tag", "id", keyValue: id);
     }
@@ -28,16 +28,16 @@ public static class TagErrors
     /// <summary>
     /// Throws when a tag name is required but not provided.
     /// </summary>
-    public static BadRequestException NameRequired()
+    public BadRequestException NameRequired()
     {
-        return new BadRequestException(TagErrorMessage.NameRequired());
+        return new BadRequestException(msg.NameRequired());
     }
 
     /// <summary>
     /// Throws when a tag slug is required but not provided.
     /// </summary>
-    public static BadRequestException SlugRequired()
+    public BadRequestException SlugRequired()
     {
-        return new BadRequestException(TagErrorMessage.SlugRequired());
+        return new BadRequestException(msg.SlugRequired());
     }
 }

@@ -1,5 +1,7 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateContentType;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -11,7 +13,9 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminCreateContentTypeValidatorTests
 {
-    private readonly AdminCreateContentTypeValidator _validator = new();
+    private readonly AdminCreateContentTypeValidator _validator = new(
+        LocalizerFactory.CreateMessage<ContentTypeErrorMessage>()
+    );
 
     #region Valid Command Tests
 

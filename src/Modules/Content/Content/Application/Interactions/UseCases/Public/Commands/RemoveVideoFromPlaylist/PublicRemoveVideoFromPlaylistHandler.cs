@@ -11,8 +11,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.RemoveV
 /// </summary>
 /// <param name="playlistRepository">Repository for playlist data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicRemoveVideoFromPlaylistHandler(IPlaylistRepository playlistRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<PublicRemoveVideoFromPlaylistCommand, PublicRemoveVideoFromPlaylistResult>
+/// <param name="playlistErrors">Playlist domain error factory.</param>
+public class PublicRemoveVideoFromPlaylistHandler(
+    IPlaylistRepository playlistRepository,
+    IContentUnitOfWork unitOfWork,
+    PlaylistErrors playlistErrors
+) : ICommandHandler<PublicRemoveVideoFromPlaylistCommand, PublicRemoveVideoFromPlaylistResult>
 {
     /// <inheritdoc />
     public async Task<PublicRemoveVideoFromPlaylistResult> Handle(
@@ -29,7 +33,7 @@ public class PublicRemoveVideoFromPlaylistHandler(IPlaylistRepository playlistRe
         {
             if (playlist.UserId != command.UserId)
             {
-                throw PlaylistErrors.NotOwner();
+                throw playlistErrors.NotOwner();
             }
 
             await playlistRepository.RemoveVideoAsync(
@@ -43,6 +47,6 @@ public class PublicRemoveVideoFromPlaylistHandler(IPlaylistRepository playlistRe
             return new PublicRemoveVideoFromPlaylistResult(IsSuccess: true);
         }
 
-        throw PlaylistErrors.NotFound(id: command.PlaylistId);
+        throw playlistErrors.NotFound(id: command.PlaylistId);
     }
 }

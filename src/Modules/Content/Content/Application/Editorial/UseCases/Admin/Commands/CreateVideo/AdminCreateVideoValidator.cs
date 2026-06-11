@@ -1,4 +1,6 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using FluentValidation;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo;
@@ -9,18 +11,42 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo
 public class AdminCreateVideoValidator : AbstractValidator<AdminCreateVideoCommand>
 {
     /// <summary>
-    /// Configures validation rules for video draft creation.
+    /// Initializes a new instance of <see cref="AdminCreateVideoValidator" /> with the specified error message providers.
     /// </summary>
-    public AdminCreateVideoValidator()
+    /// <param name="articleMsg">Article validation error messages.</param>
+    /// <param name="videoMsg">Video validation error messages.</param>
+    /// <param name="orderMsg">Content order validation error messages.</param>
+    /// <param name="customerMsg">Customer validation error messages.</param>
+    public AdminCreateVideoValidator(
+        ArticleErrorMessage articleMsg,
+        VideoErrorMessage videoMsg,
+        ContentOrderErrorMessage orderMsg,
+        CustomerErrorMessage customerMsg
+    )
     {
-        RuleFor(x => x.CategoryId).ValidArticleCategoryId();
+        RuleFor(x => x.CategoryId).ValidArticleCategoryId(articleMsg.CategoryIdRequired());
 
-        RuleFor(x => x.Title).ValidVideoTitle();
-        RuleFor(x => x.Slug).ValidVideoSlug();
+        RuleFor(x => x.Title)
+            .ValidVideoTitle(
+                titleRequired: videoMsg.TitleRequired(),
+                titleTooLong: videoMsg.TitleTooLong(ContentConstants.MaxTitleLength)
+            );
+        RuleFor(x => x.Slug)
+            .ValidVideoSlug(
+                slugRequired: videoMsg.SlugRequired(),
+                slugTooLong: videoMsg.SlugTooLong(ContentConstants.MaxSlugLength),
+                slugInvalidFormat: videoMsg.SlugInvalidFormat()
+            );
 
-        RuleFor(x => x.Description).ValidVideoDescription();
+        RuleFor(x => x.Description).ValidVideoDescription(descriptionRequired: videoMsg.DescriptionRequired());
 
-        When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId());
-        When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId());
+        When(
+            x => x.CustomerId.HasValue,
+            () => RuleFor(x => x.OrderItemId).ValidOrderItemId(orderMsg.OrderItemIdRequired())
+        );
+        When(
+            x => x.OrderItemId.HasValue,
+            () => RuleFor(x => x.CustomerId).ValidCustomerId(customerMsg.CustomerIdRequired())
+        );
     }
 }

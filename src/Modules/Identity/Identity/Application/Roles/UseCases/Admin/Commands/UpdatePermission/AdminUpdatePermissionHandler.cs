@@ -14,10 +14,12 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdatePermissi
 /// <param name="permissionRepository">Repository for permission data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
 public class AdminUpdatePermissionHandler(
     IPermissionRepository permissionRepository,
     IIdentityUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    UserErrors userErrors
 ) : ICommandHandler<AdminUpdatePermissionCommand, AdminUpdatePermissionResult>
 {
     /// <summary>
@@ -65,7 +67,12 @@ public class AdminUpdatePermissionHandler(
             string newResource = isResourceUpdated ? resource! : permission!.Resource;
             string newDescription = isDescriptionUpdated ? description! : permission!.Description;
 
-            permission!.Update(resource: newResource, action: newAction, description: newDescription);
+            permission!.Update(
+                resource: newResource,
+                action: newAction,
+                description: newDescription,
+                errors: userErrors
+            );
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
 
@@ -83,7 +90,7 @@ public class AdminUpdatePermissionHandler(
             )
         )
         {
-            throw UserErrors.PermissionAlreadyExists(resource: resource, action: action);
+            throw userErrors.PermissionAlreadyExists(resource: resource, action: action);
         }
     }
 }

@@ -14,10 +14,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.ActivateConten
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="contentTypeErrors">Content type domain error factory.</param>
 public class AdminActivateContentTypeHandler(
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    ContentTypeErrors contentTypeErrors
 ) : ICommandHandler<AdminActivateContentTypeCommand, AdminActivateContentTypeResult>
 {
     /// <inheritdoc />
@@ -37,7 +39,7 @@ public class AdminActivateContentTypeHandler(
 
         if (!activated)
         {
-            throw ContentTypeErrors.AlreadyActive();
+            throw contentTypeErrors.AlreadyActive();
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

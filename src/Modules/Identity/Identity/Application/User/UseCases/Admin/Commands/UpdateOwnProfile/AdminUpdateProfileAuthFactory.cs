@@ -11,8 +11,12 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfil
 /// </summary>
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminUpdateProfileAuthFactory(IAuthRepository authRepository, IIdentityUnitOfWork unitOfWork)
-    : IAdminUpdateProfileAuthFactory
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+public class AdminUpdateProfileAuthFactory(
+    IAuthRepository authRepository,
+    IIdentityUnitOfWork unitOfWork,
+    UserErrors userErrors
+) : IAdminUpdateProfileAuthFactory
 {
     /// <summary>
     /// Updates an admin user's profile with new information.
@@ -42,7 +46,7 @@ public class AdminUpdateProfileAuthFactory(IAuthRepository authRepository, IIden
         if (isUsernameUpdated)
         {
             await EnsureUsernameUnique(userName!, cancellationToken: cancellationToken);
-            user!.UpdateUserName(userName!);
+            user!.UpdateUserName(newUserName: userName!, errors: userErrors);
         }
 
         if (isPhoneUpdated)
@@ -71,7 +75,7 @@ public class AdminUpdateProfileAuthFactory(IAuthRepository authRepository, IIden
     {
         if (await authRepository.ExistsByUserNameAsync(userName: username, cancellationToken: cancellationToken))
         {
-            throw UserErrors.UsernameAlreadyExists(username: username);
+            throw userErrors.UsernameAlreadyExists(username: username);
         }
     }
 
@@ -90,7 +94,7 @@ public class AdminUpdateProfileAuthFactory(IAuthRepository authRepository, IIden
 
         if (existing is not null && existing.Id != userId)
         {
-            throw UserErrors.PhoneNumberAlreadyExists(phoneNumber: fullPhone);
+            throw userErrors.PhoneNumberAlreadyExists(phoneNumber: fullPhone);
         }
     }
 }

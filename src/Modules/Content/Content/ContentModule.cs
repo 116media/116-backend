@@ -12,6 +12,8 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.Co
 using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Interactions.Persistence;
 using _116.Content.Application.Shared.Cache;
+using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -61,6 +63,40 @@ public static class ContentModule
     public static IServiceCollection AddContentModule(this IServiceCollection services)
     {
         services.AddModuleDatabase(GetModuleOptions());
+
+        // Register error message classes (IStringLocalizer-backed)
+        services.AddScoped<ArticleErrorMessage>();
+        services.AddScoped<VideoErrorMessage>();
+        services.AddScoped<ShortVideoErrorMessage>();
+        services.AddScoped<LyricsErrorMessage>();
+        services.AddScoped<CategoryErrorMessage>();
+        services.AddScoped<TagErrorMessage>();
+        services.AddScoped<ContentTypeErrorMessage>();
+        services.AddScoped<PricingTierErrorMessage>();
+        services.AddScoped<PackageErrorMessage>();
+        services.AddScoped<CustomerErrorMessage>();
+        services.AddScoped<ContentOrderErrorMessage>();
+        services.AddScoped<PlaylistErrorMessage>();
+        services.AddScoped<ArticleInteractionErrorMessage>();
+        services.AddScoped<ShortVideoInteractionErrorMessage>();
+        services.AddScoped<PromotionLevelErrorMessage>();
+
+        // Register error factory classes
+        services.AddScoped<ArticleErrors>();
+        services.AddScoped<VideoErrors>();
+        services.AddScoped<ShortVideoErrors>();
+        services.AddScoped<LyricsErrors>();
+        services.AddScoped<CategoryErrors>();
+        services.AddScoped<TagErrors>();
+        services.AddScoped<ContentTypeErrors>();
+        services.AddScoped<PricingTierErrors>();
+        services.AddScoped<PackageErrors>();
+        services.AddScoped<CustomerErrors>();
+        services.AddScoped<ContentOrderErrors>();
+        services.AddScoped<PlaylistErrors>();
+        services.AddScoped<ArticleInteractionErrors>();
+        services.AddScoped<ShortVideoInteractionErrors>();
+        services.AddScoped<PromotionLevelErrors>();
 
         // Register Mapster configuration and IMapper (thread-safe, no global state)
         TypeAdapterConfig mappingConfig = MappingRegistration.CreateConfiguration();

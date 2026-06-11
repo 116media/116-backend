@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
@@ -10,12 +11,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArtic
 public class AdminUploadArticleImageValidator : AbstractValidator<AdminUploadArticleImageCommand>
 {
     /// <summary>
-    /// Configures validation rules for article image upload.
+    /// Initializes a new instance of <see cref="AdminUploadArticleImageValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminUploadArticleImageValidator()
+    /// <param name="msg">Article validation error messages.</param>
+    public AdminUploadArticleImageValidator(ArticleErrorMessage msg)
     {
         RuleFor(x => x.ArticleId).IsValidGuid("Article ID");
 
-        RuleFor(x => x.File).ValidArticleImageFile();
+        RuleFor(x => x.File).ValidArticleImageFile(fileRequired: msg.FileRequired());
     }
 }

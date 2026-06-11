@@ -1,7 +1,9 @@
 using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +30,7 @@ public class SuperAdminSeederTests : IDisposable
     private readonly Mock<ILogger<SuperAdminRepositoryManager>> _repositoryLoggerMock;
     private readonly Mock<ILogger<SuperAdminSeedingStrategy>> _strategyLoggerMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
+    private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
     private readonly string? _originalPassword;
 
     public SuperAdminSeederTests()
@@ -64,6 +67,7 @@ public class SuperAdminSeederTests : IDisposable
         return new SuperAdminSeeder(
             context,
             _passwordServiceMock.Object,
+            _userErrors,
             _seederLoggerMock.Object,
             _repositoryLoggerMock.Object,
             _strategyLoggerMock.Object
@@ -196,7 +200,8 @@ public class SuperAdminSeederTests : IDisposable
             Guid.NewGuid(),
             SuperAdminConfiguration.Email,
             "existingadmin",
-            "hashedPassword"
+            "hashedPassword",
+            _userErrors
         );
         await context.Users.AddAsync(existingUser);
         await context.SaveChangesAsync();
@@ -224,7 +229,8 @@ public class SuperAdminSeederTests : IDisposable
             Guid.NewGuid(),
             SuperAdminConfiguration.Email,
             "existingadmin",
-            "hashedPassword"
+            "hashedPassword",
+            _userErrors
         );
         await context.Users.AddAsync(existingUser);
         await context.SaveChangesAsync();

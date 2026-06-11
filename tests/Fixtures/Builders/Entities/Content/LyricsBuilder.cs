@@ -1,5 +1,6 @@
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
@@ -85,6 +86,8 @@ internal class LyricsBuilder
     /// </summary>
     public LyricsEntity Build()
     {
+        var errors = TestErrorsFactory.CreateLyricsErrors();
+
         if (_videoId.HasValue)
         {
             return LyricsEntity.CreateForVideo(
@@ -94,7 +97,8 @@ internal class LyricsBuilder
                 artistName: _artistName,
                 lyricsText: _lyricsText,
                 language: _language,
-                authorId: _authorId
+                authorId: _authorId,
+                errors: errors
             );
         }
 
@@ -104,7 +108,8 @@ internal class LyricsBuilder
             artistName: _artistName,
             lyricsText: _lyricsText,
             language: _language,
-            authorId: _authorId
+            authorId: _authorId,
+            errors: errors
         );
     }
 }

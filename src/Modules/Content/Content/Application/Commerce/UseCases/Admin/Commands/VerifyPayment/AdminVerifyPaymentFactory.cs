@@ -1,4 +1,5 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.Contracts;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -13,12 +14,14 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPaymen
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="contentOrderErrors">Content order domain error factory.</param>
 public class AdminVerifyPaymentFactory(
     IArticleRepository articleRepository,
     IVideoRepository videoRepository,
     ILookupRepository lookupRepository,
     IContentOrderRepository contentOrderRepository,
-    IContentUnitOfWork unitOfWork
+    IContentUnitOfWork unitOfWork,
+    ContentOrderErrors contentOrderErrors
 ) : IVerifyPaymentFactory
 {
     /// <inheritdoc />
@@ -30,8 +33,8 @@ public class AdminVerifyPaymentFactory(
         CancellationToken cancellationToken
     )
     {
-        payment.Verify(adminUserId: adminUserId, receiptUrl: receiptUrl);
-        order.MarkPaid();
+        payment.Verify(adminUserId: adminUserId, receiptUrl: receiptUrl, errors: contentOrderErrors);
+        order.MarkPaid(contentOrderErrors);
 
         foreach (ContentOrderItemEntity item in order.Items)
         {

@@ -25,6 +25,7 @@ public class CoreModuleTests : IDisposable
     {
         _services = [];
         _services.AddLogging();
+        _services.AddLocalization();
 
         _cloudinarySettings = new CloudinarySettings
         {
@@ -45,6 +46,7 @@ public class CoreModuleTests : IDisposable
         // Arrange
         var services = new ServiceCollection();
         services.AddLogging();
+        services.AddLocalization();
         services.AddDbContext<CoreDbContext>(options => options.UseInMemoryDatabase("TestDb"));
 
         var cloudinarySettings = new CloudinarySettings
@@ -70,6 +72,7 @@ public class CoreModuleTests : IDisposable
         // Arrange
         var services = new ServiceCollection();
         services.AddLogging();
+        services.AddLocalization();
         services.AddDbContext<CoreDbContext>(options => options.UseInMemoryDatabase("TestDb"));
 
         var cloudinarySettings = new CloudinarySettings
@@ -96,6 +99,7 @@ public class CoreModuleTests : IDisposable
         // Arrange
         var services = new ServiceCollection();
         services.AddLogging();
+        services.AddLocalization();
         services.AddDbContext<CoreDbContext>(options => options.UseInMemoryDatabase("TestDb"));
 
         var cloudinarySettings = new CloudinarySettings
@@ -122,6 +126,7 @@ public class CoreModuleTests : IDisposable
         // Arrange
         var services = new ServiceCollection();
         services.AddLogging();
+        services.AddLocalization();
         services.AddDbContext<CoreDbContext>(options => options.UseInMemoryDatabase("TestDb"));
 
         var cloudinarySettings = new CloudinarySettings
@@ -148,6 +153,7 @@ public class CoreModuleTests : IDisposable
         // Arrange
         var services = new ServiceCollection();
         services.AddLogging();
+        services.AddLocalization();
         services.AddDbContext<CoreDbContext>(options => options.UseInMemoryDatabase("TestDb"));
 
         var cloudinarySettings = new CloudinarySettings
@@ -188,6 +194,7 @@ public class CoreModuleTests : IDisposable
         // Arrange
         var services = new ServiceCollection();
         services.AddLogging();
+        services.AddLocalization();
         services.AddSingleton(_cloudinarySettings);
 
         // Act

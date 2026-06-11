@@ -1,6 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -23,7 +24,14 @@ public class PackageSlotEntityTests
         int quantity = TestConstants.Content.PackageSlot.ValidQuantity;
 
         // Act
-        var entity = PackageSlotEntity.Create(id, packageId, categoryId, isRequired: true, quantity);
+        var entity = PackageSlotEntity.Create(
+            id,
+            packageId,
+            categoryId,
+            isRequired: true,
+            quantity,
+            TestErrorsFactory.CreatePackageErrors()
+        );
 
         // Assert
         entity.Id.Should().Be(id);
@@ -42,7 +50,8 @@ public class PackageSlotEntityTests
             Guid.NewGuid(),
             null,
             false,
-            TestConstants.Content.PackageSlot.ValidQuantity
+            TestConstants.Content.PackageSlot.ValidQuantity,
+            TestErrorsFactory.CreatePackageErrors()
         );
 
         // Assert
@@ -59,7 +68,8 @@ public class PackageSlotEntityTests
             Guid.NewGuid(),
             null,
             false,
-            TestConstants.Content.PackageSlot.AnotherValidQuantity
+            TestConstants.Content.PackageSlot.AnotherValidQuantity,
+            TestErrorsFactory.CreatePackageErrors()
         );
 
         // Assert
@@ -73,7 +83,15 @@ public class PackageSlotEntityTests
     public void Create_WithQuantityLessThanOrEqualToZero_ShouldThrowBadRequestException(int invalidQuantity)
     {
         // Act
-        Action act = () => PackageSlotEntity.Create(Guid.NewGuid(), Guid.NewGuid(), null, false, invalidQuantity);
+        Action act = () =>
+            PackageSlotEntity.Create(
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                null,
+                false,
+                invalidQuantity,
+                TestErrorsFactory.CreatePackageErrors()
+            );
 
         // Assert
         act.Should().Throw<BadRequestException>();

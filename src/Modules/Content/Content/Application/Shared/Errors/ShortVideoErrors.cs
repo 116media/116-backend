@@ -7,12 +7,12 @@ namespace _116.Content.Application.Shared.Errors;
 /// ShortVideo domain error factory providing simple, readable exception creation.
 /// Usage: ShortVideoErrors.NotFound(id) or ShortVideoErrors.AlreadyActive()
 /// </summary>
-public static class ShortVideoErrors
+public class ShortVideoErrors(ShortVideoErrorMessage msg)
 {
     /// <summary>
     /// Throws when a short video is not found by its identifier.
     /// </summary>
-    public static NotFoundException NotFound(Guid id)
+    public NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("ShortVideo", "id", keyValue: id);
     }
@@ -20,32 +20,32 @@ public static class ShortVideoErrors
     /// <summary>
     /// Throws when a short video is already active.
     /// </summary>
-    public static ConflictException AlreadyActive()
+    public ConflictException AlreadyActive()
     {
-        return new ConflictException(ShortVideoErrorMessage.AlreadyActive());
+        return new ConflictException(msg.AlreadyActive());
     }
 
     /// <summary>
     /// Throws when a short video is already inactive.
     /// </summary>
-    public static ConflictException AlreadyInactive()
+    public ConflictException AlreadyInactive()
     {
-        return new ConflictException(ShortVideoErrorMessage.AlreadyInactive());
+        return new ConflictException(msg.AlreadyInactive());
     }
 
     /// <summary>
     /// Throws when a short video title is required but not provided.
     /// </summary>
-    public static BadRequestException TitleRequired()
+    public BadRequestException TitleRequired()
     {
-        return new BadRequestException(ShortVideoErrorMessage.TitleRequired());
+        return new BadRequestException(msg.TitleRequired());
     }
 
     /// <summary>
     /// Throws when a short video with the given slug already exists.
     /// </summary>
-    public static ConflictException SlugAlreadyExists(string slug)
+    public ConflictException SlugAlreadyExists(string slug)
     {
-        return new ConflictException(ShortVideoErrorMessage.SlugAlreadyExists(slug: slug));
+        return new ConflictException(msg.SlugAlreadyExists(slug: slug));
     }
 }

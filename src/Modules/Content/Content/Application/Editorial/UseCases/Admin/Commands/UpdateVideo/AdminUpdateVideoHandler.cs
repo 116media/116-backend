@@ -18,11 +18,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="videoErrors">Video domain error factory.</param>
 public class AdminUpdateVideoHandler(
     ICategoryRepository categoryRepository,
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    VideoErrors videoErrors
 ) : ICommandHandler<AdminUpdateVideoCommand, AdminUpdateVideoResult>
 {
     /// <inheritdoc />
@@ -37,7 +39,7 @@ public class AdminUpdateVideoHandler(
 
         if (video.Status is EnumContentStatus.Approved or EnumContentStatus.Published or EnumContentStatus.Archived)
         {
-            throw VideoErrors.InvalidStatusTransition(
+            throw videoErrors.InvalidStatusTransition(
                 from: video.Status.ToString(),
                 to: "Draft/PendingPayment/PendingReview/Rejected (editable)"
             );
@@ -54,7 +56,7 @@ public class AdminUpdateVideoHandler(
 
             if (slugConflict is not null && slugConflict.Id != video.Id)
             {
-                throw VideoErrors.SlugAlreadyExists(slug: command.Slug);
+                throw videoErrors.SlugAlreadyExists(slug: command.Slug);
             }
         }
 

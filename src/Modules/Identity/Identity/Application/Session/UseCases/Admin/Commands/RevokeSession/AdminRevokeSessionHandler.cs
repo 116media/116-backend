@@ -12,8 +12,12 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Commands.RevokeSessio
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="unitOfWork">Unit of work for transaction management.</param>
-public class AdminRevokeSessionHandler(ISessionRepository sessionRepository, IIdentityUnitOfWork unitOfWork)
-    : ICommandHandler<AdminRevokeSessionCommand, AdminRevokeSessionResult>
+/// <param name="sessionErrors">Session domain error factory for generating domain exceptions.</param>
+public class AdminRevokeSessionHandler(
+    ISessionRepository sessionRepository,
+    IIdentityUnitOfWork unitOfWork,
+    SessionErrors sessionErrors
+) : ICommandHandler<AdminRevokeSessionCommand, AdminRevokeSessionResult>
 {
     /// <summary>
     /// Handles the revoke session command by soft deleting the specified session.
@@ -38,7 +42,7 @@ public class AdminRevokeSessionHandler(ISessionRepository sessionRepository, IId
         // Verify the session belongs to the user
         if (session is null || session.UserId != command.UserId)
         {
-            throw SessionErrors.SessionNotFound(sessionId: sessionId);
+            throw sessionErrors.SessionNotFound(sessionId: sessionId);
         }
 
         await sessionRepository.RevokeAsync(sessionId: sessionId, cancellationToken: cancellationToken);

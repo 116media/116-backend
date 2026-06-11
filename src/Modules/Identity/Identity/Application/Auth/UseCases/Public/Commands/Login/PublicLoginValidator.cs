@@ -1,4 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
+using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
@@ -6,17 +7,20 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
 /// <summary>
 /// Validator for the <see cref="PublicLoginCommand" /> ensuring proper user credential format.
 /// </summary>
+/// <remarks>
+/// Validates credentials and password presence for user login attempts.
+/// </remarks>
 public class PublicLoginValidator : AbstractValidator<PublicLoginCommand>
 {
     /// <summary>
-    /// Configure validation rules for public user authentication.
+    /// Initializes a new instance of <see cref="PublicLoginValidator" /> with validation rules.
     /// </summary>
-    /// <remarks>
-    /// Validates credentials and password presence for user login attempts.
-    /// </remarks>
-    public PublicLoginValidator()
+    /// <param name="msg">
+    /// Validation error messages for rule configuration.
+    /// </param>
+    public PublicLoginValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.Credentials).ValidCredentials();
-        RuleFor(x => x.Password).ValidPassword(isStrong: false);
+        RuleFor(x => x.Credentials).ValidCredentials(emailOrUsernameRequired: msg.EmailOrUsernameRequired());
+        RuleFor(x => x.Password).ValidPassword(passwordRequired: msg.PasswordRequired(), isStrong: false);
     }
 }

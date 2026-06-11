@@ -1,6 +1,8 @@
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -12,7 +14,9 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.UseCases.Admin.Comma
 /// </summary>
 public class AdminUpdateOwnProfileValidatorTests
 {
-    private readonly AdminUpdateOwnProfileValidator _validator = new();
+    private readonly AdminUpdateOwnProfileValidator _validator = new(
+        LocalizerFactory.CreateMessage<ValidationErrorMessage>("en")
+    );
 
     #region Valid Command Tests
 
@@ -155,7 +159,7 @@ public class AdminUpdateOwnProfileValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.CountryName)
-            .WithErrorMessage($"Country name cannot exceed {UserConstants.MaxCountryNameLength} characters");
+            .WithErrorMessage($"Country name cannot exceed {UserConstants.MaxCountryNameLength} characters.");
     }
 
     #endregion
@@ -205,7 +209,7 @@ public class AdminUpdateOwnProfileValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.CountryIsoCode)
-            .WithErrorMessage("Country ISO code must contain only uppercase letters");
+            .WithErrorMessage("Country ISO code must contain only uppercase letters.");
     }
 
     [Fact]
@@ -345,7 +349,7 @@ public class AdminUpdateOwnProfileValidatorTests
         result
             .ShouldHaveValidationErrorFor(x => x.PartialPhoneNumber)
             .WithErrorMessage(
-                $"Partial phone number cannot exceed {UserConstants.MaxPartialPhoneNumberLength} characters"
+                $"Partial phone number cannot exceed {UserConstants.MaxPartialPhoneNumberLength} characters."
             );
     }
 

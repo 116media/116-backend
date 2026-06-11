@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TitleRequired" xml:space="preserve">
+    <value>Short video title is required.</value>
+  </data>
+  <data name="AlreadyActive" xml:space="preserve">
+    <value>Short video is already active.</value>
+  </data>
+  <data name="AlreadyInactive" xml:space="preserve">
+    <value>Short video is already inactive.</value>
+  </data>
+  <data name="SlugAlreadyExists" xml:space="preserve">
+    <value>Short video with slug '{0}' already exists.</value>
+  </data>
+  <data name="SlugRequired" xml:space="preserve">
+    <value>Short video slug is required.</value>
+  </data>
+  <data name="TitleTooLong" xml:space="preserve">
+    <value>Short video title must not exceed {0} characters.</value>
+  </data>
+  <data name="SlugTooLong" xml:space="preserve">
+    <value>Short video slug must not exceed {0} characters.</value>
+  </data>
+  <data name="SlugInvalidFormat" xml:space="preserve">
+    <value>Short video slug must be lowercase and contain only letters, numbers, and hyphens.</value>
+  </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>Short video file is required.</value>
+  </data>
+  <data name="FileEmpty" xml:space="preserve">
+    <value>Short video file must not be empty.</value>
+  </data>
+  <data name="FileTooLarge" xml:space="preserve">
+    <value>Short video file must not exceed {0} MB.</value>
+  </data>
+  <data name="FileInvalidExtension" xml:space="preserve">
+    <value>Short video file must be one of: {0}.</value>
+  </data>
+</root>

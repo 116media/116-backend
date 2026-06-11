@@ -7,6 +7,7 @@ using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -39,7 +40,8 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
             _unitOfWorkMock.Object,
             userLookupMock.Object,
             fileRepositoryMock.Object,
-            Mapper
+            Mapper,
+            TestErrorsFactory.CreateLyricsErrors()
         );
     }
 

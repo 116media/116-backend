@@ -15,7 +15,9 @@ namespace _116.Content.Infrastructure.Repositories;
 /// Implementation of <see cref="IContentOrderRepository" /> for managing content order entities.
 /// </summary>
 /// <param name="context">The Content module database context.</param>
-public class ContentOrderRepository(ContentDbContext context) : IContentOrderRepository
+/// <param name="contentOrderErrors">Content order domain error factory.</param>
+public class ContentOrderRepository(ContentDbContext context, ContentOrderErrors contentOrderErrors)
+    : IContentOrderRepository
 {
     /// <inheritdoc />
     public async Task AddAsync(ContentOrderEntity order, CancellationToken ct = default)
@@ -173,7 +175,7 @@ public class ContentOrderRepository(ContentDbContext context) : IContentOrderRep
     {
         var specification = new ContentOrderItemByIdAndOrderIdSpecification(orderId: orderId, itemId: itemId);
         return await context.ContentOrderItems.ApplySpecification(specification: specification).FirstOrDefaultAsync(ct)
-            ?? throw ContentOrderErrors.ItemNotFound(itemId: itemId);
+            ?? throw contentOrderErrors.ItemNotFound(itemId: itemId);
     }
 
     /// <inheritdoc />
@@ -194,7 +196,7 @@ public class ContentOrderRepository(ContentDbContext context) : IContentOrderRep
     )
     {
         return await context.ContentItemTiers.FirstOrDefaultAsync(t => t.OrderItemId == itemId && t.Id == tierId, ct)
-            ?? throw ContentOrderErrors.ItemTierNotFound(tierId: tierId);
+            ?? throw contentOrderErrors.ItemTierNotFound(tierId: tierId);
     }
 
     /// <inheritdoc />

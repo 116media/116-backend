@@ -14,10 +14,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateContentT
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="contentTypeErrors">Content type domain error factory.</param>
 public class AdminUpdateContentTypeHandler(
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    ContentTypeErrors contentTypeErrors
 ) : ICommandHandler<AdminUpdateContentTypeCommand, AdminUpdateContentTypeResult>
 {
     /// <inheritdoc />
@@ -40,10 +42,10 @@ public class AdminUpdateContentTypeHandler(
 
         if (nameConflict && !string.Equals(contentType.Name, command.Name, StringComparison.OrdinalIgnoreCase))
         {
-            throw ContentTypeErrors.AlreadyExists(name: command.Name);
+            throw contentTypeErrors.AlreadyExists(name: command.Name);
         }
 
-        contentType.Update(name: command.Name);
+        contentType.Update(name: command.Name, errors: contentTypeErrors);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 

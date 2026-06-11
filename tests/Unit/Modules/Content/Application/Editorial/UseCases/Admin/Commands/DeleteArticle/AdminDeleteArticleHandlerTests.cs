@@ -5,6 +5,7 @@ using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Services;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using _116.Unit.Tests.Common.Mocks.Services;
@@ -34,7 +35,8 @@ public class AdminDeleteArticleHandlerTests
         _handler = new AdminDeleteArticleHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _cloudinaryMock.Object
+            _cloudinaryMock.Object,
+            TestErrorsFactory.CreateArticleErrors()
         );
     }
 

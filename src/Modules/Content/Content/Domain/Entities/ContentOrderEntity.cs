@@ -86,11 +86,11 @@ public class ContentOrderEntity : Aggregate<Guid>
     /// <exception cref="_116.Shared.Application.Exceptions.BadRequestException">
     /// Thrown when the order is not in <c>Draft</c> status.
     /// </exception>
-    public void EnsureDraft()
+    public void EnsureDraft(ContentOrderErrors errors)
     {
         if (Status != EnumOrderStatus.Draft)
         {
-            throw ContentOrderErrors.CannotAddItemToNonDraftOrder();
+            throw errors.CannotAddItemToNonDraftOrder();
         }
     }
 
@@ -99,9 +99,9 @@ public class ContentOrderEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="customerId">The new customer ID, or null to keep the current one.</param>
     /// <param name="packageId">The new package ID, or null to clear it.</param>
-    public void Update(Guid? customerId, Guid? packageId)
+    public void Update(Guid? customerId, Guid? packageId, ContentOrderErrors errors)
     {
-        EnsureDraft();
+        EnsureDraft(errors);
 
         if (customerId.HasValue)
         {
@@ -132,11 +132,11 @@ public class ContentOrderEntity : Aggregate<Guid>
     /// <exception cref="_116.Shared.Application.Exceptions.ConflictException">
     /// Thrown when the order is already submitted or in a later status.
     /// </exception>
-    public void Submit()
+    public void Submit(ContentOrderErrors errors)
     {
         if (Status != EnumOrderStatus.Draft)
         {
-            throw ContentOrderErrors.AlreadySubmitted();
+            throw errors.AlreadySubmitted();
         }
 
         Status = EnumOrderStatus.PendingPayment;
@@ -146,14 +146,15 @@ public class ContentOrderEntity : Aggregate<Guid>
     /// Marks the order as <c>Paid</c> after payment has been verified.
     /// Called by <c>VerifyPaymentHandler</c> alongside payment entity verification.
     /// </summary>
+    /// <param name="errors">The errors factory instance.</param>
     /// <exception cref="_116.Shared.Application.Exceptions.ConflictException">
     /// Thrown when the order is not in <c>PendingPayment</c> status.
     /// </exception>
-    public void MarkPaid()
+    public void MarkPaid(ContentOrderErrors errors)
     {
         if (Status != EnumOrderStatus.PendingPayment)
         {
-            throw ContentOrderErrors.AlreadyPaid();
+            throw errors.AlreadyPaid();
         }
 
         Status = EnumOrderStatus.Paid;
@@ -163,18 +164,19 @@ public class ContentOrderEntity : Aggregate<Guid>
     /// Cancels the order. Allowed from <c>Draft</c> or <c>PendingPayment</c> status only.
     /// Paid orders cannot be cancelled because the content creation workflow has already started.
     /// </summary>
+    /// <param name="errors">The errors factory instance.</param>
     /// <exception cref="_116.Shared.Application.Exceptions.BadRequestException">
     /// Thrown when the order is already <c>Paid</c>.
     /// </exception>
     /// <exception cref="_116.Shared.Application.Exceptions.ConflictException">
     /// Thrown when the order is already <c>Cancelled</c>.
     /// </exception>
-    public void Cancel()
+    public void Cancel(ContentOrderErrors errors)
     {
         Status = Status switch
         {
-            EnumOrderStatus.Paid => throw ContentOrderErrors.CannotCancelPaidOrder(),
-            EnumOrderStatus.Cancelled => throw ContentOrderErrors.AlreadyCancelled(),
+            EnumOrderStatus.Paid => throw errors.CannotCancelPaidOrder(),
+            EnumOrderStatus.Cancelled => throw errors.AlreadyCancelled(),
             _ => EnumOrderStatus.Cancelled,
         };
     }

@@ -11,38 +11,59 @@ public static class PackageValidation
     /// <summary>
     /// Validates package name with length constraints.
     /// </summary>
-    public static IRuleBuilderOptions<T, string?> ValidPackageName<T>(this IRuleBuilderInitial<T, string?> ruleBuilder)
-    {
-        return ruleBuilder
-            .Cascade(cascadeMode: CascadeMode.Stop)
-            .NotEmpty()
-            .WithMessage("Package name is required.")
-            .MaximumLength(maximumLength: ContentConstants.MaxPackageNameLength)
-            .WithMessage($"Package name must not exceed {ContentConstants.MaxPackageNameLength} characters.");
-    }
-
-    /// <summary>
-    /// Validates package description with required and length constraints.
-    /// </summary>
-    public static IRuleBuilderOptions<T, string?> ValidPackageDescription<T>(
-        this IRuleBuilderInitial<T, string?> ruleBuilder
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the name property.</param>
+    /// <param name="nameRequired">Error message used when the name is empty.</param>
+    /// <param name="nameTooLong">Error message used when the name exceeds the maximum length.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidPackageName<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        string nameRequired,
+        string nameTooLong
     )
     {
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage("Package description is required.")
+            .WithMessage(nameRequired)
+            .MaximumLength(maximumLength: ContentConstants.MaxPackageNameLength)
+            .WithMessage(nameTooLong);
+    }
+
+    /// <summary>
+    /// Validates package description with required and length constraints.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the description property.</param>
+    /// <param name="descriptionRequired">Error message used when the description is empty.</param>
+    /// <param name="descriptionTooLong">Error message used when the description exceeds the maximum length.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidPackageDescription<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        string descriptionRequired,
+        string descriptionTooLong
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(descriptionRequired)
             .MaximumLength(maximumLength: ContentConstants.MaxPackageDescriptionLength)
-            .WithMessage(
-                $"Package description must not exceed {ContentConstants.MaxPackageDescriptionLength} characters."
-            );
+            .WithMessage(descriptionTooLong);
     }
 
     /// <summary>
     /// Validates slot quantity ensuring it is greater than zero.
     /// </summary>
-    public static IRuleBuilderOptions<T, int> ValidSlotQuantity<T>(this IRuleBuilder<T, int> ruleBuilder)
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the slot quantity property.</param>
+    /// <param name="slotQuantityMustBePositive">Error message used when the slot quantity is not positive.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, int> ValidSlotQuantity<T>(
+        this IRuleBuilder<T, int> ruleBuilder,
+        string slotQuantityMustBePositive
+    )
     {
-        return ruleBuilder.GreaterThan(valueToCompare: 0).WithMessage("Slot quantity must be greater than zero.");
+        return ruleBuilder.GreaterThan(valueToCompare: 0).WithMessage(slotQuantityMustBePositive);
     }
 }

@@ -11,8 +11,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.DeleteP
 /// </summary>
 /// <param name="playlistRepository">Repository for playlist data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicDeletePlaylistHandler(IPlaylistRepository playlistRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<PublicDeletePlaylistCommand, PublicDeletePlaylistResult>
+/// <param name="playlistErrors">Playlist domain error factory.</param>
+public class PublicDeletePlaylistHandler(
+    IPlaylistRepository playlistRepository,
+    IContentUnitOfWork unitOfWork,
+    PlaylistErrors playlistErrors
+) : ICommandHandler<PublicDeletePlaylistCommand, PublicDeletePlaylistResult>
 {
     /// <inheritdoc />
     public async Task<PublicDeletePlaylistResult> Handle(
@@ -29,7 +33,7 @@ public class PublicDeletePlaylistHandler(IPlaylistRepository playlistRepository,
         {
             if (playlist.UserId != command.UserId)
             {
-                throw PlaylistErrors.NotOwner();
+                throw playlistErrors.NotOwner();
             }
 
             playlistRepository.Delete(playlist: playlist);
@@ -39,6 +43,6 @@ public class PublicDeletePlaylistHandler(IPlaylistRepository playlistRepository,
             return new PublicDeletePlaylistResult(IsSuccess: true);
         }
 
-        throw PlaylistErrors.NotFound(id: command.Id);
+        throw playlistErrors.NotFound(id: command.Id);
     }
 }

@@ -11,8 +11,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.Bookmar
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicBookmarkArticleHandler(IArticleRepository articleRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<PublicBookmarkArticleCommand, PublicBookmarkArticleResult>
+/// <param name="articleInteractionErrors">Article interaction domain error factory.</param>
+public class PublicBookmarkArticleHandler(
+    IArticleRepository articleRepository,
+    IContentUnitOfWork unitOfWork,
+    ArticleInteractionErrors articleInteractionErrors
+) : ICommandHandler<PublicBookmarkArticleCommand, PublicBookmarkArticleResult>
 {
     /// <inheritdoc />
     public async Task<PublicBookmarkArticleResult> Handle(
@@ -33,7 +37,7 @@ public class PublicBookmarkArticleHandler(IArticleRepository articleRepository, 
 
         if (alreadyBookmarked)
         {
-            throw ArticleInteractionErrors.AlreadyBookmarked();
+            throw articleInteractionErrors.AlreadyBookmarked();
         }
 
         var bookmark = ArticleBookmarkEntity.Create(

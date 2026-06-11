@@ -1,9 +1,11 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Content.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides error messages for article interaction operations (likes, bookmarks, comments).
 /// </summary>
-public static class ArticleInteractionErrorMessage
+public class ArticleInteractionErrorMessage(IStringLocalizer<ArticleInteractionErrorMessage> localizer)
 {
     /// <summary>
     /// Gets an error message for when a user has already liked an article.
@@ -11,9 +13,9 @@ public static class ArticleInteractionErrorMessage
     /// <returns>
     /// An error message indicating the article has already been liked.
     /// </returns>
-    public static string AlreadyLiked()
+    public string AlreadyLiked()
     {
-        return "You have already liked this article";
+        return localizer["AlreadyLiked"];
     }
 
     /// <summary>
@@ -22,9 +24,9 @@ public static class ArticleInteractionErrorMessage
     /// <returns>
     /// An error message indicating the like was not found.
     /// </returns>
-    public static string LikeNotFound()
+    public string LikeNotFound()
     {
-        return "Like not found for this article";
+        return localizer["LikeNotFound"];
     }
 
     /// <summary>
@@ -33,9 +35,9 @@ public static class ArticleInteractionErrorMessage
     /// <returns>
     /// An error message indicating the article has already been bookmarked.
     /// </returns>
-    public static string AlreadyBookmarked()
+    public string AlreadyBookmarked()
     {
-        return "You have already bookmarked this article";
+        return localizer["AlreadyBookmarked"];
     }
 
     /// <summary>
@@ -44,9 +46,9 @@ public static class ArticleInteractionErrorMessage
     /// <returns>
     /// An error message indicating the bookmark was not found.
     /// </returns>
-    public static string BookmarkNotFound()
+    public string BookmarkNotFound()
     {
-        return "Bookmark not found for this article";
+        return localizer["BookmarkNotFound"];
     }
 
     /// <summary>
@@ -56,9 +58,9 @@ public static class ArticleInteractionErrorMessage
     /// <returns>
     /// A formatted error message indicating the comment was not found.
     /// </returns>
-    public static string CommentNotFound(Guid commentId)
+    public string CommentNotFound(Guid commentId)
     {
-        return $"Comment '{commentId}' not found";
+        return string.Format(localizer["CommentNotFound"], commentId);
     }
 
     /// <summary>
@@ -67,8 +69,24 @@ public static class ArticleInteractionErrorMessage
     /// <returns>
     /// An error message indicating the user can only modify their own comments.
     /// </returns>
-    public static string NotCommentOwner()
+    public string NotCommentOwner()
     {
-        return "You can only modify your own comments";
+        return localizer["NotCommentOwner"];
     }
+
+    /// <summary>
+    /// Gets an error message for when a comment body is required.
+    /// </summary>
+    public string CommentBodyRequired() => localizer["CommentBodyRequired"];
+
+    /// <summary>
+    /// Gets an error message for when a comment body exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string CommentBodyTooLong(int max) => string.Format(localizer["CommentBodyTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a star rating is out of the valid range.
+    /// </summary>
+    public string InvalidStarRating() => localizer["InvalidStarRating"];
 }

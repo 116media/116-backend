@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -30,12 +31,16 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutu
 /// <param name="mapper">
 /// Mapster mapper for entity-to-DTO transformations.
 /// </param>
+/// <param name="videoErrors">
+/// Video domain error factory.
+/// </param>
 public class AdminAttachYoutubeVideoUrlHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
     ICloudinaryService cloudinaryService,
     IYoutubeThumbnailService youtubeThumbnailService,
-    IMapper mapper
+    IMapper mapper,
+    VideoErrors videoErrors
 ) : ICommandHandler<AdminAttachYoutubeVideoUrlCommand, AdminAttachYoutubeVideoUrlResult>
 {
     private static readonly Regex YoutubeIdRegex = new(
@@ -59,7 +64,7 @@ public class AdminAttachYoutubeVideoUrlHandler(
         string? oldThumbnailStorageKey = video.ThumbnailStorageKey;
         string extractedId = ExtractVideoId(command.YoutubeVideoUrl);
 
-        video.AttachYoutubeVideoUrl(youtubeVideoUrl: command.YoutubeVideoUrl);
+        video.AttachYoutubeVideoUrl(youtubeVideoUrl: command.YoutubeVideoUrl, errors: videoErrors);
 
         IFormFile thumbnail = await youtubeThumbnailService.DownloadThumbnailAsync(
             youtubeVideoId: extractedId,

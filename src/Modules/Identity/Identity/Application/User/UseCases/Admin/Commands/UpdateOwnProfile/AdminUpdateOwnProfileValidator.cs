@@ -1,4 +1,6 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
+using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 
 namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile;
@@ -17,14 +19,36 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfil
 public class AdminUpdateOwnProfileValidator : AbstractValidator<AdminUpdateOwnProfileCommand>
 {
     /// <summary>
-    /// Configure validation rules for admin profile update.
+    /// Initializes a new instance of <see cref="AdminUpdateOwnProfileValidator" /> with validation rules.
     /// </summary>
-    public AdminUpdateOwnProfileValidator()
+    /// <param name="msg">
+    /// Validation error messages for rule configuration.
+    /// </param>
+    public AdminUpdateOwnProfileValidator(ValidationErrorMessage msg)
     {
-        RuleFor(x => x.UserName).ValidUsername(false);
-        RuleFor(x => x.CountryName).ValidCountryName();
-        RuleFor(x => x.CountryIsoCode).ValidCountryIsoCode();
-        RuleFor(x => x.CountryDialCode).ValidCountryDialCode();
-        RuleFor(x => x.PartialPhoneNumber).ValidPartialPhoneNumber();
+        RuleFor(x => x.UserName)
+            .ValidUsername(
+                usernameRequired: msg.UsernameRequired(),
+                usernameTooShort: msg.UsernameTooShort(UserConstants.MinUserNameLength),
+                usernameTooLong: msg.UsernameTooLong(UserConstants.MaxUserNameLength),
+                usernameInvalidChars: msg.UsernameInvalidChars(),
+                isRequired: false
+            );
+        RuleFor(x => x.CountryName)
+            .ValidCountryName(countryNameTooLong: msg.CountryNameTooLong(UserConstants.MaxCountryNameLength));
+        RuleFor(x => x.CountryIsoCode)
+            .ValidCountryIsoCode(
+                countryIsoCodeTooLong: msg.CountryIsoCodeTooLong(UserConstants.MaxCountryIsoCodeLength),
+                countryIsoCodeInvalid: msg.CountryIsoCodeInvalid()
+            );
+        RuleFor(x => x.CountryDialCode)
+            .ValidCountryDialCode(
+                countryDialCodeTooLong: msg.CountryDialCodeTooLong(UserConstants.MaxCountryDialCodeLength),
+                countryDialCodeInvalid: msg.CountryDialCodeInvalid(UserConstants.MaxCountryDialCodeLength)
+            );
+        RuleFor(x => x.PartialPhoneNumber)
+            .ValidPartialPhoneNumber(
+                partialPhoneNumberTooLong: msg.PartialPhoneNumberTooLong(UserConstants.MaxPartialPhoneNumberLength)
+            );
     }
 }

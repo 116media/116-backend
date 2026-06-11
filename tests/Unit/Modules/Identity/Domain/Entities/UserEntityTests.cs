@@ -1,8 +1,10 @@
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -13,6 +15,8 @@ namespace _116.Unit.Tests.Modules.Identity.Domain.Entities;
 /// </summary>
 public class UserEntityTests
 {
+    private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
+
     #region Create Tests
 
     [Fact]
@@ -25,7 +29,7 @@ public class UserEntityTests
         string passwordHash = TestConstants.User.DefaultPasswordHash;
 
         // Act
-        var user = UserEntity.Create(id, email, userName, passwordHash);
+        var user = UserEntity.Create(id, email, userName, passwordHash, TestErrorsFactory.CreateUserErrors());
 
         // Assert
         user.Id.Should().Be(id);
@@ -52,7 +56,8 @@ public class UserEntityTests
                 id,
                 invalidEmail!,
                 TestConstants.User.ValidUserName,
-                TestConstants.User.DefaultPasswordHash
+                TestConstants.User.DefaultPasswordHash,
+                TestErrorsFactory.CreateUserErrors()
             );
 
         // Assert
@@ -74,7 +79,8 @@ public class UserEntityTests
                 id,
                 TestConstants.User.ValidEmail,
                 invalidUserName!,
-                TestConstants.User.DefaultPasswordHash
+                TestConstants.User.DefaultPasswordHash,
+                TestErrorsFactory.CreateUserErrors()
             );
 
         // Assert
@@ -96,7 +102,8 @@ public class UserEntityTests
                 id,
                 TestConstants.User.ValidEmail,
                 TestConstants.User.ValidUserName,
-                invalidPasswordHash!
+                invalidPasswordHash!,
+                TestErrorsFactory.CreateUserErrors()
             );
 
         // Assert
@@ -116,7 +123,13 @@ public class UserEntityTests
         string email = TestConstants.User.ValidEmail;
 
         // Act
-        var user = UserEntity.CreateExternal(id, userName, EnumAuthProvider.Google, email);
+        var user = UserEntity.CreateExternal(
+            id,
+            userName,
+            EnumAuthProvider.Google,
+            TestErrorsFactory.CreateUserErrors(),
+            email
+        );
 
         // Assert
         user.Id.Should().Be(id);
@@ -135,7 +148,12 @@ public class UserEntityTests
         string userName = TestConstants.User.ValidUserName;
 
         // Act
-        var user = UserEntity.CreateExternal(id, userName, EnumAuthProvider.Facebook);
+        var user = UserEntity.CreateExternal(
+            id,
+            userName,
+            EnumAuthProvider.Facebook,
+            TestErrorsFactory.CreateUserErrors()
+        );
 
         // Assert
         user.Id.Should().Be(id);
@@ -154,7 +172,13 @@ public class UserEntityTests
         var id = Guid.NewGuid();
 
         // Act
-        Action act = () => UserEntity.CreateExternal(id, invalidUserName!, EnumAuthProvider.Google);
+        Action act = () =>
+            UserEntity.CreateExternal(
+                id,
+                invalidUserName!,
+                EnumAuthProvider.Google,
+                TestErrorsFactory.CreateUserErrors()
+            );
 
         // Assert
         act.Should().Throw<Exception>();
@@ -172,7 +196,7 @@ public class UserEntityTests
         string newEmail = "newemail@example.com";
 
         // Act
-        user.UpdateEmail(newEmail);
+        user.UpdateEmail(newEmail, _userErrors);
 
         // Assert
         user.Email.Should().Be(newEmail.ToLowerInvariant());
@@ -189,7 +213,7 @@ public class UserEntityTests
         UserEntity user = UserFactory.Create();
 
         // Act
-        Action act = () => user.UpdateEmail(invalidEmail!);
+        Action act = () => user.UpdateEmail(invalidEmail!, _userErrors);
 
         // Assert
         act.Should().Throw<Exception>();
@@ -207,7 +231,7 @@ public class UserEntityTests
         string newPasswordHash = "new_hashed_password_value";
 
         // Act
-        user.UpdatePassword(newPasswordHash);
+        user.UpdatePassword(newPasswordHash, _userErrors);
 
         // Assert
         user.PasswordHash.Should().Be(newPasswordHash);
@@ -223,7 +247,7 @@ public class UserEntityTests
         UserEntity user = UserFactory.Create();
 
         // Act
-        Action act = () => user.UpdatePassword(invalidHash!);
+        Action act = () => user.UpdatePassword(invalidHash!, _userErrors);
 
         // Assert
         act.Should().Throw<Exception>();
@@ -239,7 +263,7 @@ public class UserEntityTests
         typeof(UserEntity).GetProperty(nameof(UserEntity.Email))!.SetValue(user, null);
 
         // Act
-        Action act = () => user.UpdatePassword("new_password_hash");
+        Action act = () => user.UpdatePassword("new_password_hash", _userErrors);
 
         // Assert
         act.Should().Throw<BadRequestException>().WithMessage("Cannot update password for a user without email.");
@@ -257,7 +281,7 @@ public class UserEntityTests
         string passwordHash = "valid_password_hash";
 
         // Act
-        user.SetPasswordAndChangeToLocal(passwordHash);
+        user.SetPasswordAndChangeToLocal(passwordHash, _userErrors);
 
         // Assert
         user.PasswordHash.Should().Be(passwordHash);
@@ -274,10 +298,10 @@ public class UserEntityTests
         UserEntity user = UserFactory.CreateExternal(EnumAuthProvider.Google);
 
         // Act
-        Action act = () => user.SetPasswordAndChangeToLocal(invalidPassword!);
+        Action act = () => user.SetPasswordAndChangeToLocal(invalidPassword!, _userErrors);
 
         // Assert
-        act.Should().Throw<Exception>().WithMessage("*Password does not meet security requirements*");
+        act.Should().Throw<Exception>().WithMessage("*Password does not meet security requirements.*");
     }
 
     [Fact]
@@ -290,10 +314,10 @@ public class UserEntityTests
         typeof(UserEntity).GetProperty(nameof(UserEntity.Email))!.SetValue(user, null);
 
         // Act
-        Action act = () => user.SetPasswordAndChangeToLocal("valid_password_hash");
+        Action act = () => user.SetPasswordAndChangeToLocal("valid_password_hash", _userErrors);
 
         // Assert
-        act.Should().Throw<BadRequestException>().WithMessage("An email address is required to set a password");
+        act.Should().Throw<BadRequestException>().WithMessage("An email address is required to set a password.");
     }
 
     #endregion
@@ -308,7 +332,7 @@ public class UserEntityTests
         string newUserName = "newusername";
 
         // Act
-        user.UpdateUserName(newUserName);
+        user.UpdateUserName(newUserName, _userErrors);
 
         // Assert
         user.UserName.Should().Be(newUserName);
@@ -324,7 +348,7 @@ public class UserEntityTests
         UserEntity user = UserFactory.Create();
 
         // Act
-        Action act = () => user.UpdateUserName(invalidUserName!);
+        Action act = () => user.UpdateUserName(invalidUserName!, _userErrors);
 
         // Assert
         act.Should().Throw<Exception>();
@@ -388,7 +412,7 @@ public class UserEntityTests
         UserEntity user = UserFactory.CreateVerifiedActive();
 
         // Act
-        Action act = () => user.ValidateCanLogin();
+        Action act = () => user.ValidateCanLogin(_userErrors);
 
         // Assert
         act.Should().NotThrow();
@@ -402,7 +426,7 @@ public class UserEntityTests
         typeof(UserEntity).GetProperty("IsVerified")!.SetValue(user, true);
 
         // Act
-        Action act = () => user.ValidateCanLogin();
+        Action act = () => user.ValidateCanLogin(_userErrors);
 
         // Assert
         act.Should().Throw<Exception>();
@@ -415,7 +439,7 @@ public class UserEntityTests
         UserEntity user = UserFactory.CreateUnverified(); // Not verified, Local auth
 
         // Act
-        Action act = () => user.ValidateCanLogin();
+        Action act = () => user.ValidateCanLogin(_userErrors);
 
         // Assert
         act.Should().Throw<Exception>();
@@ -432,7 +456,7 @@ public class UserEntityTests
         var roleId = Guid.NewGuid();
         UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
         UserEntity user = UserFactory.Create();
-        user.AssignRole(userRole);
+        user.AssignRole(userRole, TestErrorsFactory.CreateUserErrors());
 
         // Act
         bool result = user.HasRole(roleId);
@@ -463,7 +487,7 @@ public class UserEntityTests
         UserRoleEntity userRole = UserRoleFactory.Create(user.Id, roleId);
 
         // Act
-        user.AssignRole(userRole);
+        user.AssignRole(userRole, TestErrorsFactory.CreateUserErrors());
 
         // Assert
         user.HasRole(roleId).Should().BeTrue();
@@ -477,12 +501,12 @@ public class UserEntityTests
         var roleId = Guid.NewGuid();
         UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
         UserEntity user = UserFactory.Create();
-        user.AssignRole(userRole);
+        user.AssignRole(userRole, TestErrorsFactory.CreateUserErrors());
 
         UserRoleEntity duplicateRole = UserRoleFactory.CreateWithRoleId(roleId);
 
         // Act
-        Action act = () => user.AssignRole(duplicateRole);
+        Action act = () => user.AssignRole(duplicateRole, TestErrorsFactory.CreateUserErrors());
 
         // Assert
         act.Should().Throw<Exception>();
@@ -495,7 +519,7 @@ public class UserEntityTests
         var roleId = Guid.NewGuid();
         UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
         UserEntity user = UserFactory.Create();
-        user.AssignRole(userRole);
+        user.AssignRole(userRole, TestErrorsFactory.CreateUserErrors());
 
         // Act
         bool result = user.RemoveRole(roleId);

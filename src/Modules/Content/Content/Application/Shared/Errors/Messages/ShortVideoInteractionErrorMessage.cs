@@ -1,9 +1,11 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Content.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides error messages for short video interaction operations (likes, bookmarks).
 /// </summary>
-public static class ShortVideoInteractionErrorMessage
+public class ShortVideoInteractionErrorMessage(IStringLocalizer<ShortVideoInteractionErrorMessage> localizer)
 {
     /// <summary>
     /// Gets an error message for when a user has already liked a short video.
@@ -11,9 +13,9 @@ public static class ShortVideoInteractionErrorMessage
     /// <returns>
     /// An error message indicating the short video has already been liked.
     /// </returns>
-    public static string AlreadyLiked()
+    public string AlreadyLiked()
     {
-        return "You have already liked this short video";
+        return localizer["AlreadyLiked"];
     }
 
     /// <summary>
@@ -22,9 +24,9 @@ public static class ShortVideoInteractionErrorMessage
     /// <returns>
     /// An error message indicating the like was not found.
     /// </returns>
-    public static string LikeNotFound()
+    public string LikeNotFound()
     {
-        return "Like not found for this short video";
+        return localizer["LikeNotFound"];
     }
 
     /// <summary>
@@ -33,9 +35,9 @@ public static class ShortVideoInteractionErrorMessage
     /// <returns>
     /// An error message indicating the short video has already been bookmarked.
     /// </returns>
-    public static string AlreadyBookmarked()
+    public string AlreadyBookmarked()
     {
-        return "You have already bookmarked this short video";
+        return localizer["AlreadyBookmarked"];
     }
 
     /// <summary>
@@ -44,8 +46,8 @@ public static class ShortVideoInteractionErrorMessage
     /// <returns>
     /// An error message indicating the bookmark was not found.
     /// </returns>
-    public static string BookmarkNotFound()
+    public string BookmarkNotFound()
     {
-        return "Bookmark not found for this short video";
+        return localizer["BookmarkNotFound"];
     }
 }

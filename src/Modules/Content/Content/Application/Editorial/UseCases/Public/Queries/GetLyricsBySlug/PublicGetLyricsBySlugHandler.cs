@@ -12,7 +12,8 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBy
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetLyricsBySlugHandler(ILyricsRepository lyricsRepository, IMapper mapper)
+/// <param name="lyricsErrors">Lyrics domain error factory.</param>
+public class PublicGetLyricsBySlugHandler(ILyricsRepository lyricsRepository, IMapper mapper, LyricsErrors lyricsErrors)
     : IQueryHandler<PublicGetLyricsBySlugQuery, PublicGetLyricsBySlugResult>
 {
     /// <inheritdoc />
@@ -33,6 +34,6 @@ public class PublicGetLyricsBySlugHandler(ILyricsRepository lyricsRepository, IM
             return new PublicGetLyricsBySlugResult(Lyrics: dto);
         }
 
-        throw LyricsErrors.NotFound(id: Guid.Empty);
+        throw lyricsErrors.NotFound(id: Guid.Empty);
     }
 }

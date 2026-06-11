@@ -1,10 +1,12 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Content.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides error messages for the <c>Lyrics</c> domain.
 /// Covers conflict situations and validation failures related to lyrics operations.
 /// </summary>
-public static class LyricsErrorMessage
+public class LyricsErrorMessage(IStringLocalizer<LyricsErrorMessage> localizer)
 {
     /// <summary>
     /// Gets an error message for when a lyrics entry already exists for the given song and artist.
@@ -14,9 +16,9 @@ public static class LyricsErrorMessage
     /// <returns>
     /// A formatted error message indicating that lyrics for the specified song and artist already exist.
     /// </returns>
-    public static string AlreadyExists(string songTitle, string artistName)
+    public string AlreadyExists(string songTitle, string artistName)
     {
-        return $"Lyrics for '{songTitle}' by '{artistName}' already exist";
+        return string.Format(localizer["AlreadyExists"], songTitle, artistName);
     }
 
     /// <summary>
@@ -25,9 +27,9 @@ public static class LyricsErrorMessage
     /// <returns>
     /// An error message indicating that the song title is required.
     /// </returns>
-    public static string SongTitleRequired()
+    public string SongTitleRequired()
     {
-        return "Song title is required";
+        return localizer["SongTitleRequired"];
     }
 
     /// <summary>
@@ -36,9 +38,9 @@ public static class LyricsErrorMessage
     /// <returns>
     /// An error message indicating that the artist name is required.
     /// </returns>
-    public static string ArtistNameRequired()
+    public string ArtistNameRequired()
     {
-        return "Artist name is required";
+        return localizer["ArtistNameRequired"];
     }
 
     /// <summary>
@@ -47,8 +49,36 @@ public static class LyricsErrorMessage
     /// <returns>
     /// An error message indicating that the lyrics text is required.
     /// </returns>
-    public static string LyricsTextRequired()
+    public string LyricsTextRequired()
     {
-        return "Lyrics text is required";
+        return localizer["LyricsTextRequired"];
     }
+
+    /// <summary>
+    /// Gets an error message for when a song title exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string SongTitleTooLong(int max) => string.Format(localizer["SongTitleTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when an artist name exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string ArtistNameTooLong(int max) => string.Format(localizer["ArtistNameTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when lyrics language is required.
+    /// </summary>
+    public string LanguageRequired() => localizer["LanguageRequired"];
+
+    /// <summary>
+    /// Gets an error message for when lyrics language exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string LanguageTooLong(int max) => string.Format(localizer["LanguageTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a lyrics ID is required.
+    /// </summary>
+    public string LyricsIdRequired() => localizer["LyricsIdRequired"];
 }

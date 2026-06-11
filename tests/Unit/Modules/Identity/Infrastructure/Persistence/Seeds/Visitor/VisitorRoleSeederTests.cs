@@ -1,7 +1,9 @@
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +26,7 @@ public class VisitorRoleSeederCollection { }
 public class VisitorRoleSeederTests
 {
     private readonly Mock<ILogger<VisitorRoleSeeder>> _loggerMock;
+    private readonly UserErrors _userErrors = TestErrorsFactory.CreateUserErrors();
 
     public VisitorRoleSeederTests()
     {
@@ -48,7 +51,7 @@ public class VisitorRoleSeederTests
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
-        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object, _userErrors);
 
         // Act
         await seeder.SeedAllAsync();
@@ -67,7 +70,7 @@ public class VisitorRoleSeederTests
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
-        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object, _userErrors);
 
         // Act
         await seeder.SeedAllAsync();
@@ -83,7 +86,7 @@ public class VisitorRoleSeederTests
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
-        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object, _userErrors);
 
         // Act
         await seeder.SeedAllAsync();
@@ -101,7 +104,7 @@ public class VisitorRoleSeederTests
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
-        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object, _userErrors);
 
         // Act
         await seeder.SeedAllAsync();
@@ -123,11 +126,16 @@ public class VisitorRoleSeederTests
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed visitor role
-        var existingRole = RoleEntity.Create(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor), "Existing role");
+        var existingRole = RoleEntity.Create(
+            Guid.NewGuid(),
+            nameof(EnumCoreUserRole.Visitor),
+            "Existing role",
+            _userErrors
+        );
         await context.Roles.AddAsync(existingRole);
         await context.SaveChangesAsync();
 
-        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object, _userErrors);
 
         // Act
         await seeder.SeedAllAsync();
@@ -145,11 +153,16 @@ public class VisitorRoleSeederTests
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed visitor role
-        var existingRole = RoleEntity.Create(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor), "Existing role");
+        var existingRole = RoleEntity.Create(
+            Guid.NewGuid(),
+            nameof(EnumCoreUserRole.Visitor),
+            "Existing role",
+            _userErrors
+        );
         await context.Roles.AddAsync(existingRole);
         await context.SaveChangesAsync();
 
-        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object, _userErrors);
 
         // Act
         await seeder.SeedAllAsync();
@@ -167,11 +180,16 @@ public class VisitorRoleSeederTests
         await using var context = new IdentityDbContext(options);
 
         // Pre-seed visitor role
-        var existingRole = RoleEntity.Create(Guid.NewGuid(), nameof(EnumCoreUserRole.Visitor), "Existing role");
+        var existingRole = RoleEntity.Create(
+            Guid.NewGuid(),
+            nameof(EnumCoreUserRole.Visitor),
+            "Existing role",
+            _userErrors
+        );
         await context.Roles.AddAsync(existingRole);
         await context.SaveChangesAsync();
 
-        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object, _userErrors);
 
         // Act
         await seeder.SeedAllAsync();
@@ -196,7 +214,7 @@ public class VisitorRoleSeederTests
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
-        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object, _userErrors);
 
         // Act
         await seeder.SeedAllAsync();
@@ -221,7 +239,7 @@ public class VisitorRoleSeederTests
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
-        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object, _userErrors);
 
         // Act
         await seeder.SeedAllAsync();
@@ -246,7 +264,7 @@ public class VisitorRoleSeederTests
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
-        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object, _userErrors);
 
         // Act
         await seeder.SeedAllAsync();
@@ -275,7 +293,7 @@ public class VisitorRoleSeederTests
         // Arrange
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         await using var context = new IdentityDbContext(options);
-        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object);
+        var seeder = new VisitorRoleSeeder(context, _loggerMock.Object, _userErrors);
 
         // Act
         await seeder.SeedAllAsync();

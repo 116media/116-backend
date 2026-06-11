@@ -11,8 +11,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.DeactivateS
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminDeactivateShortVideoHandler(IShortVideoRepository shortVideoRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<AdminDeactivateShortVideoCommand, AdminDeactivateShortVideoResult>
+/// <param name="shortVideoErrors">Short video domain error factory.</param>
+public class AdminDeactivateShortVideoHandler(
+    IShortVideoRepository shortVideoRepository,
+    IContentUnitOfWork unitOfWork,
+    ShortVideoErrors shortVideoErrors
+) : ICommandHandler<AdminDeactivateShortVideoCommand, AdminDeactivateShortVideoResult>
 {
     /// <inheritdoc />
     public async Task<AdminDeactivateShortVideoResult> Handle(
@@ -31,7 +35,7 @@ public class AdminDeactivateShortVideoHandler(IShortVideoRepository shortVideoRe
 
         if (!deactivated)
         {
-            throw ShortVideoErrors.AlreadyInactive();
+            throw shortVideoErrors.AlreadyInactive();
         }
 
         shortVideoRepository.Update(shortVideo: shortVideo);

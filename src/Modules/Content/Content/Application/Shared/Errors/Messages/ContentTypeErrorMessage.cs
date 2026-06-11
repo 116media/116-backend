@@ -1,10 +1,12 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Content.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides error messages for the <c>ContentType</c> domain.
 /// Covers conflict situations and validation failures related to content type operations.
 /// </summary>
-public static class ContentTypeErrorMessage
+public class ContentTypeErrorMessage(IStringLocalizer<ContentTypeErrorMessage> localizer)
 {
     /// <summary>
     /// Gets an error message for when a content type with the given name already exists.
@@ -13,9 +15,9 @@ public static class ContentTypeErrorMessage
     /// <returns>
     /// A formatted error message indicating that a content type with the specified name already exists.
     /// </returns>
-    public static string AlreadyExists(string name)
+    public string AlreadyExists(string name)
     {
-        return $"Content type '{name}' already exists";
+        return string.Format(localizer["AlreadyExists"], name);
     }
 
     /// <summary>
@@ -24,9 +26,9 @@ public static class ContentTypeErrorMessage
     /// <returns>
     /// An error message indicating that the content type is already active.
     /// </returns>
-    public static string AlreadyActive()
+    public string AlreadyActive()
     {
-        return "Content type is already active";
+        return localizer["AlreadyActive"];
     }
 
     /// <summary>
@@ -35,9 +37,9 @@ public static class ContentTypeErrorMessage
     /// <returns>
     /// An error message indicating that the content type is already inactive.
     /// </returns>
-    public static string AlreadyInactive()
+    public string AlreadyInactive()
     {
-        return "Content type is already inactive";
+        return localizer["AlreadyInactive"];
     }
 
     /// <summary>
@@ -46,8 +48,14 @@ public static class ContentTypeErrorMessage
     /// <returns>
     /// An error message indicating that the content type name is required.
     /// </returns>
-    public static string NameRequired()
+    public string NameRequired()
     {
-        return "Content type name is required";
+        return localizer["NameRequired"];
     }
+
+    /// <summary>
+    /// Gets an error message for when a content type name exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string NameTooLong(int max) => string.Format(localizer["NameTooLong"], max);
 }

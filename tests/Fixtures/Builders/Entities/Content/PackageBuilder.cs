@@ -1,5 +1,6 @@
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
@@ -68,7 +69,7 @@ internal class PackageBuilder
     /// </summary>
     public PackageEntity Build()
     {
-        var entity = PackageEntity.Create(_id, _name, _description);
+        var entity = PackageEntity.Create(_id, _name, _description, TestErrorsFactory.CreatePackageErrors());
 
         if (!_isActive)
         {

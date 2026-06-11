@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -10,6 +11,8 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 /// </summary>
 public class TagErrorsTests
 {
+    private readonly TagErrors _errors = TestErrorsFactory.CreateTagErrors();
+
     [Fact]
     public void SlugAlreadyExists_WithSlug_ShouldReturnConflictException()
     {
@@ -17,7 +20,7 @@ public class TagErrorsTests
         string slug = "fally-ipupa";
 
         // Act
-        ConflictException exception = TagErrors.SlugAlreadyExists(slug);
+        ConflictException exception = _errors.SlugAlreadyExists(slug);
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -31,7 +34,7 @@ public class TagErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = TagErrors.NotFound(id);
+        NotFoundException exception = _errors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
@@ -42,7 +45,7 @@ public class TagErrorsTests
     public void NameRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = TagErrors.NameRequired();
+        BadRequestException exception = _errors.NameRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -53,7 +56,7 @@ public class TagErrorsTests
     public void SlugRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = TagErrors.SlugRequired();
+        BadRequestException exception = _errors.SlugRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();

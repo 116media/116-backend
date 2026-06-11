@@ -1,10 +1,12 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Content.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides error messages for the <c>Article</c> domain.
 /// Covers conflict situations and validation failures related to article operations.
 /// </summary>
-public static class ArticleErrorMessage
+public class ArticleErrorMessage(IStringLocalizer<ArticleErrorMessage> localizer)
 {
     /// <summary>
     /// Gets an error message for when an article with the given slug already exists.
@@ -13,9 +15,9 @@ public static class ArticleErrorMessage
     /// <returns>
     /// A formatted error message indicating that an article with the specified slug already exists.
     /// </returns>
-    public static string SlugAlreadyExists(string slug)
+    public string SlugAlreadyExists(string slug)
     {
-        return $"Article with slug '{slug}' already exists";
+        return string.Format(localizer["SlugAlreadyExists"], slug);
     }
 
     /// <summary>
@@ -24,9 +26,9 @@ public static class ArticleErrorMessage
     /// <returns>
     /// An error message indicating that the article title is required.
     /// </returns>
-    public static string TitleRequired()
+    public string TitleRequired()
     {
-        return "Article title is required";
+        return localizer["TitleRequired"];
     }
 
     /// <summary>
@@ -35,9 +37,9 @@ public static class ArticleErrorMessage
     /// <returns>
     /// An error message indicating that the article slug is required.
     /// </returns>
-    public static string SlugRequired()
+    public string SlugRequired()
     {
-        return "Article slug is required";
+        return localizer["SlugRequired"];
     }
 
     /// <summary>
@@ -48,57 +50,57 @@ public static class ArticleErrorMessage
     /// <returns>
     /// A formatted error message indicating that the transition from the current status to the target status is not allowed.
     /// </returns>
-    public static string InvalidStatusTransition(string from, string to)
+    public string InvalidStatusTransition(string from, string to)
     {
-        return $"Cannot transition article from '{from}' to '{to}'";
+        return string.Format(localizer["InvalidStatusTransition"], from, to);
     }
 
     /// <summary>
     /// Gets an error message for when an article is already pending payment.
     /// </summary>
-    public static string AlreadySubmitted()
+    public string AlreadySubmitted()
     {
-        return "Article is already pending payment";
+        return localizer["AlreadySubmitted"];
     }
 
     /// <summary>
     /// Gets an error message for when an article is already pending review.
     /// </summary>
-    public static string AlreadyPendingReview()
+    public string AlreadyPendingReview()
     {
-        return "Article is already pending review";
+        return localizer["AlreadyPendingReview"];
     }
 
     /// <summary>
     /// Gets an error message for when an article is already approved.
     /// </summary>
-    public static string AlreadyApproved()
+    public string AlreadyApproved()
     {
-        return "Article is already approved";
+        return localizer["AlreadyApproved"];
     }
 
     /// <summary>
     /// Gets an error message for when an article is already published.
     /// </summary>
-    public static string AlreadyPublished()
+    public string AlreadyPublished()
     {
-        return "Article is already published";
+        return localizer["AlreadyPublished"];
     }
 
     /// <summary>
     /// Gets an error message for when an article is already rejected.
     /// </summary>
-    public static string AlreadyRejected()
+    public string AlreadyRejected()
     {
-        return "Article is already rejected";
+        return localizer["AlreadyRejected"];
     }
 
     /// <summary>
     /// Gets an error message for when an article is already archived.
     /// </summary>
-    public static string AlreadyArchived()
+    public string AlreadyArchived()
     {
-        return "Article is already archived";
+        return localizer["AlreadyArchived"];
     }
 
     /// <summary>
@@ -107,8 +109,92 @@ public static class ArticleErrorMessage
     /// <returns>
     /// An error message indicating that only articles in Draft or Rejected status can be permanently deleted.
     /// </returns>
-    public static string CannotDeletePublishedArticle()
+    public string CannotDeletePublishedArticle()
     {
-        return "Only articles in Draft or Rejected status can be permanently deleted. Archive published articles instead.";
+        return localizer["CannotDeletePublishedArticle"];
     }
+
+    /// <summary>
+    /// Gets an error message for when an article title exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string TitleTooLong(int max) => string.Format(localizer["TitleTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when an article slug exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string SlugTooLong(int max) => string.Format(localizer["SlugTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when an article slug has an invalid format.
+    /// </summary>
+    public string SlugInvalidFormat() => localizer["SlugInvalidFormat"];
+
+    /// <summary>
+    /// Gets an error message for when an article headline is required.
+    /// </summary>
+    public string HeadlineRequired() => localizer["HeadlineRequired"];
+
+    /// <summary>
+    /// Gets an error message for when an article headline is too short.
+    /// </summary>
+    /// <param name="min">The minimum required length.</param>
+    public string HeadlineTooShort(int min) => string.Format(localizer["HeadlineTooShort"], min);
+
+    /// <summary>
+    /// Gets an error message for when an article headline exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string HeadlineTooLong(int max) => string.Format(localizer["HeadlineTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when an article body is required.
+    /// </summary>
+    public string BodyRequired() => localizer["BodyRequired"];
+
+    /// <summary>
+    /// Gets an error message for when an article rejection reason is required.
+    /// </summary>
+    public string RejectionReasonRequired() => localizer["RejectionReasonRequired"];
+
+    /// <summary>
+    /// Gets an error message for when an article rejection reason exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string RejectionReasonTooLong(int max) => string.Format(localizer["RejectionReasonTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a meta title is too short.
+    /// </summary>
+    /// <param name="min">The minimum required length.</param>
+    public string MetaTitleTooShort(int min) => string.Format(localizer["MetaTitleTooShort"], min);
+
+    /// <summary>
+    /// Gets an error message for when a meta title exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string MetaTitleTooLong(int max) => string.Format(localizer["MetaTitleTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when a meta description is too short.
+    /// </summary>
+    /// <param name="min">The minimum required length.</param>
+    public string MetaDescriptionTooShort(int min) => string.Format(localizer["MetaDescriptionTooShort"], min);
+
+    /// <summary>
+    /// Gets an error message for when a meta description exceeds the maximum length.
+    /// </summary>
+    /// <param name="max">The maximum allowed length.</param>
+    public string MetaDescriptionTooLong(int max) => string.Format(localizer["MetaDescriptionTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when an article image file is required.
+    /// </summary>
+    public string FileRequired() => localizer["FileRequired"];
+
+    /// <summary>
+    /// Gets an error message for when a category ID is required.
+    /// </summary>
+    public string CategoryIdRequired() => localizer["CategoryIdRequired"];
 }

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AlreadyExists" xml:space="preserve">
+    <value>Les paroles de « {0} » par « {1} » existent déjà.</value>
+  </data>
+  <data name="SongTitleRequired" xml:space="preserve">
+    <value>Le titre de la chanson est obligatoire.</value>
+  </data>
+  <data name="ArtistNameRequired" xml:space="preserve">
+    <value>Le nom de l'artiste est obligatoire.</value>
+  </data>
+  <data name="LyricsTextRequired" xml:space="preserve">
+    <value>Le texte des paroles est obligatoire.</value>
+  </data>
+  <data name="SongTitleTooLong" xml:space="preserve">
+    <value>Le titre de la chanson ne doit pas dépasser {0} caractères.</value>
+  </data>
+  <data name="ArtistNameTooLong" xml:space="preserve">
+    <value>Le nom de l'artiste ne doit pas dépasser {0} caractères.</value>
+  </data>
+  <data name="LanguageRequired" xml:space="preserve">
+    <value>La langue des paroles est obligatoire.</value>
+  </data>
+  <data name="LanguageTooLong" xml:space="preserve">
+    <value>La langue des paroles ne doit pas dépasser {0} caractères.</value>
+  </data>
+  <data name="LyricsIdRequired" xml:space="preserve">
+    <value>L'identifiant des paroles est obligatoire.</value>
+  </data>
+</root>

@@ -11,8 +11,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.Unbookm
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicUnbookmarkArticleHandler(IArticleRepository articleRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<PublicUnbookmarkArticleCommand, PublicUnbookmarkArticleResult>
+/// <param name="articleInteractionErrors">Article interaction domain error factory.</param>
+public class PublicUnbookmarkArticleHandler(
+    IArticleRepository articleRepository,
+    IContentUnitOfWork unitOfWork,
+    ArticleInteractionErrors articleInteractionErrors
+) : ICommandHandler<PublicUnbookmarkArticleCommand, PublicUnbookmarkArticleResult>
 {
     /// <inheritdoc />
     public async Task<PublicUnbookmarkArticleResult> Handle(
@@ -33,7 +37,7 @@ public class PublicUnbookmarkArticleHandler(IArticleRepository articleRepository
 
         if (!hasBookmarked)
         {
-            throw ArticleInteractionErrors.BookmarkNotFound();
+            throw articleInteractionErrors.BookmarkNotFound();
         }
 
         await articleRepository.RemoveBookmarkAsync(

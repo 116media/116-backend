@@ -1,10 +1,12 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeleteRole;
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -21,14 +23,21 @@ public class AdminSoftDeleteRoleHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
+    private readonly UserErrors _userErrors;
     private readonly AdminSoftDeleteRoleHandler _handler;
 
     public AdminSoftDeleteRoleHandlerTests()
     {
         _roleRepositoryMock = MockRoleRepository.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
+        _userErrors = TestErrorsFactory.CreateUserErrors();
 
-        _handler = new AdminSoftDeleteRoleHandler(_roleRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
+        _handler = new AdminSoftDeleteRoleHandler(
+            _roleRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            Mapper,
+            _userErrors
+        );
     }
 
     #region Success Cases

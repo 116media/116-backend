@@ -1,6 +1,7 @@
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -22,7 +23,7 @@ public class TagEntityTests
         string slug = TestConstants.Content.Tag.ValidSlug;
 
         // Act
-        var entity = TagEntity.Create(id, name, slug);
+        var entity = TagEntity.Create(id, name, slug, TestErrorsFactory.CreateTagErrors());
 
         // Assert
         entity.Id.Should().Be(id);
@@ -37,7 +38,13 @@ public class TagEntityTests
     public void Create_WithInvalidName_ShouldThrowBadRequestException(string? invalidName)
     {
         // Act
-        Action act = () => TagEntity.Create(Guid.NewGuid(), invalidName!, TestConstants.Content.Tag.ValidSlug);
+        Action act = () =>
+            TagEntity.Create(
+                Guid.NewGuid(),
+                invalidName!,
+                TestConstants.Content.Tag.ValidSlug,
+                TestErrorsFactory.CreateTagErrors()
+            );
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -50,7 +57,13 @@ public class TagEntityTests
     public void Create_WithInvalidSlug_ShouldThrowBadRequestException(string? invalidSlug)
     {
         // Act
-        Action act = () => TagEntity.Create(Guid.NewGuid(), TestConstants.Content.Tag.ValidName, invalidSlug!);
+        Action act = () =>
+            TagEntity.Create(
+                Guid.NewGuid(),
+                TestConstants.Content.Tag.ValidName,
+                invalidSlug!,
+                TestErrorsFactory.CreateTagErrors()
+            );
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -67,11 +80,12 @@ public class TagEntityTests
         var tag = TagEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.Tag.ValidName,
-            TestConstants.Content.Tag.ValidSlug
+            TestConstants.Content.Tag.ValidSlug,
+            TestErrorsFactory.CreateTagErrors()
         );
 
         // Act
-        tag.Update(name: "New Name", slug: "new-slug");
+        tag.Update(name: "New Name", slug: "new-slug", errors: TestErrorsFactory.CreateTagErrors());
 
         // Assert
         tag.Name.Should().Be("New Name");
@@ -88,11 +102,13 @@ public class TagEntityTests
         var tag = TagEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.Tag.ValidName,
-            TestConstants.Content.Tag.ValidSlug
+            TestConstants.Content.Tag.ValidSlug,
+            TestErrorsFactory.CreateTagErrors()
         );
 
         // Act
-        Action act = () => tag.Update(name: invalidName!, slug: "valid-slug");
+        Action act = () =>
+            tag.Update(name: invalidName!, slug: "valid-slug", errors: TestErrorsFactory.CreateTagErrors());
 
         // Assert
         act.Should().Throw<BadRequestException>();
@@ -108,11 +124,13 @@ public class TagEntityTests
         var tag = TagEntity.Create(
             Guid.NewGuid(),
             TestConstants.Content.Tag.ValidName,
-            TestConstants.Content.Tag.ValidSlug
+            TestConstants.Content.Tag.ValidSlug,
+            TestErrorsFactory.CreateTagErrors()
         );
 
         // Act
-        Action act = () => tag.Update(name: "Valid Name", slug: invalidSlug!);
+        Action act = () =>
+            tag.Update(name: "Valid Name", slug: invalidSlug!, errors: TestErrorsFactory.CreateTagErrors());
 
         // Assert
         act.Should().Throw<BadRequestException>();

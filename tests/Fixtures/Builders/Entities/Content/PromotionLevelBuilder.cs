@@ -1,5 +1,6 @@
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
@@ -91,7 +92,14 @@ internal class PromotionLevelBuilder
     /// </summary>
     public PromotionLevelEntity Build()
     {
-        var entity = PromotionLevelEntity.Create(_id, _name, _durationDays, _priceUsd, _spotPriority);
+        var entity = PromotionLevelEntity.Create(
+            _id,
+            _name,
+            _durationDays,
+            _priceUsd,
+            _spotPriority,
+            TestErrorsFactory.CreatePromotionLevelErrors()
+        );
 
         if (!_isActive)
         {

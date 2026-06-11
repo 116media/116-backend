@@ -32,6 +32,8 @@ using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Application.Shared.Authorizations.Extensions;
+using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.Shared.Exceptions.Handlers;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
@@ -104,6 +106,16 @@ public static class IdentityModule
     public static IServiceCollection AddIdentityModule(this IServiceCollection services)
     {
         services.AddModuleDatabase(GetModuleOptions());
+
+        // Register error message classes (IStringLocalizer-backed)
+        services.AddScoped<ValidationErrorMessage>();
+        services.AddScoped<AuthenticationErrorMessage>();
+        services.AddScoped<AuthorizationErrorMessage>();
+        services.AddScoped<ConflictErrorMessage>();
+
+        // Register error factory classes
+        services.AddScoped<UserErrors>();
+        services.AddScoped<SessionErrors>();
 
         // Register Mapster configuration and IMapper (thread-safe, no global state)
         TypeAdapterConfig mappingConfig = MappingRegistration.CreateConfiguration();

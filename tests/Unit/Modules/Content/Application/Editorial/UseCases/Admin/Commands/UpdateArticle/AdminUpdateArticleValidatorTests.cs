@@ -1,5 +1,7 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticle;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -11,7 +13,11 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateArticleValidatorTests
 {
-    private readonly AdminUpdateArticleValidator _validator = new();
+    private readonly AdminUpdateArticleValidator _validator = new(
+        LocalizerFactory.CreateMessage<ArticleErrorMessage>(),
+        LocalizerFactory.CreateMessage<ContentOrderErrorMessage>(),
+        LocalizerFactory.CreateMessage<CustomerErrorMessage>()
+    );
 
     private static AdminUpdateArticleCommand ValidCommand() =>
         new(
@@ -113,7 +119,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.CategoryId)
-                && e.ErrorMessage == "Category ID is required."
+                && e.ErrorMessage == "Article category ID is required."
             );
     }
 
@@ -333,7 +339,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.OrderItemId)
-                && e.ErrorMessage == "Order item ID is required when customer ID is provided."
+                && e.ErrorMessage == "Order item ID is required."
             );
     }
 
@@ -356,7 +362,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.CustomerId)
-                && e.ErrorMessage == "Customer ID is required when order item ID is provided."
+                && e.ErrorMessage == "Customer ID is required."
             );
     }
 

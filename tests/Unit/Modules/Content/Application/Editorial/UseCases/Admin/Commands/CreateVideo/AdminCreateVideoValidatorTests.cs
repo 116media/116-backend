@@ -1,5 +1,7 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -11,7 +13,12 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminCreateVideoValidatorTests
 {
-    private readonly AdminCreateVideoValidator _validator = new();
+    private readonly AdminCreateVideoValidator _validator = new(
+        LocalizerFactory.CreateMessage<ArticleErrorMessage>(),
+        LocalizerFactory.CreateMessage<VideoErrorMessage>(),
+        LocalizerFactory.CreateMessage<ContentOrderErrorMessage>(),
+        LocalizerFactory.CreateMessage<CustomerErrorMessage>()
+    );
 
     #region Valid Command Tests
 
@@ -89,7 +96,7 @@ public class AdminCreateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateVideoCommand.CategoryId)
-                && e.ErrorMessage == "Category ID is required."
+                && e.ErrorMessage == "Article category ID is required."
             );
     }
 
@@ -239,7 +246,7 @@ public class AdminCreateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateVideoCommand.OrderItemId)
-                && e.ErrorMessage == "Order item ID is required when customer ID is provided."
+                && e.ErrorMessage == "Order item ID is required."
             );
     }
 
@@ -267,7 +274,7 @@ public class AdminCreateVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateVideoCommand.CustomerId)
-                && e.ErrorMessage == "Customer ID is required when order item ID is provided."
+                && e.ErrorMessage == "Customer ID is required."
             );
     }
 

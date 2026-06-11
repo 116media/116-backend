@@ -2,7 +2,7 @@ using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.DTOs;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
 using AwesomeAssertions;
 using Mapster;
 using MapsterMapper;

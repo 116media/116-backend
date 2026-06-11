@@ -1,4 +1,5 @@
 using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -9,6 +10,10 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Shared.Errors.Messages;
 /// </summary>
 public class AuthorizationErrorMessageTests
 {
+    private readonly AuthorizationErrorMessage _message = LocalizerFactory.CreateMessage<AuthorizationErrorMessage>(
+        "en"
+    );
+
     [Fact]
     public void AccountInactive_WithEmail_ShouldReturnFormattedMessage()
     {
@@ -16,7 +21,7 @@ public class AuthorizationErrorMessageTests
         string email = "user@example.com";
 
         // Act
-        string message = AuthorizationErrorMessage.AccountInactive(email);
+        string message = _message.AccountInactive(email);
 
         // Assert
         message.Should().Be($"Account associated with '{email}' is inactive. Please contact support for assistance.");
@@ -29,7 +34,7 @@ public class AuthorizationErrorMessageTests
         string email = "newuser@example.com";
 
         // Act
-        string message = AuthorizationErrorMessage.AccountNotVerified(email);
+        string message = _message.AccountNotVerified(email);
 
         // Assert
         message
@@ -43,9 +48,9 @@ public class AuthorizationErrorMessageTests
     public void AccessDenied_ShouldReturnCorrectMessage()
     {
         // Act
-        string message = AuthorizationErrorMessage.AccessDenied();
+        string message = _message.AccessDenied();
 
         // Assert
-        message.Should().Be("Access denied. You don't have sufficient permissions to access this resource");
+        message.Should().Be("Access denied. You don't have sufficient permissions to access this resource.");
     }
 }

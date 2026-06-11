@@ -16,10 +16,12 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.VerifyOtp;
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
 public class PublicVerifyOtpHandler(
     IAuthRepository authRepository,
     IOtpRepository otpRepository,
-    IIdentityUnitOfWork unitOfWork
+    IIdentityUnitOfWork unitOfWork,
+    UserErrors userErrors
 ) : ICommandHandler<PublicVerifyOtpCommand, PublicVerifyOtpResult>
 {
     /// <summary>
@@ -46,7 +48,7 @@ public class PublicVerifyOtpHandler(
         // Check if user is already verified (only for email verification purpose)
         if (user!.IsVerified && purpose.Value == EnumOtpPurpose.EmailVerification)
         {
-            throw UserErrors.AccountAlreadyVerified();
+            throw userErrors.AccountAlreadyVerified();
         }
 
         // Validate the OTP (throws appropriate exceptions on failure)

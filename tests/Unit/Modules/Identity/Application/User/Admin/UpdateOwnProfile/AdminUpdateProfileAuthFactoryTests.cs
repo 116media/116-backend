@@ -1,9 +1,11 @@
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile.Contracts;
 using _116.Identity.Domain.Entities;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -17,13 +19,15 @@ public class AdminUpdateProfileAuthFactoryTests
 {
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
+    private readonly UserErrors _userErrors;
     private readonly AdminUpdateProfileAuthFactory _factory;
 
     public AdminUpdateProfileAuthFactoryTests()
     {
         _authRepositoryMock = new Mock<IAuthRepository>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
-        _factory = new AdminUpdateProfileAuthFactory(_authRepositoryMock.Object, _unitOfWorkMock.Object);
+        _userErrors = TestErrorsFactory.CreateUserErrors();
+        _factory = new AdminUpdateProfileAuthFactory(_authRepositoryMock.Object, _unitOfWorkMock.Object, _userErrors);
     }
 
     #region UpdateProfileAsync Tests
@@ -141,7 +145,7 @@ public class AdminUpdateProfileAuthFactoryTests
         var sessionId = Guid.NewGuid();
         string newUserName = "newusername";
         UserEntity user = UserFactory.CreateWithId(userId);
-        user.UpdateUserName("oldusername");
+        user.UpdateUserName("oldusername", _userErrors);
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))
@@ -186,7 +190,7 @@ public class AdminUpdateProfileAuthFactoryTests
         var sessionId = Guid.NewGuid();
         string userName = "sameusername";
         UserEntity user = UserFactory.CreateWithId(userId);
-        user.UpdateUserName(userName);
+        user.UpdateUserName(userName, _userErrors);
 
         _authRepositoryMock
             .Setup(x => x.GetUserWithRolesAndPermissionsByIdOrThrow(userId, It.IsAny<CancellationToken>()))

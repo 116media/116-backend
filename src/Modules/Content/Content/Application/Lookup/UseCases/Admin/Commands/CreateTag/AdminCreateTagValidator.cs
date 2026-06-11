@@ -1,4 +1,6 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
+using _116.Content.Domain.Constants;
 using FluentValidation;
 
 namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateTag;
@@ -9,11 +11,21 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateTag;
 public class AdminCreateTagValidator : AbstractValidator<AdminCreateTagCommand>
 {
     /// <summary>
-    /// Configures validation rules for tag creation.
+    /// Initializes a new instance of <see cref="AdminCreateTagValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminCreateTagValidator()
+    /// <param name="msg">Tag validation error messages.</param>
+    public AdminCreateTagValidator(TagErrorMessage msg)
     {
-        RuleFor(x => x.Name).ValidTagName();
-        RuleFor(x => x.Slug).ValidTagSlug();
+        RuleFor(x => x.Name)
+            .ValidTagName(
+                nameRequired: msg.NameRequired(),
+                nameTooLong: msg.NameTooLong(ContentConstants.MaxTagNameLength)
+            );
+        RuleFor(x => x.Slug)
+            .ValidTagSlug(
+                slugRequired: msg.SlugRequired(),
+                slugTooLong: msg.SlugTooLong(ContentConstants.MaxTagSlugLength),
+                slugInvalidFormat: msg.SlugInvalidFormat()
+            );
     }
 }

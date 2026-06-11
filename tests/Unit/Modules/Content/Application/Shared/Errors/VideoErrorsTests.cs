@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -10,6 +11,8 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 /// </summary>
 public class VideoErrorsTests
 {
+    private readonly VideoErrors _errors = TestErrorsFactory.CreateVideoErrors();
+
     [Fact]
     public void NotFound_WithId_ShouldReturnNotFoundException()
     {
@@ -17,7 +20,7 @@ public class VideoErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = VideoErrors.NotFound(id);
+        NotFoundException exception = _errors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
@@ -31,7 +34,7 @@ public class VideoErrorsTests
         const string slug = "116-le-focus-fally-ipupa";
 
         // Act
-        ConflictException exception = VideoErrors.SlugAlreadyExists(slug);
+        ConflictException exception = _errors.SlugAlreadyExists(slug);
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -42,7 +45,7 @@ public class VideoErrorsTests
     public void TitleRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = VideoErrors.TitleRequired();
+        BadRequestException exception = _errors.TitleRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -53,7 +56,7 @@ public class VideoErrorsTests
     public void SlugRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = VideoErrors.SlugRequired();
+        BadRequestException exception = _errors.SlugRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -64,7 +67,7 @@ public class VideoErrorsTests
     public void CannotPublishWithoutYoutubeUrl_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = VideoErrors.CannotPublishWithoutYoutubeUrl();
+        BadRequestException exception = _errors.CannotPublishWithoutYoutubeUrl();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -75,7 +78,7 @@ public class VideoErrorsTests
     public void CannotDeletePublishedVideo_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = VideoErrors.CannotDeletePublishedVideo();
+        BadRequestException exception = _errors.CannotDeletePublishedVideo();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -86,7 +89,7 @@ public class VideoErrorsTests
     public void AlreadySubmitted_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = VideoErrors.AlreadySubmitted();
+        ConflictException exception = _errors.AlreadySubmitted();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -97,7 +100,7 @@ public class VideoErrorsTests
     public void AlreadyPendingReview_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = VideoErrors.AlreadyPendingReview();
+        ConflictException exception = _errors.AlreadyPendingReview();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -108,7 +111,7 @@ public class VideoErrorsTests
     public void AlreadyApproved_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = VideoErrors.AlreadyApproved();
+        ConflictException exception = _errors.AlreadyApproved();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -119,7 +122,7 @@ public class VideoErrorsTests
     public void AlreadyPublished_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = VideoErrors.AlreadyPublished();
+        ConflictException exception = _errors.AlreadyPublished();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -130,7 +133,7 @@ public class VideoErrorsTests
     public void AlreadyRejected_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = VideoErrors.AlreadyRejected();
+        ConflictException exception = _errors.AlreadyRejected();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -141,7 +144,7 @@ public class VideoErrorsTests
     public void AlreadyArchived_ShouldReturnConflictException()
     {
         // Act
-        ConflictException exception = VideoErrors.AlreadyArchived();
+        ConflictException exception = _errors.AlreadyArchived();
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -152,7 +155,7 @@ public class VideoErrorsTests
     public void InvalidStatusTransition_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = VideoErrors.InvalidStatusTransition("Draft", "Published");
+        BadRequestException exception = _errors.InvalidStatusTransition("Draft", "Published");
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -166,7 +169,7 @@ public class VideoErrorsTests
         DateTimeOffset shootDate = new DateTimeOffset(2026, 6, 15, 0, 0, 0, TimeSpan.Zero);
 
         // Act
-        BadRequestException exception = VideoErrors.CannotAttachYoutubeUrlBeforeShoot(shootDate);
+        BadRequestException exception = _errors.CannotAttachYoutubeUrlBeforeShoot(shootDate);
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();

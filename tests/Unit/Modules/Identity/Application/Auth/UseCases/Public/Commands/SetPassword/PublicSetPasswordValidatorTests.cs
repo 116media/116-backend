@@ -1,6 +1,8 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SetPassword;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -12,7 +14,9 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Comm
 /// </summary>
 public class PublicSetPasswordValidatorTests
 {
-    private readonly PublicSetPasswordValidator _validator = new();
+    private readonly PublicSetPasswordValidator _validator = new(
+        LocalizerFactory.CreateMessage<ValidationErrorMessage>()
+    );
 
     #region Valid Command Tests
 
@@ -45,7 +49,7 @@ public class PublicSetPasswordValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required.");
     }
 
     [Fact]
@@ -75,7 +79,7 @@ public class PublicSetPasswordValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.Password)
-            .WithErrorMessage($"Password must be at least {UserConstants.MinPasswordLength} characters long");
+            .WithErrorMessage($"Password must be at least {UserConstants.MinPasswordLength} characters long.");
     }
 
     [Fact]

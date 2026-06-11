@@ -145,8 +145,9 @@ public static class AuthorizationExtensions
                 context.HandleResponse();
 
                 // Create an AuthenticationException and use the existing handler
+                var authMsg = context.HttpContext.RequestServices.GetRequiredService<AuthenticationErrorMessage>();
                 var authHandler = new AccessTokenExpiryExceptionHandler();
-                var authException = new AccessTokenExpiryException(AuthenticationErrorMessage.JwtTokenRequired());
+                var authException = new AccessTokenExpiryException(authMsg.JwtTokenRequired());
                 ProblemDetails problemDetails = authHandler.CreateProblemDetails(
                     exception: authException,
                     context: context.HttpContext
@@ -160,8 +161,9 @@ public static class AuthorizationExtensions
             OnForbidden = async context =>
             {
                 // Create an AuthorizationException and use the existing handler
+                var authzMsg = context.HttpContext.RequestServices.GetRequiredService<AuthorizationErrorMessage>();
                 var authHandler = new AuthorizationExceptionHandler();
-                var authException = new AuthorizationException(AuthorizationErrorMessage.AccessDenied());
+                var authException = new AuthorizationException(authzMsg.AccessDenied());
                 ProblemDetails problemDetails = authHandler.CreateProblemDetails(
                     exception: authException,
                     context: context.HttpContext

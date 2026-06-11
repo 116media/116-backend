@@ -1,4 +1,5 @@
 using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
 
 namespace _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
@@ -7,7 +8,7 @@ namespace _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 /// Factory class for creating Super Admin related entities.
 /// Implements the factory pattern to encapsulate entity creation logic.
 /// </summary>
-public class SuperAdminEntityFactory(IPasswordService passwordService)
+public class SuperAdminEntityFactory(IPasswordService passwordService, UserErrors userErrors)
 {
     /// <summary>
     /// Creates a Super Admin user entity with proper configuration.
@@ -22,7 +23,8 @@ public class SuperAdminEntityFactory(IPasswordService passwordService)
             Guid.NewGuid(),
             email: SuperAdminConfiguration.Email,
             userName: SuperAdminConfiguration.Username,
-            passwordHash: hashedPassword
+            passwordHash: hashedPassword,
+            errors: userErrors
         );
 
         superAdminUser.MarkAsVerified();
@@ -34,12 +36,13 @@ public class SuperAdminEntityFactory(IPasswordService passwordService)
     /// Creates the Super Admin role entity.
     /// </summary>
     /// <returns>A configured <see cref="RoleEntity" /> for Super Admin.</returns>
-    public static RoleEntity CreateSuperAdminRole()
+    public RoleEntity CreateSuperAdminRole()
     {
         return RoleEntity.Create(
             Guid.NewGuid(),
             name: SuperAdminConfiguration.RoleName,
-            description: SuperAdminConfiguration.RoleDescription
+            description: SuperAdminConfiguration.RoleDescription,
+            errors: userErrors
         );
     }
 
@@ -47,13 +50,14 @@ public class SuperAdminEntityFactory(IPasswordService passwordService)
     /// Creates the system-wide "system.all" permission entity.
     /// </summary>
     /// <returns>A configured <see cref="PermissionEntity" /> for system-wide access.</returns>
-    public static PermissionEntity CreateSystemAllPermission()
+    public PermissionEntity CreateSystemAllPermission()
     {
         return PermissionEntity.Create(
             Guid.NewGuid(),
             resource: SuperAdminConfiguration.PermissionResource,
             action: SuperAdminConfiguration.PermissionAction,
-            description: SuperAdminConfiguration.PermissionDescription
+            description: SuperAdminConfiguration.PermissionDescription,
+            errors: userErrors
         );
     }
 

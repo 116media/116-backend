@@ -14,10 +14,12 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword;
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="passwordService">Service for password hashing operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
 public class PublicResetPasswordAuthFactory(
     IAuthRepository authRepository,
     IPasswordService passwordService,
-    IIdentityUnitOfWork unitOfWork
+    IIdentityUnitOfWork unitOfWork,
+    UserErrors userErrors
 ) : IPublicResetPasswordAuthFactory
 {
     /// <summary>
@@ -51,11 +53,11 @@ public class PublicResetPasswordAuthFactory(
     {
         if (passwordService.Verify(password: newPassword, hash: user.PasswordHash))
         {
-            throw UserErrors.NewPasswordSameAsOld();
+            throw userErrors.NewPasswordSameAsOld();
         }
 
         string hashedPassword = passwordService.Hash(password: newPassword);
-        user.UpdatePassword(newPasswordHash: hashedPassword);
+        user.UpdatePassword(newPasswordHash: hashedPassword, errors: userErrors);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 

@@ -1,6 +1,7 @@
 using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.Contracts;
+using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
@@ -17,12 +18,14 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp;
 /// <param name="passwordService">Service for hashing passwords.</param>
 /// <param name="otpService">Service for generating OTP codes.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
 public class PublicSignUpAuthFactory(
     IAuthRepository authRepository,
     IOtpRepository otpRepository,
     IPasswordService passwordService,
     IOtpService otpService,
-    IIdentityUnitOfWork unitOfWork
+    IIdentityUnitOfWork unitOfWork,
+    UserErrors userErrors
 ) : IPublicSignUpAuthFactory
 {
     /// <summary>
@@ -47,7 +50,8 @@ public class PublicSignUpAuthFactory(
             Guid.NewGuid(),
             userName: userName,
             passwordHash: hashedPassword,
-            email: new Email(value: email)
+            email: email,
+            errors: userErrors
         );
 
         await authRepository.AddAsync(user: newUser, cancellationToken: cancellationToken);

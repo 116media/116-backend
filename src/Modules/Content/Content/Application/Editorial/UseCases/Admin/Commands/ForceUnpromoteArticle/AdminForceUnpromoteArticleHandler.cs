@@ -15,10 +15,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnprom
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="currentActor">Provides the identity of the authenticated user from JWT claims.</param>
+/// <param name="articleErrors">Article domain error factory.</param>
 public class AdminForceUnpromoteArticleHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
-    ICurrentActor currentActor
+    ICurrentActor currentActor,
+    ArticleErrors articleErrors
 ) : ICommandHandler<AdminForceUnpromoteArticleCommand, AdminForceUnpromoteArticleResult>
 {
     /// <inheritdoc />
@@ -34,7 +36,7 @@ public class AdminForceUnpromoteArticleHandler(
 
         if (article is null)
         {
-            throw ArticleErrors.NotFound(Guid.Empty);
+            throw articleErrors.NotFound(Guid.Empty);
         }
 
         article.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason);

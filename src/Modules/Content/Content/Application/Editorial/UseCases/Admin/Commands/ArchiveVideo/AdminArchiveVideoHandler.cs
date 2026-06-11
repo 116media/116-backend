@@ -12,8 +12,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveVide
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminArchiveVideoHandler(IVideoRepository videoRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<AdminArchiveVideoCommand, AdminArchiveVideoResult>
+/// <param name="videoErrors">Video domain error factory.</param>
+public class AdminArchiveVideoHandler(
+    IVideoRepository videoRepository,
+    IContentUnitOfWork unitOfWork,
+    VideoErrors videoErrors
+) : ICommandHandler<AdminArchiveVideoCommand, AdminArchiveVideoResult>
 {
     /// <inheritdoc />
     public async Task<AdminArchiveVideoResult> Handle(
@@ -29,7 +33,7 @@ public class AdminArchiveVideoHandler(IVideoRepository videoRepository, IContent
 
         if (!archived)
         {
-            throw VideoErrors.AlreadyArchived();
+            throw videoErrors.AlreadyArchived();
         }
 
         videoRepository.Update(video: video);

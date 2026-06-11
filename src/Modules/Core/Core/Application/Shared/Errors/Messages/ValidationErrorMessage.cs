@@ -1,10 +1,12 @@
+using Microsoft.Extensions.Localization;
+
 namespace _116.Core.Application.Shared.Errors.Messages;
 
 /// <summary>
 /// Provides validation-related error messages for the <c>Core</c> domain.
 /// These messages describe failures due to invalid input or format requirements.
 /// </summary>
-public static class ValidationErrorMessage
+public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> localizer)
 {
     /// <summary>
     /// Gets the error message for the unsupported file type.
@@ -12,9 +14,9 @@ public static class ValidationErrorMessage
     /// <param name="fileType">The unsupported file type.</param>
     /// <param name="allowedTypes">Array of allowed file types.</param>
     /// <returns>A formatted error message indicating the file type is not supported.</returns>
-    public static string UnsupportedFileType(string fileType, string[] allowedTypes)
+    public string UnsupportedFileType(string fileType, string[] allowedTypes)
     {
-        return $"File type '{fileType}' is not supported. Allowed types: {string.Join(", ", allowedTypes)}";
+        return string.Format(localizer["UnsupportedFileType"], fileType, string.Join(", ", allowedTypes));
     }
 
     /// <summary>
@@ -23,9 +25,9 @@ public static class ValidationErrorMessage
     /// <param name="fileSize">The actual file size in bytes.</param>
     /// <param name="maxSize">The maximum allowed file size in bytes.</param>
     /// <returns>A formatted error message indicating the file size exceeds the limit.</returns>
-    public static string FileTooLarge(long fileSize, long maxSize)
+    public string FileTooLarge(long fileSize, long maxSize)
     {
-        return $"File size {fileSize} bytes exceeds maximum allowed size of {maxSize} bytes";
+        return string.Format(localizer["FileTooLarge"], fileSize, maxSize);
     }
 
     /// <summary>
@@ -33,9 +35,9 @@ public static class ValidationErrorMessage
     /// </summary>
     /// <param name="fileName">The name of the corrupted file.</param>
     /// <returns>A formatted error message indicating the file is corrupted.</returns>
-    public static string CorruptedFile(string fileName)
+    public string CorruptedFile(string fileName)
     {
-        return $"File '{fileName}' appears to be corrupted or invalid";
+        return string.Format(localizer["CorruptedFile"], fileName);
     }
 
     /// <summary>
@@ -43,57 +45,57 @@ public static class ValidationErrorMessage
     /// </summary>
     /// <param name="configKey">The configuration key that is invalid.</param>
     /// <returns>A formatted error message indicating the configuration is invalid.</returns>
-    public static string InvalidConfiguration(string configKey)
+    public string InvalidConfiguration(string configKey)
     {
-        return $"Configuration '{configKey}' is missing or invalid";
+        return string.Format(localizer["InvalidConfiguration"], configKey);
     }
 
     /// <summary>
     /// Error message indicating that file name is required.
     /// </summary>
-    public static string FileNameRequired()
+    public string FileNameRequired()
     {
-        return "File name is required";
+        return localizer["FileNameRequired"];
     }
 
     /// <summary>
     /// Error message indicating that the original file name is required.
     /// </summary>
-    public static string OriginalFileNameRequired()
+    public string OriginalFileNameRequired()
     {
-        return "Original file name is required";
+        return localizer["OriginalFileNameRequired"];
     }
 
     /// <summary>
     /// Error message indicating that MIME type is required.
     /// </summary>
-    public static string MimeTypeRequired()
+    public string MimeTypeRequired()
     {
-        return "MIME type is required";
+        return localizer["MimeTypeRequired"];
     }
 
     /// <summary>
     /// Error message indicating that storage URL is required.
     /// </summary>
-    public static string StorageUrlRequired()
+    public string StorageUrlRequired()
     {
-        return "Storage URL is required";
+        return localizer["StorageUrlRequired"];
     }
 
     /// <summary>
     /// Error message indicating that storage URL cannot be empty.
     /// </summary>
-    public static string StorageUrlCannotBeEmpty()
+    public string StorageUrlCannotBeEmpty()
     {
-        return "Storage URL cannot be empty";
+        return localizer["StorageUrlCannotBeEmpty"];
     }
 
     /// <summary>
     /// Error message indicating that file size must be greater than zero.
     /// </summary>
-    public static string FileSizeMustBeGreaterThanZero()
+    public string FileSizeMustBeGreaterThanZero()
     {
-        return "File size must be greater than zero";
+        return localizer["FileSizeMustBeGreaterThanZero"];
     }
 
     /// <summary>
@@ -101,16 +103,16 @@ public static class ValidationErrorMessage
     /// </summary>
     /// <param name="fileUrl">The invalid file URL.</param>
     /// <returns>A formatted error message indicating the URL format is invalid.</returns>
-    public static string InvalidFileUrl(string fileUrl)
+    public string InvalidFileUrl(string fileUrl)
     {
-        return $"File URL '{fileUrl}' has an invalid format. Must be a valid HTTP or HTTPS URL";
+        return string.Format(localizer["InvalidFileUrl"], fileUrl);
     }
 
     /// <summary>
     /// Error message indicating that file URL is required.
     /// </summary>
-    public static string FileUrlRequired()
+    public string FileUrlRequired()
     {
-        return "File URL is required";
+        return localizer["FileUrlRequired"];
     }
 }

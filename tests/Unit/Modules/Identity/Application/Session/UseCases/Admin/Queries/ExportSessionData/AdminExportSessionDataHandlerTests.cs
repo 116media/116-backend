@@ -2,7 +2,7 @@ using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Entities;
-using _116.Tests.Fixtures.Factories;
+using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
 using Mapster;

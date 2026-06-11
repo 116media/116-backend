@@ -12,8 +12,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveArti
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminApproveArticleHandler(IArticleRepository articleRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<AdminApproveArticleCommand, AdminApproveArticleResult>
+/// <param name="articleErrors">Article domain error factory.</param>
+public class AdminApproveArticleHandler(
+    IArticleRepository articleRepository,
+    IContentUnitOfWork unitOfWork,
+    ArticleErrors articleErrors
+) : ICommandHandler<AdminApproveArticleCommand, AdminApproveArticleResult>
 {
     /// <inheritdoc />
     public async Task<AdminApproveArticleResult> Handle(
@@ -30,12 +34,12 @@ public class AdminApproveArticleHandler(IArticleRepository articleRepository, IC
 
         if (article.Status == EnumContentStatus.Approved)
         {
-            throw ArticleErrors.AlreadyApproved();
+            throw articleErrors.AlreadyApproved();
         }
 
         if (article.Status != EnumContentStatus.PendingReview)
         {
-            throw ArticleErrors.InvalidStatusTransition(
+            throw articleErrors.InvalidStatusTransition(
                 from: article.Status.ToString(),
                 to: nameof(EnumContentStatus.Approved)
             );

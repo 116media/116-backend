@@ -1,5 +1,7 @@
 using _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -11,7 +13,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Comm
 /// </summary>
 public class PublicLoginValidatorTests
 {
-    private readonly PublicLoginValidator _validator = new();
+    private readonly PublicLoginValidator _validator = new(LocalizerFactory.CreateMessage<ValidationErrorMessage>());
 
     #region Valid Command Tests
 
@@ -110,7 +112,7 @@ public class PublicLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required.");
     }
 
     [Fact]
@@ -124,7 +126,7 @@ public class PublicLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required.");
     }
 
     [Fact]
@@ -138,7 +140,7 @@ public class PublicLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required.");
     }
 
     #endregion

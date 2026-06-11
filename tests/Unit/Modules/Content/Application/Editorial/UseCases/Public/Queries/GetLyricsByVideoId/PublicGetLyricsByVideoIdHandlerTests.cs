@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -22,7 +23,11 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
     public PublicGetLyricsByVideoIdHandlerTests()
     {
         _lyricsRepositoryMock = MockLyricsRepository.Create();
-        _handler = new PublicGetLyricsByVideoIdHandler(_lyricsRepositoryMock.Object, Mapper);
+        _handler = new PublicGetLyricsByVideoIdHandler(
+            _lyricsRepositoryMock.Object,
+            Mapper,
+            TestErrorsFactory.CreateLyricsErrors()
+        );
     }
 
     [Fact]

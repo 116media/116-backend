@@ -24,7 +24,14 @@ public class FileValidationTests
     {
         public TestCommandValidator(bool isRequired = false)
         {
-            RuleFor(x => x.AvatarFile).ValidAvatar(isRequired);
+            RuleFor(x => x.AvatarFile)
+                .ValidAvatar(
+                    avatarFileRequired: "Avatar file is required.",
+                    avatarFileTooLarge: $"File size must not exceed {FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)}MB.",
+                    avatarFileInvalidType: $"Only image files are allowed: {string.Join(", ", FileConstants.AllowedAvatarMimeTypes)}.",
+                    avatarFileInvalidExtension: $"Only these extensions are allowed: {string.Join(", ", FileConstants.AllowedAvatarExtensions)}.",
+                    isRequired: isRequired
+                );
         }
     }
 
@@ -39,7 +46,14 @@ public class FileValidationTests
     {
         public TestCommandNoAvatarPropertyValidator()
         {
-            RuleFor(x => x.OtherFile).ValidAvatar(isRequired: false);
+            RuleFor(x => x.OtherFile)
+                .ValidAvatar(
+                    avatarFileRequired: "Avatar file is required.",
+                    avatarFileTooLarge: $"File size must not exceed {FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)}MB.",
+                    avatarFileInvalidType: $"Only image files are allowed: {string.Join(", ", FileConstants.AllowedAvatarMimeTypes)}.",
+                    avatarFileInvalidExtension: $"Only these extensions are allowed: {string.Join(", ", FileConstants.AllowedAvatarExtensions)}.",
+                    isRequired: false
+                );
         }
     }
 
@@ -94,7 +108,7 @@ public class FileValidationTests
         TestValidationResult<TestCommand>? result = validator.TestValidate(command);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.AvatarFile).WithErrorMessage("Avatar file is required");
+        result.ShouldHaveValidationErrorFor(x => x.AvatarFile).WithErrorMessage("Avatar file is required.");
     }
 
     [Fact]
@@ -124,7 +138,7 @@ public class FileValidationTests
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.AvatarFile)
-            .WithErrorMessage($"File size must not exceed {FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)}MB");
+            .WithErrorMessage($"File size must not exceed {FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)}MB.");
     }
 
     [Fact]
@@ -155,7 +169,7 @@ public class FileValidationTests
         result
             .ShouldHaveValidationErrorFor(x => x.AvatarFile)
             .WithErrorMessage(
-                $"Only image files are allowed: {string.Join(", ", FileConstants.AllowedAvatarMimeTypes)}"
+                $"Only image files are allowed: {string.Join(", ", FileConstants.AllowedAvatarMimeTypes)}."
             );
     }
 
@@ -173,7 +187,7 @@ public class FileValidationTests
         result
             .ShouldHaveValidationErrorFor(x => x.AvatarFile)
             .WithErrorMessage(
-                $"Only these extensions are allowed: {string.Join(", ", FileConstants.AllowedAvatarExtensions)}"
+                $"Only these extensions are allowed: {string.Join(", ", FileConstants.AllowedAvatarExtensions)}."
             );
     }
 

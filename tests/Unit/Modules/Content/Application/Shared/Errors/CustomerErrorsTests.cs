@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Errors;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -10,6 +11,8 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 /// </summary>
 public class CustomerErrorsTests
 {
+    private readonly CustomerErrors _errors = TestErrorsFactory.CreateCustomerErrors();
+
     [Fact]
     public void AlreadyExists_WithEmail_ShouldReturnConflictException()
     {
@@ -17,7 +20,7 @@ public class CustomerErrorsTests
         string email = "customer@example.com";
 
         // Act
-        ConflictException exception = CustomerErrors.AlreadyExists(email);
+        ConflictException exception = _errors.AlreadyExists(email);
 
         // Assert
         exception.Should().BeOfType<ConflictException>();
@@ -31,7 +34,7 @@ public class CustomerErrorsTests
         var id = Guid.NewGuid();
 
         // Act
-        NotFoundException exception = CustomerErrors.NotFound(id);
+        NotFoundException exception = _errors.NotFound(id);
 
         // Assert
         exception.Should().BeOfType<NotFoundException>();
@@ -42,7 +45,7 @@ public class CustomerErrorsTests
     public void FullNameRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = CustomerErrors.FullNameRequired();
+        BadRequestException exception = _errors.FullNameRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
@@ -53,7 +56,7 @@ public class CustomerErrorsTests
     public void EmailRequired_ShouldReturnBadRequestException()
     {
         // Act
-        BadRequestException exception = CustomerErrors.EmailRequired();
+        BadRequestException exception = _errors.EmailRequired();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();

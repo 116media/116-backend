@@ -15,10 +15,12 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.RemoveRoleFromU
 /// <param name="userRoleRepository">Repository for user-role data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
 public class AdminRemoveRoleFromUserHandler(
     IUserRoleRepository userRoleRepository,
     IIdentityUnitOfWork unitOfWork,
-    IMapper mapper
+    IMapper mapper,
+    UserErrors userErrors
 ) : ICommandHandler<AdminRemoveRoleFromUserCommand, AdminRemoveRoleFromUserResult>
 {
     /// <summary>
@@ -58,6 +60,6 @@ public class AdminRemoveRoleFromUserHandler(
             return new AdminRemoveRoleFromUserResult(Roles: roles, IsSuccess: true);
         }
 
-        throw UserErrors.RoleNotAssignedToUser();
+        throw userErrors.RoleNotAssignedToUser();
     }
 }

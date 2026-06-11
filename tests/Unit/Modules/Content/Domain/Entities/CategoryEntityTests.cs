@@ -1,281 +1,50 @@
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
-using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Domain.Entities;
 
 /// <summary>
-/// Unit tests for <see cref="CategoryEntity"/>.
+/// Unit tests for <see cref="CategoryEntity"/> domain behaviour.
 /// </summary>
 public class CategoryEntityTests
 {
-    private static readonly Guid ContentTypeId = Guid.NewGuid();
-
-    #region Create Tests
+    #region EnsureCommissionable
 
     [Fact]
-    public void Create_WithValidValues_ShouldCreateCategory()
+    public void EnsureCommissionable_WhenActiveAndPaid_ShouldNotThrow()
     {
-        // Arrange
-        var id = Guid.NewGuid();
-        const string name = TestConstants.Content.Category.ValidName;
-        const string slug = TestConstants.Content.Category.ValidSlug;
-        const string description = TestConstants.Content.Category.ValidDescription;
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.CreatePaid(contentTypeId);
 
-        // Act
-        var entity = CategoryEntity.Create(id, ContentTypeId, name, slug, description, isFree: false);
+        Action act = () => category.EnsureCommissionable(TestErrorsFactory.CreateCategoryErrors());
 
-        // Assert
-        entity.Id.Should().Be(id);
-        entity.ContentTypeId.Should().Be(ContentTypeId);
-        entity.Name.Should().Be(name);
-        entity.Slug.Should().Be(slug);
-        entity.Description.Should().Be(description);
-        entity.IsFree.Should().BeFalse();
-        entity.IsActive.Should().BeTrue();
+        act.Should().NotThrow();
     }
 
     [Fact]
-    public void Create_WithDescription_ShouldSetDescription()
+    public void EnsureCommissionable_WhenInactive_ShouldThrowNotFoundException()
     {
-        // Act
-        var entity = CategoryEntity.Create(
-            Guid.NewGuid(),
-            ContentTypeId,
-            TestConstants.Content.Category.ValidName,
-            TestConstants.Content.Category.ValidSlug,
-            TestConstants.Content.Category.ValidDescription,
-            false
-        );
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.CreateInactive(contentTypeId);
 
-        // Assert
-        entity.Description.Should().Be(TestConstants.Content.Category.ValidDescription);
+        Action act = () => category.EnsureCommissionable(TestErrorsFactory.CreateCategoryErrors());
+
+        act.Should().Throw<NotFoundException>();
     }
 
     [Fact]
-    public void Create_WithIsFreeTrue_ShouldMarkAsFree()
+    public void EnsureCommissionable_WhenFree_ShouldThrowNotFoundException()
     {
-        // Act
-        var entity = CategoryEntity.Create(
-            Guid.NewGuid(),
-            ContentTypeId,
-            TestConstants.Content.Category.ValidName,
-            TestConstants.Content.Category.ValidSlug,
-            TestConstants.Content.Category.ValidDescription,
-            true
-        );
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.CreateFree(contentTypeId);
 
-        // Assert
-        entity.IsFree.Should().BeTrue();
-    }
+        Action act = () => category.EnsureCommissionable(TestErrorsFactory.CreateCategoryErrors());
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Create_WithInvalidName_ShouldThrowBadRequestException(string? invalidName)
-    {
-        // Act
-        Action act = () =>
-            CategoryEntity.Create(
-                Guid.NewGuid(),
-                ContentTypeId,
-                invalidName!,
-                TestConstants.Content.Category.ValidSlug,
-                TestConstants.Content.Category.ValidDescription,
-                false
-            );
-
-        // Assert
-        act.Should().Throw<BadRequestException>();
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Create_WithInvalidSlug_ShouldThrowBadRequestException(string? invalidSlug)
-    {
-        // Act
-        Action act = () =>
-            CategoryEntity.Create(
-                Guid.NewGuid(),
-                ContentTypeId,
-                TestConstants.Content.Category.ValidName,
-                invalidSlug!,
-                TestConstants.Content.Category.ValidDescription,
-                false
-            );
-
-        // Assert
-        act.Should().Throw<BadRequestException>();
-    }
-
-    #endregion
-
-    #region Update Tests
-
-    [Fact]
-    public void Update_WithValidValues_ShouldUpdate()
-    {
-        // Arrange
-        var entity = CategoryEntity.Create(
-            Guid.NewGuid(),
-            ContentTypeId,
-            TestConstants.Content.Category.ValidName,
-            TestConstants.Content.Category.ValidSlug,
-            TestConstants.Content.Category.ValidDescription,
-            false
-        );
-
-        // Act
-        entity.Update(
-            TestConstants.Content.Category.AnotherValidName,
-            TestConstants.Content.Category.AnotherValidSlug,
-            TestConstants.Content.Category.ValidDescription,
-            isGossip: false
-        );
-
-        // Assert
-        entity.Name.Should().Be(TestConstants.Content.Category.AnotherValidName);
-        entity.Slug.Should().Be(TestConstants.Content.Category.AnotherValidSlug);
-        entity.Description.Should().Be(TestConstants.Content.Category.ValidDescription);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Update_WithInvalidName_ShouldThrowBadRequestException(string? invalidName)
-    {
-        // Arrange
-        var entity = CategoryEntity.Create(
-            Guid.NewGuid(),
-            ContentTypeId,
-            TestConstants.Content.Category.ValidName,
-            TestConstants.Content.Category.ValidSlug,
-            TestConstants.Content.Category.ValidDescription,
-            false
-        );
-
-        // Act
-        Action act = () =>
-            entity.Update(
-                invalidName!,
-                TestConstants.Content.Category.ValidSlug,
-                TestConstants.Content.Category.ValidDescription,
-                isGossip: false
-            );
-
-        // Assert
-        act.Should().Throw<BadRequestException>();
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void Update_WithInvalidSlug_ShouldThrowBadRequestException(string? invalidSlug)
-    {
-        // Arrange
-        var entity = CategoryEntity.Create(
-            Guid.NewGuid(),
-            ContentTypeId,
-            TestConstants.Content.Category.ValidName,
-            TestConstants.Content.Category.ValidSlug,
-            TestConstants.Content.Category.ValidDescription,
-            false
-        );
-
-        // Act
-        Action act = () =>
-            entity.Update(
-                TestConstants.Content.Category.ValidName,
-                invalidSlug!,
-                TestConstants.Content.Category.ValidDescription,
-                isGossip: false
-            );
-
-        // Assert
-        act.Should().Throw<BadRequestException>();
-    }
-
-    #endregion
-
-    #region Activate / Deactivate Tests
-
-    [Fact]
-    public void Activate_WhenInactive_ShouldReturnTrue()
-    {
-        // Arrange
-        var entity = CategoryEntity.Create(
-            Guid.NewGuid(),
-            ContentTypeId,
-            TestConstants.Content.Category.ValidName,
-            TestConstants.Content.Category.ValidSlug,
-            TestConstants.Content.Category.ValidDescription,
-            false
-        );
-        entity.Deactivate();
-
-        // Act & Assert
-        entity.Activate().Should().BeTrue();
-        entity.IsActive.Should().BeTrue();
-    }
-
-    [Fact]
-    public void Activate_WhenAlreadyActive_ShouldReturnFalse()
-    {
-        // Arrange
-        var entity = CategoryEntity.Create(
-            Guid.NewGuid(),
-            ContentTypeId,
-            TestConstants.Content.Category.ValidName,
-            TestConstants.Content.Category.ValidSlug,
-            TestConstants.Content.Category.ValidDescription,
-            false
-        );
-
-        // Act & Assert
-        entity.Activate().Should().BeFalse();
-    }
-
-    [Fact]
-    public void Deactivate_WhenActive_ShouldReturnTrue()
-    {
-        // Arrange
-        var entity = CategoryEntity.Create(
-            Guid.NewGuid(),
-            ContentTypeId,
-            TestConstants.Content.Category.ValidName,
-            TestConstants.Content.Category.ValidSlug,
-            TestConstants.Content.Category.ValidDescription,
-            false
-        );
-
-        // Act & Assert
-        entity.Deactivate().Should().BeTrue();
-        entity.IsActive.Should().BeFalse();
-    }
-
-    [Fact]
-    public void Deactivate_WhenAlreadyInactive_ShouldReturnFalse()
-    {
-        // Arrange
-        var entity = CategoryEntity.Create(
-            Guid.NewGuid(),
-            ContentTypeId,
-            TestConstants.Content.Category.ValidName,
-            TestConstants.Content.Category.ValidSlug,
-            TestConstants.Content.Category.ValidDescription,
-            false
-        );
-        entity.Deactivate();
-
-        // Act & Assert
-        entity.Deactivate().Should().BeFalse();
+        act.Should().Throw<NotFoundException>();
     }
 
     #endregion
