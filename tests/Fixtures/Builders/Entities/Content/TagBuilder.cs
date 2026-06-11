@@ -23,9 +23,11 @@ internal class TagBuilder
     public TagBuilder()
     {
         _id = Guid.NewGuid();
+        string suffix = Guid.NewGuid().ToString("N")[..8];
         string word = _faker.Lorem.Word().ToLower();
-        _name = word[..Math.Min(TestConstants.Content.Tag.NameMaxLength, word.Length)];
-        _slug = word[..Math.Min(TestConstants.Content.Tag.SlugMaxLength, word.Length)];
+        string unique = $"{word}{suffix}";
+        _name = unique[..Math.Min(TestConstants.Content.Tag.NameMaxLength, unique.Length)];
+        _slug = unique[..Math.Min(TestConstants.Content.Tag.SlugMaxLength, unique.Length)];
     }
 
     /// <summary>
