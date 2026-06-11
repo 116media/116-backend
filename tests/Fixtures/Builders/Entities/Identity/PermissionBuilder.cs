@@ -26,8 +26,8 @@ internal class PermissionBuilder
     public PermissionBuilder()
     {
         _id = Guid.NewGuid();
-        string word = _faker.Lorem.Word();
-        _resource = word[..Math.Min(TestConstants.Permission.ResourceMaxLength, word.Length)];
+        string unique = $"{_faker.Lorem.Word()}{Guid.NewGuid():N}"[..8];
+        _resource = unique[..Math.Min(TestConstants.Permission.ResourceMaxLength, unique.Length)];
         _action = _faker.PickRandom("read", "create", "update", "delete", "approve");
         _description = _faker.Lorem.Sentence(wordCount: 5);
     }
