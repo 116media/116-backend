@@ -1,0 +1,96 @@
+using _116.Identity.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Factories.Identity;
+
+namespace _116.Integration.Tests.Common.Base;
+
+/// <summary>
+/// Base class for integration tests that need an HTTP client and the full API pipeline.
+/// Resets the database, seeds well-known test users, and calls <see cref="SeedAsync" />
+/// before each test.
+/// </summary>
+[Collection("Database")]
+public abstract class BaseApiTest : IAsyncLifetime
+{
+    /// <summary>
+    /// The shared Testcontainer database fixture.
+    /// </summary>
+    protected PostgresFixture Db { get; }
+
+    /// <summary>
+    /// A <see cref="WebApplicationFactory{TEntryPoint}" /> wired to the Testcontainer.
+    /// Use <c>Api.Services</c> to resolve DI services.
+    /// </summary>
+    protected ApiFixture Api { get; }
+
+    /// <summary>
+    /// An <see cref="HttpClient" /> that targets the test server.
+    /// Use the <c>AuthenticateAs*</c> extension methods to add JWT headers.
+    /// </summary>
+    protected HttpClient Client { get; }
+
+    /// <summary>
+    /// Creates a new test instance backed by the shared database container
+    /// and its shared API fixture.
+    /// </summary>
+    protected BaseApiTest(PostgresFixture db)
+    {
+        Db = db;
+        Api = db.Api;
+        Client = Api.CreateClient();
+    }
+
+    /// <summary>
+    /// Creates a new <typeparamref name="TDbContext" /> scoped to the Testcontainer database.
+    /// </summary>
+    protected TDbContext CreateDbContext<TDbContext>()
+        where TDbContext : DbContext
+    {
+        var scope = Api.Services.CreateScope();
+        return scope.ServiceProvider.GetRequiredService<TDbContext>();
+    }
+
+    /// <summary>
+    /// Override to seed test data after the database has been reset.
+    /// Called once per test method, after the well-known test users have been seeded.
+    /// </summary>
+    protected virtual Task SeedAsync() => Task.CompletedTask;
+
+    /// <inheritdoc />
+    public async ValueTask InitializeAsync()
+    {
+        await Db.ResetAsync();
+        await SeedTestUsersAsync();
+        await SeedAsync();
+    }
+
+    /// <inheritdoc />
+    public ValueTask DisposeAsync()
+    {
+        Client.Dispose();
+        return ValueTask.CompletedTask;
+    }
+
+    /// <summary>
+    /// Seeds SuperAdmin, Admin, and Visitor users with well-known IDs so that
+    /// the <c>AccountStatusRequirementHandler</c> can find them during authorization.
+    /// </summary>
+    private async Task SeedTestUsersAsync()
+    {
+        await using var context = CreateDbContext<IdentityDbContext>();
+
+        var superAdmin = UserFactory.CreateWithId(User.SuperAdminId, User.SuperAdminEmail);
+        superAdmin.MarkAsVerified();
+        superAdmin.Activate();
+
+        var admin = UserFactory.CreateWithId(User.AdminId, User.AdminEmail);
+        admin.MarkAsVerified();
+        admin.Activate();
+
+        var visitor = UserFactory.CreateWithId(User.VisitorId, User.VisitorEmail);
+        visitor.MarkAsVerified();
+        visitor.Activate();
+
+        context.Users.AddRange(superAdmin, admin, visitor);
+        await context.SaveChangesAsync();
+    }
+}
