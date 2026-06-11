@@ -2,6 +2,7 @@ using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
@@ -158,12 +159,12 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithIsExclusive_ShouldUnsetCurrentExclusive()
     {
         // Arrange
-        ContentTypeEntity contentType = ContentTypeFactory.Create();
-        CategoryEntity currentExclusive = CategoryFactory.Create(contentType.Id);
+        ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+        CategoryEntity currentExclusive = CategoryFactory.Create(videoType);
         currentExclusive.SetExclusive();
 
         var command = new AdminCreateCategoryCommand(
-            ContentTypeId: contentType.Id.ToString(),
+            ContentTypeId: videoType.Id.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
@@ -173,11 +174,11 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Poster: null
         );
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
+        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
         _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
         _categoryRepositoryMock.SetupGetExclusiveCategory(currentExclusive);
 
-        CategoryEntity created = CategoryFactory.Create(contentType.Id);
+        CategoryEntity created = CategoryFactory.Create(videoType);
         _categoryRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(created);
@@ -225,10 +226,10 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithIsExclusive_NoCurrentExclusive_ShouldSucceed()
     {
         // Arrange
-        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
 
         var command = new AdminCreateCategoryCommand(
-            ContentTypeId: contentType.Id.ToString(),
+            ContentTypeId: videoType.Id.ToString(),
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
@@ -238,11 +239,11 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Poster: null
         );
 
-        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
+        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
         _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
         _categoryRepositoryMock.SetupGetExclusiveCategory(null);
 
-        CategoryEntity created = CategoryFactory.Create(contentType.Id);
+        CategoryEntity created = CategoryFactory.Create(videoType);
         _categoryRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(created);
@@ -252,6 +253,33 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
 
         // Assert
         await act.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task Handle_WithIsExclusive_NonVideoContentType_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        ContentTypeEntity articleType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Article));
+
+        var command = new AdminCreateCategoryCommand(
+            ContentTypeId: articleType.Id.ToString(),
+            Name: TestConstants.Content.Category.ValidName,
+            Slug: TestConstants.Content.Category.ValidSlug,
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsFree: false,
+            IsGossip: false,
+            IsExclusive: true,
+            Poster: null
+        );
+
+        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(articleType);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
     }
 
     #endregion
