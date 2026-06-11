@@ -21,6 +21,7 @@ using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetCategoryById;
 using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetCustomerById;
 using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetPackageById;
 using _116.Content.Application.Catalog.UseCases.Public.Queries.GetActiveCategories;
+using _116.Content.Application.Catalog.UseCases.Public.Queries.GetExclusiveCategory;
 using _116.Shared.Application.Metadata;
 using AwesomeAssertions;
 using Xunit;
@@ -213,6 +214,13 @@ public class CatalogMetaFieldTests
     public void PublicGetActiveCategoriesMetaField_ShouldBeInitialized()
     {
         RouteMetadata metadata = PublicGetActiveCategoriesMetaField.PublicGetActiveCategories;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void PublicGetExclusiveCategoryMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = PublicGetExclusiveCategoryMetaField.PublicGetExclusiveCategory;
         metadata.Should().NotBeNull();
     }
 
