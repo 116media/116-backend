@@ -2,6 +2,7 @@ using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategory;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
@@ -118,9 +119,9 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithIsExclusive_ShouldUnsetCurrentExclusive()
     {
         // Arrange
-        ContentTypeEntity contentType = ContentTypeFactory.Create();
-        CategoryEntity category = CategoryFactory.Create(contentType.Id);
-        CategoryEntity currentExclusive = CategoryFactory.Create(contentType.Id);
+        ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+        CategoryEntity category = CategoryFactory.Create(videoType);
+        CategoryEntity currentExclusive = CategoryFactory.Create(videoType);
         currentExclusive.SetExclusive();
 
         var command = new AdminUpdateCategoryCommand(
@@ -148,8 +149,8 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
     public async Task Handle_WithIsExclusive_SameCategory_ShouldNotClearSelf()
     {
         // Arrange
-        ContentTypeEntity contentType = ContentTypeFactory.Create();
-        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+        CategoryEntity category = CategoryFactory.Create(videoType);
         category.SetExclusive();
 
         var command = new AdminUpdateCategoryCommand(
@@ -198,6 +199,33 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
 
         // Assert
         _categoryRepositoryMock.Verify(x => x.GetExclusiveCategoryAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_WithIsExclusive_NonVideoContentType_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        ContentTypeEntity articleType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Article));
+        CategoryEntity category = CategoryFactory.Create(articleType);
+
+        var command = new AdminUpdateCategoryCommand(
+            Id: category.Id.ToString(),
+            Name: TestConstants.Content.Category.ValidName,
+            Slug: TestConstants.Content.Category.ValidSlug,
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsGossip: false,
+            IsExclusive: true,
+            Poster: null
+        );
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
     }
 
     #endregion
