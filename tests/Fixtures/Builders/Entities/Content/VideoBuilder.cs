@@ -15,8 +15,8 @@ internal class VideoBuilder
     private Guid _id = Guid.NewGuid();
     private Guid _categoryId;
 
-    private string _title = TestConstants.Content.Editorial.Video.ValidTitle;
-    private string _slug = TestConstants.Content.Editorial.Video.ValidSlug;
+    private string _title = $"{TestConstants.Content.Editorial.Video.ValidTitle} {Guid.NewGuid():N}";
+    private string _slug = $"{TestConstants.Content.Editorial.Video.ValidSlug}-{Guid.NewGuid():N}";
     private Guid _authorId = Guid.NewGuid();
     private string _description = TestConstants.Content.Editorial.Video.ValidDescription;
     private Guid? _customerId;
