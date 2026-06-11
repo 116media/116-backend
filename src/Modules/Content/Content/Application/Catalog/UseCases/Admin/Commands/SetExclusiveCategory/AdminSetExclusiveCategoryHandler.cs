@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -42,6 +43,11 @@ public class AdminSetExclusiveCategoryHandler(
         if (!category.IsActive)
         {
             throw i18n.Category.CannotMakeInactiveExclusive();
+        }
+
+        if (category.ContentType.Name != nameof(EnumCoreContentType.Video))
+        {
+            throw i18n.Category.OnlyVideoCategoryCanBeExclusive();
         }
 
         CategoryEntity? currentExclusive = await categoryRepository.GetExclusiveCategoryAsync(
