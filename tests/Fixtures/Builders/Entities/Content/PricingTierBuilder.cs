@@ -24,8 +24,8 @@ internal class PricingTierBuilder
     public PricingTierBuilder()
     {
         _id = Guid.NewGuid();
-        string word = _faker.Lorem.Word();
-        _name = word[..Math.Min(TestConstants.Content.PricingTier.NameMaxLength, word.Length)];
+        string unique = $"{_faker.Lorem.Word()}{Guid.NewGuid():N}"[..8];
+        _name = unique[..Math.Min(TestConstants.Content.PricingTier.NameMaxLength, unique.Length)];
     }
 
     /// <summary>
