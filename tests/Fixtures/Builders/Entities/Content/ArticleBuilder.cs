@@ -13,8 +13,8 @@ internal class ArticleBuilder
 {
     private Guid _id = Guid.NewGuid();
     private Guid _categoryId;
-    private string _title = TestConstants.Content.Editorial.Article.ValidTitle;
-    private string _slug = TestConstants.Content.Editorial.Article.ValidSlug;
+    private string _title = $"{TestConstants.Content.Editorial.Article.ValidTitle} {Guid.NewGuid():N}";
+    private string _slug = $"{TestConstants.Content.Editorial.Article.ValidSlug}-{Guid.NewGuid():N}";
     private Guid _authorId = Guid.NewGuid();
     private Guid? _customerId;
     private Guid? _orderItemId;
