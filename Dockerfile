@@ -13,6 +13,7 @@ COPY src/Modules/Identity/Identity/*.csproj ./src/Modules/Identity/Identity/
 COPY src/Modules/Identity/Identity.Contracts/*.csproj ./src/Modules/Identity/Identity.Contracts/
 COPY src/Modules/Content/Content/*.csproj ./src/Modules/Content/Content/
 COPY tests/Unit/*.csproj ./tests/Unit/
+COPY tests/Integration/*.csproj ./tests/Integration/
 COPY tests/Fixtures/*.csproj ./tests/Fixtures/
 
 # Restore dependencies (cached layer - only rebuilds if dependencies change)
