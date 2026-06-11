@@ -1,3 +1,4 @@
+using System.Reflection;
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -22,6 +23,7 @@ internal class CategoryBuilder
     private bool _isActive = true;
     private bool _isExclusive;
     private Guid? _posterFileId;
+    private ContentTypeEntity? _contentType;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CategoryBuilder"/> class with random default values.
@@ -117,6 +119,16 @@ internal class CategoryBuilder
     }
 
     /// <summary>
+    /// Sets the content type navigation property via reflection.
+    /// </summary>
+    public CategoryBuilder WithContentType(ContentTypeEntity contentType)
+    {
+        _contentType = contentType;
+        _contentTypeId = contentType.Id;
+        return this;
+    }
+
+    /// <summary>
     /// Sets the poster file ID.
     /// </summary>
     public CategoryBuilder WithPosterFileId(Guid? posterFileId = null)
@@ -149,6 +161,16 @@ internal class CategoryBuilder
         if (_posterFileId.HasValue)
         {
             entity.SetPosterFileId(_posterFileId);
+        }
+
+        if (_contentType is not null)
+        {
+            PropertyInfo prop = typeof(CategoryEntity).GetProperty(
+                nameof(CategoryEntity.ContentType),
+                BindingFlags.Public | BindingFlags.Instance
+            )!;
+
+            prop.SetValue(entity, _contentType);
         }
 
         return entity;
