@@ -27,6 +27,10 @@ public static partial class TestConstants
             public const string Packages = $"{Base}/packages";
             public const string Orders = $"{Base}/orders";
             public const string Customers = $"{Base}/customers";
+            public const string ContentTypes = $"{Base}/content-types";
+            public const string PricingTiers = $"{Base}/pricing-tiers";
+            public const string PromotionLevels = $"{Base}/promotion-levels";
+            public const string Tags = $"{Base}/tags";
         }
 
         public static class Public
@@ -40,6 +44,10 @@ public static partial class TestConstants
             public const string Lyrics = $"{Base}/lyrics";
             public const string Packages = $"{Base}/packages";
             public const string Me = $"{Base}/me";
+            public const string ContentTypes = $"{Base}/content-types";
+            public const string PromotionLevels = $"{Base}/promotion-levels";
+            public const string Tags = $"{Base}/tags";
+            public const string Playlists = $"{Base}/playlists";
         }
     }
 }
