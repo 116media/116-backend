@@ -31,26 +31,20 @@ public class PublicGetVideoPromotionFeedHandler(
         CancellationToken cancellationToken
     )
     {
-        Task<IReadOnlyList<VideoEntity>> spot1Task = videoRepository.GetActivePromotedBySpotAsync(
+        IReadOnlyList<VideoEntity> spot1Videos = await videoRepository.GetActivePromotedBySpotAsync(
             spotPriority: EditorialFeedConstants.Spot1,
             cancellationToken: cancellationToken
         );
 
-        Task<IReadOnlyList<VideoEntity>> spot2Task = videoRepository.GetActivePromotedBySpotAsync(
+        IReadOnlyList<VideoEntity> spot2Videos = await videoRepository.GetActivePromotedBySpotAsync(
             spotPriority: EditorialFeedConstants.Spot2,
             cancellationToken: cancellationToken
         );
 
-        Task<IReadOnlyList<VideoEntity>> spot3Task = videoRepository.GetActivePromotedBySpotAsync(
+        IReadOnlyList<VideoEntity> spot3Videos = await videoRepository.GetActivePromotedBySpotAsync(
             spotPriority: EditorialFeedConstants.Spot3,
             cancellationToken: cancellationToken
         );
-
-        await Task.WhenAll(spot1Task, spot2Task, spot3Task);
-
-        IReadOnlyList<VideoEntity> spot1Videos = spot1Task.Result;
-        IReadOnlyList<VideoEntity> spot2Videos = spot2Task.Result;
-        IReadOnlyList<VideoEntity> spot3Videos = spot3Task.Result;
 
         var usedIds = new HashSet<Guid>(spot1Videos.Concat(spot2Videos).Concat(spot3Videos).Select(v => v.Id));
 
