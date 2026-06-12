@@ -15,7 +15,16 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Comma
 /// </summary>
 public class AdminVerifyOtpValidatorTests
 {
-    private readonly AdminVerifyOtpValidator _validator = new(LocalizerFactory.CreateMessage<ValidationErrorMessage>());
+    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly AdminVerifyOtpValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminVerifyOtpValidatorTests"/>.
+    /// </summary>
+    public AdminVerifyOtpValidatorTests()
+    {
+        _validator = new AdminVerifyOtpValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -116,7 +125,7 @@ public class AdminVerifyOtpValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.Code)
-            .WithErrorMessage($"Verification code must be exactly {UserConstants.OtpCodeLength} characters long.");
+            .WithErrorMessage(_i18n.OtpCodeWrongLength(UserConstants.OtpCodeLength));
     }
 
     [Fact]
@@ -156,7 +165,7 @@ public class AdminVerifyOtpValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Purpose).WithErrorMessage("OTP purpose is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Purpose).WithErrorMessage(_i18n.OtpPurposeRequired());
     }
 
     [Fact]
@@ -174,7 +183,7 @@ public class AdminVerifyOtpValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Purpose).WithErrorMessage("Invalid OTP purpose specified.");
+        result.ShouldHaveValidationErrorFor(x => x.Purpose).WithErrorMessage(_i18n.OtpPurposeInvalid());
     }
 
     #endregion
@@ -193,6 +202,32 @@ public class AdminVerifyOtpValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCountGreaterThanOrEqualTo(3);
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        var validator = new AdminVerifyOtpValidator(i18n);
+        var command = new AdminVerifyOtpCommand(
+            Email: TestConstants.User.ValidEmail,
+            Code: TestConstants.Otp.ValidCode,
+            Purpose: null!
+        );
+
+        // Act
+        TestValidationResult<AdminVerifyOtpCommand>? result = await validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Purpose).WithErrorMessage(i18n.OtpPurposeRequired());
     }
 
     #endregion

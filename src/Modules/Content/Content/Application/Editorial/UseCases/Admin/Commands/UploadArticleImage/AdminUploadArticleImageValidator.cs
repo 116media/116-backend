@@ -13,11 +13,11 @@ public class AdminUploadArticleImageValidator : AbstractValidator<AdminUploadArt
     /// <summary>
     /// Initializes a new instance of <see cref="AdminUploadArticleImageValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Article validation error messages.</param>
-    public AdminUploadArticleImageValidator(ArticleErrorMessage msg)
+    /// <param name="i18n">Article validation error messages.</param>
+    public AdminUploadArticleImageValidator(ArticleErrorMessage i18n)
     {
-        RuleFor(x => x.ArticleId).IsValidGuid("Article ID");
+        RuleFor(x => x.ArticleId).IsValidGuid(i18n.Localizer);
 
-        RuleFor(x => x.File).ValidArticleImageFile(fileRequired: msg.FileRequired());
+        RuleFor(x => x.File).ValidArticleImageFile(i18n);
     }
 }

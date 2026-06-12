@@ -14,9 +14,16 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.UseCases.Admin.Comma
 /// </summary>
 public class AdminUpdateAvatarValidatorTests
 {
-    private readonly AdminUpdateAvatarValidator _validator = new(
-        LocalizerFactory.CreateMessage<ValidationErrorMessage>("en")
-    );
+    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>("en");
+    private readonly AdminUpdateAvatarValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminUpdateAvatarValidatorTests"/>.
+    /// </summary>
+    public AdminUpdateAvatarValidatorTests()
+    {
+        _validator = new AdminUpdateAvatarValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -73,7 +80,7 @@ public class AdminUpdateAvatarValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.AvatarFile).WithErrorMessage("Avatar file is required.");
+        result.ShouldHaveValidationErrorFor(x => x.AvatarFile).WithErrorMessage(_i18n.AvatarFileRequired());
     }
 
     #endregion
@@ -102,7 +109,7 @@ public class AdminUpdateAvatarValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.AvatarFile)
-            .WithErrorMessage($"File size must not exceed {FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)}MB.");
+            .WithErrorMessage(_i18n.AvatarFileTooLarge(FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024)));
     }
 
     [Fact]
@@ -146,9 +153,7 @@ public class AdminUpdateAvatarValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.AvatarFile)
-            .WithErrorMessage(
-                $"Only image files are allowed: {string.Join(", ", FileConstants.AllowedAvatarMimeTypes)}."
-            );
+            .WithErrorMessage(_i18n.AvatarFileInvalidType(string.Join(", ", FileConstants.AllowedAvatarMimeTypes)));
     }
 
     [Theory]
@@ -197,7 +202,7 @@ public class AdminUpdateAvatarValidatorTests
         result
             .ShouldHaveValidationErrorFor(x => x.AvatarFile)
             .WithErrorMessage(
-                $"Only these extensions are allowed: {string.Join(", ", FileConstants.AllowedAvatarExtensions)}."
+                _i18n.AvatarFileInvalidExtension(string.Join(", ", FileConstants.AllowedAvatarExtensions))
             );
     }
 
@@ -249,6 +254,32 @@ public class AdminUpdateAvatarValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCountGreaterThanOrEqualTo(1);
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        var validator = new AdminUpdateAvatarValidator(i18n);
+        var command = new AdminUpdateAvatarCommand(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            AvatarFile: null!
+        );
+
+        // Act
+        TestValidationResult<AdminUpdateAvatarCommand>? result = await validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.AvatarFile).WithErrorMessage(i18n.AvatarFileRequired());
     }
 
     #endregion

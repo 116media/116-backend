@@ -7,14 +7,14 @@ namespace _116.Content.Application.Shared.Errors;
 /// Article interaction error factory providing simple, readable exception creation.
 /// Covers likes, bookmarks, and comments on articles.
 /// </summary>
-public class ArticleInteractionErrors(ArticleInteractionErrorMessage msg)
+public class ArticleInteractionErrors(ArticleInteractionErrorMessage i18n)
 {
     /// <summary>
     /// Throws when a user attempts to like an article they have already liked.
     /// </summary>
     public ConflictException AlreadyLiked()
     {
-        return new ConflictException(msg.AlreadyLiked());
+        return new ConflictException(i18n.AlreadyLiked());
     }
 
     /// <summary>
@@ -22,7 +22,7 @@ public class ArticleInteractionErrors(ArticleInteractionErrorMessage msg)
     /// </summary>
     public BadRequestException LikeNotFound()
     {
-        return new BadRequestException(msg.LikeNotFound());
+        return new BadRequestException(i18n.LikeNotFound());
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ public class ArticleInteractionErrors(ArticleInteractionErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyBookmarked()
     {
-        return new ConflictException(msg.AlreadyBookmarked());
+        return new ConflictException(i18n.AlreadyBookmarked());
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ public class ArticleInteractionErrors(ArticleInteractionErrorMessage msg)
     /// </summary>
     public BadRequestException BookmarkNotFound()
     {
-        return new BadRequestException(msg.BookmarkNotFound());
+        return new BadRequestException(i18n.BookmarkNotFound());
     }
 
     /// <summary>
@@ -54,6 +54,6 @@ public class ArticleInteractionErrors(ArticleInteractionErrorMessage msg)
     /// </summary>
     public BadRequestException NotCommentOwner()
     {
-        return new BadRequestException(msg.NotCommentOwner());
+        return new BadRequestException(i18n.NotCommentOwner());
     }
 }

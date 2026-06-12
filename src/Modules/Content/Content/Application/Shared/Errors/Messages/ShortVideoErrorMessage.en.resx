@@ -48,4 +48,10 @@
   <data name="FileInvalidExtension" xml:space="preserve">
     <value>Short video file must be one of: {0}.</value>
   </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>Short Video ID is required.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>Short Video ID is invalid.</value>
+  </data>
 </root>

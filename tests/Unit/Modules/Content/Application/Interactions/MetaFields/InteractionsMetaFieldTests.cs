@@ -250,8 +250,8 @@ public class InteractionsMetaFieldTests
     public void ArticleInteractionErrorMessage_CommentNotFound_ShouldReturnFormattedMessage()
     {
         Guid commentId = Guid.NewGuid();
-        ArticleInteractionErrorMessage msg = LocalizerFactory.CreateMessage<ArticleInteractionErrorMessage>("en");
-        string message = msg.CommentNotFound(commentId);
+        ArticleInteractionErrorMessage i18n = LocalizerFactory.CreateMessage<ArticleInteractionErrorMessage>("en");
+        string message = i18n.CommentNotFound(commentId);
         message.Should().Contain(commentId.ToString());
     }
 
@@ -259,8 +259,8 @@ public class InteractionsMetaFieldTests
     public void PlaylistErrorMessage_NotFound_ShouldReturnFormattedMessage()
     {
         Guid id = Guid.NewGuid();
-        PlaylistErrorMessage msg = LocalizerFactory.CreateMessage<PlaylistErrorMessage>("en");
-        string message = msg.NotFound(id);
+        PlaylistErrorMessage i18n = LocalizerFactory.CreateMessage<PlaylistErrorMessage>("en");
+        string message = i18n.NotFound(id);
         message.Should().Contain(id.ToString());
     }
 

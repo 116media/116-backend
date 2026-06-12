@@ -1,3 +1,4 @@
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -11,8 +12,11 @@ public class AdminDeactivatePermissionValidator : AbstractValidator<AdminDeactiv
     /// <summary>
     /// Configure validation rules for permission deactivation.
     /// </summary>
-    public AdminDeactivatePermissionValidator()
+    /// <param name="i18n">
+    /// Validation error messages for rule configuration.
+    /// </param>
+    public AdminDeactivatePermissionValidator(ValidationErrorMessage i18n)
     {
-        RuleFor(x => x.PermissionId).IsValidGuid("Permission ID");
+        RuleFor(x => x.PermissionId).IsValidGuid(i18n.Localizer, "PermissionIdRequired", "PermissionIdInvalid");
     }
 }

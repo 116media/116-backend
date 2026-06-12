@@ -1,4 +1,6 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivateContentType;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -10,7 +12,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminDeactivateContentTypeValidatorTests
 {
-    private readonly AdminDeactivateContentTypeValidator _validator = new();
+    private readonly ContentTypeErrorMessage _i18n = LocalizerFactory.CreateMessage<ContentTypeErrorMessage>();
+    private readonly AdminDeactivateContentTypeValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminDeactivateContentTypeValidatorTests"/>.
+    /// </summary>
+    public AdminDeactivateContentTypeValidatorTests()
+    {
+        _validator = new AdminDeactivateContentTypeValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -47,7 +58,34 @@ public class AdminDeactivateContentTypeValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminDeactivateContentTypeCommand.Id)
-                && e.ErrorMessage == "Content type ID is required."
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ContentTypeErrorMessage>(culture);
+        var validator = new AdminDeactivateContentTypeValidator(i18n);
+        var command = new AdminDeactivateContentTypeCommand(Id: "");
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminDeactivateContentTypeCommand.Id)
+                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
             );
     }
 

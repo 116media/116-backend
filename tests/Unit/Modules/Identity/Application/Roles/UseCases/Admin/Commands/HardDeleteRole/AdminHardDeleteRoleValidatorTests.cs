@@ -1,5 +1,7 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.HardDeleteRole;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -11,7 +13,9 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Comm
 /// </summary>
 public class AdminHardDeleteRoleValidatorTests
 {
-    private readonly AdminHardDeleteRoleValidator _validator = new();
+    private readonly AdminHardDeleteRoleValidator _validator = new(
+        LocalizerFactory.CreateMessage<ValidationErrorMessage>()
+    );
 
     #region Valid Command Tests
 

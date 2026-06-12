@@ -1,4 +1,3 @@
-using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
@@ -13,20 +12,12 @@ public class AdminCreateRoleValidator : AbstractValidator<AdminCreateRoleCommand
     /// <summary>
     /// Initializes a new instance of <see cref="AdminCreateRoleValidator" /> with validation rules.
     /// </summary>
-    /// <param name="msg">
+    /// <param name="i18n">
     /// Validation error messages for rule configuration.
     /// </param>
-    public AdminCreateRoleValidator(ValidationErrorMessage msg)
+    public AdminCreateRoleValidator(ValidationErrorMessage i18n)
     {
-        RuleFor(x => x.Name)
-            .ValidRoleName(
-                roleNameRequired: msg.RoleNameRequired(),
-                roleNameTooLong: msg.RoleNameTooLong(RoleConstants.MaxRoleNameLength)
-            );
-        RuleFor(x => x.Description)
-            .ValidRoleDescription(
-                roleDescriptionRequired: msg.RoleDescriptionRequired(),
-                roleDescriptionTooLong: msg.RoleDescriptionTooLong(RoleConstants.MaxRoleDescriptionLength)
-            );
+        RuleFor(x => x.Name).ValidRoleName(i18n);
+        RuleFor(x => x.Description).ValidRoleDescription(i18n);
     }
 }

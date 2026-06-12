@@ -17,12 +17,7 @@ public class AdminForceUnpromoteVideoValidator : AbstractValidator<AdminForceUnp
     /// <param name="videoMsg">Video validation error messages.</param>
     public AdminForceUnpromoteVideoValidator(ArticleErrorMessage articleMsg, VideoErrorMessage videoMsg)
     {
-        RuleFor(x => x.Slug)
-            .ValidVideoSlug(
-                slugRequired: videoMsg.SlugRequired(),
-                slugTooLong: videoMsg.SlugTooLong(ContentConstants.MaxSlugLength),
-                slugInvalidFormat: videoMsg.SlugInvalidFormat()
-            );
+        RuleFor(x => x.Slug).ValidVideoSlug(videoMsg);
         RuleFor(x => x.Reason)
             .ValidUnpromoteReason(
                 reasonRequired: articleMsg.RejectionReasonRequired(),

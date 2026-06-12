@@ -1,6 +1,5 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
-using _116.Content.Domain.Constants;
 using FluentValidation;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo;
@@ -26,27 +25,12 @@ public class AdminCreateVideoValidator : AbstractValidator<AdminCreateVideoComma
     {
         RuleFor(x => x.CategoryId).ValidArticleCategoryId(articleMsg.CategoryIdRequired());
 
-        RuleFor(x => x.Title)
-            .ValidVideoTitle(
-                titleRequired: videoMsg.TitleRequired(),
-                titleTooLong: videoMsg.TitleTooLong(ContentConstants.MaxTitleLength)
-            );
-        RuleFor(x => x.Slug)
-            .ValidVideoSlug(
-                slugRequired: videoMsg.SlugRequired(),
-                slugTooLong: videoMsg.SlugTooLong(ContentConstants.MaxSlugLength),
-                slugInvalidFormat: videoMsg.SlugInvalidFormat()
-            );
+        RuleFor(x => x.Title).ValidVideoTitle(videoMsg);
+        RuleFor(x => x.Slug).ValidVideoSlug(videoMsg);
 
-        RuleFor(x => x.Description).ValidVideoDescription(descriptionRequired: videoMsg.DescriptionRequired());
+        RuleFor(x => x.Description).ValidVideoDescription(videoMsg);
 
-        When(
-            x => x.CustomerId.HasValue,
-            () => RuleFor(x => x.OrderItemId).ValidOrderItemId(orderMsg.OrderItemIdRequired())
-        );
-        When(
-            x => x.OrderItemId.HasValue,
-            () => RuleFor(x => x.CustomerId).ValidCustomerId(customerMsg.CustomerIdRequired())
-        );
+        When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId(orderMsg));
+        When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId(customerMsg));
     }
 }

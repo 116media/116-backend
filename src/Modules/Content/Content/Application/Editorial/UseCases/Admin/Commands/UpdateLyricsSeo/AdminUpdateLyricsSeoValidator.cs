@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -9,10 +10,11 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyric
 public class AdminUpdateLyricsSeoValidator : AbstractValidator<AdminUpdateLyricsSeoCommand>
 {
     /// <summary>
-    /// Configures validation rules for lyrics SEO update.
+    /// Initializes a new instance of <see cref="AdminUpdateLyricsSeoValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminUpdateLyricsSeoValidator()
+    /// <param name="i18n">Lyrics validation error messages.</param>
+    public AdminUpdateLyricsSeoValidator(LyricsErrorMessage i18n)
     {
-        RuleFor(x => x.Id).IsValidGuid("Lyrics ID");
+        RuleFor(x => x.Id).IsValidGuid(i18n.Localizer);
     }
 }

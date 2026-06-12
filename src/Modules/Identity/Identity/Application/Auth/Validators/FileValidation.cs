@@ -1,5 +1,6 @@
 using System.Reflection;
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 
@@ -12,32 +13,34 @@ public static class FileValidation
 {
     /// <summary>
     /// Validates the avatar file with size, type, and extension constraints.
-    /// The caller is responsible for pre-computing the error message strings using the
-    /// relevant <see cref="FileConstants"/> values before invoking this extension.
+    /// The extension internally resolves error messages from the <see cref="ValidationErrorMessage"/>
+    /// using the relevant <see cref="FileConstants"/> values.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the avatar file property.</param>
-    /// <param name="avatarFileRequired">Error message when the avatar file is missing (only used when isRequired is true).</param>
-    /// <param name="avatarFileTooLarge">Error message when the avatar file exceeds the maximum allowed size.</param>
-    /// <param name="avatarFileInvalidType">Error message when the avatar file has an unsupported MIME type.</param>
-    /// <param name="avatarFileInvalidExtension">Error message when the avatar file has an unsupported extension.</param>
+    /// <param name="i18n">Validation error messages for rule configuration.</param>
     /// <param name="isRequired">Whether the avatar file is required (default: false).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, IFormFile?> ValidAvatar<T>(
         this IRuleBuilderInitial<T, IFormFile?> ruleBuilder,
-        string avatarFileRequired,
-        string avatarFileTooLarge,
-        string avatarFileInvalidType,
-        string avatarFileInvalidExtension,
+        ValidationErrorMessage i18n,
         bool isRequired = false
     )
     {
+        string avatarFileTooLarge = i18n.AvatarFileTooLarge(FileConstants.MaxAvatarFileSizeBytes / (1024 * 1024));
+        string avatarFileInvalidType = i18n.AvatarFileInvalidType(
+            string.Join(", ", FileConstants.AllowedAvatarMimeTypes)
+        );
+        string avatarFileInvalidExtension = i18n.AvatarFileInvalidExtension(
+            string.Join(", ", FileConstants.AllowedAvatarExtensions)
+        );
+
         if (isRequired)
         {
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotNull()
-                .WithMessage(avatarFileRequired)
+                .WithMessage(i18n.AvatarFileRequired())
                 .Must(predicate: BeValidFileSize)
                 .WithMessage(avatarFileTooLarge)
                 .Must(predicate: BeValidImageType)

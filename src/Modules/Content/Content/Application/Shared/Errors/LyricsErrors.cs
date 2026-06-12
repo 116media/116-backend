@@ -7,7 +7,7 @@ namespace _116.Content.Application.Shared.Errors;
 /// Lyrics domain error factory providing simple, readable exception creation.
 /// Usage: LyricsErrors.NotFound(id) or LyricsErrors.AlreadyExists(songTitle, artistName)
 /// </summary>
-public class LyricsErrors(LyricsErrorMessage msg)
+public class LyricsErrors(LyricsErrorMessage i18n)
 {
     /// <summary>
     /// Throws when a lyrics record is not found by its identifier.
@@ -22,7 +22,7 @@ public class LyricsErrors(LyricsErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyExists(string songTitle, string artistName)
     {
-        return new ConflictException(msg.AlreadyExists(songTitle: songTitle, artistName: artistName));
+        return new ConflictException(i18n.AlreadyExists(songTitle: songTitle, artistName: artistName));
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ public class LyricsErrors(LyricsErrorMessage msg)
     /// </summary>
     public BadRequestException SongTitleRequired()
     {
-        return new BadRequestException(msg.SongTitleRequired());
+        return new BadRequestException(i18n.SongTitleRequired());
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ public class LyricsErrors(LyricsErrorMessage msg)
     /// </summary>
     public BadRequestException ArtistNameRequired()
     {
-        return new BadRequestException(msg.ArtistNameRequired());
+        return new BadRequestException(i18n.ArtistNameRequired());
     }
 
     /// <summary>
@@ -46,6 +46,6 @@ public class LyricsErrors(LyricsErrorMessage msg)
     /// </summary>
     public BadRequestException LyricsTextRequired()
     {
-        return new BadRequestException(msg.LyricsTextRequired());
+        return new BadRequestException(i18n.LyricsTextRequired());
     }
 }

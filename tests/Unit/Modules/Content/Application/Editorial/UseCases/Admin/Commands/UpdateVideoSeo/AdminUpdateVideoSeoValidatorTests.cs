@@ -12,9 +12,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateVideoSeoValidatorTests
 {
-    private readonly AdminUpdateVideoSeoValidator _validator = new(
-        LocalizerFactory.CreateMessage<ArticleErrorMessage>()
-    );
+    private readonly ArticleErrorMessage _i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+
+    private readonly AdminUpdateVideoSeoValidator _validator;
+
+    public AdminUpdateVideoSeoValidatorTests()
+    {
+        _validator = new AdminUpdateVideoSeoValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -54,7 +59,8 @@ public class AdminUpdateVideoSeoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateVideoSeoCommand.Id) && e.ErrorMessage == "Video ID is required."
+                e.PropertyName == nameof(AdminUpdateVideoSeoCommand.Id)
+                && e.ErrorMessage == _i18n.Localizer["VideoIdRequired"].Value
             );
     }
 
@@ -72,7 +78,35 @@ public class AdminUpdateVideoSeoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateVideoSeoCommand.Id) && e.ErrorMessage == "Video ID is invalid."
+                e.PropertyName == nameof(AdminUpdateVideoSeoCommand.Id)
+                && e.ErrorMessage == _i18n.Localizer["VideoIdInvalid"].Value
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
+        var validator = new AdminUpdateVideoSeoValidator(i18n);
+        var command = new AdminUpdateVideoSeoCommand(Id: string.Empty, MetaTitle: null, MetaDescription: null);
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateVideoSeoCommand.Id)
+                && e.ErrorMessage == i18n.Localizer["VideoIdRequired"].Value
             );
     }
 

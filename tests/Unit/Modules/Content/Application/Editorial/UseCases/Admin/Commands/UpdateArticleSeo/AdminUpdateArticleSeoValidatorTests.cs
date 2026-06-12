@@ -12,9 +12,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateArticleSeoValidatorTests
 {
-    private readonly AdminUpdateArticleSeoValidator _validator = new(
-        LocalizerFactory.CreateMessage<ArticleErrorMessage>()
-    );
+    private readonly ArticleErrorMessage _i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+
+    private readonly AdminUpdateArticleSeoValidator _validator;
+
+    public AdminUpdateArticleSeoValidatorTests()
+    {
+        _validator = new AdminUpdateArticleSeoValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -54,7 +59,8 @@ public class AdminUpdateArticleSeoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateArticleSeoCommand.Id) && e.ErrorMessage == "Article ID is required."
+                e.PropertyName == nameof(AdminUpdateArticleSeoCommand.Id)
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -72,7 +78,8 @@ public class AdminUpdateArticleSeoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateArticleSeoCommand.Id) && e.ErrorMessage == "Article ID is invalid."
+                e.PropertyName == nameof(AdminUpdateArticleSeoCommand.Id)
+                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
             );
     }
 
@@ -99,7 +106,7 @@ public class AdminUpdateArticleSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleSeoCommand.MetaTitle)
-                && e.ErrorMessage == "Meta title must be at least 10 characters."
+                && e.ErrorMessage == _i18n.MetaTitleTooShort(10)
             );
     }
 
@@ -122,7 +129,7 @@ public class AdminUpdateArticleSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleSeoCommand.MetaTitle)
-                && e.ErrorMessage == "Meta title must not exceed 70 characters."
+                && e.ErrorMessage == _i18n.MetaTitleTooLong(70)
             );
     }
 
@@ -166,7 +173,7 @@ public class AdminUpdateArticleSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleSeoCommand.MetaDescription)
-                && e.ErrorMessage == "Meta description must be at least 50 characters."
+                && e.ErrorMessage == _i18n.MetaDescriptionTooShort(50)
             );
     }
 
@@ -189,7 +196,7 @@ public class AdminUpdateArticleSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleSeoCommand.MetaDescription)
-                && e.ErrorMessage == "Meta description must not exceed 160 characters."
+                && e.ErrorMessage == _i18n.MetaDescriptionTooLong(160)
             );
     }
 
@@ -208,6 +215,33 @@ public class AdminUpdateArticleSeoValidatorTests
 
         // Assert
         result.IsValid.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
+        var validator = new AdminUpdateArticleSeoValidator(i18n);
+        var command = new AdminUpdateArticleSeoCommand(Id: string.Empty, MetaTitle: null, MetaDescription: null);
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateArticleSeoCommand.Id)
+                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
+            );
     }
 
     #endregion

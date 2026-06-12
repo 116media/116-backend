@@ -15,9 +15,16 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Comm
 /// </summary>
 public class PublicSocialLoginValidatorTests
 {
-    private readonly PublicSocialLoginValidator _validator = new(
-        LocalizerFactory.CreateMessage<ValidationErrorMessage>()
-    );
+    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly PublicSocialLoginValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="PublicSocialLoginValidatorTests"/>.
+    /// </summary>
+    public PublicSocialLoginValidatorTests()
+    {
+        _validator = new PublicSocialLoginValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -182,9 +189,7 @@ public class PublicSocialLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.AvatarUrl)
-            .WithErrorMessage("Avatar URL must be a valid HTTP or HTTPS URL.");
+        result.ShouldHaveValidationErrorFor(x => x.AvatarUrl).WithErrorMessage(_i18n.AvatarUrlInvalid());
     }
 
     #endregion
@@ -207,7 +212,7 @@ public class PublicSocialLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Provider).WithErrorMessage("Authentication provider is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Provider).WithErrorMessage(_i18n.AuthProviderRequired());
     }
 
     [Fact]
@@ -226,9 +231,7 @@ public class PublicSocialLoginValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.Provider)
-            .WithErrorMessage("Invalid authentication provider specified.");
+        result.ShouldHaveValidationErrorFor(x => x.Provider).WithErrorMessage(_i18n.AuthProviderInvalid());
     }
 
     #endregion
@@ -252,6 +255,33 @@ public class PublicSocialLoginValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCountGreaterThanOrEqualTo(4);
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        var validator = new PublicSocialLoginValidator(i18n);
+        var command = new PublicSocialLoginCommand(
+            Email: TestConstants.User.ValidEmail,
+            UserName: TestConstants.User.ValidUserName,
+            AvatarUrl: null,
+            Provider: null!
+        );
+
+        // Act
+        TestValidationResult<PublicSocialLoginCommand>? result = await validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Provider).WithErrorMessage(i18n.AuthProviderRequired());
     }
 
     #endregion

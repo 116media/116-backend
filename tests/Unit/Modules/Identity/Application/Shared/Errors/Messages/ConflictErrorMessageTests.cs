@@ -13,6 +13,12 @@ public class ConflictErrorMessageTests
     private readonly ConflictErrorMessage _message = LocalizerFactory.CreateMessage<ConflictErrorMessage>("en");
 
     [Fact]
+    public void Localizer_ShouldNotBeNull()
+    {
+        _message.Localizer.Should().NotBeNull();
+    }
+
+    [Fact]
     public void EmailAlreadyExists_WithEmail_ShouldReturnFormattedMessage()
     {
         // Arrange

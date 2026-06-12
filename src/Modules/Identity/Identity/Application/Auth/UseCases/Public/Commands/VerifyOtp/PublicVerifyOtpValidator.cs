@@ -1,4 +1,3 @@
-using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
@@ -19,24 +18,13 @@ public class PublicVerifyOtpValidator : AbstractValidator<PublicVerifyOtpCommand
     /// <summary>
     /// Initializes a new instance of <see cref="PublicVerifyOtpValidator" /> with validation rules.
     /// </summary>
-    /// <param name="msg">
+    /// <param name="i18n">
     /// Validation error messages for rule configuration.
     /// </param>
-    public PublicVerifyOtpValidator(ValidationErrorMessage msg)
+    public PublicVerifyOtpValidator(ValidationErrorMessage i18n)
     {
-        RuleFor(x => x.Email)
-            .ValidEmail(
-                emailRequired: msg.EmailRequired(),
-                emailTooLong: msg.EmailTooLong(UserConstants.MaxEmailLength),
-                invalidEmailFormat: msg.InvalidEmailFormatMsg()
-            );
-        RuleFor(x => x.Code)
-            .ValidOtpCode(
-                otpCodeRequired: msg.OtpCodeRequired(),
-                otpCodeWrongLength: msg.OtpCodeWrongLength(UserConstants.OtpCodeLength),
-                otpCodeNotNumeric: msg.OtpCodeNotNumeric()
-            );
-        RuleFor(x => x.Purpose)
-            .ValidOtpPurpose(otpPurposeRequired: msg.OtpPurposeRequired(), otpPurposeInvalid: msg.OtpPurposeInvalid());
+        RuleFor(x => x.Email).ValidEmail(i18n);
+        RuleFor(x => x.Code).ValidOtpCode(i18n);
+        RuleFor(x => x.Purpose).ValidOtpPurpose(i18n);
     }
 }

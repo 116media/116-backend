@@ -1,6 +1,5 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
-using _116.Content.Domain.Constants;
 using FluentValidation;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArticle;
@@ -23,25 +22,10 @@ public class AdminCreateArticleValidator : AbstractValidator<AdminCreateArticleC
     )
     {
         RuleFor(x => x.CategoryId).ValidArticleCategoryId(articleMsg.CategoryIdRequired());
-        RuleFor(x => x.Title)
-            .ValidArticleTitle(
-                titleRequired: articleMsg.TitleRequired(),
-                titleTooLong: articleMsg.TitleTooLong(ContentConstants.MaxTitleLength)
-            );
-        RuleFor(x => x.Slug)
-            .ValidArticleSlug(
-                slugRequired: articleMsg.SlugRequired(),
-                slugTooLong: articleMsg.SlugTooLong(ContentConstants.MaxSlugLength),
-                slugInvalidFormat: articleMsg.SlugInvalidFormat()
-            );
+        RuleFor(x => x.Title).ValidArticleTitle(articleMsg);
+        RuleFor(x => x.Slug).ValidArticleSlug(articleMsg);
 
-        When(
-            x => x.CustomerId.HasValue,
-            () => RuleFor(x => x.OrderItemId).ValidOrderItemId(orderMsg.OrderItemIdRequired())
-        );
-        When(
-            x => x.OrderItemId.HasValue,
-            () => RuleFor(x => x.CustomerId).ValidCustomerId(customerMsg.CustomerIdRequired())
-        );
+        When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId(orderMsg));
+        When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId(customerMsg));
     }
 }

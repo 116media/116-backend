@@ -14,9 +14,16 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Public.Comm
 /// </summary>
 public class PublicSetPasswordValidatorTests
 {
-    private readonly PublicSetPasswordValidator _validator = new(
-        LocalizerFactory.CreateMessage<ValidationErrorMessage>()
-    );
+    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly PublicSetPasswordValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="PublicSetPasswordValidatorTests"/>.
+    /// </summary>
+    public PublicSetPasswordValidatorTests()
+    {
+        _validator = new PublicSetPasswordValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -49,7 +56,7 @@ public class PublicSetPasswordValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage("Password is required.");
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage(_i18n.PasswordRequired());
     }
 
     [Fact]
@@ -79,7 +86,7 @@ public class PublicSetPasswordValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.Password)
-            .WithErrorMessage($"Password must be at least {UserConstants.MinPasswordLength} characters long.");
+            .WithErrorMessage(_i18n.PasswordTooShort("Password", UserConstants.MinPasswordLength));
     }
 
     [Fact]
@@ -122,6 +129,28 @@ public class PublicSetPasswordValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.ShouldHaveValidationErrorFor(x => x.Password);
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        var validator = new PublicSetPasswordValidator(i18n);
+        var command = new PublicSetPasswordCommand(UserId: Guid.NewGuid(), Password: null!);
+
+        // Act
+        TestValidationResult<PublicSetPasswordCommand>? result = await validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.Password).WithErrorMessage(i18n.PasswordRequired());
     }
 
     #endregion

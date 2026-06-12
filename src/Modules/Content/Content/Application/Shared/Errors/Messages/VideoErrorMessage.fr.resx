@@ -75,4 +75,13 @@
   <data name="VideoIdRequired" xml:space="preserve">
     <value>L'identifiant de la vidéo est obligatoire.</value>
   </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>L'identifiant de la vidéo est obligatoire.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>L'identifiant de la vidéo est invalide.</value>
+  </data>
+  <data name="ShootingScheduledDateMustBeInFuture" xml:space="preserve">
+    <value>La date de tournage prévue doit être dans le futur.</value>
+  </data>
 </root>

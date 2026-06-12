@@ -10,6 +10,11 @@ namespace _116.Identity.Application.Shared.Errors.Messages;
 public class ConflictErrorMessage(IStringLocalizer<ConflictErrorMessage> localizer)
 {
     /// <summary>
+    /// Exposes the underlying localizer for shared validation extensions.
+    /// </summary>
+    public IStringLocalizer Localizer => localizer;
+
+    /// <summary>
     /// Gets an error message for when a user with the given email
     /// already exists.
     /// </summary>

@@ -23,40 +23,20 @@ public class AdminUpdateArticleValidator : AbstractValidator<AdminUpdateArticleC
         CustomerErrorMessage customerMsg
     )
     {
-        RuleFor(x => x.Id).IsValidGuid("Article ID");
+        RuleFor(x => x.Id).IsValidGuid(articleMsg.Localizer);
 
         RuleFor(x => x.CategoryId).ValidArticleCategoryId(articleMsg.CategoryIdRequired());
 
-        RuleFor(x => x.Title)
-            .ValidArticleTitle(
-                titleRequired: articleMsg.TitleRequired(),
-                titleTooLong: articleMsg.TitleTooLong(ContentConstants.MaxTitleLength)
-            );
+        RuleFor(x => x.Title).ValidArticleTitle(articleMsg);
 
-        RuleFor(x => x.Slug)
-            .ValidArticleSlug(
-                slugRequired: articleMsg.SlugRequired(),
-                slugTooLong: articleMsg.SlugTooLong(ContentConstants.MaxSlugLength),
-                slugInvalidFormat: articleMsg.SlugInvalidFormat()
-            );
+        RuleFor(x => x.Slug).ValidArticleSlug(articleMsg);
 
-        RuleFor(x => x.Headline)
-            .ValidArticleHeadline(
-                headlineRequired: articleMsg.HeadlineRequired(),
-                headlineTooShort: articleMsg.HeadlineTooShort(ContentConstants.MinHeadlineLength),
-                headlineTooLong: articleMsg.HeadlineTooLong(ContentConstants.MaxHeadlineLength)
-            );
+        RuleFor(x => x.Headline).ValidArticleHeadline(articleMsg);
 
-        RuleFor(x => x.Body).ValidArticleBody(bodyRequired: articleMsg.BodyRequired());
+        RuleFor(x => x.Body).ValidArticleBody(articleMsg);
 
-        When(
-            x => x.CustomerId.HasValue,
-            () => RuleFor(x => x.OrderItemId).ValidOrderItemId(orderMsg.OrderItemIdRequired())
-        );
-        When(
-            x => x.OrderItemId.HasValue,
-            () => RuleFor(x => x.CustomerId).ValidCustomerId(customerMsg.CustomerIdRequired())
-        );
+        When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId(orderMsg));
+        When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId(customerMsg));
 
         When(
             x => x.MetaTitle is not null,

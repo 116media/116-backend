@@ -1,6 +1,5 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
-using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -15,14 +14,11 @@ public class AdminUpdateArticleTagsValidator : AbstractValidator<AdminUpdateArti
     /// <summary>
     /// Initializes a new instance of <see cref="AdminUpdateArticleTagsValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Tag validation error messages.</param>
-    public AdminUpdateArticleTagsValidator(TagErrorMessage msg)
+    /// <param name="i18n">Tag validation error messages.</param>
+    /// <param name="articleMsg">Article validation error messages.</param>
+    public AdminUpdateArticleTagsValidator(TagErrorMessage i18n, ArticleErrorMessage articleMsg)
     {
-        RuleFor(x => x.ArticleId).IsValidGuid("Article ID");
-        RuleForEach(x => x.TagNames)
-            .ValidTagNameItem(
-                nameRequired: msg.NameRequired(),
-                nameTooLong: msg.NameTooLong(ContentConstants.MaxTagNameLength)
-            );
+        RuleFor(x => x.ArticleId).IsValidGuid(articleMsg.Localizer);
+        RuleForEach(x => x.TagNames).ValidTagNameItem(i18n);
     }
 }

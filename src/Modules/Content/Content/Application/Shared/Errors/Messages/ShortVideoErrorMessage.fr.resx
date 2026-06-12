@@ -48,4 +48,10 @@
   <data name="FileInvalidExtension" xml:space="preserve">
     <value>Le fichier de la courte vidéo doit être l'un des suivants : {0}.</value>
   </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>L'identifiant de la courte vidéo est obligatoire.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>L'identifiant de la courte vidéo est invalide.</value>
+  </data>
 </root>

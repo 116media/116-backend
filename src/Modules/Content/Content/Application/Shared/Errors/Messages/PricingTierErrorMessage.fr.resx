@@ -36,4 +36,10 @@
   <data name="DescriptionTooLong" xml:space="preserve">
     <value>La description du niveau de tarification ne doit pas dépasser {0} caractères.</value>
   </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>L'identifiant du niveau de tarification est obligatoire.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>L'identifiant du niveau de tarification est invalide.</value>
+  </data>
 </root>

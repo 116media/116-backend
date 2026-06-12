@@ -9,6 +9,11 @@ namespace _116.Core.Application.Shared.Errors.Messages;
 public class InternalServerErrorMessage(IStringLocalizer<InternalServerErrorMessage> localizer)
 {
     /// <summary>
+    /// Exposes the underlying localizer for shared validation extensions.
+    /// </summary>
+    public IStringLocalizer Localizer => localizer;
+
+    /// <summary>
     /// Gets the error message for service unavailable.
     /// </summary>
     /// <param name="serviceName">The name of the unavailable service.</param>

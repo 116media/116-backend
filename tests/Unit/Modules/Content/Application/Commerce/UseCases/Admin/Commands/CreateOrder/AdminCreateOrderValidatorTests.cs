@@ -1,4 +1,6 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -10,7 +12,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminCreateOrderValidatorTests
 {
-    private readonly AdminCreateOrderValidator _validator = new();
+    private readonly CustomerErrorMessage _i18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>();
+    private readonly AdminCreateOrderValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminCreateOrderValidatorTests"/>.
+    /// </summary>
+    public AdminCreateOrderValidatorTests()
+    {
+        _validator = new AdminCreateOrderValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -47,7 +58,7 @@ public class AdminCreateOrderValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateOrderCommand.CustomerId)
-                && e.ErrorMessage == "Customer ID is required."
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -66,7 +77,34 @@ public class AdminCreateOrderValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateOrderCommand.CustomerId)
-                && e.ErrorMessage == "Customer ID is invalid."
+                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>(culture);
+        var validator = new AdminCreateOrderValidator(i18n);
+        var command = new AdminCreateOrderCommand(CustomerId: "", PackageId: null);
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreateOrderCommand.CustomerId)
+                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
             );
     }
 

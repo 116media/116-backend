@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -9,10 +10,11 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBy
 public class PublicGetLyricsByVideoIdValidator : AbstractValidator<PublicGetLyricsByVideoIdQuery>
 {
     /// <summary>
-    /// Configures validation rules for the lyrics by video ID query.
+    /// Initializes a new instance of <see cref="PublicGetLyricsByVideoIdValidator" /> with the specified error message provider.
     /// </summary>
-    public PublicGetLyricsByVideoIdValidator()
+    /// <param name="i18n">Video validation error messages.</param>
+    public PublicGetLyricsByVideoIdValidator(VideoErrorMessage i18n)
     {
-        RuleFor(x => x.VideoId).IsValidGuid("Video ID");
+        RuleFor(x => x.VideoId).IsValidGuid(i18n.Localizer);
     }
 }

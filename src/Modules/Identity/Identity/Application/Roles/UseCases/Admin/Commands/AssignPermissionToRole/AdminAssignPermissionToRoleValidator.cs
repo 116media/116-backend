@@ -1,3 +1,4 @@
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -11,8 +12,11 @@ public class AdminAssignPermissionToRoleValidator : AbstractValidator<AdminAssig
     /// <summary>
     /// Configure validation rules for assigning a permission to a role.
     /// </summary>
-    public AdminAssignPermissionToRoleValidator()
+    /// <param name="i18n">
+    /// Validation error messages for rule configuration.
+    /// </param>
+    public AdminAssignPermissionToRoleValidator(ValidationErrorMessage i18n)
     {
-        RuleFor(x => x.RoleId).IsValidGuid("Role ID");
+        RuleFor(x => x.RoleId).IsValidGuid(i18n.Localizer, "RoleIdRequired", "RoleIdInvalid");
     }
 }

@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace _116.Shared.Application.Pagination;
 
 /// <summary>
@@ -10,4 +12,4 @@ namespace _116.Shared.Application.Pagination;
 /// var request = new PaginatedRequest(pageIndex: 2, pageSize: 20);
 /// </code>
 /// </example>
-public record PaginatedRequest(int PageIndex = 0, int PageSize = 10);
+public record PaginatedRequest([Range(0, int.MaxValue)] int PageIndex = 0, [Range(1, 100)] int PageSize = 10);

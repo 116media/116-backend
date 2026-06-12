@@ -7,14 +7,14 @@ namespace _116.Content.Application.Shared.Errors;
 /// Category domain error factory providing simple, readable exception creation.
 /// Usage: CategoryErrors.AlreadyExists(slug) or CategoryErrors.NotFound(id)
 /// </summary>
-public class CategoryErrors(CategoryErrorMessage msg)
+public class CategoryErrors(CategoryErrorMessage i18n)
 {
     /// <summary>
     /// Throws when a category with the given slug already exists.
     /// </summary>
     public ConflictException AlreadyExists(string slug)
     {
-        return new ConflictException(msg.AlreadyExists(slug: slug));
+        return new ConflictException(i18n.AlreadyExists(slug: slug));
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ public class CategoryErrors(CategoryErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyActive()
     {
-        return new ConflictException(msg.AlreadyActive());
+        return new ConflictException(i18n.AlreadyActive());
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ public class CategoryErrors(CategoryErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyInactive()
     {
-        return new ConflictException(msg.AlreadyInactive());
+        return new ConflictException(i18n.AlreadyInactive());
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public class CategoryErrors(CategoryErrorMessage msg)
     /// </summary>
     public BadRequestException NameRequired()
     {
-        return new BadRequestException(msg.NameRequired());
+        return new BadRequestException(i18n.NameRequired());
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public class CategoryErrors(CategoryErrorMessage msg)
     /// </summary>
     public BadRequestException SlugRequired()
     {
-        return new BadRequestException(msg.SlugRequired());
+        return new BadRequestException(i18n.SlugRequired());
     }
 
     /// <summary>
@@ -62,7 +62,7 @@ public class CategoryErrors(CategoryErrorMessage msg)
     /// </summary>
     public ConflictException PricingAlreadyExists()
     {
-        return new ConflictException(msg.PricingAlreadyExists());
+        return new ConflictException(i18n.PricingAlreadyExists());
     }
 
     /// <summary>
@@ -78,6 +78,6 @@ public class CategoryErrors(CategoryErrorMessage msg)
     /// </summary>
     public BadRequestException PriceMustBeNonNegative()
     {
-        return new BadRequestException(msg.PriceMustBeNonNegative());
+        return new BadRequestException(i18n.PriceMustBeNonNegative());
     }
 }

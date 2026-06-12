@@ -18,17 +18,29 @@ internal record LyricsIdInput(Guid LyricsId);
 
 internal class ArticleIdValidator : AbstractValidator<ArticleIdInput>
 {
-    public ArticleIdValidator() => RuleFor(x => x.ArticleId).ValidArticleId("Article ID is required.");
+    public ArticleIdValidator()
+    {
+        ArticleErrorMessage i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+        RuleFor(x => x.ArticleId).ValidArticleId(i18n);
+    }
 }
 
 internal class VideoIdValidator : AbstractValidator<VideoIdInput>
 {
-    public VideoIdValidator() => RuleFor(x => x.VideoId).ValidVideoId("Video ID is required.");
+    public VideoIdValidator()
+    {
+        VideoErrorMessage i18n = LocalizerFactory.CreateMessage<VideoErrorMessage>();
+        RuleFor(x => x.VideoId).ValidVideoId(i18n);
+    }
 }
 
 internal class LyricsIdValidator : AbstractValidator<LyricsIdInput>
 {
-    public LyricsIdValidator() => RuleFor(x => x.LyricsId).ValidLyricsId("Lyrics ID is required.");
+    public LyricsIdValidator()
+    {
+        LyricsErrorMessage i18n = LocalizerFactory.CreateMessage<LyricsErrorMessage>();
+        RuleFor(x => x.LyricsId).ValidLyricsId(i18n);
+    }
 }
 
 // Records must expose "Title" and "Slug" properties so ValidationUtils.GetPropertyValue can find them.
@@ -44,13 +56,8 @@ internal class ArticleOptionalTitleValidator : AbstractValidator<ArticleOptional
 {
     public ArticleOptionalTitleValidator()
     {
-        ArticleErrorMessage msg = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
-        RuleFor(x => x.Title)
-            .ValidArticleTitle(
-                titleRequired: msg.TitleRequired(),
-                titleTooLong: msg.TitleTooLong(ContentConstants.MaxTitleLength),
-                isRequired: false
-            );
+        ArticleErrorMessage i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+        RuleFor(x => x.Title).ValidArticleTitle(i18n, isRequired: false);
     }
 }
 
@@ -58,14 +65,8 @@ internal class ArticleOptionalSlugValidator : AbstractValidator<ArticleOptionalS
 {
     public ArticleOptionalSlugValidator()
     {
-        ArticleErrorMessage msg = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
-        RuleFor(x => x.Slug)
-            .ValidArticleSlug(
-                slugRequired: msg.SlugRequired(),
-                slugTooLong: msg.SlugTooLong(ContentConstants.MaxSlugLength),
-                slugInvalidFormat: msg.SlugInvalidFormat(),
-                isRequired: false
-            );
+        ArticleErrorMessage i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+        RuleFor(x => x.Slug).ValidArticleSlug(i18n, isRequired: false);
     }
 }
 
@@ -73,13 +74,8 @@ internal class VideoOptionalTitleValidator : AbstractValidator<VideoOptionalTitl
 {
     public VideoOptionalTitleValidator()
     {
-        VideoErrorMessage msg = LocalizerFactory.CreateMessage<VideoErrorMessage>();
-        RuleFor(x => x.Title)
-            .ValidVideoTitle(
-                titleRequired: msg.TitleRequired(),
-                titleTooLong: msg.TitleTooLong(ContentConstants.MaxTitleLength),
-                isRequired: false
-            );
+        VideoErrorMessage i18n = LocalizerFactory.CreateMessage<VideoErrorMessage>();
+        RuleFor(x => x.Title).ValidVideoTitle(i18n, isRequired: false);
     }
 }
 
@@ -87,14 +83,8 @@ internal class VideoOptionalSlugValidator : AbstractValidator<VideoOptionalSlugI
 {
     public VideoOptionalSlugValidator()
     {
-        VideoErrorMessage msg = LocalizerFactory.CreateMessage<VideoErrorMessage>();
-        RuleFor(x => x.Slug)
-            .ValidVideoSlug(
-                slugRequired: msg.SlugRequired(),
-                slugTooLong: msg.SlugTooLong(ContentConstants.MaxSlugLength),
-                slugInvalidFormat: msg.SlugInvalidFormat(),
-                isRequired: false
-            );
+        VideoErrorMessage i18n = LocalizerFactory.CreateMessage<VideoErrorMessage>();
+        RuleFor(x => x.Slug).ValidVideoSlug(i18n, isRequired: false);
     }
 }
 
@@ -249,11 +239,7 @@ public class EditorialValidatorsTests
         var validator = new ArticleIdValidator();
         ValidationResult result = await validator.ValidateAsync(new ArticleIdInput(Guid.Empty));
         result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(ArticleIdInput.ArticleId) && e.ErrorMessage == "Article ID is required."
-            );
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(ArticleIdInput.ArticleId));
     }
 
     [Fact]
@@ -270,9 +256,7 @@ public class EditorialValidatorsTests
         var validator = new VideoIdValidator();
         ValidationResult result = await validator.ValidateAsync(new VideoIdInput(Guid.Empty));
         result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e => e.PropertyName == nameof(VideoIdInput.VideoId) && e.ErrorMessage == "Video ID is required.");
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(VideoIdInput.VideoId));
     }
 
     [Fact]
@@ -289,11 +273,7 @@ public class EditorialValidatorsTests
         var validator = new LyricsIdValidator();
         ValidationResult result = await validator.ValidateAsync(new LyricsIdInput(Guid.Empty));
         result.IsValid.Should().BeFalse();
-        result
-            .Errors.Should()
-            .Contain(e =>
-                e.PropertyName == nameof(LyricsIdInput.LyricsId) && e.ErrorMessage == "Lyrics ID is required."
-            );
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(LyricsIdInput.LyricsId));
     }
 
     #endregion

@@ -1,6 +1,5 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
-using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -14,15 +13,11 @@ public class AdminRejectVideoValidator : AbstractValidator<AdminRejectVideoComma
     /// <summary>
     /// Initializes a new instance of <see cref="AdminRejectVideoValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Article validation error messages.</param>
-    public AdminRejectVideoValidator(ArticleErrorMessage msg)
+    /// <param name="i18n">Article validation error messages.</param>
+    public AdminRejectVideoValidator(ArticleErrorMessage i18n)
     {
-        RuleFor(x => x.Id).IsValidGuid("Video ID");
+        RuleFor(x => x.Id).IsValidGuid(i18n.Localizer, "VideoIdRequired", "VideoIdInvalid");
 
-        RuleFor(x => x.Reason)
-            .ValidRejectionReason(
-                reasonRequired: msg.RejectionReasonRequired(),
-                reasonTooLong: msg.RejectionReasonTooLong(ContentConstants.MaxRejectionReasonLength)
-            );
+        RuleFor(x => x.Reason).ValidRejectionReason(i18n);
     }
 }

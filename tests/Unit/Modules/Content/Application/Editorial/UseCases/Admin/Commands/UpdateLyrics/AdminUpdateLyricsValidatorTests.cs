@@ -13,7 +13,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateLyricsValidatorTests
 {
-    private readonly AdminUpdateLyricsValidator _validator = new(LocalizerFactory.CreateMessage<LyricsErrorMessage>());
+    private readonly LyricsErrorMessage _i18n = LocalizerFactory.CreateMessage<LyricsErrorMessage>();
+
+    private readonly AdminUpdateLyricsValidator _validator;
+
+    public AdminUpdateLyricsValidatorTests()
+    {
+        _validator = new AdminUpdateLyricsValidator(_i18n);
+    }
 
     private static AdminUpdateLyricsCommand ValidCommand() =>
         new(
@@ -59,7 +66,8 @@ public class AdminUpdateLyricsValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateLyricsCommand.Id) && e.ErrorMessage == "Lyrics ID is required."
+                e.PropertyName == nameof(AdminUpdateLyricsCommand.Id)
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -80,7 +88,8 @@ public class AdminUpdateLyricsValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateLyricsCommand.Id) && e.ErrorMessage == "Lyrics ID is invalid."
+                e.PropertyName == nameof(AdminUpdateLyricsCommand.Id)
+                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
             );
     }
 
@@ -106,7 +115,34 @@ public class AdminUpdateLyricsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateLyricsCommand.LyricsText)
-                && e.ErrorMessage == "Lyrics text is required."
+                && e.ErrorMessage == _i18n.LyricsTextRequired()
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<LyricsErrorMessage>(culture);
+        var validator = new AdminUpdateLyricsValidator(i18n);
+        var command = ValidCommand() with { LyricsText = string.Empty };
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateLyricsCommand.LyricsText)
+                && e.ErrorMessage == i18n.LyricsTextRequired()
             );
     }
 

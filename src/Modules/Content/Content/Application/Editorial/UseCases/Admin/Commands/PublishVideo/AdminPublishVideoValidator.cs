@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -9,10 +10,11 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishVide
 public class AdminPublishVideoValidator : AbstractValidator<AdminPublishVideoCommand>
 {
     /// <summary>
-    /// Configures validation rules for video publishing.
+    /// Initializes a new instance of <see cref="AdminPublishVideoValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminPublishVideoValidator()
+    /// <param name="i18n">Video validation error messages.</param>
+    public AdminPublishVideoValidator(VideoErrorMessage i18n)
     {
-        RuleFor(x => x.Id).IsValidGuid("Video ID");
+        RuleFor(x => x.Id).IsValidGuid(i18n.Localizer);
     }
 }

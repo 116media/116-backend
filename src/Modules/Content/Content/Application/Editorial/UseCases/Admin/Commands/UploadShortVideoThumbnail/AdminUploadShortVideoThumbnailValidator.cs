@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -9,10 +10,11 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadShort
 public class AdminUploadShortVideoThumbnailValidator : AbstractValidator<AdminUploadShortVideoThumbnailCommand>
 {
     /// <summary>
-    /// Configures validation rules for short video thumbnail upload.
+    /// Initializes a new instance of <see cref="AdminUploadShortVideoThumbnailValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminUploadShortVideoThumbnailValidator()
+    /// <param name="i18n">Short video validation error messages.</param>
+    public AdminUploadShortVideoThumbnailValidator(ShortVideoErrorMessage i18n)
     {
-        RuleFor(x => x.ShortVideoId).IsValidGuid("Short Video ID");
+        RuleFor(x => x.ShortVideoId).IsValidGuid(i18n.Localizer);
     }
 }

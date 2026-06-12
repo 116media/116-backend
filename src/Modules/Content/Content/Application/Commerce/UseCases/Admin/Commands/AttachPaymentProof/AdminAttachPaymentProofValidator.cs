@@ -13,11 +13,11 @@ public class AdminAttachPaymentProofValidator : AbstractValidator<AdminAttachPay
     /// <summary>
     /// Initializes a new instance of <see cref="AdminAttachPaymentProofValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Content order validation error messages.</param>
-    public AdminAttachPaymentProofValidator(ContentOrderErrorMessage msg)
+    /// <param name="i18n">Content order validation error messages.</param>
+    public AdminAttachPaymentProofValidator(ContentOrderErrorMessage i18n)
     {
-        RuleFor(x => x.OrderId).IsValidGuid("Order ID");
-        RuleFor(x => x.File).ValidPaymentProofFile(msg.PaymentProofRequired());
-        RuleFor(x => x.PaymentMethod).ValidPaymentMethod(msg.InvalidPaymentMethod());
+        RuleFor(x => x.OrderId).IsValidGuid(i18n.Localizer);
+        RuleFor(x => x.File).ValidPaymentProofFile(i18n);
+        RuleFor(x => x.PaymentMethod).ValidPaymentMethod(i18n);
     }
 }

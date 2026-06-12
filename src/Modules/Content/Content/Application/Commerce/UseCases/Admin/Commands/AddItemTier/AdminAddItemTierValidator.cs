@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -9,12 +10,14 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier;
 public class AdminAddItemTierValidator : AbstractValidator<AdminAddItemTierCommand>
 {
     /// <summary>
-    /// Configures validation rules for adding an item tier.
+    /// Initializes a new instance of <see cref="AdminAddItemTierValidator" /> with the specified error message providers.
     /// </summary>
-    public AdminAddItemTierValidator()
+    /// <param name="orderMsg">Content order validation error messages.</param>
+    /// <param name="pricingTierMsg">Pricing tier validation error messages.</param>
+    public AdminAddItemTierValidator(ContentOrderErrorMessage orderMsg, PricingTierErrorMessage pricingTierMsg)
     {
-        RuleFor(x => x.OrderId).IsValidGuid("Order ID");
-        RuleFor(x => x.OrderItemId).IsValidGuid("Order item ID");
-        RuleFor(x => x.PricingTierId).IsValidGuid("Pricing tier ID");
+        RuleFor(x => x.OrderId).IsValidGuid(orderMsg.Localizer);
+        RuleFor(x => x.OrderItemId).IsValidGuid(orderMsg.Localizer, "OrderItemIdRequired", "OrderItemIdInvalid");
+        RuleFor(x => x.PricingTierId).IsValidGuid(pricingTierMsg.Localizer);
     }
 }

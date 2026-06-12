@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
@@ -10,12 +11,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ScheduleSho
 public class AdminScheduleShootValidator : AbstractValidator<AdminScheduleShootCommand>
 {
     /// <summary>
-    /// Configures validation rules for scheduling a video shoot.
+    /// Initializes a new instance of <see cref="AdminScheduleShootValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminScheduleShootValidator()
+    /// <param name="i18n">Video validation error messages.</param>
+    public AdminScheduleShootValidator(VideoErrorMessage i18n)
     {
-        RuleFor(x => x.VideoId).IsValidGuid("Video ID");
+        RuleFor(x => x.VideoId).IsValidGuid(i18n.Localizer);
 
-        RuleFor(x => x.ShootingScheduledAt).ValidShootingScheduledAt();
+        RuleFor(x => x.ShootingScheduledAt).ValidShootingScheduledAt(i18n);
     }
 }

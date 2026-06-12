@@ -27,4 +27,10 @@
   <data name="NameTooLong" xml:space="preserve">
     <value>Le nom du type de contenu ne doit pas dépasser {0} caractères.</value>
   </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>L'identifiant du type de contenu est obligatoire.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>L'identifiant du type de contenu est invalide.</value>
+  </data>
 </root>

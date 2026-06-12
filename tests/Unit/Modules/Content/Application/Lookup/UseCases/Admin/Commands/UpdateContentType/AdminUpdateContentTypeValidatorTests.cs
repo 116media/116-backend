@@ -13,9 +13,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminUpdateContentTypeValidatorTests
 {
-    private readonly AdminUpdateContentTypeValidator _validator = new(
-        LocalizerFactory.CreateMessage<ContentTypeErrorMessage>()
-    );
+    private readonly ContentTypeErrorMessage _i18n = LocalizerFactory.CreateMessage<ContentTypeErrorMessage>();
+    private readonly AdminUpdateContentTypeValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminUpdateContentTypeValidatorTests"/>.
+    /// </summary>
+    public AdminUpdateContentTypeValidatorTests()
+    {
+        _validator = new AdminUpdateContentTypeValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -71,7 +78,7 @@ public class AdminUpdateContentTypeValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminUpdateContentTypeCommand.Id)
-                && e.ErrorMessage == "Content type ID is required."
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -93,8 +100,7 @@ public class AdminUpdateContentTypeValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateContentTypeCommand.Name)
-                && e.ErrorMessage == "Content type name is required."
+                e.PropertyName == nameof(AdminUpdateContentTypeCommand.Name) && e.ErrorMessage == _i18n.NameRequired()
             );
     }
 
@@ -133,6 +139,32 @@ public class AdminUpdateContentTypeValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCount(2);
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ContentTypeErrorMessage>(culture);
+        var validator = new AdminUpdateContentTypeValidator(i18n);
+        var command = new AdminUpdateContentTypeCommand(Id: Guid.NewGuid().ToString(), Name: "");
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateContentTypeCommand.Name) && e.ErrorMessage == i18n.NameRequired()
+            );
     }
 
     #endregion

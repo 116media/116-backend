@@ -44,67 +44,49 @@ public class CredentialValidationTests
 
     private class TestEmailCommandValidator : AbstractValidator<TestEmailCommand>
     {
-        public TestEmailCommandValidator(ValidationErrorMessage msg, bool isRequired = true)
+        public TestEmailCommandValidator(ValidationErrorMessage i18n, bool isRequired = true)
         {
-            RuleFor(x => x.Email)
-                .ValidEmail(
-                    emailRequired: msg.EmailRequired(),
-                    emailTooLong: msg.EmailTooLong(UserConstants.MaxEmailLength),
-                    invalidEmailFormat: msg.InvalidEmailFormatMsg(),
-                    isRequired: isRequired
-                );
+            RuleFor(x => x.Email).ValidEmail(i18n, isRequired: isRequired);
         }
     }
 
     private class TestPasswordCommandValidator : AbstractValidator<TestPasswordCommand>
     {
-        public TestPasswordCommandValidator(ValidationErrorMessage msg)
+        public TestPasswordCommandValidator(ValidationErrorMessage i18n)
         {
-            RuleFor(x => x.Password)
-                .ValidPassword(
-                    passwordRequired: msg.PasswordRequired(),
-                    passwordTooShort: msg.PasswordTooShort("Password", UserConstants.MinPasswordLength),
-                    passwordComplexity: msg.PasswordComplexity("Password")
-                );
+            RuleFor(x => x.Password).ValidPassword(i18n);
         }
     }
 
     private class TestUsernameCommandValidator : AbstractValidator<TestUsernameCommand>
     {
-        public TestUsernameCommandValidator(ValidationErrorMessage msg, bool isRequired = true)
+        public TestUsernameCommandValidator(ValidationErrorMessage i18n, bool isRequired = true)
         {
-            RuleFor(x => x.UserName)
-                .ValidUsername(
-                    usernameRequired: msg.UsernameRequired(),
-                    usernameTooShort: msg.UsernameTooShort(UserConstants.MinUserNameLength),
-                    usernameTooLong: msg.UsernameTooLong(UserConstants.MaxUserNameLength),
-                    usernameInvalidChars: msg.UsernameInvalidChars(),
-                    isRequired: isRequired
-                );
+            RuleFor(x => x.UserName).ValidUsername(i18n, isRequired: isRequired);
         }
     }
 
     private class TestPasswordNotStrongCommandValidator : AbstractValidator<TestPasswordCommand>
     {
-        public TestPasswordNotStrongCommandValidator(ValidationErrorMessage msg)
+        public TestPasswordNotStrongCommandValidator(ValidationErrorMessage i18n)
         {
-            RuleFor(x => x.Password).ValidPassword(passwordRequired: msg.PasswordRequired(), isStrong: false);
+            RuleFor(x => x.Password).ValidPassword(i18n, isStrong: false);
         }
     }
 
     private class TestCredentialsCommandValidator : AbstractValidator<TestCredentialsCommand>
     {
-        public TestCredentialsCommandValidator(ValidationErrorMessage msg)
+        public TestCredentialsCommandValidator(ValidationErrorMessage i18n)
         {
-            RuleFor(x => x.Credentials).ValidCredentials(emailOrUsernameRequired: msg.EmailOrUsernameRequired());
+            RuleFor(x => x.Credentials).ValidCredentials(i18n);
         }
     }
 
     private class TestOldPasswordCommandValidator : AbstractValidator<TestOldPasswordCommand>
     {
-        public TestOldPasswordCommandValidator(ValidationErrorMessage msg)
+        public TestOldPasswordCommandValidator(ValidationErrorMessage i18n)
         {
-            RuleFor(x => x.OldPassword).ValidOldPassword(currentPasswordRequired: msg.CurrentPasswordRequired());
+            RuleFor(x => x.OldPassword).ValidOldPassword(i18n);
         }
     }
 

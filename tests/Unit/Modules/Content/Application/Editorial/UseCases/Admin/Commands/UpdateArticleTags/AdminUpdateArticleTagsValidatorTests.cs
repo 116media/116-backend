@@ -12,9 +12,15 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateArticleTagsValidatorTests
 {
-    private readonly AdminUpdateArticleTagsValidator _validator = new(
-        LocalizerFactory.CreateMessage<TagErrorMessage>()
-    );
+    private readonly TagErrorMessage _tagI18n = LocalizerFactory.CreateMessage<TagErrorMessage>();
+    private readonly ArticleErrorMessage _articleI18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+
+    private readonly AdminUpdateArticleTagsValidator _validator;
+
+    public AdminUpdateArticleTagsValidatorTests()
+    {
+        _validator = new AdminUpdateArticleTagsValidator(_tagI18n, _articleI18n);
+    }
 
     #region Valid Command Tests
 
@@ -71,7 +77,7 @@ public class AdminUpdateArticleTagsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleTagsCommand.ArticleId)
-                && e.ErrorMessage == "Article ID is required."
+                && e.ErrorMessage == _articleI18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -90,7 +96,7 @@ public class AdminUpdateArticleTagsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleTagsCommand.ArticleId)
-                && e.ErrorMessage == "Article ID is invalid."
+                && e.ErrorMessage == _articleI18n.Localizer["IdInvalid"].Value
             );
     }
 
@@ -112,7 +118,7 @@ public class AdminUpdateArticleTagsValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == "Tag name is required.");
+        result.Errors.Should().Contain(e => e.ErrorMessage == _tagI18n.NameRequired());
     }
 
     [Fact]
@@ -129,7 +135,35 @@ public class AdminUpdateArticleTagsValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage.Contains("Tag name must not exceed 50 characters"));
+        result.Errors.Should().Contain(e => e.ErrorMessage.Contains(_tagI18n.NameTooLong(50)));
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var tagI18n = LocalizerFactory.CreateMessage<TagErrorMessage>(culture);
+        var articleI18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
+        var validator = new AdminUpdateArticleTagsValidator(tagI18n, articleI18n);
+        var command = new AdminUpdateArticleTagsCommand(ArticleId: string.Empty, TagNames: new List<string>());
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateArticleTagsCommand.ArticleId)
+                && e.ErrorMessage == articleI18n.Localizer["IdRequired"].Value
+            );
     }
 
     #endregion

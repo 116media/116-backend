@@ -57,7 +57,28 @@
   <data name="InvalidPaymentMethod" xml:space="preserve">
     <value>Payment method is invalid.</value>
   </data>
+  <data name="OrderItemIdInvalid" xml:space="preserve">
+    <value>Order item ID is invalid.</value>
+  </data>
   <data name="OrderItemIdRequired" xml:space="preserve">
     <value>Order item ID is required.</value>
+  </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>Order ID is required.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>Order ID is invalid.</value>
+  </data>
+  <data name="ItemIdRequired" xml:space="preserve">
+    <value>Item ID is required.</value>
+  </data>
+  <data name="ItemIdInvalid" xml:space="preserve">
+    <value>Item ID is invalid.</value>
+  </data>
+  <data name="TierIdRequired" xml:space="preserve">
+    <value>Tier ID is required.</value>
+  </data>
+  <data name="TierIdInvalid" xml:space="preserve">
+    <value>Tier ID is invalid.</value>
   </data>
 </root>

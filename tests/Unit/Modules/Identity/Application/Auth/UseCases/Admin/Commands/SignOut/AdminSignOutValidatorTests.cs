@@ -13,7 +13,16 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Comma
 /// </summary>
 public class AdminSignOutValidatorTests
 {
-    private readonly AdminSignOutValidator _validator = new(LocalizerFactory.CreateMessage<ValidationErrorMessage>());
+    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly AdminSignOutValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminSignOutValidatorTests"/>.
+    /// </summary>
+    public AdminSignOutValidatorTests()
+    {
+        _validator = new AdminSignOutValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -49,7 +58,7 @@ public class AdminSignOutValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage("Refresh token is required.");
+        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(_i18n.RefreshTokenRequired());
     }
 
     [Fact]
@@ -63,7 +72,7 @@ public class AdminSignOutValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage("Refresh token is required.");
+        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(_i18n.RefreshTokenRequired());
     }
 
     [Fact]
@@ -77,7 +86,29 @@ public class AdminSignOutValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage("Refresh token is required.");
+        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(_i18n.RefreshTokenRequired());
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        var validator = new AdminSignOutValidator(i18n);
+        var command = new AdminSignOutCommand(UserId: Guid.NewGuid(), RefreshToken: "");
+
+        // Act
+        TestValidationResult<AdminSignOutCommand>? result = await validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(i18n.RefreshTokenRequired());
     }
 
     #endregion

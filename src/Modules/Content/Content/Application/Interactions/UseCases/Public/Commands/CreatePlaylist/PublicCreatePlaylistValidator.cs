@@ -1,6 +1,5 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
-using _116.Content.Domain.Constants;
 using FluentValidation;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.CreatePlaylist;
@@ -13,13 +12,9 @@ public class PublicCreatePlaylistValidator : AbstractValidator<PublicCreatePlayl
     /// <summary>
     /// Initializes a new instance of <see cref="PublicCreatePlaylistValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Playlist validation error messages.</param>
-    public PublicCreatePlaylistValidator(PlaylistErrorMessage msg)
+    /// <param name="i18n">Playlist validation error messages.</param>
+    public PublicCreatePlaylistValidator(PlaylistErrorMessage i18n)
     {
-        RuleFor(x => x.Name)
-            .ValidPlaylistName(
-                nameRequired: msg.NameRequired(),
-                nameTooLong: msg.NameTooLong(ContentConstants.MaxPlaylistNameLength)
-            );
+        RuleFor(x => x.Name).ValidPlaylistName(i18n);
     }
 }

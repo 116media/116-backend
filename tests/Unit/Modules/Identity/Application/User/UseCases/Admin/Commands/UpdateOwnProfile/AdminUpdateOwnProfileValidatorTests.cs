@@ -14,9 +14,16 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.UseCases.Admin.Comma
 /// </summary>
 public class AdminUpdateOwnProfileValidatorTests
 {
-    private readonly AdminUpdateOwnProfileValidator _validator = new(
-        LocalizerFactory.CreateMessage<ValidationErrorMessage>("en")
-    );
+    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>("en");
+    private readonly AdminUpdateOwnProfileValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminUpdateOwnProfileValidatorTests"/>.
+    /// </summary>
+    public AdminUpdateOwnProfileValidatorTests()
+    {
+        _validator = new AdminUpdateOwnProfileValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -159,7 +166,7 @@ public class AdminUpdateOwnProfileValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.CountryName)
-            .WithErrorMessage($"Country name cannot exceed {UserConstants.MaxCountryNameLength} characters.");
+            .WithErrorMessage(_i18n.CountryNameTooLong(UserConstants.MaxCountryNameLength));
     }
 
     #endregion
@@ -207,9 +214,7 @@ public class AdminUpdateOwnProfileValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.CountryIsoCode)
-            .WithErrorMessage("Country ISO code must contain only uppercase letters.");
+        result.ShouldHaveValidationErrorFor(x => x.CountryIsoCode).WithErrorMessage(_i18n.CountryIsoCodeInvalid());
     }
 
     [Fact]
@@ -348,9 +353,7 @@ public class AdminUpdateOwnProfileValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.PartialPhoneNumber)
-            .WithErrorMessage(
-                $"Partial phone number cannot exceed {UserConstants.MaxPartialPhoneNumberLength} characters."
-            );
+            .WithErrorMessage(_i18n.PartialPhoneNumberTooLong(UserConstants.MaxPartialPhoneNumberLength));
     }
 
     #endregion
@@ -377,6 +380,38 @@ public class AdminUpdateOwnProfileValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCountGreaterThanOrEqualTo(5);
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        var validator = new AdminUpdateOwnProfileValidator(i18n);
+        var command = new AdminUpdateOwnProfileCommand(
+            UserId: Guid.NewGuid(),
+            SessionId: Guid.NewGuid(),
+            UserName: null,
+            CountryName: new string('a', UserConstants.MaxCountryNameLength + 1),
+            PartialPhoneNumber: null,
+            CountryIsoCode: null,
+            CountryDialCode: null
+        );
+
+        // Act
+        TestValidationResult<AdminUpdateOwnProfileCommand>? result = await validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .ShouldHaveValidationErrorFor(x => x.CountryName)
+            .WithErrorMessage(i18n.CountryNameTooLong(UserConstants.MaxCountryNameLength));
     }
 
     #endregion

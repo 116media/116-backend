@@ -6,7 +6,7 @@ namespace _116.Content.Application.Shared.Errors;
 /// <summary>
 /// Playlist error factory providing simple, readable exception creation.
 /// </summary>
-public class PlaylistErrors(PlaylistErrorMessage msg)
+public class PlaylistErrors(PlaylistErrorMessage i18n)
 {
     /// <summary>
     /// Throws when a playlist is not found by its identifier.
@@ -21,7 +21,7 @@ public class PlaylistErrors(PlaylistErrorMessage msg)
     /// </summary>
     public BadRequestException NotOwner()
     {
-        return new BadRequestException(msg.NotOwner());
+        return new BadRequestException(i18n.NotOwner());
     }
 
     /// <summary>
@@ -29,6 +29,6 @@ public class PlaylistErrors(PlaylistErrorMessage msg)
     /// </summary>
     public ConflictException VideoAlreadyInPlaylist()
     {
-        return new ConflictException(msg.VideoAlreadyInPlaylist());
+        return new ConflictException(i18n.VideoAlreadyInPlaylist());
     }
 }

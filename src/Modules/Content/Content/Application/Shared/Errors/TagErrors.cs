@@ -7,14 +7,14 @@ namespace _116.Content.Application.Shared.Errors;
 /// Tag domain error factory providing simple, readable exception creation.
 /// Usage: TagErrors.SlugAlreadyExists(slug) or TagErrors.NotFound(id)
 /// </summary>
-public class TagErrors(TagErrorMessage msg)
+public class TagErrors(TagErrorMessage i18n)
 {
     /// <summary>
     /// Throws when a tag with the given slug already exists.
     /// </summary>
     public ConflictException SlugAlreadyExists(string slug)
     {
-        return new ConflictException(msg.SlugAlreadyExists(slug: slug));
+        return new ConflictException(i18n.SlugAlreadyExists(slug: slug));
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ public class TagErrors(TagErrorMessage msg)
     /// </summary>
     public BadRequestException NameRequired()
     {
-        return new BadRequestException(msg.NameRequired());
+        return new BadRequestException(i18n.NameRequired());
     }
 
     /// <summary>
@@ -38,6 +38,6 @@ public class TagErrors(TagErrorMessage msg)
     /// </summary>
     public BadRequestException SlugRequired()
     {
-        return new BadRequestException(msg.SlugRequired());
+        return new BadRequestException(i18n.SlugRequired());
     }
 }

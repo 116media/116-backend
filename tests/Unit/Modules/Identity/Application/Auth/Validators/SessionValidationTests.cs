@@ -1,4 +1,6 @@
 using _116.Identity.Application.Auth.Validators;
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation;
 using FluentValidation.TestHelper;
@@ -11,6 +13,8 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.Validators;
 /// </summary>
 public class SessionValidationTests
 {
+    private readonly ValidationErrorMessage _enMsg = LocalizerFactory.CreateMessage<ValidationErrorMessage>("en");
+
     private class TestRefreshTokenCommand
     {
         public string RefreshToken { get; set; } = string.Empty;
@@ -18,9 +22,9 @@ public class SessionValidationTests
 
     private class TestRefreshTokenCommandValidator : AbstractValidator<TestRefreshTokenCommand>
     {
-        public TestRefreshTokenCommandValidator()
+        public TestRefreshTokenCommandValidator(ValidationErrorMessage i18n)
         {
-            RuleFor(x => x.RefreshToken).ValidRefreshToken(refreshTokenRequired: "Refresh token is required.");
+            RuleFor(x => x.RefreshToken).ValidRefreshToken(i18n);
         }
     }
 
@@ -29,7 +33,7 @@ public class SessionValidationTests
     [Fact]
     public void ValidRefreshToken_WithValidToken_ShouldPass()
     {
-        var validator = new TestRefreshTokenCommandValidator();
+        var validator = new TestRefreshTokenCommandValidator(_enMsg);
         var command = new TestRefreshTokenCommand { RefreshToken = "valid-refresh-token-base64" };
 
         TestValidationResult<TestRefreshTokenCommand> result = validator.TestValidate(command);
@@ -40,34 +44,34 @@ public class SessionValidationTests
     [Fact]
     public void ValidRefreshToken_WithEmptyToken_ShouldFail()
     {
-        var validator = new TestRefreshTokenCommandValidator();
+        var validator = new TestRefreshTokenCommandValidator(_enMsg);
         var command = new TestRefreshTokenCommand { RefreshToken = string.Empty };
 
         TestValidationResult<TestRefreshTokenCommand> result = validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage("Refresh token is required.");
+        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(_enMsg.RefreshTokenRequired());
     }
 
     [Fact]
     public void ValidRefreshToken_WithNullToken_ShouldFail()
     {
-        var validator = new TestRefreshTokenCommandValidator();
+        var validator = new TestRefreshTokenCommandValidator(_enMsg);
         var command = new TestRefreshTokenCommand { RefreshToken = null! };
 
         TestValidationResult<TestRefreshTokenCommand> result = validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage("Refresh token is required.");
+        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(_enMsg.RefreshTokenRequired());
     }
 
     [Fact]
     public void ValidRefreshToken_WithWhitespaceToken_ShouldFail()
     {
-        var validator = new TestRefreshTokenCommandValidator();
+        var validator = new TestRefreshTokenCommandValidator(_enMsg);
         var command = new TestRefreshTokenCommand { RefreshToken = "   " };
 
         TestValidationResult<TestRefreshTokenCommand> result = validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage("Refresh token is required.");
+        result.ShouldHaveValidationErrorFor(x => x.RefreshToken).WithErrorMessage(_enMsg.RefreshTokenRequired());
     }
 
     #endregion

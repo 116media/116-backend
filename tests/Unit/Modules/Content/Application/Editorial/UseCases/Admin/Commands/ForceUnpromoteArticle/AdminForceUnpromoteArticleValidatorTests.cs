@@ -12,9 +12,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminForceUnpromoteArticleValidatorTests
 {
-    private readonly AdminForceUnpromoteArticleValidator _validator = new(
-        LocalizerFactory.CreateMessage<ArticleErrorMessage>()
-    );
+    private readonly ArticleErrorMessage _i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+
+    private readonly AdminForceUnpromoteArticleValidator _validator;
+
+    public AdminForceUnpromoteArticleValidatorTests()
+    {
+        _validator = new AdminForceUnpromoteArticleValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -54,7 +59,7 @@ public class AdminForceUnpromoteArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminForceUnpromoteArticleCommand.Slug)
-                && e.ErrorMessage == "Article slug is required."
+                && e.ErrorMessage == _i18n.SlugRequired()
             );
     }
 
@@ -77,7 +82,7 @@ public class AdminForceUnpromoteArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminForceUnpromoteArticleCommand.Reason)
-                && e.ErrorMessage == "Rejection reason is required."
+                && e.ErrorMessage == _i18n.RejectionReasonRequired()
             );
     }
 
@@ -96,7 +101,7 @@ public class AdminForceUnpromoteArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminForceUnpromoteArticleCommand.Reason)
-                && e.ErrorMessage == "Rejection reason must not exceed 500 characters."
+                && e.ErrorMessage == _i18n.RejectionReasonTooLong(500)
             );
     }
 
@@ -112,6 +117,33 @@ public class AdminForceUnpromoteArticleValidatorTests
         // Assert
         result.IsValid.Should().BeTrue();
         result.Errors.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
+        var validator = new AdminForceUnpromoteArticleValidator(i18n);
+        var command = new AdminForceUnpromoteArticleCommand(Slug: "my-article-slug", Reason: string.Empty);
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminForceUnpromoteArticleCommand.Reason)
+                && e.ErrorMessage == i18n.RejectionReasonRequired()
+            );
     }
 
     #endregion

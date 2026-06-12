@@ -13,9 +13,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminAttachYoutubeVideoUrlValidatorTests
 {
-    private readonly AdminAttachYoutubeVideoUrlValidator _validator = new(
-        LocalizerFactory.CreateMessage<VideoErrorMessage>()
-    );
+    private readonly VideoErrorMessage _i18n = LocalizerFactory.CreateMessage<VideoErrorMessage>();
+
+    private readonly AdminAttachYoutubeVideoUrlValidator _validator;
+
+    public AdminAttachYoutubeVideoUrlValidatorTests()
+    {
+        _validator = new AdminAttachYoutubeVideoUrlValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -58,7 +63,7 @@ public class AdminAttachYoutubeVideoUrlValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAttachYoutubeVideoUrlCommand.VideoId)
-                && e.ErrorMessage == "Video ID is required."
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -80,7 +85,7 @@ public class AdminAttachYoutubeVideoUrlValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAttachYoutubeVideoUrlCommand.VideoId)
-                && e.ErrorMessage == "Video ID is invalid."
+                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
             );
     }
 
@@ -106,7 +111,7 @@ public class AdminAttachYoutubeVideoUrlValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAttachYoutubeVideoUrlCommand.YoutubeVideoUrl)
-                && e.ErrorMessage == "YouTube video URL is required."
+                && e.ErrorMessage == _i18n.YoutubeUrlRequired()
             );
     }
 
@@ -129,7 +134,7 @@ public class AdminAttachYoutubeVideoUrlValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminAttachYoutubeVideoUrlCommand.YoutubeVideoUrl)
                 && e.ErrorMessage
-                    == $"YouTube video URL must not exceed {TestConstants.Content.Editorial.Video.YoutubeVideoUrlMaxLength} characters."
+                    == _i18n.YoutubeUrlTooLong(TestConstants.Content.Editorial.Video.YoutubeVideoUrlMaxLength)
             );
     }
 
@@ -151,7 +156,37 @@ public class AdminAttachYoutubeVideoUrlValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAttachYoutubeVideoUrlCommand.YoutubeVideoUrl)
-                && e.ErrorMessage == "Must be a valid YouTube video URL."
+                && e.ErrorMessage == _i18n.YoutubeUrlInvalidFormat()
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<VideoErrorMessage>(culture);
+        var validator = new AdminAttachYoutubeVideoUrlValidator(i18n);
+        var command = new AdminAttachYoutubeVideoUrlCommand(
+            VideoId: Guid.NewGuid().ToString(),
+            YoutubeVideoUrl: string.Empty
+        );
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminAttachYoutubeVideoUrlCommand.YoutubeVideoUrl)
+                && e.ErrorMessage == i18n.YoutubeUrlRequired()
             );
     }
 

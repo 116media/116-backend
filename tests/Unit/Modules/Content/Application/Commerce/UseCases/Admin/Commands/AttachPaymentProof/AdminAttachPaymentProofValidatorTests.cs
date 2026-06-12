@@ -1,4 +1,5 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymentProof;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -14,9 +15,16 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminAttachPaymentProofValidatorTests
 {
-    private readonly AdminAttachPaymentProofValidator _validator = new(
-        LocalizerFactory.CreateMessage<_116.Content.Application.Shared.Errors.Messages.ContentOrderErrorMessage>("en")
-    );
+    private readonly ContentOrderErrorMessage _i18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>();
+    private readonly AdminAttachPaymentProofValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminAttachPaymentProofValidatorTests"/>.
+    /// </summary>
+    public AdminAttachPaymentProofValidatorTests()
+    {
+        _validator = new AdminAttachPaymentProofValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -68,7 +76,7 @@ public class AdminAttachPaymentProofValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAttachPaymentProofCommand.OrderId)
-                && e.ErrorMessage == "Order ID is invalid."
+                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
             );
     }
 
@@ -95,7 +103,7 @@ public class AdminAttachPaymentProofValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAttachPaymentProofCommand.File)
-                && e.ErrorMessage == "Payment proof file is required."
+                && e.ErrorMessage == _i18n.PaymentProofRequired()
             );
     }
 
@@ -125,7 +133,38 @@ public class AdminAttachPaymentProofValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAttachPaymentProofCommand.PaymentMethod)
-                && e.ErrorMessage == "Payment method is invalid."
+                && e.ErrorMessage == _i18n.InvalidPaymentMethod()
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>(culture);
+        var validator = new AdminAttachPaymentProofValidator(i18n);
+        var command = new AdminAttachPaymentProofCommand(
+            OrderId: Guid.NewGuid().ToString(),
+            File: null!,
+            PaymentMethod: EnumPaymentMethod.BankTransfer
+        );
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminAttachPaymentProofCommand.File)
+                && e.ErrorMessage == i18n.PaymentProofRequired()
             );
     }
 

@@ -1,4 +1,6 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrder;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -10,7 +12,17 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminEditOrderValidatorTests
 {
-    private readonly AdminEditOrderValidator _validator = new();
+    private readonly ContentOrderErrorMessage _orderI18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>();
+    private readonly CustomerErrorMessage _customerI18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>();
+    private readonly AdminEditOrderValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminEditOrderValidatorTests"/>.
+    /// </summary>
+    public AdminEditOrderValidatorTests()
+    {
+        _validator = new AdminEditOrderValidator(_orderI18n, _customerI18n);
+    }
 
     #region Valid Command Tests
 
@@ -64,7 +76,8 @@ public class AdminEditOrderValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminEditOrderCommand.OrderId) && e.ErrorMessage == "Order ID is invalid."
+                e.PropertyName == nameof(AdminEditOrderCommand.OrderId)
+                && e.ErrorMessage == _orderI18n.Localizer["IdInvalid"].Value
             );
     }
 
@@ -104,7 +117,35 @@ public class AdminEditOrderValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminEditOrderCommand.CustomerId)
-                && e.ErrorMessage == "Customer ID is invalid."
+                && e.ErrorMessage == _customerI18n.Localizer["IdInvalid"].Value
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var orderI18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>(culture);
+        var customerI18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>(culture);
+        var validator = new AdminEditOrderValidator(orderI18n, customerI18n);
+        var command = new AdminEditOrderCommand(OrderId: "not-a-guid", CustomerId: null, PackageId: null);
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminEditOrderCommand.OrderId)
+                && e.ErrorMessage == orderI18n.Localizer["IdInvalid"].Value
             );
     }
 

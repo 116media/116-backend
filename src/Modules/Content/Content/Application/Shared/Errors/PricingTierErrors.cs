@@ -7,14 +7,14 @@ namespace _116.Content.Application.Shared.Errors;
 /// PricingTier domain error factory providing simple, readable exception creation.
 /// Usage: PricingTierErrors.AlreadyExists(name) or PricingTierErrors.NotFound(id)
 /// </summary>
-public class PricingTierErrors(PricingTierErrorMessage msg)
+public class PricingTierErrors(PricingTierErrorMessage i18n)
 {
     /// <summary>
     /// Throws when a pricing tier with the given name already exists.
     /// </summary>
     public ConflictException AlreadyExists(string name)
     {
-        return new ConflictException(msg.AlreadyExists(name: name));
+        return new ConflictException(i18n.AlreadyExists(name: name));
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ public class PricingTierErrors(PricingTierErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyActive()
     {
-        return new ConflictException(msg.AlreadyActive());
+        return new ConflictException(i18n.AlreadyActive());
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ public class PricingTierErrors(PricingTierErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyInactive()
     {
-        return new ConflictException(msg.AlreadyInactive());
+        return new ConflictException(i18n.AlreadyInactive());
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public class PricingTierErrors(PricingTierErrorMessage msg)
     /// </summary>
     public BadRequestException IsInactive()
     {
-        return new BadRequestException(msg.IsInactive());
+        return new BadRequestException(i18n.IsInactive());
     }
 
     /// <summary>
@@ -54,6 +54,6 @@ public class PricingTierErrors(PricingTierErrorMessage msg)
     /// </summary>
     public BadRequestException NameRequired()
     {
-        return new BadRequestException(msg.NameRequired());
+        return new BadRequestException(i18n.NameRequired());
     }
 }

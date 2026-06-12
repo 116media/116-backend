@@ -13,9 +13,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminCreatePackageValidatorTests
 {
-    private readonly AdminCreatePackageValidator _validator = new(
-        LocalizerFactory.CreateMessage<PackageErrorMessage>()
-    );
+    private readonly PackageErrorMessage _i18n = LocalizerFactory.CreateMessage<PackageErrorMessage>();
+    private readonly AdminCreatePackageValidator _validator;
+
+    public AdminCreatePackageValidatorTests()
+    {
+        _validator = new AdminCreatePackageValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -57,8 +61,7 @@ public class AdminCreatePackageValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreatePackageCommand.Name)
-                && e.ErrorMessage == "Package name is required."
+                e.PropertyName == nameof(AdminCreatePackageCommand.Name) && e.ErrorMessage == _i18n.NameRequired()
             );
     }
 
@@ -80,7 +83,7 @@ public class AdminCreatePackageValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreatePackageCommand.Name)
-                && e.ErrorMessage == "Package name must not exceed 100 characters."
+                && e.ErrorMessage == _i18n.NameTooLong(TestConstants.Content.Package.NameMaxLength)
             );
     }
 
@@ -106,7 +109,36 @@ public class AdminCreatePackageValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreatePackageCommand.Description)
-                && e.ErrorMessage == "Package description must not exceed 500 characters."
+                && e.ErrorMessage == _i18n.DescriptionTooLong(TestConstants.Content.Package.DescriptionMaxLength)
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<PackageErrorMessage>(culture);
+        var validator = new AdminCreatePackageValidator(i18n);
+        var command = new AdminCreatePackageCommand(
+            Name: string.Empty,
+            Description: TestConstants.Content.Package.ValidDescription
+        );
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreatePackageCommand.Name) && e.ErrorMessage == i18n.NameRequired()
             );
     }
 

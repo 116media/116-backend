@@ -1,4 +1,6 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.RemoveCategoryPricing;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -10,7 +12,15 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminRemoveCategoryPricingValidatorTests
 {
-    private readonly AdminRemoveCategoryPricingValidator _validator = new();
+    private readonly CategoryErrorMessage _i18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>();
+    private readonly PricingTierErrorMessage _pricingTierI18n =
+        LocalizerFactory.CreateMessage<PricingTierErrorMessage>();
+    private readonly AdminRemoveCategoryPricingValidator _validator;
+
+    public AdminRemoveCategoryPricingValidatorTests()
+    {
+        _validator = new AdminRemoveCategoryPricingValidator(_i18n, _pricingTierI18n);
+    }
 
     #region Valid Command Tests
 
@@ -40,7 +50,7 @@ public class AdminRemoveCategoryPricingValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminRemoveCategoryPricingCommand.CategoryId)
-                && e.ErrorMessage == "Category ID is required."
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -57,7 +67,7 @@ public class AdminRemoveCategoryPricingValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminRemoveCategoryPricingCommand.CategoryId)
-                && e.ErrorMessage == "Category ID is invalid."
+                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
             );
     }
 
@@ -78,7 +88,7 @@ public class AdminRemoveCategoryPricingValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminRemoveCategoryPricingCommand.PricingTierId)
-                && e.ErrorMessage == "Pricing Tier ID is required."
+                && e.ErrorMessage == _pricingTierI18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -95,7 +105,7 @@ public class AdminRemoveCategoryPricingValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminRemoveCategoryPricingCommand.PricingTierId)
-                && e.ErrorMessage == "Pricing Tier ID is required."
+                && e.ErrorMessage == _pricingTierI18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -112,7 +122,35 @@ public class AdminRemoveCategoryPricingValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminRemoveCategoryPricingCommand.PricingTierId)
-                && e.ErrorMessage == "Pricing Tier ID is invalid."
+                && e.ErrorMessage == _pricingTierI18n.Localizer["IdInvalid"].Value
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>(culture);
+        var pricingTierI18n = LocalizerFactory.CreateMessage<PricingTierErrorMessage>(culture);
+        var validator = new AdminRemoveCategoryPricingValidator(i18n, pricingTierI18n);
+        var command = new AdminRemoveCategoryPricingCommand(CategoryId: "", PricingTierId: Guid.NewGuid().ToString());
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminRemoveCategoryPricingCommand.CategoryId)
+                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
             );
     }
 

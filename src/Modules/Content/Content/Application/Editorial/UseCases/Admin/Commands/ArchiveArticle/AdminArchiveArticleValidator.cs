@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -9,10 +10,11 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveArti
 public class AdminArchiveArticleValidator : AbstractValidator<AdminArchiveArticleCommand>
 {
     /// <summary>
-    /// Configures validation rules for article archiving.
+    /// Initializes a new instance of <see cref="AdminArchiveArticleValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminArchiveArticleValidator()
+    /// <param name="i18n">Article validation error messages.</param>
+    public AdminArchiveArticleValidator(ArticleErrorMessage i18n)
     {
-        RuleFor(x => x.Id).IsValidGuid("Article ID");
+        RuleFor(x => x.Id).IsValidGuid(i18n.Localizer);
     }
 }

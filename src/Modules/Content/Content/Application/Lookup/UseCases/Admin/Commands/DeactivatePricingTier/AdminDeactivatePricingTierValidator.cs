@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -9,10 +10,11 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivatePric
 public class AdminDeactivatePricingTierValidator : AbstractValidator<AdminDeactivatePricingTierCommand>
 {
     /// <summary>
-    /// Configures validation rules for pricing tier deactivation.
+    /// Initializes a new instance of <see cref="AdminDeactivatePricingTierValidator" /> with the specified error message provider.
     /// </summary>
-    public AdminDeactivatePricingTierValidator()
+    /// <param name="i18n">Pricing tier validation error messages.</param>
+    public AdminDeactivatePricingTierValidator(PricingTierErrorMessage i18n)
     {
-        RuleFor(x => x.Id).IsValidGuid("Pricing tier ID");
+        RuleFor(x => x.Id).IsValidGuid(i18n.Localizer);
     }
 }

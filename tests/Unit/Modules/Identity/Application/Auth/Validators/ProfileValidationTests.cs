@@ -1,5 +1,7 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using FluentValidation;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -11,6 +13,8 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.Validators;
 /// </summary>
 public class ProfileValidationTests
 {
+    private readonly ValidationErrorMessage _enMsg = LocalizerFactory.CreateMessage<ValidationErrorMessage>("en");
+
     // Property names must match what the When() conditions check via reflection
     private class TestCountryNameCommand
     {
@@ -34,47 +38,33 @@ public class ProfileValidationTests
 
     private class TestCountryNameCommandValidator : AbstractValidator<TestCountryNameCommand>
     {
-        public TestCountryNameCommandValidator()
+        public TestCountryNameCommandValidator(ValidationErrorMessage i18n)
         {
-            RuleFor(x => x.CountryName)
-                .ValidCountryName(
-                    countryNameTooLong: $"Country name cannot exceed {UserConstants.MaxCountryNameLength} characters."
-                );
+            RuleFor(x => x.CountryName).ValidCountryName(i18n);
         }
     }
 
     private class TestCountryIsoCodeCommandValidator : AbstractValidator<TestCountryIsoCodeCommand>
     {
-        public TestCountryIsoCodeCommandValidator()
+        public TestCountryIsoCodeCommandValidator(ValidationErrorMessage i18n)
         {
-            RuleFor(x => x.CountryIsoCode)
-                .ValidCountryIsoCode(
-                    countryIsoCodeTooLong: $"Country ISO code cannot exceed {UserConstants.MaxCountryIsoCodeLength} characters.",
-                    countryIsoCodeInvalid: "Country ISO code must contain only uppercase letters."
-                );
+            RuleFor(x => x.CountryIsoCode).ValidCountryIsoCode(i18n);
         }
     }
 
     private class TestCountryDialCodeCommandValidator : AbstractValidator<TestCountryDialCodeCommand>
     {
-        public TestCountryDialCodeCommandValidator()
+        public TestCountryDialCodeCommandValidator(ValidationErrorMessage i18n)
         {
-            RuleFor(x => x.CountryDialCode)
-                .ValidCountryDialCode(
-                    countryDialCodeTooLong: $"Country dial code must start with + followed by 1-{UserConstants.MaxCountryDialCodeLength} digits.",
-                    countryDialCodeInvalid: $"Country dial code must start with + followed by 1-{UserConstants.MaxCountryDialCodeLength} digits."
-                );
+            RuleFor(x => x.CountryDialCode).ValidCountryDialCode(i18n);
         }
     }
 
     private class TestPartialPhoneNumberCommandValidator : AbstractValidator<TestPartialPhoneNumberCommand>
     {
-        public TestPartialPhoneNumberCommandValidator()
+        public TestPartialPhoneNumberCommandValidator(ValidationErrorMessage i18n)
         {
-            RuleFor(x => x.PartialPhoneNumber)
-                .ValidPartialPhoneNumber(
-                    partialPhoneNumberTooLong: $"Partial phone number cannot exceed {UserConstants.MaxPartialPhoneNumberLength} characters."
-                );
+            RuleFor(x => x.PartialPhoneNumber).ValidPartialPhoneNumber(i18n);
         }
     }
 
@@ -83,7 +73,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidCountryName_WithValidName_ShouldPass()
     {
-        var validator = new TestCountryNameCommandValidator();
+        var validator = new TestCountryNameCommandValidator(_enMsg);
         var command = new TestCountryNameCommand { CountryName = "United States" };
 
         TestValidationResult<TestCountryNameCommand> result = validator.TestValidate(command);
@@ -94,7 +84,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidCountryName_WithMaxLengthName_ShouldPass()
     {
-        var validator = new TestCountryNameCommandValidator();
+        var validator = new TestCountryNameCommandValidator(_enMsg);
         var command = new TestCountryNameCommand { CountryName = new string('a', UserConstants.MaxCountryNameLength) };
 
         TestValidationResult<TestCountryNameCommand> result = validator.TestValidate(command);
@@ -106,7 +96,7 @@ public class ProfileValidationTests
     public void ValidCountryName_WithNullName_ShouldPass()
     {
         // When condition: skipped when null
-        var validator = new TestCountryNameCommandValidator();
+        var validator = new TestCountryNameCommandValidator(_enMsg);
         var command = new TestCountryNameCommand { CountryName = null };
 
         TestValidationResult<TestCountryNameCommand> result = validator.TestValidate(command);
@@ -118,7 +108,7 @@ public class ProfileValidationTests
     public void ValidCountryName_WithEmptyName_ShouldPass()
     {
         // When condition: skipped when empty
-        var validator = new TestCountryNameCommandValidator();
+        var validator = new TestCountryNameCommandValidator(_enMsg);
         var command = new TestCountryNameCommand { CountryName = string.Empty };
 
         TestValidationResult<TestCountryNameCommand> result = validator.TestValidate(command);
@@ -130,7 +120,7 @@ public class ProfileValidationTests
     public void ValidCountryName_WithWhitespaceName_ShouldPass()
     {
         // When condition: skipped when whitespace
-        var validator = new TestCountryNameCommandValidator();
+        var validator = new TestCountryNameCommandValidator(_enMsg);
         var command = new TestCountryNameCommand { CountryName = "   " };
 
         TestValidationResult<TestCountryNameCommand> result = validator.TestValidate(command);
@@ -141,7 +131,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidCountryName_WithNameExceedingMaxLength_ShouldFail()
     {
-        var validator = new TestCountryNameCommandValidator();
+        var validator = new TestCountryNameCommandValidator(_enMsg);
         var command = new TestCountryNameCommand
         {
             CountryName = new string('a', UserConstants.MaxCountryNameLength + 1),
@@ -151,7 +141,7 @@ public class ProfileValidationTests
 
         result
             .ShouldHaveValidationErrorFor(x => x.CountryName)
-            .WithErrorMessage($"Country name cannot exceed {UserConstants.MaxCountryNameLength} characters.");
+            .WithErrorMessage(_enMsg.CountryNameTooLong(UserConstants.MaxCountryNameLength));
     }
 
     #endregion
@@ -161,7 +151,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidCountryIsoCode_WithTwoLetterCode_ShouldPass()
     {
-        var validator = new TestCountryIsoCodeCommandValidator();
+        var validator = new TestCountryIsoCodeCommandValidator(_enMsg);
         var command = new TestCountryIsoCodeCommand { CountryIsoCode = "US" };
 
         TestValidationResult<TestCountryIsoCodeCommand> result = validator.TestValidate(command);
@@ -172,7 +162,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidCountryIsoCode_WithThreeLetterCode_ShouldPass()
     {
-        var validator = new TestCountryIsoCodeCommandValidator();
+        var validator = new TestCountryIsoCodeCommandValidator(_enMsg);
         var command = new TestCountryIsoCodeCommand { CountryIsoCode = "USA" };
 
         TestValidationResult<TestCountryIsoCodeCommand> result = validator.TestValidate(command);
@@ -183,7 +173,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidCountryIsoCode_WithNullCode_ShouldPass()
     {
-        var validator = new TestCountryIsoCodeCommandValidator();
+        var validator = new TestCountryIsoCodeCommandValidator(_enMsg);
         var command = new TestCountryIsoCodeCommand { CountryIsoCode = null };
 
         TestValidationResult<TestCountryIsoCodeCommand> result = validator.TestValidate(command);
@@ -194,7 +184,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidCountryIsoCode_WithEmptyCode_ShouldPass()
     {
-        var validator = new TestCountryIsoCodeCommandValidator();
+        var validator = new TestCountryIsoCodeCommandValidator(_enMsg);
         var command = new TestCountryIsoCodeCommand { CountryIsoCode = string.Empty };
 
         TestValidationResult<TestCountryIsoCodeCommand> result = validator.TestValidate(command);
@@ -205,40 +195,36 @@ public class ProfileValidationTests
     [Fact]
     public void ValidCountryIsoCode_WithLowercaseCode_ShouldFail()
     {
-        var validator = new TestCountryIsoCodeCommandValidator();
+        var validator = new TestCountryIsoCodeCommandValidator(_enMsg);
         var command = new TestCountryIsoCodeCommand { CountryIsoCode = "us" };
 
         TestValidationResult<TestCountryIsoCodeCommand> result = validator.TestValidate(command);
 
-        result
-            .ShouldHaveValidationErrorFor(x => x.CountryIsoCode)
-            .WithErrorMessage("Country ISO code must contain only uppercase letters.");
+        result.ShouldHaveValidationErrorFor(x => x.CountryIsoCode).WithErrorMessage(_enMsg.CountryIsoCodeInvalid());
     }
 
     [Fact]
     public void ValidCountryIsoCode_WithCodeExceedingMaxLength_ShouldFail()
     {
-        var validator = new TestCountryIsoCodeCommandValidator();
+        var validator = new TestCountryIsoCodeCommandValidator(_enMsg);
         var command = new TestCountryIsoCodeCommand { CountryIsoCode = "USAA" };
 
         TestValidationResult<TestCountryIsoCodeCommand> result = validator.TestValidate(command);
 
         result
             .ShouldHaveValidationErrorFor(x => x.CountryIsoCode)
-            .WithErrorMessage($"Country ISO code cannot exceed {UserConstants.MaxCountryIsoCodeLength} characters.");
+            .WithErrorMessage(_enMsg.CountryIsoCodeTooLong(UserConstants.MaxCountryIsoCodeLength));
     }
 
     [Fact]
     public void ValidCountryIsoCode_WithSingleLetter_ShouldFail()
     {
-        var validator = new TestCountryIsoCodeCommandValidator();
+        var validator = new TestCountryIsoCodeCommandValidator(_enMsg);
         var command = new TestCountryIsoCodeCommand { CountryIsoCode = "U" };
 
         TestValidationResult<TestCountryIsoCodeCommand> result = validator.TestValidate(command);
 
-        result
-            .ShouldHaveValidationErrorFor(x => x.CountryIsoCode)
-            .WithErrorMessage("Country ISO code must contain only uppercase letters.");
+        result.ShouldHaveValidationErrorFor(x => x.CountryIsoCode).WithErrorMessage(_enMsg.CountryIsoCodeInvalid());
     }
 
     #endregion
@@ -248,7 +234,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidCountryDialCode_WithValidSingleDigitCode_ShouldPass()
     {
-        var validator = new TestCountryDialCodeCommandValidator();
+        var validator = new TestCountryDialCodeCommandValidator(_enMsg);
         var command = new TestCountryDialCodeCommand { CountryDialCode = "+1" };
 
         TestValidationResult<TestCountryDialCodeCommand> result = validator.TestValidate(command);
@@ -259,7 +245,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidCountryDialCode_WithValidMultiDigitCode_ShouldPass()
     {
-        var validator = new TestCountryDialCodeCommandValidator();
+        var validator = new TestCountryDialCodeCommandValidator(_enMsg);
         var command = new TestCountryDialCodeCommand { CountryDialCode = "+255" };
 
         TestValidationResult<TestCountryDialCodeCommand> result = validator.TestValidate(command);
@@ -270,7 +256,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidCountryDialCode_WithNullCode_ShouldPass()
     {
-        var validator = new TestCountryDialCodeCommandValidator();
+        var validator = new TestCountryDialCodeCommandValidator(_enMsg);
         var command = new TestCountryDialCodeCommand { CountryDialCode = null };
 
         TestValidationResult<TestCountryDialCodeCommand> result = validator.TestValidate(command);
@@ -281,7 +267,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidCountryDialCode_WithEmptyCode_ShouldPass()
     {
-        var validator = new TestCountryDialCodeCommandValidator();
+        var validator = new TestCountryDialCodeCommandValidator(_enMsg);
         var command = new TestCountryDialCodeCommand { CountryDialCode = string.Empty };
 
         TestValidationResult<TestCountryDialCodeCommand> result = validator.TestValidate(command);
@@ -292,7 +278,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidCountryDialCode_WithoutPlusPrefix_ShouldFail()
     {
-        var validator = new TestCountryDialCodeCommandValidator();
+        var validator = new TestCountryDialCodeCommandValidator(_enMsg);
         var command = new TestCountryDialCodeCommand { CountryDialCode = "255" };
 
         TestValidationResult<TestCountryDialCodeCommand> result = validator.TestValidate(command);
@@ -307,7 +293,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidCountryDialCode_WithLettersAfterPlus_ShouldFail()
     {
-        var validator = new TestCountryDialCodeCommandValidator();
+        var validator = new TestCountryDialCodeCommandValidator(_enMsg);
         var command = new TestCountryDialCodeCommand { CountryDialCode = "+ABC" };
 
         TestValidationResult<TestCountryDialCodeCommand> result = validator.TestValidate(command);
@@ -322,7 +308,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidCountryDialCode_WithPlusOnly_ShouldFail()
     {
-        var validator = new TestCountryDialCodeCommandValidator();
+        var validator = new TestCountryDialCodeCommandValidator(_enMsg);
         var command = new TestCountryDialCodeCommand { CountryDialCode = "+" };
 
         TestValidationResult<TestCountryDialCodeCommand> result = validator.TestValidate(command);
@@ -341,7 +327,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidPartialPhoneNumber_WithValidNumber_ShouldPass()
     {
-        var validator = new TestPartialPhoneNumberCommandValidator();
+        var validator = new TestPartialPhoneNumberCommandValidator(_enMsg);
         var command = new TestPartialPhoneNumberCommand { PartialPhoneNumber = "712345678" };
 
         TestValidationResult<TestPartialPhoneNumberCommand> result = validator.TestValidate(command);
@@ -352,7 +338,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidPartialPhoneNumber_WithMaxLengthNumber_ShouldPass()
     {
-        var validator = new TestPartialPhoneNumberCommandValidator();
+        var validator = new TestPartialPhoneNumberCommandValidator(_enMsg);
         var command = new TestPartialPhoneNumberCommand
         {
             PartialPhoneNumber = new string('1', UserConstants.MaxPartialPhoneNumberLength),
@@ -366,7 +352,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidPartialPhoneNumber_WithNullNumber_ShouldPass()
     {
-        var validator = new TestPartialPhoneNumberCommandValidator();
+        var validator = new TestPartialPhoneNumberCommandValidator(_enMsg);
         var command = new TestPartialPhoneNumberCommand { PartialPhoneNumber = null };
 
         TestValidationResult<TestPartialPhoneNumberCommand> result = validator.TestValidate(command);
@@ -377,7 +363,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidPartialPhoneNumber_WithEmptyNumber_ShouldPass()
     {
-        var validator = new TestPartialPhoneNumberCommandValidator();
+        var validator = new TestPartialPhoneNumberCommandValidator(_enMsg);
         var command = new TestPartialPhoneNumberCommand { PartialPhoneNumber = string.Empty };
 
         TestValidationResult<TestPartialPhoneNumberCommand> result = validator.TestValidate(command);
@@ -388,7 +374,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidPartialPhoneNumber_WithWhitespaceNumber_ShouldPass()
     {
-        var validator = new TestPartialPhoneNumberCommandValidator();
+        var validator = new TestPartialPhoneNumberCommandValidator(_enMsg);
         var command = new TestPartialPhoneNumberCommand { PartialPhoneNumber = "   " };
 
         TestValidationResult<TestPartialPhoneNumberCommand> result = validator.TestValidate(command);
@@ -399,7 +385,7 @@ public class ProfileValidationTests
     [Fact]
     public void ValidPartialPhoneNumber_WithNumberExceedingMaxLength_ShouldFail()
     {
-        var validator = new TestPartialPhoneNumberCommandValidator();
+        var validator = new TestPartialPhoneNumberCommandValidator(_enMsg);
         var command = new TestPartialPhoneNumberCommand
         {
             PartialPhoneNumber = new string('1', UserConstants.MaxPartialPhoneNumberLength + 1),

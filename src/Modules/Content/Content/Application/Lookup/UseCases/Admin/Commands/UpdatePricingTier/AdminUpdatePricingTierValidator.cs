@@ -1,6 +1,5 @@
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Validators;
-using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -14,19 +13,11 @@ public class AdminUpdatePricingTierValidator : AbstractValidator<AdminUpdatePric
     /// <summary>
     /// Initializes a new instance of <see cref="AdminUpdatePricingTierValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Pricing tier validation error messages.</param>
-    public AdminUpdatePricingTierValidator(PricingTierErrorMessage msg)
+    /// <param name="i18n">Pricing tier validation error messages.</param>
+    public AdminUpdatePricingTierValidator(PricingTierErrorMessage i18n)
     {
-        RuleFor(x => x.Id).IsValidGuid("Pricing tier ID");
-        RuleFor(x => x.Name)
-            .ValidPricingTierName(
-                nameRequired: msg.NameRequired(),
-                nameTooLong: msg.NameTooLong(ContentConstants.MaxPricingTierNameLength)
-            );
-        RuleFor(x => x.Description)
-            .ValidPricingTierDescription(
-                descriptionRequired: msg.DescriptionRequired(),
-                descriptionTooLong: msg.DescriptionTooLong(ContentConstants.MaxPricingTierDescriptionLength)
-            );
+        RuleFor(x => x.Id).IsValidGuid(i18n.Localizer);
+        RuleFor(x => x.Name).ValidPricingTierName(i18n);
+        RuleFor(x => x.Description).ValidPricingTierDescription(i18n);
     }
 }

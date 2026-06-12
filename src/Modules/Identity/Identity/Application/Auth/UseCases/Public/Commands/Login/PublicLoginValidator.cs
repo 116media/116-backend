@@ -15,12 +15,12 @@ public class PublicLoginValidator : AbstractValidator<PublicLoginCommand>
     /// <summary>
     /// Initializes a new instance of <see cref="PublicLoginValidator" /> with validation rules.
     /// </summary>
-    /// <param name="msg">
+    /// <param name="i18n">
     /// Validation error messages for rule configuration.
     /// </param>
-    public PublicLoginValidator(ValidationErrorMessage msg)
+    public PublicLoginValidator(ValidationErrorMessage i18n)
     {
-        RuleFor(x => x.Credentials).ValidCredentials(emailOrUsernameRequired: msg.EmailOrUsernameRequired());
-        RuleFor(x => x.Password).ValidPassword(passwordRequired: msg.PasswordRequired(), isStrong: false);
+        RuleFor(x => x.Credentials).ValidCredentials(i18n);
+        RuleFor(x => x.Password).ValidPassword(i18n, isStrong: false);
     }
 }

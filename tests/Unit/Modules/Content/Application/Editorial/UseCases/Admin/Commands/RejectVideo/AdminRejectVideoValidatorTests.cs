@@ -13,7 +13,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminRejectVideoValidatorTests
 {
-    private readonly AdminRejectVideoValidator _validator = new(LocalizerFactory.CreateMessage<ArticleErrorMessage>());
+    private readonly ArticleErrorMessage _i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+    private readonly AdminRejectVideoValidator _validator;
+
+    public AdminRejectVideoValidatorTests()
+    {
+        _validator = new AdminRejectVideoValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -55,7 +61,8 @@ public class AdminRejectVideoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminRejectVideoCommand.Id) && e.ErrorMessage == "Video ID is required."
+                e.PropertyName == nameof(AdminRejectVideoCommand.Id)
+                && e.ErrorMessage == _i18n.Localizer["VideoIdRequired"].Value
             );
     }
 
@@ -76,7 +83,8 @@ public class AdminRejectVideoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminRejectVideoCommand.Id) && e.ErrorMessage == "Video ID is invalid."
+                e.PropertyName == nameof(AdminRejectVideoCommand.Id)
+                && e.ErrorMessage == _i18n.Localizer["VideoIdInvalid"].Value
             );
     }
 
@@ -99,7 +107,7 @@ public class AdminRejectVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminRejectVideoCommand.Reason)
-                && e.ErrorMessage == "Rejection reason is required."
+                && e.ErrorMessage == _i18n.RejectionReasonRequired()
             );
     }
 
@@ -121,7 +129,41 @@ public class AdminRejectVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminRejectVideoCommand.Reason)
-                && e.ErrorMessage == "Rejection reason must not exceed 500 characters."
+                && e.ErrorMessage
+                    == _i18n.RejectionReasonTooLong(TestConstants.Content.Editorial.Video.RejectionReasonMaxLength)
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
+        var validator = new AdminRejectVideoValidator(i18n);
+        var command = new AdminRejectVideoCommand(Id: string.Empty, Reason: string.Empty);
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminRejectVideoCommand.Id)
+                && e.ErrorMessage == i18n.Localizer["VideoIdRequired"].Value
+            );
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminRejectVideoCommand.Reason)
+                && e.ErrorMessage == i18n.RejectionReasonRequired()
             );
     }
 

@@ -13,9 +13,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminUpdateCategoryValidatorTests
 {
-    private readonly AdminUpdateCategoryValidator _validator = new(
-        LocalizerFactory.CreateMessage<CategoryErrorMessage>()
-    );
+    private readonly CategoryErrorMessage _i18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>();
+    private readonly AdminUpdateCategoryValidator _validator;
+
+    public AdminUpdateCategoryValidatorTests()
+    {
+        _validator = new AdminUpdateCategoryValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -63,7 +67,8 @@ public class AdminUpdateCategoryValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateCategoryCommand.Id) && e.ErrorMessage == "Category ID is required."
+                e.PropertyName == nameof(AdminUpdateCategoryCommand.Id)
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -91,8 +96,7 @@ public class AdminUpdateCategoryValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateCategoryCommand.Name)
-                && e.ErrorMessage == "Category name is required."
+                e.PropertyName == nameof(AdminUpdateCategoryCommand.Name) && e.ErrorMessage == _i18n.NameRequired()
             );
     }
 
@@ -117,7 +121,7 @@ public class AdminUpdateCategoryValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateCategoryCommand.Name)
-                && e.ErrorMessage == "Category name must not exceed 60 characters."
+                && e.ErrorMessage == _i18n.NameTooLong(TestConstants.Content.Category.NameMaxLength)
             );
     }
 
@@ -145,8 +149,40 @@ public class AdminUpdateCategoryValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateCategoryCommand.Slug)
-                && e.ErrorMessage == "Category slug must be lowercase and contain only letters, numbers, and hyphens."
+                e.PropertyName == nameof(AdminUpdateCategoryCommand.Slug) && e.ErrorMessage == _i18n.SlugInvalidFormat()
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>(culture);
+        var validator = new AdminUpdateCategoryValidator(i18n);
+        var command = new AdminUpdateCategoryCommand(
+            Id: "",
+            Name: TestConstants.Content.Category.ValidName,
+            Slug: TestConstants.Content.Category.ValidSlug,
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsGossip: false
+        );
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateCategoryCommand.Id)
+                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
             );
     }
 

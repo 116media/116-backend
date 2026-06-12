@@ -13,9 +13,15 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminCreateCategoryValidatorTests
 {
-    private readonly AdminCreateCategoryValidator _validator = new(
-        LocalizerFactory.CreateMessage<CategoryErrorMessage>()
-    );
+    private readonly CategoryErrorMessage _i18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>();
+    private readonly ContentTypeErrorMessage _contentTypeI18n =
+        LocalizerFactory.CreateMessage<ContentTypeErrorMessage>();
+    private readonly AdminCreateCategoryValidator _validator;
+
+    public AdminCreateCategoryValidatorTests()
+    {
+        _validator = new AdminCreateCategoryValidator(_i18n, _contentTypeI18n);
+    }
 
     #region Valid Command Tests
 
@@ -86,7 +92,7 @@ public class AdminCreateCategoryValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCategoryCommand.ContentTypeId)
-                && e.ErrorMessage == "Content type ID is required."
+                && e.ErrorMessage == _contentTypeI18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -115,8 +121,7 @@ public class AdminCreateCategoryValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreateCategoryCommand.Name)
-                && e.ErrorMessage == "Category name is required."
+                e.PropertyName == nameof(AdminCreateCategoryCommand.Name) && e.ErrorMessage == _i18n.NameRequired()
             );
     }
 
@@ -141,8 +146,7 @@ public class AdminCreateCategoryValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreateCategoryCommand.Name)
-                && e.ErrorMessage == "Category name is required."
+                e.PropertyName == nameof(AdminCreateCategoryCommand.Name) && e.ErrorMessage == _i18n.NameRequired()
             );
     }
 
@@ -168,7 +172,7 @@ public class AdminCreateCategoryValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCategoryCommand.Name)
-                && e.ErrorMessage == "Category name must not exceed 60 characters."
+                && e.ErrorMessage == _i18n.NameTooLong(TestConstants.Content.Category.NameMaxLength)
             );
     }
 
@@ -197,8 +201,7 @@ public class AdminCreateCategoryValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreateCategoryCommand.Slug)
-                && e.ErrorMessage == "Category slug is required."
+                e.PropertyName == nameof(AdminCreateCategoryCommand.Slug) && e.ErrorMessage == _i18n.SlugRequired()
             );
     }
 
@@ -224,7 +227,7 @@ public class AdminCreateCategoryValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCategoryCommand.Slug)
-                && e.ErrorMessage == "Category slug must not exceed 80 characters."
+                && e.ErrorMessage == _i18n.SlugTooLong(TestConstants.Content.Category.SlugMaxLength)
             );
     }
 
@@ -249,8 +252,7 @@ public class AdminCreateCategoryValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreateCategoryCommand.Slug)
-                && e.ErrorMessage == "Category slug must be lowercase and contain only letters, numbers, and hyphens."
+                e.PropertyName == nameof(AdminCreateCategoryCommand.Slug) && e.ErrorMessage == _i18n.SlugInvalidFormat()
             );
     }
 
@@ -280,7 +282,7 @@ public class AdminCreateCategoryValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateCategoryCommand.Description)
-                && e.ErrorMessage == "Category description must not exceed 300 characters."
+                && e.ErrorMessage == _i18n.DescriptionTooLong(TestConstants.Content.Category.DescriptionMaxLength)
             );
     }
 
@@ -303,6 +305,40 @@ public class AdminCreateCategoryValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == nameof(AdminCreateCategoryCommand.Description));
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>(culture);
+        var contentTypeI18n = LocalizerFactory.CreateMessage<ContentTypeErrorMessage>(culture);
+        var validator = new AdminCreateCategoryValidator(i18n, contentTypeI18n);
+        var command = new AdminCreateCategoryCommand(
+            ContentTypeId: Guid.NewGuid().ToString(),
+            Name: string.Empty,
+            Slug: TestConstants.Content.Category.ValidSlug,
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsFree: false,
+            IsGossip: false
+        );
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreateCategoryCommand.Name) && e.ErrorMessage == i18n.NameRequired()
+            );
     }
 
     #endregion

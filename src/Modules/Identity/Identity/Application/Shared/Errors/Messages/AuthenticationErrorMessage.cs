@@ -10,6 +10,11 @@ namespace _116.Identity.Application.Shared.Errors.Messages;
 public class AuthenticationErrorMessage(IStringLocalizer<AuthenticationErrorMessage> localizer)
 {
     /// <summary>
+    /// Exposes the underlying localizer for shared validation extensions.
+    /// </summary>
+    public IStringLocalizer Localizer => localizer;
+
+    /// <summary>
     /// Generic error message indicating that the provided login credentials
     /// are invalid. This message avoids leaking sensitive information
     /// for security reasons.

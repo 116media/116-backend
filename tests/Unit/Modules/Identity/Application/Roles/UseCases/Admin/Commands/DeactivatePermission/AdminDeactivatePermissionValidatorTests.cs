@@ -1,5 +1,7 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.DeactivatePermission;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -11,7 +13,9 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Comm
 /// </summary>
 public class AdminDeactivatePermissionValidatorTests
 {
-    private readonly AdminDeactivatePermissionValidator _validator = new();
+    private readonly AdminDeactivatePermissionValidator _validator = new(
+        LocalizerFactory.CreateMessage<ValidationErrorMessage>()
+    );
 
     #region Valid Command Tests
 

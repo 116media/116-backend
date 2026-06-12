@@ -7,14 +7,14 @@ namespace _116.Content.Application.Shared.Errors;
 /// PromotionLevel domain error factory providing simple, readable exception creation.
 /// Usage: PromotionLevelErrors.AlreadyExists(name) or PromotionLevelErrors.NotFound(id)
 /// </summary>
-public class PromotionLevelErrors(PromotionLevelErrorMessage msg)
+public class PromotionLevelErrors(PromotionLevelErrorMessage i18n)
 {
     /// <summary>
     /// Throws when a promotion level with the given name already exists.
     /// </summary>
     public ConflictException AlreadyExists(string name)
     {
-        return new ConflictException(msg.AlreadyExists(name: name));
+        return new ConflictException(i18n.AlreadyExists(name: name));
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ public class PromotionLevelErrors(PromotionLevelErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyActive()
     {
-        return new ConflictException(msg.AlreadyActive());
+        return new ConflictException(i18n.AlreadyActive());
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ public class PromotionLevelErrors(PromotionLevelErrorMessage msg)
     /// </summary>
     public ConflictException AlreadyInactive()
     {
-        return new ConflictException(msg.AlreadyInactive());
+        return new ConflictException(i18n.AlreadyInactive());
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public class PromotionLevelErrors(PromotionLevelErrorMessage msg)
     /// </summary>
     public BadRequestException NameRequired()
     {
-        return new BadRequestException(msg.NameRequired());
+        return new BadRequestException(i18n.NameRequired());
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public class PromotionLevelErrors(PromotionLevelErrorMessage msg)
     /// </summary>
     public BadRequestException DurationMustBePositive()
     {
-        return new BadRequestException(msg.DurationMustBePositive());
+        return new BadRequestException(i18n.DurationMustBePositive());
     }
 
     /// <summary>
@@ -62,7 +62,7 @@ public class PromotionLevelErrors(PromotionLevelErrorMessage msg)
     /// </summary>
     public BadRequestException PriceMustBeNonNegative()
     {
-        return new BadRequestException(msg.PriceMustBeNonNegative());
+        return new BadRequestException(i18n.PriceMustBeNonNegative());
     }
 
     /// <summary>
@@ -70,6 +70,6 @@ public class PromotionLevelErrors(PromotionLevelErrorMessage msg)
     /// </summary>
     public BadRequestException InvalidSpotPriority()
     {
-        return new BadRequestException(msg.InvalidSpotPriority());
+        return new BadRequestException(i18n.InvalidSpotPriority());
     }
 }

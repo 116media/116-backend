@@ -13,9 +13,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminRejectArticleValidatorTests
 {
-    private readonly AdminRejectArticleValidator _validator = new(
-        LocalizerFactory.CreateMessage<ArticleErrorMessage>()
-    );
+    private readonly ArticleErrorMessage _i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+
+    private readonly AdminRejectArticleValidator _validator;
+
+    public AdminRejectArticleValidatorTests()
+    {
+        _validator = new AdminRejectArticleValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -57,7 +62,8 @@ public class AdminRejectArticleValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminRejectArticleCommand.Id) && e.ErrorMessage == "Article ID is required."
+                e.PropertyName == nameof(AdminRejectArticleCommand.Id)
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -78,7 +84,8 @@ public class AdminRejectArticleValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminRejectArticleCommand.Id) && e.ErrorMessage == "Article ID is invalid."
+                e.PropertyName == nameof(AdminRejectArticleCommand.Id)
+                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
             );
     }
 
@@ -101,7 +108,7 @@ public class AdminRejectArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminRejectArticleCommand.Reason)
-                && e.ErrorMessage == "Rejection reason is required."
+                && e.ErrorMessage == _i18n.RejectionReasonRequired()
             );
     }
 
@@ -123,7 +130,35 @@ public class AdminRejectArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminRejectArticleCommand.Reason)
-                && e.ErrorMessage == "Rejection reason must not exceed 500 characters."
+                && e.ErrorMessage
+                    == _i18n.RejectionReasonTooLong(TestConstants.Content.Editorial.Article.RejectionReasonMaxLength)
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
+        var validator = new AdminRejectArticleValidator(i18n);
+        var command = new AdminRejectArticleCommand(Id: Guid.NewGuid().ToString(), Reason: string.Empty);
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminRejectArticleCommand.Reason)
+                && e.ErrorMessage == i18n.RejectionReasonRequired()
             );
     }
 

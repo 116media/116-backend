@@ -1,3 +1,4 @@
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -11,9 +12,12 @@ public class AdminRemoveRoleFromUserValidator : AbstractValidator<AdminRemoveRol
     /// <summary>
     /// Configure validation rules for removing a role from a user.
     /// </summary>
-    public AdminRemoveRoleFromUserValidator()
+    /// <param name="i18n">
+    /// Validation error messages for rule configuration.
+    /// </param>
+    public AdminRemoveRoleFromUserValidator(ValidationErrorMessage i18n)
     {
-        RuleFor(x => x.UserId).IsValidGuid("User ID");
-        RuleFor(x => x.RoleId).IsValidGuid("Role ID");
+        RuleFor(x => x.UserId).IsValidGuid(i18n.Localizer, "UserIdRequired", "UserIdInvalid");
+        RuleFor(x => x.RoleId).IsValidGuid(i18n.Localizer, "RoleIdRequired", "RoleIdInvalid");
     }
 }

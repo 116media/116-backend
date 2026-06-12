@@ -1,4 +1,3 @@
-using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
@@ -19,17 +18,12 @@ public class PublicChangePasswordValidator : AbstractValidator<PublicChangePassw
     /// <summary>
     /// Initializes a new instance of <see cref="PublicChangePasswordValidator" /> with validation rules.
     /// </summary>
-    /// <param name="msg">
+    /// <param name="i18n">
     /// Validation error messages for rule configuration.
     /// </param>
-    public PublicChangePasswordValidator(ValidationErrorMessage msg)
+    public PublicChangePasswordValidator(ValidationErrorMessage i18n)
     {
-        RuleFor(x => x.OldPassword).ValidOldPassword(currentPasswordRequired: msg.CurrentPasswordRequired());
-        RuleFor(x => x.NewPassword)
-            .ValidPassword(
-                passwordRequired: msg.PasswordRequired(),
-                passwordTooShort: msg.PasswordTooShort("New password", UserConstants.MinPasswordLength),
-                passwordComplexity: msg.PasswordComplexity("New password")
-            );
+        RuleFor(x => x.OldPassword).ValidOldPassword(i18n);
+        RuleFor(x => x.NewPassword).ValidPassword(i18n, fieldName: "New password");
     }
 }

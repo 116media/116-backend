@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.Validators;
@@ -14,16 +15,12 @@ public static partial class CredentialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the email property.</param>
-    /// <param name="emailRequired">Error message when email is missing.</param>
-    /// <param name="emailTooLong">Error message when email exceeds maximum length.</param>
-    /// <param name="invalidEmailFormat">Error message when email format is invalid.</param>
+    /// <param name="i18n">Validation error messages for rule configuration.</param>
     /// <param name="isRequired">Whether the email is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidEmail<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        string emailRequired,
-        string emailTooLong,
-        string invalidEmailFormat,
+        ValidationErrorMessage i18n,
         bool isRequired = true
     )
     {
@@ -32,19 +29,19 @@ public static partial class CredentialValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage(emailRequired)
+                .WithMessage(i18n.EmailRequired())
                 .MaximumLength(maximumLength: UserConstants.MaxEmailLength)
-                .WithMessage(emailTooLong)
+                .WithMessage(i18n.EmailTooLong(UserConstants.MaxEmailLength))
                 .EmailAddress()
-                .WithMessage(invalidEmailFormat);
+                .WithMessage(i18n.InvalidEmailFormatMsg());
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: UserConstants.MaxEmailLength)
-            .WithMessage(emailTooLong)
+            .WithMessage(i18n.EmailTooLong(UserConstants.MaxEmailLength))
             .EmailAddress()
-            .WithMessage(invalidEmailFormat)
+            .WithMessage(i18n.InvalidEmailFormatMsg())
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Email")));
     }
 
@@ -54,23 +51,21 @@ public static partial class CredentialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the password property.</param>
-    /// <param name="passwordRequired">Error message when password is missing.</param>
-    /// <param name="passwordTooShort">Error message when password is below minimum length (only used when isStrong is true).</param>
-    /// <param name="passwordComplexity">Error message when password does not meet complexity rules (only used when isStrong is true).</param>
+    /// <param name="i18n">Validation error messages for rule configuration.</param>
+    /// <param name="fieldName">The display name of the field (e.g., "Password", "New password").</param>
     /// <param name="isStrong">Whether to enforce complexity rules (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string> ValidPassword<T>(
         this IRuleBuilderInitial<T, string> ruleBuilder,
-        string passwordRequired,
-        string passwordTooShort = "",
-        string passwordComplexity = "",
+        ValidationErrorMessage i18n,
+        string fieldName = "Password",
         bool isStrong = true
     )
     {
         IRuleBuilderOptions<T, string> builder = ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage(passwordRequired);
+            .WithMessage(i18n.PasswordRequired());
 
         if (!isStrong)
         {
@@ -79,9 +74,9 @@ public static partial class CredentialValidation
 
         return builder
             .MinimumLength(minimumLength: UserConstants.MinPasswordLength)
-            .WithMessage(passwordTooShort)
+            .WithMessage(i18n.PasswordTooShort(fieldName, UserConstants.MinPasswordLength))
             .Matches(PasswordRegex())
-            .WithMessage(passwordComplexity);
+            .WithMessage(i18n.PasswordComplexity(fieldName));
     }
 
     /// <summary>
@@ -89,18 +84,12 @@ public static partial class CredentialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the username property.</param>
-    /// <param name="usernameRequired">Error message when username is missing.</param>
-    /// <param name="usernameTooShort">Error message when username is below minimum length.</param>
-    /// <param name="usernameTooLong">Error message when username exceeds maximum length.</param>
-    /// <param name="usernameInvalidChars">Error message when username contains invalid characters.</param>
+    /// <param name="i18n">Validation error messages for rule configuration.</param>
     /// <param name="isRequired">Whether the username is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidUsername<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        string usernameRequired,
-        string usernameTooShort,
-        string usernameTooLong,
-        string usernameInvalidChars,
+        ValidationErrorMessage i18n,
         bool isRequired = true
     )
     {
@@ -110,24 +99,24 @@ public static partial class CredentialValidation
             builder = ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage(usernameRequired)
+                .WithMessage(i18n.UsernameRequired())
                 .MinimumLength(minimumLength: UserConstants.MinUserNameLength)
-                .WithMessage(usernameTooShort)
+                .WithMessage(i18n.UsernameTooShort(UserConstants.MinUserNameLength))
                 .MaximumLength(maximumLength: UserConstants.MaxUserNameLength)
-                .WithMessage(usernameTooLong)
+                .WithMessage(i18n.UsernameTooLong(UserConstants.MaxUserNameLength))
                 .Matches(UsernameRegex())
-                .WithMessage(usernameInvalidChars);
+                .WithMessage(i18n.UsernameInvalidChars());
         }
         else
         {
             builder = ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .MinimumLength(minimumLength: UserConstants.MinUserNameLength)
-                .WithMessage(usernameTooShort)
+                .WithMessage(i18n.UsernameTooShort(UserConstants.MinUserNameLength))
                 .MaximumLength(maximumLength: UserConstants.MaxUserNameLength)
-                .WithMessage(usernameTooLong)
+                .WithMessage(i18n.UsernameTooLong(UserConstants.MaxUserNameLength))
                 .Matches(UsernameRegex())
-                .WithMessage(usernameInvalidChars)
+                .WithMessage(i18n.UsernameInvalidChars())
                 .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "UserName")));
         }
 
@@ -139,14 +128,14 @@ public static partial class CredentialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the old password property.</param>
-    /// <param name="currentPasswordRequired">Error message when the current password is missing.</param>
+    /// <param name="i18n">Validation error messages for rule configuration.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidOldPassword<T>(
         this IRuleBuilder<T, string?> ruleBuilder,
-        string currentPasswordRequired
+        ValidationErrorMessage i18n
     )
     {
-        return ruleBuilder.NotEmpty().WithMessage(currentPasswordRequired);
+        return ruleBuilder.NotEmpty().WithMessage(i18n.CurrentPasswordRequired());
     }
 
     /// <summary>
@@ -155,14 +144,14 @@ public static partial class CredentialValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the credentials property.</param>
-    /// <param name="emailOrUsernameRequired">Error message when email or username is missing.</param>
+    /// <param name="i18n">Validation error messages for rule configuration.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string> ValidCredentials<T>(
         this IRuleBuilderInitial<T, string> ruleBuilder,
-        string emailOrUsernameRequired
+        ValidationErrorMessage i18n
     )
     {
-        return ruleBuilder.NotEmpty().WithMessage(emailOrUsernameRequired);
+        return ruleBuilder.NotEmpty().WithMessage(i18n.EmailOrUsernameRequired());
     }
 
     /// <summary>

@@ -15,6 +15,12 @@ public class AuthenticationErrorMessageTests
     );
 
     [Fact]
+    public void Localizer_ShouldNotBeNull()
+    {
+        _message.Localizer.Should().NotBeNull();
+    }
+
+    [Fact]
     public void InvalidCredentials_ShouldReturnCorrectMessage()
     {
         // Act

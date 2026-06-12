@@ -23,13 +23,8 @@ internal class ContentTypeOptionalNameValidator : AbstractValidator<ContentTypeO
 {
     public ContentTypeOptionalNameValidator()
     {
-        ContentTypeErrorMessage msg = LocalizerFactory.CreateMessage<ContentTypeErrorMessage>();
-        RuleFor(x => x.Name)
-            .ValidContentTypeName(
-                nameRequired: msg.NameRequired(),
-                nameTooLong: msg.NameTooLong(ContentConstants.MaxContentTypeNameLength),
-                isRequired: false
-            );
+        ContentTypeErrorMessage i18n = LocalizerFactory.CreateMessage<ContentTypeErrorMessage>();
+        RuleFor(x => x.Name).ValidContentTypeName(i18n, isRequired: false);
     }
 }
 
@@ -37,13 +32,8 @@ internal class PricingTierOptionalNameValidator : AbstractValidator<PricingTierO
 {
     public PricingTierOptionalNameValidator()
     {
-        PricingTierErrorMessage msg = LocalizerFactory.CreateMessage<PricingTierErrorMessage>();
-        RuleFor(x => x.Name)
-            .ValidPricingTierName(
-                nameRequired: msg.NameRequired(),
-                nameTooLong: msg.NameTooLong(ContentConstants.MaxPricingTierNameLength),
-                isRequired: false
-            );
+        PricingTierErrorMessage i18n = LocalizerFactory.CreateMessage<PricingTierErrorMessage>();
+        RuleFor(x => x.Name).ValidPricingTierName(i18n, isRequired: false);
     }
 }
 
@@ -51,12 +41,8 @@ internal class PricingTierRequiredDescriptionValidator : AbstractValidator<Prici
 {
     public PricingTierRequiredDescriptionValidator()
     {
-        PricingTierErrorMessage msg = LocalizerFactory.CreateMessage<PricingTierErrorMessage>();
-        RuleFor(x => x.Description)
-            .ValidPricingTierDescription(
-                descriptionRequired: msg.DescriptionRequired(),
-                descriptionTooLong: msg.DescriptionTooLong(ContentConstants.MaxPricingTierDescriptionLength)
-            );
+        PricingTierErrorMessage i18n = LocalizerFactory.CreateMessage<PricingTierErrorMessage>();
+        RuleFor(x => x.Description).ValidPricingTierDescription(i18n);
     }
 }
 
@@ -64,13 +50,8 @@ internal class PromotionLevelOptionalNameValidator : AbstractValidator<Promotion
 {
     public PromotionLevelOptionalNameValidator()
     {
-        PromotionLevelErrorMessage msg = LocalizerFactory.CreateMessage<PromotionLevelErrorMessage>();
-        RuleFor(x => x.Name)
-            .ValidPromotionLevelName(
-                nameRequired: msg.NameRequired(),
-                nameTooLong: msg.NameTooLong(ContentConstants.MaxPromotionLevelNameLength),
-                isRequired: false
-            );
+        PromotionLevelErrorMessage i18n = LocalizerFactory.CreateMessage<PromotionLevelErrorMessage>();
+        RuleFor(x => x.Name).ValidPromotionLevelName(i18n, isRequired: false);
     }
 }
 
@@ -78,13 +59,8 @@ internal class TagOptionalNameValidator : AbstractValidator<TagOptionalInput>
 {
     public TagOptionalNameValidator()
     {
-        TagErrorMessage msg = LocalizerFactory.CreateMessage<TagErrorMessage>();
-        RuleFor(x => x.Name)
-            .ValidTagName(
-                nameRequired: msg.NameRequired(),
-                nameTooLong: msg.NameTooLong(ContentConstants.MaxTagNameLength),
-                isRequired: false
-            );
+        TagErrorMessage i18n = LocalizerFactory.CreateMessage<TagErrorMessage>();
+        RuleFor(x => x.Name).ValidTagName(i18n, isRequired: false);
     }
 }
 
@@ -92,14 +68,8 @@ internal class TagOptionalSlugValidator : AbstractValidator<TagOptionalInput>
 {
     public TagOptionalSlugValidator()
     {
-        TagErrorMessage msg = LocalizerFactory.CreateMessage<TagErrorMessage>();
-        RuleFor(x => x.Slug)
-            .ValidTagSlug(
-                slugRequired: msg.SlugRequired(),
-                slugTooLong: msg.SlugTooLong(ContentConstants.MaxTagSlugLength),
-                slugInvalidFormat: msg.SlugInvalidFormat(),
-                isRequired: false
-            );
+        TagErrorMessage i18n = LocalizerFactory.CreateMessage<TagErrorMessage>();
+        RuleFor(x => x.Slug).ValidTagSlug(i18n, isRequired: false);
     }
 }
 
@@ -107,13 +77,8 @@ internal class CategoryOptionalNameValidator : AbstractValidator<CategoryOptiona
 {
     public CategoryOptionalNameValidator()
     {
-        CategoryErrorMessage msg = LocalizerFactory.CreateMessage<CategoryErrorMessage>();
-        RuleFor(x => x.Name)
-            .ValidCategoryName(
-                nameRequired: msg.NameRequired(),
-                nameTooLong: msg.NameTooLong(ContentConstants.MaxCategoryNameLength),
-                isRequired: false
-            );
+        CategoryErrorMessage i18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>();
+        RuleFor(x => x.Name).ValidCategoryName(i18n, isRequired: false);
     }
 }
 
@@ -121,14 +86,8 @@ internal class CategoryOptionalSlugValidator : AbstractValidator<CategoryOptiona
 {
     public CategoryOptionalSlugValidator()
     {
-        CategoryErrorMessage msg = LocalizerFactory.CreateMessage<CategoryErrorMessage>();
-        RuleFor(x => x.Slug)
-            .ValidCategorySlug(
-                slugRequired: msg.SlugRequired(),
-                slugTooLong: msg.SlugTooLong(ContentConstants.MaxCategorySlugLength),
-                slugInvalidFormat: msg.SlugInvalidFormat(),
-                isRequired: false
-            );
+        CategoryErrorMessage i18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>();
+        RuleFor(x => x.Slug).ValidCategorySlug(i18n, isRequired: false);
     }
 }
 
@@ -227,6 +186,7 @@ public class SharedValidatorsTests
     [Fact]
     public async Task ValidPricingTierDescription_Required_WithEmpty_ShouldHaveError()
     {
+        var i18n = LocalizerFactory.CreateMessage<PricingTierErrorMessage>();
         var validator = new PricingTierRequiredDescriptionValidator();
         ValidationResult result = await validator.ValidateAsync(
             new PricingTierOptionalInput(Name: null, Description: string.Empty)
@@ -236,7 +196,7 @@ public class SharedValidatorsTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(PricingTierOptionalInput.Description)
-                && e.ErrorMessage == "Pricing tier description is required."
+                && e.ErrorMessage == i18n.DescriptionRequired()
             );
     }
 

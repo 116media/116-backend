@@ -1,4 +1,3 @@
-using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
@@ -19,28 +18,13 @@ public class PublicResetPasswordValidator : AbstractValidator<PublicResetPasswor
     /// <summary>
     /// Initializes a new instance of <see cref="PublicResetPasswordValidator" /> with validation rules.
     /// </summary>
-    /// <param name="msg">
+    /// <param name="i18n">
     /// Validation error messages for rule configuration.
     /// </param>
-    public PublicResetPasswordValidator(ValidationErrorMessage msg)
+    public PublicResetPasswordValidator(ValidationErrorMessage i18n)
     {
-        RuleFor(x => x.Email)
-            .ValidEmail(
-                emailRequired: msg.EmailRequired(),
-                emailTooLong: msg.EmailTooLong(UserConstants.MaxEmailLength),
-                invalidEmailFormat: msg.InvalidEmailFormatMsg()
-            );
-        RuleFor(x => x.Code)
-            .ValidOtpCode(
-                otpCodeRequired: msg.OtpCodeRequired(),
-                otpCodeWrongLength: msg.OtpCodeWrongLength(UserConstants.OtpCodeLength),
-                otpCodeNotNumeric: msg.OtpCodeNotNumeric()
-            );
-        RuleFor(x => x.NewPassword)
-            .ValidPassword(
-                passwordRequired: msg.PasswordRequired(),
-                passwordTooShort: msg.PasswordTooShort("New password", UserConstants.MinPasswordLength),
-                passwordComplexity: msg.PasswordComplexity("New password")
-            );
+        RuleFor(x => x.Email).ValidEmail(i18n);
+        RuleFor(x => x.Code).ValidOtpCode(i18n);
+        RuleFor(x => x.NewPassword).ValidPassword(i18n, fieldName: "New password");
     }
 }

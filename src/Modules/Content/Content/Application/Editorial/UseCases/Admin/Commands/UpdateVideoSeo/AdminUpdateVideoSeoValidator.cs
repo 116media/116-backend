@@ -15,18 +15,18 @@ public class AdminUpdateVideoSeoValidator : AbstractValidator<AdminUpdateVideoSe
     /// <summary>
     /// Initializes a new instance of <see cref="AdminUpdateVideoSeoValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="msg">Article validation error messages.</param>
-    public AdminUpdateVideoSeoValidator(ArticleErrorMessage msg)
+    /// <param name="i18n">Article validation error messages.</param>
+    public AdminUpdateVideoSeoValidator(ArticleErrorMessage i18n)
     {
-        RuleFor(x => x.Id).IsValidGuid("Video ID");
+        RuleFor(x => x.Id).IsValidGuid(i18n.Localizer, "VideoIdRequired", "VideoIdInvalid");
 
         When(
             x => x.MetaTitle is not null,
             () =>
                 RuleFor(x => x.MetaTitle)
                     .ValidMetaTitle(
-                        metaTitleTooShort: msg.MetaTitleTooShort(ContentConstants.MinMetaTitleLength),
-                        metaTitleTooLong: msg.MetaTitleTooLong(ContentConstants.MaxMetaTitleLength)
+                        metaTitleTooShort: i18n.MetaTitleTooShort(ContentConstants.MinMetaTitleLength),
+                        metaTitleTooLong: i18n.MetaTitleTooLong(ContentConstants.MaxMetaTitleLength)
                     )
         );
         When(
@@ -34,8 +34,10 @@ public class AdminUpdateVideoSeoValidator : AbstractValidator<AdminUpdateVideoSe
             () =>
                 RuleFor(x => x.MetaDescription)
                     .ValidMetaDescription(
-                        metaDescriptionTooShort: msg.MetaDescriptionTooShort(ContentConstants.MinMetaDescriptionLength),
-                        metaDescriptionTooLong: msg.MetaDescriptionTooLong(ContentConstants.MaxMetaDescriptionLength)
+                        metaDescriptionTooShort: i18n.MetaDescriptionTooShort(
+                            ContentConstants.MinMetaDescriptionLength
+                        ),
+                        metaDescriptionTooLong: i18n.MetaDescriptionTooLong(ContentConstants.MaxMetaDescriptionLength)
                     )
         );
     }

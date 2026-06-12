@@ -1,4 +1,3 @@
-using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using FluentValidation;
@@ -13,20 +12,15 @@ public class AdminLoginValidator : AbstractValidator<AdminLoginCommand>
     /// <summary>
     /// Initializes a new instance of <see cref="AdminLoginValidator" /> with validation rules.
     /// </summary>
-    /// <param name="msg">
+    /// <param name="i18n">
     /// Validation error messages for rule configuration.
     /// </param>
     /// <remarks>
     /// Validates email and password presence for admin login attempts.
     /// </remarks>
-    public AdminLoginValidator(ValidationErrorMessage msg)
+    public AdminLoginValidator(ValidationErrorMessage i18n)
     {
-        RuleFor(x => x.Email)
-            .ValidEmail(
-                emailRequired: msg.EmailRequired(),
-                emailTooLong: msg.EmailTooLong(UserConstants.MaxEmailLength),
-                invalidEmailFormat: msg.InvalidEmailFormatMsg()
-            );
-        RuleFor(x => x.Password).ValidPassword(passwordRequired: msg.PasswordRequired(), isStrong: false);
+        RuleFor(x => x.Email).ValidEmail(i18n);
+        RuleFor(x => x.Password).ValidPassword(i18n, isStrong: false);
     }
 }

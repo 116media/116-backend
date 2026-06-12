@@ -9,6 +9,11 @@ namespace _116.Core.Application.Shared.Errors.Messages;
 public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> localizer)
 {
     /// <summary>
+    /// Exposes the underlying localizer for shared validation extensions.
+    /// </summary>
+    public IStringLocalizer Localizer => localizer;
+
+    /// <summary>
     /// Gets the error message for the unsupported file type.
     /// </summary>
     /// <param name="fileType">The unsupported file type.</param>

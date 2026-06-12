@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
 using FluentValidation;
 
@@ -14,14 +15,12 @@ public static partial class TagValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the name property.</param>
-    /// <param name="nameRequired">Error message used when the name is empty.</param>
-    /// <param name="nameTooLong">Error message used when the name exceeds the maximum length.</param>
+    /// <param name="i18n">The tag error message provider.</param>
     /// <param name="isRequired">Whether the name is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidTagName<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        string nameRequired,
-        string nameTooLong,
+        TagErrorMessage i18n,
         bool isRequired = true
     )
     {
@@ -30,15 +29,15 @@ public static partial class TagValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage(nameRequired)
+                .WithMessage(i18n.NameRequired())
                 .MaximumLength(maximumLength: ContentConstants.MaxTagNameLength)
-                .WithMessage(nameTooLong);
+                .WithMessage(i18n.NameTooLong(ContentConstants.MaxTagNameLength));
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: ContentConstants.MaxTagNameLength)
-            .WithMessage(nameTooLong)
+            .WithMessage(i18n.NameTooLong(ContentConstants.MaxTagNameLength))
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Name")));
     }
 
@@ -47,16 +46,12 @@ public static partial class TagValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the slug property.</param>
-    /// <param name="slugRequired">Error message used when the slug is empty.</param>
-    /// <param name="slugTooLong">Error message used when the slug exceeds the maximum length.</param>
-    /// <param name="slugInvalidFormat">Error message used when the slug does not match the expected format.</param>
+    /// <param name="i18n">The tag error message provider.</param>
     /// <param name="isRequired">Whether the slug is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidTagSlug<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        string slugRequired,
-        string slugTooLong,
-        string slugInvalidFormat,
+        TagErrorMessage i18n,
         bool isRequired = true
     )
     {
@@ -65,19 +60,19 @@ public static partial class TagValidation
             return ruleBuilder
                 .Cascade(cascadeMode: CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage(slugRequired)
+                .WithMessage(i18n.SlugRequired())
                 .MaximumLength(maximumLength: ContentConstants.MaxTagSlugLength)
-                .WithMessage(slugTooLong)
+                .WithMessage(i18n.SlugTooLong(ContentConstants.MaxTagSlugLength))
                 .Matches(SlugRegex())
-                .WithMessage(slugInvalidFormat);
+                .WithMessage(i18n.SlugInvalidFormat());
         }
 
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
             .MaximumLength(maximumLength: ContentConstants.MaxTagSlugLength)
-            .WithMessage(slugTooLong)
+            .WithMessage(i18n.SlugTooLong(ContentConstants.MaxTagSlugLength))
             .Matches(SlugRegex())
-            .WithMessage(slugInvalidFormat)
+            .WithMessage(i18n.SlugInvalidFormat())
             .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Slug")));
     }
 
@@ -87,20 +82,18 @@ public static partial class TagValidation
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for each element in the tag names collection.</param>
-    /// <param name="nameRequired">Error message used when a tag name element is empty.</param>
-    /// <param name="nameTooLong">Error message used when a tag name element exceeds the maximum length.</param>
+    /// <param name="i18n">The tag error message provider.</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string> ValidTagNameItem<T>(
         this IRuleBuilder<T, string> ruleBuilder,
-        string nameRequired,
-        string nameTooLong
+        TagErrorMessage i18n
     )
     {
         return ruleBuilder
             .NotEmpty()
-            .WithMessage(nameRequired)
+            .WithMessage(i18n.NameRequired())
             .MaximumLength(maximumLength: ContentConstants.MaxTagNameLength)
-            .WithMessage(nameTooLong);
+            .WithMessage(i18n.NameTooLong(ContentConstants.MaxTagNameLength));
     }
 
     /// <summary>

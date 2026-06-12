@@ -1,5 +1,7 @@
-using System.Reflection;
 using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
+using _116.Identity.Application.Shared.DTOs;
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -11,7 +13,21 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Session.UseCases.Admin.Qu
 /// </summary>
 public class AdminExportSessionDataValidatorTests
 {
-    private readonly AdminExportSessionDataValidator _validator = new();
+    private static readonly string[] ValidColumns = typeof(SessionExportDto)
+        .GetProperties()
+        .Select(p => p.Name)
+        .ToArray();
+
+    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly AdminExportSessionDataValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminExportSessionDataValidatorTests"/>.
+    /// </summary>
+    public AdminExportSessionDataValidatorTests()
+    {
+        _validator = new(_i18n);
+    }
 
     #region Valid Query Tests
 
@@ -59,11 +75,16 @@ public class AdminExportSessionDataValidatorTests
 
     #region Format Validation Tests
 
-    [Fact]
-    public async Task Validate_WithValidCsvFormat_ShouldNotHaveError()
+    [Theory]
+    [InlineData("Csv")]
+    [InlineData("csv")]
+    [InlineData("Xlsx")]
+    [InlineData("xlsx")]
+    [InlineData("XLSX")]
+    public async Task Validate_WithValidFormat_ShouldNotHaveError(string format)
     {
         // Arrange
-        AdminExportSessionDataQuery query = new(Format: "Csv");
+        AdminExportSessionDataQuery query = new(Format: format);
 
         // Act
         TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
@@ -72,38 +93,30 @@ public class AdminExportSessionDataValidatorTests
         result.IsValid.Should().BeTrue();
     }
 
-    [Fact]
-    public async Task Validate_WithValidXlsxFormat_ShouldNotHaveError()
+    [Theory]
+    [InlineData("json")]
+    [InlineData("xml")]
+    [InlineData("pdf")]
+    public async Task Validate_WithInvalidFormat_ShouldHaveError(string format)
     {
         // Arrange
-        AdminExportSessionDataQuery query = new(Format: "Xlsx");
-
-        // Act
-        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Validate_WithInvalidFormat_ShouldHaveError()
-    {
-        // Arrange
-        AdminExportSessionDataQuery query = new(Format: "json");
+        AdminExportSessionDataQuery query = new(Format: format);
 
         // Act
         TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Format).WithErrorMessage("Format must be one of: Csv, Xlsx.");
+        result.ShouldHaveValidationErrorFor(x => x.Format).WithErrorMessage(_i18n.ExportFormatInvalid());
     }
 
-    [Fact]
-    public async Task Validate_WithFormatCaseInsensitive_ShouldNotHaveError()
+    [Theory]
+    [InlineData("   ")]
+    [InlineData("")]
+    public async Task Validate_WithBlankFormat_ShouldNotHaveError(string format)
     {
         // Arrange
-        AdminExportSessionDataQuery query = new(Format: "csv");
+        AdminExportSessionDataQuery query = new(Format: format);
 
         // Act
         TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
@@ -116,11 +129,17 @@ public class AdminExportSessionDataValidatorTests
 
     #region Status Validation Tests
 
-    [Fact]
-    public async Task Validate_WithValidActiveStatus_ShouldNotHaveError()
+    [Theory]
+    [InlineData("active")]
+    [InlineData("Active")]
+    [InlineData("ACTIVE")]
+    [InlineData("expired")]
+    [InlineData("Expired")]
+    [InlineData("EXPIRED")]
+    public async Task Validate_WithValidStatus_ShouldNotHaveError(string status)
     {
         // Arrange
-        AdminExportSessionDataQuery query = new(Status: "active");
+        AdminExportSessionDataQuery query = new(Status: status);
 
         // Act
         TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
@@ -129,40 +148,30 @@ public class AdminExportSessionDataValidatorTests
         result.IsValid.Should().BeTrue();
     }
 
-    [Fact]
-    public async Task Validate_WithValidExpiredStatus_ShouldNotHaveError()
+    [Theory]
+    [InlineData("pending")]
+    [InlineData("inactive")]
+    [InlineData("invalid")]
+    public async Task Validate_WithInvalidStatus_ShouldHaveError(string status)
     {
         // Arrange
-        AdminExportSessionDataQuery query = new(Status: "expired");
-
-        // Act
-        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Validate_WithInvalidStatus_ShouldHaveError()
-    {
-        // Arrange
-        AdminExportSessionDataQuery query = new(Status: "pending");
+        AdminExportSessionDataQuery query = new(Status: status);
 
         // Act
         TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.Status)
-            .WithErrorMessage("Status must be either 'active' or 'expired'.");
+        result.ShouldHaveValidationErrorFor(x => x.Status).WithErrorMessage(_i18n.ExportStatusInvalid());
     }
 
-    [Fact]
-    public async Task Validate_WithStatusCaseInsensitive_ShouldNotHaveError()
+    [Theory]
+    [InlineData("   ")]
+    [InlineData("")]
+    public async Task Validate_WithBlankStatus_ShouldNotHaveError(string status)
     {
         // Arrange
-        AdminExportSessionDataQuery query = new(Status: "ACTIVE");
+        AdminExportSessionDataQuery query = new(Status: status);
 
         // Act
         TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
@@ -175,11 +184,17 @@ public class AdminExportSessionDataValidatorTests
 
     #region Columns Validation Tests
 
-    [Fact]
-    public async Task Validate_WithValidSingleColumn_ShouldNotHaveError()
+    [Theory]
+    [InlineData("Id")]
+    [InlineData("UserId")]
+    [InlineData("Id,UserId")]
+    [InlineData("Id,UserId,IpAddress")]
+    [InlineData("id,userid,ipaddress")]
+    [InlineData("Id, UserId, IpAddress")]
+    public async Task Validate_WithValidColumns_ShouldNotHaveError(string columns)
     {
         // Arrange
-        AdminExportSessionDataQuery query = new(Columns: "Id");
+        AdminExportSessionDataQuery query = new(Columns: columns);
 
         // Act
         TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
@@ -188,53 +203,32 @@ public class AdminExportSessionDataValidatorTests
         result.IsValid.Should().BeTrue();
     }
 
-    [Fact]
-    public async Task Validate_WithValidMultipleColumns_ShouldNotHaveError()
+    [Theory]
+    [InlineData("InvalidColumn")]
+    [InlineData("Id,InvalidColumn")]
+    [InlineData("InvalidColumn1,InvalidColumn2")]
+    public async Task Validate_WithInvalidColumns_ShouldHaveError(string columns)
     {
         // Arrange
-        AdminExportSessionDataQuery query = new(Columns: "Id,UserId,IpAddress,UserAgent,Browser");
-
-        // Act
-        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Validate_WithInvalidColumnName_ShouldHaveError()
-    {
-        // Arrange
-        AdminExportSessionDataQuery query = new(Columns: "Id,InvalidColumn");
+        AdminExportSessionDataQuery query = new(Columns: columns);
 
         // Act
         TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Columns);
+        result
+            .ShouldHaveValidationErrorFor(x => x.Columns)
+            .WithErrorMessage(_i18n.ExportColumnsInvalid(string.Join(", ", ValidColumns)));
     }
 
-    [Fact]
-    public async Task Validate_WithColumnsContainingSpaces_ShouldNotHaveError()
-    {
-        // Arrange - spaces should be trimmed
-        AdminExportSessionDataQuery query = new(Columns: "Id, UserId, IpAddress");
-
-        // Act
-        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Validate_WithAllValidColumns_ShouldNotHaveError()
+    [Theory]
+    [InlineData("   ")]
+    [InlineData("")]
+    public async Task Validate_WithBlankColumns_ShouldNotHaveError(string columns)
     {
         // Arrange
-        AdminExportSessionDataQuery query = new(
-            Columns: "Id,UserId,IpAddress,UserAgent,Browser,Device,Platform,Client,CreatedAt,ExpiresAt,IsActive,DeletedAt"
-        );
+        AdminExportSessionDataQuery query = new(Columns: columns);
 
         // Act
         TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
@@ -245,7 +239,7 @@ public class AdminExportSessionDataValidatorTests
 
     #endregion
 
-    #region Date Validation Tests
+    #region Date Range Validation Tests
 
     [Fact]
     public async Task Validate_WithValidDateRange_ShouldNotHaveError()
@@ -285,9 +279,7 @@ public class AdminExportSessionDataValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result
-            .ShouldHaveValidationErrorFor(x => x.ToDate)
-            .WithErrorMessage("ToDate must be greater than or equal to FromDate.");
+        result.ShouldHaveValidationErrorFor(x => x.ToDate).WithErrorMessage(_i18n.ExportDateRangeInvalid());
     }
 
     [Fact]
@@ -318,101 +310,6 @@ public class AdminExportSessionDataValidatorTests
 
     #endregion
 
-    #region Edge Case Tests
-
-    [Fact]
-    public async Task Validate_WithWhitespaceFormat_ShouldNotHaveError()
-    {
-        // Arrange
-        AdminExportSessionDataQuery query = new(Format: "   ");
-
-        // Act
-        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Validate_WithEmptyStringFormat_ShouldNotHaveError()
-    {
-        // Arrange
-        AdminExportSessionDataQuery query = new(Format: "");
-
-        // Act
-        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Validate_WithWhitespaceStatus_ShouldNotHaveError()
-    {
-        // Arrange
-        AdminExportSessionDataQuery query = new(Status: "   ");
-
-        // Act
-        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Validate_WithEmptyStringStatus_ShouldNotHaveError()
-    {
-        // Arrange
-        AdminExportSessionDataQuery query = new(Status: "");
-
-        // Act
-        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Validate_WithWhitespaceColumns_ShouldNotHaveError()
-    {
-        // Arrange
-        AdminExportSessionDataQuery query = new(Columns: "   ");
-
-        // Act
-        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Validate_WithEmptyStringColumns_ShouldNotHaveError()
-    {
-        // Arrange
-        AdminExportSessionDataQuery query = new(Columns: "");
-
-        // Act
-        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Validate_WithColumnsCaseInsensitive_ShouldNotHaveError()
-    {
-        // Arrange
-        AdminExportSessionDataQuery query = new(Columns: "id,userid,ipaddress");
-
-        // Act
-        TestValidationResult<AdminExportSessionDataQuery>? result = await _validator.TestValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-    }
-
-    #endregion
-
     #region Multiple Validation Errors Tests
 
     [Fact]
@@ -433,204 +330,6 @@ public class AdminExportSessionDataValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCountGreaterThanOrEqualTo(4);
-    }
-
-    #endregion
-
-    #region Private Method Direct Tests (via Reflection)
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void BeValidExportFormat_WithNullOrWhitespace_ShouldReturnFalse(string? format)
-    {
-        // Arrange
-        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
-            "BeValidExportFormat",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
-        );
-
-        // Act
-        bool result = (bool)method!.Invoke(null, [format])!;
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Theory]
-    [InlineData("Csv")]
-    [InlineData("csv")]
-    [InlineData("Xlsx")]
-    [InlineData("xlsx")]
-    [InlineData("XLSX")]
-    public void BeValidExportFormat_WithValidFormat_ShouldReturnTrue(string format)
-    {
-        // Arrange
-        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
-            "BeValidExportFormat",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
-        );
-
-        // Act
-        bool result = (bool)method!.Invoke(null, [format])!;
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Theory]
-    [InlineData("json")]
-    [InlineData("xml")]
-    [InlineData("pdf")]
-    public void BeValidExportFormat_WithInvalidFormat_ShouldReturnFalse(string format)
-    {
-        // Arrange
-        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
-            "BeValidExportFormat",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
-        );
-
-        // Act
-        bool result = (bool)method!.Invoke(null, [format])!;
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void BeValidSessionStatus_WithNullOrWhitespace_ShouldReturnFalse(string? status)
-    {
-        // Arrange
-        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
-            "BeValidSessionStatus",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
-        );
-
-        // Act
-        bool result = (bool)method!.Invoke(null, [status])!;
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Theory]
-    [InlineData("Active")]
-    [InlineData("active")]
-    [InlineData("ACTIVE")]
-    [InlineData("Expired")]
-    [InlineData("expired")]
-    [InlineData("EXPIRED")]
-    public void BeValidSessionStatus_WithValidStatus_ShouldReturnTrue(string status)
-    {
-        // Arrange
-        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
-            "BeValidSessionStatus",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
-        );
-
-        // Act
-        bool result = (bool)method!.Invoke(null, [status])!;
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Theory]
-    [InlineData("pending")]
-    [InlineData("inactive")]
-    [InlineData("invalid")]
-    public void BeValidSessionStatus_WithInvalidStatus_ShouldReturnFalse(string status)
-    {
-        // Arrange
-        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
-            "BeValidSessionStatus",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
-        );
-
-        // Act
-        bool result = (bool)method!.Invoke(null, [status])!;
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void BeValidColumns_WithNullOrWhitespace_ShouldReturnTrue(string? columns)
-    {
-        // Arrange
-        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
-            "BeValidColumns",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
-        );
-
-        // Act
-        bool result = (bool)method!.Invoke(null, [columns])!;
-
-        // Assert
-        result.Should().BeTrue("null or whitespace columns should be considered valid");
-    }
-
-    [Theory]
-    [InlineData("Id")]
-    [InlineData("UserId")]
-    [InlineData("Id,UserId")]
-    [InlineData("Id,UserId,IpAddress")]
-    [InlineData("id,userid,ipaddress")] // Case insensitive
-    public void BeValidColumns_WithValidColumns_ShouldReturnTrue(string columns)
-    {
-        // Arrange
-        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
-            "BeValidColumns",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
-        );
-
-        // Act
-        bool result = (bool)method!.Invoke(null, [columns])!;
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Theory]
-    [InlineData("InvalidColumn")]
-    [InlineData("Id,InvalidColumn")]
-    [InlineData("InvalidColumn1,InvalidColumn2")]
-    public void BeValidColumns_WithInvalidColumns_ShouldReturnFalse(string columns)
-    {
-        // Arrange
-        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
-            "BeValidColumns",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
-        );
-
-        // Act
-        bool result = (bool)method!.Invoke(null, [columns])!;
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public void BeValidColumns_WithColumnsContainingSpaces_ShouldTrimAndValidate()
-    {
-        // Arrange
-        MethodInfo? method = typeof(AdminExportSessionDataValidator).GetMethod(
-            "BeValidColumns",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
-        );
-
-        // Act
-        bool result = (bool)method!.Invoke(null, ["Id, UserId, IpAddress"])!;
-
-        // Assert
-        result.Should().BeTrue("spaces should be trimmed from column names");
     }
 
     #endregion

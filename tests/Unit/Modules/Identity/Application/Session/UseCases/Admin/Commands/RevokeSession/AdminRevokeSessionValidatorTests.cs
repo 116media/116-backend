@@ -1,4 +1,6 @@
 using _116.Identity.Application.Session.UseCases.Admin.Commands.RevokeSession;
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -10,7 +12,16 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Session.UseCases.Admin.Co
 /// </summary>
 public class AdminRevokeSessionValidatorTests
 {
-    private readonly AdminRevokeSessionValidator _validator = new();
+    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly AdminRevokeSessionValidator _validator;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AdminRevokeSessionValidatorTests"/>.
+    /// </summary>
+    public AdminRevokeSessionValidatorTests()
+    {
+        _validator = new AdminRevokeSessionValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -43,7 +54,9 @@ public class AdminRevokeSessionValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.SessionId).WithErrorMessage("Session ID is required.");
+        result
+            .ShouldHaveValidationErrorFor(x => x.SessionId)
+            .WithErrorMessage(_i18n.Localizer["SessionIdRequired"].Value);
     }
 
     [Fact]
@@ -57,7 +70,9 @@ public class AdminRevokeSessionValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.SessionId).WithErrorMessage("Session ID is required.");
+        result
+            .ShouldHaveValidationErrorFor(x => x.SessionId)
+            .WithErrorMessage(_i18n.Localizer["SessionIdRequired"].Value);
     }
 
     [Fact]
@@ -71,7 +86,9 @@ public class AdminRevokeSessionValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.SessionId).WithErrorMessage("Session ID is required.");
+        result
+            .ShouldHaveValidationErrorFor(x => x.SessionId)
+            .WithErrorMessage(_i18n.Localizer["SessionIdRequired"].Value);
     }
 
     [Fact]
@@ -85,7 +102,33 @@ public class AdminRevokeSessionValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.SessionId).WithErrorMessage("Session ID is invalid.");
+        result
+            .ShouldHaveValidationErrorFor(x => x.SessionId)
+            .WithErrorMessage(_i18n.Localizer["SessionIdInvalid"].Value);
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>(culture);
+        var validator = new AdminRevokeSessionValidator(i18n);
+        var command = new AdminRevokeSessionCommand(UserId: Guid.NewGuid(), SessionId: null!);
+
+        // Act
+        TestValidationResult<AdminRevokeSessionCommand>? result = await validator.TestValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .ShouldHaveValidationErrorFor(x => x.SessionId)
+            .WithErrorMessage(i18n.Localizer["SessionIdRequired"].Value);
     }
 
     #endregion

@@ -57,7 +57,28 @@
   <data name="InvalidPaymentMethod" xml:space="preserve">
     <value>La méthode de paiement est invalide.</value>
   </data>
+  <data name="OrderItemIdInvalid" xml:space="preserve">
+    <value>Identifiant de commande invalide.</value>
+  </data>
   <data name="OrderItemIdRequired" xml:space="preserve">
     <value>L'identifiant de l'article de commande est obligatoire.</value>
+  </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>L'identifiant de la commande est obligatoire.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>L'identifiant de la commande est invalide.</value>
+  </data>
+  <data name="ItemIdRequired" xml:space="preserve">
+    <value>L'identifiant de l'article est obligatoire.</value>
+  </data>
+  <data name="ItemIdInvalid" xml:space="preserve">
+    <value>L'identifiant de l'article est invalide.</value>
+  </data>
+  <data name="TierIdRequired" xml:space="preserve">
+    <value>L'identifiant du niveau est obligatoire.</value>
+  </data>
+  <data name="TierIdInvalid" xml:space="preserve">
+    <value>L'identifiant du niveau est invalide.</value>
   </data>
 </root>

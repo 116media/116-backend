@@ -1,4 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyricsSeo;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using FluentValidation.Results;
 using Xunit;
@@ -10,7 +12,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateLyricsSeoValidatorTests
 {
-    private readonly AdminUpdateLyricsSeoValidator _validator = new();
+    private readonly LyricsErrorMessage _i18n = LocalizerFactory.CreateMessage<LyricsErrorMessage>();
+
+    private readonly AdminUpdateLyricsSeoValidator _validator;
+
+    public AdminUpdateLyricsSeoValidatorTests()
+    {
+        _validator = new AdminUpdateLyricsSeoValidator(_i18n);
+    }
 
     #region Valid Command Tests
 
@@ -56,7 +65,8 @@ public class AdminUpdateLyricsSeoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateLyricsSeoCommand.Id) && e.ErrorMessage == "Lyrics ID is required."
+                e.PropertyName == nameof(AdminUpdateLyricsSeoCommand.Id)
+                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
             );
     }
 
@@ -79,7 +89,40 @@ public class AdminUpdateLyricsSeoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateLyricsSeoCommand.Id) && e.ErrorMessage == "Lyrics ID is invalid."
+                e.PropertyName == nameof(AdminUpdateLyricsSeoCommand.Id)
+                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
+            );
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("fr")]
+    public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
+    {
+        // Arrange
+        var i18n = LocalizerFactory.CreateMessage<LyricsErrorMessage>(culture);
+        var validator = new AdminUpdateLyricsSeoValidator(i18n);
+        var command = new AdminUpdateLyricsSeoCommand(
+            Id: string.Empty,
+            MetaTitle: null,
+            MetaDescription: null,
+            StructuredData: null
+        );
+
+        // Act
+        ValidationResult result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminUpdateLyricsSeoCommand.Id)
+                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
             );
     }
 

@@ -39,4 +39,10 @@
   <data name="LyricsIdRequired" xml:space="preserve">
     <value>Lyrics ID is required.</value>
   </data>
+  <data name="IdRequired" xml:space="preserve">
+    <value>Lyrics ID is required.</value>
+  </data>
+  <data name="IdInvalid" xml:space="preserve">
+    <value>Lyrics ID is invalid.</value>
+  </data>
 </root>
