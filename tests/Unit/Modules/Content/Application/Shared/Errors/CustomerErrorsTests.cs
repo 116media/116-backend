@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,6 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class CustomerErrorsTests
 {
     private readonly CustomerErrors _errors = TestErrorsFactory.CreateCustomerErrors();
+    private readonly CustomerErrorMessage _message = LocalizerFactory.CreateMessage<CustomerErrorMessage>("en");
 
     [Fact]
     public void AlreadyExists_WithEmail_ShouldReturnConflictException()
@@ -44,22 +46,18 @@ public class CustomerErrorsTests
     [Fact]
     public void FullNameRequired_ShouldReturnBadRequestException()
     {
-        // Act
         BadRequestException exception = _errors.FullNameRequired();
 
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.FullNameRequired());
     }
 
     [Fact]
     public void EmailRequired_ShouldReturnBadRequestException()
     {
-        // Act
         BadRequestException exception = _errors.EmailRequired();
 
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.EmailRequired());
     }
 }

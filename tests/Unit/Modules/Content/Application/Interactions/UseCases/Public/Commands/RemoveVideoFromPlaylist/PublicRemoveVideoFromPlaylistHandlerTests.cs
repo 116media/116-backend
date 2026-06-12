@@ -29,7 +29,7 @@ public class PublicRemoveVideoFromPlaylistHandlerTests
         _handler = new PublicRemoveVideoFromPlaylistHandler(
             _playlistRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreatePlaylistErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

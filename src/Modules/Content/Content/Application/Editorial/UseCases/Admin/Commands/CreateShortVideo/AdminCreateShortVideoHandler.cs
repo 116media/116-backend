@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -16,13 +16,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShort
 /// <param name="cloudinaryService">Service for uploading and deleting media assets in cloud storage.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="shortVideoErrors">Short video domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreateShortVideoHandler(
     IShortVideoRepository shortVideoRepository,
     ICloudinaryService cloudinaryService,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
-    ShortVideoErrors shortVideoErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminCreateShortVideoCommand, AdminCreateShortVideoResult>
 {
     /// <inheritdoc />
@@ -38,7 +38,7 @@ public class AdminCreateShortVideoHandler(
 
         if (existing is not null)
         {
-            throw shortVideoErrors.SlugAlreadyExists(slug: command.Slug);
+            throw i18n.ShortVideo.SlugAlreadyExists(slug: command.Slug);
         }
 
         string storageKey = $"content/short-videos/{Guid.NewGuid()}";
@@ -61,7 +61,7 @@ public class AdminCreateShortVideoHandler(
                 videoStorageKey: uploadResult.PublicId,
                 videoId: command.VideoId.Value,
                 authorId: command.AuthorId,
-                errors: shortVideoErrors
+                errors: i18n.ShortVideo
             );
         }
         else
@@ -73,7 +73,7 @@ public class AdminCreateShortVideoHandler(
                 videoUrl: uploadResult.SecureUrl,
                 videoStorageKey: uploadResult.PublicId,
                 authorId: command.AuthorId,
-                errors: shortVideoErrors
+                errors: i18n.ShortVideo
             );
         }
 

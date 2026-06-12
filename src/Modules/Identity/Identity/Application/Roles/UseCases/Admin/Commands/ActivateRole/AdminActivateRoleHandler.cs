@@ -1,4 +1,4 @@
-using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
@@ -14,12 +14,12 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.ActivateRole;
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+/// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class AdminActivateRoleHandler(
     IRoleRepository roleRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper,
-    UserErrors userErrors
+    IdentityI18n i18n
 ) : ICommandHandler<AdminActivateRoleCommand, AdminActivateRoleResult>
 {
     /// <summary>
@@ -44,7 +44,7 @@ public class AdminActivateRoleHandler(
 
         if (!wasActivated)
         {
-            throw userErrors.RoleAlreadyActive();
+            throw i18n.User.RoleAlreadyActive();
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

@@ -35,8 +35,7 @@ public class PublicAddVideoToPlaylistHandlerTests
             _playlistRepositoryMock.Object,
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreatePlaylistErrors(),
-            TestErrorsFactory.CreateVideoErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

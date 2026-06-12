@@ -1,4 +1,4 @@
-using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
@@ -14,12 +14,12 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdateRole;
 /// <param name="roleRepository">Repository for role data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+/// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class AdminUpdateRoleHandler(
     IRoleRepository roleRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper,
-    UserErrors userErrors
+    IdentityI18n i18n
 ) : ICommandHandler<AdminUpdateRoleCommand, AdminUpdateRoleResult>
 {
     /// <summary>
@@ -53,7 +53,7 @@ public class AdminUpdateRoleHandler(
             string newName = isNameUpdated ? name! : role!.Name;
             string newDescription = isDescriptionUpdated ? description! : role!.Description;
 
-            role!.Update(name: newName, description: newDescription, errors: userErrors);
+            role!.Update(name: newName, description: newDescription, errors: i18n.User);
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
 
@@ -65,7 +65,7 @@ public class AdminUpdateRoleHandler(
     {
         if (await roleRepository.ExistsByNameAsync(name: name, cancellationToken: cancellationToken))
         {
-            throw userErrors.RoleAlreadyExists(roleName: name);
+            throw i18n.User.RoleAlreadyExists(roleName: name);
         }
     }
 }

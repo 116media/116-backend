@@ -31,7 +31,7 @@ public class PublicLikeArticleHandlerTests
         _handler = new PublicLikeArticleHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateArticleInteractionErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

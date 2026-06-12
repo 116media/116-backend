@@ -18,6 +18,26 @@ public class UserErrors(
 )
 {
     /// <summary>
+    /// Exposes the conflict message provider for use in validator extensions.
+    /// </summary>
+    public ConflictErrorMessage Conflict => conflict;
+
+    /// <summary>
+    /// Exposes the validation message provider for use in validator extensions.
+    /// </summary>
+    public ValidationErrorMessage Validation => validation;
+
+    /// <summary>
+    /// Exposes the authentication message provider for use in validator extensions.
+    /// </summary>
+    public AuthenticationErrorMessage Authentication => authentication;
+
+    /// <summary>
+    /// Exposes the authorization message provider for use in validator extensions.
+    /// </summary>
+    public AuthorizationErrorMessage Authorization => authorization;
+
+    /// <summary>
     /// Throws when a user already exists during registration.
     /// </summary>
     public ConflictException EmailAlreadyExists(string email)

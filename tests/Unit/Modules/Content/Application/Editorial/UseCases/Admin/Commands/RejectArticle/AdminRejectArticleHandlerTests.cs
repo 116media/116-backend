@@ -32,7 +32,7 @@ public class AdminRejectArticleHandlerTests
         _handler = new AdminRejectArticleHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateArticleErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

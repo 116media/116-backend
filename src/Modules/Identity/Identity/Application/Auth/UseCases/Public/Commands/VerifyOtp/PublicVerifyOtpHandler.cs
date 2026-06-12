@@ -1,5 +1,5 @@
 using _116.Identity.Application.Auth.Repositories;
-using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
@@ -16,12 +16,12 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.VerifyOtp;
 /// <param name="authRepository">Repository for user data access operations.</param>
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+/// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class PublicVerifyOtpHandler(
     IAuthRepository authRepository,
     IOtpRepository otpRepository,
     IIdentityUnitOfWork unitOfWork,
-    UserErrors userErrors
+    IdentityI18n i18n
 ) : ICommandHandler<PublicVerifyOtpCommand, PublicVerifyOtpResult>
 {
     /// <summary>
@@ -48,7 +48,7 @@ public class PublicVerifyOtpHandler(
         // Check if user is already verified (only for email verification purpose)
         if (user!.IsVerified && purpose.Value == EnumOtpPurpose.EmailVerification)
         {
-            throw userErrors.AccountAlreadyVerified();
+            throw i18n.User.AccountAlreadyVerified();
         }
 
         // Validate the OTP (throws appropriate exceptions on failure)

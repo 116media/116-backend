@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -14,12 +14,12 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePricingT
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="pricingTierErrors">Pricing tier domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreatePricingTierHandler(
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
-    PricingTierErrors pricingTierErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminCreatePricingTierCommand, AdminCreatePricingTierResult>
 {
     /// <inheritdoc />
@@ -35,14 +35,14 @@ public class AdminCreatePricingTierHandler(
 
         if (exists)
         {
-            throw pricingTierErrors.AlreadyExists(name: command.Name);
+            throw i18n.PricingTier.AlreadyExists(name: command.Name);
         }
 
         var pricingTier = PricingTierEntity.Create(
             id: Guid.NewGuid(),
             name: command.Name,
             description: command.Description,
-            errors: pricingTierErrors
+            errors: i18n.PricingTier
         );
 
         await lookupRepository.AddPricingTierAsync(pricingTier: pricingTier, cancellationToken: cancellationToken);

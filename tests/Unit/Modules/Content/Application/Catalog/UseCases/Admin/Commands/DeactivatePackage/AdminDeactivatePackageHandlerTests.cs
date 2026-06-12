@@ -31,7 +31,7 @@ public class AdminDeactivatePackageHandlerTests : BaseContentHandlerTest
             _packageRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
-            TestErrorsFactory.CreatePackageErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

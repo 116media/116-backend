@@ -1,4 +1,5 @@
 using _116.Core.Application.Shared.Errors;
+using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
@@ -14,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Core.Domain.Entities;
 /// </summary>
 public class FileEntityTests
 {
-    private readonly CoreErrors _coreErrors = TestErrorsFactory.CreateCoreErrors();
+    private readonly CoreI18n _coreErrors = TestErrorsFactory.CreateCoreI18n();
 
     #region Create Tests
 

@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -19,7 +19,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyric
 /// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
 /// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="lyricsErrors">Lyrics domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreateLyricsHandler(
     ILyricsRepository lyricsRepository,
     IVideoRepository videoRepository,
@@ -27,7 +27,7 @@ public class AdminCreateLyricsHandler(
     IUserLookupService userLookup,
     IFileRepository fileRepository,
     IMapper mapper,
-    LyricsErrors lyricsErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminCreateLyricsCommand, AdminCreateLyricsResult>
 {
     /// <inheritdoc />
@@ -44,7 +44,7 @@ public class AdminCreateLyricsHandler(
 
         if (existing is not null)
         {
-            throw lyricsErrors.AlreadyExists(songTitle: command.SongTitle, artistName: command.ArtistName);
+            throw i18n.Lyrics.AlreadyExists(songTitle: command.SongTitle, artistName: command.ArtistName);
         }
 
         LyricsEntity lyrics;
@@ -59,7 +59,7 @@ public class AdminCreateLyricsHandler(
                 lyricsText: command.LyricsText,
                 language: command.Language,
                 authorId: command.AuthorId,
-                errors: lyricsErrors
+                errors: i18n.Lyrics
             );
 
             VideoEntity video = await videoRepository.GetByIdOrThrowAsync(
@@ -78,7 +78,7 @@ public class AdminCreateLyricsHandler(
                 lyricsText: command.LyricsText,
                 language: command.Language,
                 authorId: command.AuthorId,
-                errors: lyricsErrors
+                errors: i18n.Lyrics
             );
         }
 

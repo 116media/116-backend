@@ -1,6 +1,6 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder.Contracts;
 using _116.Content.Application.Shared.DTOs;
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -17,16 +17,14 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder;
 /// <param name="createOrderFactory">Factory for populating orders from package slots.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="packageErrors">Package domain error factory.</param>
-/// <param name="customerErrors">Customer domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreateOrderHandler(
     ICustomerRepository customerRepository,
     IPackageRepository packageRepository,
     ICreateOrderFactory createOrderFactory,
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
-    PackageErrors packageErrors,
-    CustomerErrors customerErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminCreateOrderCommand, AdminCreateOrderResult>
 {
     /// <inheritdoc />
@@ -55,7 +53,7 @@ public class AdminCreateOrderHandler(
 
                 if (package is null || !package.IsActive)
                 {
-                    throw packageErrors.NotFound(id: command.PackageId.Value);
+                    throw i18n.Package.NotFound(id: command.PackageId.Value);
                 }
             }
 
@@ -91,6 +89,6 @@ public class AdminCreateOrderHandler(
             return new AdminCreateOrderResult(Order: dto);
         }
 
-        throw customerErrors.NotFound(id: customerId);
+        throw i18n.Customer.NotFound(id: customerId);
     }
 }

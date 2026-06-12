@@ -10,6 +10,11 @@ namespace _116.Content.Application.Shared.Errors;
 public class CategoryErrors(CategoryErrorMessage i18n)
 {
     /// <summary>
+    /// Exposes the localized message provider for use in validator extensions.
+    /// </summary>
+    public CategoryErrorMessage Msg => i18n;
+
+    /// <summary>
     /// Throws when a category with the given slug already exists.
     /// </summary>
     public ConflictException AlreadyExists(string slug)

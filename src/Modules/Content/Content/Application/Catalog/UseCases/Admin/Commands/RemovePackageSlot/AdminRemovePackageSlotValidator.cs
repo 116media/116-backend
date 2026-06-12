@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -12,10 +12,10 @@ public class AdminRemovePackageSlotValidator : AbstractValidator<AdminRemovePack
     /// <summary>
     /// Initializes a new instance of <see cref="AdminRemovePackageSlotValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="i18n">Package validation error messages.</param>
-    public AdminRemovePackageSlotValidator(PackageErrorMessage i18n)
+    /// <param name="i18n">Content module i18n facade.</param>
+    public AdminRemovePackageSlotValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.PackageId).IsValidGuid(i18n.Localizer);
-        RuleFor(x => x.SlotId).IsValidGuid(i18n.Localizer, "SlotIdRequired", "SlotIdInvalid");
+        RuleFor(x => x.PackageId).IsValidGuid(i18n.Package.Msg.Localizer);
+        RuleFor(x => x.SlotId).IsValidGuid(i18n.Package.Msg.Localizer, "SlotIdRequired", "SlotIdInvalid");
     }
 }

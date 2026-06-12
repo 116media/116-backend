@@ -1,4 +1,5 @@
 using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,6 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Errors;
 public class CategoryErrorsTests
 {
     private readonly CategoryErrors _errors = TestErrorsFactory.CreateCategoryErrors();
+    private readonly CategoryErrorMessage _message = LocalizerFactory.CreateMessage<CategoryErrorMessage>("en");
 
     [Fact]
     public void AlreadyExists_WithSlug_ShouldReturnConflictException()
@@ -44,56 +46,46 @@ public class CategoryErrorsTests
     [Fact]
     public void AlreadyActive_ShouldReturnConflictException()
     {
-        // Act
         ConflictException exception = _errors.AlreadyActive();
 
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadyActive());
     }
 
     [Fact]
     public void AlreadyInactive_ShouldReturnConflictException()
     {
-        // Act
         ConflictException exception = _errors.AlreadyInactive();
 
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadyInactive());
     }
 
     [Fact]
     public void NameRequired_ShouldReturnBadRequestException()
     {
-        // Act
         BadRequestException exception = _errors.NameRequired();
 
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.NameRequired());
     }
 
     [Fact]
     public void SlugRequired_ShouldReturnBadRequestException()
     {
-        // Act
         BadRequestException exception = _errors.SlugRequired();
 
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.SlugRequired());
     }
 
     [Fact]
     public void PricingAlreadyExists_ShouldReturnConflictException()
     {
-        // Act
         ConflictException exception = _errors.PricingAlreadyExists();
 
-        // Assert
-        exception.Should().BeOfType<ConflictException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.PricingAlreadyExists());
     }
 
     [Fact]
@@ -114,11 +106,9 @@ public class CategoryErrorsTests
     [Fact]
     public void PriceMustBeNonNegative_ShouldReturnBadRequestException()
     {
-        // Act
         BadRequestException exception = _errors.PriceMustBeNonNegative();
 
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().NotBeNullOrEmpty();
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.PriceMustBeNonNegative());
     }
 }

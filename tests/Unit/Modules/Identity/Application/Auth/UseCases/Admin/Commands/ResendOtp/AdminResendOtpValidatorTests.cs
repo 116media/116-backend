@@ -1,4 +1,5 @@
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
@@ -14,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Comma
 /// </summary>
 public class AdminResendOtpValidatorTests
 {
-    private readonly AdminResendOtpValidator _validator = new(LocalizerFactory.CreateMessage<ValidationErrorMessage>());
+    private readonly AdminResendOtpValidator _validator = new(TestErrorsFactory.CreateIdentityI18n());
 
     #region Valid Command Tests
 

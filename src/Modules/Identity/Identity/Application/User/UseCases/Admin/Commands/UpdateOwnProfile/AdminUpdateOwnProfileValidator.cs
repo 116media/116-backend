@@ -1,5 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
-using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Errors.Facade;
 using FluentValidation;
 
 namespace _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile;
@@ -21,14 +21,14 @@ public class AdminUpdateOwnProfileValidator : AbstractValidator<AdminUpdateOwnPr
     /// Initializes a new instance of <see cref="AdminUpdateOwnProfileValidator" /> with validation rules.
     /// </summary>
     /// <param name="i18n">
-    /// Validation error messages for rule configuration.
+    /// Identity module i18n facade for rule configuration.
     /// </param>
-    public AdminUpdateOwnProfileValidator(ValidationErrorMessage i18n)
+    public AdminUpdateOwnProfileValidator(IdentityI18n i18n)
     {
-        RuleFor(x => x.UserName).ValidUsername(i18n, isRequired: false);
-        RuleFor(x => x.CountryName).ValidCountryName(i18n);
-        RuleFor(x => x.CountryIsoCode).ValidCountryIsoCode(i18n);
-        RuleFor(x => x.CountryDialCode).ValidCountryDialCode(i18n);
-        RuleFor(x => x.PartialPhoneNumber).ValidPartialPhoneNumber(i18n);
+        RuleFor(x => x.UserName).ValidUsername(i18n.User.Validation, isRequired: false);
+        RuleFor(x => x.CountryName).ValidCountryName(i18n.User.Validation);
+        RuleFor(x => x.CountryIsoCode).ValidCountryIsoCode(i18n.User.Validation);
+        RuleFor(x => x.CountryDialCode).ValidCountryDialCode(i18n.User.Validation);
+        RuleFor(x => x.PartialPhoneNumber).ValidPartialPhoneNumber(i18n.User.Validation);
     }
 }

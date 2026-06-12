@@ -1,4 +1,5 @@
 using _116.Core.Application.Shared.Errors;
+using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Application.Shared.Errors.Messages;
 using _116.Core.Application.Shared.Persistence;
 using _116.Core.Application.Shared.Repositories;
@@ -53,8 +54,9 @@ public static class CoreModule
         services.AddScoped<ConflictErrorMessage>();
         services.AddScoped<InternalServerErrorMessage>();
 
-        // Register error factory class
-        services.AddScoped<CoreErrors>();
+        // Register error factory classes
+        services.AddScoped<FileErrors>();
+        services.AddScoped<CoreI18n>();
 
         // Register Unit of Work for transaction management
         services.AddScoped<ICoreUnitOfWork, CoreUnitOfWork>();

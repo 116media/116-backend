@@ -35,8 +35,7 @@ public class AdminAddPackageSlotHandlerTests : BaseContentHandlerTest
             _categoryRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
-            TestErrorsFactory.CreateCategoryErrors(),
-            TestErrorsFactory.CreatePackageErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

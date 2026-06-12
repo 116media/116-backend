@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -15,15 +15,13 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.AddPackageSlo
 /// <param name="categoryRepository">Repository for verifying category existence.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="categoryErrors">Category domain error factory.</param>
-/// <param name="packageErrors">Package domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminAddPackageSlotHandler(
     IPackageRepository packageRepository,
     ICategoryRepository categoryRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
-    CategoryErrors categoryErrors,
-    PackageErrors packageErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminAddPackageSlotCommand, AdminAddPackageSlotResult>
 {
     /// <inheritdoc />
@@ -45,7 +43,7 @@ public class AdminAddPackageSlotHandler(
 
             if (category is null)
             {
-                throw categoryErrors.NotFound(id: command.CategoryId.Value);
+                throw i18n.Category.NotFound(id: command.CategoryId.Value);
             }
         }
 
@@ -55,7 +53,7 @@ public class AdminAddPackageSlotHandler(
             categoryId: command.CategoryId,
             isRequired: command.IsRequired,
             quantity: command.Quantity,
-            errors: packageErrors
+            errors: i18n.Package
         );
 
         await packageRepository.AddSlotAsync(slot: slot, cancellationToken: cancellationToken);

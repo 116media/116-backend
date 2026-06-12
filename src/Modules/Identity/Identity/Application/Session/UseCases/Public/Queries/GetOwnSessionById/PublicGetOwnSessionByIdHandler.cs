@@ -1,5 +1,5 @@
 using _116.Identity.Application.Session.Repositories;
-using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
@@ -12,12 +12,9 @@ namespace _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessio
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="sessionErrors">Session domain error factory for generating domain exceptions.</param>
-public class PublicGetOwnSessionByIdHandler(
-    ISessionRepository sessionRepository,
-    IMapper mapper,
-    SessionErrors sessionErrors
-) : IQueryHandler<PublicGetOwnSessionByIdQuery, PublicGetOwnSessionByIdResult>
+/// <param name="i18n">Single i18n entry point for the Identity module.</param>
+public class PublicGetOwnSessionByIdHandler(ISessionRepository sessionRepository, IMapper mapper, IdentityI18n i18n)
+    : IQueryHandler<PublicGetOwnSessionByIdQuery, PublicGetOwnSessionByIdResult>
 {
     /// <summary>
     /// Handles the query by fetching the session by ID and verifying ownership.
@@ -38,7 +35,7 @@ public class PublicGetOwnSessionByIdHandler(
         // Verify the session belongs to the user
         if (session is null || session.UserId != query.UserId)
         {
-            throw sessionErrors.SessionNotFound(sessionId: query.SessionId);
+            throw i18n.Session.SessionNotFound(sessionId: query.SessionId);
         }
 
         var sessionDto = session.ToSessionDto(mapper);

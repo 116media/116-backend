@@ -10,6 +10,11 @@ namespace _116.Content.Application.Shared.Errors;
 public class PricingTierErrors(PricingTierErrorMessage i18n)
 {
     /// <summary>
+    /// Exposes the localized message provider for use in validator extensions.
+    /// </summary>
+    public PricingTierErrorMessage Msg => i18n;
+
+    /// <summary>
     /// Throws when a pricing tier with the given name already exists.
     /// </summary>
     public ConflictException AlreadyExists(string name)

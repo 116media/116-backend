@@ -13,6 +13,7 @@ using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Interactions.Persistence;
 using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
@@ -97,6 +98,7 @@ public static class ContentModule
         services.AddScoped<ArticleInteractionErrors>();
         services.AddScoped<ShortVideoInteractionErrors>();
         services.AddScoped<PromotionLevelErrors>();
+        services.AddScoped<ContentI18n>();
 
         // Register Mapster configuration and IMapper (thread-safe, no global state)
         TypeAdapterConfig mappingConfig = MappingRegistration.CreateConfiguration();

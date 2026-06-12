@@ -1,5 +1,6 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.HardDeleteRole;
 using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
@@ -21,14 +22,14 @@ public class AdminHardDeleteRoleHandlerTests
 {
     private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly UserErrors _userErrors;
+    private readonly IdentityI18n _userErrors;
     private readonly AdminHardDeleteRoleHandler _handler;
 
     public AdminHardDeleteRoleHandlerTests()
     {
         _roleRepositoryMock = MockRoleRepository.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
-        _userErrors = TestErrorsFactory.CreateUserErrors();
+        _userErrors = TestErrorsFactory.CreateIdentityI18n();
         _handler = new AdminHardDeleteRoleHandler(_roleRepositoryMock.Object, _unitOfWorkMock.Object, _userErrors);
     }
 

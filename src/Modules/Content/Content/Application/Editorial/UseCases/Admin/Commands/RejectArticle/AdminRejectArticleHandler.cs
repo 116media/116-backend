@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -12,11 +12,11 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectArtic
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="articleErrors">Article domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminRejectArticleHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
-    ArticleErrors articleErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminRejectArticleCommand, AdminRejectArticleResult>
 {
     /// <inheritdoc />
@@ -34,12 +34,12 @@ public class AdminRejectArticleHandler(
 
         if (article.Status == EnumContentStatus.Rejected)
         {
-            throw articleErrors.AlreadyRejected();
+            throw i18n.Article.AlreadyRejected();
         }
 
         if (article.Status != EnumContentStatus.PendingReview)
         {
-            throw articleErrors.InvalidStatusTransition(
+            throw i18n.Article.InvalidStatusTransition(
                 from: article.Status.ToString(),
                 to: nameof(EnumContentStatus.Rejected)
             );

@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Validators;
 using FluentValidation;
 
@@ -12,9 +12,9 @@ public class PublicCreatePlaylistValidator : AbstractValidator<PublicCreatePlayl
     /// <summary>
     /// Initializes a new instance of <see cref="PublicCreatePlaylistValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="i18n">Playlist validation error messages.</param>
-    public PublicCreatePlaylistValidator(PlaylistErrorMessage i18n)
+    /// <param name="i18n">Content module i18n facade.</param>
+    public PublicCreatePlaylistValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.Name).ValidPlaylistName(i18n);
+        RuleFor(x => x.Name).ValidPlaylistName(i18n.Playlist.Msg);
     }
 }

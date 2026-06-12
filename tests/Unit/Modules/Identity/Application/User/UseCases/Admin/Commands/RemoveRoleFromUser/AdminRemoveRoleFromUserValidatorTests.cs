@@ -1,3 +1,4 @@
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.User.UseCases.Admin.Commands.RemoveRoleFromUser;
 using _116.Tests.Fixtures.Constants;
@@ -13,9 +14,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.User.UseCases.Admin.Comma
 /// </summary>
 public class AdminRemoveRoleFromUserValidatorTests
 {
-    private readonly AdminRemoveRoleFromUserValidator _validator = new(
-        LocalizerFactory.CreateMessage<ValidationErrorMessage>()
-    );
+    private readonly AdminRemoveRoleFromUserValidator _validator = new(TestErrorsFactory.CreateIdentityI18n());
 
     #region Valid Command Tests
 

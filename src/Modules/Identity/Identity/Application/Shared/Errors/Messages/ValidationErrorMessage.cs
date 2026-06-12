@@ -14,8 +14,6 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     /// </summary>
     public IStringLocalizer Localizer => localizer;
 
-    // ── Validator-level messages (used by FluentValidation extensions) ──────
-
     /// <summary>
     /// Error message indicating that an email address is required.
     /// </summary>
@@ -36,6 +34,12 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     /// Error message indicating that a password is required.
     /// </summary>
     public string PasswordRequired() => localizer["PasswordRequired"];
+
+    /// <summary>
+    /// Gets the localized display name for the new password field.
+    /// Used as the field label in password strength error messages.
+    /// </summary>
+    public string NewPasswordFieldName() => localizer["NewPasswordFieldName"];
 
     /// <summary>
     /// Error message indicating that a password is too short.
@@ -218,8 +222,6 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     /// </summary>
     /// <param name="max">The maximum allowed length.</param>
     public string RoleDescriptionTooLong(int max) => string.Format(localizer["RoleDescriptionTooLong"], max);
-
-    // ── Domain-level messages (used by use-case handlers) ───────────────────
 
     /// <summary>
     /// Gets an error message for when an email has an invalid format.

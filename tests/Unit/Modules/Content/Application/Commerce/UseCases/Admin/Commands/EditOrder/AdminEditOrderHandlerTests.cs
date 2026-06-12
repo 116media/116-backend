@@ -34,7 +34,7 @@ public class AdminEditOrderHandlerTests : BaseContentHandlerTest
             _customerRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
-            TestErrorsFactory.CreateContentOrderErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

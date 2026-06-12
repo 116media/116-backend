@@ -38,7 +38,7 @@ public class AdminGetOrderByIdHandlerTests : BaseContentHandlerTest
             _fileRepositoryMock.Object,
             Mapper,
             _userLookupMock.Object,
-            TestErrorsFactory.CreateContentOrderErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

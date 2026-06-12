@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivatePackage;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminDeactivatePackageValidatorTests
 {
-    private readonly PackageErrorMessage _i18n = LocalizerFactory.CreateMessage<PackageErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminDeactivatePackageValidator _validator;
 
     public AdminDeactivatePackageValidatorTests()
@@ -55,7 +57,7 @@ public class AdminDeactivatePackageValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminDeactivatePackageCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Package.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -69,8 +71,9 @@ public class AdminDeactivatePackageValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<PackageErrorMessage>(culture);
-        var validator = new AdminDeactivatePackageValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminDeactivatePackageValidator(_i18n);
         var command = new AdminDeactivatePackageCommand(Id: "");
 
         // Act
@@ -82,7 +85,7 @@ public class AdminDeactivatePackageValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminDeactivatePackageCommand.Id)
-                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Package.Msg.Localizer["IdRequired"].Value
             );
     }
 

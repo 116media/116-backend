@@ -31,7 +31,7 @@ public class PublicBookmarkArticleHandlerTests
         _handler = new PublicBookmarkArticleHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateArticleInteractionErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

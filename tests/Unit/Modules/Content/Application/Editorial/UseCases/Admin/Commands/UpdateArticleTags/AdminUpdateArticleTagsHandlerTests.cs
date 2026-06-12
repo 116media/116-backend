@@ -38,7 +38,7 @@ public class AdminUpdateArticleTagsHandlerTests
             _lookupRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _cacheInvalidatorMock.Object,
-            TestErrorsFactory.CreateTagErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

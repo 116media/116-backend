@@ -29,7 +29,7 @@ public class PublicBookmarkShortVideoHandlerTests
         _handler = new PublicBookmarkShortVideoHandler(
             _shortVideoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateShortVideoInteractionErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

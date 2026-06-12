@@ -1,4 +1,4 @@
-using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
@@ -16,14 +16,14 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissi
 /// <param name="rolePermissionRepository">Repository for role-permission data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+/// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class AdminAssignPermissionToRoleHandler(
     IRoleRepository roleRepository,
     IPermissionRepository permissionRepository,
     IRolePermissionRepository rolePermissionRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper,
-    UserErrors userErrors
+    IdentityI18n i18n
 ) : ICommandHandler<AdminAssignPermissionToRoleCommand, AdminAssignPermissionToRoleResult>
 {
     /// <summary>
@@ -48,12 +48,12 @@ public class AdminAssignPermissionToRoleHandler(
         // Check if the role is active and not deleted
         if (!role!.IsActive)
         {
-            throw userErrors.RoleIsInactive();
+            throw i18n.User.RoleIsInactive();
         }
 
         if (role.IsDeleted)
         {
-            throw userErrors.RoleIsDeleted();
+            throw i18n.User.RoleIsDeleted();
         }
 
         // Validate permission exists
@@ -65,12 +65,12 @@ public class AdminAssignPermissionToRoleHandler(
         // Check if permission is active and not deleted
         if (!permission!.IsActive)
         {
-            throw userErrors.PermissionIsInactive();
+            throw i18n.User.PermissionIsInactive();
         }
 
         if (permission.IsDeleted)
         {
-            throw userErrors.PermissionIsDeleted();
+            throw i18n.User.PermissionIsDeleted();
         }
 
         // Check if permission is already assigned to the role
@@ -82,7 +82,7 @@ public class AdminAssignPermissionToRoleHandler(
 
         if (alreadyAssigned)
         {
-            throw userErrors.PermissionAlreadyAssignedToRole();
+            throw i18n.User.PermissionAlreadyAssignedToRole();
         }
 
         // Create the role-permission association

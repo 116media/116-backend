@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticleTags;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,14 +14,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateArticleTagsValidatorTests
 {
-    private readonly TagErrorMessage _tagI18n = LocalizerFactory.CreateMessage<TagErrorMessage>();
-    private readonly ArticleErrorMessage _articleI18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private readonly AdminUpdateArticleTagsValidator _validator;
 
     public AdminUpdateArticleTagsValidatorTests()
     {
-        _validator = new AdminUpdateArticleTagsValidator(_tagI18n, _articleI18n);
+        _validator = new AdminUpdateArticleTagsValidator(_i18n);
     }
 
     #region Valid Command Tests
@@ -77,7 +78,7 @@ public class AdminUpdateArticleTagsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleTagsCommand.ArticleId)
-                && e.ErrorMessage == _articleI18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -96,7 +97,7 @@ public class AdminUpdateArticleTagsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleTagsCommand.ArticleId)
-                && e.ErrorMessage == _articleI18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdInvalid"].Value
             );
     }
 
@@ -118,7 +119,7 @@ public class AdminUpdateArticleTagsValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == _tagI18n.NameRequired());
+        result.Errors.Should().Contain(e => e.ErrorMessage == _i18n.Tag.Msg.NameRequired());
     }
 
     [Fact]
@@ -135,7 +136,7 @@ public class AdminUpdateArticleTagsValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage.Contains(_tagI18n.NameTooLong(50)));
+        result.Errors.Should().Contain(e => e.ErrorMessage.Contains(_i18n.Tag.Msg.NameTooLong(50)));
     }
 
     #endregion
@@ -148,9 +149,9 @@ public class AdminUpdateArticleTagsValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var tagI18n = LocalizerFactory.CreateMessage<TagErrorMessage>(culture);
-        var articleI18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
-        var validator = new AdminUpdateArticleTagsValidator(tagI18n, articleI18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminUpdateArticleTagsValidator(_i18n);
         var command = new AdminUpdateArticleTagsCommand(ArticleId: string.Empty, TagNames: new List<string>());
 
         // Act
@@ -162,7 +163,7 @@ public class AdminUpdateArticleTagsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleTagsCommand.ArticleId)
-                && e.ErrorMessage == articleI18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdRequired"].Value
             );
     }
 

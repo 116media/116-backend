@@ -1,5 +1,5 @@
 using _116.Identity.Application.Session.Repositories;
-using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
@@ -12,11 +12,11 @@ namespace _116.Identity.Application.Session.UseCases.Public.Commands.RevokeSessi
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="unitOfWork">Unit of work for transaction management.</param>
-/// <param name="sessionErrors">Session domain error factory for generating domain exceptions.</param>
+/// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class PublicRevokeSessionHandler(
     ISessionRepository sessionRepository,
     IIdentityUnitOfWork unitOfWork,
-    SessionErrors sessionErrors
+    IdentityI18n i18n
 ) : ICommandHandler<PublicRevokeSessionCommand, PublicRevokeSessionResult>
 {
     /// <summary>
@@ -42,7 +42,7 @@ public class PublicRevokeSessionHandler(
         // Verify the session belongs to the user
         if (session is null || session.UserId != command.UserId)
         {
-            throw sessionErrors.SessionNotFound(sessionId: sessionId);
+            throw i18n.Session.SessionNotFound(sessionId: sessionId);
         }
 
         await sessionRepository.RevokeAsync(sessionId: sessionId, cancellationToken: cancellationToken);

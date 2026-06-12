@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoBySlug;
 using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
@@ -22,13 +23,14 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly PublicGetVideoBySlugHandler _handler;
     private readonly VideoErrors _videoErrors = TestErrorsFactory.CreateVideoErrors();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private static readonly Guid CategoryId = Guid.NewGuid();
 
     public PublicGetVideoBySlugHandlerTests()
     {
         _videoRepositoryMock = MockVideoRepository.Create();
-        _handler = new PublicGetVideoBySlugHandler(_videoRepositoryMock.Object, Mapper, _videoErrors);
+        _handler = new PublicGetVideoBySlugHandler(_videoRepositoryMock.Object, Mapper, _i18n);
     }
 
     [Fact]

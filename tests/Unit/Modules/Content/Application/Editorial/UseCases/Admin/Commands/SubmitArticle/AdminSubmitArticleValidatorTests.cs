@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.SubmitArticle;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminSubmitArticleValidatorTests
 {
-    private readonly ArticleErrorMessage _i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private readonly AdminSubmitArticleValidator _validator;
 
@@ -56,7 +58,7 @@ public class AdminSubmitArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminSubmitArticleCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -75,7 +77,7 @@ public class AdminSubmitArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminSubmitArticleCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdInvalid"].Value
             );
     }
 
@@ -89,8 +91,9 @@ public class AdminSubmitArticleValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
-        var validator = new AdminSubmitArticleValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminSubmitArticleValidator(_i18n);
         var command = new AdminSubmitArticleCommand(Id: string.Empty);
 
         // Act
@@ -102,7 +105,7 @@ public class AdminSubmitArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminSubmitArticleCommand.Id)
-                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdRequired"].Value
             );
     }
 

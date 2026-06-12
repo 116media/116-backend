@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -11,11 +11,11 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ActivateSho
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="shortVideoErrors">Short video domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminActivateShortVideoHandler(
     IShortVideoRepository shortVideoRepository,
     IContentUnitOfWork unitOfWork,
-    ShortVideoErrors shortVideoErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminActivateShortVideoCommand, AdminActivateShortVideoResult>
 {
     /// <inheritdoc />
@@ -35,7 +35,7 @@ public class AdminActivateShortVideoHandler(
 
         if (!activated)
         {
-            throw shortVideoErrors.AlreadyActive();
+            throw i18n.ShortVideo.AlreadyActive();
         }
 
         shortVideoRepository.Update(shortVideo: shortVideo);

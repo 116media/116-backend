@@ -1,5 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
-using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Errors.Facade;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword;
@@ -16,10 +16,10 @@ public class PublicForgotPasswordValidator : AbstractValidator<PublicForgotPassw
     /// Initializes a new instance of <see cref="PublicForgotPasswordValidator" /> with validation rules.
     /// </summary>
     /// <param name="i18n">
-    /// Validation error messages for rule configuration.
+    /// Identity module i18n facade for rule configuration.
     /// </param>
-    public PublicForgotPasswordValidator(ValidationErrorMessage i18n)
+    public PublicForgotPasswordValidator(IdentityI18n i18n)
     {
-        RuleFor(x => x.Email).ValidEmail(i18n);
+        RuleFor(x => x.Email).ValidEmail(i18n.User.Validation);
     }
 }

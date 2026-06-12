@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminCreateLyricsValidatorTests
 {
-    private readonly LyricsErrorMessage _i18n = LocalizerFactory.CreateMessage<LyricsErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private readonly AdminCreateLyricsValidator _validator;
 
@@ -71,7 +73,7 @@ public class AdminCreateLyricsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateLyricsCommand.SongTitle)
-                && e.ErrorMessage == _i18n.SongTitleRequired()
+                && e.ErrorMessage == _i18n.Lyrics.Msg.SongTitleRequired()
             );
     }
 
@@ -97,7 +99,8 @@ public class AdminCreateLyricsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateLyricsCommand.SongTitle)
-                && e.ErrorMessage == _i18n.SongTitleTooLong(TestConstants.Content.Editorial.Lyrics.SongTitleMaxLength)
+                && e.ErrorMessage
+                    == _i18n.Lyrics.Msg.SongTitleTooLong(TestConstants.Content.Editorial.Lyrics.SongTitleMaxLength)
             );
     }
 
@@ -127,7 +130,7 @@ public class AdminCreateLyricsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateLyricsCommand.ArtistName)
-                && e.ErrorMessage == _i18n.ArtistNameRequired()
+                && e.ErrorMessage == _i18n.Lyrics.Msg.ArtistNameRequired()
             );
     }
 
@@ -153,7 +156,8 @@ public class AdminCreateLyricsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateLyricsCommand.ArtistName)
-                && e.ErrorMessage == _i18n.ArtistNameTooLong(TestConstants.Content.Editorial.Lyrics.ArtistNameMaxLength)
+                && e.ErrorMessage
+                    == _i18n.Lyrics.Msg.ArtistNameTooLong(TestConstants.Content.Editorial.Lyrics.ArtistNameMaxLength)
             );
     }
 
@@ -183,7 +187,7 @@ public class AdminCreateLyricsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateLyricsCommand.LyricsText)
-                && e.ErrorMessage == _i18n.LyricsTextRequired()
+                && e.ErrorMessage == _i18n.Lyrics.Msg.LyricsTextRequired()
             );
     }
 
@@ -213,7 +217,7 @@ public class AdminCreateLyricsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateLyricsCommand.Language)
-                && e.ErrorMessage == _i18n.LanguageRequired()
+                && e.ErrorMessage == _i18n.Lyrics.Msg.LanguageRequired()
             );
     }
 
@@ -239,7 +243,8 @@ public class AdminCreateLyricsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateLyricsCommand.Language)
-                && e.ErrorMessage == _i18n.LanguageTooLong(TestConstants.Content.Editorial.Lyrics.LanguageMaxLength)
+                && e.ErrorMessage
+                    == _i18n.Lyrics.Msg.LanguageTooLong(TestConstants.Content.Editorial.Lyrics.LanguageMaxLength)
             );
     }
 
@@ -253,8 +258,9 @@ public class AdminCreateLyricsValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<LyricsErrorMessage>(culture);
-        var validator = new AdminCreateLyricsValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminCreateLyricsValidator(_i18n);
         var command = new AdminCreateLyricsCommand(
             SongTitle: string.Empty,
             ArtistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
@@ -273,7 +279,7 @@ public class AdminCreateLyricsValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreateLyricsCommand.SongTitle)
-                && e.ErrorMessage == i18n.SongTitleRequired()
+                && e.ErrorMessage == _i18n.Lyrics.Msg.SongTitleRequired()
             );
     }
 

@@ -35,7 +35,7 @@ public class PublicChangePasswordHandlerTests
             _authRepositoryMock.Object,
             _passwordServiceMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateUserErrors()
+            TestErrorsFactory.CreateIdentityI18n()
         );
     }
 

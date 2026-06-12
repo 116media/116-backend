@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateContentType;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminUpdateContentTypeValidatorTests
 {
-    private readonly ContentTypeErrorMessage _i18n = LocalizerFactory.CreateMessage<ContentTypeErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminUpdateContentTypeValidator _validator;
 
     /// <summary>
@@ -78,7 +80,7 @@ public class AdminUpdateContentTypeValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminUpdateContentTypeCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.ContentType.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -100,7 +102,8 @@ public class AdminUpdateContentTypeValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateContentTypeCommand.Name) && e.ErrorMessage == _i18n.NameRequired()
+                e.PropertyName == nameof(AdminUpdateContentTypeCommand.Name)
+                && e.ErrorMessage == _i18n.ContentType.Msg.NameRequired()
             );
     }
 
@@ -151,8 +154,9 @@ public class AdminUpdateContentTypeValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ContentTypeErrorMessage>(culture);
-        var validator = new AdminUpdateContentTypeValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminUpdateContentTypeValidator(_i18n);
         var command = new AdminUpdateContentTypeCommand(Id: Guid.NewGuid().ToString(), Name: "");
 
         // Act
@@ -163,7 +167,8 @@ public class AdminUpdateContentTypeValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateContentTypeCommand.Name) && e.ErrorMessage == i18n.NameRequired()
+                e.PropertyName == nameof(AdminUpdateContentTypeCommand.Name)
+                && e.ErrorMessage == _i18n.ContentType.Msg.NameRequired()
             );
     }
 

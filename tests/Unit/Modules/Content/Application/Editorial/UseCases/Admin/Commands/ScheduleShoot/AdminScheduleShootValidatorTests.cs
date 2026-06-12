@@ -1,4 +1,5 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ScheduleShoot;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,7 +13,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminScheduleShootValidatorTests
 {
-    private readonly VideoErrorMessage _i18n = LocalizerFactory.CreateMessage<VideoErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminScheduleShootValidator _validator;
 
     /// <summary>
@@ -63,7 +64,8 @@ public class AdminScheduleShootValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminScheduleShootCommand.VideoId) && e.ErrorMessage == _i18n.VideoIdRequired()
+                e.PropertyName == nameof(AdminScheduleShootCommand.VideoId)
+                && e.ErrorMessage == _i18n.Video.Msg.VideoIdRequired()
             );
     }
 
@@ -85,7 +87,7 @@ public class AdminScheduleShootValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminScheduleShootCommand.VideoId)
-                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.Video.Msg.Localizer["IdInvalid"].Value
             );
     }
 
@@ -111,7 +113,7 @@ public class AdminScheduleShootValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminScheduleShootCommand.ShootingScheduledAt)
-                && e.ErrorMessage == _i18n.ShootingScheduledDateMustBeInFuture()
+                && e.ErrorMessage == _i18n.Video.Msg.ShootingScheduledDateMustBeInFuture()
             );
     }
 

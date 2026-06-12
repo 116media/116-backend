@@ -36,7 +36,7 @@ public class AdminDeleteArticleHandlerTests
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _cloudinaryMock.Object,
-            TestErrorsFactory.CreateArticleErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

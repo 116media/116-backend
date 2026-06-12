@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideoSeo;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateVideoSeoValidatorTests
 {
-    private readonly ArticleErrorMessage _i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private readonly AdminUpdateVideoSeoValidator _validator;
 
@@ -60,7 +62,7 @@ public class AdminUpdateVideoSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoSeoCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["VideoIdRequired"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["VideoIdRequired"].Value
             );
     }
 
@@ -79,7 +81,7 @@ public class AdminUpdateVideoSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoSeoCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["VideoIdInvalid"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["VideoIdInvalid"].Value
             );
     }
 
@@ -93,8 +95,9 @@ public class AdminUpdateVideoSeoValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
-        var validator = new AdminUpdateVideoSeoValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminUpdateVideoSeoValidator(_i18n);
         var command = new AdminUpdateVideoSeoCommand(Id: string.Empty, MetaTitle: null, MetaDescription: null);
 
         // Act
@@ -106,7 +109,7 @@ public class AdminUpdateVideoSeoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateVideoSeoCommand.Id)
-                && e.ErrorMessage == i18n.Localizer["VideoIdRequired"].Value
+                && e.ErrorMessage == _i18n.Video.Msg.Localizer["VideoIdRequired"].Value
             );
     }
 

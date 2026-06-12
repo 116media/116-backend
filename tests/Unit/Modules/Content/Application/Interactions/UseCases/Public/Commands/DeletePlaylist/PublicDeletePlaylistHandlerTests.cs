@@ -29,7 +29,7 @@ public class PublicDeletePlaylistHandlerTests
         _handler = new PublicDeletePlaylistHandler(
             _playlistRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreatePlaylistErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

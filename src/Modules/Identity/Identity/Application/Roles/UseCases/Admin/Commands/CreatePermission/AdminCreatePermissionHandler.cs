@@ -1,5 +1,5 @@
 using _116.Identity.Application.Shared.DTOs;
-using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
@@ -15,12 +15,12 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.CreatePermissi
 /// <param name="permissionRepository">Repository for permission data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+/// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class AdminCreatePermissionHandler(
     IPermissionRepository permissionRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper,
-    UserErrors userErrors
+    IdentityI18n i18n
 ) : ICommandHandler<AdminCreatePermissionCommand, AdminCreatePermissionResult>
 {
     /// <summary>
@@ -42,7 +42,7 @@ public class AdminCreatePermissionHandler(
 
         if (permissionExists)
         {
-            throw userErrors.PermissionAlreadyExists(resource: command.Resource, action: command.Action);
+            throw i18n.User.PermissionAlreadyExists(resource: command.Resource, action: command.Action);
         }
 
         var permission = PermissionEntity.Create(
@@ -50,7 +50,7 @@ public class AdminCreatePermissionHandler(
             action: command.Action,
             resource: command.Resource,
             description: command.Description,
-            errors: userErrors
+            errors: i18n.User
         );
 
         await permissionRepository.AddAsync(permission: permission, cancellationToken: cancellationToken);

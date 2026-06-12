@@ -28,7 +28,7 @@ public class PublicGetPlaylistByIdHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetPlaylistByIdHandler(
             _playlistRepositoryMock.Object,
             Mapper,
-            TestErrorsFactory.CreatePlaylistErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

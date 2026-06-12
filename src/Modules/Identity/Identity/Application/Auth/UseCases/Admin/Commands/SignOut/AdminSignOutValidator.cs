@@ -1,5 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
-using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Errors.Facade;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
@@ -16,10 +16,10 @@ public class AdminSignOutValidator : AbstractValidator<AdminSignOutCommand>
     /// Initializes a new instance of <see cref="AdminSignOutValidator" /> with validation rules.
     /// </summary>
     /// <param name="i18n">
-    /// Validation error messages for rule configuration.
+    /// Identity module i18n facade for rule configuration.
     /// </param>
-    public AdminSignOutValidator(ValidationErrorMessage i18n)
+    public AdminSignOutValidator(IdentityI18n i18n)
     {
-        RuleFor(x => x.RefreshToken).ValidRefreshToken(i18n);
+        RuleFor(x => x.RefreshToken).ValidRefreshToken(i18n.User.Validation);
     }
 }

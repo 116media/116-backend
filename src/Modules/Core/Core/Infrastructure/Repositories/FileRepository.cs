@@ -1,4 +1,4 @@
-using _116.Core.Application.Shared.Errors;
+using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Core.Application.Shared.Specifications;
@@ -12,7 +12,7 @@ namespace _116.Core.Infrastructure.Repositories;
 /// <summary>
 /// Implementation of <see cref="IFileRepository"/> using Entity Framework Core.
 /// </summary>
-public class FileRepository(CoreDbContext context, IFileService fileService, CoreErrors errors) : IFileRepository
+public class FileRepository(CoreDbContext context, IFileService fileService, CoreI18n i18n) : IFileRepository
 {
     /// <inheritdoc />
     public async Task<FileEntity?> GetByIdAsync(Guid fileId, CancellationToken cancellationToken = default)
@@ -78,7 +78,7 @@ public class FileRepository(CoreDbContext context, IFileService fileService, Cor
             mimeType: mimeType,
             storageUrl: uploadResult.SecureUrl,
             sizeInBytes: uploadResult.Bytes,
-            errors: errors
+            i18n: i18n
         );
 
         // Persist to the Database
@@ -106,7 +106,7 @@ public class FileRepository(CoreDbContext context, IFileService fileService, Cor
             mimeType: downloadResult.MimeType,
             storageUrl: downloadResult.StorageUrl,
             sizeInBytes: downloadResult.SizeInBytes,
-            errors: errors
+            i18n: i18n
         );
 
         // Persist to Database
@@ -240,7 +240,7 @@ public class FileRepository(CoreDbContext context, IFileService fileService, Cor
             mimeType: mimeType,
             storageUrl: uploadResult.SecureUrl,
             sizeInBytes: uploadResult.Bytes,
-            errors: errors
+            i18n: i18n
         );
 
         await AddAsync(fileEntity, cancellationToken);

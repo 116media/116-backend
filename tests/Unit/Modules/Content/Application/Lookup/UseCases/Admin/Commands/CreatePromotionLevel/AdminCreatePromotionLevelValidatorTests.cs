@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotionLevel;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Comm
 /// </summary>
 public class AdminCreatePromotionLevelValidatorTests
 {
-    private readonly PromotionLevelErrorMessage _i18n = LocalizerFactory.CreateMessage<PromotionLevelErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminCreatePromotionLevelValidator _validator;
 
     /// <summary>
@@ -87,7 +89,7 @@ public class AdminCreatePromotionLevelValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePromotionLevelCommand.Name)
-                && e.ErrorMessage == _i18n.NameRequired()
+                && e.ErrorMessage == _i18n.PromotionLevel.Msg.NameRequired()
             );
     }
 
@@ -111,7 +113,8 @@ public class AdminCreatePromotionLevelValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePromotionLevelCommand.Name)
-                && e.ErrorMessage == _i18n.NameTooLong(TestConstants.Content.PromotionLevel.NameMaxLength)
+                && e.ErrorMessage
+                    == _i18n.PromotionLevel.Msg.NameTooLong(TestConstants.Content.PromotionLevel.NameMaxLength)
             );
     }
 
@@ -139,7 +142,7 @@ public class AdminCreatePromotionLevelValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePromotionLevelCommand.DurationDays)
-                && e.ErrorMessage == _i18n.DurationMustBePositive()
+                && e.ErrorMessage == _i18n.PromotionLevel.Msg.DurationMustBePositive()
             );
     }
 
@@ -163,7 +166,7 @@ public class AdminCreatePromotionLevelValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePromotionLevelCommand.DurationDays)
-                && e.ErrorMessage == _i18n.DurationMustBePositive()
+                && e.ErrorMessage == _i18n.PromotionLevel.Msg.DurationMustBePositive()
             );
     }
 
@@ -191,7 +194,7 @@ public class AdminCreatePromotionLevelValidatorTests
             .Errors.Should()
             .ContainSingle(e =>
                 e.PropertyName == nameof(AdminCreatePromotionLevelCommand.PriceUsd)
-                && e.ErrorMessage == _i18n.PriceMustBeNonNegative()
+                && e.ErrorMessage == _i18n.PromotionLevel.Msg.PriceMustBeNonNegative()
             );
     }
 
@@ -222,7 +225,7 @@ public class AdminCreatePromotionLevelValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminCreatePromotionLevelCommand.SpotPriority)
-                && e.ErrorMessage == _i18n.InvalidSpotPriority()
+                && e.ErrorMessage == _i18n.PromotionLevel.Msg.InvalidSpotPriority()
             );
     }
 
@@ -259,8 +262,9 @@ public class AdminCreatePromotionLevelValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<PromotionLevelErrorMessage>(culture);
-        var validator = new AdminCreatePromotionLevelValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminCreatePromotionLevelValidator(_i18n);
         var command = new AdminCreatePromotionLevelCommand(
             Name: "",
             DurationDays: TestConstants.Content.PromotionLevel.ValidDurationDays,
@@ -276,7 +280,8 @@ public class AdminCreatePromotionLevelValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminCreatePromotionLevelCommand.Name) && e.ErrorMessage == i18n.NameRequired()
+                e.PropertyName == nameof(AdminCreatePromotionLevelCommand.Name)
+                && e.ErrorMessage == _i18n.PromotionLevel.Msg.NameRequired()
             );
     }
 

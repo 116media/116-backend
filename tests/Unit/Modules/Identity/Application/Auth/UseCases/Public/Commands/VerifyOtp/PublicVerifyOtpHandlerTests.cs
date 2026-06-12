@@ -36,7 +36,7 @@ public class PublicVerifyOtpHandlerTests
             _authRepositoryMock.Object,
             _otpRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateUserErrors()
+            TestErrorsFactory.CreateIdentityI18n()
         );
     }
 

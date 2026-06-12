@@ -34,7 +34,7 @@ public class AdminVerifyPaymentHandlerTests
             _orderRepositoryMock.Object,
             _orderPaymentFactoryMock.Object,
             _verifyPaymentFactoryMock.Object,
-            TestErrorsFactory.CreateContentOrderErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

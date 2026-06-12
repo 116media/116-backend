@@ -1,4 +1,4 @@
-using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
@@ -14,12 +14,12 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdatePermissi
 /// <param name="permissionRepository">Repository for permission data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="userErrors">User domain error factory for generating domain exceptions.</param>
+/// <param name="i18n">Single i18n entry point for the Identity module.</param>
 public class AdminUpdatePermissionHandler(
     IPermissionRepository permissionRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper,
-    UserErrors userErrors
+    IdentityI18n i18n
 ) : ICommandHandler<AdminUpdatePermissionCommand, AdminUpdatePermissionResult>
 {
     /// <summary>
@@ -71,7 +71,7 @@ public class AdminUpdatePermissionHandler(
                 resource: newResource,
                 action: newAction,
                 description: newDescription,
-                errors: userErrors
+                errors: i18n.User
             );
             await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
         }
@@ -90,7 +90,7 @@ public class AdminUpdatePermissionHandler(
             )
         )
         {
-            throw userErrors.PermissionAlreadyExists(resource: resource, action: action);
+            throw i18n.User.PermissionAlreadyExists(resource: resource, action: action);
         }
     }
 }

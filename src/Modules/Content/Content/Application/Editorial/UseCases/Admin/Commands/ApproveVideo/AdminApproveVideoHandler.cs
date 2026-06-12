@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -12,12 +12,9 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveVide
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="videoErrors">Video domain error factory.</param>
-public class AdminApproveVideoHandler(
-    IVideoRepository videoRepository,
-    IContentUnitOfWork unitOfWork,
-    VideoErrors videoErrors
-) : ICommandHandler<AdminApproveVideoCommand, AdminApproveVideoResult>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
+public class AdminApproveVideoHandler(IVideoRepository videoRepository, IContentUnitOfWork unitOfWork, ContentI18n i18n)
+    : ICommandHandler<AdminApproveVideoCommand, AdminApproveVideoResult>
 {
     /// <inheritdoc />
     public async Task<AdminApproveVideoResult> Handle(
@@ -31,12 +28,12 @@ public class AdminApproveVideoHandler(
 
         if (video.Status == EnumContentStatus.Approved)
         {
-            throw videoErrors.AlreadyApproved();
+            throw i18n.Video.AlreadyApproved();
         }
 
         if (video.Status != EnumContentStatus.PendingReview)
         {
-            throw videoErrors.InvalidStatusTransition(
+            throw i18n.Video.InvalidStatusTransition(
                 from: video.Status.ToString(),
                 to: nameof(EnumContentStatus.Approved)
             );

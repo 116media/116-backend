@@ -1,4 +1,4 @@
-using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -13,10 +13,10 @@ public class AdminSoftDeleteRoleValidator : AbstractValidator<AdminSoftDeleteRol
     /// Configure validation rules for role soft deletion.
     /// </summary>
     /// <param name="i18n">
-    /// Validation error messages for rule configuration.
+    /// Identity module i18n facade for rule configuration.
     /// </param>
-    public AdminSoftDeleteRoleValidator(ValidationErrorMessage i18n)
+    public AdminSoftDeleteRoleValidator(IdentityI18n i18n)
     {
-        RuleFor(x => x.RoleId).IsValidGuid(i18n.Localizer, "RoleIdRequired", "RoleIdInvalid");
+        RuleFor(x => x.RoleId).IsValidGuid(i18n.User.Validation.Localizer, "RoleIdRequired", "RoleIdInvalid");
     }
 }

@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadShortVideoThumbnail;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -14,7 +16,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUploadShortVideoThumbnailValidatorTests
 {
-    private readonly ShortVideoErrorMessage _i18n = LocalizerFactory.CreateMessage<ShortVideoErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private readonly AdminUploadShortVideoThumbnailValidator _validator;
 
@@ -65,7 +67,7 @@ public class AdminUploadShortVideoThumbnailValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUploadShortVideoThumbnailCommand.ShortVideoId)
-                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.ShortVideo.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -86,7 +88,7 @@ public class AdminUploadShortVideoThumbnailValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUploadShortVideoThumbnailCommand.ShortVideoId)
-                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.ShortVideo.Msg.Localizer["IdInvalid"].Value
             );
     }
 
@@ -100,8 +102,9 @@ public class AdminUploadShortVideoThumbnailValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ShortVideoErrorMessage>(culture);
-        var validator = new AdminUploadShortVideoThumbnailValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminUploadShortVideoThumbnailValidator(_i18n);
         var fileMock = new Mock<IFormFile>();
         fileMock.Setup(f => f.Length).Returns(1);
         var command = new AdminUploadShortVideoThumbnailCommand(ShortVideoId: string.Empty, File: fileMock.Object);
@@ -115,7 +118,7 @@ public class AdminUploadShortVideoThumbnailValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUploadShortVideoThumbnailCommand.ShortVideoId)
-                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.ShortVideo.Msg.Localizer["IdRequired"].Value
             );
     }
 

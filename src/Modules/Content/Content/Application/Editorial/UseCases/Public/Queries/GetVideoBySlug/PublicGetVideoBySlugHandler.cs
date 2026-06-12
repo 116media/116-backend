@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -13,8 +13,8 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoByS
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="videoErrors">Video domain error factory.</param>
-public class PublicGetVideoBySlugHandler(IVideoRepository videoRepository, IMapper mapper, VideoErrors videoErrors)
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
+public class PublicGetVideoBySlugHandler(IVideoRepository videoRepository, IMapper mapper, ContentI18n i18n)
     : IQueryHandler<PublicGetVideoBySlugQuery, PublicGetVideoBySlugResult>
 {
     /// <inheritdoc />
@@ -30,7 +30,7 @@ public class PublicGetVideoBySlugHandler(IVideoRepository videoRepository, IMapp
 
         if (video is null || video.Status != EnumContentStatus.Published)
         {
-            throw videoErrors.NotFound(Guid.Empty);
+            throw i18n.Video.NotFound(Guid.Empty);
         }
 
         var dto = video.ToVideoDetailDto(mapper);

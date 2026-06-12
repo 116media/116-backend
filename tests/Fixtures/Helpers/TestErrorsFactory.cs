@@ -1,7 +1,10 @@
 using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Core.Application.Shared.Errors;
+using _116.Core.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
 using CoreConflictMsg = _116.Core.Application.Shared.Errors.Messages.ConflictErrorMessage;
 using CoreInternalServerMsg = _116.Core.Application.Shared.Errors.Messages.InternalServerErrorMessage;
@@ -37,18 +40,6 @@ public static class TestErrorsFactory
     public static SessionErrors CreateSessionErrors()
     {
         return new SessionErrors(LocalizerFactory.CreateMessage<AuthenticationErrorMessage>());
-    }
-
-    /// <summary>
-    /// Creates a real <see cref="CoreErrors"/> instance for use in Core entity builders.
-    /// </summary>
-    public static CoreErrors CreateCoreErrors()
-    {
-        return new CoreErrors(
-            LocalizerFactory.CreateMessage<CoreConflictMsg>(),
-            LocalizerFactory.CreateMessage<CoreValidationMsg>(),
-            LocalizerFactory.CreateMessage<CoreInternalServerMsg>()
-        );
     }
 
     /// <summary>
@@ -169,5 +160,57 @@ public static class TestErrorsFactory
     public static PlaylistErrors CreatePlaylistErrors()
     {
         return new PlaylistErrors(LocalizerFactory.CreateMessage<PlaylistErrorMessage>());
+    }
+
+    /// <summary>
+    /// Creates a real <see cref="FileErrors"/> instance for use in Core file entity builders.
+    /// </summary>
+    public static FileErrors CreateFileErrors()
+    {
+        return new FileErrors(
+            LocalizerFactory.CreateMessage<CoreConflictMsg>(),
+            LocalizerFactory.CreateMessage<CoreValidationMsg>(),
+            LocalizerFactory.CreateMessage<CoreInternalServerMsg>()
+        );
+    }
+
+    /// <summary>
+    /// Creates a real <see cref="ContentI18n"/> instance for use in Content handler tests.
+    /// </summary>
+    public static ContentI18n CreateContentI18n()
+    {
+        return new ContentI18n(
+            CreateArticleErrors(),
+            CreateVideoErrors(),
+            CreateShortVideoErrors(),
+            CreateLyricsErrors(),
+            CreateCategoryErrors(),
+            CreateTagErrors(),
+            CreateContentTypeErrors(),
+            CreatePricingTierErrors(),
+            CreatePackageErrors(),
+            CreateCustomerErrors(),
+            CreateContentOrderErrors(),
+            CreatePlaylistErrors(),
+            CreateArticleInteractionErrors(),
+            CreateShortVideoInteractionErrors(),
+            CreatePromotionLevelErrors()
+        );
+    }
+
+    /// <summary>
+    /// Creates a real <see cref="IdentityI18n"/> instance for use in Identity handler tests.
+    /// </summary>
+    public static IdentityI18n CreateIdentityI18n()
+    {
+        return new IdentityI18n(CreateUserErrors(), CreateSessionErrors());
+    }
+
+    /// <summary>
+    /// Creates a real <see cref="CoreI18n"/> instance for use in Core handler tests.
+    /// </summary>
+    public static CoreI18n CreateCoreI18n()
+    {
+        return new CoreI18n(CreateFileErrors());
     }
 }

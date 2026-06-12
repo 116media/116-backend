@@ -1,4 +1,5 @@
 using _116.Core.Application.Shared.Errors;
+using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Domain.Entities;
 using _116.Core.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Core;
@@ -14,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Core.Infrastructure.Persistence;
 /// </summary>
 public class CoreUnitOfWorkTests : IDisposable
 {
-    private readonly CoreErrors _coreErrors = TestErrorsFactory.CreateCoreErrors();
+    private readonly CoreI18n _coreErrors = TestErrorsFactory.CreateCoreI18n();
     private readonly CoreDbContext _context;
     private readonly CoreUnitOfWork _unitOfWork;
 

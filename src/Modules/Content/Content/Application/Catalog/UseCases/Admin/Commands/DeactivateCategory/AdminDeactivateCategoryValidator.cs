@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -12,9 +12,9 @@ public class AdminDeactivateCategoryValidator : AbstractValidator<AdminDeactivat
     /// <summary>
     /// Initializes a new instance of <see cref="AdminDeactivateCategoryValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="i18n">Category validation error messages.</param>
-    public AdminDeactivateCategoryValidator(CategoryErrorMessage i18n)
+    /// <param name="i18n">Content module i18n facade.</param>
+    public AdminDeactivateCategoryValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.Id).IsValidGuid(i18n.Localizer);
+        RuleFor(x => x.Id).IsValidGuid(i18n.Category.Msg.Localizer);
     }
 }

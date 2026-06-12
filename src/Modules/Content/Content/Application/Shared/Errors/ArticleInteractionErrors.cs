@@ -10,6 +10,11 @@ namespace _116.Content.Application.Shared.Errors;
 public class ArticleInteractionErrors(ArticleInteractionErrorMessage i18n)
 {
     /// <summary>
+    /// Exposes the localized message provider for use in validator extensions.
+    /// </summary>
+    public ArticleInteractionErrorMessage Msg => i18n;
+
+    /// <summary>
     /// Throws when a user attempts to like an article they have already liked.
     /// </summary>
     public ConflictException AlreadyLiked()

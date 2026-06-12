@@ -32,7 +32,7 @@ public class AdminCreateContentTypeHandlerTests : BaseContentHandlerTest
             _lookupRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
-            TestErrorsFactory.CreateContentTypeErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

@@ -31,7 +31,7 @@ public class PublicDeleteArticleCommentHandlerTests
         _handler = new PublicDeleteArticleCommentHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateArticleInteractionErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

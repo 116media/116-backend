@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -15,15 +15,13 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPr
 /// <param name="lookupRepository">Repository for verifying pricing tier existence and active status.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="pricingTierErrors">Pricing tier domain error factory.</param>
-/// <param name="categoryErrors">Category domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminAddCategoryPricingHandler(
     ICategoryRepository categoryRepository,
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
-    PricingTierErrors pricingTierErrors,
-    CategoryErrors categoryErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminAddCategoryPricingCommand, AdminAddCategoryPricingResult>
 {
     /// <inheritdoc />
@@ -43,7 +41,7 @@ public class AdminAddCategoryPricingHandler(
 
         if (!pricingTier.IsActive)
         {
-            throw pricingTierErrors.IsInactive();
+            throw i18n.PricingTier.IsInactive();
         }
 
         CategoryPricingEntity? existing = await categoryRepository.GetPricingAsync(
@@ -54,7 +52,7 @@ public class AdminAddCategoryPricingHandler(
 
         if (existing is not null)
         {
-            throw categoryErrors.PricingAlreadyExists();
+            throw i18n.Category.PricingAlreadyExists();
         }
 
         var pricing = CategoryPricingEntity.Create(
@@ -62,7 +60,7 @@ public class AdminAddCategoryPricingHandler(
             categoryId: categoryId,
             pricingTierId: command.PricingTierId,
             priceUsd: command.PriceUsd,
-            errors: categoryErrors
+            errors: i18n.Category
         );
 
         await categoryRepository.AddPricingAsync(pricing: pricing, cancellationToken: cancellationToken);

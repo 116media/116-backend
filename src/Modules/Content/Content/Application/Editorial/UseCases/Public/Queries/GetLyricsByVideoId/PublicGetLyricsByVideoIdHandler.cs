@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -13,12 +13,9 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBy
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="lyricsErrors">Lyrics domain error factory.</param>
-public class PublicGetLyricsByVideoIdHandler(
-    ILyricsRepository lyricsRepository,
-    IMapper mapper,
-    LyricsErrors lyricsErrors
-) : IQueryHandler<PublicGetLyricsByVideoIdQuery, PublicGetLyricsByVideoIdResult>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
+public class PublicGetLyricsByVideoIdHandler(ILyricsRepository lyricsRepository, IMapper mapper, ContentI18n i18n)
+    : IQueryHandler<PublicGetLyricsByVideoIdQuery, PublicGetLyricsByVideoIdResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetLyricsByVideoIdResult> Handle(
@@ -39,6 +36,6 @@ public class PublicGetLyricsByVideoIdHandler(
             return new PublicGetLyricsByVideoIdResult(Lyrics: dto);
         }
 
-        throw lyricsErrors.NotFound(id: videoId);
+        throw i18n.Lyrics.NotFound(id: videoId);
     }
 }

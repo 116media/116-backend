@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -10,13 +10,12 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.RemoveCategor
 public class AdminRemoveCategoryPricingValidator : AbstractValidator<AdminRemoveCategoryPricingCommand>
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="AdminRemoveCategoryPricingValidator" /> with the specified error message providers.
+    /// Initializes a new instance of <see cref="AdminRemoveCategoryPricingValidator" /> with the specified error message provider.
     /// </summary>
-    /// <param name="categoryMsg">Category validation error messages.</param>
-    /// <param name="pricingTierMsg">Pricing tier validation error messages.</param>
-    public AdminRemoveCategoryPricingValidator(CategoryErrorMessage categoryMsg, PricingTierErrorMessage pricingTierMsg)
+    /// <param name="i18n">Content module i18n facade.</param>
+    public AdminRemoveCategoryPricingValidator(ContentI18n i18n)
     {
-        RuleFor(x => x.CategoryId).IsValidGuid(categoryMsg.Localizer);
-        RuleFor(x => x.PricingTierId).IsValidGuid(pricingTierMsg.Localizer);
+        RuleFor(x => x.CategoryId).IsValidGuid(i18n.Category.Msg.Localizer);
+        RuleFor(x => x.PricingTierId).IsValidGuid(i18n.PricingTier.Msg.Localizer);
     }
 }

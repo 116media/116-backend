@@ -1,5 +1,5 @@
 using _116.Content.Application.Commerce.Factories;
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -13,12 +13,12 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.RejectPaymen
 /// <param name="orderPaymentFactory">Shared factory for fetching and validating payment records.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="contentOrderErrors">Content order domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminRejectPaymentHandler(
     IOrderPaymentFactory orderPaymentFactory,
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
-    ContentOrderErrors contentOrderErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminRejectPaymentCommand, AdminRejectPaymentResult>
 {
     /// <inheritdoc />
@@ -34,7 +34,7 @@ public class AdminRejectPaymentHandler(
             ct: cancellationToken
         );
 
-        payment.Reject(notes: command.Notes, errors: contentOrderErrors);
+        payment.Reject(notes: command.Notes, errors: i18n.ContentOrder);
 
         await contentOrderRepository.UpdatePaymentAsync(payment: payment, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

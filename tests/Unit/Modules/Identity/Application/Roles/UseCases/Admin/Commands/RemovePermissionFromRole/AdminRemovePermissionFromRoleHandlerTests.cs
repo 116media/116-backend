@@ -1,5 +1,6 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.RemovePermissionFromRole;
 using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
@@ -24,7 +25,7 @@ public class AdminRemovePermissionFromRoleHandlerTests : BaseHandlerTest
     private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IRolePermissionRepository> _rolePermissionRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly UserErrors _userErrors;
+    private readonly IdentityI18n _userErrors;
     private readonly AdminRemovePermissionFromRoleHandler _handler;
 
     public AdminRemovePermissionFromRoleHandlerTests()
@@ -32,7 +33,7 @@ public class AdminRemovePermissionFromRoleHandlerTests : BaseHandlerTest
         _roleRepositoryMock = MockRoleRepository.Create();
         _rolePermissionRepositoryMock = MockRolePermissionRepository.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
-        _userErrors = TestErrorsFactory.CreateUserErrors();
+        _userErrors = TestErrorsFactory.CreateIdentityI18n();
 
         _handler = new AdminRemovePermissionFromRoleHandler(
             _roleRepositoryMock.Object,

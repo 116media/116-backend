@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Helpers;
@@ -13,8 +15,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminAddOrderItemValidatorTests
 {
-    private readonly ContentOrderErrorMessage _orderI18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>();
-    private readonly CategoryErrorMessage _categoryI18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminAddOrderItemValidator _validator;
 
     /// <summary>
@@ -22,7 +23,7 @@ public class AdminAddOrderItemValidatorTests
     /// </summary>
     public AdminAddOrderItemValidatorTests()
     {
-        _validator = new AdminAddOrderItemValidator(_orderI18n, _categoryI18n);
+        _validator = new AdminAddOrderItemValidator(_i18n);
     }
 
     #region Valid Command Tests
@@ -74,7 +75,7 @@ public class AdminAddOrderItemValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddOrderItemCommand.OrderId)
-                && e.ErrorMessage == _orderI18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.ContentOrder.Msg.Localizer["IdInvalid"].Value
             );
     }
 
@@ -104,7 +105,7 @@ public class AdminAddOrderItemValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddOrderItemCommand.CategoryId)
-                && e.ErrorMessage == _categoryI18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.Category.Msg.Localizer["IdInvalid"].Value
             );
     }
 
@@ -134,7 +135,7 @@ public class AdminAddOrderItemValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddOrderItemCommand.ContentKind)
-                && e.ErrorMessage == _orderI18n.InvalidOrderItemContentKind()
+                && e.ErrorMessage == _i18n.ContentOrder.Msg.InvalidOrderItemContentKind()
             );
     }
 
@@ -148,9 +149,9 @@ public class AdminAddOrderItemValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var orderI18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>(culture);
-        var categoryI18n = LocalizerFactory.CreateMessage<CategoryErrorMessage>(culture);
-        var validator = new AdminAddOrderItemValidator(orderI18n, categoryI18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminAddOrderItemValidator(_i18n);
         var command = new AdminAddOrderItemCommand(
             OrderId: "not-a-guid",
             ContentKind: EnumCoreContentType.Article,
@@ -169,7 +170,7 @@ public class AdminAddOrderItemValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAddOrderItemCommand.OrderId)
-                && e.ErrorMessage == orderI18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.ContentOrder.Msg.Localizer["IdInvalid"].Value
             );
     }
 

@@ -30,7 +30,7 @@ public class AdminCreatePricingTierHandlerTests : BaseContentHandlerTest
             _lookupRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
-            TestErrorsFactory.CreatePricingTierErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

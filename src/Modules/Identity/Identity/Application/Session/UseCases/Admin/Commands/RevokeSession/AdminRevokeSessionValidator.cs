@@ -1,4 +1,4 @@
-using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Shared.Application.Extensions;
 using FluentValidation;
 
@@ -13,10 +13,10 @@ public class AdminRevokeSessionValidator : AbstractValidator<AdminRevokeSessionC
     /// Configure validation rules for revoke session requests.
     /// </summary>
     /// <param name="i18n">
-    /// Validation error messages for rule configuration.
+    /// Identity module i18n facade for rule configuration.
     /// </param>
-    public AdminRevokeSessionValidator(ValidationErrorMessage i18n)
+    public AdminRevokeSessionValidator(IdentityI18n i18n)
     {
-        RuleFor(x => x.SessionId).IsValidGuid(i18n.Localizer, "SessionIdRequired", "SessionIdInvalid");
+        RuleFor(x => x.SessionId).IsValidGuid(i18n.User.Validation.Localizer, "SessionIdRequired", "SessionIdInvalid");
     }
 }

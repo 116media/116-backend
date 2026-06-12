@@ -24,6 +24,9 @@
   <data name="PasswordRequired" xml:space="preserve">
     <value>Le mot de passe est obligatoire.</value>
   </data>
+  <data name="NewPasswordFieldName" xml:space="preserve">
+    <value>Nouveau mot de passe</value>
+  </data>
   <data name="PasswordTooShort" xml:space="preserve">
     <value>{0} doit comporter au moins {1} caractères.</value>
   </data>

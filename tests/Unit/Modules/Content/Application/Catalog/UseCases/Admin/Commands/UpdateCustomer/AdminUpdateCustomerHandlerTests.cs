@@ -31,7 +31,7 @@ public class AdminUpdateCustomerHandlerTests : BaseContentHandlerTest
             _customerRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
-            TestErrorsFactory.CreateCustomerErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

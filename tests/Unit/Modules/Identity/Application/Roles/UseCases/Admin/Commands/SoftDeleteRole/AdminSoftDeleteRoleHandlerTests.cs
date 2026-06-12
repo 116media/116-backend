@@ -1,5 +1,6 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeleteRole;
 using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
@@ -23,14 +24,14 @@ public class AdminSoftDeleteRoleHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
-    private readonly UserErrors _userErrors;
+    private readonly IdentityI18n _userErrors;
     private readonly AdminSoftDeleteRoleHandler _handler;
 
     public AdminSoftDeleteRoleHandlerTests()
     {
         _roleRepositoryMock = MockRoleRepository.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
-        _userErrors = TestErrorsFactory.CreateUserErrors();
+        _userErrors = TestErrorsFactory.CreateIdentityI18n();
 
         _handler = new AdminSoftDeleteRoleHandler(
             _roleRepositoryMock.Object,

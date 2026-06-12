@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateShortVideo;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateShortVideoValidatorTests
 {
-    private readonly ShortVideoErrorMessage _i18n = LocalizerFactory.CreateMessage<ShortVideoErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private readonly AdminUpdateShortVideoValidator _validator;
 
@@ -108,7 +110,8 @@ public class AdminUpdateShortVideoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateShortVideoCommand.Title) && e.ErrorMessage == _i18n.TitleRequired()
+                e.PropertyName == nameof(AdminUpdateShortVideoCommand.Title)
+                && e.ErrorMessage == _i18n.ShortVideo.Msg.TitleRequired()
             );
     }
 
@@ -132,7 +135,8 @@ public class AdminUpdateShortVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateShortVideoCommand.Title)
-                && e.ErrorMessage == _i18n.TitleTooLong(TestConstants.Content.Editorial.ShortVideo.TitleMaxLength)
+                && e.ErrorMessage
+                    == _i18n.ShortVideo.Msg.TitleTooLong(TestConstants.Content.Editorial.ShortVideo.TitleMaxLength)
             );
     }
 
@@ -146,8 +150,9 @@ public class AdminUpdateShortVideoValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ShortVideoErrorMessage>(culture);
-        var validator = new AdminUpdateShortVideoValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminUpdateShortVideoValidator(_i18n);
         var command = new AdminUpdateShortVideoCommand(
             Id: Guid.NewGuid().ToString(),
             Title: string.Empty,
@@ -163,7 +168,8 @@ public class AdminUpdateShortVideoValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUpdateShortVideoCommand.Title) && e.ErrorMessage == i18n.TitleRequired()
+                e.PropertyName == nameof(AdminUpdateShortVideoCommand.Title)
+                && e.ErrorMessage == _i18n.ShortVideo.Msg.TitleRequired()
             );
     }
 

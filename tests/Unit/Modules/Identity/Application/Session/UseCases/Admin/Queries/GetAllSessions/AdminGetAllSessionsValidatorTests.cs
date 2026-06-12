@@ -1,4 +1,5 @@
 using _116.Identity.Application.Session.UseCases.Admin.Queries.GetAllSessions;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Helpers;
@@ -13,7 +14,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Session.UseCases.Admin.Qu
 /// </summary>
 public class AdminGetAllSessionsValidatorTests
 {
-    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly IdentityI18n _i18n = TestErrorsFactory.CreateIdentityI18n();
     private readonly AdminGetAllSessionsValidator _validator;
 
     /// <summary>
@@ -78,7 +79,9 @@ public class AdminGetAllSessionsValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.UserId).WithErrorMessage(_i18n.Localizer["UserIdInvalid"].Value);
+        result
+            .ShouldHaveValidationErrorFor(x => x.UserId)
+            .WithErrorMessage(_i18n.User.Validation.Localizer["UserIdInvalid"].Value);
     }
 
     [Fact]

@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 using _116.Content.Application.Editorial.Services;
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -31,7 +31,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutu
 /// <param name="mapper">
 /// Mapster mapper for entity-to-DTO transformations.
 /// </param>
-/// <param name="videoErrors">
+/// <param name="i18n">
 /// Video domain error factory.
 /// </param>
 public class AdminAttachYoutubeVideoUrlHandler(
@@ -40,7 +40,7 @@ public class AdminAttachYoutubeVideoUrlHandler(
     ICloudinaryService cloudinaryService,
     IYoutubeThumbnailService youtubeThumbnailService,
     IMapper mapper,
-    VideoErrors videoErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminAttachYoutubeVideoUrlCommand, AdminAttachYoutubeVideoUrlResult>
 {
     private static readonly Regex YoutubeIdRegex = new(
@@ -64,7 +64,7 @@ public class AdminAttachYoutubeVideoUrlHandler(
         string? oldThumbnailStorageKey = video.ThumbnailStorageKey;
         string extractedId = ExtractVideoId(command.YoutubeVideoUrl);
 
-        video.AttachYoutubeVideoUrl(youtubeVideoUrl: command.YoutubeVideoUrl, errors: videoErrors);
+        video.AttachYoutubeVideoUrl(youtubeVideoUrl: command.YoutubeVideoUrl, errors: i18n.Video);
 
         IFormFile thumbnail = await youtubeThumbnailService.DownloadThumbnailAsync(
             youtubeVideoId: extractedId,

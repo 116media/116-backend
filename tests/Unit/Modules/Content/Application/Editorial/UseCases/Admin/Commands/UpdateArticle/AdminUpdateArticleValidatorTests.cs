@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticle;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,15 +15,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateArticleValidatorTests
 {
-    private readonly ArticleErrorMessage _articleI18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
-    private readonly ContentOrderErrorMessage _orderI18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>();
-    private readonly CustomerErrorMessage _customerI18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private readonly AdminUpdateArticleValidator _validator;
 
     public AdminUpdateArticleValidatorTests()
     {
-        _validator = new AdminUpdateArticleValidator(_articleI18n, _orderI18n, _customerI18n);
+        _validator = new AdminUpdateArticleValidator(_i18n);
     }
 
     private static AdminUpdateArticleCommand ValidCommand() =>
@@ -78,7 +78,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.Id)
-                && e.ErrorMessage == _articleI18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -100,7 +100,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.Id)
-                && e.ErrorMessage == _articleI18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdInvalid"].Value
             );
     }
 
@@ -126,7 +126,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.CategoryId)
-                && e.ErrorMessage == _articleI18n.CategoryIdRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.CategoryIdRequired()
             );
     }
 
@@ -152,7 +152,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.Title)
-                && e.ErrorMessage == _articleI18n.TitleRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.TitleRequired()
             );
     }
 
@@ -174,7 +174,8 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.Title)
-                && e.ErrorMessage == _articleI18n.TitleTooLong(TestConstants.Content.Editorial.Article.TitleMaxLength)
+                && e.ErrorMessage
+                    == _i18n.Article.Msg.TitleTooLong(TestConstants.Content.Editorial.Article.TitleMaxLength)
             );
     }
 
@@ -200,7 +201,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.Slug)
-                && e.ErrorMessage == _articleI18n.SlugRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.SlugRequired()
             );
     }
 
@@ -222,7 +223,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.Slug)
-                && e.ErrorMessage == _articleI18n.SlugInvalidFormat()
+                && e.ErrorMessage == _i18n.Article.Msg.SlugInvalidFormat()
             );
     }
 
@@ -248,7 +249,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.Headline)
-                && e.ErrorMessage == _articleI18n.HeadlineRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.HeadlineRequired()
             );
     }
 
@@ -271,7 +272,7 @@ public class AdminUpdateArticleValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.Headline)
                 && e.ErrorMessage
-                    == _articleI18n.HeadlineTooShort(TestConstants.Content.Editorial.Article.HeadlineMinLength)
+                    == _i18n.Article.Msg.HeadlineTooShort(TestConstants.Content.Editorial.Article.HeadlineMinLength)
             );
     }
 
@@ -294,7 +295,7 @@ public class AdminUpdateArticleValidatorTests
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.Headline)
                 && e.ErrorMessage
-                    == _articleI18n.HeadlineTooLong(TestConstants.Content.Editorial.Article.HeadlineMaxLength)
+                    == _i18n.Article.Msg.HeadlineTooLong(TestConstants.Content.Editorial.Article.HeadlineMaxLength)
             );
     }
 
@@ -320,7 +321,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.Body)
-                && e.ErrorMessage == _articleI18n.BodyRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.BodyRequired()
             );
     }
 
@@ -347,7 +348,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.OrderItemId)
-                && e.ErrorMessage == _orderI18n.OrderItemIdRequired()
+                && e.ErrorMessage == _i18n.ContentOrder.Msg.OrderItemIdRequired()
             );
     }
 
@@ -370,7 +371,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.CustomerId)
-                && e.ErrorMessage == _customerI18n.CustomerIdRequired()
+                && e.ErrorMessage == _i18n.Customer.Msg.CustomerIdRequired()
             );
     }
 
@@ -396,7 +397,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.MetaTitle)
-                && e.ErrorMessage == _articleI18n.MetaTitleTooShort(10)
+                && e.ErrorMessage == _i18n.Article.Msg.MetaTitleTooShort(10)
             );
     }
 
@@ -418,7 +419,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.MetaTitle)
-                && e.ErrorMessage == _articleI18n.MetaTitleTooLong(70)
+                && e.ErrorMessage == _i18n.Article.Msg.MetaTitleTooLong(70)
             );
     }
 
@@ -460,7 +461,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.MetaDescription)
-                && e.ErrorMessage == _articleI18n.MetaDescriptionTooShort(50)
+                && e.ErrorMessage == _i18n.Article.Msg.MetaDescriptionTooShort(50)
             );
     }
 
@@ -482,7 +483,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.MetaDescription)
-                && e.ErrorMessage == _articleI18n.MetaDescriptionTooLong(160)
+                && e.ErrorMessage == _i18n.Article.Msg.MetaDescriptionTooLong(160)
             );
     }
 
@@ -512,10 +513,9 @@ public class AdminUpdateArticleValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var articleI18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
-        var orderI18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>(culture);
-        var customerI18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>(culture);
-        var validator = new AdminUpdateArticleValidator(articleI18n, orderI18n, customerI18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminUpdateArticleValidator(_i18n);
         var command = ValidCommand() with { Title = string.Empty };
 
         // Act
@@ -527,7 +527,7 @@ public class AdminUpdateArticleValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateArticleCommand.Title)
-                && e.ErrorMessage == articleI18n.TitleRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.TitleRequired()
             );
     }
 

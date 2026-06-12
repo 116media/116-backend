@@ -1,6 +1,6 @@
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.DTOs;
-using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Errors.Facade;
 using FluentValidation;
 
 namespace _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
@@ -19,23 +19,31 @@ public class AdminExportSessionDataValidator : AbstractValidator<AdminExportSess
     /// Configure validation rules for the export query parameters.
     /// </summary>
     /// <param name="i18n">
-    /// Validation error messages for rule configuration.
+    /// Identity module i18n facade for rule configuration.
     /// </param>
-    public AdminExportSessionDataValidator(ValidationErrorMessage i18n)
+    public AdminExportSessionDataValidator(IdentityI18n i18n)
     {
-        When(x => !string.IsNullOrWhiteSpace(value: x.Format), () => RuleFor(x => x.Format).ValidExportFormat(i18n));
+        When(
+            x => !string.IsNullOrWhiteSpace(value: x.Format),
+            () => RuleFor(x => x.Format).ValidExportFormat(i18n.User.Validation)
+        );
 
         When(
             x => !string.IsNullOrWhiteSpace(value: x.Columns),
-            () => RuleFor(x => x.Columns).ValidExportColumns(ValidColumns, i18n)
+            () => RuleFor(x => x.Columns).ValidExportColumns(ValidColumns, i18n.User.Validation)
         );
 
-        When(x => !string.IsNullOrWhiteSpace(value: x.Status), () => RuleFor(x => x.Status).ValidExportStatus(i18n));
+        When(
+            x => !string.IsNullOrWhiteSpace(value: x.Status),
+            () => RuleFor(x => x.Status).ValidExportStatus(i18n.User.Validation)
+        );
 
         When(
             x => x.FromDate.HasValue && x.ToDate.HasValue,
             () =>
-                RuleFor(x => x.ToDate).GreaterThanOrEqualTo(x => x.FromDate).WithMessage(i18n.ExportDateRangeInvalid())
+                RuleFor(x => x.ToDate)
+                    .GreaterThanOrEqualTo(x => x.FromDate)
+                    .WithMessage(i18n.User.Validation.ExportDateRangeInvalid())
         );
     }
 }

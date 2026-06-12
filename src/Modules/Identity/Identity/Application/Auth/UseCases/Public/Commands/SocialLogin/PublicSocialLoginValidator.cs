@@ -1,5 +1,5 @@
 using _116.Identity.Application.Auth.Validators;
-using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Errors.Facade;
 using FluentValidation;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin;
@@ -20,13 +20,13 @@ public class PublicSocialLoginValidator : AbstractValidator<PublicSocialLoginCom
     /// Initializes a new instance of <see cref="PublicSocialLoginValidator" /> with validation rules.
     /// </summary>
     /// <param name="i18n">
-    /// Validation error messages for rule configuration.
+    /// Identity module i18n facade for rule configuration.
     /// </param>
-    public PublicSocialLoginValidator(ValidationErrorMessage i18n)
+    public PublicSocialLoginValidator(IdentityI18n i18n)
     {
-        RuleFor(x => x.Email).ValidEmail(i18n);
-        RuleFor(x => x.UserName).ValidUsername(i18n);
-        RuleFor(x => x.AvatarUrl).ValidAvatarUrl(i18n);
-        RuleFor(x => x.Provider).ValidAuthProvider(i18n);
+        RuleFor(x => x.Email).ValidEmail(i18n.User.Validation);
+        RuleFor(x => x.UserName).ValidUsername(i18n.User.Validation);
+        RuleFor(x => x.AvatarUrl).ValidAvatarUrl(i18n.User.Validation);
+        RuleFor(x => x.Provider).ValidAuthProvider(i18n.User.Validation);
     }
 }

@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCustomer;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Com
 /// </summary>
 public class AdminUpdateCustomerValidatorTests
 {
-    private readonly CustomerErrorMessage _i18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminUpdateCustomerValidator _validator;
 
     public AdminUpdateCustomerValidatorTests()
@@ -90,7 +92,7 @@ public class AdminUpdateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateCustomerCommand.Id)
-                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Customer.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -120,7 +122,7 @@ public class AdminUpdateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateCustomerCommand.FullName)
-                && e.ErrorMessage == _i18n.FullNameRequired()
+                && e.ErrorMessage == _i18n.Customer.Msg.FullNameRequired()
             );
     }
 
@@ -134,8 +136,9 @@ public class AdminUpdateCustomerValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<CustomerErrorMessage>(culture);
-        var validator = new AdminUpdateCustomerValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminUpdateCustomerValidator(_i18n);
         var command = new AdminUpdateCustomerCommand(
             Id: "",
             FullName: TestConstants.Content.Customer.ValidFullName,
@@ -154,7 +157,7 @@ public class AdminUpdateCustomerValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUpdateCustomerCommand.Id)
-                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Customer.Msg.Localizer["IdRequired"].Value
             );
     }
 

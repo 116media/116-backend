@@ -48,4 +48,19 @@
   <data name="FileUrlRequired" xml:space="preserve">
     <value>L'URL du fichier est obligatoire.</value>
   </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>Aucun fichier n'a été fourni pour le téléversement.</value>
+  </data>
+  <data name="FileTooLargeWithLimit" xml:space="preserve">
+    <value>La taille du fichier dépasse la taille maximale autorisée de {0} Mo.</value>
+  </data>
+  <data name="InvalidFileType" xml:space="preserve">
+    <value>Le type de fichier « {0} » n'est pas autorisé. Types autorisés : {1}.</value>
+  </data>
+  <data name="InvalidFileExtension" xml:space="preserve">
+    <value>L'extension de fichier « {0} » n'est pas autorisée. Extensions autorisées : {1}.</value>
+  </data>
+  <data name="FileUploadFailed" xml:space="preserve">
+    <value>Le téléversement du fichier a échoué : {0}.</value>
+  </data>
 </root>

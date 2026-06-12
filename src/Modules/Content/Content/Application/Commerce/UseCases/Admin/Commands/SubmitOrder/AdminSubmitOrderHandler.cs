@@ -1,5 +1,5 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder.Contracts;
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
@@ -11,11 +11,11 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="submitOrderFactory">Factory for the order submission flow.</param>
-/// <param name="contentOrderErrors">Content order domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminSubmitOrderHandler(
     IContentOrderRepository contentOrderRepository,
     ISubmitOrderFactory submitOrderFactory,
-    ContentOrderErrors contentOrderErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminSubmitOrderCommand, AdminSubmitOrderResult>
 {
     /// <inheritdoc />
@@ -37,6 +37,6 @@ public class AdminSubmitOrderHandler(
             return new AdminSubmitOrderResult(IsSuccess: true);
         }
 
-        throw contentOrderErrors.NotFound(id: orderId);
+        throw i18n.ContentOrder.NotFound(id: orderId);
     }
 }

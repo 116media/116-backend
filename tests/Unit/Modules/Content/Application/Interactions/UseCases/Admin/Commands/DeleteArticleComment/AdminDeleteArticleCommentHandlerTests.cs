@@ -31,7 +31,7 @@ public class AdminDeleteArticleCommentHandlerTests
         _handler = new AdminDeleteArticleCommentHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateArticleInteractionErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

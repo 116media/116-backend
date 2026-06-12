@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteVideo;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -12,14 +14,13 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminForceUnpromoteVideoValidatorTests
 {
-    private readonly ArticleErrorMessage _articleI18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
-    private readonly VideoErrorMessage _videoI18n = LocalizerFactory.CreateMessage<VideoErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private readonly AdminForceUnpromoteVideoValidator _validator;
 
     public AdminForceUnpromoteVideoValidatorTests()
     {
-        _validator = new AdminForceUnpromoteVideoValidator(_articleI18n, _videoI18n);
+        _validator = new AdminForceUnpromoteVideoValidator(_i18n);
     }
 
     #region Valid Command Tests
@@ -60,7 +61,7 @@ public class AdminForceUnpromoteVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminForceUnpromoteVideoCommand.Slug)
-                && e.ErrorMessage == _videoI18n.SlugRequired()
+                && e.ErrorMessage == _i18n.Video.Msg.SlugRequired()
             );
     }
 
@@ -83,7 +84,7 @@ public class AdminForceUnpromoteVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminForceUnpromoteVideoCommand.Reason)
-                && e.ErrorMessage == _articleI18n.RejectionReasonRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.RejectionReasonRequired()
             );
     }
 
@@ -102,7 +103,7 @@ public class AdminForceUnpromoteVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminForceUnpromoteVideoCommand.Reason)
-                && e.ErrorMessage == _articleI18n.RejectionReasonTooLong(500)
+                && e.ErrorMessage == _i18n.Article.Msg.RejectionReasonTooLong(500)
             );
     }
 
@@ -130,9 +131,11 @@ public class AdminForceUnpromoteVideoValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var articleI18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
-        var videoI18n = LocalizerFactory.CreateMessage<VideoErrorMessage>(culture);
-        var validator = new AdminForceUnpromoteVideoValidator(articleI18n, videoI18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+
+        var _i18n = TestErrorsFactory.CreateContentI18n();
+        var validator = new AdminForceUnpromoteVideoValidator(_i18n);
         var command = new AdminForceUnpromoteVideoCommand(Slug: "my-video-slug", Reason: string.Empty);
 
         // Act
@@ -144,7 +147,7 @@ public class AdminForceUnpromoteVideoValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminForceUnpromoteVideoCommand.Reason)
-                && e.ErrorMessage == articleI18n.RejectionReasonRequired()
+                && e.ErrorMessage == _i18n.Article.Msg.RejectionReasonRequired()
             );
     }
 

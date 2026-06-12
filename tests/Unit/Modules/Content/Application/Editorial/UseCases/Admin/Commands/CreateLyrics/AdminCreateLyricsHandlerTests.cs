@@ -42,7 +42,7 @@ public class AdminCreateLyricsHandlerTests : BaseContentHandlerTest
             userLookupMock.Object,
             fileRepositoryMock.Object,
             Mapper,
-            TestErrorsFactory.CreateLyricsErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

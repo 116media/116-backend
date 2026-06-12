@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArticleImage;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Helpers;
@@ -15,7 +17,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUploadArticleImageValidatorTests
 {
-    private readonly ArticleErrorMessage _i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
 
     private readonly AdminUploadArticleImageValidator _validator;
 
@@ -71,7 +73,7 @@ public class AdminUploadArticleImageValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUploadArticleImageCommand.ArticleId)
-                && e.ErrorMessage == _i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdRequired"].Value
             );
     }
 
@@ -96,7 +98,7 @@ public class AdminUploadArticleImageValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUploadArticleImageCommand.ArticleId)
-                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdInvalid"].Value
             );
     }
 
@@ -123,7 +125,8 @@ public class AdminUploadArticleImageValidatorTests
         result
             .Errors.Should()
             .Contain(e =>
-                e.PropertyName == nameof(AdminUploadArticleImageCommand.File) && e.ErrorMessage == _i18n.FileRequired()
+                e.PropertyName == nameof(AdminUploadArticleImageCommand.File)
+                && e.ErrorMessage == _i18n.Article.Msg.FileRequired()
             );
     }
 
@@ -137,8 +140,9 @@ public class AdminUploadArticleImageValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>(culture);
-        var validator = new AdminUploadArticleImageValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminUploadArticleImageValidator(_i18n);
         var command = new AdminUploadArticleImageCommand(
             ArticleId: string.Empty,
             File: null!,
@@ -154,7 +158,7 @@ public class AdminUploadArticleImageValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminUploadArticleImageCommand.ArticleId)
-                && e.ErrorMessage == i18n.Localizer["IdRequired"].Value
+                && e.ErrorMessage == _i18n.Article.Msg.Localizer["IdRequired"].Value
             );
     }
 

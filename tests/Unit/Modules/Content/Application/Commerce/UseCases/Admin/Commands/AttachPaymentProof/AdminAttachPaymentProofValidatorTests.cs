@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymentProof;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Helpers;
@@ -15,7 +17,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminAttachPaymentProofValidatorTests
 {
-    private readonly ContentOrderErrorMessage _i18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminAttachPaymentProofValidator _validator;
 
     /// <summary>
@@ -76,7 +78,7 @@ public class AdminAttachPaymentProofValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAttachPaymentProofCommand.OrderId)
-                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.ContentOrder.Msg.Localizer["IdInvalid"].Value
             );
     }
 
@@ -103,7 +105,7 @@ public class AdminAttachPaymentProofValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAttachPaymentProofCommand.File)
-                && e.ErrorMessage == _i18n.PaymentProofRequired()
+                && e.ErrorMessage == _i18n.ContentOrder.Msg.PaymentProofRequired()
             );
     }
 
@@ -133,7 +135,7 @@ public class AdminAttachPaymentProofValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAttachPaymentProofCommand.PaymentMethod)
-                && e.ErrorMessage == _i18n.InvalidPaymentMethod()
+                && e.ErrorMessage == _i18n.ContentOrder.Msg.InvalidPaymentMethod()
             );
     }
 
@@ -147,8 +149,9 @@ public class AdminAttachPaymentProofValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>(culture);
-        var validator = new AdminAttachPaymentProofValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminAttachPaymentProofValidator(_i18n);
         var command = new AdminAttachPaymentProofCommand(
             OrderId: Guid.NewGuid().ToString(),
             File: null!,
@@ -164,7 +167,7 @@ public class AdminAttachPaymentProofValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminAttachPaymentProofCommand.File)
-                && e.ErrorMessage == i18n.PaymentProofRequired()
+                && e.ErrorMessage == _i18n.ContentOrder.Msg.PaymentProofRequired()
             );
     }
 

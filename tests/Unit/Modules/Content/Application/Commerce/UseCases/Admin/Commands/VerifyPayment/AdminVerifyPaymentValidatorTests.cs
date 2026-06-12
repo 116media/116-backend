@@ -1,4 +1,6 @@
+using System.Globalization;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -13,7 +15,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminVerifyPaymentValidatorTests
 {
-    private readonly ContentOrderErrorMessage _i18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>();
+    private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
     private readonly AdminVerifyPaymentValidator _validator;
 
     /// <summary>
@@ -67,7 +69,7 @@ public class AdminVerifyPaymentValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminVerifyPaymentCommand.OrderId)
-                && e.ErrorMessage == _i18n.Localizer["IdInvalid"].Value
+                && e.ErrorMessage == _i18n.ContentOrder.Msg.Localizer["IdInvalid"].Value
             );
     }
 
@@ -94,7 +96,7 @@ public class AdminVerifyPaymentValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminVerifyPaymentCommand.ReceiptUrl)
-                && e.ErrorMessage == _i18n.ReceiptUrlRequired()
+                && e.ErrorMessage == _i18n.ContentOrder.Msg.ReceiptUrlRequired()
             );
     }
 
@@ -121,7 +123,7 @@ public class AdminVerifyPaymentValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminVerifyPaymentCommand.AdminUserId)
-                && e.ErrorMessage == _i18n.AdminUserIdRequired()
+                && e.ErrorMessage == _i18n.ContentOrder.Msg.AdminUserIdRequired()
             );
     }
 
@@ -135,8 +137,9 @@ public class AdminVerifyPaymentValidatorTests
     public async Task Validate_ErrorMessages_ShouldBeLocalizedForCulture(string culture)
     {
         // Arrange
-        var i18n = LocalizerFactory.CreateMessage<ContentOrderErrorMessage>(culture);
-        var validator = new AdminVerifyPaymentValidator(i18n);
+        Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+        var validator = new AdminVerifyPaymentValidator(_i18n);
         var command = new AdminVerifyPaymentCommand(
             OrderId: Guid.NewGuid().ToString(),
             ReceiptUrl: string.Empty,
@@ -152,7 +155,7 @@ public class AdminVerifyPaymentValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminVerifyPaymentCommand.ReceiptUrl)
-                && e.ErrorMessage == i18n.ReceiptUrlRequired()
+                && e.ErrorMessage == _i18n.ContentOrder.Msg.ReceiptUrlRequired()
             );
     }
 

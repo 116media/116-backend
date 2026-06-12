@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -11,11 +11,11 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.CancelOrder;
 /// </summary>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="contentOrderErrors">Content order domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCancelOrderHandler(
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
-    ContentOrderErrors contentOrderErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminCancelOrderCommand, AdminCancelOrderResult>
 {
     /// <inheritdoc />
@@ -28,7 +28,7 @@ public class AdminCancelOrderHandler(
 
         ContentOrderEntity order = await contentOrderRepository.GetByIdOrThrowAsync(id: orderId, ct: cancellationToken);
 
-        order.Cancel(contentOrderErrors);
+        order.Cancel(i18n.ContentOrder);
 
         await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

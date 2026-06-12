@@ -1,4 +1,4 @@
-using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -15,13 +15,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtic
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-/// <param name="articleErrors">Article domain error factory.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreateArticleHandler(
     ICategoryRepository categoryRepository,
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
     IMapper mapper,
-    ArticleErrors articleErrors
+    ContentI18n i18n
 ) : ICommandHandler<AdminCreateArticleCommand, AdminCreateArticleResult>
 {
     /// <inheritdoc />
@@ -39,7 +39,7 @@ public class AdminCreateArticleHandler(
 
         if (existing is not null)
         {
-            throw articleErrors.SlugAlreadyExists(slug: command.Slug);
+            throw i18n.Article.SlugAlreadyExists(slug: command.Slug);
         }
 
         ArticleEntity article = CreateArticle(command);
@@ -74,7 +74,7 @@ public class AdminCreateArticleHandler(
                 title: command.Title,
                 slug: command.Slug,
                 authorId: command.AuthorId,
-                errors: articleErrors
+                errors: i18n.Article
             )
             : ArticleEntity.CreateFree(
                 id: Guid.NewGuid(),
@@ -82,7 +82,7 @@ public class AdminCreateArticleHandler(
                 title: command.Title,
                 slug: command.Slug,
                 authorId: command.AuthorId,
-                errors: articleErrors
+                errors: i18n.Article
             );
     }
 }

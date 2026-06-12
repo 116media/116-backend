@@ -10,6 +10,11 @@ namespace _116.Content.Application.Shared.Errors;
 public class ArticleErrors(ArticleErrorMessage i18n)
 {
     /// <summary>
+    /// Exposes the localized message provider for use in validator extensions.
+    /// </summary>
+    public ArticleErrorMessage Msg => i18n;
+
+    /// <summary>
     /// Throws when an article is not found by its identifier.
     /// </summary>
     public NotFoundException NotFound(Guid id)

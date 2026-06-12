@@ -31,7 +31,7 @@ public class AdminApproveVideoHandlerTests
         _handler = new AdminApproveVideoHandler(
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateVideoErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

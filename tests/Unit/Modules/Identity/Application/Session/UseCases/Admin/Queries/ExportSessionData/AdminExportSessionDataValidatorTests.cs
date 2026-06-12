@@ -1,5 +1,6 @@
 using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData;
 using _116.Identity.Application.Shared.DTOs;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -18,7 +19,7 @@ public class AdminExportSessionDataValidatorTests
         .Select(p => p.Name)
         .ToArray();
 
-    private readonly ValidationErrorMessage _i18n = LocalizerFactory.CreateMessage<ValidationErrorMessage>();
+    private readonly IdentityI18n _i18n = TestErrorsFactory.CreateIdentityI18n();
     private readonly AdminExportSessionDataValidator _validator;
 
     /// <summary>
@@ -107,7 +108,9 @@ public class AdminExportSessionDataValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Format).WithErrorMessage(_i18n.ExportFormatInvalid());
+        result
+            .ShouldHaveValidationErrorFor(x => x.Format)
+            .WithErrorMessage(_i18n.User.Validation.ExportFormatInvalid());
     }
 
     [Theory]
@@ -162,7 +165,9 @@ public class AdminExportSessionDataValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.Status).WithErrorMessage(_i18n.ExportStatusInvalid());
+        result
+            .ShouldHaveValidationErrorFor(x => x.Status)
+            .WithErrorMessage(_i18n.User.Validation.ExportStatusInvalid());
     }
 
     [Theory]
@@ -219,7 +224,7 @@ public class AdminExportSessionDataValidatorTests
         result.IsValid.Should().BeFalse();
         result
             .ShouldHaveValidationErrorFor(x => x.Columns)
-            .WithErrorMessage(_i18n.ExportColumnsInvalid(string.Join(", ", ValidColumns)));
+            .WithErrorMessage(_i18n.User.Validation.ExportColumnsInvalid(string.Join(", ", ValidColumns)));
     }
 
     [Theory]
@@ -279,7 +284,9 @@ public class AdminExportSessionDataValidatorTests
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.ShouldHaveValidationErrorFor(x => x.ToDate).WithErrorMessage(_i18n.ExportDateRangeInvalid());
+        result
+            .ShouldHaveValidationErrorFor(x => x.ToDate)
+            .WithErrorMessage(_i18n.User.Validation.ExportDateRangeInvalid());
     }
 
     [Fact]

@@ -32,7 +32,7 @@ public class AdminRejectVideoHandlerTests
         _handler = new AdminRejectVideoHandler(
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateVideoErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

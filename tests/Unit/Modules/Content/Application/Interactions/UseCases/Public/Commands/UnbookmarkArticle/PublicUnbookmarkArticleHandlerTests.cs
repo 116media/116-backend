@@ -31,7 +31,7 @@ public class PublicUnbookmarkArticleHandlerTests
         _handler = new PublicUnbookmarkArticleHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateArticleInteractionErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 

@@ -1,6 +1,7 @@
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RevokeSession;
 using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
@@ -28,9 +29,9 @@ public class PublicRevokeSessionHandlerTests
         _sessionRepositoryMock = MockSessionRepository.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
 
-        SessionErrors sessionErrors = TestErrorsFactory.CreateSessionErrors();
+        IdentityI18n identityI18n = TestErrorsFactory.CreateIdentityI18n();
 
-        _handler = new PublicRevokeSessionHandler(_sessionRepositoryMock.Object, _unitOfWorkMock.Object, sessionErrors);
+        _handler = new PublicRevokeSessionHandler(_sessionRepositoryMock.Object, _unitOfWorkMock.Object, identityI18n);
     }
 
     #region Success Cases

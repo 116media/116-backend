@@ -10,6 +10,11 @@ namespace _116.Content.Application.Shared.Errors;
 public class TagErrors(TagErrorMessage i18n)
 {
     /// <summary>
+    /// Exposes the localized message provider for use in validator extensions.
+    /// </summary>
+    public TagErrorMessage Msg => i18n;
+
+    /// <summary>
     /// Throws when a tag with the given slug already exists.
     /// </summary>
     public ConflictException SlugAlreadyExists(string slug)

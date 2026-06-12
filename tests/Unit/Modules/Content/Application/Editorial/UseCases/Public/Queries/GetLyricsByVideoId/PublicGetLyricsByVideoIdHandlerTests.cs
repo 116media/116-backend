@@ -26,7 +26,7 @@ public class PublicGetLyricsByVideoIdHandlerTests : BaseContentHandlerTest
         _handler = new PublicGetLyricsByVideoIdHandler(
             _lyricsRepositoryMock.Object,
             Mapper,
-            TestErrorsFactory.CreateLyricsErrors()
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
