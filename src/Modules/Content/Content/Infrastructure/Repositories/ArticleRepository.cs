@@ -319,17 +319,18 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     )
     {
         var specification = new ArticleBookmarkByUserIdSpecification(userId: userId);
-        IQueryable<ArticleEntity> query = context
+        IQueryable<ArticleBookmarkEntity> bookmarkQuery = context
             .ArticleBookmarks.ApplySpecification(specification: specification)
-            .OrderByDescending(b => b.CreatedAt)
-            .Select(b => b.Article)
-            .Include(a => a.Category);
+            .Include(b => b.Article)
+                .ThenInclude(a => a.Category)
+            .OrderByDescending(b => b.CreatedAt);
 
-        int totalCount = await query.CountAsync(cancellationToken);
+        int totalCount = await bookmarkQuery.CountAsync(cancellationToken);
 
-        List<ArticleEntity> articles = await query
+        List<ArticleEntity> articles = await bookmarkQuery
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(b => b.Article)
             .ToListAsync(cancellationToken);
 
         return (articles, totalCount);
