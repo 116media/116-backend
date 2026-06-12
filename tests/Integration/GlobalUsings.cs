@@ -8,3 +8,4 @@ global using AwesomeAssertions;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.DependencyInjection;
 global using Xunit;
+global using TestUser = _116.Tests.Fixtures.Constants.TestConstants.User;
