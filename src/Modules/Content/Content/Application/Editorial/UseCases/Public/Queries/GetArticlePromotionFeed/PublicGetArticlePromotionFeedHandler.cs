@@ -34,26 +34,20 @@ public class PublicGetArticlePromotionFeedHandler(
     {
         CategoryEntity? gossipCategory = await categoryRepository.GetGossipCategoryAsync(cancellationToken);
 
-        Task<IReadOnlyList<ArticleEntity>> spot1Task = articleRepository.GetActivePromotedBySpotAsync(
+        IReadOnlyList<ArticleEntity> spot1Articles = await articleRepository.GetActivePromotedBySpotAsync(
             spotPriority: EditorialFeedConstants.Spot1,
             cancellationToken: cancellationToken
         );
 
-        Task<IReadOnlyList<ArticleEntity>> spot2Task = articleRepository.GetActivePromotedBySpotAsync(
+        IReadOnlyList<ArticleEntity> spot2Articles = await articleRepository.GetActivePromotedBySpotAsync(
             spotPriority: EditorialFeedConstants.Spot2,
             cancellationToken: cancellationToken
         );
 
-        Task<IReadOnlyList<ArticleEntity>> spot3Task = articleRepository.GetActivePromotedBySpotAsync(
+        IReadOnlyList<ArticleEntity> spot3Articles = await articleRepository.GetActivePromotedBySpotAsync(
             spotPriority: EditorialFeedConstants.Spot3,
             cancellationToken: cancellationToken
         );
-
-        await Task.WhenAll(spot1Task, spot2Task, spot3Task);
-
-        IReadOnlyList<ArticleEntity> spot1Articles = spot1Task.Result;
-        IReadOnlyList<ArticleEntity> spot2Articles = spot2Task.Result;
-        IReadOnlyList<ArticleEntity> spot3Articles = spot3Task.Result;
 
         var usedIds = new HashSet<Guid>(spot1Articles.Concat(spot2Articles).Concat(spot3Articles).Select(a => a.Id));
 
