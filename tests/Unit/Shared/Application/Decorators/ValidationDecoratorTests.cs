@@ -10,7 +10,7 @@ using Xunit;
 namespace _116.Unit.Tests.Shared.Application.Decorators;
 
 /// <summary>
-/// Unit tests for <see cref="ValidationDecorator{TRequest, TResponse}"/>.
+/// Unit tests for <see cref="ValidationDecorator{TRequest,TResponse}"/>.
 /// </summary>
 public class ValidationDecoratorTests
 {

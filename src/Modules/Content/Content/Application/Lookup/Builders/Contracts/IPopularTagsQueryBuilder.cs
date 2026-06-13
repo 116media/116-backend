@@ -1,3 +1,4 @@
+using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 
@@ -26,5 +27,5 @@ public interface IPopularTagsQueryBuilder
     /// <summary>
     /// Builds and returns the final ordered, optionally limited <see cref="IQueryable" />.
     /// </summary>
-    IQueryable<Domain.Entities.TagEntity> Build(ContentDbContext context);
+    IQueryable<TagEntity> Build(ContentDbContext context);
 }

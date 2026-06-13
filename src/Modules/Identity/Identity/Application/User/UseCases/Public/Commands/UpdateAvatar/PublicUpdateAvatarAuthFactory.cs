@@ -2,6 +2,7 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar.Contracts;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 
 namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
 
@@ -43,7 +44,7 @@ public class PublicUpdateAvatarAuthFactory(IAuthRepository authRepository, IIden
         CancellationToken cancellationToken
     )
     {
-        user.UpdateAvatar(avatarFileId: avatarFileId, avatarSource: Domain.Enums.EnumAvatarSource.Manual);
+        user.UpdateAvatar(avatarFileId: avatarFileId, avatarSource: EnumAvatarSource.Manual);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 

@@ -1,4 +1,3 @@
-using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Infrastructure.Persistence;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;

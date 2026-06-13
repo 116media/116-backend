@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Application.Shared.Services;
 using _116.Shared.Application.Exceptions;
@@ -156,7 +157,7 @@ public class FileService(HttpClient httpClient, ICloudinaryService cloudinarySer
     private async Task<long?> TryGetContentLengthWithRangeAsync(Uri? uri, CancellationToken cancellationToken)
     {
         using var partialRequest = new HttpRequestMessage(HttpMethod.Get, uri);
-        partialRequest.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(0, 0);
+        partialRequest.Headers.Range = new RangeHeaderValue(0, 0);
 
         using HttpResponseMessage partialResponse = await httpClient.SendAsync(partialRequest, cancellationToken);
         return partialResponse.Content.Headers.ContentRange?.Length;

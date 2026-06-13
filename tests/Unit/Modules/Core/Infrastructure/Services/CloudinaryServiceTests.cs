@@ -1,6 +1,4 @@
 using _116.BuildingBlocks.Constants;
-using _116.Core.Application.Shared.Errors;
-using _116.Core.Application.Shared.Errors.Facade;
 using _116.Core.Infrastructure.Services;
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions;

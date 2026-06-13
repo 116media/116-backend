@@ -1,7 +1,6 @@
 using _116.Identity.Application.Auth.Validators;
 using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Helpers;
-using AwesomeAssertions;
 using FluentValidation;
 using FluentValidation.TestHelper;
 using Xunit;

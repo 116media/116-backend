@@ -1,7 +1,6 @@
 using System.Globalization;
 using _116.Identity.Application.Session.UseCases.Admin.Commands.RefreshToken;
 using _116.Identity.Application.Shared.Errors.Facade;
-using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;

@@ -1,7 +1,5 @@
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword;
-using _116.Identity.Application.Shared.Errors.Facade;
-using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;

@@ -1,7 +1,6 @@
 using System.Globalization;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArticleImage;
 using _116.Content.Application.Shared.Errors.Facade;
-using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;

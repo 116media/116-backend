@@ -1,7 +1,6 @@
 using System.Globalization;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Shared.Errors.Facade;
-using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;

@@ -1,7 +1,5 @@
 using _116.Core.Domain.Entities;
-using _116.Tests.Fixtures.Builders.Entities.Core;
 using _116.Tests.Fixtures.Constants;
-using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using Bogus;
 

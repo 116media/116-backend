@@ -1,5 +1,4 @@
 using _116.Content.Domain.Entities;
-using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Builders.Entities.Content;
 
 namespace _116.Tests.Fixtures.Factories.Content;
