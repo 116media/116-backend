@@ -14,7 +14,7 @@ public class PublicSetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     public async Task SetPassword_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var request = new { Password = "Test123!abc" };
+        var request = new { Password = Auth.ValidPassword };
 
         var response = await Client.PostAsJsonAsync($"{ApiRoutes.Public.Auth}/set-password", request);
 
