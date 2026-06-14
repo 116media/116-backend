@@ -26,7 +26,7 @@ public class PublicSignUpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         {
             Email = email,
             UserName = userName,
-            Password = Auth.ValidPassword,
+            Password = TestAuth.ValidPassword,
         };
 
         var response = await Client.PostAsJsonAsync($"{ApiRoutes.Public.Auth}/signup", request);
@@ -42,7 +42,7 @@ public class PublicSignUpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         {
             Email = TestUser.SuperAdminEmail,
             UserName = $"u{Guid.NewGuid():N}"[..10],
-            Password = Auth.ValidPassword,
+            Password = TestAuth.ValidPassword,
         };
 
         var response = await Client.PostAsJsonAsync($"{ApiRoutes.Public.Auth}/signup", request);
@@ -58,7 +58,7 @@ public class PublicSignUpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         {
             Email = "",
             UserName = "validuser",
-            Password = Auth.ValidPassword,
+            Password = TestAuth.ValidPassword,
         };
 
         var response = await Client.PostAsJsonAsync($"{ApiRoutes.Public.Auth}/signup", request);
@@ -90,7 +90,7 @@ public class PublicSignUpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         {
             Email = $"s{Guid.NewGuid():N}@test.com",
             UserName = "ab",
-            Password = Auth.ValidPassword,
+            Password = TestAuth.ValidPassword,
         };
 
         var response = await Client.PostAsJsonAsync($"{ApiRoutes.Public.Auth}/signup", request);
