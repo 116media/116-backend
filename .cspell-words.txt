@@ -143,6 +143,7 @@ sigmacool
 signups
 smallint
 snupkg
+socialuser
 société
 softwareengineering
 soit
@@ -161,6 +162,7 @@ targetdir
 téléchargement
 téléversement
 Testcontainer
+testuser
 tête
 trouvé
 trouver
