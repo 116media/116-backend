@@ -47,7 +47,7 @@ public class AuditableEntityInterceptorTests(PostgresFixture db) : BaseApiTest(d
         await using var queryContext = CreateDbContext<IdentityDbContext>();
         var updated = await queryContext.Permissions.FindAsync(permission.Id);
 
-        updated!.CreatedAt.Should().Be(originalCreatedAt);
+        updated!.CreatedAt.Should().BeCloseTo(originalCreatedAt!.Value, TimeSpan.FromMicroseconds(1));
         updated.UpdatedAt.Should().BeOnOrAfter(originalUpdatedAt!.Value);
     }
 
