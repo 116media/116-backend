@@ -12,6 +12,11 @@ public class RateLimitExceededException : Exception
     public TimeSpan RetryAfter { get; }
 
     /// <summary>
+    /// Gets a value indicating whether a custom message was provided.
+    /// </summary>
+    public bool HasCustomMessage { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="RateLimitExceededException"/> class.
     /// </summary>
     /// <param name="retryAfter">The time period after which the client can retry.</param>
@@ -30,5 +35,6 @@ public class RateLimitExceededException : Exception
         : base(message)
     {
         RetryAfter = retryAfter;
+        HasCustomMessage = true;
     }
 }

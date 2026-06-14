@@ -11,6 +11,26 @@ public class NotFoundException : Exception
     public string? Details { get; }
 
     /// <summary>
+    /// Gets the entity name used in the lookup, if provided.
+    /// </summary>
+    public string? EntityName { get; }
+
+    /// <summary>
+    /// Gets the identifier value used in the lookup, if provided.
+    /// </summary>
+    public object? Key { get; }
+
+    /// <summary>
+    /// Gets the name of the lookup key, if provided.
+    /// </summary>
+    public string? KeyName { get; }
+
+    /// <summary>
+    /// Gets the value of the lookup key, if provided.
+    /// </summary>
+    public object? KeyValue { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="NotFoundException"/> class with a custom error message.
     /// </summary>
     /// <param name="message">The message that describes the error.</param>
@@ -46,7 +66,11 @@ public class NotFoundException : Exception
     /// </code>
     /// </example>
     public NotFoundException(string entityName, object? key)
-        : base($"Could not find {CleanEntityName(entityName)} with id: {key}") { }
+        : base($"Could not find {CleanEntityName(entityName)} with id: {key}")
+    {
+        EntityName = CleanEntityName(entityName);
+        Key = key;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NotFoundException"/>
@@ -63,7 +87,12 @@ public class NotFoundException : Exception
     /// </code>
     /// </example>
     public NotFoundException(string entityName, string keyName, object keyValue)
-        : base($"Could not find {CleanEntityName(entityName)} with {keyName}: {keyValue}") { }
+        : base($"Could not find {CleanEntityName(entityName)} with {keyName}: {keyValue}")
+    {
+        EntityName = CleanEntityName(entityName);
+        KeyName = keyName;
+        KeyValue = keyValue;
+    }
 
     /// <summary>
     /// Removes the word "Entity" (case-insensitive) from the entity name, if present.

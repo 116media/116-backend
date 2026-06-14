@@ -1,5 +1,6 @@
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
@@ -14,16 +15,15 @@ namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
 public class RateLimitExceededExceptionHandlerTests
 {
     private readonly RateLimitExceededExceptionHandler _handler = new();
+    private readonly SharedExceptionMessage i18n = LocalizerFactory.CreateMessage<SharedExceptionMessage>("en");
 
     #region ExceptionType Tests
 
     [Fact]
     public void ExceptionType_ShouldReturnRateLimitExceededExceptionType()
     {
-        // Act
         Type exceptionType = _handler.ExceptionType;
 
-        // Assert
         exceptionType.Should().Be(typeof(RateLimitExceededException));
     }
 
@@ -46,7 +46,7 @@ public class RateLimitExceededExceptionHandlerTests
     }
 
     [Fact]
-    public void CreateProblemDetails_ShouldReturnProblemDetailsWithExceptionMessage()
+    public void CreateProblemDetails_ShouldReturnLocalizedDetailMessage()
     {
         // Arrange
         TimeSpan retryAfter = TimeSpan.FromSeconds(30);
@@ -57,8 +57,7 @@ public class RateLimitExceededExceptionHandlerTests
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
-        problemDetails.Detail.Should().Contain("Rate limit exceeded");
-        problemDetails.Detail.Should().Contain("30 seconds");
+        problemDetails.Detail.Should().Be(i18n.RateLimitExceeded(30));
     }
 
     [Fact]
@@ -133,7 +132,7 @@ public class RateLimitExceededExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
+        _handler.CreateProblemDetails(exception, context);
 
         // Assert
         context.Response.Headers.Should().ContainKey("Retry-After");
@@ -149,7 +148,7 @@ public class RateLimitExceededExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
+        _handler.CreateProblemDetails(exception, context);
 
         // Assert
         context.Response.Headers["Retry-After"].ToString().Should().Be("300");
@@ -180,10 +179,41 @@ public class RateLimitExceededExceptionHandlerTests
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
 
         // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
+        _handler.CreateProblemDetails(exception, context);
 
         // Assert
         context.Response.Headers["Retry-After"].ToString().Should().Be("45");
+    }
+
+    [Fact]
+    public void CreateProblemDetails_InFrench_ShouldReturnFrenchDetailMessage()
+    {
+        // Arrange
+        string enDetail = i18n.RateLimitExceeded(30);
+        using var scope = new CultureScope("fr");
+        RateLimitExceededException exception = new(TimeSpan.FromSeconds(30));
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
+
+        // Act
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
+
+        // Assert
+        problemDetails.Detail.Should().NotBe(enDetail);
+    }
+
+    [Fact]
+    public void CreateProblemDetails_InFrench_ShouldContainSeconds()
+    {
+        // Arrange
+        using var scope = new CultureScope("fr");
+        RateLimitExceededException exception = new(TimeSpan.FromSeconds(60));
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
+
+        // Act
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
+
+        // Assert
+        problemDetails.Detail.Should().Contain("60");
     }
 
     #endregion

@@ -6,7 +6,6 @@ using Asp.Versioning;
 using Carter;
 using DotNetEnv;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Localization;
 using Serilog;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -49,14 +48,7 @@ builder.Services.AddRateLimiting();
 
 builder.Services.AddMemoryCache();
 
-builder.Services.AddLocalization(options => options.ResourcesPath = string.Empty);
-
-builder.Services.Configure<RequestLocalizationOptions>(options =>
-{
-    string[] supported = ["fr", "en"];
-    options.SetDefaultCulture("fr").AddSupportedCultures(supported).AddSupportedUICultures(supported);
-    options.RequestCultureProviders = [new AcceptLanguageHeaderRequestCultureProvider()];
-});
+builder.Services.AddAppLocalization();
 
 string[] allowedOrigins = AppEnvironment.CorsAllowedOrigins();
 builder.Services.AddCors(options =>
@@ -105,24 +97,11 @@ app.UseSerilogRequestLogging();
 app.UseAppExceptionHandler();
 app.UseCors();
 app.UseRateLimiter();
+app.UseAppLocalization();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseApiVersioning();
-app.UseRequestLocalization();
-
-app.Use(
-    async (context, next) =>
-    {
-        string? header = context.Request.Headers.AcceptLanguage.FirstOrDefault();
-        string lang =
-            header?.Split(',').FirstOrDefault()?.Trim().StartsWith("en", StringComparison.OrdinalIgnoreCase) == true
-                ? "en"
-                : "fr";
-        context.Items["Language"] = lang;
-        await next();
-    }
-);
 
 app.MapCarter();
 app.UseResourceNotFoundHandler();

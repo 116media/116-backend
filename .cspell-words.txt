@@ -11,6 +11,7 @@ attribué
 attribuée
 authentifié
 autoplays
+autorisé
 autorisées
 autorisés
 Behaviour
@@ -39,12 +40,14 @@ dotnettools
 Dtos
 début
 définition
+dépassée
 espaces
 exactement
 Expando
 extractability
 favori
 fichiers
+fourni
 fournir
 fournisseur
 futur
@@ -121,6 +124,7 @@ suivants
 suivi
 sunsetting
 Swashbuckle
+trouver
 trouvé
 TRUNC
 typeparam
@@ -141,4 +145,5 @@ VARCHAR
 Xunit
 zéro
 Échec
+échoué
 égale

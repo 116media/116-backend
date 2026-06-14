@@ -1,5 +1,6 @@
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
@@ -14,16 +15,15 @@ namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;
 public class FormatExceptionStrategyTests
 {
     private readonly FormatExceptionStrategy _handler = new();
+    private readonly SharedExceptionMessage i18n = LocalizerFactory.CreateMessage<SharedExceptionMessage>("en");
 
     #region ExceptionType Tests
 
     [Fact]
     public void ExceptionType_ShouldReturnFormatExceptionType()
     {
-        // Act
         Type exceptionType = _handler.ExceptionType;
 
-        // Assert
         exceptionType.Should().Be<FormatException>();
     }
 
@@ -46,7 +46,7 @@ public class FormatExceptionStrategyTests
     }
 
     [Fact]
-    public void CreateProblemDetails_ShouldReturnProblemDetailsWithUuidDetail()
+    public void CreateProblemDetails_ShouldReturnLocalizedDetailMessage()
     {
         // Arrange
         FormatException exception = new("Input string was not in a correct format.");
@@ -56,7 +56,7 @@ public class FormatExceptionStrategyTests
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
         // Assert
-        problemDetails.Detail.Should().Be("The provided identifier is invalid.");
+        problemDetails.Detail.Should().Be(i18n.InvalidIdentifier());
     }
 
     [Fact]
@@ -122,6 +122,28 @@ public class FormatExceptionStrategyTests
         timestamp.Should().NotBe(default);
     }
 
+    [Fact]
+    public void CreateProblemDetails_InFrench_ShouldReturnFrenchDetailMessage()
+    {
+        // Arrange
+        string enDetail = i18n.InvalidIdentifier();
+        using var scope = new CultureScope("fr");
+        FormatException exception = new("Input string was not in a correct format.");
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
+
+        // Act
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
+
+        // Assert
+        problemDetails.Detail.Should().NotBe(enDetail);
+    }
+
+    [Fact]
+    public void SharedExceptionMessage_Localizer_InvalidIdentifier_ShouldReturnLocalizedString()
+    {
+        i18n.Localizer["InvalidIdentifier"].Value.Should().Be(i18n.InvalidIdentifier());
+    }
+
     #endregion
 
     #region InvalidFormatException Tests
@@ -129,64 +151,50 @@ public class FormatExceptionStrategyTests
     [Fact]
     public void InvalidFormatException_WithMessageOnly_ShouldSetMessage()
     {
-        // Arrange
         const string message = "Invalid format error";
 
-        // Act
         var exception = new InvalidFormatException(message);
 
-        // Assert
         exception.Message.Should().Be(message);
     }
 
     [Fact]
     public void InvalidFormatException_WithMessageOnly_ShouldHaveNullDetails()
     {
-        // Arrange
         const string message = "Invalid format error";
 
-        // Act
         var exception = new InvalidFormatException(message);
 
-        // Assert
         exception.Details.Should().BeNull();
     }
 
     [Fact]
     public void InvalidFormatException_WithMessageAndDetails_ShouldSetMessage()
     {
-        // Arrange
         const string message = "Invalid format error";
         const string details = "The value must be a valid UUID.";
 
-        // Act
         var exception = new InvalidFormatException(message, details);
 
-        // Assert
         exception.Message.Should().Be(message);
     }
 
     [Fact]
     public void InvalidFormatException_WithMessageAndDetails_ShouldSetDetails()
     {
-        // Arrange
         const string message = "Invalid format error";
         const string details = "The value must be a valid UUID.";
 
-        // Act
         var exception = new InvalidFormatException(message, details);
 
-        // Assert
         exception.Details.Should().Be(details);
     }
 
     [Fact]
     public void InvalidFormatException_ShouldInheritFromException()
     {
-        // Act
         var exception = new InvalidFormatException("error");
 
-        // Assert
         exception.Should().BeAssignableTo<Exception>();
     }
 
