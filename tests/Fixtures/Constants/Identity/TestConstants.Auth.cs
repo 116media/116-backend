@@ -10,6 +10,7 @@ public static partial class TestConstants
     {
         public const string PublicLoginEmail = "user@example.com";
         public const string PublicLoginUserName = "testuser";
+        public const string ValidPassword = "Test123!abc";
         public const string PublicLoginPassword = "Password123!";
         public const string PublicLoginInvalidPassword = "WrongPassword!";
 
