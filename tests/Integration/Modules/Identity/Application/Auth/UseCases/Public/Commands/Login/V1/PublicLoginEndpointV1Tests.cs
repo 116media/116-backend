@@ -25,7 +25,7 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
     public async Task Login_WithNonExistentCredentials_ReturnsError()
     {
         Client.ClearAuthentication();
-        var request = new { Credentials = "nobody@nowhere.com", Password = "Test123!abc" };
+        var request = new { Credentials = "nobody@nowhere.com", Password = Auth.ValidPassword };
 
         var response = await Client.PostAsJsonAsync($"{ApiRoutes.Public.Auth}/login", request);
 
