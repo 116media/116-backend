@@ -57,4 +57,48 @@ public class AdminSubmitOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    [Fact]
+    public async Task SubmitOrder_AsSuperAdmin_AlreadySubmitted_ReturnsError()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var order = ContentOrderFactory.CreateSubmitted();
+        var customer = CustomerFactory.CreateWithId(order.CustomerId);
+        seedContext.Customers.Add(customer);
+        seedContext.ContentOrders.Add(order);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Orders}/{order.Id}/submit", null);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.Conflict);
+    }
+
+    /// <summary>
+    /// Verifies that submitting a Draft order whose items have no pricing tiers
+    /// returns 400 Bad Request, covering the MustHaveAtLeastOneItemWithTier error path.
+    /// </summary>
+    [Fact]
+    public async Task SubmitOrder_WithItemButNoTiers_ReturnsBadRequest()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var customer = CustomerFactory.Create();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        var orderItem = ContentOrderItemFactory.Create(order.Id, category.Id);
+        seedContext.Customers.Add(customer);
+        seedContext.ContentTypes.Add(contentType);
+        seedContext.Categories.Add(category);
+        seedContext.ContentOrders.Add(order);
+        seedContext.ContentOrderItems.Add(orderItem);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Orders}/{order.Id}/submit", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }
