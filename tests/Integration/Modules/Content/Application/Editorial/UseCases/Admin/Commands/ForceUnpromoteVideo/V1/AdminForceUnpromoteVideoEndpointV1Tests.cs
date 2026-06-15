@@ -85,4 +85,31 @@ public class AdminForceUnpromoteVideoEndpointV1Tests(PostgresFixture db) : BaseA
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    /// <summary>
+    /// Verifies that force-unpromoting a video that does not have an active promotion
+    /// returns a 400 Bad Request response, exercising the <c>!IsPromoted</c> guard
+    /// in <c>VideoEntity.ForceUnpromote</c>.
+    /// </summary>
+    [Fact]
+    public async Task ForceUnpromoteVideo_AsSuperAdmin_NotPromoted_ReturnsBadRequest()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var video = VideoFactory.CreatePublished(category.Id);
+        seedContext.ContentTypes.Add(contentType);
+        seedContext.Categories.Add(category);
+        seedContext.Videos.Add(video);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsJsonAsync(
+            $"{ApiRoutes.Admin.Videos}/{video.Slug}/unpromote",
+            new { Reason = "Attempted unpromote on non-promoted video" }
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }
