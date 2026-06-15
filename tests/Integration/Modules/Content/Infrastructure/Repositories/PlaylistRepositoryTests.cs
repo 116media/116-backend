@@ -1,4 +1,5 @@
 using _116.Content.Application.Interactions.Persistence;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -134,5 +135,114 @@ public class PlaylistRepositoryTests(PostgresFixture postgres) : BaseRepositoryT
         await using var verifyContext = CreateDbContext<ContentDbContext>();
         var removed = await verifyContext.Playlists.FindAsync(playlist.Id);
         removed.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Verifies that <see cref="IPlaylistRepository.VideoExistsInPlaylistAsync" /> returns
+    /// <c>true</c> after a video has been added to the playlist, exercising the positive
+    /// branch of the query method.
+    /// </summary>
+    [Fact]
+    public async Task VideoExistsInPlaylistAsync_AfterAddingVideo_ReturnsTrue()
+    {
+        var userId = Guid.NewGuid();
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        seedContext.ContentTypes.Add(contentType);
+        await seedContext.SaveChangesAsync();
+
+        var category = CategoryFactory.Create(contentType.Id);
+        seedContext.Categories.Add(category);
+        await seedContext.SaveChangesAsync();
+
+        var video = VideoFactory.Create(category.Id);
+        seedContext.Videos.Add(video);
+        await seedContext.SaveChangesAsync();
+
+        var playlist = PlaylistFactory.Create(userId);
+        seedContext.Playlists.Add(playlist);
+        await seedContext.SaveChangesAsync();
+
+        var playlistVideo = PlaylistVideoEntity.Create(
+            id: Guid.NewGuid(),
+            playlistId: playlist.Id,
+            videoId: video.Id,
+            sortOrder: 1
+        );
+        seedContext.PlaylistVideos.Add(playlistVideo);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IPlaylistRepository>();
+        var result = await repo.VideoExistsInPlaylistAsync(playlist.Id, video.Id);
+
+        result.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Verifies that <see cref="IPlaylistRepository.AddVideoAsync" /> persists a
+    /// <see cref="PlaylistVideoEntity" /> and that the video can subsequently be found
+    /// via <see cref="IPlaylistRepository.VideoExistsInPlaylistAsync" />.
+    /// </summary>
+    [Fact]
+    public async Task AddVideoAsync_NewVideo_PersistsToPlaylist()
+    {
+        var userId = Guid.NewGuid();
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        seedContext.ContentTypes.Add(contentType);
+        await seedContext.SaveChangesAsync();
+
+        var category = CategoryFactory.Create(contentType.Id);
+        seedContext.Categories.Add(category);
+        await seedContext.SaveChangesAsync();
+
+        var video = VideoFactory.Create(category.Id);
+        seedContext.Videos.Add(video);
+        await seedContext.SaveChangesAsync();
+
+        var playlist = PlaylistFactory.Create(userId);
+        seedContext.Playlists.Add(playlist);
+        await seedContext.SaveChangesAsync();
+
+        var (repo, db) = CreateScopedRepository<IPlaylistRepository, ContentDbContext>();
+        var playlistVideo = PlaylistVideoEntity.Create(
+            id: Guid.NewGuid(),
+            playlistId: playlist.Id,
+            videoId: video.Id,
+            sortOrder: 1
+        );
+
+        await repo.AddVideoAsync(playlistVideo);
+        await db.SaveChangesAsync();
+
+        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        var exists = await verifyContext.PlaylistVideos.AnyAsync(pv =>
+            pv.PlaylistId == playlist.Id && pv.VideoId == video.Id
+        );
+        exists.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Verifies that <see cref="IPlaylistRepository.Update" /> persists a name change
+    /// on an existing playlist, exercising the update path of the repository.
+    /// </summary>
+    [Fact]
+    public async Task Update_ExistingPlaylist_PersistsNameChange()
+    {
+        var userId = Guid.NewGuid();
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var playlist = PlaylistFactory.Create(userId);
+        seedContext.Playlists.Add(playlist);
+        await seedContext.SaveChangesAsync();
+
+        var (repo, db) = CreateScopedRepository<IPlaylistRepository, ContentDbContext>();
+        var toUpdate = await db.Playlists.FindAsync(playlist.Id);
+        toUpdate!.Rename("Renamed Playlist");
+        repo.Update(toUpdate);
+        await db.SaveChangesAsync();
+
+        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        var updated = await verifyContext.Playlists.FindAsync(playlist.Id);
+        updated!.Name.Should().Be("Renamed Playlist");
     }
 }
