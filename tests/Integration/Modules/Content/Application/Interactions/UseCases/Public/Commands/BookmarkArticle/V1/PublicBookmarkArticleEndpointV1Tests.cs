@@ -51,4 +51,29 @@ public class PublicBookmarkArticleEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    [Fact]
+    public async Task BookmarkArticle_AsVisitor_AlreadyBookmarked_ReturnsConflict()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        context.ContentTypes.Add(contentType);
+        await context.SaveChangesAsync();
+
+        var category = CategoryFactory.Create(contentType.Id);
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var article = ArticleFactory.CreatePublished(category.Id);
+        context.Articles.Add(article);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsVisitor();
+
+        await Client.PostAsync($"{ApiRoutes.Public.Articles}/{article.Id}/bookmarks", null);
+
+        var response = await Client.PostAsync($"{ApiRoutes.Public.Articles}/{article.Id}/bookmarks", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }
