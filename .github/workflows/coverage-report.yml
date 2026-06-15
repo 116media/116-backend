@@ -1,93 +1,104 @@
 name: Coverage Report
 
+# Runs after the Unit Tests and Integration Tests workflows finish and
+# reuses the coverage artifacts they produce, so the test suites are
+# never executed twice. The workflow fires once per upstream run; it
+# only posts the comment once both coverage artifacts are available for
+# the same commit.
 on:
-    pull_request:
-        branches: [main, develop]
+    workflow_run:
+        workflows: [Unit Tests, Integration Tests]
+        types: [completed]
 
-env:
-    DOTNET_VERSION: '9.0.x'
-    DOTNET_NOLOGO: true
-    DOTNET_CLI_TELEMETRY_OPTOUT: true
+permissions:
+    contents: read
+    actions: read
+    pull-requests: write
 
 jobs:
     coverage-report:
         name: Coverage Report
         runs-on: ubuntu-latest
-        permissions:
-            contents: read
-            pull-requests: write
+        if: >-
+            github.event.workflow_run.event == 'pull_request' &&
+            github.event.workflow_run.conclusion == 'success'
         steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-
-            - name: Setup .NET
-              uses: actions/setup-dotnet@v4
+            - name: Download unit coverage
+              uses: dawidd6/action-download-artifact@v6
               with:
-                  dotnet-version: ${{ env.DOTNET_VERSION }}
+                  workflow: unit-tests.yml
+                  commit: ${{ github.event.workflow_run.head_sha }}
+                  name: unit-coverage
+                  path: coverage/unit
+                  if_no_artifact_found: ignore
 
-            - name: Restore dependencies
-              run: dotnet restore
+            - name: Download integration coverage
+              uses: dawidd6/action-download-artifact@v6
+              with:
+                  workflow: integration-tests.yml
+                  commit: ${{ github.event.workflow_run.head_sha }}
+                  name: integration-coverage
+                  path: coverage/integration
+                  if_no_artifact_found: ignore
 
-            - name: Run unit tests with coverage
+            - name: Check both artifacts present
+              id: check
               run: |
-                  dotnet test tests/Unit \
-                    --configuration Release \
-                    --no-restore \
-                    /p:CollectCoverage=true \
-                    /p:CoverletOutputFormat=opencover \
-                    /p:CoverletOutput=${{ github.workspace }}/coverage/unit/coverage.opencover.xml \
-                    /p:ExcludeByFile=\"**/Migrations/**,**/obj/**/*.g.cs,**/*.Designer.cs\" \
-                    /p:ExcludeByAttribute=\"GeneratedCodeAttribute,CompilerGeneratedAttribute\"
+                  unit="$(find coverage/unit -name 'coverage.cobertura.xml' 2>/dev/null | head -n1)"
+                  integration="$(find coverage/integration -name 'coverage.cobertura.xml' 2>/dev/null | head -n1)"
+                  if [ -n "$unit" ] && [ -n "$integration" ]; then
+                    echo "ready=true" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "ready=false" >> "$GITHUB_OUTPUT"
+                    echo "Both coverage artifacts are not available yet; waiting for the other workflow."
+                  fi
 
-            - name: Run integration tests with coverage
-              env:
-                  DOTNET_ENVIRONMENT: Testing
-              run: |
-                  dotnet test tests/Integration \
-                    --configuration Release \
-                    --no-restore \
-                    /p:CollectCoverage=true \
-                    /p:CoverletOutputFormat=opencover \
-                    /p:CoverletOutput=${{ github.workspace }}/coverage/integration/coverage.opencover.xml \
-                    /p:ExcludeByFile=\"**/Migrations/**,**/obj/**/*.g.cs,**/*.Designer.cs\" \
-                    /p:ExcludeByAttribute=\"GeneratedCodeAttribute,CompilerGeneratedAttribute\"
-
-            - name: Generate unit coverage summary
+            - name: Generate combined coverage summary
+              if: steps.check.outputs.ready == 'true'
               uses: danielpalme/ReportGenerator-GitHub-Action@5
               with:
-                  reports: coverage/unit/coverage.opencover.xml
-                  targetdir: coverage/report/unit
+                  reports: coverage/**/coverage.cobertura.xml
+                  targetdir: coverage/report
                   reporttypes: MarkdownSummaryGithub
                   assemblyfilters: -*Tests*;-*Migrations*
-                  title: Unit Test Coverage
-
-            - name: Generate integration coverage summary
-              uses: danielpalme/ReportGenerator-GitHub-Action@5
-              with:
-                  reports: coverage/integration/coverage.opencover.xml
-                  targetdir: coverage/report/integration
-                  reporttypes: MarkdownSummaryGithub
-                  assemblyfilters: -*Tests*;-*Migrations*
-                  title: Integration Test Coverage
+                  title: Test Coverage
 
             - name: Assemble PR comment
+              if: steps.check.outputs.ready == 'true'
               run: |
+                  md=coverage/report/SummaryGithub.md
                   {
-                    echo "# Test Coverage"
+                    echo "# Test Coverage (Unit + Integration)"
                     echo ""
-                    echo "## Unit Tests"
+                    # Headline metrics block: everything before the per-class
+                    # "## Coverage" section, minus the leading H1.
+                    awk '/^## Coverage/{exit} !/^# Summary$/{print}' "$md"
                     echo ""
-                    cat coverage/report/unit/SummaryGithub.md
+                    echo "## Coverage by module"
                     echo ""
-                    echo "---"
-                    echo ""
-                    echo "## Integration Tests"
-                    echo ""
-                    cat coverage/report/integration/SummaryGithub.md
+                    echo "| Module | Line | Branch |"
+                    echo "|:---|---:|---:|"
+                    # Per-assembly total rows are the bold rows in the coverage
+                    # section; the bold "Name" header rows are excluded.
+                    awk '/^## Coverage/{c=1} c && /^\|\*\*/ && !/Name/{gsub(/\*\*/,""); print}' "$md"
                   } > coverage/comment.md
 
+            - name: Resolve PR number
+              id: pr
+              if: steps.check.outputs.ready == 'true'
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+              run: |
+                  num="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open \
+                    --json number,headRefOid \
+                    --jq "map(select(.headRefOid==\"$HEAD_SHA\")) | .[0].number")"
+                  echo "number=$num" >> "$GITHUB_OUTPUT"
+
             - name: Post coverage comment
+              if: steps.check.outputs.ready == 'true' && steps.pr.outputs.number != ''
               uses: marocchino/sticky-pull-request-comment@v2
               with:
                   header: test-coverage
+                  number: ${{ steps.pr.outputs.number }}
                   path: coverage/comment.md
