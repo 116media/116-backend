@@ -44,4 +44,23 @@ public class AdminActivatePricingTierEndpointV1Tests(PostgresFixture db) : BaseA
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    /// <summary>
+    /// Verifies that activating a pricing tier that is already active
+    /// returns a 409 Conflict response.
+    /// </summary>
+    [Fact]
+    public async Task ActivatePricingTier_WhenAlreadyActive_ReturnsConflict()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var pricingTier = PricingTierFactory.Create();
+        context.PricingTiers.Add(pricingTier);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.PricingTiers}/{pricingTier.Id}/activate", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }
