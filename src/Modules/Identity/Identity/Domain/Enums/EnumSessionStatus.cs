@@ -14,4 +14,9 @@ public enum EnumSessionStatus
     /// Represents an expired session (past expiration date).
     /// </summary>
     Expired,
+
+    /// <summary>
+    /// Represents a revoked session (explicitly logged out or invalidated).
+    /// </summary>
+    Revoked,
 }
