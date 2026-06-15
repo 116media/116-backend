@@ -1,8 +1,8 @@
 # 116-backend
 
 [![Build](https://github.com/116media/116-backend/actions/workflows/build.yml/badge.svg?branch=develop)](https://github.com/116media/116-backend/actions/workflows/build.yml)
-[![Unit Tests](https://codecov.io/github/116media/116-backend/branch/develop/graph/badge.svg?token=2U0DTBWF9D&flag=unit)](https://codecov.io/github/116media/116-backend)
-[![Integration Tests](https://codecov.io/github/116media/116-backend/branch/develop/graph/badge.svg?token=2U0DTBWF9D&flag=integration)](https://codecov.io/github/116media/116-backend)
+[![Unit Tests](https://img.shields.io/codecov/c/github/116media/116-backend/develop?token=2U0DTBWF9D&flag=unit&label=Unit%20Tests)](https://app.codecov.io/github/116media/116-backend/flags?flags%5B0%5D=unit)
+[![Integration Tests](https://img.shields.io/codecov/c/github/116media/116-backend/develop?token=2U0DTBWF9D&flag=integration&label=Integration%20Tests)](https://app.codecov.io/github/116media/116-backend/flags?flags%5B0%5D=integration)
 
 116 (Cent-Seize) is a bold digital platform that promotes music and hip-hop culture in DR and beyond. Through articles, video shows, and exclusive behind-the-scenes content, it connects fans with artists, highlights emerging talent, and tells the stories shaping the culture.
 
