@@ -25,4 +25,22 @@ public class AdminSoftDeleteRoleEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    /// <summary>
+    /// Verifies that soft-deleting a role that is already deleted returns a 409 Conflict.
+    /// </summary>
+    [Fact]
+    public async Task SoftDeleteRole_WhenAlreadyDeleted_ReturnsConflict()
+    {
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var role = RoleFactory.CreateDeleted(ShortName("dd"));
+        seedContext.Roles.Add(role);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Roles}/{role.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }
