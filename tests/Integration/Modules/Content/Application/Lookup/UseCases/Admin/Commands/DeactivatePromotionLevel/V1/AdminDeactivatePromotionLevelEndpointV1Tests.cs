@@ -46,4 +46,25 @@ public class AdminDeactivatePromotionLevelEndpointV1Tests(PostgresFixture db) : 
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    /// <summary>
+    /// Verifies that deactivating a promotion level that is already inactive returns 409 Conflict.
+    /// </summary>
+    [Fact]
+    public async Task DeactivatePromotionLevel_WhenAlreadyInactive_ReturnsConflict()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var promotionLevel = PromotionLevelFactory.CreateInactive();
+        context.PromotionLevels.Add(promotionLevel);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync(
+            $"{ApiRoutes.Admin.PromotionLevels}/{promotionLevel.Id}/deactivate",
+            null
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }
