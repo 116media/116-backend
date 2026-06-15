@@ -13,14 +13,14 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private const string KnownPassword = "Test123!abc";
+    private const string KnownPassword = TestAuth.ValidPassword;
     private const string ChangePasswordUrl = $"{ApiRoutes.Public.Auth}/change-password";
 
     [Fact]
     public async Task ChangePassword_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var request = new { OldPassword = "Old123!abc", NewPassword = "New123!abc" };
+        var request = new { OldPassword = TestAuth.OldPassword, NewPassword = TestAuth.NewPassword };
 
         var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
 
@@ -31,7 +31,7 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
     public async Task ChangePassword_AsAdmin_ReturnsForbidden()
     {
         Client.AuthenticateAsAdmin();
-        var request = new { OldPassword = "Old123!abc", NewPassword = "New123!abc" };
+        var request = new { OldPassword = TestAuth.OldPassword, NewPassword = TestAuth.NewPassword };
 
         var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
 
@@ -65,7 +65,7 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         Client.AuthenticateAs(userId, "Visitor", sessionId);
 
-        var request = new { OldPassword = KnownPassword, NewPassword = "NewPass123!abc" };
+        var request = new { OldPassword = KnownPassword, NewPassword = TestAuth.ChangedPassword };
 
         var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
 
@@ -99,7 +99,7 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         Client.AuthenticateAs(userId, "Visitor", sessionId);
 
-        var request = new { OldPassword = "WrongPassword123!", NewPassword = "NewPass123!abc" };
+        var request = new { OldPassword = TestAuth.IncorrectCurrentPassword, NewPassword = TestAuth.ChangedPassword };
 
         var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
 
@@ -161,7 +161,7 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         Client.AuthenticateAs(socialUserId, "Visitor", sessionId);
 
-        var request = new { OldPassword = "AnyPass123!", NewPassword = "NewPass123!abc" };
+        var request = new { OldPassword = TestAuth.SocialAccountPassword, NewPassword = TestAuth.ChangedPassword };
 
         var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
 
