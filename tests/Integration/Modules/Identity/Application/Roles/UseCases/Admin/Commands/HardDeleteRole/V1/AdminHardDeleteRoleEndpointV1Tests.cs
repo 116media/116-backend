@@ -45,4 +45,22 @@ public class AdminHardDeleteRoleEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    /// <summary>
+    /// Verifies that hard-deleting a core role (SuperAdmin, Admin, or Visitor) returns a 400 Bad Request.
+    /// </summary>
+    [Fact]
+    public async Task HardDeleteRole_CoreRole_ReturnsBadRequest()
+    {
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var coreRole = RoleFactory.CreateSuperAdmin();
+        seedContext.Roles.Add(coreRole);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Roles}/{coreRole.Id}/hard");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }
