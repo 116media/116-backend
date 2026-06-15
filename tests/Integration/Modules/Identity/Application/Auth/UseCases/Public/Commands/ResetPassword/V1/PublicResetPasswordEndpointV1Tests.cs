@@ -38,7 +38,7 @@ public class PublicResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
         {
             Email = "reset-valid@test.com",
             Code = Otp.ValidCode,
-            NewPassword = "NewSecure123!abc",
+            NewPassword = TestAuth.ResetNewPassword,
         };
 
         var response = await Client.PostAsJsonAsync(ResetPasswordUrl, request);
@@ -71,7 +71,7 @@ public class PublicResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
         {
             Email = "reset-invalid@test.com",
             Code = Otp.InvalidCode,
-            NewPassword = "NewSecure123!abc",
+            NewPassword = TestAuth.ResetNewPassword,
         };
 
         var response = await Client.PostAsJsonAsync(ResetPasswordUrl, request);
@@ -91,7 +91,7 @@ public class PublicResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
         {
             Email = "",
             Code = Otp.ValidCode,
-            NewPassword = "NewSecure123!abc",
+            NewPassword = TestAuth.ResetNewPassword,
         };
 
         var response = await Client.PostAsJsonAsync(ResetPasswordUrl, request);
