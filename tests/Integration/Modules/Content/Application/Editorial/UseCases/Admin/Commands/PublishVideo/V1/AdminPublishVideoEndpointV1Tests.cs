@@ -1,3 +1,6 @@
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.PublishVideo.V1;
 
 /// <summary>
@@ -48,5 +51,81 @@ public class AdminPublishVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}/publish", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task PublishVideo_AsSuperAdmin_AlreadyPublished_ReturnsConflict()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var video = VideoFactory.CreatePublished(category.Id);
+        context.ContentTypes.Add(contentType);
+        context.Categories.Add(category);
+        context.Videos.Add(video);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{video.Id}/publish", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task PublishVideo_AsSuperAdmin_DraftVideo_ReturnsBadRequest()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var video = VideoFactory.Create(category.Id);
+        context.ContentTypes.Add(contentType);
+        context.Categories.Add(category);
+        context.Videos.Add(video);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{video.Id}/publish", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task PublishVideo_AsSuperAdmin_ApprovedWithYoutubeUrl_ReturnsOk()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var video = VideoFactory.CreateApprovedWithYoutubeUrl(category.Id);
+        context.ContentTypes.Add(contentType);
+        context.Categories.Add(category);
+        context.Videos.Add(video);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{video.Id}/publish", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task PublishVideo_AsSuperAdmin_ApprovedWithoutYoutubeUrl_ReturnsBadRequest()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var video = VideoFactory.CreateApproved(category.Id);
+        context.ContentTypes.Add(contentType);
+        context.Categories.Add(category);
+        context.Videos.Add(video);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{video.Id}/publish", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }
