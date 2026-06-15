@@ -71,8 +71,36 @@ run_integration_tests() {
         /p:CoverletOutputFormat=opencover \
         /p:CoverletOutput="$COVERAGE_DIR/integration/coverage.opencover.xml" \
         /p:ExcludeByFile="\"**/Migrations/**,**/obj/**/*.g.cs,**/*.Designer.cs\"" \
-        /p:ExcludeByAttribute="\"GeneratedCodeAttribute,CompilerGeneratedAttribute\"" \
-        /p:MergeWith="$COVERAGE_DIR/unit/coverage.opencover.xml"
+        /p:ExcludeByAttribute="\"GeneratedCodeAttribute,CompilerGeneratedAttribute\""
+}
+
+# Generate a standalone coverage report for a single test suite.
+# Each suite gets its own report directory so unit and integration
+# coverage are reported separately instead of being merged together.
+generate_suite_report() {
+    local suite="$1"
+    local label="$2"
+    local report="$COVERAGE_DIR/$suite/coverage.opencover.xml"
+
+    if [ ! -f "$report" ]; then
+        print_warning "No $label coverage found at $report — skipping"
+        return
+    fi
+
+    reportgenerator \
+        -reports:"$report" \
+        -targetdir:"$COVERAGE_DIR/report/$suite" \
+        -reporttypes:"Html;TextSummary;MarkdownSummaryGithub" \
+        -assemblyfilters:"-*Tests*;-*Migrations*" \
+        -title:"$label Test Coverage"
+
+    print_success "\n$label coverage report: $COVERAGE_DIR/report/$suite/index.html"
+
+    if [ -f "$COVERAGE_DIR/report/$suite/Summary.txt" ]; then
+        echo ""
+        print_header "$label Coverage Summary"
+        cat "$COVERAGE_DIR/report/$suite/Summary.txt"
+    fi
 }
 
 generate_report() {
@@ -84,19 +112,8 @@ generate_report() {
         dotnet tool install -g dotnet-reportgenerator-globaltool
     fi
 
-    reportgenerator \
-        -reports:"$COVERAGE_DIR/**/coverage.opencover.xml" \
-        -targetdir:"$COVERAGE_DIR/report" \
-        -reporttypes:"Html;TextSummary;MarkdownSummary" \
-        -assemblyfilters:"-*Tests*;-*Migrations*"
-
-    print_success "\nCoverage report generated at: $COVERAGE_DIR/report/index.html"
-
-    # Print text summary
-    if [ -f "$COVERAGE_DIR/report/Summary.txt" ]; then
-        echo ""
-        cat "$COVERAGE_DIR/report/Summary.txt"
-    fi
+    generate_suite_report "unit" "Unit"
+    generate_suite_report "integration" "Integration"
 }
 
 show_help() {
