@@ -60,4 +60,19 @@ public class AdminActivatePackageEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact]
+    public async Task ActivatePackage_AsSuperAdmin_AlreadyActive_ReturnsConflict()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var package = PackageFactory.Create();
+        context.Packages.Add(package);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Packages}/{package.Id}/activate", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }
