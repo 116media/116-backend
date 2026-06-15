@@ -1,0 +1,93 @@
+name: Coverage Report
+
+on:
+    pull_request:
+        branches: [main, develop]
+
+env:
+    DOTNET_VERSION: '9.0.x'
+    DOTNET_NOLOGO: true
+    DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+    coverage-report:
+        name: Coverage Report
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            pull-requests: write
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: ${{ env.DOTNET_VERSION }}
+
+            - name: Restore dependencies
+              run: dotnet restore
+
+            - name: Run unit tests with coverage
+              run: |
+                  dotnet test tests/Unit \
+                    --configuration Release \
+                    --no-restore \
+                    /p:CollectCoverage=true \
+                    /p:CoverletOutputFormat=opencover \
+                    /p:CoverletOutput=${{ github.workspace }}/coverage/unit/coverage.opencover.xml \
+                    /p:ExcludeByFile="**/Migrations/**,**/obj/**/*.g.cs,**/*.Designer.cs" \
+                    /p:ExcludeByAttribute="GeneratedCodeAttribute,CompilerGeneratedAttribute"
+
+            - name: Run integration tests with coverage
+              env:
+                  DOTNET_ENVIRONMENT: Testing
+              run: |
+                  dotnet test tests/Integration \
+                    --configuration Release \
+                    --no-restore \
+                    /p:CollectCoverage=true \
+                    /p:CoverletOutputFormat=opencover \
+                    /p:CoverletOutput=${{ github.workspace }}/coverage/integration/coverage.opencover.xml \
+                    /p:ExcludeByFile="**/Migrations/**,**/obj/**/*.g.cs,**/*.Designer.cs" \
+                    /p:ExcludeByAttribute="GeneratedCodeAttribute,CompilerGeneratedAttribute"
+
+            - name: Generate unit coverage summary
+              uses: danielpalme/ReportGenerator-GitHub-Action@5
+              with:
+                  reports: coverage/unit/coverage.opencover.xml
+                  targetdir: coverage/report/unit
+                  reporttypes: MarkdownSummaryGithub
+                  assemblyfilters: -*Tests*;-*Migrations*
+                  title: Unit Test Coverage
+
+            - name: Generate integration coverage summary
+              uses: danielpalme/ReportGenerator-GitHub-Action@5
+              with:
+                  reports: coverage/integration/coverage.opencover.xml
+                  targetdir: coverage/report/integration
+                  reporttypes: MarkdownSummaryGithub
+                  assemblyfilters: -*Tests*;-*Migrations*
+                  title: Integration Test Coverage
+
+            - name: Assemble PR comment
+              run: |
+                  {
+                    echo "# Test Coverage"
+                    echo ""
+                    echo "## Unit Tests"
+                    echo ""
+                    cat coverage/report/unit/SummaryGithub.md
+                    echo ""
+                    echo "---"
+                    echo ""
+                    echo "## Integration Tests"
+                    echo ""
+                    cat coverage/report/integration/SummaryGithub.md
+                  } > coverage/comment.md
+
+            - name: Post coverage comment
+              uses: marocchino/sticky-pull-request-comment@v2
+              with:
+                  header: test-coverage
+                  path: coverage/comment.md
