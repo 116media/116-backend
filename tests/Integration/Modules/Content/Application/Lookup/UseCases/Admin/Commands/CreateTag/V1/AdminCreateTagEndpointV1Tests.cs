@@ -1,3 +1,6 @@
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Commands.CreateTag.V1;
 
 /// <summary>
@@ -48,5 +51,21 @@ public class AdminCreateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Tags, request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task CreateTag_AsSuperAdmin_DuplicateSlug_ReturnsConflict()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var existingTag = TagFactory.Create("Fally Ipupa", "fally-ipupa");
+        context.Tags.Add(existingTag);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { Name = "Fally Ipupa Duplicate", Slug = "fally-ipupa" };
+
+        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Tags, request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 }
