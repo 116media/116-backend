@@ -23,7 +23,9 @@ internal class ContentTypeBuilder
     public ContentTypeBuilder()
     {
         _id = Guid.NewGuid();
-        string unique = $"{_faker.Lorem.Word()}{Guid.NewGuid():N}"[..8];
+        string word = _faker.Lorem.Word();
+        string prefix = word.Length > 4 ? word[..4] : word;
+        string unique = $"{prefix}{Guid.NewGuid():N}";
         _name = unique[..Math.Min(TestConstants.Content.ContentType.NameMaxLength, unique.Length)];
     }
 
