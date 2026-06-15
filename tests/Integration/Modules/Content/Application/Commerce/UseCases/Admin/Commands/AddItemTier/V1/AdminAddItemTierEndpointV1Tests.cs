@@ -68,4 +68,40 @@ public class AdminAddItemTierEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    /// <summary>
+    /// Verifies that attaching a tier that is already attached to the order item returns 409 Conflict.
+    /// </summary>
+    [Fact]
+    public async Task AddItemTier_WhenAlreadyAttached_ReturnsConflict()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var customer = CustomerFactory.Create();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var pricingTier = PricingTierFactory.Create();
+        var categoryPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 9.99m);
+        var order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        var orderItem = ContentOrderItemFactory.Create(order.Id, category.Id);
+        var existingTier = ContentItemTierFactory.CreateDefault(orderItem.Id, pricingTier.Id);
+        seedContext.Customers.Add(customer);
+        seedContext.ContentTypes.Add(contentType);
+        seedContext.Categories.Add(category);
+        seedContext.PricingTiers.Add(pricingTier);
+        seedContext.CategoryPricing.Add(categoryPricing);
+        seedContext.ContentOrders.Add(order);
+        seedContext.ContentOrderItems.Add(orderItem);
+        seedContext.ContentItemTiers.Add(existingTier);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { PricingTierId = pricingTier.Id.ToString() };
+
+        var response = await Client.PostAsJsonAsync(
+            $"{ApiRoutes.Admin.Orders}/{order.Id}/items/{orderItem.Id}/tiers",
+            request
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }
