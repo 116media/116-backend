@@ -50,6 +50,19 @@ public static class HttpClientExtensions
     }
 
     /// <summary>
+    /// Authenticates the client with a specific user ID, role, and session ID.
+    /// Use this overload when the handler validates the session against the database.
+    /// </summary>
+    public static void AuthenticateAs(this HttpClient client, Guid userId, string role, Guid sessionId)
+    {
+        string token = GenerateToken(userId, role, sessionId);
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+            "Bearer",
+            token
+        );
+    }
+
+    /// <summary>
     /// Removes any authentication header from the client.
     /// </summary>
     public static void ClearAuthentication(this HttpClient client)
@@ -61,7 +74,7 @@ public static class HttpClientExtensions
     /// Mints a JWT token in-memory using the same secret, issuer, and audience
     /// that the test server validates against.
     /// </summary>
-    private static string GenerateToken(Guid userId, string role)
+    private static string GenerateToken(Guid userId, string role, Guid? sessionId = null)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Jwt.ValidSecret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -76,7 +89,7 @@ public static class HttpClientExtensions
             new(ClaimTypes.Role, role),
             new(JwtClaimsConstants.IsVerified, "true", ClaimValueTypes.Boolean),
             new(JwtClaimsConstants.IsActive, "true", ClaimValueTypes.Boolean),
-            new(JwtClaimsConstants.SessionId, Guid.NewGuid().ToString()),
+            new(JwtClaimsConstants.SessionId, (sessionId ?? Guid.NewGuid()).ToString()),
             new(JwtClaimsConstants.AuthProvider, "Email"),
         };
 
