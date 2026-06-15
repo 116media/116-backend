@@ -67,4 +67,25 @@ public class AdminDeactivateCategoryEndpointV1Tests(PostgresFixture db) : BaseAp
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    /// <summary>
+    /// Verifies that deactivating a category that is already inactive
+    /// returns a 409 Conflict response.
+    /// </summary>
+    [Fact]
+    public async Task DeactivateCategory_WhenAlreadyInactive_ReturnsConflict()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        seedContext.ContentTypes.Add(contentType);
+        var category = CategoryFactory.CreateInactive(contentType.Id);
+        seedContext.Categories.Add(category);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/deactivate", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }
