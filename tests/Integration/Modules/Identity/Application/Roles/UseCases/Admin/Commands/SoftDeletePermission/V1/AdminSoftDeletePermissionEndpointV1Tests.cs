@@ -41,4 +41,22 @@ public class AdminSoftDeletePermissionEndpointV1Tests(PostgresFixture db) : Base
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    /// <summary>
+    /// Verifies that soft-deleting a permission that is already deleted returns a 409 Conflict.
+    /// </summary>
+    [Fact]
+    public async Task SoftDeletePermission_WhenAlreadyDeleted_ReturnsConflict()
+    {
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var permission = PermissionFactory.CreateDeleted();
+        seedContext.Permissions.Add(permission);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Permissions}/{permission.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }
