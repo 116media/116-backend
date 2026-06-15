@@ -64,4 +64,97 @@ public class AdminUpdatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    /// <summary>
+    /// Verifies that updating a promotion level with a name exceeding the maximum allowed length
+    /// (40 characters) returns a 400 Bad Request or 422 Unprocessable Entity response,
+    /// exercising the <c>isRequired=false</c> branch of <c>ValidPromotionLevelName</c>
+    /// in PromotionLevelValidation.
+    /// </summary>
+    [Fact]
+    public async Task UpdatePromotionLevel_WithNameTooLong_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+        var id = Guid.NewGuid();
+        var request = new
+        {
+            Name = new string('L', 200),
+            DurationDays = 7,
+            PriceUsd = 50m,
+            SpotPriority = (int?)null,
+        };
+
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PromotionLevels}/{id}", request);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+    }
+
+    /// <summary>
+    /// Verifies that updating a promotion level with a negative price returns a 400 Bad Request
+    /// or 422 Unprocessable Entity response, exercising the <c>ValidPriceUsd</c> rule
+    /// in PromotionLevelValidation.
+    /// </summary>
+    [Fact]
+    public async Task UpdatePromotionLevel_WithNegativePrice_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+        var id = Guid.NewGuid();
+        var request = new
+        {
+            Name = "Valid Name",
+            DurationDays = 7,
+            PriceUsd = -10m,
+            SpotPriority = (int?)null,
+        };
+
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PromotionLevels}/{id}", request);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+    }
+
+    /// <summary>
+    /// Verifies that updating a promotion level with a zero duration returns a 400 Bad Request
+    /// or 422 Unprocessable Entity response, exercising the <c>ValidDurationDays</c> rule
+    /// in PromotionLevelValidation.
+    /// </summary>
+    [Fact]
+    public async Task UpdatePromotionLevel_WithZeroDuration_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+        var id = Guid.NewGuid();
+        var request = new
+        {
+            Name = "Valid Name",
+            DurationDays = 0,
+            PriceUsd = 50m,
+            SpotPriority = (int?)null,
+        };
+
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PromotionLevels}/{id}", request);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+    }
+
+    /// <summary>
+    /// Verifies that updating a promotion level with an invalid spot priority (outside 1-3)
+    /// returns a 400 Bad Request or 422 Unprocessable Entity response, exercising the
+    /// <c>ValidSpotPriority</c> rule in PromotionLevelValidation.
+    /// </summary>
+    [Fact]
+    public async Task UpdatePromotionLevel_WithInvalidSpotPriority_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+        var id = Guid.NewGuid();
+        var request = new
+        {
+            Name = "Valid Name",
+            DurationDays = 7,
+            PriceUsd = 50m,
+            SpotPriority = (int?)5,
+        };
+
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PromotionLevels}/{id}", request);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+    }
 }
