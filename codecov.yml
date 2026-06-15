@@ -29,12 +29,13 @@ parsers:
             macro: no
 
 comment:
-    layout: "reach,diff,flags,files,footer"
+    layout: "reach,diff,flags,components,files,footer"
     behavior: default
     require_changes: false
     require_base: false
     require_head: true
     after_n_builds: 2
+    show_carryforward_flags: true
 
 ignore:
     - "**/Migrations/**"
@@ -42,12 +43,25 @@ ignore:
     - "**/*.Designer.cs"
     - "**/Program.cs"
 
-flags:
-    unit:
-        paths:
-            - src/
+flag_management:
+    default_rules:
         carryforward: true
-    integration:
-        paths:
-            - src/
-        carryforward: true
+        statuses:
+            - type: project
+              target: auto
+              threshold: 0%
+    individual_flags:
+        - name: unit
+          paths:
+              - src/
+          statuses:
+              - type: patch
+                target: 60%
+                threshold: 0%
+        - name: integration
+          paths:
+              - src/
+          statuses:
+              - type: patch
+                target: 80%
+                threshold: 0%
