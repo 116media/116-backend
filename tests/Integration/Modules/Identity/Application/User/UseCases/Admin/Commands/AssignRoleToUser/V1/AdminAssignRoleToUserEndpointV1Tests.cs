@@ -58,4 +58,65 @@ public class AdminAssignRoleToUserEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    /// <summary>
+    /// Verifies that assigning a role that is already assigned to the user returns a 409 Conflict.
+    /// </summary>
+    [Fact]
+    public async Task AssignRole_WhenAlreadyAssigned_ReturnsConflict()
+    {
+        await using var context = CreateDbContext<IdentityDbContext>();
+        var role = RoleFactory.Create();
+        context.Roles.Add(role);
+        await context.SaveChangesAsync();
+
+        var userRole = UserRoleFactory.Create(TestUser.AdminId, role.Id);
+        context.UserRoles.Add(userRole);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { RoleId = role.Id };
+
+        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Users}/{TestUser.AdminId}/roles", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    /// <summary>
+    /// Verifies that assigning an inactive role to a user returns a 400 Bad Request.
+    /// </summary>
+    [Fact]
+    public async Task AssignRole_WhenRoleInactive_ReturnsBadRequest()
+    {
+        await using var context = CreateDbContext<IdentityDbContext>();
+        var role = RoleFactory.CreateInactive();
+        context.Roles.Add(role);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { RoleId = role.Id };
+
+        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Users}/{TestUser.AdminId}/roles", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    /// <summary>
+    /// Verifies that assigning a soft-deleted role to a user returns a 400 Bad Request.
+    /// </summary>
+    [Fact]
+    public async Task AssignRole_WhenRoleDeleted_ReturnsBadRequest()
+    {
+        await using var context = CreateDbContext<IdentityDbContext>();
+        var role = RoleFactory.CreateDeleted();
+        context.Roles.Add(role);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { RoleId = role.Id };
+
+        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Users}/{TestUser.AdminId}/roles", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }
