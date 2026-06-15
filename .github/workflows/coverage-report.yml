@@ -36,8 +36,8 @@ jobs:
                     /p:CollectCoverage=true \
                     /p:CoverletOutputFormat=opencover \
                     /p:CoverletOutput=${{ github.workspace }}/coverage/unit/coverage.opencover.xml \
-                    /p:ExcludeByFile="**/Migrations/**,**/obj/**/*.g.cs,**/*.Designer.cs" \
-                    /p:ExcludeByAttribute="GeneratedCodeAttribute,CompilerGeneratedAttribute"
+                    /p:ExcludeByFile=\"**/Migrations/**,**/obj/**/*.g.cs,**/*.Designer.cs\" \
+                    /p:ExcludeByAttribute=\"GeneratedCodeAttribute,CompilerGeneratedAttribute\"
 
             - name: Run integration tests with coverage
               env:
@@ -49,8 +49,8 @@ jobs:
                     /p:CollectCoverage=true \
                     /p:CoverletOutputFormat=opencover \
                     /p:CoverletOutput=${{ github.workspace }}/coverage/integration/coverage.opencover.xml \
-                    /p:ExcludeByFile="**/Migrations/**,**/obj/**/*.g.cs,**/*.Designer.cs" \
-                    /p:ExcludeByAttribute="GeneratedCodeAttribute,CompilerGeneratedAttribute"
+                    /p:ExcludeByFile=\"**/Migrations/**,**/obj/**/*.g.cs,**/*.Designer.cs\" \
+                    /p:ExcludeByAttribute=\"GeneratedCodeAttribute,CompilerGeneratedAttribute\"
 
             - name: Generate unit coverage summary
               uses: danielpalme/ReportGenerator-GitHub-Action@5
