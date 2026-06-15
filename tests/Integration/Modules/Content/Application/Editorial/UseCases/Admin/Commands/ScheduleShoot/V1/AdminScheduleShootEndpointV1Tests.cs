@@ -49,4 +49,21 @@ public class AdminScheduleShootEndpointV1Tests(PostgresFixture db) : BaseApiTest
             .StatusCode.Should()
             .BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.NotFound, HttpStatusCode.UnprocessableEntity);
     }
+
+    /// <summary>
+    /// Verifies that scheduling a shoot with a date in the past returns a 400 Bad Request
+    /// response from the validator because <c>ValidShootingScheduledAt</c> requires the
+    /// date to be greater than <c>DateTimeOffset.UtcNow</c>.
+    /// </summary>
+    [Fact]
+    public async Task ScheduleShoot_WithDateInPast_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+        var id = Guid.NewGuid();
+        var request = new { ShootingScheduledAt = DateTimeOffset.UtcNow.AddDays(-7) };
+
+        var response = await Client.PatchAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}/shoot", request);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+    }
 }
