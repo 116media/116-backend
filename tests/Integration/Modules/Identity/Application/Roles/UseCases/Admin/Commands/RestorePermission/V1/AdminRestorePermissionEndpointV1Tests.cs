@@ -43,4 +43,22 @@ public class AdminRestorePermissionEndpointV1Tests(PostgresFixture db) : BaseApi
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    /// <summary>
+    /// Verifies that restoring a permission that is not deleted returns a 409 Conflict.
+    /// </summary>
+    [Fact]
+    public async Task RestorePermission_WhenNotDeleted_ReturnsConflict()
+    {
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var permission = PermissionFactory.Create(UniqueResource("rn"), UniqueAction("rn"));
+        seedContext.Permissions.Add(permission);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Permissions}/{permission.Id}/restore", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }
