@@ -44,4 +44,19 @@ public class AdminActivateContentTypeEndpointV1Tests(PostgresFixture db) : BaseA
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    [Fact]
+    public async Task ActivateContentType_AsSuperAdmin_AlreadyActive_ReturnsConflict()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        context.ContentTypes.Add(contentType);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.ContentTypes}/{contentType.Id}/activate", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }
