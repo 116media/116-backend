@@ -45,6 +45,14 @@ jobs:
                   path: ./coverage/unit/*.trx
                   retention-days: 30
 
+            - name: Upload Coverage Data
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: unit-coverage
+                  path: ./coverage/unit/**/coverage.cobertura.xml
+                  retention-days: 30
+
             - name: Upload to Codecov
               uses: codecov/codecov-action@v5
               with:
