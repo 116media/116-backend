@@ -47,4 +47,38 @@ public class AdminCancelOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    [Fact]
+    public async Task CancelOrder_AsSuperAdmin_AlreadyCancelled_ReturnsConflict()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var order = ContentOrderFactory.CreateCancelled();
+        var customer = CustomerFactory.CreateWithId(order.CustomerId);
+        seedContext.Customers.Add(customer);
+        seedContext.ContentOrders.Add(order);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Orders}/{order.Id}/cancel", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task CancelOrder_AsSuperAdmin_PaidOrder_ReturnsBadRequest()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var order = ContentOrderFactory.CreatePaid();
+        var customer = CustomerFactory.CreateWithId(order.CustomerId);
+        seedContext.Customers.Add(customer);
+        seedContext.ContentOrders.Add(order);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Orders}/{order.Id}/cancel", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }
