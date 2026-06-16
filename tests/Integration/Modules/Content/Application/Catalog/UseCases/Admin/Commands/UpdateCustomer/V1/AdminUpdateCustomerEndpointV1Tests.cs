@@ -1,5 +1,8 @@
-using System.Text.Json;
+using System.Net.Http.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCustomer.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCustomer.V1;
@@ -10,6 +13,16 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminUpdateCustomerEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<CustomerEntity> SeedCustomerAsync()
+    {
+        return await SeedAsync<ContentDbContext, CustomerEntity>(ctx =>
+        {
+            CustomerEntity customer = CustomerFactory.Create();
+            ctx.Customers.Add(customer);
+            return customer;
+        });
+    }
+
     [Fact]
     public async Task UpdateCustomer_WithNoAuth_ReturnsUnauthorized()
     {
@@ -24,10 +37,7 @@ public class AdminUpdateCustomerEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task UpdateCustomer_AsVisitor_ReturnsForbidden()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var customer = CustomerFactory.Create();
-        seedContext.Customers.Add(customer);
-        await seedContext.SaveChangesAsync();
+        CustomerEntity customer = await SeedCustomerAsync();
 
         Client.AuthenticateAsVisitor();
         var request = new { FullName = "Visitor Update", Email = "visitor-update@example.com" };
@@ -40,79 +50,84 @@ public class AdminUpdateCustomerEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task UpdateCustomer_AsSuperAdmin_WithValidData_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var customer = CustomerFactory.Create();
-        seedContext.Customers.Add(customer);
-        await seedContext.SaveChangesAsync();
+        CustomerEntity customer = await SeedCustomerAsync();
 
         Client.AuthenticateAsSuperAdmin();
-        var updatedEmail = $"updated-{Guid.NewGuid():N}@example.com";
-        var request = new
-        {
-            FullName = "Updated Name",
-            Email = updatedEmail,
-            Phone = "+243888000111",
-            Company = "Updated Corp",
-            Notes = "Updated notes",
-        };
+        string updatedEmail = $"updated-{Guid.NewGuid():N}@example.com";
+        AdminUpdateCustomerRequest request = new AdminUpdateCustomerRequestBuilder().WithEmail(updatedEmail).Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Customers}/{customer.Id}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminUpdateCustomerResponse>();
+        body.Customer.Id.Should().Be(customer.Id);
+        body.Customer.FullName.Should().Be(request.FullName);
+        body.Customer.Email.Should().Be(updatedEmail);
+        body.Customer.Company.Should().Be(request.Company);
+
+        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        CustomerEntity? updated = await verifyContext.Customers.FindAsync(customer.Id);
+        updated.Should().NotBeNull();
+        updated!.FullName.Should().Be(request.FullName);
+        updated.Email.Should().Be(updatedEmail);
     }
 
     [Fact]
     public async Task UpdateCustomer_AsAdmin_WithValidData_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var customer = CustomerFactory.Create();
-        seedContext.Customers.Add(customer);
-        await seedContext.SaveChangesAsync();
+        CustomerEntity customer = await SeedCustomerAsync();
 
         Client.AuthenticateAsAdmin();
-        var updatedEmail = $"admin-upd-{Guid.NewGuid():N}@example.com";
-        var request = new { FullName = "Admin Updated", Email = updatedEmail };
+        string updatedEmail = $"admin-upd-{Guid.NewGuid():N}@example.com";
+        AdminUpdateCustomerRequest request = new AdminUpdateCustomerRequestBuilder().WithEmail(updatedEmail).Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Customers}/{customer.Id}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminUpdateCustomerResponse>();
+        body.Customer.Id.Should().Be(customer.Id);
+        body.Customer.FullName.Should().Be(request.FullName);
+        body.Customer.Email.Should().Be(updatedEmail);
+
+        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        CustomerEntity? updated = await verifyContext.Customers.FindAsync(customer.Id);
+        updated!.Email.Should().Be(updatedEmail);
     }
 
     [Fact]
     public async Task UpdateCustomer_NonExistentId_ReturnsNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { FullName = "Ghost", Email = "ghost@example.com" };
+        AdminUpdateCustomerRequest request = new AdminUpdateCustomerRequestBuilder().Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Customers}/{Guid.NewGuid()}", request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task UpdateCustomer_WithEmptyFullName_ReturnsValidationError()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var customer = CustomerFactory.Create();
-        seedContext.Customers.Add(customer);
-        await seedContext.SaveChangesAsync();
+        CustomerEntity customer = await SeedCustomerAsync();
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { FullName = "", Email = "valid@example.com" };
+        AdminUpdateCustomerRequest request = new AdminUpdateCustomerRequestBuilder().WithFullName(string.Empty).Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Customers}/{customer.Id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task UpdateCustomer_WithInvalidGuidId_ReturnsValidationError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { FullName = "Valid", Email = "valid@example.com" };
+        AdminUpdateCustomerRequest request = new AdminUpdateCustomerRequestBuilder().Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Customers}/not-a-guid", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }
