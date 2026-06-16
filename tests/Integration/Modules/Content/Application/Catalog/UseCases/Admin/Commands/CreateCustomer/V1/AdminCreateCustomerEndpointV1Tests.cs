@@ -1,5 +1,8 @@
-using System.Text.Json;
+using System.Net.Http.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCustomer.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Commands.CreateCustomer.V1;
@@ -36,96 +39,96 @@ public class AdminCreateCustomerEndpointV1Tests(PostgresFixture db) : BaseApiTes
     public async Task CreateCustomer_AsAdmin_WithValidData_ReturnsCreated()
     {
         Client.AuthenticateAsAdmin();
-        var email = $"admin-create-{Guid.NewGuid():N}@example.com";
-        var request = new
-        {
-            FullName = "Admin Created",
-            Email = email,
-            Phone = "+243999000111",
-            Company = "Acme Corp",
-            Notes = "VIP customer",
-        };
+        string email = $"admin-create-{Guid.NewGuid():N}@example.com";
+        AdminCreateCustomerRequest request = new AdminCreateCustomerRequestBuilder().WithEmail(email).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Customers, request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
+        var body = await response.ReadAsAsync<AdminCreateCustomerResponse>();
+        body.Customer.Id.Should().NotBeEmpty();
+        body.Customer.FullName.Should().Be(request.FullName);
+        body.Customer.Email.Should().Be(email);
+        body.Customer.Company.Should().Be(request.Company);
+
         await using var context = CreateDbContext<ContentDbContext>();
-        var customer = await context.Customers.FirstOrDefaultAsync(c => c.Email == email);
+        CustomerEntity? customer = await context.Customers.FirstOrDefaultAsync(c => c.Id == body.Customer.Id);
         customer.Should().NotBeNull();
-        customer!.FullName.Should().Be("Admin Created");
+        customer!.FullName.Should().Be(request.FullName);
+        customer.Email.Should().Be(email);
     }
 
     [Fact]
     public async Task CreateCustomer_AsSuperAdmin_WithValidData_ReturnsCreated()
     {
         Client.AuthenticateAsSuperAdmin();
-        var email = $"super-create-{Guid.NewGuid():N}@example.com";
-        var request = new
-        {
-            FullName = "Super Created",
-            Email = email,
-            Phone = "+243999000222",
-            Company = "Super Corp",
-            Notes = "Created by super admin",
-        };
+        string email = $"super-create-{Guid.NewGuid():N}@example.com";
+        AdminCreateCustomerRequest request = new AdminCreateCustomerRequestBuilder().WithEmail(email).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Customers, request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
+        var body = await response.ReadAsAsync<AdminCreateCustomerResponse>();
+        body.Customer.Id.Should().NotBeEmpty();
+        body.Customer.Company.Should().Be(request.Company);
+
         await using var context = CreateDbContext<ContentDbContext>();
-        var customer = await context.Customers.FirstOrDefaultAsync(c => c.Email == email);
+        CustomerEntity? customer = await context.Customers.FirstOrDefaultAsync(c => c.Id == body.Customer.Id);
         customer.Should().NotBeNull();
-        customer!.Company.Should().Be("Super Corp");
+        customer!.Company.Should().Be(request.Company);
     }
 
     [Fact]
     public async Task CreateCustomer_WithEmptyFullName_ReturnsValidationError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { FullName = "", Email = "valid@example.com" };
+        AdminCreateCustomerRequest request = new AdminCreateCustomerRequestBuilder().WithFullName(string.Empty).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Customers, request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task CreateCustomer_WithEmptyEmail_ReturnsValidationError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { FullName = "Valid Name", Email = "" };
+        AdminCreateCustomerRequest request = new AdminCreateCustomerRequestBuilder().WithEmail(string.Empty).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Customers, request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task CreateCustomer_WithInvalidEmail_ReturnsValidationError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { FullName = "Valid Name", Email = "not-an-email" };
+        AdminCreateCustomerRequest request = new AdminCreateCustomerRequestBuilder().WithEmail("not-an-email").Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Customers, request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task CreateCustomer_WithDuplicateEmail_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var existing = CustomerFactory.Create("duplicate@example.com");
-        seedContext.Customers.Add(existing);
-        await seedContext.SaveChangesAsync();
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            CustomerEntity existing = CustomerFactory.Create("duplicate@example.com");
+            ctx.Customers.Add(existing);
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { FullName = "Duplicate", Email = "duplicate@example.com" };
+        AdminCreateCustomerRequest request = new AdminCreateCustomerRequestBuilder()
+            .WithEmail("duplicate@example.com")
+            .Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Customers, request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
     }
 }
