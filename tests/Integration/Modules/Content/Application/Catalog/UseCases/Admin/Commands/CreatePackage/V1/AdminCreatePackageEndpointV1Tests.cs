@@ -1,7 +1,8 @@
 using System.Net.Http.Json;
-using System.Text.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreatePackage.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
-using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Commands.CreatePackage.V1;
 
@@ -37,37 +38,45 @@ public class AdminCreatePackageEndpointV1Tests(PostgresFixture db) : BaseApiTest
     public async Task CreatePackage_AsSuperAdmin_WithEmptyName_ReturnsValidationError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { Name = "", Description = "Missing name" };
+        AdminCreatePackageRequest request = new AdminCreatePackageRequestBuilder().WithName(string.Empty).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Packages, request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task CreatePackage_AsSuperAdmin_WithEmptyDescription_ReturnsValidationError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { Name = "Valid Name", Description = "" };
+        AdminCreatePackageRequest request = new AdminCreatePackageRequestBuilder()
+            .WithDescription(string.Empty)
+            .Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Packages, request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task CreatePackage_AsSuperAdmin_WithValidData_ReturnsCreated()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { Name = "Premium Bundle", Description = "A premium content package" };
+        AdminCreatePackageRequest request = new AdminCreatePackageRequestBuilder().Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Packages, request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
+        var body = await response.ReadAsAsync<AdminCreatePackageResponse>();
+        body.Package.Id.Should().NotBeEmpty();
+        body.Package.Name.Should().Be(request.Name);
+        body.Package.Description.Should().Be(request.Description);
+
         await using var context = CreateDbContext<ContentDbContext>();
-        var package = await context.Packages.FirstOrDefaultAsync(p => p.Name == "Premium Bundle");
+        PackageEntity? package = await context.Packages.FirstOrDefaultAsync(p => p.Id == body.Package.Id);
         package.Should().NotBeNull();
-        package!.Description.Should().Be("A premium content package");
+        package!.Name.Should().Be(request.Name);
+        package.Description.Should().Be(request.Description);
     }
 }
