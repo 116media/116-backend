@@ -1,4 +1,4 @@
-using System.Net.Http.Json;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -10,42 +10,51 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminDeactivateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ShortName(string prefix = "c") => $"{prefix}{Guid.NewGuid().ToString("N")[..8]}";
+    private async Task<CategoryEntity> SeedCategoryAsync(bool active)
+    {
+        return await SeedAsync<ContentDbContext, CategoryEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity category = active
+                ? CategoryFactory.Create(contentType.Id)
+                : CategoryFactory.CreateInactive(contentType.Id);
+            ctx.Categories.Add(category);
+            return category;
+        });
+    }
 
-    private static string ShortSlug(string prefix = "s") => $"{prefix}-{Guid.NewGuid().ToString("N")[..8]}";
+    private async Task<bool> IsCategoryActiveAsync(Guid id)
+    {
+        await using var ctx = CreateDbContext<ContentDbContext>();
+        CategoryEntity? category = await ctx.Categories.FindAsync(id);
+        return category!.IsActive;
+    }
 
     [Fact]
     public async Task DeactivateCategory_AsSuperAdmin_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = await SeedCategoryAsync(active: true);
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/deactivate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Categories.Deactivate(category.Id), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await IsCategoryActiveAsync(category.Id)).Should().BeFalse();
     }
 
     [Fact]
     public async Task DeactivateCategory_AsAdmin_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = await SeedCategoryAsync(active: true);
 
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/deactivate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Categories.Deactivate(category.Id), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await IsCategoryActiveAsync(category.Id)).Should().BeFalse();
     }
 
     [Fact]
@@ -53,9 +62,9 @@ public class AdminDeactivateCategoryEndpointV1Tests(PostgresFixture db) : BaseAp
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/deactivate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Categories.Deactivate(Guid.NewGuid()), null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -63,7 +72,7 @@ public class AdminDeactivateCategoryEndpointV1Tests(PostgresFixture db) : BaseAp
     {
         Client.ClearAuthentication();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/deactivate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Categories.Deactivate(Guid.NewGuid()), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -75,17 +84,13 @@ public class AdminDeactivateCategoryEndpointV1Tests(PostgresFixture db) : BaseAp
     [Fact]
     public async Task DeactivateCategory_WhenAlreadyInactive_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.CreateInactive(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = await SeedCategoryAsync(active: false);
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/deactivate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Categories.Deactivate(category.Id), null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await IsCategoryActiveAsync(category.Id)).Should().BeFalse();
     }
 }
