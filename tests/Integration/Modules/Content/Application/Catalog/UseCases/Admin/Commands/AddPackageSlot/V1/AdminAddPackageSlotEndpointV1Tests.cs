@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
-using System.Text.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.AddPackageSlot.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Commands.AddPackageSlot.V1;
@@ -11,6 +13,16 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminAddPackageSlotEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<PackageEntity> SeedPackageAsync()
+    {
+        return await SeedAsync<ContentDbContext, PackageEntity>(ctx =>
+        {
+            PackageEntity package = PackageFactory.Create();
+            ctx.Packages.Add(package);
+            return package;
+        });
+    }
+
     [Fact]
     public async Task AddPackageSlot_WithNoAuth_ReturnsUnauthorized()
     {
@@ -22,7 +34,7 @@ public class AdminAddPackageSlotEndpointV1Tests(PostgresFixture db) : BaseApiTes
             Quantity = 1,
         };
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Packages}/{Guid.NewGuid()}/slots", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Packages.Slots(Guid.NewGuid()), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -30,10 +42,7 @@ public class AdminAddPackageSlotEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task AddPackageSlot_AsAdmin_ReturnsForbidden()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var package = PackageFactory.Create();
-        context.Packages.Add(package);
-        await context.SaveChangesAsync();
+        PackageEntity package = await SeedPackageAsync();
 
         Client.AuthenticateAsAdmin();
         var request = new
@@ -43,7 +52,7 @@ public class AdminAddPackageSlotEndpointV1Tests(PostgresFixture db) : BaseApiTes
             Quantity = 1,
         };
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Packages}/{package.Id}/slots", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Packages.Slots(package.Id), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -51,87 +60,95 @@ public class AdminAddPackageSlotEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task AddPackageSlot_AsSuperAdmin_WithInvalidQuantity_ReturnsValidationError()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var package = PackageFactory.Create();
-        context.Packages.Add(package);
-        await context.SaveChangesAsync();
+        PackageEntity package = await SeedPackageAsync();
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new
-        {
-            CategoryId = (Guid?)null,
-            IsRequired = true,
-            Quantity = 0,
-        };
+        AdminAddPackageSlotRequest request = new AdminAddPackageSlotRequestBuilder().WithQuantity(0).Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Packages}/{package.Id}/slots", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Packages.Slots(package.Id), request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task AddPackageSlot_AsSuperAdmin_NonExistentPackage_ReturnsNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new
-        {
-            CategoryId = (Guid?)null,
-            IsRequired = true,
-            Quantity = 1,
-        };
+        AdminAddPackageSlotRequest request = new AdminAddPackageSlotRequestBuilder().WithQuantity(1).Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Packages}/{Guid.NewGuid()}/slots", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Packages.Slots(Guid.NewGuid()), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task AddPackageSlot_AsSuperAdmin_WithValidData_ReturnsCreated()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
-
-        var category = CategoryFactory.Create(contentType.Id);
-        context.Categories.Add(category);
-        await context.SaveChangesAsync();
-
-        var package = PackageFactory.Create();
-        context.Packages.Add(package);
-        await context.SaveChangesAsync();
+        CategoryEntity category = null!;
+        PackageEntity package = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            package = PackageFactory.Create();
+            ctx.Packages.Add(package);
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new
-        {
-            CategoryId = (Guid?)category.Id,
-            IsRequired = true,
-            Quantity = 2,
-        };
+        AdminAddPackageSlotRequest request = new AdminAddPackageSlotRequestBuilder()
+            .WithCategoryId(category.Id)
+            .WithIsRequired(true)
+            .WithQuantity(2)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Packages}/{package.Id}/slots", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Packages.Slots(package.Id), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var body = await response.ReadAsAsync<AdminAddPackageSlotResponse>();
+        body.Package.Id.Should().Be(package.Id);
+        body.Package.Slots.Should()
+            .Contain(s =>
+                s.CategoryId == request.CategoryId
+                && s.Quantity == request.Quantity
+                && s.IsRequired == request.IsRequired
+            );
+
+        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        PackageSlotEntity? slot = await verifyContext.PackageSlots.FirstOrDefaultAsync(s =>
+            s.PackageId == package.Id && s.CategoryId == category.Id
+        );
+        slot.Should().NotBeNull();
+        slot!.Quantity.Should().Be(2);
+        slot.IsRequired.Should().BeTrue();
     }
 
     [Fact]
     public async Task AddPackageSlot_AsSuperAdmin_WithNullCategory_ReturnsCreated()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var package = PackageFactory.Create();
-        context.Packages.Add(package);
-        await context.SaveChangesAsync();
+        PackageEntity package = await SeedPackageAsync();
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new
-        {
-            CategoryId = (Guid?)null,
-            IsRequired = false,
-            Quantity = 1,
-        };
+        AdminAddPackageSlotRequest request = new AdminAddPackageSlotRequestBuilder()
+            .WithCategoryId(null)
+            .WithIsRequired(false)
+            .WithQuantity(1)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Packages}/{package.Id}/slots", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Packages.Slots(package.Id), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var body = await response.ReadAsAsync<AdminAddPackageSlotResponse>();
+        body.Package.Id.Should().Be(package.Id);
+        body.Package.Slots.Should().Contain(s => s.CategoryId == null && s.Quantity == request.Quantity);
+
+        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        PackageSlotEntity? slot = await verifyContext.PackageSlots.FirstOrDefaultAsync(s =>
+            s.PackageId == package.Id && s.CategoryId == null
+        );
+        slot.Should().NotBeNull();
     }
 }
