@@ -55,11 +55,11 @@ public abstract class BaseApiTest : IAsyncLifetime
     /// </summary>
     /// <typeparam name="TDbContext">The database context to seed against.</typeparam>
     /// <param name="seed">An action that adds entities to the context.</param>
-    protected async Task SeedAsync<TDbContext>(Func<TDbContext, Task> seed)
+    protected async Task SeedAsync<TDbContext>(Action<TDbContext> seed)
         where TDbContext : DbContext
     {
         await using var context = CreateDbContext<TDbContext>();
-        await seed(context);
+        seed(context);
         await context.SaveChangesAsync();
     }
 
