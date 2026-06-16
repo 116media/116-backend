@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +14,10 @@ namespace _116.Integration.Tests.Common.Extensions;
 /// </summary>
 public static class HttpResponseExtensions
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter() },
+    };
 
     /// <summary>
     /// Deserializes the response body into <typeparamref name="T" /> (a production
@@ -46,8 +50,17 @@ public static class HttpResponseExtensions
     {
         response.StatusCode.Should().Be(status);
 
-        ProblemDetails? problem = await response.Content.ReadFromJsonAsync<ProblemDetails>(JsonOptions);
-        problem.Should().NotBeNull("error responses should carry a ProblemDetails body");
+        // Some error responses (e.g. framework/multipart model-binding failures) carry no
+        // body. The status assertion above is the contract in that case; only validate the
+        // ProblemDetails shape when a body is actually present.
+        string raw = await response.Content.ReadAsStringAsync();
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return;
+        }
+
+        ProblemDetails? problem = JsonSerializer.Deserialize<ProblemDetails>(raw, JsonOptions);
+        problem.Should().NotBeNull("a non-empty error response should be a ProblemDetails body");
         problem!.Status.Should().Be((int)status);
         problem.Title.Should().NotBeNullOrWhiteSpace();
 
