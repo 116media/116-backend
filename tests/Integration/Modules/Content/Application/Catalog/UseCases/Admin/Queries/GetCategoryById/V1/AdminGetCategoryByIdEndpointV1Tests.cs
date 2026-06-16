@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetCategoryById.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -10,6 +11,18 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminGetCategoryByIdEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<CategoryEntity> SeedCategoryAsync()
+    {
+        return await SeedAsync<ContentDbContext, CategoryEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            return category;
+        });
+    }
+
     [Fact]
     public async Task AdminGetCategoryById_WithoutAuthentication_ReturnsUnauthorized()
     {
@@ -23,14 +36,7 @@ public class AdminGetCategoryByIdEndpointV1Tests(PostgresFixture db) : BaseApiTe
     [Fact]
     public async Task AdminGetCategoryById_AsVisitor_ReturnsForbidden()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
-
-        var category = CategoryFactory.Create(contentType.Id);
-        context.Categories.Add(category);
-        await context.SaveChangesAsync();
+        CategoryEntity category = await SeedCategoryAsync();
 
         Client.AuthenticateAsVisitor();
 
@@ -42,14 +48,7 @@ public class AdminGetCategoryByIdEndpointV1Tests(PostgresFixture db) : BaseApiTe
     [Fact]
     public async Task AdminGetCategoryById_AsSuperAdmin_WithExistingCategory_ReturnsOk()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
-
-        var category = CategoryFactory.Create(contentType.Id);
-        context.Categories.Add(category);
-        await context.SaveChangesAsync();
+        CategoryEntity category = await SeedCategoryAsync();
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -57,11 +56,10 @@ public class AdminGetCategoryByIdEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var categoryProp = doc.RootElement.GetProperty("category");
-
-        categoryProp.GetProperty("id").GetString().Should().Be(category.Id.ToString());
+        var body = await response.ReadAsAsync<AdminGetCategoryByIdResponse>();
+        body.Category.Id.Should().Be(category.Id);
+        body.Category.Name.Should().Be(category.Name);
+        body.Category.Slug.Should().Be(category.Slug);
     }
 
     [Fact]
@@ -71,6 +69,6 @@ public class AdminGetCategoryByIdEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 }
