@@ -52,7 +52,10 @@ public class PublicRateVideoHandlerTests
         result.IsSuccess.Should().BeTrue();
         _videoRepositoryMock.VerifyAddRatingCalled();
         _videoRepositoryMock.VerifyUpdateCalled();
-        _unitOfWorkMock.VerifyCommitCalled();
+
+        // The handler commits twice: once to persist the rating, then again after
+        // recomputing the video's denormalized rating count and average.
+        _unitOfWorkMock.VerifyCommitCalled(2);
     }
 
     [Fact]
@@ -76,7 +79,10 @@ public class PublicRateVideoHandlerTests
         result.IsSuccess.Should().BeTrue();
         _videoRepositoryMock.VerifyUpdateRatingCalled();
         _videoRepositoryMock.VerifyUpdateCalled();
-        _unitOfWorkMock.VerifyCommitCalled();
+
+        // The handler commits twice: once to persist the rating, then again after
+        // recomputing the video's denormalized rating count and average.
+        _unitOfWorkMock.VerifyCommitCalled(2);
     }
 
     #endregion
