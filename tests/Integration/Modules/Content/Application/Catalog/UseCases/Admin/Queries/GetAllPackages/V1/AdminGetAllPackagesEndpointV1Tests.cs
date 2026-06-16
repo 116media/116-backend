@@ -1,5 +1,5 @@
-using System.Net.Http.Json;
-using System.Text.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetAllPackages.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -34,10 +34,12 @@ public class AdminGetAllPackagesEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task GetAllPackages_AsSuperAdmin_ReturnsOkWithItems()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var packages = PackageFactory.CreateMany(3);
-        context.Packages.AddRange(packages);
-        await context.SaveChangesAsync();
+        List<PackageEntity> packages = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            packages = PackageFactory.CreateMany(3);
+            ctx.Packages.AddRange(packages);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -45,13 +47,11 @@ public class AdminGetAllPackagesEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var root = doc.RootElement;
-
-        root.TryGetProperty("packages", out var packagesProp).Should().BeTrue();
-        packagesProp.TryGetProperty("items", out var items).Should().BeTrue();
-        items.GetArrayLength().Should().BeGreaterThanOrEqualTo(3);
+        var body = await response.ReadAsAsync<AdminGetAllPackagesResponse>();
+        body.Packages.PageIndex.Should().Be(0);
+        body.Packages.PageSize.Should().Be(10);
+        body.Packages.Count.Should().BeGreaterThanOrEqualTo(3);
+        body.Packages.Items.Should().Contain(p => p.Id == packages[0].Id);
     }
 
     [Fact]
@@ -62,16 +62,21 @@ public class AdminGetAllPackagesEndpointV1Tests(PostgresFixture db) : BaseApiTes
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Packages}?pageIndex=0&pageSize=10");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminGetAllPackagesResponse>();
+        body.Packages.Should().NotBeNull();
     }
 
     [Fact]
     public async Task GetAllPackages_WithIsActiveFilter_ReturnsFilteredResults()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var activePackage = PackageFactory.Create();
-        var inactivePackage = PackageFactory.CreateInactive();
-        context.Packages.AddRange(activePackage, inactivePackage);
-        await context.SaveChangesAsync();
+        PackageEntity activePackage = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            activePackage = PackageFactory.Create();
+            PackageEntity inactivePackage = PackageFactory.CreateInactive();
+            ctx.Packages.AddRange(activePackage, inactivePackage);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -79,14 +84,8 @@ public class AdminGetAllPackagesEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var packagesProp = doc.RootElement.GetProperty("packages");
-        var items = packagesProp.GetProperty("items");
-
-        for (var i = 0; i < items.GetArrayLength(); i++)
-        {
-            items[i].GetProperty("isActive").GetBoolean().Should().BeTrue();
-        }
+        var body = await response.ReadAsAsync<AdminGetAllPackagesResponse>();
+        body.Packages.Items.Should().OnlyContain(p => p.IsActive);
+        body.Packages.Items.Should().Contain(p => p.Id == activePackage.Id);
     }
 }
