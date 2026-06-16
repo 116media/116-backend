@@ -1,0 +1,8 @@
+# Scoped overrides for the shared test-support assembly. Inherits all rules from the
+# repository-root .editorconfig (no `root = true`).
+
+[*.cs]
+# This is a test-only support project, not shipped application code. The
+# [ModuleInitializer] used to seed Bogus's global randomizer for deterministic test
+# data is a deliberate, sanctioned use, so CA2255 does not apply here.
+dotnet_diagnostic.CA2255.severity = none
