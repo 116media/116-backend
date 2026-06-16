@@ -1,4 +1,6 @@
 using System.Net.Http.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategory.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -14,21 +16,30 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
     private static string ShortSlug(string prefix = "s") => $"{prefix}-{Guid.NewGuid().ToString("N")[..8]}";
 
+    private async Task<CategoryEntity> SeedCategoryAsync()
+    {
+        return await SeedAsync<ContentDbContext, CategoryEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            return category;
+        });
+    }
+
     [Fact]
     public async Task UpdateCategory_AsSuperAdmin_WithValidData_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = await SeedCategoryAsync();
 
         Client.AuthenticateAsSuperAdmin();
+        string name = ShortName("un");
+        string slug = ShortSlug("un");
         var request = new
         {
-            Name = ShortName("un"),
-            Slug = ShortSlug("un"),
+            Name = name,
+            Slug = slug,
             Description = "Updated",
             IsGossip = false,
             IsExclusive = false,
@@ -37,6 +48,19 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{category.Id}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminUpdateCategoryResponse>();
+        body.Category.Id.Should().Be(category.Id);
+        body.Category.Name.Should().Be(name);
+        body.Category.Slug.Should().Be(slug);
+        body.Category.Description.Should().Be("Updated");
+
+        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        CategoryEntity? updated = await verifyContext.Categories.FindAsync(category.Id);
+        updated.Should().NotBeNull();
+        updated!.Name.Should().Be(name);
+        updated.Slug.Should().Be(slug);
+        updated.Description.Should().Be("Updated");
     }
 
     [Fact]
@@ -54,18 +78,13 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}", request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task UpdateCategory_AsAdmin_ReturnsForbidden()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = await SeedCategoryAsync();
 
         Client.AuthenticateAsAdmin();
         var request = new
@@ -103,12 +122,7 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task UpdateCategory_WithEmptyName_ReturnsValidationError()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = await SeedCategoryAsync();
 
         Client.AuthenticateAsSuperAdmin();
         var request = new
@@ -122,7 +136,7 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{category.Id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -140,7 +154,7 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/not-a-guid", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -151,7 +165,7 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
     public async Task UpdateCategory_WithNameTooLong_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
+        Guid id = Guid.NewGuid();
         var request = new
         {
             Name = new string('A', 300),
@@ -163,7 +177,7 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -174,7 +188,7 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
     public async Task UpdateCategory_WithSlugTooLong_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
+        Guid id = Guid.NewGuid();
         var request = new
         {
             Name = ShortName("sl"),
@@ -186,7 +200,7 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -197,7 +211,7 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
     public async Task UpdateCategory_WithDescriptionTooLong_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
+        Guid id = Guid.NewGuid();
         var request = new
         {
             Name = ShortName("dl"),
@@ -209,7 +223,7 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -221,7 +235,7 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
     public async Task UpdateCategory_WithInvalidSlugFormat_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
+        Guid id = Guid.NewGuid();
         var request = new
         {
             Name = ShortName("sf"),
@@ -233,6 +247,6 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }
