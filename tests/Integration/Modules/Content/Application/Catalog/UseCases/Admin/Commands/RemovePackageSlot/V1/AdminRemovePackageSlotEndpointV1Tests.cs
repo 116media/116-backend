@@ -1,5 +1,5 @@
-using System.Net.Http.Json;
-using System.Text.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.RemovePackageSlot.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -16,7 +16,7 @@ public class AdminRemovePackageSlotEndpointV1Tests(PostgresFixture db) : BaseApi
     {
         Client.ClearAuthentication();
 
-        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Packages}/{Guid.NewGuid()}/slots/{Guid.NewGuid()}");
+        var response = await Client.DeleteAsync(Routes.Admin.Packages.Slot(Guid.NewGuid(), Guid.NewGuid()));
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -24,18 +24,19 @@ public class AdminRemovePackageSlotEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task RemovePackageSlot_AsAdmin_ReturnsForbidden()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var package = PackageFactory.Create();
-        context.Packages.Add(package);
-        await context.SaveChangesAsync();
-
-        var slot = PackageSlotFactory.Create(package.Id);
-        context.PackageSlots.Add(slot);
-        await context.SaveChangesAsync();
+        PackageEntity package = null!;
+        PackageSlotEntity slot = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            package = PackageFactory.Create();
+            ctx.Packages.Add(package);
+            slot = PackageSlotFactory.Create(package.Id);
+            ctx.PackageSlots.Add(slot);
+        });
 
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Packages}/{package.Id}/slots/{slot.Id}");
+        var response = await Client.DeleteAsync(Routes.Admin.Packages.Slot(package.Id, slot.Id));
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -45,9 +46,9 @@ public class AdminRemovePackageSlotEndpointV1Tests(PostgresFixture db) : BaseApi
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Packages}/{Guid.NewGuid()}/slots/{Guid.NewGuid()}");
+        var response = await Client.DeleteAsync(Routes.Admin.Packages.Slot(Guid.NewGuid(), Guid.NewGuid()));
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     /// <summary>
@@ -57,42 +58,48 @@ public class AdminRemovePackageSlotEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task RemovePackageSlot_NonExistentSlot_ReturnsNotFound()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var package = PackageFactory.Create();
-        context.Packages.Add(package);
-        await context.SaveChangesAsync();
+        PackageEntity package = await SeedAsync<ContentDbContext, PackageEntity>(ctx =>
+        {
+            PackageEntity pkg = PackageFactory.Create();
+            ctx.Packages.Add(pkg);
+            return pkg;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Packages}/{package.Id}/slots/{Guid.NewGuid()}");
+        var response = await Client.DeleteAsync(Routes.Admin.Packages.Slot(package.Id, Guid.NewGuid()));
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task RemovePackageSlot_AsSuperAdmin_WithExistingSlot_ReturnsOk()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
-
-        var category = CategoryFactory.Create(contentType.Id);
-        context.Categories.Add(category);
-        await context.SaveChangesAsync();
-
-        var package = PackageFactory.Create();
-        context.Packages.Add(package);
-        await context.SaveChangesAsync();
-
-        var slot = PackageSlotFactory.Create(package.Id, category.Id);
-        context.PackageSlots.Add(slot);
-        await context.SaveChangesAsync();
+        PackageEntity package = null!;
+        PackageSlotEntity slot = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            package = PackageFactory.Create();
+            ctx.Packages.Add(package);
+            slot = PackageSlotFactory.Create(package.Id, category.Id);
+            ctx.PackageSlots.Add(slot);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Packages}/{package.Id}/slots/{slot.Id}");
+        var response = await Client.DeleteAsync(Routes.Admin.Packages.Slot(package.Id, slot.Id));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminRemovePackageSlotResponse>();
+        body.IsSuccess.Should().BeTrue();
+        body.Package.Slots.Should().NotContain(s => s.Id == slot.Id);
+
+        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        (await verifyContext.PackageSlots.AnyAsync(s => s.Id == slot.Id)).Should().BeFalse();
     }
 }
