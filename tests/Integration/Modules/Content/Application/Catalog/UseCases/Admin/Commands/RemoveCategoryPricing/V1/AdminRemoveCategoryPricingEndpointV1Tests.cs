@@ -1,4 +1,5 @@
-using System.Net.Http.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.RemoveCategoryPricing.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -10,29 +11,41 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminRemoveCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ShortName(string prefix = "c") => $"{prefix}{Guid.NewGuid().ToString("N")[..8]}";
-
-    private static string ShortSlug(string prefix = "s") => $"{prefix}-{Guid.NewGuid().ToString("N")[..8]}";
-
     [Fact]
     public async Task RemoveCategoryPricing_AsSuperAdmin_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        var pricingTier = PricingTierFactory.Create();
-        seedContext.PricingTiers.Add(pricingTier);
-        var categoryPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 5.99m);
-        seedContext.CategoryPricing.Add(categoryPricing);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = null!;
+        PricingTierEntity pricingTier = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            pricingTier = PricingTierFactory.Create();
+            ctx.PricingTiers.Add(pricingTier);
+            CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 5.99m);
+            ctx.CategoryPricing.Add(categoryPricing);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/pricing/{pricingTier.Id}");
+        var response = await Client.DeleteAsync(Routes.Admin.Categories.PricingItem(category.Id, pricingTier.Id));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminRemoveCategoryPricingResponse>();
+        body.IsSuccess.Should().BeTrue();
+        body.Pricing.Should().NotContain(p => p.TierId == pricingTier.Id);
+
+        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        (
+            await verifyContext.CategoryPricing.AnyAsync(cp =>
+                cp.CategoryId == category.Id && cp.PricingTierId == pricingTier.Id
+            )
+        )
+            .Should()
+            .BeFalse();
     }
 
     [Fact]
@@ -40,9 +53,7 @@ public class AdminRemoveCategoryPricingEndpointV1Tests(PostgresFixture db) : Bas
     {
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.DeleteAsync(
-            $"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/pricing/{Guid.NewGuid()}"
-        );
+        var response = await Client.DeleteAsync(Routes.Admin.Categories.PricingItem(Guid.NewGuid(), Guid.NewGuid()));
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -52,9 +63,7 @@ public class AdminRemoveCategoryPricingEndpointV1Tests(PostgresFixture db) : Bas
     {
         Client.ClearAuthentication();
 
-        var response = await Client.DeleteAsync(
-            $"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/pricing/{Guid.NewGuid()}"
-        );
+        var response = await Client.DeleteAsync(Routes.Admin.Categories.PricingItem(Guid.NewGuid(), Guid.NewGuid()));
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -64,11 +73,9 @@ public class AdminRemoveCategoryPricingEndpointV1Tests(PostgresFixture db) : Bas
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.DeleteAsync(
-            $"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/pricing/{Guid.NewGuid()}"
-        );
+        var response = await Client.DeleteAsync(Routes.Admin.Categories.PricingItem(Guid.NewGuid(), Guid.NewGuid()));
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     /// <summary>
@@ -78,17 +85,19 @@ public class AdminRemoveCategoryPricingEndpointV1Tests(PostgresFixture db) : Bas
     [Fact]
     public async Task RemoveCategoryPricing_NonExistentPricing_ReturnsNotFound()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = await SeedAsync<ContentDbContext, CategoryEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity cat = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(cat);
+            return cat;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/pricing/{Guid.NewGuid()}");
+        var response = await Client.DeleteAsync(Routes.Admin.Categories.PricingItem(category.Id, Guid.NewGuid()));
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 }
