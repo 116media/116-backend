@@ -1,5 +1,7 @@
-using System.Net.Http.Json;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier.V1;
@@ -13,56 +15,66 @@ public class AdminAddItemTierEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     [Fact]
     public async Task AddItemTier_AsSuperAdmin_WithValidData_ReturnsCreated()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var customer = CustomerFactory.Create();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var pricingTier = PricingTierFactory.Create();
-        var categoryPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 9.99m);
-        var order = ContentOrderFactory.CreateForCustomer(customer.Id);
-        var orderItem = ContentOrderItemFactory.Create(order.Id, category.Id);
-        seedContext.Customers.Add(customer);
-        seedContext.ContentTypes.Add(contentType);
-        seedContext.Categories.Add(category);
-        seedContext.PricingTiers.Add(pricingTier);
-        seedContext.CategoryPricing.Add(categoryPricing);
-        seedContext.ContentOrders.Add(order);
-        seedContext.ContentOrderItems.Add(orderItem);
-        await seedContext.SaveChangesAsync();
+        CustomerEntity customer = CustomerFactory.Create();
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        PricingTierEntity pricingTier = PricingTierFactory.Create();
+        CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 9.99m);
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        ContentOrderItemEntity orderItem = ContentOrderItemFactory.Create(order.Id, category.Id);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.PricingTiers.Add(pricingTier);
+            ctx.CategoryPricing.Add(categoryPricing);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentOrderItems.Add(orderItem);
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { PricingTierId = pricingTier.Id.ToString() };
+        AdminAddItemTierRequest request = new AdminAddItemTierRequestBuilder()
+            .WithPricingTierId(pricingTier.Id.ToString())
+            .Build();
 
-        var response = await Client.PostAsJsonAsync(
-            $"{ApiRoutes.Admin.Orders}/{order.Id}/items/{orderItem.Id}/tiers",
-            request
-        );
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Orders.ItemTiers(order.Id, orderItem.Id), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var body = await response.ReadAsAsync<AdminAddItemTierResponse>();
+        body.Tier.Id.Should().NotBeEmpty();
+        body.Tier.PriceSnapshotUsd.Should().Be(9.99m);
+
+        await using ContentDbContext db = CreateDbContext<ContentDbContext>();
+        ContentItemTierEntity? persisted = await db.ContentItemTiers.FindAsync(body.Tier.Id);
+        persisted.Should().NotBeNull();
+        persisted!.OrderItemId.Should().Be(orderItem.Id);
+        persisted.PricingTierId.Should().Be(pricingTier.Id);
+        persisted.PriceSnapshotUsd.Should().Be(9.99m);
     }
 
     [Fact]
     public async Task AddItemTier_NonExistentOrder_ReturnsNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { PricingTierId = Guid.NewGuid().ToString() };
+        AdminAddItemTierRequest request = new AdminAddItemTierRequestBuilder().Build();
 
         var response = await Client.PostAsJsonAsync(
-            $"{ApiRoutes.Admin.Orders}/{Guid.NewGuid()}/items/{Guid.NewGuid()}/tiers",
+            Routes.Admin.Orders.ItemTiers(Guid.NewGuid(), Guid.NewGuid()),
             request
         );
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task AddItemTier_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var request = new { PricingTierId = Guid.NewGuid().ToString() };
+        AdminAddItemTierRequest request = new AdminAddItemTierRequestBuilder().Build();
 
         var response = await Client.PostAsJsonAsync(
-            $"{ApiRoutes.Admin.Orders}/{Guid.NewGuid()}/items/{Guid.NewGuid()}/tiers",
+            Routes.Admin.Orders.ItemTiers(Guid.NewGuid(), Guid.NewGuid()),
             request
         );
 
@@ -75,33 +87,33 @@ public class AdminAddItemTierEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     [Fact]
     public async Task AddItemTier_WhenAlreadyAttached_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var customer = CustomerFactory.Create();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var pricingTier = PricingTierFactory.Create();
-        var categoryPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 9.99m);
-        var order = ContentOrderFactory.CreateForCustomer(customer.Id);
-        var orderItem = ContentOrderItemFactory.Create(order.Id, category.Id);
-        var existingTier = ContentItemTierFactory.CreateDefault(orderItem.Id, pricingTier.Id);
-        seedContext.Customers.Add(customer);
-        seedContext.ContentTypes.Add(contentType);
-        seedContext.Categories.Add(category);
-        seedContext.PricingTiers.Add(pricingTier);
-        seedContext.CategoryPricing.Add(categoryPricing);
-        seedContext.ContentOrders.Add(order);
-        seedContext.ContentOrderItems.Add(orderItem);
-        seedContext.ContentItemTiers.Add(existingTier);
-        await seedContext.SaveChangesAsync();
+        CustomerEntity customer = CustomerFactory.Create();
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        PricingTierEntity pricingTier = PricingTierFactory.Create();
+        CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 9.99m);
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        ContentOrderItemEntity orderItem = ContentOrderItemFactory.Create(order.Id, category.Id);
+        ContentItemTierEntity existingTier = ContentItemTierFactory.CreateDefault(orderItem.Id, pricingTier.Id);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.PricingTiers.Add(pricingTier);
+            ctx.CategoryPricing.Add(categoryPricing);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentOrderItems.Add(orderItem);
+            ctx.ContentItemTiers.Add(existingTier);
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { PricingTierId = pricingTier.Id.ToString() };
+        AdminAddItemTierRequest request = new AdminAddItemTierRequestBuilder()
+            .WithPricingTierId(pricingTier.Id.ToString())
+            .Build();
 
-        var response = await Client.PostAsJsonAsync(
-            $"{ApiRoutes.Admin.Orders}/{order.Id}/items/{orderItem.Id}/tiers",
-            request
-        );
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Orders.ItemTiers(order.Id, orderItem.Id), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
     }
 }
