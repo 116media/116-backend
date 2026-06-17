@@ -1,4 +1,9 @@
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectArticle.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.RejectArticle.V1;
@@ -9,14 +14,34 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminRejectArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<ArticleEntity> SeedArticleAsync(Func<Guid, ArticleEntity> create)
+    {
+        return await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ArticleEntity article = create(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Articles.Add(article);
+            return article;
+        });
+    }
+
+    private async Task<ArticleEntity> GetArticleAsync(Guid id)
+    {
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        ArticleEntity? article = await ctx.Articles.FindAsync(id);
+        return article!;
+    }
+
     [Fact]
     public async Task RejectArticle_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var nonExistentId = Guid.NewGuid();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Articles}/{nonExistentId}/reject",
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Articles, Guid.NewGuid()),
             new { Reason = "test" }
         );
 
@@ -27,10 +52,9 @@ public class AdminRejectArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     public async Task RejectArticle_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var nonExistentId = Guid.NewGuid();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Articles}/{nonExistentId}/reject",
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Articles, Guid.NewGuid()),
             new { Reason = "test" }
         );
 
@@ -41,10 +65,9 @@ public class AdminRejectArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     public async Task RejectArticle_AsAdmin_ReturnsForbidden()
     {
         Client.AuthenticateAsAdmin();
-        var nonExistentId = Guid.NewGuid();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Articles}/{nonExistentId}/reject",
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Articles, Guid.NewGuid()),
             new { Reason = "test" }
         );
 
@@ -55,67 +78,58 @@ public class AdminRejectArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     public async Task RejectArticle_AsSuperAdmin_WithNonExistentId_ReturnsError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var nonExistentId = Guid.NewGuid();
+        AdminRejectArticleRequest request = new AdminRejectArticleRequestBuilder().Build();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Articles}/{nonExistentId}/reject",
-            new { Reason = "test" }
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            request
         );
 
-        response
-            .StatusCode.Should()
-            .BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.NotFound, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     /// <summary>
     /// Verifies that rejecting an article that is already in Rejected status
-    /// returns a 409 Conflict response.
+    /// returns a 409 Conflict problem and leaves the article rejected.
     /// </summary>
     [Fact]
     public async Task RejectArticle_WhenAlreadyRejected_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var article = ArticleFactory.CreateRejected(category.Id);
-        seedContext.ContentTypes.Add(contentType);
-        seedContext.Categories.Add(category);
-        seedContext.Articles.Add(article);
-        await seedContext.SaveChangesAsync();
-
+        ArticleEntity article = await SeedArticleAsync(ArticleFactory.CreateRejected);
         Client.AuthenticateAsSuperAdmin();
+        AdminRejectArticleRequest request = new AdminRejectArticleRequestBuilder().Build();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Articles}/{article.Id}/reject",
-            new { Reason = "duplicate rejection attempt" }
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Articles, article.Id),
+            request
         );
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await GetArticleAsync(article.Id)).Status.Should().Be(EnumContentStatus.Rejected);
     }
 
     /// <summary>
-    /// Verifies that rejecting a PendingReview article succeeds and returns a 200 OK response,
-    /// exercising the happy path of <c>ArticleEntity.Reject</c>.
+    /// Verifies that rejecting a PendingReview article succeeds, returns IsSuccess true,
+    /// transitions the persisted status to Rejected, and records the rejection reason.
     /// </summary>
     [Fact]
     public async Task RejectArticle_AsSuperAdmin_PendingReviewArticle_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var article = ArticleFactory.CreatePendingReview(category.Id);
-        seedContext.ContentTypes.Add(contentType);
-        seedContext.Categories.Add(category);
-        seedContext.Articles.Add(article);
-        await seedContext.SaveChangesAsync();
-
+        ArticleEntity article = await SeedArticleAsync(ArticleFactory.CreatePendingReview);
         Client.AuthenticateAsSuperAdmin();
+        AdminRejectArticleRequest request = new AdminRejectArticleRequestBuilder().Build();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Articles}/{article.Id}/reject",
-            new { Reason = "Content quality insufficient" }
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Articles, article.Id),
+            request
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminRejectArticleResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        ArticleEntity persisted = await GetArticleAsync(article.Id);
+        persisted.Status.Should().Be(EnumContentStatus.Rejected);
+        persisted.RejectionReason.Should().Be(request.Reason);
     }
 }
