@@ -1,3 +1,9 @@
+using _116.Content.Application.Interactions.UseCases.Public.Commands.RenamePlaylist.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Public.Commands.RenamePlaylist.V1;
 
 /// <summary>
@@ -6,13 +12,23 @@ namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCas
 [Collection("Database")]
 public class PublicRenamePlaylistEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<PlaylistEntity> SeedPlaylistAsync(Guid userId)
+    {
+        return await SeedAsync<ContentDbContext, PlaylistEntity>(ctx =>
+        {
+            PlaylistEntity playlist = PlaylistFactory.Create(userId);
+            ctx.Playlists.Add(playlist);
+            return playlist;
+        });
+    }
+
     [Fact]
     public async Task RenamePlaylist_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var request = new { Name = "Updated Playlist" };
+        PublicRenamePlaylistRequest request = new PublicRenamePlaylistRequestBuilder().Build();
 
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Public.Playlists}/{Guid.NewGuid()}", request);
+        var response = await Client.PutAsJsonAsync(Routes.Public.Playlists.ById(Guid.NewGuid()), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -21,10 +37,40 @@ public class PublicRenamePlaylistEndpointV1Tests(PostgresFixture db) : BaseApiTe
     public async Task RenamePlaylist_AsVisitor_NonExistent_ReturnsNotFound()
     {
         Client.AuthenticateAsVisitor();
-        var request = new { Name = "Updated Playlist" };
+        PublicRenamePlaylistRequest request = new PublicRenamePlaylistRequestBuilder().Build();
 
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Public.Playlists}/{Guid.NewGuid()}", request);
+        var response = await Client.PutAsJsonAsync(Routes.Public.Playlists.ById(Guid.NewGuid()), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task RenamePlaylist_AsVisitor_NotOwner_ReturnsBadRequest()
+    {
+        PlaylistEntity playlist = await SeedPlaylistAsync(TestUser.AdminId);
+        Client.AuthenticateAsVisitor();
+        PublicRenamePlaylistRequest request = new PublicRenamePlaylistRequestBuilder().Build();
+
+        var response = await Client.PutAsJsonAsync(Routes.Public.Playlists.ById(playlist.Id), request);
+
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task RenamePlaylist_AsOwner_UpdatesName()
+    {
+        PlaylistEntity playlist = await SeedPlaylistAsync(TestUser.VisitorId);
+        Client.AuthenticateAsVisitor();
+        PublicRenamePlaylistRequest request = new PublicRenamePlaylistRequestBuilder().Build();
+
+        var response = await Client.PutAsJsonAsync(Routes.Public.Playlists.ById(playlist.Id), request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        PublicRenamePlaylistResponse body = await response.ReadAsAsync<PublicRenamePlaylistResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using ContentDbContext verifyDb = CreateDbContext<ContentDbContext>();
+        PlaylistEntity? stored = await verifyDb.Playlists.FindAsync(playlist.Id);
+        stored!.Name.Should().Be(request.Name);
     }
 }
