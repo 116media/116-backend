@@ -1,3 +1,6 @@
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -9,13 +12,36 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminArchiveVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<VideoEntity> SeedVideoAsync(Func<Guid, VideoEntity> create)
+    {
+        return await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            VideoEntity video = create(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Videos.Add(video);
+            return video;
+        });
+    }
+
+    private async Task<EnumContentStatus> GetVideoStatusAsync(Guid id)
+    {
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        VideoEntity? video = await ctx.Videos.FindAsync(id);
+        return video!.Status;
+    }
+
     [Fact]
     public async Task ArchiveVideo_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}/archive", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Archive(EditorialRouteConstants.Videos, Guid.NewGuid()),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -24,9 +50,11 @@ public class AdminArchiveVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     public async Task ArchiveVideo_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}/archive", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Archive(EditorialRouteConstants.Videos, Guid.NewGuid()),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -35,9 +63,11 @@ public class AdminArchiveVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     public async Task ArchiveVideo_AsAdmin_ReturnsForbidden()
     {
         Client.AuthenticateAsAdmin();
-        var nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}/archive", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Archive(EditorialRouteConstants.Videos, Guid.NewGuid()),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -46,52 +76,46 @@ public class AdminArchiveVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     public async Task ArchiveVideo_AsSuperAdmin_WithNonExistentId_ReturnsError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}/archive", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Archive(EditorialRouteConstants.Videos, Guid.NewGuid()),
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task ArchiveVideo_AsSuperAdmin_AlreadyArchived_ReturnsConflict()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var video = VideoFactory.CreateArchived(category.Id);
-        context.ContentTypes.Add(contentType);
-        context.Categories.Add(category);
-        context.Videos.Add(video);
-        await context.SaveChangesAsync();
-
+        VideoEntity video = await SeedVideoAsync(categoryId => VideoFactory.CreateArchived(categoryId));
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{video.Id}/archive", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Archive(EditorialRouteConstants.Videos, video.Id),
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await GetVideoStatusAsync(video.Id)).Should().Be(EnumContentStatus.Archived);
     }
 
     /// <summary>
-    /// Verifies that archiving a published video succeeds and returns a 200 OK response,
+    /// Verifies that archiving a published video succeeds and persists the Archived status,
     /// exercising the happy path of <c>VideoEntity.Archive</c>.
     /// </summary>
     [Fact]
     public async Task ArchiveVideo_AsSuperAdmin_PublishedVideo_ReturnsOk()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var video = VideoFactory.CreatePublished(category.Id);
-        context.ContentTypes.Add(contentType);
-        context.Categories.Add(category);
-        context.Videos.Add(video);
-        await context.SaveChangesAsync();
-
+        VideoEntity video = await SeedVideoAsync(categoryId => VideoFactory.CreatePublished(categoryId));
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{video.Id}/archive", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Archive(EditorialRouteConstants.Videos, video.Id),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await GetVideoStatusAsync(video.Id)).Should().Be(EnumContentStatus.Archived);
     }
 }
