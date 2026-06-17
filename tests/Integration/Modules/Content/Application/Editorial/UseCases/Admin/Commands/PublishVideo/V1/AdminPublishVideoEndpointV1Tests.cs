@@ -1,3 +1,6 @@
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -9,13 +12,36 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminPublishVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<VideoEntity> SeedVideoAsync(Func<Guid, VideoEntity> create)
+    {
+        return await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            VideoEntity video = create(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Videos.Add(video);
+            return video;
+        });
+    }
+
+    private async Task<VideoEntity> GetVideoAsync(Guid id)
+    {
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        VideoEntity? video = await ctx.Videos.FindAsync(id);
+        return video!;
+    }
+
     [Fact]
     public async Task PublishVideo_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}/publish", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Publish(EditorialRouteConstants.Videos, Guid.NewGuid()),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -24,9 +50,11 @@ public class AdminPublishVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     public async Task PublishVideo_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}/publish", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Publish(EditorialRouteConstants.Videos, Guid.NewGuid()),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -35,9 +63,11 @@ public class AdminPublishVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     public async Task PublishVideo_AsAdmin_ReturnsForbidden()
     {
         Client.AuthenticateAsAdmin();
-        var nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}/publish", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Publish(EditorialRouteConstants.Videos, Guid.NewGuid()),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -46,86 +76,75 @@ public class AdminPublishVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     public async Task PublishVideo_AsSuperAdmin_WithNonExistentId_ReturnsError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}/publish", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Publish(EditorialRouteConstants.Videos, Guid.NewGuid()),
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task PublishVideo_AsSuperAdmin_AlreadyPublished_ReturnsConflict()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var video = VideoFactory.CreatePublished(category.Id);
-        context.ContentTypes.Add(contentType);
-        context.Categories.Add(category);
-        context.Videos.Add(video);
-        await context.SaveChangesAsync();
-
+        VideoEntity video = await SeedVideoAsync(categoryId => VideoFactory.CreatePublished(categoryId));
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{video.Id}/publish", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Publish(EditorialRouteConstants.Videos, video.Id),
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await GetVideoAsync(video.Id)).Status.Should().Be(EnumContentStatus.Published);
     }
 
     [Fact]
     public async Task PublishVideo_AsSuperAdmin_DraftVideo_ReturnsBadRequest()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var video = VideoFactory.Create(category.Id);
-        context.ContentTypes.Add(contentType);
-        context.Categories.Add(category);
-        context.Videos.Add(video);
-        await context.SaveChangesAsync();
-
+        VideoEntity video = await SeedVideoAsync(categoryId => VideoFactory.Create(categoryId));
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{video.Id}/publish", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Publish(EditorialRouteConstants.Videos, video.Id),
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        (await GetVideoAsync(video.Id)).Status.Should().Be(EnumContentStatus.Draft);
     }
 
     [Fact]
     public async Task PublishVideo_AsSuperAdmin_ApprovedWithYoutubeUrl_ReturnsOk()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var video = VideoFactory.CreateApprovedWithYoutubeUrl(category.Id);
-        context.ContentTypes.Add(contentType);
-        context.Categories.Add(category);
-        context.Videos.Add(video);
-        await context.SaveChangesAsync();
-
+        VideoEntity video = await SeedVideoAsync(categoryId => VideoFactory.CreateApprovedWithYoutubeUrl(categoryId));
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{video.Id}/publish", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Publish(EditorialRouteConstants.Videos, video.Id),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        VideoEntity persisted = await GetVideoAsync(video.Id);
+        persisted.Status.Should().Be(EnumContentStatus.Published);
+        persisted.PublishedAt.Should().NotBeNull();
     }
 
     [Fact]
     public async Task PublishVideo_AsSuperAdmin_ApprovedWithoutYoutubeUrl_ReturnsBadRequest()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var video = VideoFactory.CreateApproved(category.Id);
-        context.ContentTypes.Add(contentType);
-        context.Categories.Add(category);
-        context.Videos.Add(video);
-        await context.SaveChangesAsync();
-
+        VideoEntity video = await SeedVideoAsync(categoryId => VideoFactory.CreateApproved(categoryId));
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Videos}/{video.Id}/publish", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Publish(EditorialRouteConstants.Videos, video.Id),
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        (await GetVideoAsync(video.Id)).Status.Should().Be(EnumContentStatus.Approved);
     }
 }
