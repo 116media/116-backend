@@ -1,3 +1,5 @@
+using _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeArticle.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -9,12 +11,26 @@ namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCas
 [Collection("Database")]
 public class PublicUnlikeArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<ArticleEntity> SeedArticleAsync()
+    {
+        return await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            ArticleEntity article = ArticleFactory.CreatePublished(category.Id);
+            ctx.Articles.Add(article);
+            return article;
+        });
+    }
+
     [Fact]
     public async Task UnlikeArticle_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
 
-        var response = await Client.DeleteAsync($"{ApiRoutes.Public.Articles}/{Guid.NewGuid()}/likes");
+        var response = await Client.DeleteAsync(Routes.Public.Articles.Likes(Guid.NewGuid()));
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -24,9 +40,32 @@ public class PublicUnlikeArticleEndpointV1Tests(PostgresFixture db) : BaseApiTes
     {
         Client.AuthenticateAsVisitor();
 
-        var response = await Client.DeleteAsync($"{ApiRoutes.Public.Articles}/{Guid.NewGuid()}/likes");
+        var response = await Client.DeleteAsync(Routes.Public.Articles.Likes(Guid.NewGuid()));
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    /// <summary>
+    /// Verifies that unliking a previously liked article removes the like row
+    /// and returns a successful response.
+    /// </summary>
+    [Fact]
+    public async Task UnlikeArticle_WhenLiked_RemovesLikeAndPersists()
+    {
+        ArticleEntity article = await SeedArticleAsync();
+        Client.AuthenticateAsVisitor();
+        await Client.PostAsync(Routes.Public.Articles.Likes(article.Id), null);
+
+        var response = await Client.DeleteAsync(Routes.Public.Articles.Likes(article.Id));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<PublicUnlikeArticleResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using var verifyDb = CreateDbContext<ContentDbContext>();
+        (await verifyDb.ArticleLikes.AnyAsync(l => l.ArticleId == article.Id && l.UserId == TestUser.VisitorId))
+            .Should()
+            .BeFalse();
     }
 
     /// <summary>
@@ -35,23 +74,11 @@ public class PublicUnlikeArticleEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task UnlikeArticle_WhenNotLiked_ReturnsBadRequest()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
-
-        var category = CategoryFactory.Create(contentType.Id);
-        context.Categories.Add(category);
-        await context.SaveChangesAsync();
-
-        var article = ArticleFactory.CreatePublished(category.Id);
-        context.Articles.Add(article);
-        await context.SaveChangesAsync();
-
+        ArticleEntity article = await SeedArticleAsync();
         Client.AuthenticateAsVisitor();
 
-        var response = await Client.DeleteAsync($"{ApiRoutes.Public.Articles}/{article.Id}/likes");
+        var response = await Client.DeleteAsync(Routes.Public.Articles.Likes(article.Id));
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }
