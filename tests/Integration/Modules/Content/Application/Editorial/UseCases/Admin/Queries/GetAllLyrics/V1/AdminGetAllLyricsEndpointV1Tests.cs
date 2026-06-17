@@ -1,3 +1,5 @@
+using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllLyrics.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -32,11 +34,24 @@ public class AdminGetAllLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     [Fact]
     public async Task GetAllLyrics_AsAdmin_IsAllowed()
     {
+        LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
+        {
+            LyricsEntity entity = LyricsFactory.Create();
+            ctx.Lyrics.Add(entity);
+            return entity;
+        });
+
         Client.AuthenticateAsAdmin();
 
         var response = await Client.GetAsync(ApiRoutes.Admin.Lyrics);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetAllLyricsResponse body = await response.ReadAsAsync<AdminGetAllLyricsResponse>();
+        body.Lyrics.Items.Should().Contain(item => item.Id == lyrics.Id);
+        body.Lyrics.Count.Should().BeGreaterThanOrEqualTo(1);
+        body.Lyrics.PageIndex.Should().Be(0);
+        body.Lyrics.PageSize.Should().Be(10);
     }
 
     [Fact]
@@ -47,6 +62,9 @@ public class AdminGetAllLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Lyrics}?search=test");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetAllLyricsResponse body = await response.ReadAsAsync<AdminGetAllLyricsResponse>();
+        body.Lyrics.Should().NotBeNull();
     }
 
     /// <summary>
@@ -56,16 +74,28 @@ public class AdminGetAllLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     [Fact]
     public async Task GetAllLyrics_WithSearchQuery_ReturnsFilteredResults()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var matchingLyrics = LyricsFactory.Create("UniqueSearchTerm Song", "Test Artist");
-        var otherLyrics = LyricsFactory.Create("Completely Different Song", "Other Artist");
-        context.Lyrics.AddRange(matchingLyrics, otherLyrics);
-        await context.SaveChangesAsync();
+        LyricsEntity matchingLyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
+        {
+            LyricsEntity entity = LyricsFactory.Create("UniqueSearchTerm Song", "Test Artist");
+            ctx.Lyrics.Add(entity);
+            return entity;
+        });
+        LyricsEntity otherLyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
+        {
+            LyricsEntity entity = LyricsFactory.Create("Completely Different Song", "Other Artist");
+            ctx.Lyrics.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Lyrics}?search=UniqueSearchTerm");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetAllLyricsResponse body = await response.ReadAsAsync<AdminGetAllLyricsResponse>();
+        body.Lyrics.Items.Should().Contain(item => item.Id == matchingLyrics.Id);
+        body.Lyrics.Items.Should().NotContain(item => item.Id == otherLyrics.Id);
+        body.Lyrics.Items.Should().OnlyContain(item => item.SongTitle.Contains("UniqueSearchTerm"));
     }
 }
