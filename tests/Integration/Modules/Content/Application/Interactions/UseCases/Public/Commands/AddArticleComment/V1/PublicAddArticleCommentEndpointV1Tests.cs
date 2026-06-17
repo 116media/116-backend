@@ -1,4 +1,7 @@
+using _116.Content.Application.Interactions.UseCases.Public.Commands.AddArticleComment.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Public.Commands.AddArticleComment.V1;
@@ -9,13 +12,27 @@ namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCas
 [Collection("Database")]
 public class PublicAddArticleCommentEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<ArticleEntity> SeedArticleAsync()
+    {
+        return await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            ArticleEntity article = ArticleFactory.CreatePublished(category.Id);
+            ctx.Articles.Add(article);
+            return article;
+        });
+    }
+
     [Fact]
     public async Task AddArticleComment_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var request = new { Body = "This is a valid test comment body." };
+        PublicAddArticleCommentRequest request = new PublicAddArticleCommentRequestBuilder().Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Public.Articles}/{Guid.NewGuid()}/comments", request);
+        var response = await Client.PostAsJsonAsync(Routes.Public.Articles.Comments(Guid.NewGuid()), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -24,45 +41,47 @@ public class PublicAddArticleCommentEndpointV1Tests(PostgresFixture db) : BaseAp
     public async Task AddArticleComment_AsVisitor_NonExistentArticle_ReturnsNotFound()
     {
         Client.AuthenticateAsVisitor();
-        var request = new { Body = "This is a valid test comment body." };
+        PublicAddArticleCommentRequest request = new PublicAddArticleCommentRequestBuilder().Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Public.Articles}/{Guid.NewGuid()}/comments", request);
+        var response = await Client.PostAsJsonAsync(Routes.Public.Articles.Comments(Guid.NewGuid()), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task AddArticleComment_AsVisitor_WithEmptyBody_ReturnsValidationError()
     {
         Client.AuthenticateAsVisitor();
-        var request = new { Body = "" };
+        PublicAddArticleCommentRequest request = new PublicAddArticleCommentRequestBuilder()
+            .WithBody(string.Empty)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Public.Articles}/{Guid.NewGuid()}/comments", request);
+        var response = await Client.PostAsJsonAsync(Routes.Public.Articles.Comments(Guid.NewGuid()), request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task AddArticleComment_AsVisitor_WithValidData_ReturnsCreated()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
-
-        var category = CategoryFactory.Create(contentType.Id);
-        context.Categories.Add(category);
-        await context.SaveChangesAsync();
-
-        var article = ArticleFactory.CreatePublished(category.Id);
-        context.Articles.Add(article);
-        await context.SaveChangesAsync();
-
+        ArticleEntity article = await SeedArticleAsync();
         Client.AuthenticateAsVisitor();
-        var request = new { Body = "This is a valid test comment body." };
+        PublicAddArticleCommentRequest request = new PublicAddArticleCommentRequestBuilder().Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Public.Articles}/{article.Id}/comments", request);
+        var response = await Client.PostAsJsonAsync(Routes.Public.Articles.Comments(article.Id), request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.Created);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        PublicAddArticleCommentResponse body = await response.ReadAsAsync<PublicAddArticleCommentResponse>();
+        body.Comment.Id.Should().NotBeEmpty();
+        body.Comment.Body.Should().Be(request.Body);
+        body.Comment.UserId.Should().Be(TestUser.VisitorId);
+        body.Comment.IsDeleted.Should().BeFalse();
+
+        await using ContentDbContext verifyDb = CreateDbContext<ContentDbContext>();
+        ArticleCommentEntity? stored = await verifyDb.ArticleComments.FindAsync(body.Comment.Id);
+        stored.Should().NotBeNull();
+        stored!.ArticleId.Should().Be(article.Id);
+        stored.Body.Should().Be(request.Body);
+        stored.UserId.Should().Be(TestUser.VisitorId);
     }
 }
