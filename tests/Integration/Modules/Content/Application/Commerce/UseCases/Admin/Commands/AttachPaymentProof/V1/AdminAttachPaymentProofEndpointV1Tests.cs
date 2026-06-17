@@ -1,4 +1,6 @@
-using System.Net.Http.Json;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymentProof.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -13,18 +15,15 @@ public class AdminAttachPaymentProofEndpointV1Tests(PostgresFixture db) : BaseAp
     [Fact]
     public async Task AttachPaymentProof_AsSuperAdmin_WithValidFile_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var customer = CustomerFactory.Create();
-        seedContext.Customers.Add(customer);
-        await seedContext.SaveChangesAsync();
-
-        var order = ContentOrderFactory.CreateForCustomer(customer.Id);
-        seedContext.ContentOrders.Add(order);
-        await seedContext.SaveChangesAsync();
-
-        var payment = ContentPaymentFactory.Create(order.Id);
-        seedContext.ContentPayments.Add(payment);
-        await seedContext.SaveChangesAsync();
+        CustomerEntity customer = CustomerFactory.Create();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentPayments.Add(payment);
+        });
 
         Client.AuthenticateAsSuperAdmin();
         using var content = new MultipartFormDataContent();
@@ -33,11 +32,20 @@ public class AdminAttachPaymentProofEndpointV1Tests(PostgresFixture db) : BaseAp
         content.Add(fileContent, "file", "proof.jpg");
 
         var response = await Client.PostAsync(
-            $"{ApiRoutes.Admin.Orders}/{order.Id}/payment/proof?paymentMethod=BankTransfer",
+            $"{Routes.Admin.Orders.PaymentProof(order.Id)}?paymentMethod=BankTransfer",
             content
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminAttachPaymentProofResponse>();
+        body.Proof.Id.Should().NotBeEmpty();
+        body.Proof.MimeType.Should().NotBeNullOrEmpty();
+
+        await using ContentDbContext db = CreateDbContext<ContentDbContext>();
+        ContentPaymentEntity? persisted = await db.ContentPayments.FindAsync(payment.Id);
+        persisted.Should().NotBeNull();
+        persisted!.PaymentProofFileId.Should().Be(body.Proof.Id);
+        persisted.PaymentMethod.Should().Be(EnumPaymentMethod.BankTransfer);
     }
 
     [Fact]
@@ -50,11 +58,11 @@ public class AdminAttachPaymentProofEndpointV1Tests(PostgresFixture db) : BaseAp
         content.Add(fileContent, "file", "proof.jpg");
 
         var response = await Client.PostAsync(
-            $"{ApiRoutes.Admin.Orders}/{Guid.NewGuid()}/payment/proof?paymentMethod=BankTransfer",
+            $"{Routes.Admin.Orders.PaymentProof(Guid.NewGuid())}?paymentMethod=BankTransfer",
             content
         );
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -67,7 +75,7 @@ public class AdminAttachPaymentProofEndpointV1Tests(PostgresFixture db) : BaseAp
         content.Add(fileContent, "file", "proof.jpg");
 
         var response = await Client.PostAsync(
-            $"{ApiRoutes.Admin.Orders}/{Guid.NewGuid()}/payment/proof?paymentMethod=BankTransfer",
+            $"{Routes.Admin.Orders.PaymentProof(Guid.NewGuid())}?paymentMethod=BankTransfer",
             content
         );
 
