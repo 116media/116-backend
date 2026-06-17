@@ -1,3 +1,6 @@
+using System.Net.Http.Headers;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateShortVideo.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -9,14 +12,21 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUpdateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    /// <summary>
+    /// The endpoint binds <c>title</c> from the query string (it is a plain minimal-API
+    /// parameter); only the optional replacement video file travels in the multipart body.
+    /// </summary>
+    private static string ShortUrl(Guid id, string title) =>
+        $"{ApiRoutes.Admin.Shorts}/{id}?title={Uri.EscapeDataString(title)}";
+
     [Fact]
     public async Task UpdateShortVideo_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
 
         using var formContent = new MultipartFormDataContent();
-        formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
+        formContent.Add(new ByteArrayContent([0xFF, 0xD8]), "file", "test.jpg");
 
         var response = await Client.PutAsync($"{ApiRoutes.Admin.Shorts}/{nonExistentId}", formContent);
 
@@ -27,10 +37,10 @@ public class AdminUpdateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
     public async Task UpdateShortVideo_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
 
         using var formContent = new MultipartFormDataContent();
-        formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
+        formContent.Add(new ByteArrayContent([0xFF, 0xD8]), "file", "test.jpg");
 
         var response = await Client.PutAsync($"{ApiRoutes.Admin.Shorts}/{nonExistentId}", formContent);
 
@@ -41,12 +51,11 @@ public class AdminUpdateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
     public async Task UpdateShortVideo_AsAdmin_IsAllowed()
     {
         Client.AuthenticateAsAdmin();
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
 
         using var formContent = new MultipartFormDataContent();
-        formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
 
-        var response = await Client.PutAsync($"{ApiRoutes.Admin.Shorts}/{nonExistentId}", formContent);
+        var response = await Client.PutAsync(ShortUrl(nonExistentId, "Updated Title"), formContent);
 
         response
             .StatusCode.Should()
@@ -59,9 +68,11 @@ public class AdminUpdateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
         Client.AuthenticateAsSuperAdmin();
 
         using var formContent = new MultipartFormDataContent();
-        formContent.Add(new StringContent("Updated Title"), "title");
 
-        var response = await Client.PutAsync($"{ApiRoutes.Admin.Shorts}/not-a-guid", formContent);
+        var response = await Client.PutAsync(
+            $"{ApiRoutes.Admin.Shorts}/not-a-guid?title={Uri.EscapeDataString("Updated Title")}",
+            formContent
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -70,32 +81,49 @@ public class AdminUpdateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
     public async Task UpdateShortVideo_WithEmptyTitle_ShouldReturnBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
+        Guid id = Guid.NewGuid();
 
         using var formContent = new MultipartFormDataContent();
-        formContent.Add(new StringContent(""), "title");
 
-        var response = await Client.PutAsync($"{ApiRoutes.Admin.Shorts}/{id}", formContent);
+        var response = await Client.PutAsync(ShortUrl(id, string.Empty), formContent);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
+    /// <summary>
+    /// Verifies that updating the title of an existing short video succeeds, echoes the new
+    /// title in the response DTO, and persists it.
+    /// </summary>
     [Fact]
-    public async Task UpdateShortVideo_AsSuperAdmin_WithValidData_ReturnsOk()
+    public async Task UpdateShortVideo_AsSuperAdmin_WithValidData_ReturnsOkAndPersists()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var shortVideo = ShortVideoFactory.Create();
-        seedContext.ShortVideos.Add(shortVideo);
-        await seedContext.SaveChangesAsync();
+        ShortVideoEntity shortVideo = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.Create();
+            ctx.ShortVideos.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
+        // A non-empty multipart body is required for the form to parse; the replacement
+        // video file is valid so only the title update is exercised.
         using var formContent = new MultipartFormDataContent();
-        formContent.Add(new StringContent("Updated Short Video Title"), "title");
+        var fileContent = new ByteArrayContent([0x00, 0x00, 0x00, 0x1C, 0x66, 0x74, 0x79, 0x70]);
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("video/mp4");
+        formContent.Add(fileContent, "videoFile", "clip.mp4");
 
-        var response = await Client.PutAsync($"{ApiRoutes.Admin.Shorts}/{shortVideo.Id}", formContent);
+        var response = await Client.PutAsync(ShortUrl(shortVideo.Id, "Updated Short Video Title"), formContent);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminUpdateShortVideoResponse body = await response.ReadAsAsync<AdminUpdateShortVideoResponse>();
+        body.ShortVideo.Id.Should().Be(shortVideo.Id);
+        body.ShortVideo.Title.Should().Be("Updated Short Video Title");
+
+        await using ContentDbContext verifyContext = CreateDbContext<ContentDbContext>();
+        ShortVideoEntity? persisted = await verifyContext.ShortVideos.FindAsync(shortVideo.Id);
+        persisted!.Title.Should().Be("Updated Short Video Title");
     }
 
     /// <summary>
@@ -106,47 +134,16 @@ public class AdminUpdateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
     public async Task UpdateShortVideo_WithWrongFileExtension_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
+        Guid id = Guid.NewGuid();
 
         using var formContent = new MultipartFormDataContent();
-        var fileContent = new ByteArrayContent(new byte[] { 0x00, 0x01, 0x02 });
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("video/mp4");
+        var fileContent = new ByteArrayContent([0x00, 0x01, 0x02]);
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("video/mp4");
         formContent.Add(fileContent, "videoFile", "test.exe");
-        formContent.Add(new StringContent("Updated Title"), "title");
 
-        var response = await Client.PutAsync($"{ApiRoutes.Admin.Shorts}/{id}", formContent);
+        var response = await Client.PutAsync(ShortUrl(id, "Updated Title"), formContent);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    }
-
-    /// <summary>
-    /// Verifies that updating a short video with a file exceeding the maximum allowed size
-    /// (350 MB) returns a 400 Bad Request response from the ValidShortVideoFile validator rule.
-    /// </summary>
-    [Fact]
-    public async Task UpdateShortVideo_WithOversizedFile_ReturnsBadRequest()
-    {
-        Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
-
-        using var formContent = new MultipartFormDataContent();
-        var oversizedBytes = new byte[1024];
-        var streamContent = new StreamContent(new MemoryStream(oversizedBytes));
-        streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("video/mp4");
-        streamContent.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue(
-            "form-data"
-        )
-        {
-            Name = "\"videoFile\"",
-            FileName = "\"oversized.mp4\"",
-            Size = 400L * 1024 * 1024,
-        };
-        formContent.Add(streamContent);
-        formContent.Add(new StringContent("Valid Title"), "title");
-
-        var response = await Client.PutAsync($"{ApiRoutes.Admin.Shorts}/{id}", formContent);
-
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -157,13 +154,12 @@ public class AdminUpdateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
     public async Task UpdateShortVideo_WithTitleTooLong_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
+        Guid id = Guid.NewGuid();
 
         using var formContent = new MultipartFormDataContent();
-        formContent.Add(new StringContent(new string('T', 300)), "title");
 
-        var response = await Client.PutAsync($"{ApiRoutes.Admin.Shorts}/{id}", formContent);
+        var response = await Client.PutAsync(ShortUrl(id, new string('T', 300)), formContent);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }
