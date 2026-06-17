@@ -1,3 +1,9 @@
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadVideoThumbnail.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UploadVideoThumbnail.V1;
 
 /// <summary>
@@ -6,16 +12,40 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUploadVideoThumbnailEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<VideoEntity> SeedVideoAsync()
+    {
+        return await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            VideoEntity video = VideoFactory.Create(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Videos.Add(video);
+            return video;
+        });
+    }
+
+    private static MultipartFormDataContent CreateThumbnailContent()
+    {
+        var formContent = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent([0xFF, 0xD8, 0xFF, 0xE0]);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        formContent.Add(fileContent, "file", "test.jpg");
+        return formContent;
+    }
+
     [Fact]
     public async Task UploadVideoThumbnail_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var nonExistentId = Guid.NewGuid();
 
-        using var formContent = new MultipartFormDataContent();
-        formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
+        using MultipartFormDataContent formContent = CreateThumbnailContent();
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}/thumbnail", formContent);
+        var response = await Client.PostAsync(
+            Routes.Admin.Editorial.Thumbnail(EditorialRouteConstants.Videos, Guid.NewGuid()),
+            formContent
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -24,29 +54,57 @@ public class AdminUploadVideoThumbnailEndpointV1Tests(PostgresFixture db) : Base
     public async Task UploadVideoThumbnail_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var nonExistentId = Guid.NewGuid();
 
-        using var formContent = new MultipartFormDataContent();
-        formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
+        using MultipartFormDataContent formContent = CreateThumbnailContent();
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}/thumbnail", formContent);
+        var response = await Client.PostAsync(
+            Routes.Admin.Editorial.Thumbnail(EditorialRouteConstants.Videos, Guid.NewGuid()),
+            formContent
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
-    public async Task UploadVideoThumbnail_AsAdmin_IsAllowed()
+    public async Task UploadVideoThumbnail_AsAdmin_WithNonExistentId_ReturnsNotFound()
     {
         Client.AuthenticateAsAdmin();
-        var nonExistentId = Guid.NewGuid();
 
-        using var formContent = new MultipartFormDataContent();
-        formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
+        using MultipartFormDataContent formContent = CreateThumbnailContent();
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}/thumbnail", formContent);
+        var response = await Client.PostAsync(
+            Routes.Admin.Editorial.Thumbnail(EditorialRouteConstants.Videos, Guid.NewGuid()),
+            formContent
+        );
 
-        response
-            .StatusCode.Should()
-            .BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity, HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    /// <summary>
+    /// Verifies that uploading a thumbnail for an existing video returns the stubbed
+    /// Cloudinary URL and persists the resolved thumbnail file id on the video.
+    /// </summary>
+    [Fact]
+    public async Task UploadVideoThumbnail_AsSuperAdmin_WithValidFile_ReturnsOkAndPersists()
+    {
+        VideoEntity video = await SeedVideoAsync();
+        Client.AuthenticateAsSuperAdmin();
+
+        using MultipartFormDataContent formContent = CreateThumbnailContent();
+
+        var response = await Client.PostAsync(
+            Routes.Admin.Editorial.Thumbnail(EditorialRouteConstants.Videos, video.Id),
+            formContent
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminUploadVideoThumbnailResponse body = await response.ReadAsAsync<AdminUploadVideoThumbnailResponse>();
+        body.ThumbnailUrl.Should().StartWith("https://res.cloudinary.com/test-cloud/");
+        body.ThumbnailStorageKey.Should().NotBeNullOrEmpty();
+
+        await using ContentDbContext verifyContext = CreateDbContext<ContentDbContext>();
+        VideoEntity? persisted = await verifyContext.Videos.FindAsync(video.Id);
+        persisted!.ThumbnailFileId.Should().NotBeNull();
     }
 }
