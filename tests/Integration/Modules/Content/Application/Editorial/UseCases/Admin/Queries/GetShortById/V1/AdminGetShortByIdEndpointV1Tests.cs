@@ -1,3 +1,8 @@
+using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetShortById.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Queries.GetShortById.V1;
 
 /// <summary>
@@ -31,11 +36,33 @@ public class AdminGetShortByIdEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     [Fact]
     public async Task GetShortById_AsAdmin_IsAllowed()
     {
+        ShortVideoEntity shortVideo = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.Create();
+            ctx.ShortVideos.Add(entity);
+            return entity;
+        });
+
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Shorts}/{shortVideo.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetShortByIdResponse body = await response.ReadAsAsync<AdminGetShortByIdResponse>();
+        body.ShortVideo.Id.Should().Be(shortVideo.Id);
+        body.ShortVideo.Title.Should().Be(shortVideo.Title);
+        body.ShortVideo.Slug.Should().Be(shortVideo.Slug);
+    }
+
+    [Fact]
+    public async Task GetShortById_WithNonExistent_ReturnsNotFound()
+    {
         Client.AuthenticateAsAdmin();
         var nonExistentId = Guid.NewGuid();
 
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Shorts}/{nonExistentId}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 }
