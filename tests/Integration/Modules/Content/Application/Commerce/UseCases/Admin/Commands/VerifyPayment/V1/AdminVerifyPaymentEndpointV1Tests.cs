@@ -1,4 +1,6 @@
-using System.Net.Http.Json;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -13,21 +15,19 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
     [Fact]
     public async Task VerifyPayment_AsSuperAdmin_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var order = ContentOrderFactory.CreateSubmitted();
-        var customer = CustomerFactory.CreateWithId(order.CustomerId);
-        seedContext.Customers.Add(customer);
-        seedContext.ContentOrders.Add(order);
-        await seedContext.SaveChangesAsync();
-
-        var proofFileId = Guid.NewGuid();
-        var payment = ContentPaymentFactory.CreateWithProof(order.Id, proofFileId);
-        seedContext.ContentPayments.Add(payment);
-        await seedContext.SaveChangesAsync();
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        CustomerEntity customer = CustomerFactory.CreateWithId(order.CustomerId);
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentPayments.Add(payment);
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { ReceiptUrl = "https://example.com/receipt/12345" };
-        var msg = new HttpRequestMessage(HttpMethod.Patch, $"{ApiRoutes.Admin.Orders}/{order.Id}/payment/verify")
+        var request = new { ReceiptUrl = _116.Tests.Fixtures.Constants.TestConstants.Content.Commerce.ValidReceiptUrl };
+        var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
         {
             Content = JsonContent.Create(request),
         };
@@ -35,29 +35,38 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         var response = await Client.SendAsync(msg);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminVerifyPaymentResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using ContentDbContext db = CreateDbContext<ContentDbContext>();
+        ContentPaymentEntity? persistedPayment = await db.ContentPayments.FindAsync(payment.Id);
+        persistedPayment!.Status.Should().Be(EnumPaymentStatus.Verified);
+
+        ContentOrderEntity? persistedOrder = await db.ContentOrders.FindAsync(order.Id);
+        persistedOrder!.Status.Should().Be(EnumOrderStatus.Paid);
     }
 
     [Fact]
     public async Task VerifyPayment_NonExistentOrder_ReturnsNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { ReceiptUrl = "https://example.com/receipt/12345" };
-        var msg = new HttpRequestMessage(HttpMethod.Patch, $"{ApiRoutes.Admin.Orders}/{Guid.NewGuid()}/payment/verify")
+        var request = new { ReceiptUrl = _116.Tests.Fixtures.Constants.TestConstants.Content.Commerce.ValidReceiptUrl };
+        var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(Guid.NewGuid()))
         {
             Content = JsonContent.Create(request),
         };
 
         var response = await Client.SendAsync(msg);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task VerifyPayment_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var request = new { ReceiptUrl = "https://example.com/receipt/12345" };
-        var msg = new HttpRequestMessage(HttpMethod.Patch, $"{ApiRoutes.Admin.Orders}/{Guid.NewGuid()}/payment/verify")
+        var request = new { ReceiptUrl = _116.Tests.Fixtures.Constants.TestConstants.Content.Commerce.ValidReceiptUrl };
+        var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(Guid.NewGuid()))
         {
             Content = JsonContent.Create(request),
         };
@@ -73,27 +82,26 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
     [Fact]
     public async Task VerifyPayment_WhenAlreadyVerified_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var order = ContentOrderFactory.CreateSubmitted();
-        var customer = CustomerFactory.CreateWithId(order.CustomerId);
-        seedContext.Customers.Add(customer);
-        seedContext.ContentOrders.Add(order);
-        await seedContext.SaveChangesAsync();
-
-        var payment = ContentPaymentFactory.CreateVerified(order.Id);
-        seedContext.ContentPayments.Add(payment);
-        await seedContext.SaveChangesAsync();
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        CustomerEntity customer = CustomerFactory.CreateWithId(order.CustomerId);
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateVerified(order.Id);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentPayments.Add(payment);
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { ReceiptUrl = "https://example.com/receipt/99999" };
-        var msg = new HttpRequestMessage(HttpMethod.Patch, $"{ApiRoutes.Admin.Orders}/{order.Id}/payment/verify")
+        var request = new { ReceiptUrl = _116.Tests.Fixtures.Constants.TestConstants.Content.Commerce.ValidReceiptUrl };
+        var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
         {
             Content = JsonContent.Create(request),
         };
 
         var response = await Client.SendAsync(msg);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
     }
 
     /// <summary>
@@ -103,28 +111,27 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
     [Fact]
     public async Task VerifyPayment_WithVideoOrderItem_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var order = ContentOrderFactory.CreateSubmitted();
-        var customer = CustomerFactory.CreateWithId(order.CustomerId);
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var orderItem = ContentOrderItemFactory.Create(order.Id, category.Id);
-        var video = VideoFactory.CreatePaid(category.Id, customer.Id, orderItem.Id);
-        seedContext.Customers.Add(customer);
-        seedContext.ContentTypes.Add(contentType);
-        seedContext.Categories.Add(category);
-        seedContext.ContentOrders.Add(order);
-        seedContext.ContentOrderItems.Add(orderItem);
-        seedContext.Videos.Add(video);
-        await seedContext.SaveChangesAsync();
-
-        var payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
-        seedContext.ContentPayments.Add(payment);
-        await seedContext.SaveChangesAsync();
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        CustomerEntity customer = CustomerFactory.CreateWithId(order.CustomerId);
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        ContentOrderItemEntity orderItem = ContentOrderItemFactory.Create(order.Id, category.Id);
+        VideoEntity video = VideoFactory.CreatePaid(category.Id, customer.Id, orderItem.Id);
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentOrderItems.Add(orderItem);
+            ctx.Videos.Add(video);
+            ctx.ContentPayments.Add(payment);
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { ReceiptUrl = "https://example.com/receipt/video-order" };
-        var msg = new HttpRequestMessage(HttpMethod.Patch, $"{ApiRoutes.Admin.Orders}/{order.Id}/payment/verify")
+        var request = new { ReceiptUrl = _116.Tests.Fixtures.Constants.TestConstants.Content.Commerce.ValidReceiptUrl };
+        var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
         {
             Content = JsonContent.Create(request),
         };
@@ -132,5 +139,14 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         var response = await Client.SendAsync(msg);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminVerifyPaymentResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using ContentDbContext db = CreateDbContext<ContentDbContext>();
+        ContentPaymentEntity? persistedPayment = await db.ContentPayments.FindAsync(payment.Id);
+        persistedPayment!.Status.Should().Be(EnumPaymentStatus.Verified);
+
+        ContentOrderEntity? persistedOrder = await db.ContentOrders.FindAsync(order.Id);
+        persistedOrder!.Status.Should().Be(EnumOrderStatus.Paid);
     }
 }
