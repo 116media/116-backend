@@ -1,3 +1,6 @@
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteArticle.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -9,11 +12,25 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminDeleteArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<ArticleEntity> SeedArticleAsync(Func<Guid, ArticleEntity> create)
+    {
+        return await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ArticleEntity article = create(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Articles.Add(article);
+            return article;
+        });
+    }
+
     [Fact]
     public async Task DeleteArticle_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}");
 
@@ -24,7 +41,7 @@ public class AdminDeleteArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     public async Task DeleteArticle_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}");
 
@@ -35,7 +52,7 @@ public class AdminDeleteArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     public async Task DeleteArticle_AsAdmin_ReturnsForbidden()
     {
         Client.AuthenticateAsAdmin();
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}");
 
@@ -46,33 +63,51 @@ public class AdminDeleteArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     public async Task DeleteArticle_AsSuperAdmin_WithNonExistentId_ReturnsError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     /// <summary>
-    /// Verifies that deleting a Published article returns a 400 BadRequest
-    /// because only Draft or Rejected articles can be deleted.
+    /// Verifies that deleting a Draft article succeeds, returns IsSuccess true,
+    /// and removes the row from the database.
     /// </summary>
     [Fact]
-    public async Task DeleteArticle_WhenPublished_ReturnsBadRequest()
+    public async Task DeleteArticle_WhenDraft_RemovesArticle()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var article = ArticleFactory.CreatePublished(category.Id);
-        seedContext.ContentTypes.Add(contentType);
-        seedContext.Categories.Add(category);
-        seedContext.Articles.Add(article);
-        await seedContext.SaveChangesAsync();
-
+        ArticleEntity article = await SeedArticleAsync(ArticleFactory.Create);
         Client.AuthenticateAsSuperAdmin();
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Articles}/{article.Id}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminDeleteArticleResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        ArticleEntity? persisted = await ctx.Articles.FindAsync(article.Id);
+        persisted.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Verifies that deleting a Published article returns a 400 BadRequest problem
+    /// because only Draft or Rejected articles can be deleted, and the article remains.
+    /// </summary>
+    [Fact]
+    public async Task DeleteArticle_WhenPublished_ReturnsBadRequest()
+    {
+        ArticleEntity article = await SeedArticleAsync(ArticleFactory.CreatePublished);
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Articles}/{article.Id}");
+
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        ArticleEntity? persisted = await ctx.Articles.FindAsync(article.Id);
+        persisted.Should().NotBeNull();
+        persisted!.Status.Should().Be(EnumContentStatus.Published);
     }
 }
