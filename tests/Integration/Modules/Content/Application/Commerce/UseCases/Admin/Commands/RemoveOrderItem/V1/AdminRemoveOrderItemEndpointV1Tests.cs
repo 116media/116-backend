@@ -1,4 +1,5 @@
-using System.Net.Http.Json;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.RemoveOrderItem.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -13,24 +14,31 @@ public class AdminRemoveOrderItemEndpointV1Tests(PostgresFixture db) : BaseApiTe
     [Fact]
     public async Task RemoveOrderItem_AsSuperAdmin_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var customer = CustomerFactory.Create();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var order = ContentOrderFactory.CreateForCustomer(customer.Id);
-        var orderItem = ContentOrderItemFactory.Create(order.Id, category.Id);
-        seedContext.Customers.Add(customer);
-        seedContext.ContentTypes.Add(contentType);
-        seedContext.Categories.Add(category);
-        seedContext.ContentOrders.Add(order);
-        seedContext.ContentOrderItems.Add(orderItem);
-        await seedContext.SaveChangesAsync();
+        CustomerEntity customer = CustomerFactory.Create();
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        ContentOrderItemEntity orderItem = ContentOrderItemFactory.Create(order.Id, category.Id);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentOrderItems.Add(orderItem);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Orders}/{order.Id}/items/{orderItem.Id}");
+        var response = await Client.DeleteAsync(Routes.Admin.Orders.Item(order.Id, orderItem.Id));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminRemoveOrderItemResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using ContentDbContext db = CreateDbContext<ContentDbContext>();
+        ContentOrderItemEntity? persisted = await db.ContentOrderItems.FindAsync(orderItem.Id);
+        persisted.Should().BeNull();
     }
 
     [Fact]
@@ -38,9 +46,9 @@ public class AdminRemoveOrderItemEndpointV1Tests(PostgresFixture db) : BaseApiTe
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Orders}/{Guid.NewGuid()}/items/{Guid.NewGuid()}");
+        var response = await Client.DeleteAsync(Routes.Admin.Orders.Item(Guid.NewGuid(), Guid.NewGuid()));
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -48,7 +56,7 @@ public class AdminRemoveOrderItemEndpointV1Tests(PostgresFixture db) : BaseApiTe
     {
         Client.ClearAuthentication();
 
-        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Orders}/{Guid.NewGuid()}/items/{Guid.NewGuid()}");
+        var response = await Client.DeleteAsync(Routes.Admin.Orders.Item(Guid.NewGuid(), Guid.NewGuid()));
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
