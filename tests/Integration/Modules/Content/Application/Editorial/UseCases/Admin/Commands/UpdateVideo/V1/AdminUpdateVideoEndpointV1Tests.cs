@@ -1,3 +1,9 @@
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo.V1;
 
 /// <summary>
@@ -6,11 +12,28 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<(CategoryEntity Category, VideoEntity Video)> SeedVideoAsync(Func<Guid, VideoEntity> create)
+    {
+        CategoryEntity? seededCategory = null;
+        VideoEntity video = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            seededCategory = category;
+            VideoEntity v = create(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Videos.Add(v);
+            return v;
+        });
+        return (seededCategory!, video);
+    }
+
     [Fact]
     public async Task UpdateVideo_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}", new { });
 
@@ -21,7 +44,7 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     public async Task UpdateVideo_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}", new { });
 
@@ -32,13 +55,52 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     public async Task UpdateVideo_AsAdmin_IsAllowed()
     {
         Client.AuthenticateAsAdmin();
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
+        AdminUpdateVideoRequest request = new AdminUpdateVideoRequestBuilder().Build();
 
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}", new { });
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}", request);
 
-        response
-            .StatusCode.Should()
-            .BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity, HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    /// <summary>
+    /// Verifies that updating a draft video with valid data persists the new title, slug,
+    /// description, and SEO metadata and echoes them back in the response DTO.
+    /// </summary>
+    [Fact]
+    public async Task UpdateVideo_AsSuperAdmin_WithValidData_ReturnsOkAndPersists()
+    {
+        (CategoryEntity category, VideoEntity video) = await SeedVideoAsync(categoryId =>
+            VideoFactory.Create(categoryId)
+        );
+        Client.AuthenticateAsSuperAdmin();
+        string slug = $"updated-video-{Guid.NewGuid():N}"[..20];
+        AdminUpdateVideoRequest request = new AdminUpdateVideoRequestBuilder()
+            .WithCategoryId(category.Id)
+            .WithTitle("Updated Video Title")
+            .WithSlug(slug)
+            .WithDescription("An updated video description for integration testing.")
+            .WithSocialBoost(true)
+            .WithMetaTitle("Updated meta title")
+            .WithMetaDescription("An updated meta description that comfortably exceeds the minimum length requirement.")
+            .Build();
+
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{video.Id}", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminUpdateVideoResponse body = await response.ReadAsAsync<AdminUpdateVideoResponse>();
+        body.Video.Id.Should().Be(video.Id);
+        body.Video.Title.Should().Be(request.Title);
+        body.Video.Slug.Should().Be(slug);
+        body.Video.SocialBoost.Should().BeTrue();
+
+        await using ContentDbContext verifyContext = CreateDbContext<ContentDbContext>();
+        VideoEntity? persisted = await verifyContext.Videos.FindAsync(video.Id);
+        persisted!.Title.Should().Be(request.Title);
+        persisted.Slug.Should().Be(slug);
+        persisted.Description.Should().Be(request.Description);
+        persisted.SocialBoost.Should().BeTrue();
     }
 
     /// <summary>
@@ -50,19 +112,12 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     public async Task UpdateVideo_WithTitleTooLong_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
-        var request = new
-        {
-            CategoryId = Guid.NewGuid(),
-            Title = new string('V', 200),
-            Slug = "valid-slug",
-            Description = "Some description",
-            SocialBoost = false,
-        };
+        Guid id = Guid.NewGuid();
+        AdminUpdateVideoRequest request = new AdminUpdateVideoRequestBuilder().WithTitle(new string('V', 200)).Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -74,19 +129,12 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     public async Task UpdateVideo_WithInvalidSlug_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
-        var request = new
-        {
-            CategoryId = Guid.NewGuid(),
-            Title = "Valid Title",
-            Slug = "INVALID SLUG!!!",
-            Description = "Some description",
-            SocialBoost = false,
-        };
+        Guid id = Guid.NewGuid();
+        AdminUpdateVideoRequest request = new AdminUpdateVideoRequestBuilder().WithSlug("INVALID SLUG!!!").Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -98,19 +146,12 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     public async Task UpdateVideo_WithSlugTooLong_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
-        var request = new
-        {
-            CategoryId = Guid.NewGuid(),
-            Title = "Valid Title",
-            Slug = new string('a', 300),
-            Description = "Some description",
-            SocialBoost = false,
-        };
+        Guid id = Guid.NewGuid();
+        AdminUpdateVideoRequest request = new AdminUpdateVideoRequestBuilder().WithSlug(new string('a', 300)).Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -122,19 +163,12 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     public async Task UpdateVideo_WithEmptyDescription_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
-        var request = new
-        {
-            CategoryId = Guid.NewGuid(),
-            Title = "Valid Title",
-            Slug = "valid-slug",
-            Description = "",
-            SocialBoost = false,
-        };
+        Guid id = Guid.NewGuid();
+        AdminUpdateVideoRequest request = new AdminUpdateVideoRequestBuilder().WithDescription(string.Empty).Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -146,20 +180,12 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     public async Task UpdateVideo_WithMetaTitleTooShort_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
-        var request = new
-        {
-            CategoryId = Guid.NewGuid(),
-            Title = "Valid Title",
-            Slug = "valid-slug",
-            Description = "Some description",
-            MetaTitle = "Short",
-            SocialBoost = false,
-        };
+        Guid id = Guid.NewGuid();
+        AdminUpdateVideoRequest request = new AdminUpdateVideoRequestBuilder().WithMetaTitle("Short").Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -171,19 +197,11 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     public async Task UpdateVideo_WithMetaDescriptionTooShort_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
-        var request = new
-        {
-            CategoryId = Guid.NewGuid(),
-            Title = "Valid Title",
-            Slug = "valid-slug",
-            Description = "Some description",
-            MetaDescription = "Too short",
-            SocialBoost = false,
-        };
+        Guid id = Guid.NewGuid();
+        AdminUpdateVideoRequest request = new AdminUpdateVideoRequestBuilder().WithMetaDescription("Too short").Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }
