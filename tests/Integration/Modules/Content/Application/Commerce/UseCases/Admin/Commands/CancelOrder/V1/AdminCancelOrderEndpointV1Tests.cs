@@ -1,3 +1,6 @@
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.CancelOrder.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -12,20 +15,25 @@ public class AdminCancelOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     [Fact]
     public async Task CancelOrder_AsSuperAdmin_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var customer = CustomerFactory.Create();
-        seedContext.Customers.Add(customer);
-        await seedContext.SaveChangesAsync();
-
-        var order = ContentOrderFactory.CreateForCustomer(customer.Id);
-        seedContext.ContentOrders.Add(order);
-        await seedContext.SaveChangesAsync();
+        CustomerEntity customer = CustomerFactory.Create();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Orders}/{order.Id}/cancel", null);
+        var response = await Client.PatchAsync(Routes.Admin.Orders.Cancel(order.Id), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminCancelOrderResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using ContentDbContext db = CreateDbContext<ContentDbContext>();
+        ContentOrderEntity? persisted = await db.ContentOrders.FindAsync(order.Id);
+        persisted!.Status.Should().Be(EnumOrderStatus.Cancelled);
     }
 
     [Fact]
@@ -33,9 +41,9 @@ public class AdminCancelOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Orders}/{Guid.NewGuid()}/cancel", null);
+        var response = await Client.PatchAsync(Routes.Admin.Orders.Cancel(Guid.NewGuid()), null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -43,7 +51,7 @@ public class AdminCancelOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     {
         Client.ClearAuthentication();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Orders}/{Guid.NewGuid()}/cancel", null);
+        var response = await Client.PatchAsync(Routes.Admin.Orders.Cancel(Guid.NewGuid()), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -51,34 +59,44 @@ public class AdminCancelOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     [Fact]
     public async Task CancelOrder_AsSuperAdmin_AlreadyCancelled_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var order = ContentOrderFactory.CreateCancelled();
-        var customer = CustomerFactory.CreateWithId(order.CustomerId);
-        seedContext.Customers.Add(customer);
-        seedContext.ContentOrders.Add(order);
-        await seedContext.SaveChangesAsync();
+        ContentOrderEntity order = ContentOrderFactory.CreateCancelled();
+        CustomerEntity customer = CustomerFactory.CreateWithId(order.CustomerId);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Orders}/{order.Id}/cancel", null);
+        var response = await Client.PatchAsync(Routes.Admin.Orders.Cancel(order.Id), null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+
+        await using ContentDbContext db = CreateDbContext<ContentDbContext>();
+        ContentOrderEntity? persisted = await db.ContentOrders.FindAsync(order.Id);
+        persisted!.Status.Should().Be(EnumOrderStatus.Cancelled);
     }
 
     [Fact]
     public async Task CancelOrder_AsSuperAdmin_PaidOrder_ReturnsBadRequest()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var order = ContentOrderFactory.CreatePaid();
-        var customer = CustomerFactory.CreateWithId(order.CustomerId);
-        seedContext.Customers.Add(customer);
-        seedContext.ContentOrders.Add(order);
-        await seedContext.SaveChangesAsync();
+        ContentOrderEntity order = ContentOrderFactory.CreatePaid();
+        CustomerEntity customer = CustomerFactory.CreateWithId(order.CustomerId);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Orders}/{order.Id}/cancel", null);
+        var response = await Client.PatchAsync(Routes.Admin.Orders.Cancel(order.Id), null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+
+        await using ContentDbContext db = CreateDbContext<ContentDbContext>();
+        ContentOrderEntity? persisted = await db.ContentOrders.FindAsync(order.Id);
+        persisted!.Status.Should().Be(EnumOrderStatus.Paid);
     }
 }
