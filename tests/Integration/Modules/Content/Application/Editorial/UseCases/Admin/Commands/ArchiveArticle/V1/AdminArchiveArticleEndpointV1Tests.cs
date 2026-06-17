@@ -1,3 +1,7 @@
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveArticle.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -9,13 +13,36 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminArchiveArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<ArticleEntity> SeedArticleAsync(Func<Guid, ArticleEntity> create)
+    {
+        return await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ArticleEntity article = create(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Articles.Add(article);
+            return article;
+        });
+    }
+
+    private async Task<EnumContentStatus> GetArticleStatusAsync(Guid id)
+    {
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        ArticleEntity? article = await ctx.Articles.FindAsync(id);
+        return article!.Status;
+    }
+
     [Fact]
     public async Task ArchiveArticle_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}/archive", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Archive(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -24,9 +51,11 @@ public class AdminArchiveArticleEndpointV1Tests(PostgresFixture db) : BaseApiTes
     public async Task ArchiveArticle_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}/archive", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Archive(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -35,9 +64,11 @@ public class AdminArchiveArticleEndpointV1Tests(PostgresFixture db) : BaseApiTes
     public async Task ArchiveArticle_AsAdmin_ReturnsForbidden()
     {
         Client.AuthenticateAsAdmin();
-        var nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}/archive", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Archive(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -46,56 +77,52 @@ public class AdminArchiveArticleEndpointV1Tests(PostgresFixture db) : BaseApiTes
     public async Task ArchiveArticle_AsSuperAdmin_WithNonExistentId_ReturnsError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}/archive", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Archive(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     /// <summary>
     /// Verifies that archiving an article that is already in Archived status
-    /// returns a 409 Conflict response.
+    /// returns a 409 Conflict problem and leaves the article archived.
     /// </summary>
     [Fact]
     public async Task ArchiveArticle_WhenAlreadyArchived_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var article = ArticleFactory.CreateArchived(category.Id);
-        seedContext.ContentTypes.Add(contentType);
-        seedContext.Categories.Add(category);
-        seedContext.Articles.Add(article);
-        await seedContext.SaveChangesAsync();
-
+        ArticleEntity article = await SeedArticleAsync(ArticleFactory.CreateArchived);
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Articles}/{article.Id}/archive", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Archive(EditorialRouteConstants.Articles, article.Id),
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await GetArticleStatusAsync(article.Id)).Should().Be(EnumContentStatus.Archived);
     }
 
     /// <summary>
-    /// Verifies that archiving a published article succeeds and returns a 200 OK response,
-    /// exercising the happy path of <c>ArticleEntity.Archive</c>.
+    /// Verifies that archiving a published article succeeds, returns IsSuccess true,
+    /// and transitions the persisted status to Archived.
     /// </summary>
     [Fact]
     public async Task ArchiveArticle_AsSuperAdmin_PublishedArticle_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var article = ArticleFactory.CreatePublished(category.Id);
-        seedContext.ContentTypes.Add(contentType);
-        seedContext.Categories.Add(category);
-        seedContext.Articles.Add(article);
-        await seedContext.SaveChangesAsync();
-
+        ArticleEntity article = await SeedArticleAsync(ArticleFactory.CreatePublished);
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Articles}/{article.Id}/archive", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Archive(EditorialRouteConstants.Articles, article.Id),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminArchiveArticleResponse>();
+        body.IsSuccess.Should().BeTrue();
+        (await GetArticleStatusAsync(article.Id)).Should().Be(EnumContentStatus.Archived);
     }
 }
