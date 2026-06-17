@@ -1,3 +1,9 @@
+using _116.Content.Application.Interactions.Constants;
+using _116.Content.Application.Interactions.UseCases.Admin.Commands.DeleteArticleComment.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Admin.Commands.DeleteArticleComment.V1;
 
 /// <summary>
@@ -6,14 +12,38 @@ namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCas
 [Collection("Database")]
 public class AdminDeleteArticleCommentEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string CommentUrl(Guid articleId, Guid commentId) =>
+        $"{ApiRoutes.Admin.Articles}/{articleId}/{InteractionsRouteConstants.Comments}/{commentId}";
+
+    private async Task<(ArticleEntity Article, ArticleCommentEntity Comment)> SeedArticleWithCommentAsync(Guid authorId)
+    {
+        ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            ArticleEntity created = ArticleFactory.CreatePublished(category.Id);
+            ctx.Articles.Add(created);
+            return created;
+        });
+
+        ArticleCommentEntity comment = await SeedAsync<ContentDbContext, ArticleCommentEntity>(ctx =>
+        {
+            ArticleCommentEntity created = ArticleCommentFactory.Create(article.Id, authorId);
+            ctx.ArticleComments.Add(created);
+            return created;
+        });
+
+        return (article, comment);
+    }
+
     [Fact]
     public async Task DeleteArticleComment_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
 
-        var response = await Client.DeleteAsync(
-            $"{ApiRoutes.Admin.Articles}/{Guid.NewGuid()}/comments/{Guid.NewGuid()}"
-        );
+        var response = await Client.DeleteAsync(CommentUrl(Guid.NewGuid(), Guid.NewGuid()));
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -23,9 +53,7 @@ public class AdminDeleteArticleCommentEndpointV1Tests(PostgresFixture db) : Base
     {
         Client.AuthenticateAsVisitor();
 
-        var response = await Client.DeleteAsync(
-            $"{ApiRoutes.Admin.Articles}/{Guid.NewGuid()}/comments/{Guid.NewGuid()}"
-        );
+        var response = await Client.DeleteAsync(CommentUrl(Guid.NewGuid(), Guid.NewGuid()));
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -35,10 +63,25 @@ public class AdminDeleteArticleCommentEndpointV1Tests(PostgresFixture db) : Base
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.DeleteAsync(
-            $"{ApiRoutes.Admin.Articles}/{Guid.NewGuid()}/comments/{Guid.NewGuid()}"
-        );
+        var response = await Client.DeleteAsync(CommentUrl(Guid.NewGuid(), Guid.NewGuid()));
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task DeleteArticleComment_AsSuperAdmin_WithExistingComment_SoftDeletesComment()
+    {
+        (ArticleEntity article, ArticleCommentEntity comment) = await SeedArticleWithCommentAsync(TestUser.VisitorId);
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.DeleteAsync(CommentUrl(article.Id, comment.Id));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        AdminDeleteArticleCommentResponse body = await response.ReadAsAsync<AdminDeleteArticleCommentResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using ContentDbContext verifyDb = CreateDbContext<ContentDbContext>();
+        ArticleCommentEntity? stored = await verifyDb.ArticleComments.FindAsync(comment.Id);
+        stored!.IsDeleted.Should().BeTrue();
     }
 }
