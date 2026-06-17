@@ -1,3 +1,9 @@
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadShortVideoThumbnail.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UploadShortVideoThumbnail.V1;
 
 /// <summary>
@@ -6,16 +12,26 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUploadShortVideoThumbnailEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static MultipartFormDataContent CreateThumbnailContent()
+    {
+        var formContent = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent([0xFF, 0xD8, 0xFF, 0xE0]);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        formContent.Add(fileContent, "file", "test.jpg");
+        return formContent;
+    }
+
     [Fact]
     public async Task UploadShortVideoThumbnail_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var nonExistentId = Guid.NewGuid();
 
-        using var formContent = new MultipartFormDataContent();
-        formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
+        using MultipartFormDataContent formContent = CreateThumbnailContent();
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Shorts}/{nonExistentId}/thumbnail", formContent);
+        var response = await Client.PostAsync(
+            Routes.Admin.Editorial.Thumbnail(EditorialRouteConstants.Shorts, Guid.NewGuid()),
+            formContent
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -24,29 +40,64 @@ public class AdminUploadShortVideoThumbnailEndpointV1Tests(PostgresFixture db) :
     public async Task UploadShortVideoThumbnail_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var nonExistentId = Guid.NewGuid();
 
-        using var formContent = new MultipartFormDataContent();
-        formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
+        using MultipartFormDataContent formContent = CreateThumbnailContent();
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Shorts}/{nonExistentId}/thumbnail", formContent);
+        var response = await Client.PostAsync(
+            Routes.Admin.Editorial.Thumbnail(EditorialRouteConstants.Shorts, Guid.NewGuid()),
+            formContent
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
-    public async Task UploadShortVideoThumbnail_AsAdmin_IsAllowed()
+    public async Task UploadShortVideoThumbnail_AsAdmin_WithNonExistentId_ReturnsNotFound()
     {
         Client.AuthenticateAsAdmin();
-        var nonExistentId = Guid.NewGuid();
 
-        using var formContent = new MultipartFormDataContent();
-        formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
+        using MultipartFormDataContent formContent = CreateThumbnailContent();
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Shorts}/{nonExistentId}/thumbnail", formContent);
+        var response = await Client.PostAsync(
+            Routes.Admin.Editorial.Thumbnail(EditorialRouteConstants.Shorts, Guid.NewGuid()),
+            formContent
+        );
 
-        response
-            .StatusCode.Should()
-            .BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity, HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    /// <summary>
+    /// Verifies that uploading a thumbnail for an existing short video returns the stubbed
+    /// Cloudinary URL and persists the resolved thumbnail file id.
+    /// </summary>
+    [Fact]
+    public async Task UploadShortVideoThumbnail_AsSuperAdmin_WithValidFile_ReturnsOkAndPersists()
+    {
+        ShortVideoEntity shortVideo = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.Create();
+            ctx.ShortVideos.Add(entity);
+            return entity;
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+
+        using MultipartFormDataContent formContent = CreateThumbnailContent();
+
+        var response = await Client.PostAsync(
+            Routes.Admin.Editorial.Thumbnail(EditorialRouteConstants.Shorts, shortVideo.Id),
+            formContent
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminUploadShortVideoThumbnailResponse body =
+            await response.ReadAsAsync<AdminUploadShortVideoThumbnailResponse>();
+        body.ThumbnailUrl.Should().StartWith("https://res.cloudinary.com/test-cloud/");
+        body.ThumbnailStorageKey.Should().NotBeNullOrEmpty();
+
+        await using ContentDbContext verifyContext = CreateDbContext<ContentDbContext>();
+        ShortVideoEntity? persisted = await verifyContext.ShortVideos.FindAsync(shortVideo.Id);
+        persisted!.ThumbnailFileId.Should().NotBeNull();
     }
 }
