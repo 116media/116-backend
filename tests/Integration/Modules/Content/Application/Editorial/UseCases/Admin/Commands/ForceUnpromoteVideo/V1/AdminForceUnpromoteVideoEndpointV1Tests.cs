@@ -1,4 +1,8 @@
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteVideo.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteVideo.V1;
@@ -9,15 +13,22 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminForceUnpromoteVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string UnpromoteUrl(string slug) =>
+        $"{ApiRoutes.Admin.Videos}/{slug}/{EditorialRouteConstants.Unpromote}";
+
+    private async Task<VideoEntity> GetVideoAsync(Guid id)
+    {
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        VideoEntity? video = await ctx.Videos.FindAsync(id);
+        return video!;
+    }
+
     [Fact]
     public async Task ForceUnpromoteVideo_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
 
-        var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Videos}/non-existent-slug/unpromote",
-            new { Reason = "test" }
-        );
+        var response = await Client.PatchAsJsonAsync(UnpromoteUrl("non-existent-slug"), new { Reason = "test" });
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -27,10 +38,7 @@ public class AdminForceUnpromoteVideoEndpointV1Tests(PostgresFixture db) : BaseA
     {
         Client.AuthenticateAsVisitor();
 
-        var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Videos}/non-existent-slug/unpromote",
-            new { Reason = "test" }
-        );
+        var response = await Client.PatchAsJsonAsync(UnpromoteUrl("non-existent-slug"), new { Reason = "test" });
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -40,10 +48,7 @@ public class AdminForceUnpromoteVideoEndpointV1Tests(PostgresFixture db) : BaseA
     {
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Videos}/non-existent-slug/unpromote",
-            new { Reason = "test" }
-        );
+        var response = await Client.PatchAsJsonAsync(UnpromoteUrl("non-existent-slug"), new { Reason = "test" });
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -52,38 +57,43 @@ public class AdminForceUnpromoteVideoEndpointV1Tests(PostgresFixture db) : BaseA
     public async Task ForceUnpromoteVideo_AsSuperAdmin_WithNonExistentSlug_ReturnsNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
+        AdminForceUnpromoteVideoRequest request = new AdminForceUnpromoteVideoRequestBuilder().Build();
 
-        var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Videos}/non-existent-slug/unpromote",
-            new { Reason = "Content policy violation" }
-        );
+        var response = await Client.PatchAsJsonAsync(UnpromoteUrl("non-existent-slug"), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task ForceUnpromoteVideo_AsSuperAdmin_WithPromotedVideo_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var promotionLevel = PromotionLevelFactory.Create();
-        var video = VideoFactory.CreatePublished(category.Id);
-        video.StampPromotion(promotionLevel.Id, DateTimeOffset.UtcNow.AddDays(7));
-        seedContext.ContentTypes.Add(contentType);
-        seedContext.Categories.Add(category);
-        seedContext.PromotionLevels.Add(promotionLevel);
-        seedContext.Videos.Add(video);
-        await seedContext.SaveChangesAsync();
+        VideoEntity video = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            PromotionLevelEntity promotionLevel = PromotionLevelFactory.Create();
+            VideoEntity v = VideoFactory.CreatePublished(category.Id);
+            v.StampPromotion(promotionLevel.Id, DateTimeOffset.UtcNow.AddDays(7));
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.PromotionLevels.Add(promotionLevel);
+            ctx.Videos.Add(v);
+            return v;
+        });
 
         Client.AuthenticateAsSuperAdmin();
+        AdminForceUnpromoteVideoRequest request = new AdminForceUnpromoteVideoRequestBuilder().Build();
 
-        var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Videos}/{video.Slug}/unpromote",
-            new { Reason = "Content policy violation" }
-        );
+        var response = await Client.PatchAsJsonAsync(UnpromoteUrl(video.Slug), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminForceUnpromoteVideoResponse body = await response.ReadAsAsync<AdminForceUnpromoteVideoResponse>();
+        body.VideoId.Should().Be(video.Id);
+
+        VideoEntity persisted = await GetVideoAsync(video.Id);
+        persisted.IsPromoted.Should().BeFalse();
+        persisted.UnpromotedAt.Should().NotBeNull();
     }
 
     /// <summary>
@@ -94,22 +104,23 @@ public class AdminForceUnpromoteVideoEndpointV1Tests(PostgresFixture db) : BaseA
     [Fact]
     public async Task ForceUnpromoteVideo_AsSuperAdmin_NotPromoted_ReturnsBadRequest()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var video = VideoFactory.CreatePublished(category.Id);
-        seedContext.ContentTypes.Add(contentType);
-        seedContext.Categories.Add(category);
-        seedContext.Videos.Add(video);
-        await seedContext.SaveChangesAsync();
+        VideoEntity video = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            VideoEntity v = VideoFactory.CreatePublished(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Videos.Add(v);
+            return v;
+        });
 
         Client.AuthenticateAsSuperAdmin();
+        AdminForceUnpromoteVideoRequest request = new AdminForceUnpromoteVideoRequestBuilder().Build();
 
-        var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Videos}/{video.Slug}/unpromote",
-            new { Reason = "Attempted unpromote on non-promoted video" }
-        );
+        var response = await Client.PatchAsJsonAsync(UnpromoteUrl(video.Slug), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        (await GetVideoAsync(video.Id)).IsPromoted.Should().BeFalse();
     }
 }
