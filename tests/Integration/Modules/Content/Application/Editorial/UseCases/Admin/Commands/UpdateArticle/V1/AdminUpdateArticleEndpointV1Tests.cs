@@ -1,4 +1,7 @@
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticle.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticle.V1;
@@ -36,40 +39,54 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     {
         Client.AuthenticateAsAdmin();
         var nonExistentId = Guid.NewGuid();
+        AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder().Build();
 
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}", new { });
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}", request);
 
-        response
-            .StatusCode.Should()
-            .BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity, HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
+    /// <summary>
+    /// Verifies that a full article update returns 200 OK, echoes the new title/headline/body
+    /// in the typed response, and persists the changed fields.
+    /// </summary>
     [Fact]
     public async Task UpdateArticle_AsSuperAdmin_WithValidData_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var article = ArticleFactory.Create(category.Id);
-        seedContext.ContentTypes.Add(contentType);
-        seedContext.Categories.Add(category);
-        seedContext.Articles.Add(article);
-        await seedContext.SaveChangesAsync();
+        ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ArticleEntity a = ArticleFactory.Create(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Articles.Add(a);
+            return a;
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new
-        {
-            CategoryId = category.Id,
-            Title = "Updated Article Title",
-            Slug = article.Slug,
-            Headline = "This is a test headline that is intentionally written to be long enough to pass the minimum validation length requirement of one hundred characters.",
-            Body = "<p>Updated article body content.</p>",
-            SocialBoost = false,
-        };
+        AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder()
+            .WithCategoryId(article.CategoryId)
+            .WithTitle("Updated Article Title")
+            .WithSlug(article.Slug)
+            .WithBody("<p>Updated article body content.</p>")
+            .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{article.Id}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminUpdateArticleResponse>();
+        body.Article.Id.Should().Be(article.Id);
+        body.Article.Title.Should().Be(request.Title);
+        body.Article.Headline.Should().Be(request.Headline);
+        body.Article.Body.Should().Be(request.Body);
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        ArticleEntity? persisted = await ctx.Articles.FindAsync(article.Id);
+        persisted.Should().NotBeNull();
+        persisted!.Title.Should().Be(request.Title);
+        persisted.Headline.Should().Be(request.Headline);
+        persisted.Body.Should().Be(request.Body);
     }
 
     /// <summary>
@@ -82,19 +99,13 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     {
         Client.AuthenticateAsSuperAdmin();
         var id = Guid.NewGuid();
-        var request = new
-        {
-            CategoryId = Guid.NewGuid(),
-            Title = new string('A', 200),
-            Slug = "valid-slug",
-            Headline = string.Empty,
-            Body = string.Empty,
-            SocialBoost = false,
-        };
+        AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder()
+            .WithTitle(new string('A', 200))
+            .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -107,19 +118,11 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     {
         Client.AuthenticateAsSuperAdmin();
         var id = Guid.NewGuid();
-        var request = new
-        {
-            CategoryId = Guid.NewGuid(),
-            Title = "Valid Title",
-            Slug = "INVALID SLUG!!!",
-            Headline = "This is a test headline that is intentionally written to be long enough to pass the minimum validation length requirement of one hundred characters.",
-            Body = "<p>Valid body.</p>",
-            SocialBoost = false,
-        };
+        AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder().WithSlug("INVALID SLUG!!!").Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -131,19 +134,11 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     {
         Client.AuthenticateAsSuperAdmin();
         var id = Guid.NewGuid();
-        var request = new
-        {
-            CategoryId = Guid.NewGuid(),
-            Title = "Valid Title",
-            Slug = "valid-slug",
-            Headline = "Too short",
-            Body = "<p>Valid body.</p>",
-            SocialBoost = false,
-        };
+        AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder().WithHeadline("Too short").Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -156,19 +151,13 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     {
         Client.AuthenticateAsSuperAdmin();
         var id = Guid.NewGuid();
-        var request = new
-        {
-            CategoryId = Guid.NewGuid(),
-            Title = "Valid Title",
-            Slug = new string('a', 300),
-            Headline = "This is a test headline that is intentionally written to be long enough to pass the minimum validation length requirement of one hundred characters.",
-            Body = "<p>Valid body.</p>",
-            SocialBoost = false,
-        };
+        AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder()
+            .WithSlug(new string('a', 300))
+            .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -181,19 +170,13 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     {
         Client.AuthenticateAsSuperAdmin();
         var id = Guid.NewGuid();
-        var request = new
-        {
-            CategoryId = Guid.NewGuid(),
-            Title = "Valid Title",
-            Slug = "valid-slug",
-            Headline = new string('H', 600),
-            Body = "<p>Valid body.</p>",
-            SocialBoost = false,
-        };
+        AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder()
+            .WithHeadline(new string('H', 600))
+            .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -206,20 +189,11 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     {
         Client.AuthenticateAsSuperAdmin();
         var id = Guid.NewGuid();
-        var request = new
-        {
-            CategoryId = Guid.NewGuid(),
-            Title = "Valid Title",
-            Slug = "valid-slug",
-            Headline = "This is a test headline that is intentionally written to be long enough to pass the minimum validation length requirement of one hundred characters.",
-            Body = "<p>Valid body.</p>",
-            MetaTitle = "Short",
-            SocialBoost = false,
-        };
+        AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder().WithMetaTitle("Short").Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -232,20 +206,13 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     {
         Client.AuthenticateAsSuperAdmin();
         var id = Guid.NewGuid();
-        var request = new
-        {
-            CategoryId = Guid.NewGuid(),
-            Title = "Valid Title",
-            Slug = "valid-slug",
-            Headline = "This is a test headline that is intentionally written to be long enough to pass the minimum validation length requirement of one hundred characters.",
-            Body = "<p>Valid body.</p>",
-            MetaTitle = new string('M', 100),
-            SocialBoost = false,
-        };
+        AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder()
+            .WithMetaTitle(new string('M', 100))
+            .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -258,20 +225,13 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     {
         Client.AuthenticateAsSuperAdmin();
         var id = Guid.NewGuid();
-        var request = new
-        {
-            CategoryId = Guid.NewGuid(),
-            Title = "Valid Title",
-            Slug = "valid-slug",
-            Headline = "This is a test headline that is intentionally written to be long enough to pass the minimum validation length requirement of one hundred characters.",
-            Body = "<p>Valid body.</p>",
-            MetaDescription = "Too short",
-            SocialBoost = false,
-        };
+        AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder()
+            .WithMetaDescription("Too short")
+            .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -284,20 +244,13 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     {
         Client.AuthenticateAsSuperAdmin();
         var id = Guid.NewGuid();
-        var request = new
-        {
-            CategoryId = Guid.NewGuid(),
-            Title = "Valid Title",
-            Slug = "valid-slug",
-            Headline = "This is a test headline that is intentionally written to be long enough to pass the minimum validation length requirement of one hundred characters.",
-            Body = "<p>Valid body.</p>",
-            MetaDescription = new string('D', 200),
-            SocialBoost = false,
-        };
+        AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder()
+            .WithMetaDescription(new string('D', 200))
+            .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -309,18 +262,10 @@ public class AdminUpdateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     {
         Client.AuthenticateAsSuperAdmin();
         var id = Guid.NewGuid();
-        var request = new
-        {
-            CategoryId = Guid.NewGuid(),
-            Title = "Valid Title",
-            Slug = "valid-slug",
-            Headline = "This is a test headline that is intentionally written to be long enough to pass the minimum validation length requirement of one hundred characters.",
-            Body = "",
-            SocialBoost = false,
-        };
+        AdminUpdateArticleRequest request = new AdminUpdateArticleRequestBuilder().WithBody(string.Empty).Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Articles}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }
