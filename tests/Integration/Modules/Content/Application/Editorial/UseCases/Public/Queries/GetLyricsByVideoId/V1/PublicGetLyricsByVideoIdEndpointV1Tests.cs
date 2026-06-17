@@ -1,3 +1,8 @@
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsByVideoId.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsByVideoId.V1;
 
 /// <summary>
@@ -7,6 +12,45 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 public class PublicGetLyricsByVideoIdEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
     [Fact]
+    public async Task GetLyricsByVideoId_WithLinkedLyrics_ReturnsLyrics()
+    {
+        Guid categoryId = await SeedAsync<ContentDbContext, Guid>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+
+            return category.Id;
+        });
+
+        VideoEntity video = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            VideoEntity entity = VideoFactory.Create(categoryId);
+            ctx.Videos.Add(entity);
+            return entity;
+        });
+
+        LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
+        {
+            LyricsEntity entity = LyricsFactory.CreateForVideo(video.Id);
+            ctx.Lyrics.Add(entity);
+            return entity;
+        });
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Lyrics}/videos/{video.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetLyricsByVideoIdResponse body = await response.ReadAsAsync<PublicGetLyricsByVideoIdResponse>();
+        body.Lyrics.Id.Should().Be(lyrics.Id);
+        body.Lyrics.VideoId.Should().Be(video.Id);
+    }
+
+    [Fact]
     public async Task GetLyricsByVideoId_WithNonExistent_ReturnsNotFound()
     {
         Client.ClearAuthentication();
@@ -14,6 +58,6 @@ public class PublicGetLyricsByVideoIdEndpointV1Tests(PostgresFixture db) : BaseA
 
         var response = await Client.GetAsync($"{ApiRoutes.Public.Lyrics}/videos/{nonExistentId}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 }
