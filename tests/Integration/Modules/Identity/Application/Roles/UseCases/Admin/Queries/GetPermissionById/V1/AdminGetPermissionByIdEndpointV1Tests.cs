@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Identity.Application.Roles.UseCases.Admin.Queries.GetPermissionById.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -23,25 +24,25 @@ public class AdminGetPermissionByIdEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task GetPermissionById_ShouldReturn200_WhenAdminAndExists()
     {
-        Client.AuthenticateAsSuperAdmin();
-
-        var createPayload = new
+        string resource = UniqueResource("gi");
+        string action = UniqueAction("gi");
+        PermissionEntity permission = await SeedAsync<IdentityDbContext, PermissionEntity>(ctx =>
         {
-            Resource = UniqueResource("gi"),
-            Action = UniqueAction("gi"),
-            Description = "Seeded for get by id",
-        };
-
-        var createResponse = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, createPayload);
-        var createBody = await createResponse.Content.ReadAsStringAsync();
-        using var createDoc = JsonDocument.Parse(createBody);
-        var permissionId = createDoc.RootElement.GetProperty("permission").GetProperty("id").GetString();
+            PermissionEntity entity = PermissionFactory.Create(resource, action, "Seeded for get by id");
+            ctx.Permissions.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Permissions}/{permissionId}");
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Permissions}/{permission.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminGetPermissionByIdResponse>();
+        body.Permission.Id.Should().Be(permission.Id);
+        body.Permission.Resource.Should().Be(resource);
+        body.Permission.Action.Should().Be(action);
     }
 
     [Fact]
@@ -49,10 +50,10 @@ public class AdminGetPermissionByIdEndpointV1Tests(PostgresFixture db) : BaseApi
     {
         Client.AuthenticateAsAdmin();
 
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
 
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Permissions}/{nonExistentId}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 }
