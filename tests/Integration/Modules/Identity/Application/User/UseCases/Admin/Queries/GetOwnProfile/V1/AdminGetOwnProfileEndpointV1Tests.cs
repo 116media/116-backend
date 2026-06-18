@@ -1,7 +1,6 @@
-using System.Text.Json;
-using _116.Identity.Domain.Entities;
-using _116.Identity.Infrastructure.Persistence;
-using _116.Tests.Fixtures.Factories.Identity;
+using _116.Identity.Application.User.Constants;
+using _116.Identity.Application.User.UseCases.Admin.Queries.GetOwnProfile.V1;
+using _116.Identity.Domain.Constants;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.User.UseCases.Admin.Queries.GetOwnProfile.V1;
 
@@ -11,10 +10,7 @@ namespace _116.Integration.Tests.Modules.Identity.Application.User.UseCases.Admi
 [Collection("Database")]
 public class AdminGetOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private const string AdminMeProfile = $"{ApiRoutes.Admin.Base}/me/profile";
-    private const string AdminMeAvatar = $"{ApiRoutes.Admin.Base}/me/avatar";
-    private const string PublicMeProfile = $"{ApiRoutes.Public.Me}/profile";
-    private const string PublicMeAvatar = $"{ApiRoutes.Public.Me}/avatar";
+    private const string AdminMeProfile = $"{ApiRoutes.Admin.Base}/{IdentityConstants.Me}/{UserRouteConstants.Profile}";
 
     [Fact]
     public async Task AdminGetOwnProfile_AsSuperAdmin_Returns200WithUser()
@@ -25,10 +21,9 @@ public class AdminGetOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        doc.RootElement.TryGetProperty("user", out var userProp).Should().BeTrue();
-        userProp.GetProperty("id").GetString().Should().Be(TestUser.SuperAdminId.ToString());
+        AdminGetOwnProfileResponse body = await response.ReadAsAsync<AdminGetOwnProfileResponse>();
+        body.User.Id.Should().Be(TestUser.SuperAdminId);
+        body.User.Email.Should().Be(TestUser.SuperAdminEmail);
     }
 
     [Fact]
