@@ -1,3 +1,4 @@
+using _116.Identity.Application.Auth.UseCases.Public.Commands.SignOutFromAllDevices.V1;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -14,11 +15,15 @@ public class PublicSignOutFromAllDevicesEndpointV1Tests(PostgresFixture db) : Ba
     {
         Client.ClearAuthentication();
 
-        var response = await Client.PostAsync($"{ApiRoutes.Public.Auth}/sign-out-all", null);
+        var response = await Client.PostAsync(Routes.Public.Auth.SignOutAll(), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+    /// <summary>
+    /// Verifies that a Visitor signing out from all devices receives a success payload and that
+    /// every active session for the user is revoked in the database.
+    /// </summary>
     [Fact]
     public async Task SignOutFromAllDevices_AsVisitor_ReturnsOk()
     {
@@ -29,9 +34,17 @@ public class PublicSignOutFromAllDevicesEndpointV1Tests(PostgresFixture db) : Ba
 
         Client.AuthenticateAsVisitor();
 
-        var response = await Client.PostAsync($"{ApiRoutes.Public.Auth}/sign-out-all", null);
+        var response = await Client.PostAsync(Routes.Public.Auth.SignOutAll(), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicSignOutFromAllDevicesResponse body = await response.ReadAsAsync<PublicSignOutFromAllDevicesResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using var verifyContext = CreateDbContext<IdentityDbContext>();
+        var sessions = await verifyContext.Sessions.Where(s => s.UserId == TestUser.VisitorId).ToListAsync();
+        sessions.Should().NotBeEmpty();
+        sessions.Should().OnlyContain(s => s.IsRevoked);
     }
 
     [Fact]
@@ -39,7 +52,7 @@ public class PublicSignOutFromAllDevicesEndpointV1Tests(PostgresFixture db) : Ba
     {
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.PostAsync($"{ApiRoutes.Public.Auth}/sign-out-all", null);
+        var response = await Client.PostAsync(Routes.Public.Auth.SignOutAll(), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
