@@ -1,4 +1,7 @@
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.CreateRole.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Commands.CreateRole.V1;
@@ -15,24 +18,29 @@ public class AdminCreateRoleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
     public async Task CreateRole_AsSuperAdmin_WithValidData_ReturnsSuccess()
     {
         Client.AuthenticateAsSuperAdmin();
-        var name = ShortName("cr");
-        var request = new { Name = name, Description = "A test role for creation" };
+        AdminCreateRoleRequest request = new AdminCreateRoleRequestBuilder().Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var role = await context.Roles.FirstOrDefaultAsync(r => r.Name == name);
+        var body = await response.ReadAsAsync<AdminCreateRoleResponse>();
+        body.Role.Id.Should().NotBeEmpty();
+        body.Role.Name.Should().Be(request.Name);
+        body.Role.Description.Should().Be(request.Description);
+
+        await using IdentityDbContext context = CreateDbContext<IdentityDbContext>();
+        RoleEntity? role = await context.Roles.FirstOrDefaultAsync(r => r.Id == body.Role.Id);
         role.Should().NotBeNull();
-        role!.Description.Should().Be("A test role for creation");
+        role!.Name.Should().Be(request.Name);
+        role.Description.Should().Be(request.Description);
     }
 
     [Fact]
     public async Task CreateRole_AsAdmin_ReturnsForbidden()
     {
         Client.AuthenticateAsAdmin();
-        var request = new { Name = ShortName("fa"), Description = "Should not be created" };
+        AdminCreateRoleRequest request = new AdminCreateRoleRequestBuilder().Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, request);
 
@@ -43,7 +51,7 @@ public class AdminCreateRoleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
     public async Task CreateRole_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var request = new { Name = ShortName("na"), Description = "Should not be created" };
+        AdminCreateRoleRequest request = new AdminCreateRoleRequestBuilder().Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, request);
 
@@ -53,32 +61,30 @@ public class AdminCreateRoleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
     [Fact]
     public async Task CreateRole_WithDuplicateName_ReturnsConflict()
     {
-        var duplicateName = ShortName("dup");
+        string duplicateName = ShortName("dup");
 
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var existingRole = RoleFactory.Create(duplicateName, "Already exists");
-        seedContext.Roles.Add(existingRole);
-        await seedContext.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            RoleEntity existingRole = RoleFactory.Create(duplicateName, "Already exists");
+            ctx.Roles.Add(existingRole);
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { Name = duplicateName, Description = "Duplicate attempt" };
+        AdminCreateRoleRequest request = new AdminCreateRoleRequestBuilder().WithName(duplicateName).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
     }
 
     [Fact]
     public async Task CreateRole_WithEmptyName_ReturnsValidationError()
     {
-        // Arrange
         Client.AuthenticateAsSuperAdmin();
-        var request = new { Name = "", Description = "Missing name" };
+        AdminCreateRoleRequest request = new AdminCreateRoleRequestBuilder().WithName(string.Empty).Build();
 
-        // Act
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, request);
 
-        // Assert
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }
