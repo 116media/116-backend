@@ -1,4 +1,7 @@
+using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateTag.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Commands.CreateTag.V1;
@@ -13,7 +16,7 @@ public class AdminCreateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
     public async Task CreateTag_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var request = new { Name = "Fally Ipupa", Slug = "fally-ipupa" };
+        var request = new AdminCreateTagRequestBuilder().Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Tags, request);
 
@@ -24,7 +27,7 @@ public class AdminCreateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
     public async Task CreateTag_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var request = new { Name = "Fally Ipupa", Slug = "fally-ipupa" };
+        var request = new AdminCreateTagRequestBuilder().Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Tags, request);
 
@@ -35,37 +38,49 @@ public class AdminCreateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
     public async Task CreateTag_AsSuperAdmin_WithEmptyName_ReturnsValidationError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { Name = "", Slug = "fally-ipupa" };
+        var request = new AdminCreateTagRequestBuilder().WithName(string.Empty).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Tags, request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task CreateTag_AsSuperAdmin_WithValidData_ReturnsCreated()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { Name = "Fally Ipupa", Slug = "fally-ipupa" };
+        var request = new AdminCreateTagRequestBuilder().Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Tags, request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var body = await response.ReadAsAsync<AdminCreateTagResponse>();
+        body.Tag.Id.Should().NotBeEmpty();
+        body.Tag.Name.Should().Be(request.Name);
+        body.Tag.Slug.Should().Be(request.Slug);
+
+        await using ContentDbContext context = CreateDbContext<ContentDbContext>();
+        TagEntity? persisted = await context.Tags.FindAsync(body.Tag.Id);
+        persisted.Should().NotBeNull();
+        persisted!.Slug.Should().Be(request.Slug);
     }
 
     [Fact]
     public async Task CreateTag_AsSuperAdmin_DuplicateSlug_ReturnsConflict()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var existingTag = TagFactory.Create("Fally Ipupa", "fally-ipupa");
-        context.Tags.Add(existingTag);
-        await context.SaveChangesAsync();
+        await SeedAsync<ContentDbContext, TagEntity>(ctx =>
+        {
+            TagEntity existingTag = TagFactory.Create("Fally Ipupa", "fally-ipupa");
+            ctx.Tags.Add(existingTag);
+            return existingTag;
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { Name = "Fally Ipupa Duplicate", Slug = "fally-ipupa" };
+        var request = new AdminCreateTagRequestBuilder().WithSlug("fally-ipupa").Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Tags, request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
     }
 }
