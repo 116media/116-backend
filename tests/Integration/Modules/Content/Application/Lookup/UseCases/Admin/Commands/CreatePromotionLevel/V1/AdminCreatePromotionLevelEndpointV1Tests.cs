@@ -1,4 +1,7 @@
+using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotionLevel.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotionLevel.V1;
@@ -13,13 +16,7 @@ public class AdminCreatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
     public async Task CreatePromotionLevel_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var request = new
-        {
-            Name = "Featured — 7 days",
-            DurationDays = 7,
-            PriceUsd = 50m,
-            SpotPriority = (int?)null,
-        };
+        var request = new AdminCreatePromotionLevelRequestBuilder().Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PromotionLevels, request);
 
@@ -30,13 +27,7 @@ public class AdminCreatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
     public async Task CreatePromotionLevel_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var request = new
-        {
-            Name = "Featured — 7 days",
-            DurationDays = 7,
-            PriceUsd = 50m,
-            SpotPriority = (int?)null,
-        };
+        var request = new AdminCreatePromotionLevelRequestBuilder().Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PromotionLevels, request);
 
@@ -47,17 +38,24 @@ public class AdminCreatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
     public async Task CreatePromotionLevel_AsSuperAdmin_WithValidData_ReturnsCreated()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new
-        {
-            Name = "Featured — 7 days",
-            DurationDays = 7,
-            PriceUsd = 50m,
-            SpotPriority = (int?)1,
-        };
+        var request = new AdminCreatePromotionLevelRequestBuilder().WithSpotPriority(1).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PromotionLevels, request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var body = await response.ReadAsAsync<AdminCreatePromotionLevelResponse>();
+        body.PromotionLevel.Id.Should().NotBeEmpty();
+        body.PromotionLevel.Name.Should().Be(request.Name);
+        body.PromotionLevel.DurationDays.Should().Be(request.DurationDays);
+        body.PromotionLevel.PriceUsd.Should().Be(request.PriceUsd);
+        body.PromotionLevel.SpotPriority.Should().Be(request.SpotPriority);
+        body.PromotionLevel.IsActive.Should().BeTrue();
+
+        await using ContentDbContext context = CreateDbContext<ContentDbContext>();
+        PromotionLevelEntity? persisted = await context.PromotionLevels.FindAsync(body.PromotionLevel.Id);
+        persisted.Should().NotBeNull();
+        persisted!.Name.Should().Be(request.Name);
     }
 
     /// <summary>
@@ -67,110 +65,86 @@ public class AdminCreatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
     [Fact]
     public async Task CreatePromotionLevel_WithDuplicateName_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var existing = PromotionLevelFactory.Create("Featured — 7 days", 7, 50m);
-        seedContext.PromotionLevels.Add(existing);
-        await seedContext.SaveChangesAsync();
+        await SeedAsync<ContentDbContext, PromotionLevelEntity>(ctx =>
+        {
+            PromotionLevelEntity existing = PromotionLevelFactory.Create("Featured — 7 days", 7, 50m);
+            ctx.PromotionLevels.Add(existing);
+            return existing;
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new
-        {
-            Name = "Featured — 7 days",
-            DurationDays = 14,
-            PriceUsd = 99m,
-            SpotPriority = (int?)null,
-        };
+        var request = new AdminCreatePromotionLevelRequestBuilder()
+            .WithName("Featured — 7 days")
+            .WithDurationDays(14)
+            .WithPriceUsd(99m)
+            .Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PromotionLevels, request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
     }
 
     /// <summary>
     /// Verifies that creating a promotion level with a zero or negative duration
-    /// returns a 400 Bad Request or 422 Unprocessable Entity response, exercising
-    /// the <c>ValidDurationDays</c> rule in PromotionLevelValidation.
+    /// returns a 400 Bad Request response, exercising the <c>ValidDurationDays</c>
+    /// rule in PromotionLevelValidation.
     /// </summary>
     [Fact]
     public async Task CreatePromotionLevel_WithZeroDuration_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new
-        {
-            Name = "Zero Duration",
-            DurationDays = 0,
-            PriceUsd = 50m,
-            SpotPriority = (int?)null,
-        };
+        var request = new AdminCreatePromotionLevelRequestBuilder().WithDurationDays(0).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PromotionLevels, request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
     /// Verifies that creating a promotion level with a negative price
-    /// returns a 400 Bad Request or 422 Unprocessable Entity response, exercising
-    /// the <c>ValidPriceUsd</c> rule in PromotionLevelValidation.
+    /// returns a 400 Bad Request response, exercising the <c>ValidPriceUsd</c>
+    /// rule in PromotionLevelValidation.
     /// </summary>
     [Fact]
     public async Task CreatePromotionLevel_WithNegativePrice_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new
-        {
-            Name = "Negative Price",
-            DurationDays = 7,
-            PriceUsd = -10m,
-            SpotPriority = (int?)null,
-        };
+        var request = new AdminCreatePromotionLevelRequestBuilder().WithPriceUsd(-10m).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PromotionLevels, request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
     /// Verifies that creating a promotion level with a spot priority outside the
-    /// valid range (1-3) returns a 400 Bad Request or 422 Unprocessable Entity
-    /// response, exercising the <c>ValidSpotPriority</c> rule in PromotionLevelValidation.
+    /// valid range (1-3) returns a 400 Bad Request response, exercising the
+    /// <c>ValidSpotPriority</c> rule in PromotionLevelValidation.
     /// </summary>
     [Fact]
     public async Task CreatePromotionLevel_WithInvalidSpotPriority_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new
-        {
-            Name = "Invalid Spot",
-            DurationDays = 7,
-            PriceUsd = 50m,
-            SpotPriority = (int?)4,
-        };
+        var request = new AdminCreatePromotionLevelRequestBuilder().WithSpotPriority(4).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PromotionLevels, request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
     /// Verifies that creating a promotion level with an empty name
-    /// returns a 400 Bad Request or 422 Unprocessable Entity response, exercising
-    /// the <c>ValidPromotionLevelName</c> rule in PromotionLevelValidation.
+    /// returns a 400 Bad Request response, exercising the <c>ValidPromotionLevelName</c>
+    /// rule in PromotionLevelValidation.
     /// </summary>
     [Fact]
     public async Task CreatePromotionLevel_WithEmptyName_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new
-        {
-            Name = "",
-            DurationDays = 7,
-            PriceUsd = 50m,
-            SpotPriority = (int?)null,
-        };
+        var request = new AdminCreatePromotionLevelRequestBuilder().WithName(string.Empty).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PromotionLevels, request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }
