@@ -1,7 +1,8 @@
-using System.Text.Json;
 using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.ChangePassword.V1;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
 
@@ -14,15 +15,17 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
     private const string KnownPassword = TestAuth.ValidPassword;
-    private const string ChangePasswordUrl = $"{ApiRoutes.Public.Auth}/change-password";
 
     [Fact]
     public async Task ChangePassword_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var request = new { OldPassword = TestAuth.OldPassword, NewPassword = TestAuth.NewPassword };
+        var request = new PublicChangePasswordRequestBuilder()
+            .WithOldPassword(TestAuth.OldPassword)
+            .WithNewPassword(TestAuth.NewPassword)
+            .Build();
 
-        var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
+        var response = await Client.PatchAsJsonAsync(Routes.Public.Auth.ChangePassword(), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -31,15 +34,19 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
     public async Task ChangePassword_AsAdmin_ReturnsForbidden()
     {
         Client.AuthenticateAsAdmin();
-        var request = new { OldPassword = TestAuth.OldPassword, NewPassword = TestAuth.NewPassword };
+        var request = new PublicChangePasswordRequestBuilder()
+            .WithOldPassword(TestAuth.OldPassword)
+            .WithNewPassword(TestAuth.NewPassword)
+            .Build();
 
-        var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
+        var response = await Client.PatchAsJsonAsync(Routes.Public.Auth.ChangePassword(), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     /// <summary>
-    /// Verifies that a Visitor user with a correct current password can successfully change their password.
+    /// Verifies that a Visitor user with a correct current password can successfully change their password
+    /// and that the persisted password hash is updated.
     /// </summary>
     [Fact]
     public async Task ChangePassword_AsVisitor_WithCorrectPassword_ReturnsOk()
@@ -65,11 +72,22 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         Client.AuthenticateAs(userId, "Visitor", sessionId);
 
-        var request = new { OldPassword = KnownPassword, NewPassword = TestAuth.ChangedPassword };
+        var request = new PublicChangePasswordRequestBuilder()
+            .WithOldPassword(KnownPassword)
+            .WithNewPassword(TestAuth.ChangedPassword)
+            .Build();
 
-        var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
+        var response = await Client.PatchAsJsonAsync(Routes.Public.Auth.ChangePassword(), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicChangePasswordResponse body = await response.ReadAsAsync<PublicChangePasswordResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using var verifyContext = CreateDbContext<IdentityDbContext>();
+        var updated = await verifyContext.Users.FirstAsync(u => u.Id == userId);
+        updated.PasswordHash.Should().NotBe(hashedPassword);
+        passwordService.Verify(request.NewPassword, updated.PasswordHash).Should().BeTrue();
     }
 
     /// <summary>
@@ -99,11 +117,14 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         Client.AuthenticateAs(userId, "Visitor", sessionId);
 
-        var request = new { OldPassword = TestAuth.IncorrectCurrentPassword, NewPassword = TestAuth.ChangedPassword };
+        var request = new PublicChangePasswordRequestBuilder()
+            .WithOldPassword(TestAuth.IncorrectCurrentPassword)
+            .WithNewPassword(TestAuth.ChangedPassword)
+            .Build();
 
-        var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
+        var response = await Client.PatchAsJsonAsync(Routes.Public.Auth.ChangePassword(), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -133,11 +154,14 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         Client.AuthenticateAs(userId, "Visitor", sessionId);
 
-        var request = new { OldPassword = KnownPassword, NewPassword = KnownPassword };
+        var request = new PublicChangePasswordRequestBuilder()
+            .WithOldPassword(KnownPassword)
+            .WithNewPassword(KnownPassword)
+            .Build();
 
-        var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
+        var response = await Client.PatchAsJsonAsync(Routes.Public.Auth.ChangePassword(), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
     }
 
     /// <summary>
@@ -161,10 +185,13 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         Client.AuthenticateAs(socialUserId, "Visitor", sessionId);
 
-        var request = new { OldPassword = TestAuth.SocialAccountPassword, NewPassword = TestAuth.ChangedPassword };
+        var request = new PublicChangePasswordRequestBuilder()
+            .WithOldPassword(TestAuth.SocialAccountPassword)
+            .WithNewPassword(TestAuth.ChangedPassword)
+            .Build();
 
-        var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
+        var response = await Client.PatchAsJsonAsync(Routes.Public.Auth.ChangePassword(), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }
