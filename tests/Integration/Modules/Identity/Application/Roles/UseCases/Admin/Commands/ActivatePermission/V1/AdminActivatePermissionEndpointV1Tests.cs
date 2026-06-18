@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.ActivatePermission.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -20,28 +21,34 @@ public class AdminActivatePermissionEndpointV1Tests(PostgresFixture db) : BaseAp
     /// </summary>
     private static string UniqueAction(string prefix = "act") => $"{prefix}_{Guid.NewGuid().ToString("N")[..8]}";
 
+    private async Task<bool> IsPermissionActiveAsync(Guid id)
+    {
+        await using IdentityDbContext ctx = CreateDbContext<IdentityDbContext>();
+        PermissionEntity? permission = await ctx.Permissions.FindAsync(id);
+        return permission!.IsActive;
+    }
+
     [Fact]
     public async Task ActivatePermission_ShouldReturn200_WhenSuperAdmin()
     {
+        PermissionEntity permission = await SeedAsync<IdentityDbContext, PermissionEntity>(ctx =>
+        {
+            PermissionEntity entity = PermissionFactory.CreateInactive();
+            ctx.Permissions.Add(entity);
+            return entity;
+        });
+
         Client.AuthenticateAsSuperAdmin();
 
-        var createPayload = new
-        {
-            Resource = UniqueResource("ac"),
-            Action = UniqueAction("ac"),
-            Description = "To be activated",
-        };
-
-        var createResponse = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, createPayload);
-        var createBody = await createResponse.Content.ReadAsStringAsync();
-        using var createDoc = JsonDocument.Parse(createBody);
-        var permissionId = createDoc.RootElement.GetProperty("permission").GetProperty("id").GetString();
-
-        await Client.PatchAsync($"{ApiRoutes.Admin.Permissions}/{permissionId}/deactivate", null);
-
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Permissions}/{permissionId}/activate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Permissions.Activate(permission.Id), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminActivatePermissionResponse>();
+        body.Permission.Id.Should().Be(permission.Id);
+        body.Permission.IsActive.Should().BeTrue();
+
+        (await IsPermissionActiveAsync(permission.Id)).Should().BeTrue();
     }
 
     /// <summary>
@@ -50,15 +57,18 @@ public class AdminActivatePermissionEndpointV1Tests(PostgresFixture db) : BaseAp
     [Fact]
     public async Task ActivatePermission_WhenAlreadyActive_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var permission = PermissionFactory.Create(UniqueResource("ap"), UniqueAction("ap"));
-        seedContext.Permissions.Add(permission);
-        await seedContext.SaveChangesAsync();
+        PermissionEntity permission = await SeedAsync<IdentityDbContext, PermissionEntity>(ctx =>
+        {
+            PermissionEntity entity = PermissionFactory.Create(UniqueResource("ap"), UniqueAction("ap"));
+            ctx.Permissions.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Permissions}/{permission.Id}/activate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Permissions.Activate(permission.Id), null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await IsPermissionActiveAsync(permission.Id)).Should().BeTrue();
     }
 }
