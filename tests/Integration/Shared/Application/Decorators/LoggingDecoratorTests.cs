@@ -1,3 +1,5 @@
+using _116.Identity.Application.Roles.UseCases.Admin.Queries.GetAllRoles.V1;
+
 namespace _116.Integration.Tests.Shared.Application.Decorators;
 
 /// <summary>
@@ -14,8 +16,10 @@ public class LoggingDecoratorTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.GetAsync(ApiRoutes.Admin.Roles);
 
-        response.Should().NotBeNull();
-        response.StatusCode.Should().NotBe(HttpStatusCode.InternalServerError);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetAllRolesResponse body = await response.ReadAsAsync<AdminGetAllRolesResponse>();
+        body.Roles.Should().NotBeNull("the logged query should still flow through to the handler and return data");
     }
 
     [Fact]
@@ -23,9 +27,9 @@ public class LoggingDecoratorTests(PostgresFixture db) : BaseApiTest(db)
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Roles}/{nonExistentId}");
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.NotFound, HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 }
