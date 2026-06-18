@@ -1,6 +1,8 @@
-using System.Text.Json;
+using _116.Identity.Application.Roles.Constants;
+using _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUser.V1;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUser.V1;
@@ -11,39 +13,49 @@ namespace _116.Integration.Tests.Modules.Identity.Application.User.UseCases.Admi
 [Collection("Database")]
 public class AdminAssignRoleToUserEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private const string AdminMeProfile = $"{ApiRoutes.Admin.Base}/me/profile";
-    private const string AdminMeAvatar = $"{ApiRoutes.Admin.Base}/me/avatar";
-    private const string PublicMeProfile = $"{ApiRoutes.Public.Me}/profile";
-    private const string PublicMeAvatar = $"{ApiRoutes.Public.Me}/avatar";
+    private static string UserRolesUrl(Guid userId) =>
+        $"{ApiRoutes.Admin.Users}/{userId}/{RoleRouteConstants.Endpoint}";
 
     [Fact]
     public async Task AdminAssignRole_AsSuperAdmin_WithValidData_Returns200()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.Create();
-        context.Roles.Add(role);
-        await context.SaveChangesAsync();
+        RoleEntity role = await SeedAsync<IdentityDbContext, RoleEntity>(context =>
+        {
+            RoleEntity created = RoleFactory.Create();
+            context.Roles.Add(created);
+            return created;
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { RoleId = role.Id };
+        var request = new AdminAssignRoleToUserRequestBuilder().WithRoleId(role.Id).Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Users}/{TestUser.AdminId}/roles", request);
+        var response = await Client.PostAsJsonAsync(UserRolesUrl(TestUser.AdminId), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminAssignRoleToUserResponse body = await response.ReadAsAsync<AdminAssignRoleToUserResponse>();
+        body.Roles.Should().Contain(r => r.Id == role.Id);
+
+        await using var verifyContext = CreateDbContext<IdentityDbContext>();
+        (await verifyContext.UserRoles.AnyAsync(ur => ur.UserId == TestUser.AdminId && ur.RoleId == role.Id))
+            .Should()
+            .BeTrue();
     }
 
     [Fact]
     public async Task AdminAssignRole_AsAdmin_Returns403()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.Create();
-        context.Roles.Add(role);
-        await context.SaveChangesAsync();
+        RoleEntity role = await SeedAsync<IdentityDbContext, RoleEntity>(context =>
+        {
+            RoleEntity created = RoleFactory.Create();
+            context.Roles.Add(created);
+            return created;
+        });
 
         Client.AuthenticateAsAdmin();
-        var request = new { RoleId = role.Id };
+        var request = new AdminAssignRoleToUserRequestBuilder().WithRoleId(role.Id).Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Users}/{TestUser.AdminId}/roles", request);
+        var response = await Client.PostAsJsonAsync(UserRolesUrl(TestUser.AdminId), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -52,11 +64,11 @@ public class AdminAssignRoleToUserEndpointV1Tests(PostgresFixture db) : BaseApiT
     public async Task AdminAssignRole_WithNonExistentRole_Returns404()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { RoleId = Guid.NewGuid() };
+        var request = new AdminAssignRoleToUserRequestBuilder().WithRoleId(Guid.NewGuid()).Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Users}/{TestUser.AdminId}/roles", request);
+        var response = await Client.PostAsJsonAsync(UserRolesUrl(TestUser.AdminId), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     /// <summary>
@@ -65,21 +77,20 @@ public class AdminAssignRoleToUserEndpointV1Tests(PostgresFixture db) : BaseApiT
     [Fact]
     public async Task AssignRole_WhenAlreadyAssigned_ReturnsConflict()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.Create();
-        context.Roles.Add(role);
-        await context.SaveChangesAsync();
-
-        var userRole = UserRoleFactory.Create(TestUser.AdminId, role.Id);
-        context.UserRoles.Add(userRole);
-        await context.SaveChangesAsync();
+        RoleEntity role = await SeedAsync<IdentityDbContext, RoleEntity>(context =>
+        {
+            RoleEntity created = RoleFactory.Create();
+            context.Roles.Add(created);
+            context.UserRoles.Add(UserRoleFactory.Create(TestUser.AdminId, created.Id));
+            return created;
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { RoleId = role.Id };
+        var request = new AdminAssignRoleToUserRequestBuilder().WithRoleId(role.Id).Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Users}/{TestUser.AdminId}/roles", request);
+        var response = await Client.PostAsJsonAsync(UserRolesUrl(TestUser.AdminId), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
     }
 
     /// <summary>
@@ -88,17 +99,19 @@ public class AdminAssignRoleToUserEndpointV1Tests(PostgresFixture db) : BaseApiT
     [Fact]
     public async Task AssignRole_WhenRoleInactive_ReturnsBadRequest()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.CreateInactive();
-        context.Roles.Add(role);
-        await context.SaveChangesAsync();
+        RoleEntity role = await SeedAsync<IdentityDbContext, RoleEntity>(context =>
+        {
+            RoleEntity created = RoleFactory.CreateInactive();
+            context.Roles.Add(created);
+            return created;
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { RoleId = role.Id };
+        var request = new AdminAssignRoleToUserRequestBuilder().WithRoleId(role.Id).Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Users}/{TestUser.AdminId}/roles", request);
+        var response = await Client.PostAsJsonAsync(UserRolesUrl(TestUser.AdminId), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -107,16 +120,18 @@ public class AdminAssignRoleToUserEndpointV1Tests(PostgresFixture db) : BaseApiT
     [Fact]
     public async Task AssignRole_WhenRoleDeleted_ReturnsBadRequest()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.CreateDeleted();
-        context.Roles.Add(role);
-        await context.SaveChangesAsync();
+        RoleEntity role = await SeedAsync<IdentityDbContext, RoleEntity>(context =>
+        {
+            RoleEntity created = RoleFactory.CreateDeleted();
+            context.Roles.Add(created);
+            return created;
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { RoleId = role.Id };
+        var request = new AdminAssignRoleToUserRequestBuilder().WithRoleId(role.Id).Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Users}/{TestUser.AdminId}/roles", request);
+        var response = await Client.PostAsJsonAsync(UserRolesUrl(TestUser.AdminId), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }
