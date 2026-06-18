@@ -1,3 +1,5 @@
+using _116.Content.Application.Lookup.UseCases.Admin.Commands.DeleteTag.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -26,21 +28,29 @@ public class AdminDeleteTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Tags}/{Guid.NewGuid()}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
-    public async Task DeleteTag_AsSuperAdmin_WithValidId_ReturnsNoContent()
+    public async Task DeleteTag_AsSuperAdmin_WithValidId_RemovesTag()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var tag = TagFactory.Create();
-        context.Tags.Add(tag);
-        await context.SaveChangesAsync();
+        TagEntity tag = await SeedAsync<ContentDbContext, TagEntity>(ctx =>
+        {
+            TagEntity entity = TagFactory.Create();
+            ctx.Tags.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Tags}/{tag.Id}");
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.NoContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminDeleteTagResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using ContentDbContext context = CreateDbContext<ContentDbContext>();
+        (await context.Tags.AnyAsync(t => t.Id == tag.Id)).Should().BeFalse();
     }
 }
