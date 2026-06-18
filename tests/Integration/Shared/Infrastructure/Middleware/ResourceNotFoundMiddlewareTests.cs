@@ -1,4 +1,4 @@
-using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 
 namespace _116.Integration.Tests.Shared.Infrastructure.Middleware;
 
@@ -12,16 +12,13 @@ public class ResourceNotFoundMiddlewareTests(PostgresFixture db) : BaseApiTest(d
     [Fact]
     public async Task Request_ToNonExistentRoute_ShouldReturn404WithProblemDetails()
     {
-        var response = await Client.GetAsync("/api/v1/public/this-does-not-exist");
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Base}/this-does-not-exist");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
 
-        string body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var root = doc.RootElement;
-
-        root.TryGetProperty("status", out var status).Should().BeTrue();
-        status.GetInt32().Should().Be(404);
+        ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
+        problem.Status.Should().Be(404);
+        problem.Title.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -29,7 +26,7 @@ public class ResourceNotFoundMiddlewareTests(PostgresFixture db) : BaseApiTest(d
     {
         Client.ClearAuthentication();
 
-        var response = await Client.GetAsync("/api/v1/admin/this-does-not-exist");
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Base}/this-does-not-exist");
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.Unauthorized, HttpStatusCode.NotFound);
     }
