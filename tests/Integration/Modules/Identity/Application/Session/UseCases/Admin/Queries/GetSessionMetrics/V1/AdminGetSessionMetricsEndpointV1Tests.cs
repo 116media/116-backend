@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Identity.Application.Session.UseCases.Admin.Queries.GetSessionMetrics.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -13,11 +14,25 @@ public class AdminGetSessionMetricsEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task AdminGetSessionMetrics_AsSuperAdmin_Returns200()
     {
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            SessionEntity session = SessionFactory.CreateDesktop(TestUser.SuperAdminId);
+            ctx.Sessions.Add(session);
+        });
+
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Sessions}/metrics");
+        var response = await Client.GetAsync(Routes.Admin.Sessions.Metrics());
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetSessionMetricsResponse body = await response.ReadAsAsync<AdminGetSessionMetricsResponse>();
+        body.Browsers.Should().NotBeNull();
+        body.Devices.Should().NotBeNull();
+        body.Platforms.Should().NotBeNull();
+        body.Clients.Should().NotBeNull();
+        body.TotalActiveSessions.Should().BeGreaterThanOrEqualTo(1);
+        body.TotalActiveUsers.Should().BeGreaterThanOrEqualTo(1);
     }
 
     [Fact]
@@ -25,7 +40,7 @@ public class AdminGetSessionMetricsEndpointV1Tests(PostgresFixture db) : BaseApi
     {
         Client.AuthenticateAsVisitor();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Sessions}/metrics");
+        var response = await Client.GetAsync(Routes.Admin.Sessions.Metrics());
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
