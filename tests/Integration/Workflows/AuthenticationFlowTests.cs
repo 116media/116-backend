@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.V1;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -14,86 +15,70 @@ public class AuthenticationFlowTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task SignUpAndLogin_ShouldGrantAccessToProtectedEndpoints()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var visitorRole = RoleFactory.CreateWithId(Guid.NewGuid(), "Visitor");
-        context.Roles.Add(visitorRole);
-        await context.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(context =>
+            context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), "Visitor"))
+        );
 
         Client.ClearAuthentication();
         Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
 
-        var email = $"flow-{Guid.NewGuid():N}@test.com";
-        var userName = $"u{Guid.NewGuid():N}"[..10];
-        var signupRequest = new
-        {
-            Email = email,
-            UserName = userName,
-            Password = TestAuth.ValidPassword,
-        };
+        string email = $"flow-{Guid.NewGuid():N}@test.com";
+        string userName = $"u{Guid.NewGuid():N}"[..10];
+        var signupRequest = new PublicSignUpRequest(Email: email, UserName: userName, Password: TestAuth.ValidPassword);
 
-        HttpResponseMessage signupResponse = await Client.PostAsJsonAsync(
-            $"{ApiRoutes.Public.Auth}/signup",
-            signupRequest
-        );
+        HttpResponseMessage signupResponse = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), signupRequest);
         signupResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        string signupBody = await signupResponse.Content.ReadAsStringAsync();
-        using JsonDocument signupDoc = JsonDocument.Parse(signupBody);
-        string? accessToken = signupDoc.RootElement.TryGetProperty("accessToken", out JsonElement at)
-            ? at.GetString()
-            : null;
-        string? refreshToken = signupDoc.RootElement.TryGetProperty("refreshToken", out JsonElement rt)
-            ? rt.GetString()
-            : null;
+        PublicSignUpMobileResponse signupBody = await signupResponse.ReadAsAsync<PublicSignUpMobileResponse>();
+        signupBody.AccessToken.Should().NotBeNullOrEmpty();
+        signupBody.RefreshToken.Should().NotBeNullOrEmpty();
+        signupBody.AccessToken.Split('.').Should().HaveCount(3);
+        signupBody.User.Email.Should().Be(email);
+        signupBody.User.UserName.Should().Be(userName);
 
-        accessToken.Should().NotBeNullOrEmpty();
-        refreshToken.Should().NotBeNullOrEmpty();
-        accessToken!.Split('.').Should().HaveCount(3);
+        await using IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>();
+        (await verifyContext.Users.AnyAsync(u => u.Id == signupBody.User.Id)).Should().BeTrue();
     }
 
     [Fact]
     public async Task Login_WithValidCredentials_ShouldReturnTokens()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var visitorRole = RoleFactory.CreateWithId(Guid.NewGuid(), "Visitor");
-        context.Roles.Add(visitorRole);
-        await context.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(context =>
+            context.Roles.Add(RoleFactory.CreateWithId(Guid.NewGuid(), "Visitor"))
+        );
 
         Client.ClearAuthentication();
         Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
 
-        var email = $"login-{Guid.NewGuid():N}@test.com";
-        var userName = $"u{Guid.NewGuid():N}"[..10];
-        var signupRequest = new
+        string email = $"login-{Guid.NewGuid():N}@test.com";
+        string userName = $"u{Guid.NewGuid():N}"[..10];
+        var signupRequest = new PublicSignUpRequest(Email: email, UserName: userName, Password: TestAuth.ValidPassword);
+
+        HttpResponseMessage signupResponse = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), signupRequest);
+        signupResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        PublicSignUpMobileResponse signupBody = await signupResponse.ReadAsAsync<PublicSignUpMobileResponse>();
+        Guid userId = signupBody.User.Id;
+
+        await using (IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>())
         {
-            Email = email,
-            UserName = userName,
-            Password = TestAuth.ValidPassword,
-        };
+            var user = await verifyContext.Users.FirstAsync(u => u.Id == userId);
+            user.MarkAsVerified();
+            user.Activate();
+            await verifyContext.SaveChangesAsync();
+        }
 
-        await Client.PostAsJsonAsync($"{ApiRoutes.Public.Auth}/signup", signupRequest);
+        var loginRequest = new PublicLoginRequest(Credentials: email, Password: TestAuth.ValidPassword);
 
-        await using var verifyContext = CreateDbContext<IdentityDbContext>();
-        var user = await verifyContext.Users.FirstAsync(u => u.Email == email);
-        user.MarkAsVerified();
-        user.Activate();
-        await verifyContext.SaveChangesAsync();
-
-        var loginRequest = new { Credentials = email, Password = TestAuth.ValidPassword };
-
-        HttpResponseMessage loginResponse = await Client.PostAsJsonAsync(
-            $"{ApiRoutes.Public.Auth}/login",
-            loginRequest
-        );
+        HttpResponseMessage loginResponse = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        string loginBody = await loginResponse.Content.ReadAsStringAsync();
-        using JsonDocument loginDoc = JsonDocument.Parse(loginBody);
-        string? loginToken = loginDoc.RootElement.TryGetProperty("accessToken", out JsonElement lat)
-            ? lat.GetString()
-            : null;
-
-        loginToken.Should().NotBeNullOrEmpty();
+        PublicLoginMobileResponse loginBody = await loginResponse.ReadAsAsync<PublicLoginMobileResponse>();
+        loginBody.AccessToken.Should().NotBeNullOrEmpty();
+        loginBody.RefreshToken.Should().NotBeNullOrEmpty();
+        loginBody.AccessToken.Split('.').Should().HaveCount(3);
+        loginBody.User.Id.Should().Be(userId);
+        loginBody.User.Email.Should().Be(email);
     }
 
     [Fact]
@@ -101,16 +86,15 @@ public class AuthenticationFlowTests(PostgresFixture db) : BaseApiTest(db)
     {
         Client.ClearAuthentication();
 
-        var request = new
-        {
-            Email = TestUser.SuperAdminEmail,
-            UserName = $"u{Guid.NewGuid():N}"[..10],
-            Password = TestAuth.ValidPassword,
-        };
+        var request = new PublicSignUpRequest(
+            Email: TestUser.SuperAdminEmail,
+            UserName: $"u{Guid.NewGuid():N}"[..10],
+            Password: TestAuth.ValidPassword
+        );
 
-        HttpResponseMessage response = await Client.PostAsJsonAsync($"{ApiRoutes.Public.Auth}/signup", request);
+        HttpResponseMessage response = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
     }
 
     [Fact]
@@ -118,10 +102,10 @@ public class AuthenticationFlowTests(PostgresFixture db) : BaseApiTest(db)
     {
         Client.ClearAuthentication();
 
-        var request = new { Credentials = "nonexistent@nobody.com", Password = TestAuth.ValidPassword };
+        var request = new PublicLoginRequest(Credentials: "nonexistent@nobody.com", Password: TestAuth.ValidPassword);
 
-        HttpResponseMessage response = await Client.PostAsJsonAsync($"{ApiRoutes.Public.Auth}/login", request);
+        HttpResponseMessage response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 }
