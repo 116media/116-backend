@@ -1,4 +1,7 @@
+using _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePricingTier.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Commands.CreatePricingTier.V1;
@@ -13,7 +16,7 @@ public class AdminCreatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApi
     public async Task CreatePricingTier_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var request = new { Name = "base_upload", Description = "Base upload fee for content." };
+        var request = new AdminCreatePricingTierRequestBuilder().Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PricingTiers, request);
 
@@ -24,7 +27,7 @@ public class AdminCreatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApi
     public async Task CreatePricingTier_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var request = new { Name = "base_upload", Description = "Base upload fee for content." };
+        var request = new AdminCreatePricingTierRequestBuilder().Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PricingTiers, request);
 
@@ -35,11 +38,22 @@ public class AdminCreatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApi
     public async Task CreatePricingTier_AsSuperAdmin_WithValidData_ReturnsCreated()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { Name = "base_upload", Description = "Base upload fee for content." };
+        var request = new AdminCreatePricingTierRequestBuilder().Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PricingTiers, request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var body = await response.ReadAsAsync<AdminCreatePricingTierResponse>();
+        body.PricingTier.Id.Should().NotBeEmpty();
+        body.PricingTier.Name.Should().Be(request.Name);
+        body.PricingTier.Description.Should().Be(request.Description);
+        body.PricingTier.IsActive.Should().BeTrue();
+
+        await using ContentDbContext context = CreateDbContext<ContentDbContext>();
+        PricingTierEntity? persisted = await context.PricingTiers.FindAsync(body.PricingTier.Id);
+        persisted.Should().NotBeNull();
+        persisted!.Name.Should().Be(request.Name);
     }
 
     /// <summary>
@@ -49,31 +63,33 @@ public class AdminCreatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task CreatePricingTier_WithDuplicateName_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var existing = PricingTierFactory.Create("base_upload");
-        seedContext.PricingTiers.Add(existing);
-        await seedContext.SaveChangesAsync();
+        await SeedAsync<ContentDbContext, PricingTierEntity>(ctx =>
+        {
+            PricingTierEntity existing = PricingTierFactory.Create("base_upload");
+            ctx.PricingTiers.Add(existing);
+            return existing;
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { Name = "base_upload", Description = "Duplicate tier." };
+        var request = new AdminCreatePricingTierRequestBuilder().WithName("base_upload").Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PricingTiers, request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
     }
 
     /// <summary>
     /// Verifies that creating a pricing tier with an empty name returns a
-    /// 400 Bad Request or 422 Unprocessable Entity response from the validator.
+    /// 400 Bad Request response from the validator.
     /// </summary>
     [Fact]
     public async Task CreatePricingTier_WithEmptyName_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { Name = "", Description = "A tier with no name." };
+        var request = new AdminCreatePricingTierRequestBuilder().WithName(string.Empty).Build();
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.PricingTiers, request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }
