@@ -79,42 +79,6 @@ public static class ApiRoutes
 
 (These remain `const` because the src constants are `const`.)
 
-**Step B — typed route helpers.** Add a `Routes` helper layer in `tests/Fixtures`
-for sub-resource/action URLs so no test ever concatenates a literal segment:
-
-```csharp
-public static class Routes
-{
-    public static class Admin
-    {
-        public static class Categories
-        {
-            public static string Activate(Guid id) =>
-                $"{ApiRoutes.Admin.Categories}/{id}/{CatalogRouteConstants.Activate}";
-            public static string Pricing(Guid id) =>
-                $"{ApiRoutes.Admin.Categories}/{id}/{CatalogRouteConstants.Pricing}";
-        }
-        public static class Orders
-        {
-            public static string Items(Guid orderId) =>
-                $"{ApiRoutes.Admin.Orders}/{orderId}/{CommerceRouteConstants.Items}";
-            public static string ItemTiers(Guid orderId, Guid itemId) =>
-                $"{ApiRoutes.Admin.Orders}/{orderId}/{CommerceRouteConstants.Items}/{itemId}/{CommerceRouteConstants.Tiers}";
-        }
-    }
-    public static class Public
-    {
-        public static class Me
-        {
-            public static string Roles() => $"{ApiRoutes.Public.Me}/{RoleRouteConstants.Endpoint}";
-        }
-    }
-}
-```
-
-**Step C — replace usages.** Swap the ~68 partial segments and ~13 hardcoded
-literals across the suite for `ApiRoutes.*` + `Routes.*` + `*RouteConstants.*`.
-
 The full segment-by-segment list and per-file checklist are in
 [`specs/routes/01-apiroutes-rewrite.md`](specs/routes/01-apiroutes-rewrite.md) and
 [`specs/routes/02-segment-replacements.md`](specs/routes/02-segment-replacements.md).
