@@ -1,3 +1,5 @@
+using _116.Identity.Application.Session.UseCases.Admin.Commands.ForceLogoutUser.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -13,9 +15,9 @@ public class AdminForceLogoutUserEndpointV1Tests(PostgresFixture db) : BaseApiTe
     public async Task ForceLogoutUser_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var userId = Guid.NewGuid();
+        Guid userId = Guid.NewGuid();
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Sessions}/force-logout/{userId}", null);
+        var response = await Client.PostAsync(Routes.Admin.Sessions.ForceLogout(userId), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -24,20 +26,23 @@ public class AdminForceLogoutUserEndpointV1Tests(PostgresFixture db) : BaseApiTe
     public async Task ForceLogoutUser_AsSuperAdmin_WithNonExistentUser_ReturnsOk()
     {
         Client.AuthenticateAsSuperAdmin();
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Sessions}/force-logout/{nonExistentId}", null);
+        var response = await Client.PostAsync(Routes.Admin.Sessions.ForceLogout(nonExistentId), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminForceLogoutUserResponse body = await response.ReadAsAsync<AdminForceLogoutUserResponse>();
+        body.IsSuccess.Should().BeTrue();
     }
 
     [Fact]
     public async Task ForceLogoutUser_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var userId = Guid.NewGuid();
+        Guid userId = Guid.NewGuid();
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Sessions}/force-logout/{userId}", null);
+        var response = await Client.PostAsync(Routes.Admin.Sessions.ForceLogout(userId), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -45,15 +50,24 @@ public class AdminForceLogoutUserEndpointV1Tests(PostgresFixture db) : BaseApiTe
     [Fact]
     public async Task ForceLogoutUser_AsSuperAdmin_WithExistingUserSessions_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var sessions = SessionFactory.CreateMany(TestUser.VisitorId, 3);
-        seedContext.Sessions.AddRange(sessions);
-        await seedContext.SaveChangesAsync();
+        List<SessionEntity> sessions = SessionFactory.CreateMany(TestUser.VisitorId, 3);
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Sessions.AddRange(sessions);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Sessions}/force-logout/{TestUser.VisitorId}", null);
+        var response = await Client.PostAsync(Routes.Admin.Sessions.ForceLogout(TestUser.VisitorId), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminForceLogoutUserResponse body = await response.ReadAsAsync<AdminForceLogoutUserResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using IdentityDbContext context = CreateDbContext<IdentityDbContext>();
+        List<SessionEntity> persisted = await context.Sessions.Where(s => s.UserId == TestUser.VisitorId).ToListAsync();
+        persisted.Should().NotBeEmpty();
+        persisted.Should().OnlyContain(s => s.IsRevoked);
     }
 }
