@@ -31,6 +31,8 @@ public class FileConfiguration : IEntityTypeConfiguration<FileEntity>
 
         builder.Property(f => f.SizeInBytes).IsRequired();
 
+        builder.Property(f => f.StorageKey).HasMaxLength(FileConstants.MaxStorageKeyLength).IsRequired(false);
+
         builder.Property(f => f.IsDeleted).HasDefaultValue(FileConstants.DefaultIsDeleted);
 
         builder.Property(f => f.DeletedAt).IsRequired(false);

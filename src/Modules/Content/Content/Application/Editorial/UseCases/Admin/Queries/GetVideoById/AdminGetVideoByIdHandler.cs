@@ -35,7 +35,7 @@ public class AdminGetVideoByIdHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = video.ToVideoDetailDto(mapper);
+        var dto = await video.ToVideoDetailDtoAsync(mapper, fileRepository, cancellationToken);
 
         AuthorInfo? authorInfo = await userLookup.GetAuthorInfoByIdAsync(userId: video.AuthorId, ct: cancellationToken);
 

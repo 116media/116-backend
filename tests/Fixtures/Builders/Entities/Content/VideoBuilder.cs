@@ -22,8 +22,7 @@ internal class VideoBuilder
     private Guid? _customerId;
     private Guid? _orderItemId;
     private string? _youtubeVideoUrl;
-    private string? _thumbnailUrl;
-    private string? _thumbnailStorageKey;
+    private Guid? _thumbnailFileId;
     private DateTimeOffset? _shootingScheduledAt;
     private EnumContentStatus _targetStatus = EnumContentStatus.Draft;
     private string? _rejectionReason;
@@ -121,12 +120,20 @@ internal class VideoBuilder
     }
 
     /// <summary>
-    /// Sets a thumbnail URL and storage key.
+    /// Sets the thumbnail file ID (FileEntity reference).
     /// </summary>
-    public VideoBuilder WithThumbnail(string? url = null, string? storageKey = null)
+    public VideoBuilder WithThumbnail(Guid? fileId = null)
     {
-        _thumbnailUrl = url ?? TestConstants.Content.Editorial.ShortVideo.ValidVideoUrl;
-        _thumbnailStorageKey = storageKey ?? TestConstants.Content.Editorial.ShortVideo.ValidVideoStorageKey;
+        _thumbnailFileId = fileId ?? Guid.NewGuid();
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the thumbnail file ID (FileEntity reference).
+    /// </summary>
+    public VideoBuilder WithThumbnailFileId(Guid fileId)
+    {
+        _thumbnailFileId = fileId;
         return this;
     }
 
@@ -245,9 +252,9 @@ internal class VideoBuilder
             entity.AttachYoutubeVideoUrl(_youtubeVideoUrl, errors);
         }
 
-        if (_thumbnailUrl is not null && _thumbnailStorageKey is not null)
+        if (_thumbnailFileId.HasValue)
         {
-            entity.UpdateThumbnail(_thumbnailUrl, _thumbnailStorageKey);
+            entity.SetThumbnailFileId(_thumbnailFileId);
         }
 
         ApplyStatusTransition(entity, errors);

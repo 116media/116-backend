@@ -4,10 +4,12 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeVi
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Services;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -26,7 +28,7 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<ICloudinaryService> _cloudinaryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IYoutubeThumbnailService> _youtubeThumbnailMock;
     private readonly AdminAttachYoutubeVideoUrlHandler _handler;
 
@@ -36,12 +38,16 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
     {
         _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _cloudinaryMock = MockCloudinaryService.Create();
+        _fileRepositoryMock = MockFileRepository.Create();
         _youtubeThumbnailMock = MockYoutubeThumbnailService.Create();
+
+        FileEntity fileEntity = FileFactory.CreateImage();
+        _fileRepositoryMock.SetupReplaceImageFile(fileEntity);
+
         _handler = new AdminAttachYoutubeVideoUrlHandler(
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _cloudinaryMock.Object,
+            _fileRepositoryMock.Object,
             _youtubeThumbnailMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
@@ -81,14 +87,13 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
         // Assert
         result.Should().NotBeNull();
         result.Video.Should().NotBeNull();
-        _cloudinaryMock.VerifyUploadCalled();
+        _fileRepositoryMock.VerifyReplaceImageFileCalled();
         _videoRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
-        _cloudinaryMock.VerifyDeleteImageNotCalled();
     }
 
     [Fact]
-    public async Task Handle_WhenVideoHasExistingThumbnail_ShouldDeleteOldThumbnailAfterUpload()
+    public async Task Handle_WhenVideoHasExistingThumbnail_ShouldReplaceViaCentralizedFileEntity()
     {
         // Arrange
         VideoEntity video = WithCategory(VideoFactory.CreateWithThumbnail(CategoryId));
@@ -102,15 +107,12 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
             .Setup(x => x.GetByIdOrThrowAsync(video.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(video);
 
-        string oldThumbnailKey = video.ThumbnailStorageKey!;
-
         // Act
         AdminAttachYoutubeVideoUrlResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
-        _cloudinaryMock.VerifyUploadCalled();
-        _cloudinaryMock.VerifyDeleteImageCalled(oldThumbnailKey);
+        _fileRepositoryMock.VerifyReplaceImageFileCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
@@ -191,7 +193,7 @@ public class AdminAttachYoutubeVideoUrlHandlerTests : BaseContentHandlerTest
         // Assert
         result.Should().NotBeNull();
         result.Video.Should().NotBeNull();
-        _cloudinaryMock.VerifyUploadCalled();
+        _fileRepositoryMock.VerifyReplaceImageFileCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

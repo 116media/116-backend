@@ -238,7 +238,8 @@ public class FileRepositoryTests : IDisposable
             Format: "jpg",
             Width: 300,
             Height: 300,
-            Bytes: 50000
+            Bytes: 50000,
+            PublicId: "test-public-id"
         );
 
         _mockFileService
@@ -461,7 +462,8 @@ public class FileRepositoryTests : IDisposable
             Format: "png",
             Width: 400,
             Height: 400,
-            Bytes: 70000
+            Bytes: 70000,
+            PublicId: "test-public-id"
         );
 
         _mockFileService
@@ -507,7 +509,8 @@ public class FileRepositoryTests : IDisposable
             Format: "jpg",
             Width: 500,
             Height: 500,
-            Bytes: 80000
+            Bytes: 80000,
+            PublicId: "test-public-id"
         );
 
         _mockFileService
@@ -552,7 +555,8 @@ public class FileRepositoryTests : IDisposable
             Format: "jpg",
             Width: 350,
             Height: 350,
-            Bytes: 65000
+            Bytes: 65000,
+            PublicId: "test-public-id"
         );
 
         _mockFileService

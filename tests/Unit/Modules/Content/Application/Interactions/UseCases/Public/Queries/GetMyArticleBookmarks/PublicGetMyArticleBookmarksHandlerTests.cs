@@ -1,8 +1,11 @@
 using _116.Content.Application.Interactions.UseCases.Public.Queries.GetMyArticleBookmarks;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -20,12 +23,20 @@ public class PublicGetMyArticleBookmarksHandlerTests : BaseContentHandlerTest
     private static readonly Guid UserId = Guid.NewGuid();
 
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetMyArticleBookmarksHandler _handler;
 
     public PublicGetMyArticleBookmarksHandlerTests()
     {
         _articleRepositoryMock = MockArticleRepository.Create();
-        _handler = new PublicGetMyArticleBookmarksHandler(_articleRepositoryMock.Object, Mapper);
+        _fileRepositoryMock = MockFileRepository.Create();
+        FileEntity coverFile = FileFactory.CreateImage();
+        _fileRepositoryMock.SetupGetById(coverFile);
+        _handler = new PublicGetMyArticleBookmarksHandler(
+            _articleRepositoryMock.Object,
+            _fileRepositoryMock.Object,
+            Mapper
+        );
     }
 
     #region Success Cases

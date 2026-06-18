@@ -2,9 +2,11 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadShortVide
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Services;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using _116.Unit.Tests.Common.Mocks.Services;
@@ -21,18 +23,22 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 public class AdminUploadShortVideoThumbnailHandlerTests
 {
     private readonly Mock<IShortVideoRepository> _shortVideoRepositoryMock;
-    private readonly Mock<ICloudinaryService> _cloudinaryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUploadShortVideoThumbnailHandler _handler;
 
     public AdminUploadShortVideoThumbnailHandlerTests()
     {
         _shortVideoRepositoryMock = MockShortVideoRepository.Create();
-        _cloudinaryMock = MockCloudinaryService.Create();
+        _fileRepositoryMock = MockFileRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
+
+        FileEntity fileEntity = FileFactory.CreateImage();
+        _fileRepositoryMock.SetupReplaceImageFile(fileEntity);
+
         _handler = new AdminUploadShortVideoThumbnailHandler(
             _shortVideoRepositoryMock.Object,
-            _cloudinaryMock.Object,
+            _fileRepositoryMock.Object,
             _unitOfWorkMock.Object
         );
     }
@@ -54,10 +60,9 @@ public class AdminUploadShortVideoThumbnailHandlerTests
         result.Should().NotBeNull();
         result.ThumbnailUrl.Should().NotBeNullOrEmpty();
         result.ThumbnailStorageKey.Should().NotBeNullOrEmpty();
-        _cloudinaryMock.VerifyUploadCalled();
+        _fileRepositoryMock.VerifyReplaceImageFileCalled();
         _shortVideoRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
-        _cloudinaryMock.VerifyDeleteImageNotCalled();
     }
 
     [Fact]
@@ -75,8 +80,7 @@ public class AdminUploadShortVideoThumbnailHandlerTests
 
         // Assert
         result.Should().NotBeNull();
-        _cloudinaryMock.VerifyUploadCalled();
-        _cloudinaryMock.VerifyDeleteImageNotCalled();
+        _fileRepositoryMock.VerifyReplaceImageFileCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 

@@ -34,7 +34,6 @@ public class PublicGetVideoBySlugEndpointV1Tests
             Slug: "test",
             Description: "Test video description",
             ThumbnailUrl: null,
-            ThumbnailStorageKey: null,
             AuthorId: "Test",
             Status: EnumContentStatus.Published,
             RejectionReason: null,

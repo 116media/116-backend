@@ -26,10 +26,8 @@ namespace _116.Content.Application.Shared.DTOs;
 /// Description shown below the video player.
 /// </param>
 /// <param name="ThumbnailUrl">
-/// The URL of the video thumbnail, or null if not yet uploaded.
-/// </param>
-/// <param name="ThumbnailStorageKey">
-/// The CDN storage key for the thumbnail asset, or null.
+/// The publicly accessible URL of the thumbnail image, resolved from the associated FileEntity.
+/// Null if no thumbnail has been uploaded.
 /// </param>
 /// <param name="AuthorId">
 /// The identity user UUID of the author.
@@ -105,7 +103,6 @@ public record VideoDetailDto(
     string Slug,
     string Description,
     string? ThumbnailUrl,
-    string? ThumbnailStorageKey,
     string AuthorId,
     EnumContentStatus Status,
     string? RejectionReason,

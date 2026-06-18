@@ -2,8 +2,11 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticleSe
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -20,6 +23,7 @@ public class AdminUpdateArticleSeoHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly AdminUpdateArticleSeoHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -28,7 +32,15 @@ public class AdminUpdateArticleSeoHandlerTests : BaseContentHandlerTest
     {
         _articleRepositoryMock = MockArticleRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminUpdateArticleSeoHandler(_articleRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
+        _fileRepositoryMock = MockFileRepository.Create();
+        FileEntity coverFile = FileFactory.CreateImage();
+        _fileRepositoryMock.SetupGetById(coverFile);
+        _handler = new AdminUpdateArticleSeoHandler(
+            _articleRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            _fileRepositoryMock.Object,
+            Mapper
+        );
     }
 
     #region Success Cases

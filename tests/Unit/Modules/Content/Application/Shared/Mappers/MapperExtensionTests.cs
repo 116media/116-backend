@@ -1,9 +1,14 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
+using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
+using Moq;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Application.Shared.Mappers;
@@ -196,13 +201,20 @@ public class MapperExtensionTests : BaseContentHandlerTest
     #region ShortVideoMapper Extensions
 
     [Fact]
-    public void ToShortVideoDtos_WithMultipleEntities_ShouldReturnMappedList()
+    public async Task ToShortVideoDtosAsync_WithMultipleEntities_ShouldReturnMappedList()
     {
         // Arrange
         IReadOnlyList<ShortVideoEntity> entities = ShortVideoFactory.CreateMany(3).AsReadOnly();
+        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        FileEntity videoFile = FileFactory.CreateVideo();
+        fileRepositoryMock.SetupGetById(videoFile);
 
         // Act
-        IReadOnlyList<ShortVideoDto> result = entities.ToShortVideoDtos(Mapper);
+        IReadOnlyList<ShortVideoDto> result = await entities.ToShortVideoDtosAsync(
+            Mapper,
+            fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         result.Should().HaveCount(3);
@@ -210,13 +222,18 @@ public class MapperExtensionTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToShortVideoDtos_WithEmptyList_ShouldReturnEmptyList()
+    public async Task ToShortVideoDtosAsync_WithEmptyList_ShouldReturnEmptyList()
     {
         // Arrange
         IReadOnlyList<ShortVideoEntity> entities = new List<ShortVideoEntity>().AsReadOnly();
+        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
 
         // Act
-        IReadOnlyList<ShortVideoDto> result = entities.ToShortVideoDtos(Mapper);
+        IReadOnlyList<ShortVideoDto> result = await entities.ToShortVideoDtosAsync(
+            Mapper,
+            fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         result.Should().BeEmpty();

@@ -12,7 +12,15 @@ namespace _116.Core.Application.Shared.Services;
 /// <param name="Width">The image width in pixels.</param>
 /// <param name="Height">The image height in pixels.</param>
 /// <param name="Bytes">The file size in bytes.</param>
-public record FileUploadResult(Guid FileId, string SecureUrl, string Format, int Width, int Height, long Bytes);
+public record FileUploadResult(
+    Guid FileId,
+    string SecureUrl,
+    string Format,
+    int Width,
+    int Height,
+    long Bytes,
+    string PublicId
+);
 
 /// <summary>
 /// Result of a file download operation containing metadata about the downloaded file.
@@ -95,4 +103,27 @@ public interface IFileService
         string? folder = null,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Uploads a video file to cloud storage and returns the upload result with metadata.
+    /// </summary>
+    /// <param name="file">The video file to upload.</param>
+    /// <param name="publicId">The public ID for the file in cloud storage.</param>
+    /// <param name="folder">Optional folder path in cloud storage.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Upload result containing public URL, metadata, and generated file ID.</returns>
+    Task<FileUploadResult> UploadVideoFileAsync(
+        IFormFile file,
+        string publicId,
+        string? folder = null,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Deletes a file from cloud storage by its storage key.
+    /// </summary>
+    /// <param name="storageKey">The provider-agnostic storage key (e.g., Cloudinary public ID).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns><c>true</c> if the file was deleted; <c>false</c> if not found.</returns>
+    Task<bool> DeleteFileAsync(string storageKey, CancellationToken cancellationToken = default);
 }

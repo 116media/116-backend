@@ -2,10 +2,13 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticle;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -26,6 +29,7 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly Mock<ICloudinaryService> _cloudinaryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly AdminUpdateArticleHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -36,11 +40,15 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
         _articleRepositoryMock = MockArticleRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
         _cloudinaryMock = MockCloudinaryService.Create();
+        _fileRepositoryMock = MockFileRepository.Create();
+        FileEntity coverFile = FileFactory.CreateImage();
+        _fileRepositoryMock.SetupGetById(coverFile);
         _handler = new AdminUpdateArticleHandler(
             _categoryRepositoryMock.Object,
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _cloudinaryMock.Object,
+            _fileRepositoryMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
         );
@@ -54,7 +62,6 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
             Slug: TestConstants.Content.Editorial.Article.ValidSlug,
             Headline: TestConstants.Content.Editorial.Article.ValidHeadline,
             Body: TestConstants.Content.Editorial.Article.ValidBody,
-            CoverImageUrl: null,
             CustomerId: null,
             OrderItemId: null,
             SocialBoost: false,

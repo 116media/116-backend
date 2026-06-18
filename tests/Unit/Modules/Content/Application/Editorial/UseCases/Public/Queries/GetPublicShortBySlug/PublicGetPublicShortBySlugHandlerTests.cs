@@ -1,9 +1,12 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicShortBySlug;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -19,13 +22,20 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 public class PublicGetPublicShortBySlugHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IShortVideoRepository> _shortVideoRepositoryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetPublicShortBySlugHandler _handler;
 
     public PublicGetPublicShortBySlugHandlerTests()
     {
         _shortVideoRepositoryMock = MockShortVideoRepository.Create();
+        _fileRepositoryMock = MockFileRepository.Create();
+
+        FileEntity videoFile = FileFactory.CreateVideo();
+        _fileRepositoryMock.SetupGetById(videoFile);
+
         _handler = new PublicGetPublicShortBySlugHandler(
             _shortVideoRepositoryMock.Object,
+            _fileRepositoryMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
         );

@@ -26,6 +26,11 @@ public static class FileConstants
     public const int MaxStorageUrlLength = 2048;
 
     /// <summary>
+    /// Maximum allowed length for cloud storage keys (e.g., Cloudinary public IDs).
+    /// </summary>
+    public const int MaxStorageKeyLength = 100;
+
+    /// <summary>
     /// Default deletion status for new files.
     /// </summary>
     public const bool DefaultIsDeleted = false;

@@ -1,6 +1,7 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishedVideos;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
@@ -17,6 +18,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 public class PublicGetPublishedVideosHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetPublishedVideosHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -24,7 +26,8 @@ public class PublicGetPublishedVideosHandlerTests : BaseContentHandlerTest
     public PublicGetPublishedVideosHandlerTests()
     {
         _videoRepositoryMock = MockVideoRepository.Create();
-        _handler = new PublicGetPublishedVideosHandler(_videoRepositoryMock.Object, Mapper);
+        _fileRepositoryMock = MockFileRepository.Create();
+        _handler = new PublicGetPublishedVideosHandler(_videoRepositoryMock.Object, _fileRepositoryMock.Object, Mapper);
     }
 
     [Fact]

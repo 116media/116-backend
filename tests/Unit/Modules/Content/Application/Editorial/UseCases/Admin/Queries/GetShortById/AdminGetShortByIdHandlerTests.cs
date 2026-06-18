@@ -136,7 +136,11 @@ public class AdminGetShortByIdHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.ShortVideo.Author.Should().BeNull();
-        _fileRepositoryMock.Verify(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        _fileRepositoryMock.Verify(
+            x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Once,
+            "GetByIdAsync should be called once for the video file URL resolution"
+        );
     }
 
     [Fact]
@@ -158,7 +162,11 @@ public class AdminGetShortByIdHandlerTests : BaseContentHandlerTest
         // Assert
         result.ShortVideo.Author.Should().NotBeNull();
         result.ShortVideo.Author!.AvatarUrl.Should().BeNull();
-        _fileRepositoryMock.Verify(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        _fileRepositoryMock.Verify(
+            x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Once,
+            "GetByIdAsync should be called once for the video file URL, not for the avatar"
+        );
     }
 
     #endregion

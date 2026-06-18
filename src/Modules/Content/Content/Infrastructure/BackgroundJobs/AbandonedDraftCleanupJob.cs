@@ -1,6 +1,7 @@
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Shared.Application.Jobs;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,6 +54,7 @@ public class AbandonedDraftCleanupJob(IServiceScopeFactory scopeFactory, ILogger
 
             var articleRepository = scope.ServiceProvider.GetRequiredService<IArticleRepository>();
             var cloudinaryService = scope.ServiceProvider.GetRequiredService<ICloudinaryService>();
+            var fileRepository = scope.ServiceProvider.GetRequiredService<IFileRepository>();
             var unitOfWork = scope.ServiceProvider.GetRequiredService<IContentUnitOfWork>();
 
             DateTime cutoff = DateTime.UtcNow - AbandonedAfter;
@@ -74,6 +76,14 @@ public class AbandonedDraftCleanupJob(IServiceScopeFactory scopeFactory, ILogger
             {
                 try
                 {
+                    if (draft.CoverImageFileId.HasValue)
+                    {
+                        await fileRepository.SoftDeleteByIdAsync(
+                            fileId: draft.CoverImageFileId.Value,
+                            cancellationToken: context.CancellationToken
+                        );
+                    }
+
                     List<string> storageKeys = draft.Images.Select(i => i.StorageKey).ToList();
 
                     if (storageKeys.Count > 0)

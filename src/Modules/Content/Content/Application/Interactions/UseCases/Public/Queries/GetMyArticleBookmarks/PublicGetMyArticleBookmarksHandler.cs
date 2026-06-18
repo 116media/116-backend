@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -12,9 +13,13 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetMyArt
 /// Handles the <see cref="PublicGetMyArticleBookmarksQuery" /> to retrieve the user's bookmarked articles.
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="fileRepository">Repository for resolving file URLs.</param>
 /// <param name="mapper">The Mapster mapper instance.</param>
-public class PublicGetMyArticleBookmarksHandler(IArticleRepository articleRepository, IMapper mapper)
-    : IQueryHandler<PublicGetMyArticleBookmarksQuery, PublicGetMyArticleBookmarksResult>
+public class PublicGetMyArticleBookmarksHandler(
+    IArticleRepository articleRepository,
+    IFileRepository fileRepository,
+    IMapper mapper
+) : IQueryHandler<PublicGetMyArticleBookmarksQuery, PublicGetMyArticleBookmarksResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetMyArticleBookmarksResult> Handle(
@@ -32,7 +37,11 @@ public class PublicGetMyArticleBookmarksHandler(IArticleRepository articleReposi
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<ArticleSummaryDto> dtoList = articles.ToArticleSummaryDtos(mapper);
+        IReadOnlyList<ArticleSummaryDto> dtoList = await articles.ToArticleSummaryDtosAsync(
+            mapper,
+            fileRepository,
+            cancellationToken
+        );
 
         var paginated = new PaginatedResult<ArticleSummaryDto>(
             pageIndex: pageIndex,

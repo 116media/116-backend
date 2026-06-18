@@ -1,5 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using Mapster;
 using MapsterMapper;
 
@@ -34,17 +36,25 @@ public static class VideoMapper
     }
 
     /// <summary>
-    /// Maps a <see cref="VideoEntity" /> to a <see cref="VideoSummaryDto" />.
+    /// Maps a <see cref="VideoEntity" /> to a <see cref="VideoSummaryDto" />,
+    /// resolving the thumbnail URL from the associated FileEntity.
     /// </summary>
-    public static VideoSummaryDto ToVideoSummaryDto(this VideoEntity entity, IMapper mapper)
+    public static async Task<VideoSummaryDto> ToVideoSummaryDtoAsync(
+        this VideoEntity entity,
+        IMapper mapper,
+        IFileRepository fileRepository,
+        CancellationToken ct = default
+    )
     {
+        string? thumbnailUrl = await ResolveThumbnailUrlAsync(entity, fileRepository, ct);
+
         return new VideoSummaryDto(
             entity.Id,
             entity.CategoryId,
             entity.Category != null ? entity.Category.Name : string.Empty,
             entity.Title,
             entity.Slug,
-            entity.ThumbnailUrl,
+            thumbnailUrl,
             entity.AuthorId.ToString(),
             entity.Status,
             entity.YoutubeVideoUrl,
@@ -65,10 +75,18 @@ public static class VideoMapper
     }
 
     /// <summary>
-    /// Maps a <see cref="VideoEntity" /> to a <see cref="VideoDetailDto" />.
+    /// Maps a <see cref="VideoEntity" /> to a <see cref="VideoDetailDto" />,
+    /// resolving the thumbnail URL from the associated FileEntity.
     /// </summary>
-    public static VideoDetailDto ToVideoDetailDto(this VideoEntity entity, IMapper mapper)
+    public static async Task<VideoDetailDto> ToVideoDetailDtoAsync(
+        this VideoEntity entity,
+        IMapper mapper,
+        IFileRepository fileRepository,
+        CancellationToken ct = default
+    )
     {
+        string? thumbnailUrl = await ResolveThumbnailUrlAsync(entity, fileRepository, ct);
+
         return new VideoDetailDto(
             entity.Id,
             entity.CategoryId,
@@ -76,8 +94,7 @@ public static class VideoMapper
             entity.Title,
             entity.Slug,
             entity.Description,
-            entity.ThumbnailUrl,
-            entity.ThumbnailStorageKey,
+            thumbnailUrl,
             entity.AuthorId.ToString(),
             entity.Status,
             entity.RejectionReason,
@@ -109,13 +126,40 @@ public static class VideoMapper
     }
 
     /// <summary>
-    /// Maps a list of <see cref="VideoEntity" /> to a list of <see cref="VideoSummaryDto" />.
+    /// Maps a list of <see cref="VideoEntity" /> to a list of <see cref="VideoSummaryDto" />,
+    /// resolving thumbnail URLs from associated FileEntity records.
     /// </summary>
-    public static IReadOnlyList<VideoSummaryDto> ToVideoSummaryDtos(
+    public static async Task<IReadOnlyList<VideoSummaryDto>> ToVideoSummaryDtosAsync(
         this IReadOnlyList<VideoEntity> entities,
-        IMapper mapper
+        IMapper mapper,
+        IFileRepository fileRepository,
+        CancellationToken ct = default
     )
     {
-        return entities.Select(e => e.ToVideoSummaryDto(mapper)).ToList();
+        var results = new List<VideoSummaryDto>(entities.Count);
+        foreach (VideoEntity entity in entities)
+        {
+            results.Add(await entity.ToVideoSummaryDtoAsync(mapper, fileRepository, ct));
+        }
+        return results;
+    }
+
+    /// <summary>
+    /// Resolves the thumbnail URL from the associated FileEntity, or returns null
+    /// if no thumbnail has been uploaded.
+    /// </summary>
+    private static async Task<string?> ResolveThumbnailUrlAsync(
+        VideoEntity entity,
+        IFileRepository fileRepository,
+        CancellationToken ct
+    )
+    {
+        if (!entity.ThumbnailFileId.HasValue)
+        {
+            return null;
+        }
+
+        FileEntity? thumbnailFile = await fileRepository.GetByIdAsync(entity.ThumbnailFileId.Value, ct);
+        return thumbnailFile?.StorageUrl;
     }
 }

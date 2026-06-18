@@ -39,7 +39,8 @@ public class FileService(HttpClient httpClient, ICloudinaryService cloudinarySer
             Format: uploadResult.Format,
             Width: uploadResult.Width,
             Height: uploadResult.Height,
-            Bytes: uploadResult.Bytes
+            Bytes: uploadResult.Bytes,
+            PublicId: uploadResult.PublicId
         );
     }
 
@@ -66,8 +67,43 @@ public class FileService(HttpClient httpClient, ICloudinaryService cloudinarySer
             Format: uploadResult.Format,
             Width: uploadResult.Width,
             Height: uploadResult.Height,
-            Bytes: uploadResult.Bytes
+            Bytes: uploadResult.Bytes,
+            PublicId: uploadResult.PublicId
         );
+    }
+
+    /// <inheritdoc />
+    public async Task<FileUploadResult> UploadVideoFileAsync(
+        IFormFile file,
+        string publicId,
+        string? folder = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        CloudinaryUploadResult uploadResult = await cloudinaryService.UploadVideoAsync(
+            file,
+            publicId,
+            folder,
+            cancellationToken
+        );
+
+        var fileId = Guid.NewGuid();
+
+        return new FileUploadResult(
+            FileId: fileId,
+            SecureUrl: uploadResult.SecureUrl,
+            Format: uploadResult.Format,
+            Width: uploadResult.Width,
+            Height: uploadResult.Height,
+            Bytes: uploadResult.Bytes,
+            PublicId: uploadResult.PublicId
+        );
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> DeleteFileAsync(string storageKey, CancellationToken cancellationToken = default)
+    {
+        return await cloudinaryService.DeleteImageAsync(storageKey, cancellationToken);
     }
 
     /// <inheritdoc />

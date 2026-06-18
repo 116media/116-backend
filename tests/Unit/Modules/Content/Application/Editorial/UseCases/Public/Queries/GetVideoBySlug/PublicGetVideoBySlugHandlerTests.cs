@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
@@ -21,6 +22,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetVideoBySlugHandler _handler;
     private readonly VideoErrors _videoErrors = TestErrorsFactory.CreateVideoErrors();
     private readonly ContentI18n _i18n = TestErrorsFactory.CreateContentI18n();
@@ -30,7 +32,13 @@ public class PublicGetVideoBySlugHandlerTests : BaseContentHandlerTest
     public PublicGetVideoBySlugHandlerTests()
     {
         _videoRepositoryMock = MockVideoRepository.Create();
-        _handler = new PublicGetVideoBySlugHandler(_videoRepositoryMock.Object, Mapper, _i18n);
+        _fileRepositoryMock = MockFileRepository.Create();
+        _handler = new PublicGetVideoBySlugHandler(
+            _videoRepositoryMock.Object,
+            _fileRepositoryMock.Object,
+            Mapper,
+            _i18n
+        );
     }
 
     [Fact]

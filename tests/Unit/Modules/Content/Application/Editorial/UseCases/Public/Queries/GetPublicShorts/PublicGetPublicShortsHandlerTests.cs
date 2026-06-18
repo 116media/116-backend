@@ -1,8 +1,11 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicShorts;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -17,12 +20,22 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 public class PublicGetPublicShortsHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IShortVideoRepository> _shortVideoRepositoryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetPublicShortsHandler _handler;
 
     public PublicGetPublicShortsHandlerTests()
     {
         _shortVideoRepositoryMock = MockShortVideoRepository.Create();
-        _handler = new PublicGetPublicShortsHandler(_shortVideoRepositoryMock.Object, Mapper);
+        _fileRepositoryMock = MockFileRepository.Create();
+
+        FileEntity videoFile = FileFactory.CreateVideo();
+        _fileRepositoryMock.SetupGetById(videoFile);
+
+        _handler = new PublicGetPublicShortsHandler(
+            _shortVideoRepositoryMock.Object,
+            _fileRepositoryMock.Object,
+            Mapper
+        );
     }
 
     [Fact]

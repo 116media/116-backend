@@ -73,11 +73,10 @@ public class ArticleEntity : Aggregate<Guid>
     public string Body { get; private set; } = string.Empty;
 
     /// <summary>
-    /// URL of the article's primary cover image. Tracked in <c>article_images</c>
-    /// alongside all body images so it can be cleaned up on update or delete.
+    /// ID of the uploaded cover image file tracked in the Core module.
+    /// References a FileEntity in the Core module.
     /// </summary>
-    [MaxLength(length: ContentConstants.MaxCoverImageUrlLength)]
-    public string? CoverImageUrl { get; private set; }
+    public Guid? CoverImageFileId { get; private set; }
 
     /// <summary>
     /// The identity user UUID who authored this article.
@@ -317,7 +316,6 @@ public class ArticleEntity : Aggregate<Guid>
     /// <param name="slug">The URL-safe slug. Uniqueness enforced by handler.</param>
     /// <param name="headline">The short teaser text (100–300 chars; min enforced by validator).</param>
     /// <param name="body">The rich-text HTML body containing only Cloudinary URLs.</param>
-    /// <param name="coverImageUrl">Optional URL of the cover image.</param>
     /// <param name="customerId">The B2B customer who commissioned this article. <c>null</c> for free content.</param>
     /// <param name="orderItemId">The order item this article fulfils. <c>null</c> for free content.</param>
     /// <param name="socialBoost">Whether this article is flagged for social media promotion.</param>
@@ -329,7 +327,6 @@ public class ArticleEntity : Aggregate<Guid>
         string slug,
         string headline,
         string body,
-        string? coverImageUrl,
         Guid? customerId,
         Guid? orderItemId,
         bool socialBoost,
@@ -342,7 +339,6 @@ public class ArticleEntity : Aggregate<Guid>
         Slug = slug;
         Headline = headline;
         Body = body;
-        CoverImageUrl = coverImageUrl;
         CustomerId = customerId;
         OrderItemId = orderItemId;
         SocialBoost = socialBoost;
@@ -351,12 +347,15 @@ public class ArticleEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Sets the article's cover image URL. Called by <c>UploadArticleImageCommandHandler</c>
+    /// Sets the cover image file reference. Called by <c>UploadArticleImageCommandHandler</c>
     /// when a <c>Cover</c>-type image is uploaded.
     /// </summary>
-    public void UpdateCoverImage(string? coverImageUrl)
+    /// <param name="coverImageFileId">
+    /// The FileEntity ID for the uploaded cover image, or null to clear it.
+    /// </param>
+    public void UpdateCoverImage(Guid? coverImageFileId)
     {
-        CoverImageUrl = coverImageUrl;
+        CoverImageFileId = coverImageFileId;
     }
 
     /// <summary>

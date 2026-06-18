@@ -1,5 +1,7 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using Mapster;
 using MapsterMapper;
 
@@ -20,7 +22,7 @@ public static class PlaylistMapper
             .NewConfig<PlaylistVideoEntity, VideoInPlaylistDto>()
             .Map(dest => dest.VideoId, src => src.VideoId)
             .Map(dest => dest.Title, src => src.Video.Title)
-            .Map(dest => dest.ThumbnailUrl, src => src.Video.ThumbnailUrl)
+            .Map(dest => dest.ThumbnailUrl, _ => (string?)null)
             .Map(dest => dest.RatingAverage, src => src.Video.RatingAverage)
             .Map(dest => dest.RatingCount, src => src.Video.RatingCount)
             .Map(dest => dest.SortOrder, src => src.SortOrder);
@@ -33,14 +35,39 @@ public static class PlaylistMapper
     }
 
     /// <summary>
-    /// Maps a <see cref="PlaylistEntity" /> to a <see cref="PlaylistDetailDto" />.
+    /// Maps a <see cref="PlaylistEntity" /> to a <see cref="PlaylistDetailDto" />,
+    /// resolving video thumbnail URLs from associated FileEntity records.
     /// </summary>
-    public static PlaylistDetailDto ToPlaylistDetailDto(this PlaylistEntity entity, IMapper mapper)
+    public static async Task<PlaylistDetailDto> ToPlaylistDetailDtoAsync(
+        this PlaylistEntity entity,
+        IMapper mapper,
+        IFileRepository fileRepository,
+        CancellationToken ct = default
+    )
     {
         var dto = mapper.Map<PlaylistDetailDto>(entity);
+        var orderedVideos = entity.Videos.OrderBy(v => v.SortOrder).ToList();
+        var videoDtos = mapper.Map<IReadOnlyList<VideoInPlaylistDto>>(orderedVideos);
+
+        var resolved = new List<VideoInPlaylistDto>(videoDtos.Count);
+        for (int i = 0; i < videoDtos.Count; i++)
+        {
+            VideoInPlaylistDto videoDto = videoDtos[i];
+            PlaylistVideoEntity playlistVideo = orderedVideos[i];
+
+            string? thumbnailUrl = null;
+            if (playlistVideo.Video?.ThumbnailFileId.HasValue == true)
+            {
+                FileEntity? file = await fileRepository.GetByIdAsync(playlistVideo.Video.ThumbnailFileId!.Value, ct);
+                thumbnailUrl = file?.StorageUrl;
+            }
+
+            resolved.Add(videoDto with { ThumbnailUrl = thumbnailUrl });
+        }
+
         return dto with
         {
-            Videos = mapper.Map<IReadOnlyList<VideoInPlaylistDto>>(entity.Videos.OrderBy(v => v.SortOrder).ToList()),
+            Videos = resolved,
         };
     }
 

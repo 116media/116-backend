@@ -38,7 +38,7 @@ public class AdminGetArticleByIdHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = article.ToArticleDetailDto(mapper);
+        var dto = await article.ToArticleDetailDtoAsync(mapper, fileRepository, cancellationToken);
 
         AuthorInfo? authorInfo = await userLookup.GetAuthorInfoByIdAsync(
             userId: article.AuthorId,

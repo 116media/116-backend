@@ -17,5 +17,7 @@ public static partial class TestConstants
         public const string ValidMimeType = "image/jpeg";
         public const string ValidStorageUrl = "https://res.cloudinary.com/test/image/upload/v1234567890/test-file.jpg";
         public const long ValidSizeInBytes = 1024 * 100; // 100 KB
+        public const string ValidStorageKey = "content/test-images/test-image-id";
+        public const string ValidVideoStorageKey = "content/short-videos/test-video-id";
     }
 }

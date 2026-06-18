@@ -1,10 +1,13 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.DTOs;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using AwesomeAssertions;
+using Moq;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Application.Shared.Mappers;
@@ -16,6 +19,7 @@ public class VideoMapperTests : BaseContentHandlerTest
 {
     private static readonly Guid CategoryId = Guid.NewGuid();
     private static readonly Guid ContentTypeId = Guid.NewGuid();
+    private readonly Mock<IFileRepository> _fileRepositoryMock = new();
 
     /// <summary>
     /// Creates a video entity with the Category navigation property populated via reflection,
@@ -41,30 +45,38 @@ public class VideoMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToVideoSummaryDto — category name
+    #region ToVideoSummaryDtoAsync — category name
 
     [Fact]
-    public void ToVideoSummaryDto_WhenCategoryIsNull_ShouldMapCategoryNameAsEmptyString()
+    public async Task ToVideoSummaryDtoAsync_WhenCategoryIsNull_ShouldMapCategoryNameAsEmptyString()
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
         // Category nav property is null by default
 
         // Act
-        VideoSummaryDto dto = video.ToVideoSummaryDto(Mapper);
+        VideoSummaryDto dto = await video.ToVideoSummaryDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CategoryName.Should().BeEmpty();
     }
 
     [Fact]
-    public void ToVideoSummaryDto_WhenCategoryIsLoaded_ShouldMapCategoryName()
+    public async Task ToVideoSummaryDtoAsync_WhenCategoryIsLoaded_ShouldMapCategoryName()
     {
         // Arrange
         VideoEntity video = CreateVideoWithCategory();
 
         // Act
-        VideoSummaryDto dto = video.ToVideoSummaryDto(Mapper);
+        VideoSummaryDto dto = await video.ToVideoSummaryDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CategoryName.Should().NotBeEmpty();
@@ -72,23 +84,26 @@ public class VideoMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToVideoSummaryDto — core fields
+    #region ToVideoSummaryDtoAsync — core fields
 
     [Fact]
-    public void ToVideoSummaryDto_ShouldMapCoreFields()
+    public async Task ToVideoSummaryDtoAsync_ShouldMapCoreFields()
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
 
         // Act
-        VideoSummaryDto dto = video.ToVideoSummaryDto(Mapper);
+        VideoSummaryDto dto = await video.ToVideoSummaryDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.Id.Should().Be(video.Id);
         dto.CategoryId.Should().Be(video.CategoryId);
         dto.Title.Should().Be(video.Title);
         dto.Slug.Should().Be(video.Slug);
-        dto.ThumbnailUrl.Should().Be(video.ThumbnailUrl);
         dto.AuthorId.Should().Be(video.AuthorId.ToString());
         dto.Status.Should().Be(video.Status);
         dto.YoutubeVideoUrl.Should().Be(video.YoutubeVideoUrl);
@@ -100,7 +115,7 @@ public class VideoMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToVideoSummaryDto — AuditableDto fields
+    #region ToVideoSummaryDtoAsync — AuditableDto fields
 
     [Fact]
     public void ToVideoSummaryDto_ShouldInheritAuditableDto()
@@ -109,7 +124,7 @@ public class VideoMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToVideoSummaryDto_ShouldMapAuditFields()
+    public async Task ToVideoSummaryDtoAsync_ShouldMapAuditFields()
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
@@ -119,7 +134,11 @@ public class VideoMapperTests : BaseContentHandlerTest
         video.UpdatedBy = "updater";
 
         // Act
-        VideoSummaryDto dto = video.ToVideoSummaryDto(Mapper);
+        VideoSummaryDto dto = await video.ToVideoSummaryDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CreatedAt.Should().Be(video.CreatedAt);
@@ -130,29 +149,37 @@ public class VideoMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToVideoSummaryDto — promoted fields
+    #region ToVideoSummaryDtoAsync — promoted fields
 
     [Fact]
-    public void ToVideoSummaryDto_WhenPromoted_ShouldMapIsPromotedTrue()
+    public async Task ToVideoSummaryDtoAsync_WhenPromoted_ShouldMapIsPromotedTrue()
     {
         // Arrange
         VideoEntity video = VideoFactory.CreatePromoted(CategoryId);
 
         // Act
-        VideoSummaryDto dto = video.ToVideoSummaryDto(Mapper);
+        VideoSummaryDto dto = await video.ToVideoSummaryDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.IsPromoted.Should().BeTrue();
     }
 
     [Fact]
-    public void ToVideoSummaryDto_WhenNotPromoted_ShouldMapIsPromotedFalse()
+    public async Task ToVideoSummaryDtoAsync_WhenNotPromoted_ShouldMapIsPromotedFalse()
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
 
         // Act
-        VideoSummaryDto dto = video.ToVideoSummaryDto(Mapper);
+        VideoSummaryDto dto = await video.ToVideoSummaryDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.IsPromoted.Should().BeFalse();
@@ -160,54 +187,62 @@ public class VideoMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToVideoSummaryDto — PromotionLevel nav property null safety
+    #region ToVideoSummaryDtoAsync — PromotionLevel nav property null safety
 
     [Fact]
-    public void ToVideoSummaryDto_WhenPromotionLevelIsNull_ShouldNotThrow()
+    public async Task ToVideoSummaryDtoAsync_WhenPromotionLevelIsNull_ShouldNotThrow()
     {
         // Arrange — video with IsPromoted=true but PromotionLevel nav not loaded (null)
         VideoEntity video = VideoFactory.Create(CategoryId);
         video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
         // Act
-        Action act = () => video.ToVideoSummaryDto(Mapper);
+        Func<Task> act = () => video.ToVideoSummaryDtoAsync(Mapper, _fileRepositoryMock.Object, CancellationToken.None);
 
         // Assert — must not NPE
-        act.Should().NotThrow();
+        await act.Should().NotThrowAsync();
     }
 
     #endregion
 
-    #region ToVideoSummaryDtos — list mapping
+    #region ToVideoSummaryDtosAsync — list mapping
 
     [Fact]
-    public void ToVideoSummaryDtos_ShouldMapAllEntities()
+    public async Task ToVideoSummaryDtosAsync_ShouldMapAllEntities()
     {
         // Arrange
         IReadOnlyList<VideoEntity> videos = VideoFactory.CreateMany(CategoryId, 3);
 
         // Act
-        IReadOnlyList<VideoSummaryDto> dtos = videos.ToVideoSummaryDtos(Mapper);
+        IReadOnlyList<VideoSummaryDto> dtos = await videos.ToVideoSummaryDtosAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dtos.Should().HaveCount(3);
     }
 
     [Fact]
-    public void ToVideoSummaryDtos_WhenEmpty_ShouldReturnEmptyList()
+    public async Task ToVideoSummaryDtosAsync_WhenEmpty_ShouldReturnEmptyList()
     {
         // Arrange
         IReadOnlyList<VideoEntity> videos = [];
 
         // Act
-        IReadOnlyList<VideoSummaryDto> dtos = videos.ToVideoSummaryDtos(Mapper);
+        IReadOnlyList<VideoSummaryDto> dtos = await videos.ToVideoSummaryDtosAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dtos.Should().BeEmpty();
     }
 
     [Fact]
-    public void ToVideoSummaryDtos_ShouldPreserveOrder()
+    public async Task ToVideoSummaryDtosAsync_ShouldPreserveOrder()
     {
         // Arrange
         VideoEntity first = VideoFactory.Create(CategoryId);
@@ -215,7 +250,11 @@ public class VideoMapperTests : BaseContentHandlerTest
         IReadOnlyList<VideoEntity> videos = [first, second];
 
         // Act
-        IReadOnlyList<VideoSummaryDto> dtos = videos.ToVideoSummaryDtos(Mapper);
+        IReadOnlyList<VideoSummaryDto> dtos = await videos.ToVideoSummaryDtosAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dtos[0].Id.Should().Be(first.Id);
@@ -224,7 +263,7 @@ public class VideoMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToVideoDetailDto — AuditableDto inheritance
+    #region ToVideoDetailDtoAsync — AuditableDto inheritance
 
     [Fact]
     public void ToVideoDetailDto_ShouldInheritAuditableDto()
@@ -233,7 +272,7 @@ public class VideoMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToVideoDetailDto_ShouldMapCreatedAtFromEntity()
+    public async Task ToVideoDetailDtoAsync_ShouldMapCreatedAtFromEntity()
     {
         // Arrange
         VideoEntity video = CreateVideoWithCategory();
@@ -241,28 +280,28 @@ public class VideoMapperTests : BaseContentHandlerTest
         video.CreatedAt = expectedCreatedAt;
 
         // Act
-        var dto = video.ToVideoDetailDto(Mapper);
+        var dto = await video.ToVideoDetailDtoAsync(Mapper, _fileRepositoryMock.Object, CancellationToken.None);
 
         // Assert
         dto.CreatedAt.Should().Be(expectedCreatedAt);
     }
 
     [Fact]
-    public void ToVideoDetailDto_ShouldMapCreatedByFromEntity()
+    public async Task ToVideoDetailDtoAsync_ShouldMapCreatedByFromEntity()
     {
         // Arrange
         VideoEntity video = CreateVideoWithCategory();
         video.CreatedBy = "admin-user-id";
 
         // Act
-        var dto = video.ToVideoDetailDto(Mapper);
+        var dto = await video.ToVideoDetailDtoAsync(Mapper, _fileRepositoryMock.Object, CancellationToken.None);
 
         // Assert
         dto.CreatedBy.Should().Be("admin-user-id");
     }
 
     [Fact]
-    public void ToVideoDetailDto_ShouldMapUpdatedAtFromEntity()
+    public async Task ToVideoDetailDtoAsync_ShouldMapUpdatedAtFromEntity()
     {
         // Arrange
         VideoEntity video = CreateVideoWithCategory();
@@ -270,21 +309,21 @@ public class VideoMapperTests : BaseContentHandlerTest
         video.UpdatedAt = expectedUpdatedAt;
 
         // Act
-        var dto = video.ToVideoDetailDto(Mapper);
+        var dto = await video.ToVideoDetailDtoAsync(Mapper, _fileRepositoryMock.Object, CancellationToken.None);
 
         // Assert
         dto.UpdatedAt.Should().Be(expectedUpdatedAt);
     }
 
     [Fact]
-    public void ToVideoDetailDto_ShouldMapUpdatedByFromEntity()
+    public async Task ToVideoDetailDtoAsync_ShouldMapUpdatedByFromEntity()
     {
         // Arrange
         VideoEntity video = CreateVideoWithCategory();
         video.UpdatedBy = "super-admin-id";
 
         // Act
-        var dto = video.ToVideoDetailDto(Mapper);
+        var dto = await video.ToVideoDetailDtoAsync(Mapper, _fileRepositoryMock.Object, CancellationToken.None);
 
         // Assert
         dto.UpdatedBy.Should().Be("super-admin-id");
@@ -292,16 +331,16 @@ public class VideoMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToVideoDetailDto — core field mapping
+    #region ToVideoDetailDtoAsync — core field mapping
 
     [Fact]
-    public void ToVideoDetailDto_ShouldMapCoreFields()
+    public async Task ToVideoDetailDtoAsync_ShouldMapCoreFields()
     {
         // Arrange
         VideoEntity video = CreateVideoWithCategory();
 
         // Act
-        var dto = video.ToVideoDetailDto(Mapper);
+        var dto = await video.ToVideoDetailDtoAsync(Mapper, _fileRepositoryMock.Object, CancellationToken.None);
 
         // Assert
         dto.Id.Should().Be(video.Id);
@@ -311,8 +350,6 @@ public class VideoMapperTests : BaseContentHandlerTest
         dto.Title.Should().Be(video.Title);
         dto.Slug.Should().Be(video.Slug);
         dto.Description.Should().Be(video.Description);
-        dto.ThumbnailUrl.Should().Be(video.ThumbnailUrl);
-        dto.ThumbnailStorageKey.Should().Be(video.ThumbnailStorageKey);
         dto.YoutubeVideoUrl.Should().Be(video.YoutubeVideoUrl);
         dto.HasLyrics.Should().Be(video.HasLyrics);
         dto.ShootingScheduledAt.Should().Be(video.ShootingScheduledAt);
@@ -325,29 +362,37 @@ public class VideoMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToVideoDetailDto — category name
+    #region ToVideoDetailDtoAsync — category name
 
     [Fact]
-    public void ToVideoDetailDto_WhenCategoryIsNull_ShouldMapCategoryNameAsEmptyString()
+    public async Task ToVideoDetailDtoAsync_WhenCategoryIsNull_ShouldMapCategoryNameAsEmptyString()
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
 
         // Act
-        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CategoryName.Should().BeEmpty();
     }
 
     [Fact]
-    public void ToVideoDetailDto_WhenCategoryIsLoaded_ShouldMapCategoryName()
+    public async Task ToVideoDetailDtoAsync_WhenCategoryIsLoaded_ShouldMapCategoryName()
     {
         // Arrange
         VideoEntity video = CreateVideoWithCategory();
 
         // Act
-        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CategoryName.Should().NotBeEmpty();
@@ -355,16 +400,20 @@ public class VideoMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToVideoDetailDto — promotion fields
+    #region ToVideoDetailDtoAsync — promotion fields
 
     [Fact]
-    public void ToVideoDetailDto_WhenPromoted_ShouldMapPromotionFields()
+    public async Task ToVideoDetailDtoAsync_WhenPromoted_ShouldMapPromotionFields()
     {
         // Arrange
         VideoEntity video = VideoFactory.CreatePromoted(CategoryId);
 
         // Act
-        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.IsPromoted.Should().BeTrue();
@@ -372,13 +421,17 @@ public class VideoMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToVideoDetailDto_WhenNotPromoted_ShouldMapPromotionFieldsAsDefault()
+    public async Task ToVideoDetailDtoAsync_WhenNotPromoted_ShouldMapPromotionFieldsAsDefault()
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
 
         // Act
-        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.IsPromoted.Should().BeFalse();
@@ -386,25 +439,25 @@ public class VideoMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToVideoDetailDto_WhenPromotionLevelIsNull_ShouldNotThrow()
+    public async Task ToVideoDetailDtoAsync_WhenPromotionLevelIsNull_ShouldNotThrow()
     {
         // Arrange — video has IsPromoted=true but PromotionLevel nav not loaded
         VideoEntity video = VideoFactory.Create(CategoryId);
         video.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
         // Act
-        Action act = () => video.ToVideoDetailDto(Mapper);
+        Func<Task> act = () => video.ToVideoDetailDtoAsync(Mapper, _fileRepositoryMock.Object, CancellationToken.None);
 
         // Assert — must not NPE
-        act.Should().NotThrow();
+        await act.Should().NotThrowAsync();
     }
 
     #endregion
 
-    #region ToVideoSummaryDto — engagement counters
+    #region ToVideoSummaryDtoAsync — engagement counters
 
     [Fact]
-    public void ToVideoSummaryDto_ShouldMapEngagementCounters()
+    public async Task ToVideoSummaryDtoAsync_ShouldMapEngagementCounters()
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
@@ -413,7 +466,11 @@ public class VideoMapperTests : BaseContentHandlerTest
         video.UpdateRating(4.5m, 10);
 
         // Act
-        VideoSummaryDto dto = video.ToVideoSummaryDto(Mapper);
+        VideoSummaryDto dto = await video.ToVideoSummaryDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.ShareCount.Should().Be(2);
@@ -422,13 +479,17 @@ public class VideoMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToVideoSummaryDto_WhenNoInteractions_ShouldMapCountersAsZero()
+    public async Task ToVideoSummaryDtoAsync_WhenNoInteractions_ShouldMapCountersAsZero()
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
 
         // Act
-        VideoSummaryDto dto = video.ToVideoSummaryDto(Mapper);
+        VideoSummaryDto dto = await video.ToVideoSummaryDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.ShareCount.Should().Be(0);
@@ -438,10 +499,10 @@ public class VideoMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToVideoDetailDto — engagement counters
+    #region ToVideoDetailDtoAsync — engagement counters
 
     [Fact]
-    public void ToVideoDetailDto_ShouldMapEngagementCounters()
+    public async Task ToVideoDetailDtoAsync_ShouldMapEngagementCounters()
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
@@ -449,7 +510,11 @@ public class VideoMapperTests : BaseContentHandlerTest
         video.UpdateRating(3.8m, 5);
 
         // Act
-        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.ShareCount.Should().Be(1);
@@ -458,13 +523,17 @@ public class VideoMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToVideoDetailDto_WhenNoInteractions_ShouldMapCountersAsZero()
+    public async Task ToVideoDetailDtoAsync_WhenNoInteractions_ShouldMapCountersAsZero()
     {
         // Arrange
         VideoEntity video = VideoFactory.Create(CategoryId);
 
         // Act
-        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.ShareCount.Should().Be(0);
@@ -474,16 +543,20 @@ public class VideoMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToVideoDetailDto — customer and order item mapping
+    #region ToVideoDetailDtoAsync — customer and order item mapping
 
     [Fact]
-    public void ToVideoDetailDto_WhenFreeVideo_ShouldMapCustomerIdAsNull()
+    public async Task ToVideoDetailDtoAsync_WhenFreeVideo_ShouldMapCustomerIdAsNull()
     {
         // Arrange
         VideoEntity video = CreateVideoWithCategory();
 
         // Act
-        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CustomerId.Should().BeNull();
@@ -492,7 +565,7 @@ public class VideoMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToVideoDetailDto_WhenPaidVideo_ShouldMapCustomerId()
+    public async Task ToVideoDetailDtoAsync_WhenPaidVideo_ShouldMapCustomerId()
     {
         // Arrange
         Guid customerId = Guid.NewGuid();
@@ -506,7 +579,11 @@ public class VideoMapperTests : BaseContentHandlerTest
         video.GetType().GetProperty("Customer")!.SetValue(video, customer);
 
         // Act
-        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CustomerId.Should().Be(customerId);
@@ -515,7 +592,7 @@ public class VideoMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToVideoDetailDto_WhenCustomerNavIsNull_ShouldMapCustomerNameAsNull()
+    public async Task ToVideoDetailDtoAsync_WhenCustomerNavIsNull_ShouldMapCustomerNameAsNull()
     {
         // Arrange — CustomerId is set but Customer nav not loaded
         Guid customerId = Guid.NewGuid();
@@ -523,7 +600,11 @@ public class VideoMapperTests : BaseContentHandlerTest
         VideoEntity video = VideoFactory.CreatePaid(CategoryId, customerId, orderItemId);
 
         // Act
-        VideoDetailDto dto = video.ToVideoDetailDto(Mapper);
+        VideoDetailDto dto = await video.ToVideoDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CustomerId.Should().Be(customerId);

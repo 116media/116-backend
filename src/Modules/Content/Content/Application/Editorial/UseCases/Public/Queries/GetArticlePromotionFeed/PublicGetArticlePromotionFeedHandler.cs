@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -14,10 +15,12 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleP
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="categoryRepository">Repository for category data access operations.</param>
+/// <param name="fileRepository">Repository for resolving file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class PublicGetArticlePromotionFeedHandler(
     IArticleRepository articleRepository,
     ICategoryRepository categoryRepository,
+    IFileRepository fileRepository,
     IMapper mapper
 ) : IQueryHandler<PublicGetArticlePromotionFeedQuery, PublicGetArticlePromotionFeedResult>
 {
@@ -65,33 +68,41 @@ public class PublicGetArticlePromotionFeedHandler(
 
         var gossipQueue = new Queue<ArticleEntity>(gossipPool);
 
-        ArticlePromotionSpotDto spot1 = BuildSimpleSpot(
+        ArticlePromotionSpotDto spot1 = await BuildSimpleSpotAsync(
             spotPriority: EditorialFeedConstants.Spot1,
             promoted: spot1Articles,
             gossipQueue: gossipQueue,
             usedIds: usedIds,
-            mapper: mapper
+            mapper: mapper,
+            fileRepository: fileRepository,
+            cancellationToken: cancellationToken
         );
 
-        ArticlePromotionSpotDto spot2 = BuildSimpleSpot(
+        ArticlePromotionSpotDto spot2 = await BuildSimpleSpotAsync(
             spotPriority: EditorialFeedConstants.Spot2,
             promoted: spot2Articles,
             gossipQueue: gossipQueue,
             usedIds: usedIds,
-            mapper: mapper
+            mapper: mapper,
+            fileRepository: fileRepository,
+            cancellationToken: cancellationToken
         );
 
-        ArticlePromotionSpot3Dto spot3 = BuildSpot3(
+        ArticlePromotionSpot3Dto spot3 = await BuildSpot3Async(
             promoted: spot3Articles,
             gossipQueue: gossipQueue,
             usedIds: usedIds,
-            mapper: mapper
+            mapper: mapper,
+            fileRepository: fileRepository,
+            cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<ArticleSummaryDto> gossipStrip = BuildGossipStrip(
+        IReadOnlyList<ArticleSummaryDto> gossipStrip = await BuildGossipStripAsync(
             gossipQueue: gossipQueue,
             stripSize: query.StripSize,
-            mapper: mapper
+            mapper: mapper,
+            fileRepository: fileRepository,
+            cancellationToken: cancellationToken
         );
 
         return new PublicGetArticlePromotionFeedResult(
@@ -111,20 +122,24 @@ public class PublicGetArticlePromotionFeedHandler(
     /// <param name="gossipQueue">Remaining gossip articles not yet consumed by earlier spots.</param>
     /// <param name="usedIds">Tracks all article IDs already placed in the feed to prevent duplicates.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+    /// <param name="fileRepository">Repository for resolving file URLs.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>A <see cref="ArticlePromotionSpotDto" /> with promoted articles or a single gossip fallback.</returns>
-    private static ArticlePromotionSpotDto BuildSimpleSpot(
+    private static async Task<ArticlePromotionSpotDto> BuildSimpleSpotAsync(
         int spotPriority,
         IReadOnlyList<ArticleEntity> promoted,
         Queue<ArticleEntity> gossipQueue,
         HashSet<Guid> usedIds,
-        IMapper mapper
+        IMapper mapper,
+        IFileRepository fileRepository,
+        CancellationToken cancellationToken
     )
     {
         if (promoted.Count > 0)
         {
             return new ArticlePromotionSpotDto(
                 SpotPriority: spotPriority,
-                Articles: promoted.ToArticleSummaryDtos(mapper)
+                Articles: await promoted.ToArticleSummaryDtosAsync(mapper, fileRepository, cancellationToken)
             );
         }
 
@@ -133,7 +148,7 @@ public class PublicGetArticlePromotionFeedHandler(
         if (gossipQueue.TryDequeue(out ArticleEntity? gossip))
         {
             usedIds.Add(gossip.Id);
-            fallback.Add(gossip.ToArticleSummaryDto(mapper));
+            fallback.Add(await gossip.ToArticleSummaryDtoAsync(mapper, fileRepository, cancellationToken));
         }
 
         return new ArticlePromotionSpotDto(SpotPriority: spotPriority, Articles: fallback);
@@ -147,15 +162,19 @@ public class PublicGetArticlePromotionFeedHandler(
     /// <param name="gossipQueue">Remaining gossip articles not yet consumed by earlier spots.</param>
     /// <param name="usedIds">Tracks all article IDs already placed in the feed to prevent duplicates.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+    /// <param name="fileRepository">Repository for resolving file URLs.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>
     /// A <see cref="ArticlePromotionSpot3Dto" /> with two named slots (<c>"a"</c> and <c>"b"</c>),
     /// each containing at least one article.
     /// </returns>
-    private static ArticlePromotionSpot3Dto BuildSpot3(
+    private static async Task<ArticlePromotionSpot3Dto> BuildSpot3Async(
         IReadOnlyList<ArticleEntity> promoted,
         Queue<ArticleEntity> gossipQueue,
         HashSet<Guid> usedIds,
-        IMapper mapper
+        IMapper mapper,
+        IFileRepository fileRepository,
+        CancellationToken cancellationToken
     )
     {
         var columnA = new List<ArticleSummaryDto>();
@@ -163,20 +182,21 @@ public class PublicGetArticlePromotionFeedHandler(
 
         for (int i = 0; i < promoted.Count; i++)
         {
-            ArticleSummaryDto dto = promoted[i].ToArticleSummaryDto(mapper);
+            ArticleSummaryDto dto = await promoted[i]
+                .ToArticleSummaryDtoAsync(mapper, fileRepository, cancellationToken);
             (i % 2 == 0 ? columnA : columnB).Add(dto);
         }
 
         if (columnA.Count == 0 && gossipQueue.TryDequeue(out ArticleEntity? gossipA))
         {
             usedIds.Add(gossipA.Id);
-            columnA.Add(gossipA.ToArticleSummaryDto(mapper));
+            columnA.Add(await gossipA.ToArticleSummaryDtoAsync(mapper, fileRepository, cancellationToken));
         }
 
         if (columnB.Count == 0 && gossipQueue.TryDequeue(out ArticleEntity? gossipB))
         {
             usedIds.Add(gossipB.Id);
-            columnB.Add(gossipB.ToArticleSummaryDto(mapper));
+            columnB.Add(await gossipB.ToArticleSummaryDtoAsync(mapper, fileRepository, cancellationToken));
         }
 
         var slots = new List<ArticlePromotionSlotDto>
@@ -195,21 +215,25 @@ public class PublicGetArticlePromotionFeedHandler(
     /// <param name="gossipQueue">Remaining gossip articles not yet consumed by spot fallbacks.</param>
     /// <param name="stripSize">Maximum number of articles to include in the strip.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+    /// <param name="fileRepository">Repository for resolving file URLs.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>
     /// An ordered list of up to <paramref name="stripSize" /> gossip article summaries.
     /// May be shorter if the queue is exhausted.
     /// </returns>
-    private static IReadOnlyList<ArticleSummaryDto> BuildGossipStrip(
+    private static async Task<IReadOnlyList<ArticleSummaryDto>> BuildGossipStripAsync(
         Queue<ArticleEntity> gossipQueue,
         int stripSize,
-        IMapper mapper
+        IMapper mapper,
+        IFileRepository fileRepository,
+        CancellationToken cancellationToken
     )
     {
         var strip = new List<ArticleSummaryDto>();
 
         while (strip.Count < stripSize && gossipQueue.TryDequeue(out ArticleEntity? article))
         {
-            strip.Add(article.ToArticleSummaryDto(mapper));
+            strip.Add(await article.ToArticleSummaryDtoAsync(mapper, fileRepository, cancellationToken));
         }
 
         return strip;

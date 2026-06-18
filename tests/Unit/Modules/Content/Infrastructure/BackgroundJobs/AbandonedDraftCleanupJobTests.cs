@@ -2,6 +2,7 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.BackgroundJobs;
+using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
 using _116.Tests.Fixtures.Factories.Content;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +25,7 @@ public class AbandonedDraftCleanupJobTests
     private readonly Mock<IServiceProvider> _serviceProviderMock;
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<ICloudinaryService> _cloudinaryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly Mock<ILogger<AbandonedDraftCleanupJob>> _loggerMock;
     private readonly Mock<IJobExecutionContext> _jobContextMock;
@@ -36,6 +38,7 @@ public class AbandonedDraftCleanupJobTests
         _serviceProviderMock = new Mock<IServiceProvider>();
         _articleRepositoryMock = new Mock<IArticleRepository>();
         _cloudinaryMock = new Mock<ICloudinaryService>();
+        _fileRepositoryMock = new Mock<IFileRepository>();
         _unitOfWorkMock = new Mock<IContentUnitOfWork>();
         _loggerMock = new Mock<ILogger<AbandonedDraftCleanupJob>>();
         _jobContextMock = new Mock<IJobExecutionContext>();
@@ -48,6 +51,7 @@ public class AbandonedDraftCleanupJobTests
             .Setup(x => x.GetService(typeof(IArticleRepository)))
             .Returns(_articleRepositoryMock.Object);
         _serviceProviderMock.Setup(x => x.GetService(typeof(ICloudinaryService))).Returns(_cloudinaryMock.Object);
+        _serviceProviderMock.Setup(x => x.GetService(typeof(IFileRepository))).Returns(_fileRepositoryMock.Object);
         _serviceProviderMock.Setup(x => x.GetService(typeof(IContentUnitOfWork))).Returns(_unitOfWorkMock.Object);
 
         _jobContextMock.Setup(x => x.CancellationToken).Returns(CancellationToken.None);

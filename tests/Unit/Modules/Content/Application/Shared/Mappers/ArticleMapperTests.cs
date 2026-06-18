@@ -1,10 +1,15 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.DTOs;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
+using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
+using Moq;
 using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Application.Shared.Mappers;
@@ -16,6 +21,15 @@ public class ArticleMapperTests : BaseContentHandlerTest
 {
     private static readonly Guid CategoryId = Guid.NewGuid();
     private static readonly Guid ContentTypeId = Guid.NewGuid();
+
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
+
+    public ArticleMapperTests()
+    {
+        _fileRepositoryMock = MockFileRepository.Create();
+        FileEntity videoFile = FileFactory.CreateVideo();
+        _fileRepositoryMock.SetupGetById(videoFile);
+    }
 
     #region Register
 
@@ -29,24 +43,28 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToArticleSummaryDto — category name
+    #region ToArticleSummaryDtoAsync — category name
 
     [Fact]
-    public void ToArticleSummaryDto_WhenCategoryIsNull_ShouldMapCategoryNameAsEmptyString()
+    public async Task ToArticleSummaryDtoAsync_WhenCategoryIsNull_ShouldMapCategoryNameAsEmptyString()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
         // Category nav property is null by default (not loaded)
 
         // Act
-        ArticleSummaryDto dto = article.ToArticleSummaryDto(Mapper);
+        ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CategoryName.Should().BeEmpty();
     }
 
     [Fact]
-    public void ToArticleSummaryDto_WhenCategoryIsLoaded_ShouldMapCategoryName()
+    public async Task ToArticleSummaryDtoAsync_WhenCategoryIsLoaded_ShouldMapCategoryName()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
@@ -54,7 +72,11 @@ public class ArticleMapperTests : BaseContentHandlerTest
         article.GetType().GetProperty("Category")!.SetValue(article, category);
 
         // Act
-        ArticleSummaryDto dto = article.ToArticleSummaryDto(Mapper);
+        ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CategoryName.Should().Be(category.Name);
@@ -62,16 +84,20 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToArticleSummaryDto — core fields
+    #region ToArticleSummaryDtoAsync — core fields
 
     [Fact]
-    public void ToArticleSummaryDto_ShouldMapCoreFields()
+    public async Task ToArticleSummaryDtoAsync_ShouldMapCoreFields()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
 
         // Act
-        ArticleSummaryDto dto = article.ToArticleSummaryDto(Mapper);
+        ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.Id.Should().Be(article.Id);
@@ -79,7 +105,6 @@ public class ArticleMapperTests : BaseContentHandlerTest
         dto.Title.Should().Be(article.Title);
         dto.Slug.Should().Be(article.Slug);
         dto.Headline.Should().Be(article.Headline);
-        dto.CoverImageUrl.Should().Be(article.CoverImageUrl);
         dto.AuthorId.Should().Be(article.AuthorId.ToString());
         dto.Status.Should().Be(article.Status);
         dto.IsPromoted.Should().Be(article.IsPromoted);
@@ -88,16 +113,16 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToArticleSummaryDto — AuditableDto fields
+    #region ToArticleSummaryDtoAsync — AuditableDto fields
 
     [Fact]
-    public void ToArticleSummaryDto_ShouldInheritAuditableDto()
+    public void ToArticleSummaryDtoAsync_ShouldInheritAuditableDto()
     {
         typeof(ArticleSummaryDto).Should().BeAssignableTo<AuditableDto>();
     }
 
     [Fact]
-    public void ToArticleSummaryDto_ShouldMapAuditFields()
+    public async Task ToArticleSummaryDtoAsync_ShouldMapAuditFields()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
@@ -107,7 +132,11 @@ public class ArticleMapperTests : BaseContentHandlerTest
         article.UpdatedBy = "updater";
 
         // Act
-        ArticleSummaryDto dto = article.ToArticleSummaryDto(Mapper);
+        ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CreatedAt.Should().Be(article.CreatedAt);
@@ -118,29 +147,37 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToArticleSummaryDto — promoted fields
+    #region ToArticleSummaryDtoAsync — promoted fields
 
     [Fact]
-    public void ToArticleSummaryDto_WhenPromoted_ShouldMapIsPromotedTrue()
+    public async Task ToArticleSummaryDtoAsync_WhenPromoted_ShouldMapIsPromotedTrue()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePromoted(CategoryId);
 
         // Act
-        ArticleSummaryDto dto = article.ToArticleSummaryDto(Mapper);
+        ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.IsPromoted.Should().BeTrue();
     }
 
     [Fact]
-    public void ToArticleSummaryDto_WhenNotPromoted_ShouldMapIsPromotedFalse()
+    public async Task ToArticleSummaryDtoAsync_WhenNotPromoted_ShouldMapIsPromotedFalse()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
 
         // Act
-        ArticleSummaryDto dto = article.ToArticleSummaryDto(Mapper);
+        ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.IsPromoted.Should().BeFalse();
@@ -148,10 +185,10 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToArticleSummaryDto — PromotionLevel nav property null safety
+    #region ToArticleSummaryDtoAsync — PromotionLevel nav property null safety
 
     [Fact]
-    public void ToArticleSummaryDto_WhenPromotionLevelIsNull_ShouldNotThrow()
+    public async Task ToArticleSummaryDtoAsync_WhenPromotionLevelIsNull_ShouldNotThrow()
     {
         // Arrange — article with IsPromoted=true but PromotionLevel nav not loaded (null)
         ArticleEntity article = ArticleFactory.Create(CategoryId);
@@ -159,44 +196,53 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // PromotionLevel nav property remains null (EF not loaded)
 
         // Act
-        Action act = () => article.ToArticleSummaryDto(Mapper);
+        Func<Task> act = async () =>
+            await article.ToArticleSummaryDtoAsync(Mapper, _fileRepositoryMock.Object, CancellationToken.None);
 
         // Assert — must not NPE
-        act.Should().NotThrow();
+        await act.Should().NotThrowAsync();
     }
 
     #endregion
 
-    #region ToArticleSummaryDtos — list mapping
+    #region ToArticleSummaryDtosAsync — list mapping
 
     [Fact]
-    public void ToArticleSummaryDtos_ShouldMapAllEntities()
+    public async Task ToArticleSummaryDtosAsync_ShouldMapAllEntities()
     {
         // Arrange
         IReadOnlyList<ArticleEntity> articles = ArticleFactory.CreateMany(CategoryId, 3);
 
         // Act
-        IReadOnlyList<ArticleSummaryDto> dtos = articles.ToArticleSummaryDtos(Mapper);
+        IReadOnlyList<ArticleSummaryDto> dtos = await articles.ToArticleSummaryDtosAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dtos.Should().HaveCount(3);
     }
 
     [Fact]
-    public void ToArticleSummaryDtos_WhenEmpty_ShouldReturnEmptyList()
+    public async Task ToArticleSummaryDtosAsync_WhenEmpty_ShouldReturnEmptyList()
     {
         // Arrange
         IReadOnlyList<ArticleEntity> articles = [];
 
         // Act
-        IReadOnlyList<ArticleSummaryDto> dtos = articles.ToArticleSummaryDtos(Mapper);
+        IReadOnlyList<ArticleSummaryDto> dtos = await articles.ToArticleSummaryDtosAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dtos.Should().BeEmpty();
     }
 
     [Fact]
-    public void ToArticleSummaryDtos_ShouldPreserveOrder()
+    public async Task ToArticleSummaryDtosAsync_ShouldPreserveOrder()
     {
         // Arrange
         ArticleEntity first = ArticleFactory.Create(CategoryId);
@@ -204,7 +250,11 @@ public class ArticleMapperTests : BaseContentHandlerTest
         IReadOnlyList<ArticleEntity> articles = [first, second];
 
         // Act
-        IReadOnlyList<ArticleSummaryDto> dtos = articles.ToArticleSummaryDtos(Mapper);
+        IReadOnlyList<ArticleSummaryDto> dtos = await articles.ToArticleSummaryDtosAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dtos[0].Id.Should().Be(first.Id);
@@ -213,16 +263,16 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToArticleDetailDto — AuditableDto inheritance
+    #region ToArticleDetailDtoAsync — AuditableDto inheritance
 
     [Fact]
-    public void ToArticleDetailDto_ShouldInheritAuditableDto()
+    public void ToArticleDetailDtoAsync_ShouldInheritAuditableDto()
     {
         typeof(ArticleDetailDto).Should().BeAssignableTo<AuditableDto>();
     }
 
     [Fact]
-    public void ToArticleDetailDto_ShouldMapCreatedAtFromEntity()
+    public async Task ToArticleDetailDtoAsync_ShouldMapCreatedAtFromEntity()
     {
         // Arrange
         DateTime createdAt = new DateTime(2025, 1, 15, 10, 30, 0, DateTimeKind.Utc);
@@ -230,28 +280,36 @@ public class ArticleMapperTests : BaseContentHandlerTest
         article.CreatedAt = createdAt;
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CreatedAt.Should().Be(createdAt);
     }
 
     [Fact]
-    public void ToArticleDetailDto_ShouldMapCreatedByFromEntity()
+    public async Task ToArticleDetailDtoAsync_ShouldMapCreatedByFromEntity()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
         article.CreatedBy = "system";
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CreatedBy.Should().Be("system");
     }
 
     [Fact]
-    public void ToArticleDetailDto_ShouldMapUpdatedAtFromEntity()
+    public async Task ToArticleDetailDtoAsync_ShouldMapUpdatedAtFromEntity()
     {
         // Arrange
         DateTime updatedAt = new DateTime(2025, 6, 20, 14, 0, 0, DateTimeKind.Utc);
@@ -259,21 +317,29 @@ public class ArticleMapperTests : BaseContentHandlerTest
         article.UpdatedAt = updatedAt;
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.UpdatedAt.Should().Be(updatedAt);
     }
 
     [Fact]
-    public void ToArticleDetailDto_ShouldMapUpdatedByFromEntity()
+    public async Task ToArticleDetailDtoAsync_ShouldMapUpdatedByFromEntity()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
         article.UpdatedBy = "admin-user";
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.UpdatedBy.Should().Be("admin-user");
@@ -281,16 +347,20 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToArticleDetailDto — core field mapping
+    #region ToArticleDetailDtoAsync — core field mapping
 
     [Fact]
-    public void ToArticleDetailDto_ShouldMapCoreFields()
+    public async Task ToArticleDetailDtoAsync_ShouldMapCoreFields()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.Id.Should().Be(article.Id);
@@ -301,29 +371,32 @@ public class ArticleMapperTests : BaseContentHandlerTest
         dto.Slug.Should().Be(article.Slug);
         dto.Headline.Should().Be(article.Headline);
         dto.Body.Should().Be(article.Body);
-        dto.CoverImageUrl.Should().Be(article.CoverImageUrl);
         dto.PublishedAt.Should().Be(article.PublishedAt);
     }
 
     #endregion
 
-    #region ToArticleDetailDto — category name
+    #region ToArticleDetailDtoAsync — category name
 
     [Fact]
-    public void ToArticleDetailDto_WhenCategoryIsNull_ShouldMapCategoryNameAsEmptyString()
+    public async Task ToArticleDetailDtoAsync_WhenCategoryIsNull_ShouldMapCategoryNameAsEmptyString()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CategoryName.Should().BeEmpty();
     }
 
     [Fact]
-    public void ToArticleDetailDto_WhenCategoryIsLoaded_ShouldMapCategoryName()
+    public async Task ToArticleDetailDtoAsync_WhenCategoryIsLoaded_ShouldMapCategoryName()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
@@ -331,7 +404,11 @@ public class ArticleMapperTests : BaseContentHandlerTest
         article.GetType().GetProperty("Category")!.SetValue(article, category);
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CategoryName.Should().Be(category.Name);
@@ -339,16 +416,20 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToArticleDetailDto — promotion fields
+    #region ToArticleDetailDtoAsync — promotion fields
 
     [Fact]
-    public void ToArticleDetailDto_WhenPromoted_ShouldMapPromotionFields()
+    public async Task ToArticleDetailDtoAsync_WhenPromoted_ShouldMapPromotionFields()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePromoted(CategoryId);
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.IsPromoted.Should().BeTrue();
@@ -356,13 +437,17 @@ public class ArticleMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToArticleDetailDto_WhenNotPromoted_ShouldMapPromotionFieldsAsDefault()
+    public async Task ToArticleDetailDtoAsync_WhenNotPromoted_ShouldMapPromotionFieldsAsDefault()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.IsPromoted.Should().BeFalse();
@@ -370,32 +455,37 @@ public class ArticleMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToArticleDetailDto_WhenPromotionLevelIsNull_ShouldNotThrow()
+    public async Task ToArticleDetailDtoAsync_WhenPromotionLevelIsNull_ShouldNotThrow()
     {
         // Arrange — article has IsPromoted=true but PromotionLevel nav not loaded
         ArticleEntity article = ArticleFactory.Create(CategoryId);
         article.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
 
         // Act
-        Action act = () => article.ToArticleDetailDto(Mapper);
+        Func<Task> act = async () =>
+            await article.ToArticleDetailDtoAsync(Mapper, _fileRepositoryMock.Object, CancellationToken.None);
 
         // Assert — must not NPE
-        act.Should().NotThrow();
+        await act.Should().NotThrowAsync();
     }
 
     #endregion
 
-    #region ToArticleDetailDto — read time computation
+    #region ToArticleDetailDtoAsync — read time computation
 
     [Fact]
-    public void ToArticleDetailDto_WhenBodyIsEmpty_ShouldReturnReadTimeOfOne()
+    public async Task ToArticleDetailDtoAsync_WhenBodyIsEmpty_ShouldReturnReadTimeOfOne()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
         // Body is empty string by default on new articles
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert — Math.Max(1, ceil(0/200)) = 1
         dto.ReadTimeInMinutes.Should().Be(1);
@@ -406,7 +496,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
     [InlineData(201, 2)]
     [InlineData(400, 2)]
     [InlineData(401, 3)]
-    public void ToArticleDetailDto_ShouldComputeReadTimeInMinutes(int wordCount, int expectedMinutes)
+    public async Task ToArticleDetailDtoAsync_ShouldComputeReadTimeInMinutes(int wordCount, int expectedMinutes)
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
@@ -416,7 +506,6 @@ public class ArticleMapperTests : BaseContentHandlerTest
             slug: article.Slug,
             headline: "headline",
             body: string.Join(" ", Enumerable.Repeat("word", wordCount)),
-            coverImageUrl: null,
             customerId: null,
             orderItemId: null,
             socialBoost: false,
@@ -425,7 +514,11 @@ public class ArticleMapperTests : BaseContentHandlerTest
         );
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.ReadTimeInMinutes.Should().Be(expectedMinutes);
@@ -433,10 +526,10 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToArticleDetailDto — SEO and optional fields
+    #region ToArticleDetailDtoAsync — SEO and optional fields
 
     [Fact]
-    public void ToArticleDetailDto_ShouldMapRejectionReasonAndSocialBoost()
+    public async Task ToArticleDetailDtoAsync_ShouldMapRejectionReasonAndSocialBoost()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
@@ -446,7 +539,6 @@ public class ArticleMapperTests : BaseContentHandlerTest
             slug: article.Slug,
             headline: "headline",
             body: "body",
-            coverImageUrl: null,
             customerId: null,
             orderItemId: null,
             socialBoost: true,
@@ -455,7 +547,11 @@ public class ArticleMapperTests : BaseContentHandlerTest
         );
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.SocialBoost.Should().BeTrue();
@@ -465,10 +561,10 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToArticleDetailDto — customer and order item mapping
+    #region ToArticleDetailDtoAsync — customer and order item mapping
 
     [Fact]
-    public void ToArticleDetailDto_WhenFreeArticle_ShouldMapCustomerFieldsAsNull()
+    public async Task ToArticleDetailDtoAsync_WhenFreeArticle_ShouldMapCustomerFieldsAsNull()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
@@ -476,7 +572,11 @@ public class ArticleMapperTests : BaseContentHandlerTest
         article.GetType().GetProperty("Category")!.SetValue(article, category);
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CustomerId.Should().BeNull();
@@ -485,7 +585,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToArticleDetailDto_WhenPaidArticle_ShouldMapCustomerAndOrderItemId()
+    public async Task ToArticleDetailDtoAsync_WhenPaidArticle_ShouldMapCustomerAndOrderItemId()
     {
         // Arrange
         Guid customerId = Guid.NewGuid();
@@ -499,7 +599,11 @@ public class ArticleMapperTests : BaseContentHandlerTest
         article.GetType().GetProperty("Customer")!.SetValue(article, customer);
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CustomerId.Should().Be(customerId);
@@ -508,7 +612,7 @@ public class ArticleMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToArticleDetailDto_WhenCustomerNavIsNull_ShouldMapCustomerNameAsNull()
+    public async Task ToArticleDetailDtoAsync_WhenCustomerNavIsNull_ShouldMapCustomerNameAsNull()
     {
         // Arrange — CustomerId is set but Customer nav not loaded
         Guid customerId = Guid.NewGuid();
@@ -517,7 +621,11 @@ public class ArticleMapperTests : BaseContentHandlerTest
         // Customer nav property left null
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.CustomerId.Should().Be(customerId);
@@ -526,10 +634,10 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToArticleSummaryDto — engagement counters
+    #region ToArticleSummaryDtoAsync — engagement counters
 
     [Fact]
-    public void ToArticleSummaryDto_ShouldMapEngagementCounters()
+    public async Task ToArticleSummaryDtoAsync_ShouldMapEngagementCounters()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
@@ -542,7 +650,11 @@ public class ArticleMapperTests : BaseContentHandlerTest
         article.IncrementBookmarkCount();
 
         // Act
-        ArticleSummaryDto dto = article.ToArticleSummaryDto(Mapper);
+        ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.LikeCount.Should().Be(2);
@@ -552,13 +664,17 @@ public class ArticleMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToArticleSummaryDto_WhenNoInteractions_ShouldMapCountersAsZero()
+    public async Task ToArticleSummaryDtoAsync_WhenNoInteractions_ShouldMapCountersAsZero()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
 
         // Act
-        ArticleSummaryDto dto = article.ToArticleSummaryDto(Mapper);
+        ArticleSummaryDto dto = await article.ToArticleSummaryDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.LikeCount.Should().Be(0);
@@ -569,10 +685,10 @@ public class ArticleMapperTests : BaseContentHandlerTest
 
     #endregion
 
-    #region ToArticleDetailDto — engagement counters
+    #region ToArticleDetailDtoAsync — engagement counters
 
     [Fact]
-    public void ToArticleDetailDto_ShouldMapEngagementCounters()
+    public async Task ToArticleDetailDtoAsync_ShouldMapEngagementCounters()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
@@ -585,7 +701,11 @@ public class ArticleMapperTests : BaseContentHandlerTest
         article.IncrementBookmarkCount();
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.LikeCount.Should().Be(1);
@@ -595,13 +715,17 @@ public class ArticleMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToArticleDetailDto_WhenNoInteractions_ShouldMapCountersAsZero()
+    public async Task ToArticleDetailDtoAsync_WhenNoInteractions_ShouldMapCountersAsZero()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.LikeCount.Should().Be(0);
@@ -611,14 +735,18 @@ public class ArticleMapperTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToArticleDetailDto_WhenLikeCountDecremented_ShouldNotGoBelowZero()
+    public async Task ToArticleDetailDtoAsync_WhenLikeCountDecremented_ShouldNotGoBelowZero()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
         article.DecrementLikeCount();
 
         // Act
-        ArticleDetailDto dto = article.ToArticleDetailDto(Mapper);
+        ArticleDetailDto dto = await article.ToArticleDetailDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
 
         // Assert
         dto.LikeCount.Should().Be(0);

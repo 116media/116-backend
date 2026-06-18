@@ -2,9 +2,12 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteVideo;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Core.Application.Shared.Services;
+using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -22,7 +25,8 @@ public class AdminDeleteVideoHandlerTests
 {
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<ICloudinaryService> _cloudinaryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly Mock<IFileService> _fileServiceMock;
     private readonly AdminDeleteVideoHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -31,11 +35,13 @@ public class AdminDeleteVideoHandlerTests
     {
         _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _cloudinaryMock = MockCloudinaryService.Create();
+        _fileRepositoryMock = MockFileRepository.Create();
+        _fileServiceMock = MockFileService.Create();
         _handler = new AdminDeleteVideoHandler(
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _cloudinaryMock.Object,
+            _fileRepositoryMock.Object,
+            _fileServiceMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -57,7 +63,7 @@ public class AdminDeleteVideoHandlerTests
         result.IsSuccess.Should().BeTrue();
         _videoRepositoryMock.VerifyRemoveCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
-        _cloudinaryMock.VerifyDeleteImageNotCalled();
+        _fileServiceMock.VerifyDeleteFileNotCalled();
     }
 
     [Fact]
@@ -68,12 +74,17 @@ public class AdminDeleteVideoHandlerTests
         var command = new AdminDeleteVideoCommand(Id: video.Id.ToString());
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
 
+        FileEntity thumbnailFile = FileFactory.CreateWithStorageKey("test-storage-key");
+        _fileRepositoryMock
+            .Setup(x => x.GetByIdAsync(video.ThumbnailFileId!.Value, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(thumbnailFile);
+
         // Act
         AdminDeleteVideoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        _cloudinaryMock.VerifyDeleteImageCalled(video.ThumbnailStorageKey!);
+        _fileServiceMock.VerifyDeleteFileCalled();
         _videoRepositoryMock.VerifyRemoveCalled(video);
         _unitOfWorkMock.VerifyCommitCalled();
     }

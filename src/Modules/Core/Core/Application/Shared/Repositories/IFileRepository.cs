@@ -149,6 +149,73 @@ public interface IFileRepository : IRepository<FileEntity>
     );
 
     /// <summary>
+    /// Uploads an image file to cloud storage and persists file metadata to the database.
+    /// </summary>
+    /// <param name="file">The image file to upload.</param>
+    /// <param name="publicId">The public ID used in cloud storage.</param>
+    /// <param name="folder">The destination folder in cloud storage.</param>
+    /// <param name="originalFileName">The original filename as submitted by the client.</param>
+    /// <param name="mimeType">The MIME type of the file.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The created <see cref="FileEntity" /> with persisted metadata.</returns>
+    Task<FileEntity> UploadAndStoreImageFileAsync(
+        IFormFile file,
+        string publicId,
+        string folder,
+        string originalFileName,
+        string mimeType,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Uploads a video file to cloud storage and persists file metadata to the database.
+    /// </summary>
+    /// <param name="file">The video file to upload.</param>
+    /// <param name="publicId">The public ID used in cloud storage.</param>
+    /// <param name="folder">The destination folder in cloud storage.</param>
+    /// <param name="originalFileName">The original filename as submitted by the client.</param>
+    /// <param name="mimeType">The MIME type of the file.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The created <see cref="FileEntity" /> with persisted metadata.</returns>
+    Task<FileEntity> UploadAndStoreVideoFileAsync(
+        IFormFile file,
+        string publicId,
+        string folder,
+        string originalFileName,
+        string mimeType,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Replaces a tracked file: soft-deletes the old FileEntity if it exists, then uploads a new image.
+    /// </summary>
+    /// <param name="currentFileId">The ID of the current file to replace, or null if none exists.</param>
+    /// <param name="file">The new image file to upload.</param>
+    /// <param name="publicId">The public ID used in cloud storage.</param>
+    /// <param name="folder">The destination folder in cloud storage.</param>
+    /// <param name="originalFileName">The original filename as submitted by the client.</param>
+    /// <param name="mimeType">The MIME type of the file.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The created <see cref="FileEntity" /> for the new upload.</returns>
+    Task<FileEntity> ReplaceImageFileAsync(
+        Guid? currentFileId,
+        IFormFile file,
+        string publicId,
+        string folder,
+        string originalFileName,
+        string mimeType,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Soft-deletes a file entity by its ID.
+    /// </summary>
+    /// <param name="fileId">The unique identifier of the file to soft-delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>True if the file was successfully soft-deleted; false if not found or already deleted.</returns>
+    Task<bool> SoftDeleteByIdAsync(Guid fileId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Uploads a raw file (image or PDF) to cloud storage and persists file metadata to the database.
     /// </summary>
     /// <param name="file">The file to upload.</param>

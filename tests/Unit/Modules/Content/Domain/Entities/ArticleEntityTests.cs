@@ -754,7 +754,7 @@ public class ArticleEntityTests
     }
 
     [Fact]
-    public void UpdateCoverImage_ShouldSetCoverImageUrl()
+    public void UpdateCoverImage_ShouldSetCoverImageFileId()
     {
         // Arrange
         ArticleEntity article = ArticleEntity.CreateFree(
@@ -765,13 +765,13 @@ public class ArticleEntityTests
             AuthorId,
             TestErrorsFactory.CreateArticleErrors()
         );
-        const string coverUrl = TestConstants.Content.Editorial.ArticleImage.ValidUrl;
+        Guid coverImageFileId = Guid.NewGuid();
 
         // Act
-        article.UpdateCoverImage(coverUrl);
+        article.UpdateCoverImage(coverImageFileId: coverImageFileId);
 
         // Assert
-        article.CoverImageUrl.Should().Be(coverUrl);
+        article.CoverImageFileId.Should().Be(coverImageFileId);
     }
 
     [Fact]
@@ -797,7 +797,6 @@ public class ArticleEntityTests
             slug: "updated-slug",
             headline: "Updated headline for the article",
             body: "<p>Updated body</p>",
-            coverImageUrl: "https://example.com/cover.jpg",
             customerId: customerId,
             orderItemId: orderItemId,
             socialBoost: true,
@@ -811,7 +810,6 @@ public class ArticleEntityTests
         article.Slug.Should().Be("updated-slug");
         article.Headline.Should().Be("Updated headline for the article");
         article.Body.Should().Be("<p>Updated body</p>");
-        article.CoverImageUrl.Should().Be("https://example.com/cover.jpg");
         article.CustomerId.Should().Be(customerId);
         article.OrderItemId.Should().Be(orderItemId);
         article.SocialBoost.Should().BeTrue();

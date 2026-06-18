@@ -109,4 +109,26 @@ public static class FileFactory
     /// <returns>A new FileEntity with the specified storage URL.</returns>
     public static FileEntity CreateWithStorageUrl(string storageUrl) =>
         new FileBuilder().WithStorageUrl(storageUrl).Build();
+
+    /// <summary>
+    /// Creates a JPEG image file with a storage key.
+    /// </summary>
+    /// <returns>A new JPEG FileEntity with a storage key.</returns>
+    public static FileEntity CreateImage() =>
+        new FileBuilder().AsJpegImage().WithStorageKey(TestConstants.File.ValidStorageKey).Build();
+
+    /// <summary>
+    /// Creates a video file with a storage key.
+    /// </summary>
+    /// <returns>A new FileEntity configured as a video with a storage key.</returns>
+    public static FileEntity CreateVideo() =>
+        new FileBuilder().WithMimeType("video/mp4").WithStorageKey(TestConstants.File.ValidVideoStorageKey).Build();
+
+    /// <summary>
+    /// Creates a file with a specific storage key.
+    /// </summary>
+    /// <param name="storageKey">The storage key.</param>
+    /// <returns>A new FileEntity with the specified storage key.</returns>
+    public static FileEntity CreateWithStorageKey(string storageKey) =>
+        new FileBuilder().WithStorageKey(storageKey).Build();
 }

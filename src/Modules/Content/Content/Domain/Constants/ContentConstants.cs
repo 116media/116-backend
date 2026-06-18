@@ -176,29 +176,14 @@ public static class ContentConstants
     public const int MaxMetaDescriptionLength = 160;
 
     /// <summary>
-    /// Maximum allowed length for a cover image URL stored on an article.
-    /// </summary>
-    public const int MaxCoverImageUrlLength = 500;
-
-    /// <summary>
     /// Maximum allowed length for a YouTube video URL.
     /// </summary>
     public const int MaxYoutubeVideoUrlLength = 200;
 
     /// <summary>
-    /// Maximum allowed length for a video thumbnail URL.
-    /// </summary>
-    public const int MaxThumbnailUrlLength = 500;
-
-    /// <summary>
     /// Maximum allowed length for a short video title.
     /// </summary>
     public const int MaxShortVideoTitleLength = 200;
-
-    /// <summary>
-    /// Maximum allowed length for a short video URL (public CDN URL).
-    /// </summary>
-    public const int MaxShortVideoUrlLength = 500;
 
     /// <summary>
     /// Maximum allowed length for a song title on a lyrics page.

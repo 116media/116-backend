@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
@@ -13,9 +14,13 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 /// Handles the <see cref="PublicGetPublishedArticlesQuery" /> to retrieve a paginated list of published articles.
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
+/// <param name="fileRepository">Repository for resolving file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
-public class PublicGetPublishedArticlesHandler(IArticleRepository articleRepository, IMapper mapper)
-    : IQueryHandler<PublicGetPublishedArticlesQuery, PublicGetPublishedArticlesResult>
+public class PublicGetPublishedArticlesHandler(
+    IArticleRepository articleRepository,
+    IFileRepository fileRepository,
+    IMapper mapper
+) : IQueryHandler<PublicGetPublishedArticlesQuery, PublicGetPublishedArticlesResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetPublishedArticlesResult> Handle(
@@ -35,7 +40,11 @@ public class PublicGetPublishedArticlesHandler(IArticleRepository articleReposit
             cancellationToken: cancellationToken
         );
 
-        List<ArticleSummaryDto> dtoList = articles.Select(a => a.ToArticleSummaryDto(mapper)).ToList();
+        IReadOnlyList<ArticleSummaryDto> dtoList = await articles.ToArticleSummaryDtosAsync(
+            mapper,
+            fileRepository,
+            cancellationToken
+        );
 
         var paginatedResult = new PaginatedResult<ArticleSummaryDto>(
             pageIndex: pageIndex,
