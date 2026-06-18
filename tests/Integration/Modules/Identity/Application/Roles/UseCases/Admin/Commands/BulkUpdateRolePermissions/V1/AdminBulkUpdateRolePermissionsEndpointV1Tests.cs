@@ -1,5 +1,7 @@
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.BulkUpdateRolePermissions.V1;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Commands.BulkUpdateRolePermissions.V1;
@@ -13,32 +15,38 @@ public class AdminBulkUpdateRolePermissionsEndpointV1Tests(PostgresFixture db) :
     [Fact]
     public async Task BulkUpdatePermissions_AsSuperAdmin_WithValidList_ReturnsSuccess()
     {
-        // Arrange
-        var roleId = Guid.NewGuid();
-        var permissionId1 = Guid.NewGuid();
-        var permissionId2 = Guid.NewGuid();
-        var permissionId3 = Guid.NewGuid();
+        Guid roleId = Guid.NewGuid();
+        Guid permissionId1 = Guid.NewGuid();
+        Guid permissionId2 = Guid.NewGuid();
+        Guid permissionId3 = Guid.NewGuid();
 
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]);
-        var perm1 = PermissionFactory.CreateWithId(permissionId1, $"rpa_{Guid.NewGuid():N}"[..15], "read");
-        var perm2 = PermissionFactory.CreateWithId(permissionId2, $"rpa_{Guid.NewGuid():N}"[..15], "create");
-        var perm3 = PermissionFactory.CreateWithId(permissionId3, $"rpa_{Guid.NewGuid():N}"[..15], "update");
-        seedContext.Roles.Add(role);
-        seedContext.Permissions.AddRange(perm1, perm2, perm3);
-        await seedContext.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Roles.Add(RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]));
+            ctx.Permissions.AddRange(
+                PermissionFactory.CreateWithId(permissionId1, $"rpa_{Guid.NewGuid():N}"[..15], "read"),
+                PermissionFactory.CreateWithId(permissionId2, $"rpa_{Guid.NewGuid():N}"[..15], "create"),
+                PermissionFactory.CreateWithId(permissionId3, $"rpa_{Guid.NewGuid():N}"[..15], "update")
+            );
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { PermissionIds = new List<Guid> { permissionId1, permissionId2, permissionId3 } };
+        AdminBulkUpdateRolePermissionsRequest request = new AdminBulkUpdateRolePermissionsRequestBuilder()
+            .WithPermissionIds([permissionId1, permissionId2, permissionId3])
+            .Build();
 
-        // Act
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Roles}/{roleId}/permissions", request);
+        var response = await Client.PutAsJsonAsync(Routes.Admin.Roles.Permissions(roleId), request);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        await using var verifyContext = CreateDbContext<IdentityDbContext>();
-        var assignments = await verifyContext.RolePermissions.Where(rp => rp.RoleId == roleId).ToListAsync();
+        var body = await response.ReadAsAsync<AdminBulkUpdateRolePermissionsResponse>();
+        body.Role.Id.Should().Be(roleId);
+        body.Role.Permissions.Select(p => p.Id).Should().BeEquivalentTo([permissionId1, permissionId2, permissionId3]);
+
+        await using IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>();
+        List<RolePermissionEntity> assignments = await verifyContext
+            .RolePermissions.Where(rp => rp.RoleId == roleId)
+            .ToListAsync();
         assignments.Should().HaveCount(3);
         assignments.Select(a => a.PermissionId).Should().BeEquivalentTo([permissionId1, permissionId2, permissionId3]);
     }
@@ -46,21 +54,18 @@ public class AdminBulkUpdateRolePermissionsEndpointV1Tests(PostgresFixture db) :
     [Fact]
     public async Task BulkUpdatePermissions_AsVisitor_ReturnsForbidden()
     {
-        // Arrange
-        var roleId = Guid.NewGuid();
+        Guid roleId = Guid.NewGuid();
 
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]);
-        seedContext.Roles.Add(role);
-        await seedContext.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Roles.Add(RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]));
+        });
 
         Client.AuthenticateAsVisitor();
-        var request = new { PermissionIds = new List<Guid> { Guid.NewGuid() } };
+        AdminBulkUpdateRolePermissionsRequest request = new AdminBulkUpdateRolePermissionsRequestBuilder().Build();
 
-        // Act
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Roles}/{roleId}/permissions", request);
+        var response = await Client.PutAsJsonAsync(Routes.Admin.Roles.Permissions(roleId), request);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 }
