@@ -1,5 +1,7 @@
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissionToRole.V1;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissionToRole.V1;
@@ -10,148 +12,137 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Adm
 [Collection("Database")]
 public class AdminAssignPermissionToRoleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<bool> AssignmentExistsAsync(Guid roleId, Guid permissionId)
+    {
+        await using IdentityDbContext ctx = CreateDbContext<IdentityDbContext>();
+        return await ctx.RolePermissions.AnyAsync(rp => rp.RoleId == roleId && rp.PermissionId == permissionId);
+    }
+
     [Fact]
     public async Task AssignPermission_AsSuperAdmin_WithValidData_ReturnsSuccess()
     {
-        // Arrange
-        var roleId = Guid.NewGuid();
-        var permissionId = Guid.NewGuid();
+        Guid roleId = Guid.NewGuid();
+        Guid permissionId = Guid.NewGuid();
 
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]);
-        var permission = PermissionFactory.CreateWithId(permissionId, $"rpa_{Guid.NewGuid():N}"[..15], "read");
-        seedContext.Roles.Add(role);
-        seedContext.Permissions.Add(permission);
-        await seedContext.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Roles.Add(RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]));
+            ctx.Permissions.Add(PermissionFactory.CreateWithId(permissionId, $"rpa_{Guid.NewGuid():N}"[..15], "read"));
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { PermissionId = permissionId };
+        AdminAssignPermissionToRoleRequest request = new AdminAssignPermissionToRoleRequestBuilder()
+            .WithPermissionId(permissionId)
+            .Build();
 
-        // Act
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Roles}/{roleId}/permissions", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Roles.Permissions(roleId), request);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        await using var verifyContext = CreateDbContext<IdentityDbContext>();
-        var assignment = await verifyContext.RolePermissions.FirstOrDefaultAsync(rp =>
-            rp.RoleId == roleId && rp.PermissionId == permissionId
-        );
-        assignment.Should().NotBeNull();
+        var body = await response.ReadAsAsync<AdminAssignPermissionToRoleResponse>();
+        body.Role.Id.Should().Be(roleId);
+        body.Role.Permissions.Should().Contain(p => p.Id == permissionId);
+
+        (await AssignmentExistsAsync(roleId, permissionId)).Should().BeTrue();
     }
 
     [Fact]
     public async Task AssignPermission_AsAdmin_ReturnsForbidden()
     {
-        // Arrange
-        var roleId = Guid.NewGuid();
-        var permissionId = Guid.NewGuid();
+        Guid roleId = Guid.NewGuid();
+        Guid permissionId = Guid.NewGuid();
 
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]);
-        var permission = PermissionFactory.CreateWithId(permissionId, $"rpa_{Guid.NewGuid():N}"[..15], "read");
-        seedContext.Roles.Add(role);
-        seedContext.Permissions.Add(permission);
-        await seedContext.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Roles.Add(RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]));
+            ctx.Permissions.Add(PermissionFactory.CreateWithId(permissionId, $"rpa_{Guid.NewGuid():N}"[..15], "read"));
+        });
 
         Client.AuthenticateAsAdmin();
-        var request = new { PermissionId = permissionId };
+        AdminAssignPermissionToRoleRequest request = new AdminAssignPermissionToRoleRequestBuilder()
+            .WithPermissionId(permissionId)
+            .Build();
 
-        // Act
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Roles}/{roleId}/permissions", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Roles.Permissions(roleId), request);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
     public async Task AssignPermission_WithNoAuth_ReturnsUnauthorized()
     {
-        // Arrange
         Client.ClearAuthentication();
-        var roleId = Guid.NewGuid();
-        var request = new { PermissionId = Guid.NewGuid() };
+        Guid roleId = Guid.NewGuid();
+        AdminAssignPermissionToRoleRequest request = new AdminAssignPermissionToRoleRequestBuilder().Build();
 
-        // Act
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Roles}/{roleId}/permissions", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Roles.Permissions(roleId), request);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
     public async Task AssignPermission_NonExistentRole_ReturnsNotFound()
     {
-        // Arrange
-        var permissionId = Guid.NewGuid();
+        Guid permissionId = Guid.NewGuid();
 
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var permission = PermissionFactory.CreateWithId(permissionId, $"rpa_{Guid.NewGuid():N}"[..15], "read");
-        seedContext.Permissions.Add(permission);
-        await seedContext.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Permissions.Add(PermissionFactory.CreateWithId(permissionId, $"rpa_{Guid.NewGuid():N}"[..15], "read"));
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var nonExistentRoleId = Guid.NewGuid();
-        var request = new { PermissionId = permissionId };
+        Guid nonExistentRoleId = Guid.NewGuid();
+        AdminAssignPermissionToRoleRequest request = new AdminAssignPermissionToRoleRequestBuilder()
+            .WithPermissionId(permissionId)
+            .Build();
 
-        // Act
-        var response = await Client.PostAsJsonAsync(
-            $"{ApiRoutes.Admin.Roles}/{nonExistentRoleId}/permissions",
-            request
-        );
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Roles.Permissions(nonExistentRoleId), request);
 
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task AssignPermission_NonExistentPermission_ReturnsNotFound()
     {
-        // Arrange
-        var roleId = Guid.NewGuid();
+        Guid roleId = Guid.NewGuid();
 
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]);
-        seedContext.Roles.Add(role);
-        await seedContext.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Roles.Add(RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]));
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var nonExistentPermissionId = Guid.NewGuid();
-        var request = new { PermissionId = nonExistentPermissionId };
+        Guid nonExistentPermissionId = Guid.NewGuid();
+        AdminAssignPermissionToRoleRequest request = new AdminAssignPermissionToRoleRequestBuilder()
+            .WithPermissionId(nonExistentPermissionId)
+            .Build();
 
-        // Act
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Roles}/{roleId}/permissions", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Roles.Permissions(roleId), request);
 
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task AssignPermission_AlreadyAssigned_ReturnsConflict()
     {
-        // Arrange
-        var roleId = Guid.NewGuid();
-        var permissionId = Guid.NewGuid();
+        Guid roleId = Guid.NewGuid();
+        Guid permissionId = Guid.NewGuid();
 
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]);
-        var permission = PermissionFactory.CreateWithId(permissionId, $"rpa_{Guid.NewGuid():N}"[..15], "read");
-        seedContext.Roles.Add(role);
-        seedContext.Permissions.Add(permission);
-        await seedContext.SaveChangesAsync();
-
-        var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), roleId, permissionId);
-        seedContext.RolePermissions.Add(rolePermission);
-        await seedContext.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Roles.Add(RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]));
+            ctx.Permissions.Add(PermissionFactory.CreateWithId(permissionId, $"rpa_{Guid.NewGuid():N}"[..15], "read"));
+            ctx.RolePermissions.Add(RolePermissionEntity.Create(Guid.NewGuid(), roleId, permissionId));
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { PermissionId = permissionId };
+        AdminAssignPermissionToRoleRequest request = new AdminAssignPermissionToRoleRequestBuilder()
+            .WithPermissionId(permissionId)
+            .Build();
 
-        // Act
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Roles}/{roleId}/permissions", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Roles.Permissions(roleId), request);
 
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
     }
 
     /// <summary>
@@ -160,21 +151,24 @@ public class AdminAssignPermissionToRoleEndpointV1Tests(PostgresFixture db) : Ba
     [Fact]
     public async Task AssignPermission_WhenPermissionInactive_ReturnsBadRequest()
     {
-        var roleId = Guid.NewGuid();
+        Guid roleId = Guid.NewGuid();
 
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]);
-        var permission = PermissionFactory.CreateInactive();
-        seedContext.Roles.Add(role);
-        seedContext.Permissions.Add(permission);
-        await seedContext.SaveChangesAsync();
+        PermissionEntity permission = await SeedAsync<IdentityDbContext, PermissionEntity>(ctx =>
+        {
+            ctx.Roles.Add(RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]));
+            PermissionEntity entity = PermissionFactory.CreateInactive();
+            ctx.Permissions.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { PermissionId = permission.Id };
+        AdminAssignPermissionToRoleRequest request = new AdminAssignPermissionToRoleRequestBuilder()
+            .WithPermissionId(permission.Id)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Roles}/{roleId}/permissions", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Roles.Permissions(roleId), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -183,20 +177,23 @@ public class AdminAssignPermissionToRoleEndpointV1Tests(PostgresFixture db) : Ba
     [Fact]
     public async Task AssignPermission_WhenPermissionDeleted_ReturnsBadRequest()
     {
-        var roleId = Guid.NewGuid();
+        Guid roleId = Guid.NewGuid();
 
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]);
-        var permission = PermissionFactory.CreateDeleted();
-        seedContext.Roles.Add(role);
-        seedContext.Permissions.Add(permission);
-        await seedContext.SaveChangesAsync();
+        PermissionEntity permission = await SeedAsync<IdentityDbContext, PermissionEntity>(ctx =>
+        {
+            ctx.Roles.Add(RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]));
+            PermissionEntity entity = PermissionFactory.CreateDeleted();
+            ctx.Permissions.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { PermissionId = permission.Id };
+        AdminAssignPermissionToRoleRequest request = new AdminAssignPermissionToRoleRequestBuilder()
+            .WithPermissionId(permission.Id)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Roles}/{roleId}/permissions", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Roles.Permissions(roleId), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }
