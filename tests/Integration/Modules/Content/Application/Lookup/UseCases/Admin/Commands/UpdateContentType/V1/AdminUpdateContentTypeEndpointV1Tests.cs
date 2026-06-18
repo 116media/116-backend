@@ -1,4 +1,7 @@
+using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateContentType.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Commands.UpdateContentType.V1;
@@ -13,7 +16,7 @@ public class AdminUpdateContentTypeEndpointV1Tests(PostgresFixture db) : BaseApi
     public async Task UpdateContentType_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var request = new { Name = "UpdatedName" };
+        var request = new AdminUpdateContentTypeRequestBuilder().Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.ContentTypes}/{Guid.NewGuid()}", request);
 
@@ -24,42 +27,56 @@ public class AdminUpdateContentTypeEndpointV1Tests(PostgresFixture db) : BaseApi
     public async Task UpdateContentType_AsSuperAdmin_NonExistent_ReturnsNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { Name = "UpdatedName" };
+        var request = new AdminUpdateContentTypeRequestBuilder().Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.ContentTypes}/{Guid.NewGuid()}", request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task UpdateContentType_AsSuperAdmin_WithValidData_ReturnsOk()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
+        ContentTypeEntity contentType = await SeedAsync<ContentDbContext, ContentTypeEntity>(ctx =>
+        {
+            ContentTypeEntity entity = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { Name = "UpdatedType" };
+        var request = new AdminUpdateContentTypeRequestBuilder().Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.ContentTypes}/{contentType.Id}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminUpdateContentTypeResponse>();
+        body.ContentType.Id.Should().Be(contentType.Id);
+        body.ContentType.Name.Should().Be(request.Name);
+
+        await using ContentDbContext context = CreateDbContext<ContentDbContext>();
+        ContentTypeEntity? persisted = await context.ContentTypes.FindAsync(contentType.Id);
+        persisted!.Name.Should().Be(request.Name);
     }
 
     /// <summary>
     /// Verifies that updating a content type with a name exceeding the maximum allowed length
-    /// (30 characters) returns a 400 Bad Request or 422 Unprocessable Entity response.
+    /// (30 characters) returns a 400 Bad Request response.
     /// </summary>
     [Fact]
     public async Task UpdateContentType_WithNameTooLong_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
-        var request = new { Name = new string('X', 100) };
+        Guid id = Guid.NewGuid();
+        var request = new AdminUpdateContentTypeRequestBuilder()
+            .WithName(
+                new string('X', _116.Tests.Fixtures.Constants.TestConstants.Content.ContentType.NameMaxLength + 1)
+            )
+            .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.ContentTypes}/{id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }
