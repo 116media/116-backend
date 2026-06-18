@@ -1,3 +1,4 @@
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -32,6 +33,10 @@ public class DispatchDomainEventsInterceptorTests(PostgresFixture db) : BaseApiT
         context.Roles.Add(role);
         await context.SaveChangesAsync();
 
-        role.DomainEvents.Should().BeEmpty();
+        role.DomainEvents.Should().BeEmpty("the interceptor clears domain events once they are dispatched on save");
+
+        await using var queryContext = CreateDbContext<IdentityDbContext>();
+        RoleEntity? persisted = await queryContext.Roles.FindAsync(role.Id);
+        persisted.Should().NotBeNull("the save should commit through the dispatch interceptor without faulting");
     }
 }
