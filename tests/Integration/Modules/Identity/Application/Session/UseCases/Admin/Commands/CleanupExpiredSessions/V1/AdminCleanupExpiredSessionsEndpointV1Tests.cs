@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Identity.Application.Session.UseCases.Admin.Commands.CleanupExpiredSessions.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -13,23 +14,26 @@ public class AdminCleanupExpiredSessionsEndpointV1Tests(PostgresFixture db) : Ba
     [Fact]
     public async Task AdminCleanup_AsSuperAdmin_Returns200()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var expiredSession = SessionFactory.CreateExpired(TestUser.SuperAdminId);
-        context.Sessions.Add(expiredSession);
-        await context.SaveChangesAsync();
+        SessionEntity expiredSession = await SeedAsync<IdentityDbContext, SessionEntity>(ctx =>
+        {
+            SessionEntity session = SessionFactory.CreateExpired(TestUser.SuperAdminId);
+            ctx.Sessions.Add(session);
+            return session;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Sessions}/cleanup", null);
+        var response = await Client.PostAsync(Routes.Admin.Sessions.Cleanup(), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var root = doc.RootElement;
+        AdminCleanupExpiredSessionsResponse body = await response.ReadAsAsync<AdminCleanupExpiredSessionsResponse>();
+        body.DeletedCount.Should().BeGreaterThanOrEqualTo(1);
 
-        root.TryGetProperty("deletedCount", out var deletedCount).Should().BeTrue();
-        deletedCount.GetInt32().Should().BeGreaterThanOrEqualTo(1);
+        await using IdentityDbContext context = CreateDbContext<IdentityDbContext>();
+        SessionEntity? persisted = await context.Sessions.FirstOrDefaultAsync(s => s.Id == expiredSession.Id);
+        persisted.Should().NotBeNull();
+        persisted!.IsRevoked.Should().BeTrue();
     }
 
     [Fact]
@@ -37,7 +41,7 @@ public class AdminCleanupExpiredSessionsEndpointV1Tests(PostgresFixture db) : Ba
     {
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Sessions}/cleanup", null);
+        var response = await Client.PostAsync(Routes.Admin.Sessions.Cleanup(), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
