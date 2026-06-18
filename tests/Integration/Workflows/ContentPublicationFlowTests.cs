@@ -1,4 +1,7 @@
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishedVideos.V1;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -14,74 +17,97 @@ public class ContentPublicationFlowTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task PublishApprovedVideo_ShouldBeVisiblePublicly()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create("Video");
-        seedContext.ContentTypes.Add(contentType);
-        await seedContext.SaveChangesAsync();
+        ContentTypeEntity contentType = await SeedAsync<ContentDbContext, ContentTypeEntity>(context =>
+        {
+            ContentTypeEntity entity = ContentTypeFactory.Create("Video");
+            context.ContentTypes.Add(entity);
+            return entity;
+        });
 
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = await SeedAsync<ContentDbContext, CategoryEntity>(context =>
+        {
+            CategoryEntity entity = CategoryFactory.Create(contentType.Id);
+            context.Categories.Add(entity);
+            return entity;
+        });
 
-        var video = VideoFactory.CreateApprovedWithYoutubeUrl(category.Id);
-        seedContext.Videos.Add(video);
-        await seedContext.SaveChangesAsync();
+        VideoEntity video = await SeedAsync<ContentDbContext, VideoEntity>(context =>
+        {
+            VideoEntity entity = VideoFactory.CreateApprovedWithYoutubeUrl(category.Id);
+            context.Videos.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
         HttpResponseMessage publishResponse = await Client.PatchAsync(
-            $"{ApiRoutes.Admin.Videos}/{video.Id}/publish",
+            Routes.Admin.Editorial.Publish(EditorialRouteConstants.Videos, video.Id),
             null
         );
         publishResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using (ContentDbContext verifyContext = CreateDbContext<ContentDbContext>())
+        {
+            VideoEntity published = await verifyContext.Videos.FirstAsync(v => v.Id == video.Id);
+            published.Status.Should().Be(EnumContentStatus.Published);
+        }
 
         Client.ClearAuthentication();
         HttpResponseMessage publicResponse = await Client.GetAsync(ApiRoutes.Public.Videos);
         publicResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        string body = await publicResponse.Content.ReadAsStringAsync();
-        body.Should().Contain(video.Slug);
+        PublicGetPublishedVideosResponse body = await publicResponse.ReadAsAsync<PublicGetPublishedVideosResponse>();
+        body.Videos.Items.Should().Contain(v => v.Id == video.Id && v.Slug == video.Slug);
     }
 
     [Fact]
     public async Task DraftVideo_ShouldNotBeVisiblePublicly()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create("Video");
-        seedContext.ContentTypes.Add(contentType);
-        await seedContext.SaveChangesAsync();
-
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
-
-        Client.AuthenticateAsSuperAdmin();
-        var draftSlug = $"draft-{Guid.NewGuid():N}"[..15];
-        var videoRequest = new
+        ContentTypeEntity contentType = await SeedAsync<ContentDbContext, ContentTypeEntity>(context =>
         {
-            CategoryId = category.Id,
-            Title = "Draft Video",
-            Slug = draftSlug,
-            Description = "Should not be visible publicly",
-        };
+            ContentTypeEntity entity = ContentTypeFactory.Create("Video");
+            context.ContentTypes.Add(entity);
+            return entity;
+        });
 
-        await Client.PostAsJsonAsync(ApiRoutes.Admin.Videos, videoRequest);
+        CategoryEntity category = await SeedAsync<ContentDbContext, CategoryEntity>(context =>
+        {
+            CategoryEntity entity = CategoryFactory.Create(contentType.Id);
+            context.Categories.Add(entity);
+            return entity;
+        });
+
+        VideoEntity draft = await SeedAsync<ContentDbContext, VideoEntity>(context =>
+        {
+            VideoEntity entity = VideoFactory.Create(category.Id);
+            context.Videos.Add(entity);
+            return entity;
+        });
+
+        await using (ContentDbContext verifyContext = CreateDbContext<ContentDbContext>())
+        {
+            VideoEntity persisted = await verifyContext.Videos.FirstAsync(v => v.Id == draft.Id);
+            persisted.Status.Should().Be(EnumContentStatus.Draft);
+        }
 
         Client.ClearAuthentication();
         HttpResponseMessage publicResponse = await Client.GetAsync(ApiRoutes.Public.Videos);
         publicResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        string body = await publicResponse.Content.ReadAsStringAsync();
-        body.Should().NotContain(draftSlug);
+        PublicGetPublishedVideosResponse body = await publicResponse.ReadAsAsync<PublicGetPublishedVideosResponse>();
+        body.Videos.Items.Should().NotContain(v => v.Id == draft.Id);
+        body.Videos.Items.Should().NotContain(v => v.Slug == draft.Slug);
     }
 
     [Fact]
     public async Task CreateCategory_AsVisitor_ShouldReturnForbidden()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create("Video");
-        seedContext.ContentTypes.Add(contentType);
-        await seedContext.SaveChangesAsync();
+        ContentTypeEntity contentType = await SeedAsync<ContentDbContext, ContentTypeEntity>(context =>
+        {
+            ContentTypeEntity entity = ContentTypeFactory.Create("Video");
+            context.ContentTypes.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsVisitor();
         var request = new
