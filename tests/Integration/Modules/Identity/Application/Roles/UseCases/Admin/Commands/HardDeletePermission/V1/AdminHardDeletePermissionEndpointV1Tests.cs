@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.HardDeletePermission.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -23,26 +24,25 @@ public class AdminHardDeletePermissionEndpointV1Tests(PostgresFixture db) : Base
     [Fact]
     public async Task HardDeletePermission_ShouldReturn200_AndRemoveFromDatabase()
     {
+        PermissionEntity permission = await SeedAsync<IdentityDbContext, PermissionEntity>(ctx =>
+        {
+            PermissionEntity entity = PermissionFactory.Create(UniqueResource("hd"), UniqueAction("hd"));
+            ctx.Permissions.Add(entity);
+            return entity;
+        });
+        Guid permissionId = permission.Id;
+
         Client.AuthenticateAsSuperAdmin();
 
-        var createPayload = new
-        {
-            Resource = UniqueResource("hd"),
-            Action = UniqueAction("hd"),
-            Description = "To be hard deleted",
-        };
-
-        var createResponse = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, createPayload);
-        var createBody = await createResponse.Content.ReadAsStringAsync();
-        using var createDoc = JsonDocument.Parse(createBody);
-        var permissionId = Guid.Parse(createDoc.RootElement.GetProperty("permission").GetProperty("id").GetString()!);
-
-        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Permissions}/{permissionId}/hard");
+        var response = await Client.DeleteAsync(Routes.Admin.Permissions.Hard(permissionId));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var exists = await context.Permissions.AnyAsync(p => p.Id == permissionId);
+        var body = await response.ReadAsAsync<AdminHardDeletePermissionResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using IdentityDbContext context = CreateDbContext<IdentityDbContext>();
+        bool exists = await context.Permissions.AnyAsync(p => p.Id == permissionId);
         exists.Should().BeFalse();
     }
 }
