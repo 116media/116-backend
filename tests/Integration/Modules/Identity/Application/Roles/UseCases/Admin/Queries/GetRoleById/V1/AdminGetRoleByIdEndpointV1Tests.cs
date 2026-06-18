@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Identity.Application.Roles.UseCases.Admin.Queries.GetRoleById.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -15,10 +16,13 @@ public class AdminGetRoleByIdEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     [Fact]
     public async Task GetRoleById_AsSuperAdmin_WithExistingRole_ReturnsOk()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.Create(ShortName("det"), "A role fetched by ID.");
-        context.Roles.Add(role);
-        await context.SaveChangesAsync();
+        string roleName = ShortName("det");
+        RoleEntity role = await SeedAsync<IdentityDbContext, RoleEntity>(ctx =>
+        {
+            RoleEntity entity = RoleFactory.Create(roleName, "A role fetched by ID.");
+            ctx.Roles.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -26,11 +30,10 @@ public class AdminGetRoleByIdEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var roleProp = doc.RootElement.GetProperty("role");
-
-        roleProp.GetProperty("id").GetString().Should().Be(role.Id.ToString());
+        var body = await response.ReadAsAsync<AdminGetRoleByIdResponse>();
+        body.Role.Id.Should().Be(role.Id);
+        body.Role.Name.Should().Be(roleName);
+        body.Role.Description.Should().Be("A role fetched by ID.");
     }
 
     [Fact]
@@ -40,16 +43,18 @@ public class AdminGetRoleByIdEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Roles}/{Guid.NewGuid()}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task GetRoleById_AsVisitor_ReturnsForbidden()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.Create(ShortName("fb"), "Visitor should not access.");
-        context.Roles.Add(role);
-        await context.SaveChangesAsync();
+        RoleEntity role = await SeedAsync<IdentityDbContext, RoleEntity>(ctx =>
+        {
+            RoleEntity entity = RoleFactory.Create(ShortName("fb"), "Visitor should not access.");
+            ctx.Roles.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsVisitor();
 
