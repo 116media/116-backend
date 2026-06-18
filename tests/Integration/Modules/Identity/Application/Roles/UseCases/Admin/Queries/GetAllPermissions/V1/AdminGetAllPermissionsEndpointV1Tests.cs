@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Identity.Application.Roles.UseCases.Admin.Queries.GetAllPermissions.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -23,22 +24,26 @@ public class AdminGetAllPermissionsEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task GetAllPermissions_ShouldReturn200_WhenAdmin()
     {
-        Client.AuthenticateAsSuperAdmin();
-
-        var createPayload = new
+        PermissionEntity seeded = await SeedAsync<IdentityDbContext, PermissionEntity>(ctx =>
         {
-            Resource = UniqueResource("ga"),
-            Action = UniqueAction("ga"),
-            Description = "Seeded for listing",
-        };
-
-        await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, createPayload);
+            PermissionEntity entity = PermissionFactory.Create(
+                UniqueResource("ga"),
+                UniqueAction("ga"),
+                "Seeded for listing"
+            );
+            ctx.Permissions.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Permissions}?pageIndex=0&pageSize=10");
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Permissions}?pageIndex=0&pageSize=50");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminGetAllPermissionsResponse>();
+        body.Permissions.PageIndex.Should().Be(0);
+        body.Permissions.Items.Should().Contain(p => p.Id == seeded.Id);
     }
 
     /// <summary>
@@ -49,11 +54,11 @@ public class AdminGetAllPermissionsEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task GetAllPermissions_FilterByIsDeletedTrue_ReturnsDeletedPermissions()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var deletedPermission = PermissionFactory.CreateDeleted();
-        var activePermission = PermissionFactory.Create(UniqueResource("adl"), UniqueAction("adl"));
-        context.Permissions.AddRange(deletedPermission, activePermission);
-        await context.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Permissions.Add(PermissionFactory.CreateDeleted());
+            ctx.Permissions.Add(PermissionFactory.Create(UniqueResource("adl"), UniqueAction("adl")));
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -61,15 +66,9 @@ public class AdminGetAllPermissionsEndpointV1Tests(PostgresFixture db) : BaseApi
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var items = doc.RootElement.GetProperty("permissions").GetProperty("items");
-
-        items.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
-        for (var i = 0; i < items.GetArrayLength(); i++)
-        {
-            items[i].GetProperty("isDeleted").GetBoolean().Should().BeTrue();
-        }
+        var body = await response.ReadAsAsync<AdminGetAllPermissionsResponse>();
+        body.Permissions.Items.Should().NotBeEmpty();
+        body.Permissions.Items.Should().OnlyContain(p => p.IsDeleted);
     }
 
     /// <summary>
@@ -80,11 +79,11 @@ public class AdminGetAllPermissionsEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task GetAllPermissions_FilterByIsActiveFalse_ReturnsInactivePermissions()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var inactivePermission = PermissionFactory.CreateInactive();
-        var activePermission = PermissionFactory.Create(UniqueResource("aic"), UniqueAction("aic"));
-        context.Permissions.AddRange(inactivePermission, activePermission);
-        await context.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Permissions.Add(PermissionFactory.CreateInactive());
+            ctx.Permissions.Add(PermissionFactory.Create(UniqueResource("aic"), UniqueAction("aic")));
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -92,15 +91,9 @@ public class AdminGetAllPermissionsEndpointV1Tests(PostgresFixture db) : BaseApi
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var items = doc.RootElement.GetProperty("permissions").GetProperty("items");
-
-        items.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
-        for (var i = 0; i < items.GetArrayLength(); i++)
-        {
-            items[i].GetProperty("isActive").GetBoolean().Should().BeFalse();
-        }
+        var body = await response.ReadAsAsync<AdminGetAllPermissionsResponse>();
+        body.Permissions.Items.Should().NotBeEmpty();
+        body.Permissions.Items.Should().OnlyContain(p => !p.IsActive);
     }
 
     /// <summary>
@@ -111,11 +104,11 @@ public class AdminGetAllPermissionsEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task GetAllPermissions_FilterByIsActiveTrue_ReturnsOnlyActivePermissions()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var activePermission = PermissionFactory.Create(UniqueResource("acp"), UniqueAction("acp"));
-        var inactivePermission = PermissionFactory.CreateInactive();
-        context.Permissions.AddRange(activePermission, inactivePermission);
-        await context.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Permissions.Add(PermissionFactory.Create(UniqueResource("acp"), UniqueAction("acp")));
+            ctx.Permissions.Add(PermissionFactory.CreateInactive());
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -123,15 +116,9 @@ public class AdminGetAllPermissionsEndpointV1Tests(PostgresFixture db) : BaseApi
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var items = doc.RootElement.GetProperty("permissions").GetProperty("items");
-
-        items.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
-        for (var i = 0; i < items.GetArrayLength(); i++)
-        {
-            items[i].GetProperty("isActive").GetBoolean().Should().BeTrue();
-        }
+        var body = await response.ReadAsAsync<AdminGetAllPermissionsResponse>();
+        body.Permissions.Items.Should().NotBeEmpty();
+        body.Permissions.Items.Should().OnlyContain(p => p.IsActive);
     }
 
     /// <summary>
@@ -142,11 +129,11 @@ public class AdminGetAllPermissionsEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task GetAllPermissions_DefaultQuery_ExcludesDeletedPermissions()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var deletedPermission = PermissionFactory.CreateDeleted();
-        var activePermission = PermissionFactory.Create(UniqueResource("ndp"), UniqueAction("ndp"));
-        context.Permissions.AddRange(deletedPermission, activePermission);
-        await context.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Permissions.Add(PermissionFactory.CreateDeleted());
+            ctx.Permissions.Add(PermissionFactory.Create(UniqueResource("ndp"), UniqueAction("ndp")));
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -154,14 +141,8 @@ public class AdminGetAllPermissionsEndpointV1Tests(PostgresFixture db) : BaseApi
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var items = doc.RootElement.GetProperty("permissions").GetProperty("items");
-
-        for (var i = 0; i < items.GetArrayLength(); i++)
-        {
-            items[i].GetProperty("isDeleted").GetBoolean().Should().BeFalse();
-        }
+        var body = await response.ReadAsAsync<AdminGetAllPermissionsResponse>();
+        body.Permissions.Items.Should().OnlyContain(p => !p.IsDeleted);
     }
 
     /// <summary>
@@ -172,12 +153,14 @@ public class AdminGetAllPermissionsEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task GetAllPermissions_FilterBySearch_ReturnsMatchingPermissions()
     {
-        var uniqueResource = UniqueResource("xz");
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var targetPermission = PermissionFactory.Create(uniqueResource, "read", "Searchable permission.");
-        var otherPermission = PermissionFactory.Create(UniqueResource("yy"), UniqueAction("yy"));
-        context.Permissions.AddRange(targetPermission, otherPermission);
-        await context.SaveChangesAsync();
+        string uniqueResource = UniqueResource("xz");
+        PermissionEntity targetPermission = await SeedAsync<IdentityDbContext, PermissionEntity>(ctx =>
+        {
+            PermissionEntity entity = PermissionFactory.Create(uniqueResource, "read", "Searchable permission.");
+            ctx.Permissions.Add(entity);
+            ctx.Permissions.Add(PermissionFactory.Create(UniqueResource("yy"), UniqueAction("yy")));
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -187,10 +170,7 @@ public class AdminGetAllPermissionsEndpointV1Tests(PostgresFixture db) : BaseApi
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var items = doc.RootElement.GetProperty("permissions").GetProperty("items");
-
-        items.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
+        var body = await response.ReadAsAsync<AdminGetAllPermissionsResponse>();
+        body.Permissions.Items.Should().Contain(p => p.Id == targetPermission.Id);
     }
 }
