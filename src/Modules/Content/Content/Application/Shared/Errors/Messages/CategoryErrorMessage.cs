@@ -128,4 +128,14 @@ public class CategoryErrorMessage(IStringLocalizer<CategoryErrorMessage> localiz
     /// Gets an error message for when a file is required but not provided.
     /// </summary>
     public string FileRequired() => localizer["FileRequired"];
+
+    /// <summary>
+    /// Gets an error message for when a non-video category is set as exclusive.
+    /// </summary>
+    public string OnlyVideoCategoryCanBeExclusive() => localizer["OnlyVideoCategoryCanBeExclusive"];
+
+    /// <summary>
+    /// Gets an error message for when no exclusive category is currently set.
+    /// </summary>
+    public string NoExclusiveCategoryFound() => localizer["NoExclusiveCategoryFound"];
 }

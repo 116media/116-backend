@@ -93,4 +93,20 @@ public class CategoryErrors(CategoryErrorMessage i18n)
     {
         return new BadRequestException(i18n.CannotMakeInactiveExclusive());
     }
+
+    /// <summary>
+    /// Throws when a non-video category is set as exclusive.
+    /// </summary>
+    public BadRequestException OnlyVideoCategoryCanBeExclusive()
+    {
+        return new BadRequestException(i18n.OnlyVideoCategoryCanBeExclusive());
+    }
+
+    /// <summary>
+    /// Throws when no exclusive category is currently set.
+    /// </summary>
+    public NotFoundException NoExclusiveCategoryFound()
+    {
+        return new NotFoundException(i18n.NoExclusiveCategoryFound());
+    }
 }

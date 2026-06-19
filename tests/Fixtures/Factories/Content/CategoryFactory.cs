@@ -22,6 +22,12 @@ public static class CategoryFactory
         new CategoryBuilder(contentTypeId).WithName(name).WithSlug(slug).WithIsExclusive(isExclusive).Build();
 
     /// <summary>
+    /// Creates a category with a content type navigation property populated.
+    /// </summary>
+    public static CategoryEntity Create(ContentTypeEntity contentType, bool isExclusive = false) =>
+        new CategoryBuilder(contentType.Id).WithContentType(contentType).WithIsExclusive(isExclusive).Build();
+
+    /// <summary>
     /// Creates an inactive category.
     /// </summary>
     public static CategoryEntity CreateInactive(Guid contentTypeId) =>

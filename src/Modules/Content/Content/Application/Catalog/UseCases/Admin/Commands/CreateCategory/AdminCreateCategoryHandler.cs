@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
@@ -36,7 +37,10 @@ public class AdminCreateCategoryHandler(
     {
         Guid contentTypeId = Guid.Parse(command.ContentTypeId);
 
-        await lookupRepository.GetContentTypeByIdOrThrowAsync(id: contentTypeId, cancellationToken: cancellationToken);
+        ContentTypeEntity contentType = await lookupRepository.GetContentTypeByIdOrThrowAsync(
+            id: contentTypeId,
+            cancellationToken: cancellationToken
+        );
 
         CategoryEntity? existing = await categoryRepository.GetBySlugAsync(
             slug: command.Slug,
@@ -50,14 +54,16 @@ public class AdminCreateCategoryHandler(
 
         if (command.IsExclusive)
         {
+            if (contentType.Name != nameof(EnumCoreContentType.Video))
+            {
+                throw i18n.Category.OnlyVideoCategoryCanBeExclusive();
+            }
+
             CategoryEntity? currentExclusive = await categoryRepository.GetExclusiveCategoryAsync(
                 cancellationToken: cancellationToken
             );
 
-            if (currentExclusive is not null)
-            {
-                currentExclusive.ClearExclusive();
-            }
+            currentExclusive?.ClearExclusive();
         }
 
         var category = CategoryEntity.Create(

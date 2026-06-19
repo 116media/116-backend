@@ -2,6 +2,7 @@ using _116.Content.Application.Catalog.UseCases.Admin.Commands.SetExclusiveCateg
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
@@ -45,8 +46,8 @@ public class AdminSetExclusiveCategoryHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenNoCurrentExclusive_ShouldSetExclusive()
     {
         // Arrange
-        ContentTypeEntity contentType = ContentTypeFactory.Create();
-        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+        CategoryEntity category = CategoryFactory.Create(videoType);
 
         var command = new AdminSetExclusiveCategoryCommand(Id: category.Id.ToString());
 
@@ -67,9 +68,9 @@ public class AdminSetExclusiveCategoryHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenDifferentCategoryIsExclusive_ShouldClearOldAndSetNew()
     {
         // Arrange
-        ContentTypeEntity contentType = ContentTypeFactory.Create();
-        CategoryEntity category = CategoryFactory.Create(contentType.Id);
-        CategoryEntity currentExclusive = CategoryFactory.Create(contentType.Id);
+        ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+        CategoryEntity category = CategoryFactory.Create(videoType);
+        CategoryEntity currentExclusive = CategoryFactory.Create(videoType);
         currentExclusive.SetExclusive();
 
         var command = new AdminSetExclusiveCategoryCommand(Id: category.Id.ToString());
@@ -89,8 +90,8 @@ public class AdminSetExclusiveCategoryHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenSameCategoryIsAlreadyExclusive_ShouldNotClearSelf()
     {
         // Arrange
-        ContentTypeEntity contentType = ContentTypeFactory.Create();
-        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        ContentTypeEntity videoType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Video));
+        CategoryEntity category = CategoryFactory.Create(videoType);
         category.SetExclusive();
 
         var command = new AdminSetExclusiveCategoryCommand(Id: category.Id.ToString());
@@ -119,6 +120,24 @@ public class AdminSetExclusiveCategoryHandlerTests : BaseContentHandlerTest
         var command = new AdminSetExclusiveCategoryCommand(Id: inactive.Id.ToString());
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(inactive);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenNonVideoCategory_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        ContentTypeEntity articleType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Article));
+        CategoryEntity category = CategoryFactory.Create(articleType);
+
+        var command = new AdminSetExclusiveCategoryCommand(Id: category.Id.ToString());
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
 
         // Act
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);

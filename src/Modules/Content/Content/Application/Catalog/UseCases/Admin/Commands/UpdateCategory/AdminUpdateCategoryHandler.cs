@@ -3,6 +3,7 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
@@ -49,13 +50,18 @@ public class AdminUpdateCategoryHandler(
             throw i18n.Category.AlreadyExists(slug: command.Slug);
         }
 
-        if (command.IsExclusive && !category.IsActive)
-        {
-            throw i18n.Category.CannotMakeInactiveExclusive();
-        }
-
         if (command.IsExclusive)
         {
+            if (!category.IsActive)
+            {
+                throw i18n.Category.CannotMakeInactiveExclusive();
+            }
+
+            if (category.ContentType.Name != nameof(EnumCoreContentType.Video))
+            {
+                throw i18n.Category.OnlyVideoCategoryCanBeExclusive();
+            }
+
             CategoryEntity? currentExclusive = await categoryRepository.GetExclusiveCategoryAsync(
                 cancellationToken: cancellationToken
             );
