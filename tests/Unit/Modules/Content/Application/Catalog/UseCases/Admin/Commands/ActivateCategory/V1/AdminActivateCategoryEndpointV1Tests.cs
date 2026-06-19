@@ -35,6 +35,8 @@ public class AdminActivateCategoryEndpointV1Tests
             true,
             true,
             false,
+            false,
+            null,
             []
         );
 }

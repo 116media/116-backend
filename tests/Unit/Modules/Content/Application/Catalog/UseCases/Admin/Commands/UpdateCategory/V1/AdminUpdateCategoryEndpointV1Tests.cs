@@ -35,6 +35,8 @@ public class AdminUpdateCategoryEndpointV1Tests
             true,
             true,
             false,
+            false,
+            null,
             []
         );
 }

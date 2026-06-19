@@ -12,13 +12,14 @@ public static class CategoryFactory
     /// <summary>
     /// Creates a category with a specific content type ID.
     /// </summary>
-    public static CategoryEntity Create(Guid contentTypeId) => new CategoryBuilder(contentTypeId).Build();
+    public static CategoryEntity Create(Guid contentTypeId, bool isExclusive = false) =>
+        new CategoryBuilder(contentTypeId).WithIsExclusive(isExclusive).Build();
 
     /// <summary>
     /// Creates a category with specific name and slug.
     /// </summary>
-    public static CategoryEntity Create(Guid contentTypeId, string name, string slug) =>
-        new CategoryBuilder(contentTypeId).WithName(name).WithSlug(slug).Build();
+    public static CategoryEntity Create(Guid contentTypeId, string name, string slug, bool isExclusive = false) =>
+        new CategoryBuilder(contentTypeId).WithName(name).WithSlug(slug).WithIsExclusive(isExclusive).Build();
 
     /// <summary>
     /// Creates an inactive category.

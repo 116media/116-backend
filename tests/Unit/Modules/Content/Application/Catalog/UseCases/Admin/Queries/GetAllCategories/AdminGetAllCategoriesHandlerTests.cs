@@ -1,6 +1,7 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetAllCategories;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
@@ -17,12 +18,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Que
 public class AdminGetAllCategoriesHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly AdminGetAllCategoriesHandler _handler;
 
     public AdminGetAllCategoriesHandlerTests()
     {
         _categoryRepositoryMock = MockCategoryRepository.Create();
-        _handler = new AdminGetAllCategoriesHandler(_categoryRepositoryMock.Object, Mapper);
+        _fileRepositoryMock = MockFileRepository.Create();
+        _handler = new AdminGetAllCategoriesHandler(_categoryRepositoryMock.Object, _fileRepositoryMock.Object, Mapper);
     }
 
     #region Success Cases

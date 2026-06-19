@@ -56,6 +56,22 @@ public class CategoryEntity : Aggregate<Guid>
     public bool IsGossip { get; private set; }
 
     /// <summary>
+    /// Optional reference to a FileEntity storing the show's poster image.
+    /// Nullable because article categories do not need a poster — only video
+    /// categories (shows) use it for the exclusive homepage section.
+    /// Resolved to a URL at mapping time via IFileRepository.
+    /// </summary>
+    public Guid? PosterFileId { get; private set; }
+
+    /// <summary>
+    /// When true, this show is the currently featured exclusive.
+    /// Exactly one category should have this flag set at a time (mutex).
+    /// The handler layer enforces the mutex by unsetting the previous exclusive
+    /// before setting the new one.
+    /// </summary>
+    public bool IsExclusive { get; private set; }
+
+    /// <summary>
     /// The content type this category is classified under.
     /// </summary>
     public ContentTypeEntity ContentType { get; private set; } = null!;
@@ -85,6 +101,7 @@ public class CategoryEntity : Aggregate<Guid>
     /// <param name="description">The description of the category.</param>
     /// <param name="isFree">Whether content in this category is free.</param>
     /// <param name="isGossip">Whether this is the gossip category used for homepage feed fallbacks.</param>
+    /// <param name="isExclusive">Whether this category is the exclusive show featured on the homepage.</param>
     /// <returns>A new <see cref="CategoryEntity" /> instance.</returns>
     public static CategoryEntity Create(
         Guid id,
@@ -94,7 +111,8 @@ public class CategoryEntity : Aggregate<Guid>
         string description,
         bool isFree,
         CategoryErrors errors,
-        bool isGossip = false
+        bool isGossip = false,
+        bool isExclusive = false
     )
     {
         if (string.IsNullOrWhiteSpace(value: name))
@@ -116,6 +134,7 @@ public class CategoryEntity : Aggregate<Guid>
             Description = description,
             IsFree = isFree,
             IsGossip = isGossip,
+            IsExclusive = isExclusive,
             IsActive = true,
         };
     }
@@ -127,8 +146,16 @@ public class CategoryEntity : Aggregate<Guid>
     /// <param name="slug">The new URL-safe slug.</param>
     /// <param name="description">The new description.</param>
     /// <param name="isGossip">Whether this is the gossip category used for homepage feed fallbacks.</param>
+    /// <param name="isExclusive">Whether this category is the exclusive show featured on the homepage.</param>
     /// <param name="errors">The errors factory instance.</param>
-    public void Update(string name, string slug, string description, bool isGossip, CategoryErrors errors)
+    public void Update(
+        string name,
+        string slug,
+        string description,
+        bool isGossip,
+        bool isExclusive,
+        CategoryErrors errors
+    )
     {
         if (string.IsNullOrWhiteSpace(value: name))
         {
@@ -144,6 +171,7 @@ public class CategoryEntity : Aggregate<Guid>
         Slug = slug;
         Description = description;
         IsGossip = isGossip;
+        IsExclusive = isExclusive;
     }
 
     /// <summary>
@@ -190,5 +218,33 @@ public class CategoryEntity : Aggregate<Guid>
 
         IsActive = false;
         return true;
+    }
+
+    /// <summary>
+    /// Sets or clears the poster image file reference.
+    /// </summary>
+    /// <param name="posterFileId">The FileEntity ID, or null to clear.</param>
+    public void SetPosterFileId(Guid? posterFileId)
+    {
+        PosterFileId = posterFileId;
+    }
+
+    /// <summary>
+    /// Marks this category as the exclusive show.
+    /// The handler is responsible for calling ClearExclusive() on the previously
+    /// exclusive category before calling this method.
+    /// </summary>
+    public void SetExclusive()
+    {
+        IsExclusive = true;
+    }
+
+    /// <summary>
+    /// Removes the exclusive flag from this category.
+    /// Called by the handler on the previously exclusive category before setting a new one.
+    /// </summary>
+    public void ClearExclusive()
+    {
+        IsExclusive = false;
     }
 }

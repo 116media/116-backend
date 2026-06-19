@@ -35,6 +35,8 @@ public class AdminGetCategoryByIdEndpointV1Tests
             true,
             true,
             false,
+            false,
+            null,
             []
         );
 }

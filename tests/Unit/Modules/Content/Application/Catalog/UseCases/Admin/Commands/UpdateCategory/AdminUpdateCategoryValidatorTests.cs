@@ -33,7 +33,9 @@ public class AdminUpdateCategoryValidatorTests
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act
@@ -57,7 +59,9 @@ public class AdminUpdateCategoryValidatorTests
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act
@@ -86,7 +90,9 @@ public class AdminUpdateCategoryValidatorTests
             Name: string.Empty,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act
@@ -111,7 +117,9 @@ public class AdminUpdateCategoryValidatorTests
             Name: new string('a', TestConstants.Content.Category.NameMaxLength + 1),
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act
@@ -140,7 +148,9 @@ public class AdminUpdateCategoryValidatorTests
             Name: TestConstants.Content.Category.ValidName,
             Slug: "Invalid Slug",
             Description: TestConstants.Content.Category.ValidDescription,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act
@@ -174,7 +184,9 @@ public class AdminUpdateCategoryValidatorTests
             Name: TestConstants.Content.Category.ValidName,
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act

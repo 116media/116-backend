@@ -118,4 +118,14 @@ public class CategoryErrorMessage(IStringLocalizer<CategoryErrorMessage> localiz
     /// </summary>
     /// <param name="max">The maximum allowed length.</param>
     public string DescriptionTooLong(int max) => string.Format(localizer["DescriptionTooLong"], max);
+
+    /// <summary>
+    /// Gets an error message for when attempting to mark an inactive category as exclusive.
+    /// </summary>
+    public string CannotMakeInactiveExclusive() => localizer["CannotMakeInactiveExclusive"];
+
+    /// <summary>
+    /// Gets an error message for when a file is required but not provided.
+    /// </summary>
+    public string FileRequired() => localizer["FileRequired"];
 }

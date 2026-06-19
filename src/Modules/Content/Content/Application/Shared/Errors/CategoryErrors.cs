@@ -85,4 +85,12 @@ public class CategoryErrors(CategoryErrorMessage i18n)
     {
         return new BadRequestException(i18n.PriceMustBeNonNegative());
     }
+
+    /// <summary>
+    /// Throws when attempting to mark an inactive category as exclusive.
+    /// </summary>
+    public BadRequestException CannotMakeInactiveExclusive()
+    {
+        return new BadRequestException(i18n.CannotMakeInactiveExclusive());
+    }
 }

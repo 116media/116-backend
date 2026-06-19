@@ -91,3 +91,16 @@ public class GossipCategorySpecification : Specification<CategoryEntity>
         return category => category.IsGossip && category.IsActive;
     }
 }
+
+/// <summary>
+/// Specification that matches the single active exclusive category.
+/// The exclusive show is featured on the homepage after the promotion feed section.
+/// </summary>
+public class ExclusiveCategorySpecification : Specification<CategoryEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<CategoryEntity, bool>> ToExpression()
+    {
+        return category => category.IsExclusive && category.IsActive;
+    }
+}

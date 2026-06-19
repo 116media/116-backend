@@ -108,4 +108,14 @@ public interface ICategoryRepository : IRepository<CategoryEntity>
     /// The gossip fallback category entity if one exists, otherwise null.
     /// </returns>
     Task<CategoryEntity?> GetGossipCategoryAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the single active category currently marked as the exclusive show
+    /// for the homepage. Returns null if no category is currently exclusive.
+    /// </summary>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>
+    /// The exclusive category entity if one exists, otherwise null.
+    /// </returns>
+    Task<CategoryEntity?> GetExclusiveCategoryAsync(CancellationToken cancellationToken = default);
 }

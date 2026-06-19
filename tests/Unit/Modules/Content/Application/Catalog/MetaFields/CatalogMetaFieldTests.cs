@@ -9,9 +9,11 @@ using _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivateCategor
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivatePackage;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.RemoveCategoryPricing;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.RemovePackageSlot;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.SetExclusiveCategory;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategory;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategoryPricing;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCustomer;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.UploadCategoryPoster;
 using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetAllCategories;
 using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetAllCustomers;
 using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetAllPackages;
@@ -72,6 +74,20 @@ public class CatalogMetaFieldTests
     public void AdminGetCategoryByIdMetaField_ShouldBeInitialized()
     {
         RouteMetadata metadata = AdminGetCategoryByIdMetaField.AdminGetCategoryById;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void AdminSetExclusiveCategoryMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = AdminSetExclusiveCategoryMetaField.AdminSetExclusiveCategory;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void AdminUploadCategoryPosterMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = AdminUploadCategoryPosterMetaField.AdminUploadCategoryPoster;
         metadata.Should().NotBeNull();
     }
 

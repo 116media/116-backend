@@ -34,7 +34,9 @@ public class AdminCreateCategoryValidatorTests
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act
@@ -55,7 +57,9 @@ public class AdminCreateCategoryValidatorTests
             Slug: "artist-profile",
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: true,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act
@@ -79,7 +83,9 @@ public class AdminCreateCategoryValidatorTests
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act
@@ -109,7 +115,9 @@ public class AdminCreateCategoryValidatorTests
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act
@@ -135,7 +143,9 @@ public class AdminCreateCategoryValidatorTests
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act
@@ -161,7 +171,9 @@ public class AdminCreateCategoryValidatorTests
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act
@@ -191,7 +203,9 @@ public class AdminCreateCategoryValidatorTests
             Slug: string.Empty,
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act
@@ -217,7 +231,9 @@ public class AdminCreateCategoryValidatorTests
             Slug: new string('a', TestConstants.Content.Category.SlugMaxLength + 1),
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act
@@ -243,7 +259,9 @@ public class AdminCreateCategoryValidatorTests
             Slug: "Artist Profile",
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act
@@ -273,7 +291,9 @@ public class AdminCreateCategoryValidatorTests
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: new string('d', TestConstants.Content.Category.DescriptionMaxLength + 1),
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act
@@ -300,7 +320,9 @@ public class AdminCreateCategoryValidatorTests
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: null!,
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act
@@ -330,7 +352,9 @@ public class AdminCreateCategoryValidatorTests
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         // Act

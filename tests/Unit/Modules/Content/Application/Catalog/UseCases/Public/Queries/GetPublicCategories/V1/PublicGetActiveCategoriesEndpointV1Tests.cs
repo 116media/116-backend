@@ -35,6 +35,8 @@ public class PublicGetActiveCategoriesEndpointV1Tests
             true,
             true,
             false,
+            false,
+            null,
             []
         );
 }

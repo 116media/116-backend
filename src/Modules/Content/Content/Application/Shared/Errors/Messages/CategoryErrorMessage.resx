@@ -54,4 +54,10 @@
   <data name="IdInvalid" xml:space="preserve">
     <value>Category ID is invalid.</value>
   </data>
+  <data name="CannotMakeInactiveExclusive" xml:space="preserve">
+    <value>Cannot mark an inactive category as exclusive.</value>
+  </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>A file is required.</value>
+  </data>
 </root>

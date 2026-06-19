@@ -36,6 +36,8 @@ public class AdminGetAllCategoriesEndpointV1Tests
             true,
             true,
             false,
+            false,
+            null,
             []
         );
 }

@@ -30,6 +30,12 @@ public class CategoryConfiguration : IEntityTypeConfiguration<CategoryEntity>
 
         builder.HasIndex(x => x.IsGossip).IsUnique().HasFilter("is_gossip_fallback = true");
 
+        builder.Property(x => x.PosterFileId);
+
+        builder.Property(x => x.IsExclusive).IsRequired().HasDefaultValue(false);
+
+        builder.HasIndex(x => x.IsExclusive).IsUnique().HasFilter("is_exclusive = true");
+
         builder.HasIndex(x => x.Slug).IsUnique();
         builder.HasIndex(x => x.Name).IsUnique();
 

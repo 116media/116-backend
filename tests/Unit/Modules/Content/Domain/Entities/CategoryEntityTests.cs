@@ -48,6 +48,36 @@ public class CategoryEntityTests
         act.Should().Throw<BadRequestException>();
     }
 
+    [Fact]
+    public void Create_WithIsExclusive_ShouldSetProperty()
+    {
+        Guid id = Guid.NewGuid();
+        Guid contentTypeId = Guid.NewGuid();
+        var errors = TestErrorsFactory.CreateCategoryErrors();
+
+        CategoryEntity category = CategoryEntity.Create(
+            id,
+            contentTypeId,
+            "Test",
+            "test",
+            "desc",
+            false,
+            errors,
+            isExclusive: true
+        );
+
+        category.IsExclusive.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Create_DefaultIsExclusive_ShouldBeFalse()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        category.IsExclusive.Should().BeFalse();
+    }
+
     #endregion
 
     #region Update
@@ -59,7 +89,7 @@ public class CategoryEntityTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        category.Update("New Name", "new-slug", "New description", false, errors);
+        category.Update("New Name", "new-slug", "New description", false, false, errors);
 
         category.Name.Should().Be("New Name");
         category.Slug.Should().Be("new-slug");
@@ -73,7 +103,7 @@ public class CategoryEntityTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        Action act = () => category.Update("", "valid-slug", "desc", false, errors);
+        Action act = () => category.Update("", "valid-slug", "desc", false, false, errors);
 
         act.Should().Throw<BadRequestException>();
     }
@@ -85,7 +115,7 @@ public class CategoryEntityTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        Action act = () => category.Update("Valid Name", "  ", "desc", false, errors);
+        Action act = () => category.Update("Valid Name", "  ", "desc", false, false, errors);
 
         act.Should().Throw<BadRequestException>();
     }
@@ -179,6 +209,77 @@ public class CategoryEntityTests
         bool result = category.Deactivate();
 
         result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Update IsExclusive
+
+    [Fact]
+    public void Update_SetsIsExclusive()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+        var errors = TestErrorsFactory.CreateCategoryErrors();
+
+        category.Update("Name", "slug", "desc", false, true, errors);
+
+        category.IsExclusive.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region SetExclusive / ClearExclusive
+
+    [Fact]
+    public void SetExclusive_ShouldSetToTrue()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        category.SetExclusive();
+
+        category.IsExclusive.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ClearExclusive_ShouldSetToFalse()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+        category.SetExclusive();
+
+        category.ClearExclusive();
+
+        category.IsExclusive.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region SetPosterFileId
+
+    [Fact]
+    public void SetPosterFileId_ShouldSetValue()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+        Guid posterFileId = Guid.NewGuid();
+
+        category.SetPosterFileId(posterFileId);
+
+        category.PosterFileId.Should().Be(posterFileId);
+    }
+
+    [Fact]
+    public void SetPosterFileId_WithNull_ShouldClearValue()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+        category.SetPosterFileId(Guid.NewGuid());
+
+        category.SetPosterFileId(null);
+
+        category.PosterFileId.Should().BeNull();
     }
 
     #endregion

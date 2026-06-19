@@ -2,6 +2,7 @@ using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
@@ -23,6 +24,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
     private readonly Mock<ILookupRepository> _lookupRepositoryMock;
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly AdminCreateCategoryHandler _handler;
 
     public AdminCreateCategoryHandlerTests()
@@ -30,10 +32,12 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
         _lookupRepositoryMock = MockLookupRepository.Create();
         _categoryRepositoryMock = MockCategoryRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _fileRepositoryMock = MockFileRepository.Create();
         _handler = new AdminCreateCategoryHandler(
             _lookupRepositoryMock.Object,
             _categoryRepositoryMock.Object,
             _unitOfWorkMock.Object,
+            _fileRepositoryMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
         );
@@ -55,13 +59,14 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Slug: slug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
         _categoryRepositoryMock.SetupGetBySlug(slug, null);
 
-        // Use It.IsAny<Guid> because the handler creates the entity with a new Guid internally
         CategoryEntity created = CategoryFactory.Create(contentType.Id, name, slug);
         _categoryRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -91,7 +96,9 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Slug: slug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: true,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
@@ -120,7 +127,9 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Slug: slug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
@@ -143,6 +152,110 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
 
     #endregion
 
+    #region Exclusive Mutex
+
+    [Fact]
+    public async Task Handle_WithIsExclusive_ShouldUnsetCurrentExclusive()
+    {
+        // Arrange
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        CategoryEntity currentExclusive = CategoryFactory.Create(contentType.Id);
+        currentExclusive.SetExclusive();
+
+        var command = new AdminCreateCategoryCommand(
+            ContentTypeId: contentType.Id.ToString(),
+            Name: TestConstants.Content.Category.ValidName,
+            Slug: TestConstants.Content.Category.ValidSlug,
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsFree: false,
+            IsGossip: false,
+            IsExclusive: true,
+            Poster: null
+        );
+
+        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetExclusiveCategory(currentExclusive);
+
+        CategoryEntity created = CategoryFactory.Create(contentType.Id);
+        _categoryRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(created);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        currentExclusive.IsExclusive.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Handle_WithIsExclusiveFalse_ShouldNotQueryExclusive()
+    {
+        // Arrange
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+
+        var command = new AdminCreateCategoryCommand(
+            ContentTypeId: contentType.Id.ToString(),
+            Name: TestConstants.Content.Category.ValidName,
+            Slug: TestConstants.Content.Category.ValidSlug,
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsFree: false,
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
+        );
+
+        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+
+        CategoryEntity created = CategoryFactory.Create(contentType.Id);
+        _categoryRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(created);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _categoryRepositoryMock.Verify(x => x.GetExclusiveCategoryAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_WithIsExclusive_NoCurrentExclusive_ShouldSucceed()
+    {
+        // Arrange
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+
+        var command = new AdminCreateCategoryCommand(
+            ContentTypeId: contentType.Id.ToString(),
+            Name: TestConstants.Content.Category.ValidName,
+            Slug: TestConstants.Content.Category.ValidSlug,
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsFree: false,
+            IsGossip: false,
+            IsExclusive: true,
+            Poster: null
+        );
+
+        _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetExclusiveCategory(null);
+
+        CategoryEntity created = CategoryFactory.Create(contentType.Id);
+        _categoryRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(created);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().NotThrowAsync();
+    }
+
+    #endregion
+
     #region Failure Cases
 
     [Fact]
@@ -157,7 +270,9 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrowNotFound(nonExistentId);
@@ -182,7 +297,9 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Slug: slug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
@@ -210,7 +327,9 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Slug: slug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
-            IsGossip: false
+            IsGossip: false,
+            IsExclusive: false,
+            Poster: null
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);

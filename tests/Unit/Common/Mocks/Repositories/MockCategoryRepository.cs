@@ -151,6 +151,7 @@ public static class MockCategoryRepository
         mock.Setup(x => x.GetPricingAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((CategoryPricingEntity?)null);
         mock.Setup(x => x.GetGossipCategoryAsync(It.IsAny<CancellationToken>())).ReturnsAsync((CategoryEntity?)null);
+        mock.Setup(x => x.GetExclusiveCategoryAsync(It.IsAny<CancellationToken>())).ReturnsAsync((CategoryEntity?)null);
     }
 
     public static Mock<ICategoryRepository> SetupGetGossipCategory(
@@ -159,6 +160,18 @@ public static class MockCategoryRepository
     )
     {
         mock.Setup(x => x.GetGossipCategoryAsync(It.IsAny<CancellationToken>())).ReturnsAsync(category);
+        return mock;
+    }
+
+    /// <summary>
+    /// Sets up GetExclusiveCategoryAsync to return the specified category.
+    /// </summary>
+    public static Mock<ICategoryRepository> SetupGetExclusiveCategory(
+        this Mock<ICategoryRepository> mock,
+        CategoryEntity? category
+    )
+    {
+        mock.Setup(x => x.GetExclusiveCategoryAsync(It.IsAny<CancellationToken>())).ReturnsAsync(category);
         return mock;
     }
 }

@@ -512,6 +512,12 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasDefaultValue(true)
                         .HasColumnName("is_active");
 
+                    b.Property<bool>("IsExclusive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_exclusive");
+
                     b.Property<bool>("IsFree")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -529,6 +535,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("character varying(60)")
                         .HasColumnName("name");
+
+                    b.Property<Guid?>("PosterFileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("poster_file_id");
 
                     b.Property<string>("Slug")
                         .IsRequired()
@@ -549,6 +559,11 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ContentTypeId")
                         .HasDatabaseName("ix_categories_content_type_id");
+
+                    b.HasIndex("IsExclusive")
+                        .IsUnique()
+                        .HasDatabaseName("ix_categories_is_exclusive")
+                        .HasFilter("is_exclusive = true");
 
                     b.HasIndex("IsGossip")
                         .IsUnique()
