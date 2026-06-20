@@ -1,8 +1,12 @@
 using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoFeed;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoFeed.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Core.Domain.Entities;
+using _116.Core.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetVideoFeed.V1;
 
@@ -115,6 +119,38 @@ public class PublicGetVideoFeedEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var body = await response.ReadAsAsync<PublicGetVideoFeedResponse>();
         body.Sections.Should().ContainSingle(s => s.Category.Id == videoCategory.Id);
+    }
+
+    [Fact]
+    public async Task GetFeed_WithPinnedCategoryPoster_ResolvesPosterUrl()
+    {
+        const string posterUrl = "https://cdn.116.test/posters/show.jpg";
+
+        FileEntity poster = await SeedAsync<CoreDbContext, FileEntity>(ctx =>
+        {
+            FileEntity file = FileFactory.CreateWithStorageUrl(posterUrl);
+            ctx.Files.Add(file);
+            return file;
+        });
+
+        CategoryEntity category = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ContentTypeEntity type = ContentTypeFactory.Create("Video");
+            ctx.ContentTypes.Add(type);
+            category = CategoryFactory.CreatePinnedWithPoster(type.Id, poster.Id);
+            ctx.Categories.Add(category);
+            ctx.Videos.AddRange(VideoFactory.CreateManyPublished(category.Id, 4));
+        });
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync(FeedUrl);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<PublicGetVideoFeedResponse>();
+        VideoFeedSectionDto section = body.Sections.Single(s => s.Category.Id == category.Id);
+        section.Category.PosterUrl.Should().Be(posterUrl);
     }
 
     [Fact]
