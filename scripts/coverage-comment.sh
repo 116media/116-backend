@@ -66,8 +66,4 @@ int_branch=$(headline "$INT_MD" "Branch coverage:")
             }
         }
     ' "$UNIT_MD" "$INT_MD"
-
-    echo ""
-    echo "> Unit and integration suites are complementary — unit covers domain/handlers/specs,"
-    echo "> integration covers endpoints and EF. A module low in one column is typically high in the other."
 } > "$OUT"
