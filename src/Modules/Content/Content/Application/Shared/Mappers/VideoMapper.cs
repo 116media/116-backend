@@ -145,6 +145,49 @@ public static class VideoMapper
     }
 
     /// <summary>
+    /// Maps a <see cref="VideoEntity" /> to a <see cref="VideoSummaryDto" />, resolving the
+    /// thumbnail URL from a pre-fetched file map. Performs no IO — intended for batch mapping
+    /// (e.g. the content feed) where files are loaded once up front via
+    /// <c>IFileRepository.GetByIdsAsync</c>.
+    /// </summary>
+    public static VideoSummaryDto ToVideoSummaryDto(
+        this VideoEntity entity,
+        IMapper mapper,
+        IReadOnlyDictionary<Guid, FileEntity> files
+    )
+    {
+        string? thumbnailUrl =
+            entity.ThumbnailFileId is { } thumbnailId && files.TryGetValue(thumbnailId, out FileEntity? thumbnail)
+                ? thumbnail.StorageUrl
+                : null;
+
+        return new VideoSummaryDto(
+            entity.Id,
+            entity.CategoryId,
+            entity.Category != null ? entity.Category.Name : string.Empty,
+            entity.Title,
+            entity.Slug,
+            thumbnailUrl,
+            entity.AuthorId.ToString(),
+            entity.Status,
+            entity.YoutubeVideoUrl,
+            entity.IsPromoted,
+            entity.HasLyrics,
+            entity.PublishedAt,
+            entity.ShootingScheduledAt,
+            entity.ShareCount,
+            entity.RatingAverage,
+            entity.RatingCount
+        )
+        {
+            CreatedAt = entity.CreatedAt,
+            CreatedBy = entity.CreatedBy,
+            UpdatedAt = entity.UpdatedAt,
+            UpdatedBy = entity.UpdatedBy,
+        };
+    }
+
+    /// <summary>
     /// Resolves the thumbnail URL from the associated FileEntity, or returns null
     /// if no thumbnail has been uploaded.
     /// </summary>
