@@ -104,3 +104,21 @@ public class ExclusiveCategorySpecification : Specification<CategoryEntity>
         return category => category.IsExclusive && category.IsActive;
     }
 }
+
+/// <summary>
+/// Specification that matches active categories currently pinned to the content feed,
+/// optionally narrowed to a single content type.
+/// Filters on <c>PinnedToFeedAt</c> (the mapped column), not the
+/// <c>[NotMapped]</c> <c>IsPinnedToFeed</c> property, so it translates to SQL.
+/// </summary>
+public class PinnedToFeedCategorySpecification(Guid? contentTypeId = null) : Specification<CategoryEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<CategoryEntity, bool>> ToExpression()
+    {
+        return category =>
+            category.PinnedToFeedAt != null
+            && category.IsActive
+            && (contentTypeId == null || category.ContentTypeId == contentTypeId);
+    }
+}
