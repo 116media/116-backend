@@ -82,6 +82,32 @@ public static class CategoryMapper
     }
 
     /// <summary>
+    /// Maps a <see cref="CategoryEntity" /> to a <see cref="CategoryDto" />, resolving the poster
+    /// URL from a pre-fetched file map. Performs no IO — intended for batch mapping (e.g. the
+    /// content feed) where files are loaded once up front via <c>IFileRepository.GetByIdsAsync</c>.
+    /// </summary>
+    public static CategoryDto ToCategoryDto(
+        this CategoryEntity entity,
+        IMapper mapper,
+        IReadOnlyDictionary<Guid, FileEntity> files
+    )
+    {
+        var dto = mapper.Map<CategoryDto>(entity);
+
+        string? posterUrl = null;
+        if (entity.PosterFileId is { } posterId && files.TryGetValue(posterId, out FileEntity? poster))
+        {
+            posterUrl = poster.StorageUrl;
+        }
+
+        return dto with
+        {
+            PosterUrl = posterUrl,
+            Pricing = mapper.Map<IReadOnlyList<CategoryPricingDto>>(entity.Pricing),
+        };
+    }
+
+    /// <summary>
     /// Maps a <see cref="CategoryPricingEntity" /> to a <see cref="CategoryPricingDto" />.
     /// </summary>
     public static CategoryPricingDto ToCategoryPricingDto(this CategoryPricingEntity entity, IMapper mapper)
