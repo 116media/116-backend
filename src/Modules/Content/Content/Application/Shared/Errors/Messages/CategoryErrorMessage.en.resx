@@ -66,4 +66,13 @@
   <data name="NoExclusiveCategoryFound" xml:space="preserve">
     <value>No exclusive category is currently set.</value>
   </data>
+  <data name="CannotPinInactiveToFeed" xml:space="preserve">
+    <value>An inactive category cannot be pinned to the feed.</value>
+  </data>
+  <data name="ContentTypeNotFeedable" xml:space="preserve">
+    <value>Only video and article categories can be pinned to the feed.</value>
+  </data>
+  <data name="NotEnoughVideosToPinToFeed" xml:space="preserve">
+    <value>This category needs at least {0} published videos to be pinned to the feed.</value>
+  </data>
 </root>
