@@ -66,4 +66,13 @@
   <data name="NoExclusiveCategoryFound" xml:space="preserve">
     <value>Aucune catégorie exclusive n'est actuellement définie.</value>
   </data>
+  <data name="CannotPinInactiveToFeed" xml:space="preserve">
+    <value>Une catégorie inactive ne peut pas être épinglée au fil.</value>
+  </data>
+  <data name="ContentTypeNotFeedable" xml:space="preserve">
+    <value>Seules les catégories de vidéos et d'articles peuvent être épinglées au fil.</value>
+  </data>
+  <data name="NotEnoughVideosToPinToFeed" xml:space="preserve">
+    <value>Cette catégorie doit avoir au moins {0} vidéos publiées pour être épinglée au fil.</value>
+  </data>
 </root>
