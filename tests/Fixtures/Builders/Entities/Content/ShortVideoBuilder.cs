@@ -11,8 +11,8 @@ namespace _116.Tests.Fixtures.Builders.Entities.Content;
 internal class ShortVideoBuilder
 {
     private Guid _id = Guid.NewGuid();
-    private string _title = TestConstants.Content.Editorial.ShortVideo.ValidTitle;
-    private string _slug = TestConstants.Content.Editorial.ShortVideo.ValidSlug;
+    private string _title = $"{TestConstants.Content.Editorial.ShortVideo.ValidTitle} {Guid.NewGuid():N}";
+    private string _slug = $"{TestConstants.Content.Editorial.ShortVideo.ValidSlug}-{Guid.NewGuid():N}";
     private Guid _authorId = Guid.NewGuid();
     private Guid _videoFileId = Guid.NewGuid();
     private Guid? _videoId;

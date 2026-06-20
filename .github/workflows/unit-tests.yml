@@ -1,0 +1,55 @@
+name: Unit Tests
+
+on:
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main, develop]
+
+env:
+    DOTNET_VERSION: '9.0.x'
+    DOTNET_NOLOGO: true
+    DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+    unit-tests:
+        name: Unit Tests
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: ${{ env.DOTNET_VERSION }}
+
+            - name: Restore dependencies
+              run: dotnet restore
+
+            - name: Run Unit Tests with Coverage
+              run: |
+                  dotnet test tests/Unit \
+                    --configuration Release \
+                    --no-restore \
+                    --settings tests/coverage.runsettings \
+                    --collect:"XPlat Code Coverage" \
+                    --results-directory ./coverage/unit \
+                    --logger "trx;LogFileName=unit-test-results.trx"
+
+            - name: Upload Test Results
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: unit-test-results
+                  path: ./coverage/unit/*.trx
+                  retention-days: 30
+
+            - name: Upload to Codecov
+              uses: codecov/codecov-action@v5
+              with:
+                  directory: ./coverage/unit
+                  flags: unit
+                  fail_ci_if_error: true
+              env:
+                  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

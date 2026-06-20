@@ -26,6 +26,10 @@ public static partial class TestConstants
         public const string AdminEmail = "admin@116.com";
         public const string VisitorEmail = "visitor@116.com";
 
+        public static readonly Guid SuperAdminId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+        public static readonly Guid AdminId = Guid.Parse("00000000-0000-0000-0000-000000000002");
+        public static readonly Guid VisitorId = Guid.Parse("00000000-0000-0000-0000-000000000003");
+
         public const string DefaultPasswordHash = "$2a$11$K8Xj1E9kQ2wP3rT4y5U6IeHashed.Password.ForTesting";
     }
 }

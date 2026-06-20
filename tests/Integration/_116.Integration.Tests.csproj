@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <RootNamespace>_116.Integration.Tests</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.7" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+        <PackageReference Include="Testcontainers.PostgreSql" Version="4.12.0" />
+        <PackageReference Include="xunit.v3" Version="1.1.0" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="AwesomeAssertions" Version="9.0.0" />
+        <PackageReference Include="AwesomeAssertions.Analyzers" Version="9.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Bogus" Version="35.6.3" />
+        <PackageReference Include="Respawn" Version="7.0.0" />
+        <PackageReference Include="EFCore.NamingConventions" Version="9.0.0" />
+
+        <PackageReference Include="coverlet.msbuild" Version="6.0.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="coverlet.collector" Version="6.0.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Api\Api.csproj" />
+        <ProjectReference Include="..\..\src\Modules\Identity\Identity\Identity.csproj" />
+        <ProjectReference Include="..\..\src\Modules\Content\Content\Content.csproj" />
+        <ProjectReference Include="..\..\src\Modules\Core\Core\Core.csproj" />
+        <ProjectReference Include="..\..\src\Shared\Shared\Shared.csproj" />
+        <ProjectReference Include="..\..\src\Shared\Shared.Contracts\Shared.Contracts.csproj" />
+        <ProjectReference Include="..\..\src\BuildingBlocks\BuildingBlocks.csproj" />
+        <ProjectReference Include="..\Fixtures\_116.Tests.Fixtures.csproj" />
+    </ItemGroup>
+</Project>
