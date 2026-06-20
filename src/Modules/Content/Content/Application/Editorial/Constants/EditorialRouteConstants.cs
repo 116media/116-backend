@@ -132,4 +132,10 @@ public static class EditorialRouteConstants
     /// Example: /api/v1/public/articles/promotion/feed.
     /// </summary>
     public const string PromotionFeed = "promotion/feed";
+
+    /// <summary>
+    /// Route segment for the homepage content feed endpoint.
+    /// Example: /api/v1/public/videos/feed.
+    /// </summary>
+    public const string Feed = "feed";
 }
