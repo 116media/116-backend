@@ -95,4 +95,15 @@ public static class CategoryFactory
     /// </summary>
     public static List<CategoryEntity> CreateManyPinned(Guid contentTypeId, int count, DateTimeOffset baseTime) =>
         Enumerable.Range(0, count).Select(i => CreatePinned(contentTypeId, baseTime.AddMinutes(i))).ToList();
+
+    /// <summary>
+    /// Creates a category pinned to the feed with a poster file reference, by content type id.
+    /// The referenced <paramref name="posterFileId" /> must point to a persisted file when used
+    /// in integration tests so the poster URL can be resolved.
+    /// </summary>
+    public static CategoryEntity CreatePinnedWithPoster(
+        Guid contentTypeId,
+        Guid posterFileId,
+        DateTimeOffset? pinnedAt = null
+    ) => new CategoryBuilder(contentTypeId).WithPosterFileId(posterFileId).PinnedToFeedAt(pinnedAt).Build();
 }
