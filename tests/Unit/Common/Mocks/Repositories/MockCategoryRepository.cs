@@ -152,6 +152,8 @@ public static class MockCategoryRepository
             .ReturnsAsync((CategoryPricingEntity?)null);
         mock.Setup(x => x.GetGossipCategoryAsync(It.IsAny<CancellationToken>())).ReturnsAsync((CategoryEntity?)null);
         mock.Setup(x => x.GetExclusiveCategoryAsync(It.IsAny<CancellationToken>())).ReturnsAsync((CategoryEntity?)null);
+        mock.Setup(x => x.GetPinnedToFeedCategoriesAsync(It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<CategoryEntity>());
     }
 
     public static Mock<ICategoryRepository> SetupGetGossipCategory(
@@ -172,6 +174,19 @@ public static class MockCategoryRepository
     )
     {
         mock.Setup(x => x.GetExclusiveCategoryAsync(It.IsAny<CancellationToken>())).ReturnsAsync(category);
+        return mock;
+    }
+
+    /// <summary>
+    /// Sets up GetPinnedToFeedCategoriesAsync to return the given list for any content-type filter.
+    /// </summary>
+    public static Mock<ICategoryRepository> SetupGetPinnedToFeedCategories(
+        this Mock<ICategoryRepository> mock,
+        IReadOnlyList<CategoryEntity> categories
+    )
+    {
+        mock.Setup(x => x.GetPinnedToFeedCategoriesAsync(It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(categories);
         return mock;
     }
 }
