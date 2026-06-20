@@ -1,3 +1,4 @@
+using System.Reflection;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -28,6 +29,7 @@ internal class VideoBuilder
     private string? _rejectionReason;
     private DateTimeOffset? _promotedUntil;
     private Guid _promotionLevelId = Guid.NewGuid();
+    private DateTimeOffset? _publishedAtOverride;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VideoBuilder"/> class with a required category ID.
@@ -180,6 +182,16 @@ internal class VideoBuilder
     }
 
     /// <summary>
+    /// Publishes the video with an explicit PublishedAt, for deterministic "latest first" ordering.
+    /// </summary>
+    public VideoBuilder AsPublishedAt(DateTimeOffset publishedAt)
+    {
+        AsPublished();
+        _publishedAtOverride = publishedAt;
+        return this;
+    }
+
+    /// <summary>
     /// Transitions the video to Rejected status with a reason.
     /// </summary>
     public VideoBuilder AsRejected(string? reason = null)
@@ -262,6 +274,16 @@ internal class VideoBuilder
         if (_promotedUntil.HasValue)
         {
             entity.StampPromotion(_promotionLevelId, _promotedUntil.Value);
+        }
+
+        if (_publishedAtOverride.HasValue)
+        {
+            PropertyInfo publishedProp = typeof(VideoEntity).GetProperty(
+                nameof(VideoEntity.PublishedAt),
+                BindingFlags.Public | BindingFlags.Instance
+            )!;
+
+            publishedProp.SetValue(entity, _publishedAtOverride);
         }
 
         entity.CreatedAt = DateTime.UtcNow;
