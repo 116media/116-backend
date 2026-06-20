@@ -10,9 +10,6 @@ namespace _116.Integration.Tests.Common.Fixtures;
 /// <summary>
 /// Manages a PostgreSQL Testcontainer and Respawn for database reset between tests.
 /// </summary>
-[CollectionDefinition("Database")]
-public class DatabaseCollection : ICollectionFixture<PostgresFixture>;
-
 /// <summary>
 /// Provides a shared PostgreSQL container for integration tests.
 /// Starts a postgres:16-alpine container, applies EF migrations for all modules,

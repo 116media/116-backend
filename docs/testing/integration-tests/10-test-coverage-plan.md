@@ -12,8 +12,8 @@ Establish the integration test infrastructure before writing any tests.
 | Implement `PostgresFixture` | `Common/Fixtures/PostgresFixture.cs` | |
 | Implement `DatabaseCollection` | `Common/Fixtures/DatabaseCollection.cs` | |
 | Implement `ApiFixture` | `Common/Fixtures/ApiFixture.cs` | |
-| Implement `BaseRepositoryTest` | `Common/Abstractions/BaseRepositoryTest.cs` | |
-| Implement `BaseApiTest` | `Common/Abstractions/BaseApiTest.cs` | |
+| Implement `BaseRepositoryTest` | `Common/Base/BaseRepositoryTest.cs` | |
+| Implement `BaseApiTest` | `Common/Base/BaseApiTest.cs` | |
 | Implement `HttpClientExtensions` | `Common/Extensions/HttpClientExtensions.cs` | |
 | Implement `HttpResponseExtensions` | `Common/Extensions/HttpResponseExtensions.cs` | |
 | Implement `TestDataSeeder` | `Common/Seeders/TestDataSeeder.cs` | |
