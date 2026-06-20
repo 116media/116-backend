@@ -118,4 +118,18 @@ public interface ICategoryRepository : IRepository<CategoryEntity>
     /// The exclusive category entity if one exists, otherwise null.
     /// </returns>
     Task<CategoryEntity?> GetExclusiveCategoryAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves all active categories currently pinned to the content feed, optionally
+    /// filtered to a single content type, ordered by PinnedToFeedAt descending (most recently
+    /// pinned first). Used by the public feed query and by the admin pin handler to enforce
+    /// the per-content-type cap and pick the FIFO eviction victim.
+    /// </summary>
+    /// <param name="contentTypeId">Optional content type filter, or null for all pinned categories.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>A read-only list of pinned category entities, newest first.</returns>
+    Task<IReadOnlyList<CategoryEntity>> GetPinnedToFeedCategoriesAsync(
+        Guid? contentTypeId = null,
+        CancellationToken cancellationToken = default
+    );
 }
