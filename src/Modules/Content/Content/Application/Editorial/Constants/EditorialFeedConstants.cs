@@ -28,6 +28,19 @@ public static class EditorialFeedConstants
     public const int DefaultStripSize = 3;
 
     /// <summary>
+    /// Maximum number of latest published videos shown in a single feed section
+    /// (one pinned category) in the video feed.
+    /// </summary>
+    public const int MaxVideosPerFeedSection = 8;
+
+    /// <summary>
+    /// Minimum number of published videos a category must have before it can be
+    /// pinned to the video feed. A category below this threshold cannot be pinned,
+    /// so no section ever renders with too few videos to look intentional.
+    /// </summary>
+    public const int MinVideosToPinToFeed = 4;
+
+    /// <summary>
     /// Spot 1 — Hero carousel (top-left position in the homepage grid).
     /// </summary>
     public const int Spot1 = 1;
