@@ -109,4 +109,31 @@ public class CategoryErrors(CategoryErrorMessage i18n)
     {
         return new NotFoundException(i18n.NoExclusiveCategoryFound());
     }
+
+    /// <summary>
+    /// Throws when attempting to pin an inactive category to the content feed.
+    /// </summary>
+    public BadRequestException CannotPinInactiveToFeed()
+    {
+        return new BadRequestException(i18n.CannotPinInactiveToFeed());
+    }
+
+    /// <summary>
+    /// Throws when attempting to pin a category whose content type cannot appear
+    /// in a feed (only Video and Article are feedable).
+    /// </summary>
+    public BadRequestException ContentTypeNotFeedable()
+    {
+        return new BadRequestException(i18n.ContentTypeNotFeedable());
+    }
+
+    /// <summary>
+    /// Throws when attempting to pin a category that does not have the minimum number
+    /// of published videos required to appear as a feed section.
+    /// </summary>
+    /// <param name="minimum">The minimum number of published videos required.</param>
+    public BadRequestException NotEnoughVideosToPinToFeed(int minimum)
+    {
+        return new BadRequestException(i18n.NotEnoughVideosToPinToFeed(minimum));
+    }
 }
