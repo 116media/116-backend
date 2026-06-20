@@ -18,6 +18,7 @@ autorisé
 autorisées
 autorisés
 Behaviour
+behaviours
 binlog
 carryforward
 Cheatsheet
@@ -201,3 +202,5 @@ zéro
 Échec
 échoué
 égale
+épinglée
+épinglées
