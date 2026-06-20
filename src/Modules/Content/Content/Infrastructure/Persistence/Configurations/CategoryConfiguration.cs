@@ -36,6 +36,10 @@ public class CategoryConfiguration : IEntityTypeConfiguration<CategoryEntity>
 
         builder.HasIndex(x => x.IsExclusive).IsUnique().HasFilter("is_exclusive = true");
 
+        builder.Property(x => x.PinnedToFeedAt);
+
+        builder.HasIndex(x => x.PinnedToFeedAt).HasFilter("pinned_to_feed_at IS NOT NULL");
+
         builder.HasIndex(x => x.Slug).IsUnique();
         builder.HasIndex(x => x.Name).IsUnique();
 
