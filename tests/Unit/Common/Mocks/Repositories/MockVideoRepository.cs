@@ -208,6 +208,33 @@ public static class MockVideoRepository
                 x.GetFreeVideosAsync(It.IsAny<int>(), It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>())
             )
             .ReturnsAsync(new List<VideoEntity>());
+        mock.Setup(x =>
+                x.GetLatestPublishedByCategoryAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(new List<VideoEntity>());
+        mock.Setup(x => x.CountPublishedByCategoryAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0);
+    }
+
+    public static Mock<IVideoRepository> SetupGetLatestPublishedByCategory(
+        this Mock<IVideoRepository> mock,
+        Guid categoryId,
+        IReadOnlyList<VideoEntity> videos
+    )
+    {
+        mock.Setup(x => x.GetLatestPublishedByCategoryAsync(categoryId, It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(videos);
+        return mock;
+    }
+
+    public static Mock<IVideoRepository> SetupCountPublishedByCategory(
+        this Mock<IVideoRepository> mock,
+        Guid categoryId,
+        int count
+    )
+    {
+        mock.Setup(x => x.CountPublishedByCategoryAsync(categoryId, It.IsAny<CancellationToken>())).ReturnsAsync(count);
+        return mock;
     }
 
     public static Mock<IVideoRepository> SetupGetActivePromotedBySpot(
