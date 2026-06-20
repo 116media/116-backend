@@ -283,4 +283,65 @@ public class CategoryEntityTests
     }
 
     #endregion
+
+    #region PinToFeed / UnpinFromFeed
+
+    [Fact]
+    public void PinToFeed_WhenNotPinned_ShouldSetTimestampAndFlag()
+    {
+        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
+
+        category.PinToFeed();
+
+        category.PinnedToFeedAt.Should().NotBeNull();
+        category.IsPinnedToFeed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void PinToFeed_WhenAlreadyPinned_ShouldRefreshTimestampForward()
+    {
+        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
+        category.PinToFeed();
+        DateTimeOffset first = category.PinnedToFeedAt!.Value;
+
+        category.PinToFeed();
+
+        category.PinnedToFeedAt!.Value.Should().BeOnOrAfter(first);
+    }
+
+    [Fact]
+    public void UnpinFromFeed_WhenPinned_ShouldClearAndReturnTrue()
+    {
+        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
+        category.PinToFeed();
+
+        bool result = category.UnpinFromFeed();
+
+        result.Should().BeTrue();
+        category.PinnedToFeedAt.Should().BeNull();
+        category.IsPinnedToFeed.Should().BeFalse();
+    }
+
+    [Fact]
+    public void UnpinFromFeed_WhenNotPinned_ShouldReturnFalse()
+    {
+        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
+
+        bool result = category.UnpinFromFeed();
+
+        result.Should().BeFalse();
+        category.PinnedToFeedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public void IsPinnedToFeed_ShouldReflectTimestampPresence()
+    {
+        CategoryEntity category = CategoryFactory.Create(Guid.NewGuid());
+
+        category.IsPinnedToFeed.Should().BeFalse();
+        category.PinToFeed();
+        category.IsPinnedToFeed.Should().BeTrue();
+    }
+
+    #endregion
 }
