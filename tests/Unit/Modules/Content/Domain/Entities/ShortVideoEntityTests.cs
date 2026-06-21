@@ -14,14 +14,22 @@ public class ShortVideoEntityTests
 {
     private static readonly Guid AuthorId = Guid.NewGuid();
 
+    private static ShortVideoEntity CreateStandalone() =>
+        ShortVideoEntity.CreateStandalone(
+            Guid.NewGuid(),
+            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
+            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
+            AuthorId,
+            TestErrorsFactory.CreateShortVideoErrors()
+        );
+
     #region CreateStandalone Tests
 
     [Fact]
-    public void CreateStandalone_WithValidParams_ShouldCreateActiveShortVideo()
+    public void CreateStandalone_WithValidParams_ShouldCreateInactiveDraftWithoutVideoFile()
     {
         // Arrange
         var id = Guid.NewGuid();
-        var videoFileId = Guid.NewGuid();
         const string title = TestConstants.Content.Editorial.ShortVideo.ValidTitle;
         const string slug = TestConstants.Content.Editorial.ShortVideo.ValidSlug;
 
@@ -30,7 +38,6 @@ public class ShortVideoEntityTests
             id,
             title,
             slug,
-            videoFileId,
             AuthorId,
             TestErrorsFactory.CreateShortVideoErrors()
         );
@@ -39,9 +46,9 @@ public class ShortVideoEntityTests
         shortVideo.Id.Should().Be(id);
         shortVideo.Title.Should().Be(title);
         shortVideo.Slug.Should().Be(slug);
-        shortVideo.VideoFileId.Should().Be(videoFileId);
+        shortVideo.VideoFileId.Should().BeNull();
         shortVideo.AuthorId.Should().Be(AuthorId);
-        shortVideo.IsActive.Should().BeTrue();
+        shortVideo.IsActive.Should().BeFalse();
         shortVideo.HasFullVideo.Should().BeFalse();
         shortVideo.VideoId.Should().BeNull();
         shortVideo.ThumbnailFileId.Should().BeNull();
@@ -59,7 +66,6 @@ public class ShortVideoEntityTests
                 Guid.NewGuid(),
                 invalidTitle!,
                 TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-                Guid.NewGuid(),
                 AuthorId,
                 TestErrorsFactory.CreateShortVideoErrors()
             );
@@ -73,7 +79,7 @@ public class ShortVideoEntityTests
     #region CreateTeaser Tests
 
     [Fact]
-    public void CreateTeaser_ShouldSetVideoIdAndHasFullVideoTrue()
+    public void CreateTeaser_ShouldSetVideoIdAndHasFullVideoTrueAndStayInactive()
     {
         // Arrange
         var videoId = Guid.NewGuid();
@@ -83,7 +89,6 @@ public class ShortVideoEntityTests
             Guid.NewGuid(),
             TestConstants.Content.Editorial.ShortVideo.ValidTitle,
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
             videoId,
             AuthorId,
             TestErrorsFactory.CreateShortVideoErrors()
@@ -92,7 +97,8 @@ public class ShortVideoEntityTests
         // Assert
         shortVideo.VideoId.Should().Be(videoId);
         shortVideo.HasFullVideo.Should().BeTrue();
-        shortVideo.IsActive.Should().BeTrue();
+        shortVideo.IsActive.Should().BeFalse();
+        shortVideo.VideoFileId.Should().BeNull();
     }
 
     [Theory]
@@ -106,7 +112,6 @@ public class ShortVideoEntityTests
                 Guid.NewGuid(),
                 invalidTitle!,
                 TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-                Guid.NewGuid(),
                 Guid.NewGuid(),
                 AuthorId,
                 TestErrorsFactory.CreateShortVideoErrors()
@@ -124,14 +129,9 @@ public class ShortVideoEntityTests
     public void Deactivate_WhenActive_ShouldReturnTrue()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
+        ShortVideoEntity shortVideo = CreateStandalone();
+        shortVideo.ReplaceVideoFile(Guid.NewGuid());
+        shortVideo.Activate(TestErrorsFactory.CreateShortVideoErrors());
 
         // Act
         bool result = shortVideo.Deactivate();
@@ -145,15 +145,7 @@ public class ShortVideoEntityTests
     public void Deactivate_WhenAlreadyInactive_ShouldReturnFalse()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
-        shortVideo.Deactivate();
+        ShortVideoEntity shortVideo = CreateStandalone();
 
         // Act
         bool result = shortVideo.Deactivate();
@@ -163,21 +155,14 @@ public class ShortVideoEntityTests
     }
 
     [Fact]
-    public void Activate_WhenInactive_ShouldReturnTrue()
+    public void Activate_WhenInactiveWithVideoFile_ShouldReturnTrue()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
-        shortVideo.Deactivate();
+        ShortVideoEntity shortVideo = CreateStandalone();
+        shortVideo.ReplaceVideoFile(Guid.NewGuid());
 
         // Act
-        bool result = shortVideo.Activate();
+        bool result = shortVideo.Activate(TestErrorsFactory.CreateShortVideoErrors());
 
         // Assert
         result.Should().BeTrue();
@@ -188,20 +173,29 @@ public class ShortVideoEntityTests
     public void Activate_WhenAlreadyActive_ShouldReturnFalse()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
+        ShortVideoEntity shortVideo = CreateStandalone();
+        shortVideo.ReplaceVideoFile(Guid.NewGuid());
+        shortVideo.Activate(TestErrorsFactory.CreateShortVideoErrors());
 
         // Act
-        bool result = shortVideo.Activate();
+        bool result = shortVideo.Activate(TestErrorsFactory.CreateShortVideoErrors());
 
         // Assert
         result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Activate_WhenNoVideoFile_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = CreateStandalone();
+
+        // Act
+        Action act = () => shortVideo.Activate(TestErrorsFactory.CreateShortVideoErrors());
+
+        // Assert
+        act.Should().Throw<BadRequestException>();
+        shortVideo.IsActive.Should().BeFalse();
     }
 
     #endregion
@@ -212,14 +206,7 @@ public class ShortVideoEntityTests
     public void SetThumbnailFileId_ShouldSetThumbnailFileId()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
+        ShortVideoEntity shortVideo = CreateStandalone();
         var thumbnailFileId = Guid.NewGuid();
 
         // Act
@@ -233,14 +220,7 @@ public class ShortVideoEntityTests
     public void SetThumbnailFileId_WithNull_ShouldClearThumbnailFileId()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
+        ShortVideoEntity shortVideo = CreateStandalone();
         shortVideo.SetThumbnailFileId(Guid.NewGuid());
 
         // Act
@@ -258,14 +238,7 @@ public class ShortVideoEntityTests
     public void ReplaceVideoFile_ShouldUpdateVideoFileId()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
+        ShortVideoEntity shortVideo = CreateStandalone();
         var newFileId = Guid.NewGuid();
 
         // Act
@@ -283,14 +256,7 @@ public class ShortVideoEntityTests
     public void IncrementViewCount_ShouldIncrement()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
+        ShortVideoEntity shortVideo = CreateStandalone();
 
         // Act
         shortVideo.IncrementViewCount();
@@ -303,14 +269,7 @@ public class ShortVideoEntityTests
     public void DecrementLikeCount_WhenAtZero_ShouldStayAtZero()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
+        ShortVideoEntity shortVideo = CreateStandalone();
 
         // Act
         shortVideo.DecrementLikeCount();
@@ -323,14 +282,7 @@ public class ShortVideoEntityTests
     public void DecrementBookmarkCount_WhenAtZero_ShouldStayAtZero()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
+        ShortVideoEntity shortVideo = CreateStandalone();
 
         // Act
         shortVideo.DecrementBookmarkCount();
@@ -343,14 +295,7 @@ public class ShortVideoEntityTests
     public void IncrementLikeCount_ShouldIncrementLikeCount()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
+        ShortVideoEntity shortVideo = CreateStandalone();
 
         // Act
         shortVideo.IncrementLikeCount();
@@ -363,14 +308,7 @@ public class ShortVideoEntityTests
     public void IncrementShareCount_ShouldIncrementShareCount()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
+        ShortVideoEntity shortVideo = CreateStandalone();
 
         // Act
         shortVideo.IncrementShareCount();
@@ -383,14 +321,7 @@ public class ShortVideoEntityTests
     public void IncrementBookmarkCount_ShouldIncrementBookmarkCount()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
+        ShortVideoEntity shortVideo = CreateStandalone();
 
         // Act
         shortVideo.IncrementBookmarkCount();
@@ -407,14 +338,7 @@ public class ShortVideoEntityTests
     public void Update_WithValidParams_ShouldUpdateFields()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
+        ShortVideoEntity shortVideo = CreateStandalone();
 
         // Act
         shortVideo.Update("New Title", null, TestErrorsFactory.CreateShortVideoErrors());
@@ -430,14 +354,7 @@ public class ShortVideoEntityTests
     public void Update_WithVideoId_ShouldSetHasFullVideo()
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
+        ShortVideoEntity shortVideo = CreateStandalone();
         Guid parentVideoId = Guid.NewGuid();
 
         // Act
@@ -457,7 +374,6 @@ public class ShortVideoEntityTests
             Guid.NewGuid(),
             TestConstants.Content.Editorial.ShortVideo.ValidTitle,
             TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
             parentVideoId,
             AuthorId,
             TestErrorsFactory.CreateShortVideoErrors()
@@ -478,14 +394,7 @@ public class ShortVideoEntityTests
     public void Update_WithEmptyTitle_ShouldThrowBadRequestException(string? invalidTitle)
     {
         // Arrange
-        ShortVideoEntity shortVideo = ShortVideoEntity.CreateStandalone(
-            Guid.NewGuid(),
-            TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            Guid.NewGuid(),
-            AuthorId,
-            TestErrorsFactory.CreateShortVideoErrors()
-        );
+        ShortVideoEntity shortVideo = CreateStandalone();
 
         // Act
         Action act = () => shortVideo.Update(invalidTitle!, null, TestErrorsFactory.CreateShortVideoErrors());
