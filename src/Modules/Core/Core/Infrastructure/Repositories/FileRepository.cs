@@ -369,6 +369,38 @@ public class FileRepository(CoreDbContext context, IFileService fileService, Cor
     }
 
     /// <inheritdoc />
+    public async Task<FileEntity> ReplaceVideoFileAsync(
+        Guid? currentFileId,
+        IFormFile file,
+        string publicId,
+        string folder,
+        string originalFileName,
+        string mimeType,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (currentFileId.HasValue)
+        {
+            FileEntity? oldFile = await GetByIdAsync(currentFileId.Value, cancellationToken);
+            if (oldFile?.StorageKey is not null)
+            {
+                await fileService.DeleteFileAsync(oldFile.StorageKey, cancellationToken);
+            }
+
+            await SoftDeleteByIdAsync(currentFileId.Value, cancellationToken);
+        }
+
+        return await UploadAndStoreVideoFileAsync(
+            file,
+            publicId,
+            folder,
+            originalFileName,
+            mimeType,
+            cancellationToken
+        );
+    }
+
+    /// <inheritdoc />
     public async Task<bool> SoftDeleteByIdAsync(Guid fileId, CancellationToken cancellationToken = default)
     {
         FileEntity? file = await GetByIdAsync(fileId, cancellationToken);
