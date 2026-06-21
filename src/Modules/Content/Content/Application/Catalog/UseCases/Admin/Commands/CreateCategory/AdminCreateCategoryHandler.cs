@@ -5,7 +5,6 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -77,20 +76,6 @@ public class AdminCreateCategoryHandler(
             isGossip: command.IsGossip,
             isExclusive: command.IsExclusive
         );
-
-        if (command.Poster is not null)
-        {
-            FileEntity posterFile = await fileRepository.UploadAndStoreImageFileAsync(
-                file: command.Poster,
-                publicId: category.Id.ToString(),
-                folder: "content/category-posters",
-                originalFileName: command.Poster.FileName,
-                mimeType: command.Poster.ContentType,
-                cancellationToken: cancellationToken
-            );
-
-            category.SetPosterFileId(posterFileId: posterFile.Id);
-        }
 
         await categoryRepository.AddAsync(category: category, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
