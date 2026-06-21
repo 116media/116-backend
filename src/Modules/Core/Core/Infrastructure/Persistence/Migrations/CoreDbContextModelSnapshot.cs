@@ -94,7 +94,8 @@ namespace _116.Core.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("FileName")
                         .IsUnique()
-                        .HasDatabaseName("ix_files_file_name");
+                        .HasDatabaseName("ix_files_file_name")
+                        .HasFilter("is_deleted = false");
 
                     b.HasIndex("IsDeleted")
                         .HasDatabaseName("ix_files_is_deleted");
