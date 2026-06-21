@@ -13,6 +13,14 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateShortVideo.V1;
 
 /// <summary>
+/// Request model for updating a short video's metadata. The video file is replaced separately via
+/// the dedicated <c>POST /api/v1/admin/shorts/{id}/video</c> endpoint.
+/// </summary>
+/// <param name="Title">The new display title.</param>
+/// <param name="VideoId">Optional parent full video identifier. <c>null</c> for standalone.</param>
+public record AdminUpdateShortVideoRequest(string Title, Guid? VideoId);
+
+/// <summary>
 /// Response model for a successful short video update.
 /// </summary>
 /// <param name="ShortVideo">The updated short video information.</param>
@@ -20,7 +28,7 @@ public record AdminUpdateShortVideoResponse(ShortVideoDto ShortVideo);
 
 /// <summary>
 /// Defines the admin update short video endpoint.
-/// Handles updating metadata and optionally replacing the video file.
+/// Handles updating metadata; the video file is replaced separately.
 /// </summary>
 public class AdminUpdateShortVideoEndpointV1 : ICarterModule
 {
@@ -38,19 +46,12 @@ public class AdminUpdateShortVideoEndpointV1 : ICarterModule
         group
             .MapPut(
                 "/{id}",
-                async (
-                    string id,
-                    string title,
-                    IDispatcher dispatcher,
-                    Guid? videoId = null,
-                    IFormFile? videoFile = null
-                ) =>
+                async (string id, AdminUpdateShortVideoRequest request, IDispatcher dispatcher) =>
                 {
                     var command = new AdminUpdateShortVideoCommand(
                         Id: id,
-                        Title: title,
-                        VideoId: videoId,
-                        VideoFile: videoFile
+                        Title: request.Title,
+                        VideoId: request.VideoId
                     );
 
                     AdminUpdateShortVideoResult result = await dispatcher.Send(request: command);
@@ -63,8 +64,7 @@ public class AdminUpdateShortVideoEndpointV1 : ICarterModule
             .WithDescription(description: AdminUpdateShortVideoMetaField.AdminUpdateShortVideo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
-            .RequireRateLimiting(policyName: RateLimitPolicies.FileUpload)
-            .DisableAntiforgery()
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminUpdateShortVideoResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
