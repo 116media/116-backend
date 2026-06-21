@@ -54,12 +54,18 @@ public class AdminDeleteShortVideoHandler(
             );
         }
 
-        FileEntity? videoFile = await fileRepository.GetByIdAsync(shortVideo.VideoFileId, cancellationToken);
-        if (videoFile?.StorageKey is not null)
+        if (shortVideo.VideoFileId.HasValue)
         {
-            await fileService.DeleteFileAsync(videoFile.StorageKey, cancellationToken);
+            FileEntity? videoFile = await fileRepository.GetByIdAsync(shortVideo.VideoFileId.Value, cancellationToken);
+            if (videoFile?.StorageKey is not null)
+            {
+                await fileService.DeleteFileAsync(videoFile.StorageKey, cancellationToken);
+            }
+            await fileRepository.SoftDeleteByIdAsync(
+                fileId: shortVideo.VideoFileId.Value,
+                cancellationToken: cancellationToken
+            );
         }
-        await fileRepository.SoftDeleteByIdAsync(fileId: shortVideo.VideoFileId, cancellationToken: cancellationToken);
 
         shortVideoRepository.Remove(shortVideo: shortVideo);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
