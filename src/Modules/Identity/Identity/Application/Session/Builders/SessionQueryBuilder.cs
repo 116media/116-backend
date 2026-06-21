@@ -41,6 +41,10 @@ public class SessionQueryBuilder : ISessionQueryBuilder
                     nameof(EnumSessionStatus.Expired),
                     comparisonType: StringComparison.InvariantCultureIgnoreCase
                 ) => new SessionIsExpiredSpecification(),
+            _ when normalizedStatus.Equals(
+                    nameof(EnumSessionStatus.Revoked),
+                    comparisonType: StringComparison.InvariantCultureIgnoreCase
+                ) => new SessionIsRevokedSpecification(),
             _ => null!,
         };
 

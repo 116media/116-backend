@@ -43,4 +43,23 @@ public class AdminDeactivatePricingTierEndpointV1Tests(PostgresFixture db) : Bas
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    /// <summary>
+    /// Verifies that deactivating a pricing tier that is already inactive
+    /// returns a 409 Conflict response.
+    /// </summary>
+    [Fact]
+    public async Task DeactivatePricingTier_WhenAlreadyInactive_ReturnsConflict()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var pricingTier = PricingTierFactory.CreateInactive();
+        context.PricingTiers.Add(pricingTier);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.PricingTiers}/{pricingTier.Id}/deactivate", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }

@@ -1,3 +1,6 @@
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics.V1;
 
 /// <summary>
@@ -85,5 +88,31 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Lyrics, request);
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+    }
+
+    /// <summary>
+    /// Verifies that creating lyrics with a song title and artist name combination
+    /// that already exists in the database returns a 409 Conflict response.
+    /// </summary>
+    [Fact]
+    public async Task CreateLyrics_AsSuperAdmin_WithDuplicateSongAndArtist_ReturnsConflict()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var existing = LyricsFactory.Create("Nakombela", "Fally Ipupa");
+        seedContext.Lyrics.Add(existing);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new
+        {
+            SongTitle = "Nakombela",
+            ArtistName = "Fally Ipupa",
+            LyricsText = "Nakombela yo na motema, nakombela yo mingi...",
+            Language = "fr",
+        };
+
+        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Lyrics, request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 }

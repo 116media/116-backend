@@ -40,6 +40,25 @@ public class AdminGetAllOrdersEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     }
 
     [Fact]
+    public async Task GetAllOrders_WithSearch_ReturnsOk()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var customer = CustomerFactory.Create($"search-{Guid.NewGuid():N}@test.com");
+        seedContext.Customers.Add(customer);
+        await seedContext.SaveChangesAsync();
+
+        var order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        seedContext.ContentOrders.Add(order);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Orders}?pageIndex=0&pageSize=10&search=search");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
     public async Task GetAllOrders_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();

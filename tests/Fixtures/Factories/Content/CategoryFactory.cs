@@ -53,6 +53,14 @@ public static class CategoryFactory
             .Build();
 
     /// <summary>
+    /// Creates a gossip category (IsGossip = true) with the given content type ID.
+    /// Used to exercise the <c>GossipCategorySpecification</c> and gossip fallback logic
+    /// in the article promotion feed.
+    /// </summary>
+    public static CategoryEntity CreateGossip(Guid contentTypeId) =>
+        new CategoryBuilder(contentTypeId).AsGossip().Build();
+
+    /// <summary>
     /// Creates a list of categories with the specified count.
     /// </summary>
     public static List<CategoryEntity> CreateMany(Guid contentTypeId, int count) =>

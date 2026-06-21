@@ -153,4 +153,50 @@ public class AdminAssignPermissionToRoleEndpointV1Tests(PostgresFixture db) : Ba
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
+
+    /// <summary>
+    /// Verifies that assigning an inactive permission to a role returns a 400 Bad Request.
+    /// </summary>
+    [Fact]
+    public async Task AssignPermission_WhenPermissionInactive_ReturnsBadRequest()
+    {
+        var roleId = Guid.NewGuid();
+
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var role = RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]);
+        var permission = PermissionFactory.CreateInactive();
+        seedContext.Roles.Add(role);
+        seedContext.Permissions.Add(permission);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { PermissionId = permission.Id };
+
+        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Roles}/{roleId}/permissions", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    /// <summary>
+    /// Verifies that assigning a soft-deleted permission to a role returns a 400 Bad Request.
+    /// </summary>
+    [Fact]
+    public async Task AssignPermission_WhenPermissionDeleted_ReturnsBadRequest()
+    {
+        var roleId = Guid.NewGuid();
+
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var role = RoleFactory.CreateWithId(roleId, $"rpa_{Guid.NewGuid():N}"[..20]);
+        var permission = PermissionFactory.CreateDeleted();
+        seedContext.Roles.Add(role);
+        seedContext.Permissions.Add(permission);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { PermissionId = permission.Id };
+
+        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Roles}/{roleId}/permissions", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

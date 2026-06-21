@@ -22,6 +22,7 @@ internal class CategoryBuilder
     private bool _isFree;
     private bool _isActive = true;
     private bool _isExclusive;
+    private bool _isGossip;
     private Guid? _posterFileId;
     private ContentTypeEntity? _contentType;
 
@@ -120,6 +121,15 @@ internal class CategoryBuilder
     }
 
     /// <summary>
+    /// Marks the category as the gossip fallback source (IsGossip = true).
+    /// </summary>
+    public CategoryBuilder AsGossip()
+    {
+        _isGossip = true;
+        return this;
+    }
+
+    /// <summary>
     /// Sets the content type navigation property via reflection.
     /// </summary>
     public CategoryBuilder WithContentType(ContentTypeEntity contentType)
@@ -151,6 +161,7 @@ internal class CategoryBuilder
             _description,
             _isFree,
             TestErrorsFactory.CreateCategoryErrors(),
+            isGossip: _isGossip,
             isExclusive: _isExclusive
         );
 

@@ -31,6 +31,7 @@ public static partial class TestConstants
             public const string PricingTiers = $"{Base}/pricing-tiers";
             public const string PromotionLevels = $"{Base}/promotion-levels";
             public const string Tags = $"{Base}/tags";
+            public const string Payments = $"{Base}/payments";
         }
 
         public static class Public

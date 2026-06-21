@@ -67,4 +67,25 @@ public class AdminActivateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    /// <summary>
+    /// Verifies that activating a category that is already active
+    /// returns a 409 Conflict response.
+    /// </summary>
+    [Fact]
+    public async Task ActivateCategory_WhenAlreadyActive_ReturnsConflict()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        seedContext.ContentTypes.Add(contentType);
+        var category = CategoryFactory.Create(contentType.Id);
+        seedContext.Categories.Add(category);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/activate", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }

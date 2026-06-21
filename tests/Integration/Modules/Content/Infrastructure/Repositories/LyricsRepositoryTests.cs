@@ -157,4 +157,27 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
         var removed = await verifyContext.Lyrics.FindAsync(lyrics.Id);
         removed.Should().BeNull();
     }
+
+    /// <summary>
+    /// Verifies that <see cref="ILyricsRepository.GetAllAsync" /> with a search query returns
+    /// only lyrics whose song title matches the keyword, exercising the search path
+    /// in <c>LyricsRepository</c> via <c>LyricsSearchSpecification</c>.
+    /// </summary>
+    [Fact]
+    public async Task GetAllAsync_WithSearchQuery_ReturnsFilteredResults()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        string uniqueKeyword = $"UniqueLyricsKw{Guid.NewGuid():N}"[..20];
+        var matchingLyrics = LyricsFactory.Create($"{uniqueKeyword} Song", "Artist A");
+        var nonMatchingLyrics = LyricsFactory.Create();
+        context.Lyrics.AddRange(matchingLyrics, nonMatchingLyrics);
+        await context.SaveChangesAsync();
+
+        var repo = Resolve<ILyricsRepository>();
+        var (result, totalCount) = await repo.GetAllAsync(1, 100, uniqueKeyword);
+
+        totalCount.Should().BeGreaterThanOrEqualTo(1);
+        result.Should().Contain(l => l.Id == matchingLyrics.Id);
+        result.Should().NotContain(l => l.Id == nonMatchingLyrics.Id);
+    }
 }

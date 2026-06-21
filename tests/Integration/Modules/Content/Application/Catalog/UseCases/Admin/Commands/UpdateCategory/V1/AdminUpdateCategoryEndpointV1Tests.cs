@@ -142,4 +142,97 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
     }
+
+    /// <summary>
+    /// Verifies that updating a category with a name exceeding the maximum allowed length
+    /// (60 characters) returns a 400 Bad Request or 422 Unprocessable Entity response.
+    /// </summary>
+    [Fact]
+    public async Task UpdateCategory_WithNameTooLong_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+        var id = Guid.NewGuid();
+        var request = new
+        {
+            Name = new string('A', 300),
+            Slug = ShortSlug("tl"),
+            Description = "Test",
+            IsGossip = false,
+            IsExclusive = false,
+        };
+
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+    }
+
+    /// <summary>
+    /// Verifies that updating a category with a slug exceeding the maximum allowed length
+    /// (80 characters) returns a 400 Bad Request or 422 Unprocessable Entity response.
+    /// </summary>
+    [Fact]
+    public async Task UpdateCategory_WithSlugTooLong_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+        var id = Guid.NewGuid();
+        var request = new
+        {
+            Name = ShortName("sl"),
+            Slug = new string('a', 200),
+            Description = "Test",
+            IsGossip = false,
+            IsExclusive = false,
+        };
+
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+    }
+
+    /// <summary>
+    /// Verifies that updating a category with a description exceeding the maximum allowed length
+    /// (300 characters) returns a 400 Bad Request or 422 Unprocessable Entity response.
+    /// </summary>
+    [Fact]
+    public async Task UpdateCategory_WithDescriptionTooLong_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+        var id = Guid.NewGuid();
+        var request = new
+        {
+            Name = ShortName("dl"),
+            Slug = ShortSlug("dl"),
+            Description = new string('D', 500),
+            IsGossip = false,
+            IsExclusive = false,
+        };
+
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+    }
+
+    /// <summary>
+    /// Verifies that updating a category with a slug that does not match the required format
+    /// (lowercase letters, numbers, and hyphens only) returns a 400 Bad Request or
+    /// 422 Unprocessable Entity response, exercising the slug regex branch of CategoryValidation.
+    /// </summary>
+    [Fact]
+    public async Task UpdateCategory_WithInvalidSlugFormat_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+        var id = Guid.NewGuid();
+        var request = new
+        {
+            Name = ShortName("sf"),
+            Slug = "INVALID SLUG!!!",
+            Description = "Test",
+            IsGossip = false,
+            IsExclusive = false,
+        };
+
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+    }
 }

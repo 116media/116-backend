@@ -1,0 +1,172 @@
+name: Tests
+
+on:
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main, develop]
+
+permissions:
+    contents: read
+
+env:
+    DOTNET_VERSION: '9.0.x'
+    DOTNET_NOLOGO: true
+    DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+    unit-tests:
+        name: Unit Tests
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: ${{ env.DOTNET_VERSION }}
+
+            - name: Restore dependencies
+              run: dotnet restore
+
+            - name: Run Unit Tests with Coverage
+              run: |
+                  dotnet test tests/Unit \
+                    --configuration Release \
+                    --no-restore \
+                    --settings tests/coverage.runsettings \
+                    --collect:"XPlat Code Coverage" \
+                    --results-directory ./coverage/unit \
+                    --logger "trx;LogFileName=unit-test-results.trx"
+
+            - name: Upload Test Results
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: unit-test-results
+                  path: ./coverage/unit/*.trx
+                  retention-days: 30
+
+            - name: Upload Coverage Data
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: unit-coverage
+                  path: ./coverage/unit/**/coverage.cobertura.xml
+                  retention-days: 30
+
+            - name: Upload to Codecov
+              uses: codecov/codecov-action@v5
+              with:
+                  directory: ./coverage/unit
+                  flags: unit
+                  fail_ci_if_error: true
+              env:
+                  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+    integration-tests:
+        name: Integration Tests
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: ${{ env.DOTNET_VERSION }}
+
+            - name: Restore dependencies
+              run: dotnet restore
+
+            - name: Run Integration Tests with Coverage
+              run: |
+                  dotnet test tests/Integration \
+                    --configuration Release \
+                    --no-restore \
+                    --settings tests/coverage.runsettings \
+                    --collect:"XPlat Code Coverage" \
+                    --results-directory ./coverage/integration \
+                    --logger "trx;LogFileName=integration-test-results.trx"
+
+            - name: Upload Test Results
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: integration-test-results
+                  path: ./coverage/integration/*.trx
+                  retention-days: 30
+
+            - name: Upload Coverage Data
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: integration-coverage
+                  path: ./coverage/integration/**/coverage.cobertura.xml
+                  retention-days: 30
+
+            - name: Upload to Codecov
+              uses: codecov/codecov-action@v5
+              with:
+                  directory: ./coverage/integration
+                  flags: integration
+                  fail_ci_if_error: true
+              env:
+                  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+    coverage-report:
+        name: Coverage Report
+        runs-on: ubuntu-latest
+        needs: [unit-tests, integration-tests]
+        if: github.event_name == 'pull_request'
+        permissions:
+            contents: read
+            pull-requests: write
+        steps:
+            - name: Download unit coverage
+              uses: actions/download-artifact@v4
+              with:
+                  name: unit-coverage
+                  path: coverage/unit
+
+            - name: Download integration coverage
+              uses: actions/download-artifact@v4
+              with:
+                  name: integration-coverage
+                  path: coverage/integration
+
+            - name: Generate combined coverage summary
+              uses: danielpalme/ReportGenerator-GitHub-Action@5
+              with:
+                  reports: coverage/**/coverage.cobertura.xml
+                  targetdir: coverage/report
+                  reporttypes: MarkdownSummaryGithub
+                  assemblyfilters: -*Tests*;-*Migrations*
+                  title: Test Coverage
+
+            - name: Assemble PR comment
+              run: |
+                  md=coverage/report/SummaryGithub.md
+                  {
+                    echo "# Test Coverage (Unit + Integration)"
+                    echo ""
+                    # Headline metrics block: everything before the per-class
+                    # "## Coverage" section, minus the leading H1.
+                    awk '/^## Coverage/{exit} !/^# Summary$/{print}' "$md"
+                    echo ""
+                    echo "## Coverage by module"
+                    echo ""
+                    echo "| Module | Line | Branch |"
+                    echo "|:---|---:|---:|"
+                    # Per-assembly total rows are the bold rows in the coverage
+                    # section; the bold "Name" header rows are excluded.
+                    awk '/^## Coverage/{c=1} c && /^\|\*\*/ && !/Name/{gsub(/\*\*/,""); print}' "$md"
+                  } > coverage/comment.md
+
+            - name: Post coverage comment
+              uses: marocchino/sticky-pull-request-comment@v2
+              with:
+                  header: test-coverage
+                  number: ${{ github.event.pull_request.number }}
+                  path: coverage/comment.md

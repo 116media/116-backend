@@ -28,4 +28,34 @@ public class AdminUpdateAvatarEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    [Fact]
+    public async Task AdminUpdateAvatar_WithInvalidExtension_ShouldReturnBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        using var content = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(new byte[] { 0xFF, 0xD8, 0xFF });
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        content.Add(fileContent, "avatarFile", "avatar.bmp");
+
+        var response = await Client.PatchAsync(AdminMeAvatar, content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task AdminUpdateAvatar_WithInvalidMimeType_ShouldReturn422()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        using var content = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(new byte[] { 0x00, 0x01, 0x02 });
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/pdf");
+        content.Add(fileContent, "avatarFile", "document.pdf");
+
+        var response = await Client.PatchAsync(AdminMeAvatar, content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

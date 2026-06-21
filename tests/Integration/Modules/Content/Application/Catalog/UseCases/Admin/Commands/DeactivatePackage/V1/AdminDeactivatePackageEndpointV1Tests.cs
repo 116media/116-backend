@@ -60,4 +60,19 @@ public class AdminDeactivatePackageEndpointV1Tests(PostgresFixture db) : BaseApi
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact]
+    public async Task DeactivatePackage_AsSuperAdmin_AlreadyInactive_ReturnsConflict()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var package = PackageFactory.CreateInactive();
+        context.Packages.Add(package);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Packages}/{package.Id}/deactivate", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }

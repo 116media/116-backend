@@ -60,4 +60,46 @@ public class AdminSetExclusiveCategoryEndpointV1Tests(PostgresFixture db) : Base
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    /// <summary>
+    /// Verifies that setting an inactive category as exclusive
+    /// returns a 400 BadRequest response.
+    /// </summary>
+    [Fact]
+    public async Task SetExclusive_WhenInactive_ReturnsBadRequest()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create("Video");
+        seedContext.ContentTypes.Add(contentType);
+        var category = CategoryFactory.CreateInactive(contentType.Id);
+        seedContext.Categories.Add(category);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/set-exclusive", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    /// <summary>
+    /// Verifies that setting a non-Video category as exclusive
+    /// returns a 400 BadRequest response because only Video categories can be exclusive.
+    /// </summary>
+    [Fact]
+    public async Task SetExclusive_WhenNonVideoCategory_ReturnsBadRequest()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create("Article");
+        seedContext.ContentTypes.Add(contentType);
+        var category = CategoryFactory.Create(contentType.Id);
+        seedContext.Categories.Add(category);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/set-exclusive", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

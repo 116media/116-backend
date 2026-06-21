@@ -33,4 +33,20 @@ public class PublicUpdateAvatarEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    /// <summary>
+    /// Verifies that uploading a file with an invalid extension returns 400 Bad Request.
+    /// </summary>
+    [Fact]
+    public async Task UpdateAvatar_WithInvalidFileFormat_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsVisitor();
+
+        using var content = new MultipartFormDataContent();
+        content.Add(new ByteArrayContent(new byte[] { 0x4D, 0x5A }), "avatarFile", "malicious.exe");
+
+        var response = await Client.PatchAsync(PublicMeAvatar, content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

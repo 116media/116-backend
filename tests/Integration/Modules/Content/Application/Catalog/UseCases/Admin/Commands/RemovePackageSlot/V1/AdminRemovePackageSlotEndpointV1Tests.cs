@@ -50,6 +50,25 @@ public class AdminRemovePackageSlotEndpointV1Tests(PostgresFixture db) : BaseApi
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    /// <summary>
+    /// Verifies that removing a package slot that does not exist on a valid package
+    /// returns a 404 Not Found response.
+    /// </summary>
+    [Fact]
+    public async Task RemovePackageSlot_NonExistentSlot_ReturnsNotFound()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var package = PackageFactory.Create();
+        context.Packages.Add(package);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Packages}/{package.Id}/slots/{Guid.NewGuid()}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     [Fact]
     public async Task RemovePackageSlot_AsSuperAdmin_WithExistingSlot_ReturnsOk()
     {

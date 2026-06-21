@@ -44,4 +44,22 @@ public class AdminActivatePromotionLevelEndpointV1Tests(PostgresFixture db) : Ba
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    /// <summary>
+    /// Verifies that activating a promotion level that is already active returns 409 Conflict.
+    /// </summary>
+    [Fact]
+    public async Task ActivatePromotionLevel_WhenAlreadyActive_ReturnsConflict()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var promotionLevel = PromotionLevelFactory.Create();
+        context.PromotionLevels.Add(promotionLevel);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.PromotionLevels}/{promotionLevel.Id}/activate", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }

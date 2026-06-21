@@ -21,4 +21,25 @@ public class AdminForgotPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
     }
+
+    /// <summary>
+    /// Verifies that submitting a forgot-password request for an existing non-admin user
+    /// returns 403 Forbidden, exercising the AccessDeniedExceptionHandler.
+    /// The handler throws AccessDeniedException when the user lacks an admin role.
+    /// </summary>
+    [Fact]
+    public async Task ForgotPassword_ForNonAdminUser_ReturnsForbidden()
+    {
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var visitorUser = UserFactory.CreateVerifiedActive();
+        seedContext.Users.Add(visitorUser);
+        await seedContext.SaveChangesAsync();
+
+        Client.ClearAuthentication();
+        var request = new { Email = visitorUser.Email };
+
+        var response = await Client.PostAsJsonAsync($"{AuthUrl}/forgot-password", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 }

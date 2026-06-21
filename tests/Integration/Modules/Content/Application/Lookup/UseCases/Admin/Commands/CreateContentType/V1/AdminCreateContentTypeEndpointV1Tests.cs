@@ -1,3 +1,6 @@
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Commands.CreateContentType.V1;
 
 /// <summary>
@@ -48,5 +51,25 @@ public class AdminCreateContentTypeEndpointV1Tests(PostgresFixture db) : BaseApi
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.ContentTypes, request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    /// <summary>
+    /// Verifies that creating a content type with a name that already exists
+    /// returns a 409 Conflict response.
+    /// </summary>
+    [Fact]
+    public async Task CreateContentType_WithDuplicateName_ReturnsConflict()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var existing = ContentTypeFactory.Create("DuplicateType");
+        seedContext.ContentTypes.Add(existing);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { Name = "DuplicateType" };
+
+        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.ContentTypes, request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 }

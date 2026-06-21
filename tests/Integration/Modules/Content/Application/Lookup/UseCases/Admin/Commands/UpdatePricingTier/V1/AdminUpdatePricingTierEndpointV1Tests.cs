@@ -46,4 +46,37 @@ public class AdminUpdatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApi
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    /// <summary>
+    /// Verifies that updating a pricing tier with a name exceeding the maximum allowed length
+    /// (40 characters) returns a 400 Bad Request or 422 Unprocessable Entity response,
+    /// exercising the <c>isRequired=false</c> branch of <c>ValidPricingTierName</c> in PricingTierValidation.
+    /// </summary>
+    [Fact]
+    public async Task UpdatePricingTier_WithNameTooLong_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+        var id = Guid.NewGuid();
+        var request = new { Name = new string('P', 200), Description = "Valid description" };
+
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PricingTiers}/{id}", request);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+    }
+
+    /// <summary>
+    /// Verifies that updating a pricing tier with a description exceeding the maximum allowed
+    /// length (200 characters) returns a 400 Bad Request or 422 Unprocessable Entity response.
+    /// </summary>
+    [Fact]
+    public async Task UpdatePricingTier_WithDescriptionTooLong_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+        var id = Guid.NewGuid();
+        var request = new { Name = "Valid Name", Description = new string('D', 500) };
+
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PricingTiers}/{id}", request);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+    }
 }

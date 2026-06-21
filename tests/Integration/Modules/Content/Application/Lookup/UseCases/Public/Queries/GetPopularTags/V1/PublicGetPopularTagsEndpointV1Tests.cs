@@ -35,4 +35,14 @@ public class PublicGetPopularTagsEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    [Fact]
+    public async Task GetPopularTags_WithVideoContentType_ReturnsOk()
+    {
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Tags}/popular?contentType=Video");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
 }

@@ -1,3 +1,6 @@
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.RejectVideo.V1;
 
 /// <summary>
@@ -62,5 +65,71 @@ public class AdminRejectVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         response
             .StatusCode.Should()
             .BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.NotFound, HttpStatusCode.UnprocessableEntity);
+    }
+
+    [Fact]
+    public async Task RejectVideo_AsSuperAdmin_AlreadyRejected_ReturnsConflict()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var video = VideoFactory.CreateRejected(category.Id);
+        context.ContentTypes.Add(contentType);
+        context.Categories.Add(category);
+        context.Videos.Add(video);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsJsonAsync(
+            $"{ApiRoutes.Admin.Videos}/{video.Id}/reject",
+            new { Reason = "Content quality insufficient" }
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task RejectVideo_AsSuperAdmin_DraftVideo_ReturnsBadRequest()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var video = VideoFactory.Create(category.Id);
+        context.ContentTypes.Add(contentType);
+        context.Categories.Add(category);
+        context.Videos.Add(video);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsJsonAsync(
+            $"{ApiRoutes.Admin.Videos}/{video.Id}/reject",
+            new { Reason = "Content quality insufficient" }
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task RejectVideo_AsSuperAdmin_PendingReviewVideo_ReturnsOk()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var video = VideoFactory.CreatePendingReview(category.Id);
+        context.ContentTypes.Add(contentType);
+        context.Categories.Add(category);
+        context.Videos.Add(video);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsJsonAsync(
+            $"{ApiRoutes.Admin.Videos}/{video.Id}/reject",
+            new { Reason = "Content quality insufficient" }
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 }

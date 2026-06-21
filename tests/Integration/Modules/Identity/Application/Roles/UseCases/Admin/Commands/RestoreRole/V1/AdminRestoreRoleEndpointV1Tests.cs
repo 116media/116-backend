@@ -25,4 +25,22 @@ public class AdminRestoreRoleEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    /// <summary>
+    /// Verifies that restoring a role that is not deleted returns a 409 Conflict.
+    /// </summary>
+    [Fact]
+    public async Task RestoreRole_WhenNotDeleted_ReturnsConflict()
+    {
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var role = RoleFactory.Create(ShortName("rn"));
+        seedContext.Roles.Add(role);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Roles}/{role.Id}/restore", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }

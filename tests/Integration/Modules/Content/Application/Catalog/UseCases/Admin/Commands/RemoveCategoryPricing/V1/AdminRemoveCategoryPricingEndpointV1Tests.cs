@@ -70,4 +70,25 @@ public class AdminRemoveCategoryPricingEndpointV1Tests(PostgresFixture db) : Bas
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    /// <summary>
+    /// Verifies that removing a category pricing entry that does not exist
+    /// returns a 404 Not Found response.
+    /// </summary>
+    [Fact]
+    public async Task RemoveCategoryPricing_NonExistentPricing_ReturnsNotFound()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        seedContext.ContentTypes.Add(contentType);
+        var category = CategoryFactory.Create(contentType.Id);
+        seedContext.Categories.Add(category);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/pricing/{Guid.NewGuid()}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
 }

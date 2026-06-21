@@ -17,6 +17,7 @@ autorisées
 autorisés
 Behaviour
 binlog
+carryforward
 Cheatsheet
 checkmarks
 cleanarchitecture
@@ -38,6 +39,8 @@ csharpierignore
 d'actualisation
 d'attribuer
 d'utiliser
+danielpalme
+dawidd
 début
 définie
 définition
@@ -65,8 +68,10 @@ fourni
 fournir
 fournisseur
 futur
+gcov
 getopt
 globaltool
+gsub
 Guids
 Hmac
 Hotfixes

@@ -53,4 +53,22 @@ public class AdminRemoveRoleFromUserEndpointV1Tests(PostgresFixture db) : BaseAp
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    /// <summary>
+    /// Verifies that removing a role that is not assigned to the user returns a 400 Bad Request.
+    /// </summary>
+    [Fact]
+    public async Task RemoveRole_WhenNotAssigned_ReturnsBadRequest()
+    {
+        await using var context = CreateDbContext<IdentityDbContext>();
+        var role = RoleFactory.Create();
+        context.Roles.Add(role);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Users}/{TestUser.AdminId}/roles/{role.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

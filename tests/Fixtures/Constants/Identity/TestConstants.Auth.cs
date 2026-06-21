@@ -14,6 +14,13 @@ public static partial class TestConstants
         public const string PublicLoginPassword = "Password123!";
         public const string PublicLoginInvalidPassword = "WrongPassword!";
 
+        public const string OldPassword = "Old123!abc";
+        public const string NewPassword = "New123!abc";
+        public const string ChangedPassword = "NewPass123!abc";
+        public const string IncorrectCurrentPassword = "WrongPassword123!";
+        public const string SocialAccountPassword = "AnyPass123!";
+        public const string ResetNewPassword = "NewSecure123!abc";
+
         public const string AdminLoginEmail = "admin@example.com";
         public const string AdminLoginPassword = "Password123!";
         public const string AdminLoginInvalidPassword = "WrongPassword!";

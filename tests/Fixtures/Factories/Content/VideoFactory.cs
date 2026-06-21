@@ -129,6 +129,12 @@ public static class VideoFactory
             .Build();
 
     /// <summary>
+    /// Creates a free video in Draft status with a specific title.
+    /// </summary>
+    public static VideoEntity CreateWithTitle(Guid categoryId, string title) =>
+        new VideoBuilder(categoryId).WithTitle(title).Build();
+
+    /// <summary>
     /// Creates a free video with a shooting scheduled in the future.
     /// A YouTube URL cannot be attached until after the shoot date passes.
     /// </summary>

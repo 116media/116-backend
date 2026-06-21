@@ -54,4 +54,75 @@ public class AdminExportSessionDataEndpointV1Tests(PostgresFixture db) : BaseApi
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    /// <summary>
+    /// Verifies that requesting a session data export with an unsupported format
+    /// returns a 400 Bad Request due to the export format validation rule.
+    /// </summary>
+    [Fact]
+    public async Task AdminExportSessions_WithInvalidFormat_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Sessions}/export?format=invalid_format");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    /// <summary>
+    /// Verifies that requesting a session data export with CSV format returns
+    /// a 200 OK response with the correct CSV content type. This exercises
+    /// the ExportFile branch of the endpoint.
+    /// </summary>
+    [Fact]
+    public async Task AdminExportSessions_WithCsvFormat_ReturnsFileResponse()
+    {
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var sessions = SessionFactory.CreateMany(TestUser.SuperAdminId, 2);
+        seedContext.Sessions.AddRange(sessions);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Sessions}/export?format=csv");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.Should().Be("text/csv");
+    }
+
+    /// <summary>
+    /// Verifies that requesting a session data export with XLSX format returns
+    /// a 200 OK response with the correct spreadsheet content type.
+    /// </summary>
+    [Fact]
+    public async Task AdminExportSessions_WithXlsxFormat_ReturnsFileResponse()
+    {
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var sessions = SessionFactory.CreateMany(TestUser.SuperAdminId, 2);
+        seedContext.Sessions.AddRange(sessions);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Sessions}/export?format=xlsx");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response
+            .Content.Headers.ContentType?.MediaType.Should()
+            .Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    }
+
+    /// <summary>
+    /// Verifies that requesting a session data export with an invalid status
+    /// returns a 400 Bad Request due to the status validation rule.
+    /// </summary>
+    [Fact]
+    public async Task AdminExportSessions_WithInvalidStatus_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Sessions}/export?status=invalid_status");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

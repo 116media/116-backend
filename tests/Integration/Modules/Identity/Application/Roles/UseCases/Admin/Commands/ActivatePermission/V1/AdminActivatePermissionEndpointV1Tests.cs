@@ -43,4 +43,22 @@ public class AdminActivatePermissionEndpointV1Tests(PostgresFixture db) : BaseAp
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    /// <summary>
+    /// Verifies that activating a permission that is already active returns a 409 Conflict.
+    /// </summary>
+    [Fact]
+    public async Task ActivatePermission_WhenAlreadyActive_ReturnsConflict()
+    {
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var permission = PermissionFactory.Create(UniqueResource("ap"), UniqueAction("ap"));
+        seedContext.Permissions.Add(permission);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Permissions}/{permission.Id}/activate", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }

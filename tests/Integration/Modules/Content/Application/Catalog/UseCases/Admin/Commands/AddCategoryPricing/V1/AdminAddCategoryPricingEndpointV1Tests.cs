@@ -77,4 +77,78 @@ public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseAp
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    /// <summary>
+    /// Verifies that adding category pricing with a pricing tier that is already
+    /// associated with the category returns a 409 Conflict response.
+    /// </summary>
+    [Fact]
+    public async Task AddCategoryPricing_WithDuplicateTier_ReturnsConflict()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        seedContext.ContentTypes.Add(contentType);
+        var category = CategoryFactory.Create(contentType.Id);
+        seedContext.Categories.Add(category);
+        var pricingTier = PricingTierFactory.Create();
+        seedContext.PricingTiers.Add(pricingTier);
+        var existingPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 5.99m);
+        seedContext.CategoryPricing.Add(existingPricing);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { PricingTierId = pricingTier.Id, PriceUsd = 12.99m };
+
+        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/pricing", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    /// <summary>
+    /// Verifies that adding category pricing with an inactive pricing tier
+    /// returns a 400 BadRequest response because the tier must be active.
+    /// </summary>
+    [Fact]
+    public async Task AddCategoryPricing_WithInactiveTier_ReturnsBadRequest()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        seedContext.ContentTypes.Add(contentType);
+        var category = CategoryFactory.Create(contentType.Id);
+        seedContext.Categories.Add(category);
+        var inactiveTier = PricingTierFactory.CreateInactive();
+        seedContext.PricingTiers.Add(inactiveTier);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { PricingTierId = inactiveTier.Id, PriceUsd = 9.99m };
+
+        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/pricing", request);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+    }
+
+    /// <summary>
+    /// Verifies that adding category pricing with a negative price
+    /// returns a 400 BadRequest response because the price must be non-negative.
+    /// </summary>
+    [Fact]
+    public async Task AddPricing_WithNegativePrice_ReturnsBadRequest()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        seedContext.ContentTypes.Add(contentType);
+        var category = CategoryFactory.Create(contentType.Id);
+        seedContext.Categories.Add(category);
+        var pricingTier = PricingTierFactory.Create();
+        seedContext.PricingTiers.Add(pricingTier);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { PricingTierId = pricingTier.Id, PriceUsd = -1m };
+
+        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/pricing", request);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+    }
 }

@@ -126,4 +126,32 @@ public class AdminCreateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.Conflict, HttpStatusCode.BadRequest);
     }
+
+    [Fact]
+    public async Task CreateArticle_AsSuperAdmin_WithPaidArticle_ReturnsCreated()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var customer = CustomerFactory.Create();
+        seedContext.ContentTypes.Add(contentType);
+        seedContext.Categories.Add(category);
+        seedContext.Customers.Add(customer);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+        var slug = $"paid-article-{Guid.NewGuid().ToString("N")[..8]}";
+        var request = new
+        {
+            CategoryId = category.Id,
+            Title = "Paid Article Title",
+            Slug = slug,
+            CustomerId = customer.Id,
+            OrderItemId = Guid.NewGuid(),
+        };
+
+        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Articles, request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
 }

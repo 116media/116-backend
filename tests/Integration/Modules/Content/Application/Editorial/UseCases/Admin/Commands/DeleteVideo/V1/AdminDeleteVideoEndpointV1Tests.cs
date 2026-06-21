@@ -1,3 +1,6 @@
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.DeleteVideo.V1;
 
 /// <summary>
@@ -48,5 +51,43 @@ public class AdminDeleteVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task DeleteVideo_AsSuperAdmin_PublishedVideo_ReturnsBadRequest()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var video = VideoFactory.CreatePublished(category.Id);
+        context.ContentTypes.Add(contentType);
+        context.Categories.Add(category);
+        context.Videos.Add(video);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Videos}/{video.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task DeleteVideo_AsSuperAdmin_DraftVideo_ReturnsOk()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var video = VideoFactory.Create(category.Id);
+        context.ContentTypes.Add(contentType);
+        context.Categories.Add(category);
+        context.Videos.Add(video);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Videos}/{video.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 }

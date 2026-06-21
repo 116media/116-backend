@@ -46,4 +46,20 @@ public class AdminUpdateContentTypeEndpointV1Tests(PostgresFixture db) : BaseApi
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    /// <summary>
+    /// Verifies that updating a content type with a name exceeding the maximum allowed length
+    /// (30 characters) returns a 400 Bad Request or 422 Unprocessable Entity response.
+    /// </summary>
+    [Fact]
+    public async Task UpdateContentType_WithNameTooLong_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+        var id = Guid.NewGuid();
+        var request = new { Name = new string('X', 100) };
+
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.ContentTypes}/{id}", request);
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+    }
 }

@@ -287,4 +287,36 @@ public class VideoRepositoryTests : BaseRepositoryTest
 
         result.Should().BeNull();
     }
+
+    /// <summary>
+    /// Verifies that <see cref="IVideoRepository.GetAllAsync" /> with a search query returns
+    /// only videos whose title matches the keyword, exercising the search path
+    /// in <c>VideoRepository</c> via <c>VideoSearchSpecification</c>.
+    /// </summary>
+    [Fact]
+    public async Task GetAllAsync_WithSearchQuery_ReturnsFilteredResults()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var (_, category) = await SeedCategoryChainAsync(seedContext);
+
+        string uniqueKeyword = $"UniqueSearchKw{Guid.NewGuid():N}"[..20];
+        var matchingVideo = VideoFactory.CreateWithTitle(category.Id, $"{uniqueKeyword} Music Video");
+        var nonMatchingVideo = VideoFactory.Create(category.Id);
+
+        seedContext.Videos.AddRange(matchingVideo, nonMatchingVideo);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IVideoRepository>();
+        var (result, totalCount) = await repo.GetAllAsync(
+            page: 1,
+            pageSize: 100,
+            search: uniqueKeyword,
+            status: null,
+            categoryId: null
+        );
+
+        totalCount.Should().BeGreaterThanOrEqualTo(1);
+        result.Should().Contain(v => v.Id == matchingVideo.Id);
+        result.Should().NotContain(v => v.Id == nonMatchingVideo.Id);
+    }
 }

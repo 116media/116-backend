@@ -27,7 +27,9 @@ internal class RoleBuilder
     public RoleBuilder()
     {
         _id = Guid.NewGuid();
-        string unique = $"{_faker.Lorem.Word()}{Guid.NewGuid():N}"[..8];
+        string word = _faker.Lorem.Word();
+        string prefix = word.Length > 4 ? word[..4] : word;
+        string unique = $"{prefix}{Guid.NewGuid():N}";
         _name = unique[..Math.Min(TestConstants.Role.NameMaxLength, unique.Length)];
         _description = _faker.Lorem.Sentence(wordCount: 5);
     }

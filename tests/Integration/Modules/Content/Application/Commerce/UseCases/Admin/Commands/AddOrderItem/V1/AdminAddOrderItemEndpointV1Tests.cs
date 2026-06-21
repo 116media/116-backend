@@ -71,4 +71,37 @@ public class AdminAddOrderItemEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    /// <summary>
+    /// Verifies that adding an item to a submitted (non-draft) order returns 400 Bad Request.
+    /// </summary>
+    [Fact]
+    public async Task AddItem_ToSubmittedOrder_ReturnsBadRequest()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var customer = CustomerFactory.Create();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var order = ContentOrderFactory.CreateSubmitted();
+        var orderCustomer = CustomerFactory.CreateWithId(order.CustomerId);
+        seedContext.Customers.Add(customer);
+        seedContext.Customers.Add(orderCustomer);
+        seedContext.ContentTypes.Add(contentType);
+        seedContext.Categories.Add(category);
+        seedContext.ContentOrders.Add(order);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new
+        {
+            ContentKind = 0,
+            CategoryId = category.Id.ToString(),
+            SocialBoost = false,
+            IsBonus = false,
+        };
+
+        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Orders}/{order.Id}/items", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

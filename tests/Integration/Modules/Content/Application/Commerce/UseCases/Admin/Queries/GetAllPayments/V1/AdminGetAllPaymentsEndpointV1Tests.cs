@@ -28,7 +28,37 @@ public class AdminGetAllPaymentsEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.GetAsync("/api/v1/admin/payments?pageIndex=0&pageSize=10");
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Payments}?pageIndex=0&pageSize=10");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task GetAllPayments_WithStatusFilter_ReturnsOk()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Payments}?pageIndex=0&pageSize=10&status=Pending");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task GetAllPayments_WithMethodFilter_ReturnsOk()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Payments}?pageIndex=0&pageSize=10&method=BankTransfer");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task GetAllPayments_WithSearch_ReturnsOk()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Payments}?pageIndex=0&pageSize=10&search=test");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -38,7 +68,7 @@ public class AdminGetAllPaymentsEndpointV1Tests(PostgresFixture db) : BaseApiTes
     {
         Client.ClearAuthentication();
 
-        var response = await Client.GetAsync("/api/v1/admin/payments?pageIndex=0&pageSize=10");
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Payments}?pageIndex=0&pageSize=10");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }

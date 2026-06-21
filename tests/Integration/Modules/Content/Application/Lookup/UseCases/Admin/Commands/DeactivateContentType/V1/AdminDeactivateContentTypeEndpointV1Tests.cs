@@ -43,4 +43,20 @@ public class AdminDeactivateContentTypeEndpointV1Tests(PostgresFixture db) : Bas
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    [Fact]
+    public async Task DeactivateContentType_AsSuperAdmin_AlreadyInactive_ReturnsConflict()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        contentType.Deactivate();
+        context.ContentTypes.Add(contentType);
+        await context.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync($"{ApiRoutes.Admin.ContentTypes}/{contentType.Id}/deactivate", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }

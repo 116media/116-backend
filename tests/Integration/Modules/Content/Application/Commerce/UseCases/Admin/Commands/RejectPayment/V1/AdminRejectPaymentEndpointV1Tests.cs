@@ -66,4 +66,33 @@ public class AdminRejectPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    /// <summary>
+    /// Verifies that rejecting an already-rejected payment returns 409 Conflict.
+    /// </summary>
+    [Fact]
+    public async Task RejectPayment_WhenAlreadyRejected_ReturnsConflict()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var order = ContentOrderFactory.CreateSubmitted();
+        var customer = CustomerFactory.CreateWithId(order.CustomerId);
+        seedContext.Customers.Add(customer);
+        seedContext.ContentOrders.Add(order);
+        await seedContext.SaveChangesAsync();
+
+        var payment = ContentPaymentFactory.CreateRejected(order.Id);
+        seedContext.ContentPayments.Add(payment);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { Notes = "Rejecting again" };
+        var msg = new HttpRequestMessage(HttpMethod.Patch, $"{ApiRoutes.Admin.Orders}/{order.Id}/payment/reject")
+        {
+            Content = JsonContent.Create(request),
+        };
+
+        var response = await Client.SendAsync(msg);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
 }
