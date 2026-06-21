@@ -62,7 +62,12 @@ public class AdminCreateCategoryHandler(
                 cancellationToken: cancellationToken
             );
 
-            currentExclusive?.ClearExclusive();
+            if (currentExclusive is not null)
+            {
+                // Clear the previous exclusive first
+                currentExclusive.ClearExclusive();
+                await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+            }
         }
 
         var category = CategoryEntity.Create(
