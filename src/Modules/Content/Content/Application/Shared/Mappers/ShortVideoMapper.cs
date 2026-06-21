@@ -42,8 +42,12 @@ public static class ShortVideoMapper
     {
         var dto = mapper.Map<ShortVideoDto>(entity);
 
-        FileEntity? videoFile = await fileRepository.GetByIdAsync(entity.VideoFileId, ct);
-        string? videoUrl = videoFile?.StorageUrl;
+        string? videoUrl = null;
+        if (entity.VideoFileId.HasValue)
+        {
+            FileEntity? videoFile = await fileRepository.GetByIdAsync(entity.VideoFileId.Value, ct);
+            videoUrl = videoFile?.StorageUrl;
+        }
 
         string? thumbnailUrl = null;
         if (entity.ThumbnailFileId.HasValue)
