@@ -101,4 +101,9 @@ public class ShortVideoErrorMessage(IStringLocalizer<ShortVideoErrorMessage> loc
     /// </summary>
     /// <param name="allowed">Comma-separated list of allowed extensions.</param>
     public string FileInvalidExtension(string allowed) => string.Format(localizer["FileInvalidExtension"], allowed);
+
+    /// <summary>
+    /// Gets an error message for when a short video is activated before its video file is uploaded.
+    /// </summary>
+    public string VideoFileRequired() => localizer["VideoFileRequired"];
 }
