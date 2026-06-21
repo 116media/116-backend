@@ -14,7 +14,7 @@ internal class ShortVideoBuilder
     private string _title = $"{TestConstants.Content.Editorial.ShortVideo.ValidTitle} {Guid.NewGuid():N}";
     private string _slug = $"{TestConstants.Content.Editorial.ShortVideo.ValidSlug}-{Guid.NewGuid():N}";
     private Guid _authorId = Guid.NewGuid();
-    private Guid _videoFileId = Guid.NewGuid();
+    private Guid? _videoFileId = Guid.NewGuid();
     private Guid? _videoId;
     private Guid? _thumbnailFileId;
     private bool _isInactive;
@@ -65,6 +65,16 @@ internal class ShortVideoBuilder
     }
 
     /// <summary>
+    /// Builds the short video as a file-less draft, simulating a short video created before its
+    /// video file has been uploaded. Such drafts cannot be activated and are hidden from the feed.
+    /// </summary>
+    public ShortVideoBuilder WithoutVideoFile()
+    {
+        _videoFileId = null;
+        return this;
+    }
+
+    /// <summary>
     /// Sets the thumbnail file ID (FileEntity reference).
     /// </summary>
     public ShortVideoBuilder WithThumbnailFileId(Guid fileId)
@@ -111,7 +121,6 @@ internal class ShortVideoBuilder
                 id: _id,
                 title: _title,
                 slug: _slug,
-                videoFileId: _videoFileId,
                 videoId: _videoId.Value,
                 authorId: _authorId,
                 errors: errors
@@ -120,19 +129,23 @@ internal class ShortVideoBuilder
                 id: _id,
                 title: _title,
                 slug: _slug,
-                videoFileId: _videoFileId,
                 authorId: _authorId,
                 errors: errors
             );
+
+        if (_videoFileId.HasValue)
+        {
+            entity.ReplaceVideoFile(videoFileId: _videoFileId.Value);
+        }
 
         if (_thumbnailFileId.HasValue)
         {
             entity.SetThumbnailFileId(_thumbnailFileId);
         }
 
-        if (_isInactive)
+        if (!_isInactive && _videoFileId.HasValue)
         {
-            entity.Deactivate();
+            entity.Activate(errors);
         }
 
         return entity;
