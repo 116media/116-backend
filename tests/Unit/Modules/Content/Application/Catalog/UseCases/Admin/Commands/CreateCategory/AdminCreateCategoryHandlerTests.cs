@@ -61,8 +61,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
@@ -98,8 +97,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: true,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
@@ -129,8 +127,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
@@ -170,8 +167,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: true,
-            Poster: null
+            IsExclusive: true
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
@@ -203,8 +199,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
@@ -235,8 +230,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: true,
-            Poster: null
+            IsExclusive: true
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(videoType);
@@ -268,8 +262,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: true,
-            Poster: null
+            IsExclusive: true
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(articleType);
@@ -299,8 +292,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrowNotFound(nonExistentId);
@@ -326,8 +318,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
@@ -356,8 +347,7 @@ public class AdminCreateCategoryHandlerTests : BaseContentHandlerTest
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         _lookupRepositoryMock.SetupGetContentTypeByIdOrThrow(contentType);
