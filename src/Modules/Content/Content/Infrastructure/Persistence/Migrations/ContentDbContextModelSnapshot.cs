@@ -1473,7 +1473,7 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("updated_by");
 
-                    b.Property<Guid>("VideoFileId")
+                    b.Property<Guid?>("VideoFileId")
                         .HasColumnType("uuid")
                         .HasColumnName("video_file_id");
 
