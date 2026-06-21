@@ -38,7 +38,8 @@ public class FileConfiguration : IEntityTypeConfiguration<FileEntity>
         builder.Property(f => f.DeletedAt).IsRequired(false);
 
         // Indexes
-        builder.HasIndex(f => f.FileName).IsUnique();
+        // Unique among active rows only; soft-deleted rows keep their file_name on replace.
+        builder.HasIndex(f => f.FileName).IsUnique().HasFilter("is_deleted = false");
 
         builder.HasIndex(f => f.IsDeleted);
     }
