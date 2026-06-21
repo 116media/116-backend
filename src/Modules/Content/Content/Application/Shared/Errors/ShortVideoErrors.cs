@@ -53,4 +53,12 @@ public class ShortVideoErrors(ShortVideoErrorMessage i18n)
     {
         return new ConflictException(i18n.SlugAlreadyExists(slug: slug));
     }
+
+    /// <summary>
+    /// Throws when activating a short video that has no uploaded video file yet.
+    /// </summary>
+    public BadRequestException VideoFileRequired()
+    {
+        return new BadRequestException(i18n.VideoFileRequired());
+    }
 }
