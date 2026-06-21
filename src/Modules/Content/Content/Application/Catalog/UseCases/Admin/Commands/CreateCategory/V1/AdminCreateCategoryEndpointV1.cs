@@ -14,7 +14,8 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory.V1;
 
 /// <summary>
-/// Request model for creating a category.
+/// Request model for creating a category. The poster image is uploaded separately via the
+/// dedicated <c>PUT /api/v1/admin/categories/{id}/poster</c> endpoint.
 /// </summary>
 /// <param name="Name">The display name of the category.</param>
 /// <param name="Slug">The URL-safe slug for the category.</param>
@@ -22,15 +23,13 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategor
 /// <param name="IsFree">Whether content in this category requires no payment.</param>
 /// <param name="IsGossip">Whether this is the gossip category used for homepage feed fallbacks and the gossip strip.</param>
 /// <param name="IsExclusive">Whether this category is the exclusive show featured on the homepage.</param>
-/// <param name="Poster">Optional poster image file for the show.</param>
 public record AdminCreateCategoryRequest(
     string Name,
     string Slug,
     string Description,
     bool IsFree,
     bool IsGossip,
-    bool IsExclusive,
-    IFormFile? Poster
+    bool IsExclusive
 );
 
 /// <summary>
@@ -73,8 +72,7 @@ public class AdminCreateCategoryEndpointV1 : ICarterModule
                         Description: request.Description,
                         IsFree: request.IsFree,
                         IsGossip: request.IsGossip,
-                        IsExclusive: request.IsExclusive,
-                        Poster: request.Poster
+                        IsExclusive: request.IsExclusive
                     );
 
                     AdminCreateCategoryResult result = await dispatcher.Send(request: command);
