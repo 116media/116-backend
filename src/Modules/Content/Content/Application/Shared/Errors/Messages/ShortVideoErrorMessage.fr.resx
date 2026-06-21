@@ -54,4 +54,7 @@
   <data name="IdInvalid" xml:space="preserve">
     <value>L'identifiant de la courte vidéo est invalide.</value>
   </data>
+  <data name="VideoFileRequired" xml:space="preserve">
+    <value>Un fichier vidéo doit être téléversé avant que la courte vidéo puisse être activée.</value>
+  </data>
 </root>
