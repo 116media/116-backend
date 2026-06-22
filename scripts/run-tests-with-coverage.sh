@@ -50,7 +50,6 @@ run_unit_tests() {
         /p:CollectCoverage=true \
         /p:CoverletOutputFormat=opencover \
         /p:CoverletOutput="$COVERAGE_DIR/unit/coverage.opencover.xml" \
-        /p:Exclude="\"[*]*EndpointV1\"" \
         /p:ExcludeByFile="\"**/Migrations/**,**/obj/**/*.g.cs,**/*.Designer.cs\"" \
         /p:ExcludeByAttribute="\"GeneratedCodeAttribute,CompilerGeneratedAttribute\""
 }
