@@ -5,7 +5,7 @@
             <DataCollector friendlyName="XPlat Code Coverage">
                 <Configuration>
                     <Format>opencover,cobertura</Format>
-                    <Exclude>[*Tests*]*,[*Migrations*]*,[*]*EndpointV1</Exclude>
+                    <Exclude>[*Tests*]*,[*Migrations*]*</Exclude>
                     <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
                     <ExcludeByFile>**/Migrations/*.cs,**/*.Designer.cs</ExcludeByFile>
                     <IncludeDirectory>../src/**/*.cs</IncludeDirectory>
