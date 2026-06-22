@@ -1,5 +1,6 @@
-using System.Text.Json;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
@@ -10,28 +11,80 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private const string AuthUrl = ApiRoutes.Public.Auth;
-
     [Fact]
     public async Task Login_WithEmptyCredentials_ReturnsValidationError()
     {
         Client.ClearAuthentication();
-        var request = new { Credentials = "", Password = "" };
+        var request = new PublicLoginRequestBuilder().WithCredentials(string.Empty).WithPassword(string.Empty).Build();
 
-        var response = await Client.PostAsJsonAsync($"{AuthUrl}/login", request);
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task Login_WithNonExistentCredentials_ReturnsError()
     {
         Client.ClearAuthentication();
-        var request = new { Credentials = "nobody@nowhere.com", Password = TestAuth.ValidPassword };
+        var request = new PublicLoginRequestBuilder()
+            .WithCredentials("nobody@nowhere.com")
+            .WithPassword(TestAuth.ValidPassword)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{AuthUrl}/login", request);
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    /// <summary>
+    /// Verifies that a verified, active account can log in successfully and receives a
+    /// fully-populated mobile token response carrying the authenticated user's details.
+    /// </summary>
+    [Fact]
+    public async Task Login_WithValidCredentials_ReturnsTokensAndUser()
+    {
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        var visitorRole = RoleFactory.CreateWithId(Guid.NewGuid(), "Visitor");
+        seedContext.Roles.Add(visitorRole);
+        await seedContext.SaveChangesAsync();
+
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+
+        var email = $"login-ok-{Guid.NewGuid():N}@test.com";
+        var userName = $"u{Guid.NewGuid():N}"[..10];
+        var signupRequest = new PublicSignUpRequestBuilder()
+            .WithEmail(email)
+            .WithUserName(userName)
+            .WithPassword(TestAuth.ValidPassword)
+            .Build();
+
+        await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), signupRequest);
+
+        await using var updateContext = CreateDbContext<IdentityDbContext>();
+        var user = await updateContext.Users.FirstAsync(u => u.Email == email);
+        user.MarkAsVerified();
+        user.Activate();
+        await updateContext.SaveChangesAsync();
+
+        var loginRequest = new PublicLoginRequestBuilder()
+            .WithCredentials(email)
+            .WithPassword(TestAuth.ValidPassword)
+            .Build();
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicLoginMobileResponse body = await response.ReadAsAsync<PublicLoginMobileResponse>();
+        body.TokenType.Should().Be("Bearer");
+        body.AccessToken.Should().NotBeNullOrWhiteSpace();
+        body.RefreshToken.Should().NotBeNullOrWhiteSpace();
+        body.AccessTokenExpiresAt.Should().BeAfter(DateTime.UtcNow);
+        body.RefreshTokenExpiresAt.Should().BeAfter(body.AccessTokenExpiresAt);
+        body.User.Email.Should().Be(email);
+        body.User.IsActive.Should().BeTrue();
+        body.User.IsVerified.Should().BeTrue();
     }
 
     /// <summary>
@@ -51,14 +104,13 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var email = $"inactive-{Guid.NewGuid():N}@test.com";
         var userName = $"u{Guid.NewGuid():N}"[..10];
-        var signupRequest = new
-        {
-            Email = email,
-            UserName = userName,
-            Password = TestAuth.ValidPassword,
-        };
+        var signupRequest = new PublicSignUpRequestBuilder()
+            .WithEmail(email)
+            .WithUserName(userName)
+            .WithPassword(TestAuth.ValidPassword)
+            .Build();
 
-        await Client.PostAsJsonAsync($"{AuthUrl}/signup", signupRequest);
+        await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), signupRequest);
 
         await using var updateContext = CreateDbContext<IdentityDbContext>();
         var user = await updateContext.Users.FirstAsync(u => u.Email == email);
@@ -66,11 +118,14 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         user.Deactivate();
         await updateContext.SaveChangesAsync();
 
-        var loginRequest = new { Credentials = email, Password = TestAuth.ValidPassword };
+        var loginRequest = new PublicLoginRequestBuilder()
+            .WithCredentials(email)
+            .WithPassword(TestAuth.ValidPassword)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{AuthUrl}/login", loginRequest);
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Locked);
+        await response.ShouldBeProblem(HttpStatusCode.Locked);
     }
 
     /// <summary>
@@ -90,14 +145,13 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var email = $"nodevice-{Guid.NewGuid():N}@test.com";
         var userName = $"u{Guid.NewGuid():N}"[..10];
-        var signupRequest = new
-        {
-            Email = email,
-            UserName = userName,
-            Password = TestAuth.ValidPassword,
-        };
+        var signupRequest = new PublicSignUpRequestBuilder()
+            .WithEmail(email)
+            .WithUserName(userName)
+            .WithPassword(TestAuth.ValidPassword)
+            .Build();
 
-        await Client.PostAsJsonAsync($"{AuthUrl}/signup", signupRequest);
+        await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), signupRequest);
 
         await using var updateContext = CreateDbContext<IdentityDbContext>();
         var user = await updateContext.Users.FirstAsync(u => u.Email == email);
@@ -107,11 +161,14 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         Client.DefaultRequestHeaders.Remove("X-Device-Id");
 
-        var loginRequest = new { Credentials = email, Password = TestAuth.ValidPassword };
+        var loginRequest = new PublicLoginRequestBuilder()
+            .WithCredentials(email)
+            .WithPassword(TestAuth.ValidPassword)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{AuthUrl}/login", loginRequest);
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -131,24 +188,26 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var email = $"unverified-{Guid.NewGuid():N}@test.com";
         var userName = $"u{Guid.NewGuid():N}"[..10];
-        var signupRequest = new
-        {
-            Email = email,
-            UserName = userName,
-            Password = TestAuth.ValidPassword,
-        };
+        var signupRequest = new PublicSignUpRequestBuilder()
+            .WithEmail(email)
+            .WithUserName(userName)
+            .WithPassword(TestAuth.ValidPassword)
+            .Build();
 
-        await Client.PostAsJsonAsync($"{AuthUrl}/signup", signupRequest);
+        await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), signupRequest);
 
         await using var updateContext = CreateDbContext<IdentityDbContext>();
         var user = await updateContext.Users.FirstAsync(u => u.Email == email);
         user.Activate();
         await updateContext.SaveChangesAsync();
 
-        var loginRequest = new { Credentials = email, Password = TestAuth.ValidPassword };
+        var loginRequest = new PublicLoginRequestBuilder()
+            .WithCredentials(email)
+            .WithPassword(TestAuth.ValidPassword)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{AuthUrl}/login", loginRequest);
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await response.ShouldBeProblem(HttpStatusCode.Forbidden);
     }
 }

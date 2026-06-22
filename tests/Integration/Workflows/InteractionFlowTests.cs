@@ -1,3 +1,10 @@
+using _116.Content.Application.Interactions.UseCases.Public.Commands.AddArticleComment.V1;
+using _116.Content.Application.Interactions.UseCases.Public.Commands.BookmarkArticle.V1;
+using _116.Content.Application.Interactions.UseCases.Public.Commands.LikeArticle.V1;
+using _116.Content.Application.Interactions.UseCases.Public.Commands.RateVideo.V1;
+using _116.Content.Application.Interactions.UseCases.Public.Commands.ShareArticle.V1;
+using _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeArticle.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -18,14 +25,27 @@ public class InteractionFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         Client.AuthenticateAsVisitor();
 
-        HttpResponseMessage likeResponse = await Client.PostAsync(
-            $"{ApiRoutes.Public.Articles}/{articleId}/likes",
-            null
-        );
+        HttpResponseMessage likeResponse = await Client.PostAsync(Routes.Public.Articles.Likes(articleId), null);
         likeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        HttpResponseMessage unlikeResponse = await Client.DeleteAsync($"{ApiRoutes.Public.Articles}/{articleId}/likes");
+        PublicLikeArticleResponse likeBody = await likeResponse.ReadAsAsync<PublicLikeArticleResponse>();
+        likeBody.IsSuccess.Should().BeTrue();
+
+        await using (ContentDbContext likeContext = CreateDbContext<ContentDbContext>())
+        {
+            (await likeContext.ArticleLikes.CountAsync(l => l.ArticleId == articleId)).Should().Be(1);
+        }
+
+        HttpResponseMessage unlikeResponse = await Client.DeleteAsync(Routes.Public.Articles.Likes(articleId));
         unlikeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicUnlikeArticleResponse unlikeBody = await unlikeResponse.ReadAsAsync<PublicUnlikeArticleResponse>();
+        unlikeBody.IsSuccess.Should().BeTrue();
+
+        await using (ContentDbContext unlikeContext = CreateDbContext<ContentDbContext>())
+        {
+            (await unlikeContext.ArticleLikes.CountAsync(l => l.ArticleId == articleId)).Should().Be(0);
+        }
     }
 
     [Fact]
@@ -36,10 +56,17 @@ public class InteractionFlowTests(PostgresFixture db) : BaseApiTest(db)
         Client.AuthenticateAsVisitor();
 
         HttpResponseMessage bookmarkResponse = await Client.PostAsync(
-            $"{ApiRoutes.Public.Articles}/{articleId}/bookmarks",
+            Routes.Public.Articles.Bookmarks(articleId),
             null
         );
         bookmarkResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicBookmarkArticleResponse bookmarkBody =
+            await bookmarkResponse.ReadAsAsync<PublicBookmarkArticleResponse>();
+        bookmarkBody.IsSuccess.Should().BeTrue();
+
+        await using ContentDbContext context = CreateDbContext<ContentDbContext>();
+        (await context.ArticleBookmarks.CountAsync(b => b.ArticleId == articleId)).Should().Be(1);
     }
 
     [Fact]
@@ -49,12 +76,22 @@ public class InteractionFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         Client.AuthenticateAsVisitor();
 
-        var commentRequest = new { Body = "Great article!" };
+        var commentRequest = new PublicAddArticleCommentRequest(Body: "Great article!");
         HttpResponseMessage commentResponse = await Client.PostAsJsonAsync(
-            $"{ApiRoutes.Public.Articles}/{articleId}/comments",
+            Routes.Public.Articles.Comments(articleId),
             commentRequest
         );
-        commentResponse.StatusCode.Should().BeOneOf(HttpStatusCode.Created, HttpStatusCode.OK);
+        commentResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        PublicAddArticleCommentResponse commentBody =
+            await commentResponse.ReadAsAsync<PublicAddArticleCommentResponse>();
+        commentBody.Comment.Id.Should().NotBeEmpty();
+        commentBody.Comment.Body.Should().Be("Great article!");
+
+        await using ContentDbContext context = CreateDbContext<ContentDbContext>();
+        ArticleCommentEntity persisted = await context.ArticleComments.FirstAsync(c => c.Id == commentBody.Comment.Id);
+        persisted.ArticleId.Should().Be(articleId);
+        persisted.Body.Should().Be("Great article!");
     }
 
     [Fact]
@@ -64,12 +101,19 @@ public class InteractionFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         Client.AuthenticateAsVisitor();
 
-        var rateRequest = new { Stars = (short)4 };
+        var rateRequest = new PublicRateVideoRequest(Stars: 4);
         HttpResponseMessage rateResponse = await Client.PostAsJsonAsync(
-            $"{ApiRoutes.Public.Videos}/{videoId}/ratings",
+            Routes.Public.Videos.Ratings(videoId),
             rateRequest
         );
         rateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicRateVideoResponse rateBody = await rateResponse.ReadAsAsync<PublicRateVideoResponse>();
+        rateBody.IsSuccess.Should().BeTrue();
+
+        await using ContentDbContext context = CreateDbContext<ContentDbContext>();
+        VideoRatingEntity rating = await context.VideoRatings.FirstAsync(r => r.VideoId == videoId);
+        rating.Stars.Should().Be(4);
     }
 
     [Fact]
@@ -79,11 +123,14 @@ public class InteractionFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         Client.AuthenticateAsVisitor();
 
-        HttpResponseMessage shareResponse = await Client.PostAsync(
-            $"{ApiRoutes.Public.Articles}/{articleId}/shares",
-            null
-        );
+        HttpResponseMessage shareResponse = await Client.PostAsync(Routes.Public.Articles.Shares(articleId), null);
         shareResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicShareArticleResponse shareBody = await shareResponse.ReadAsAsync<PublicShareArticleResponse>();
+        shareBody.IsSuccess.Should().BeTrue();
+
+        await using ContentDbContext context = CreateDbContext<ContentDbContext>();
+        (await context.ArticleShares.CountAsync(s => s.ArticleId == articleId)).Should().Be(1);
     }
 
     [Fact]
@@ -93,7 +140,7 @@ public class InteractionFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         Client.ClearAuthentication();
 
-        HttpResponseMessage response = await Client.PostAsync($"{ApiRoutes.Public.Articles}/{articleId}/likes", null);
+        HttpResponseMessage response = await Client.PostAsync(Routes.Public.Articles.Likes(articleId), null);
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
@@ -102,18 +149,26 @@ public class InteractionFlowTests(PostgresFixture db) : BaseApiTest(db)
     /// </summary>
     private async Task<Guid> SeedPublishedArticleAsync()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create("Article");
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
+        ContentTypeEntity contentType = await SeedAsync<ContentDbContext, ContentTypeEntity>(context =>
+        {
+            ContentTypeEntity entity = ContentTypeFactory.Create("Article");
+            context.ContentTypes.Add(entity);
+            return entity;
+        });
 
-        var category = CategoryFactory.Create(contentType.Id);
-        context.Categories.Add(category);
-        await context.SaveChangesAsync();
+        CategoryEntity category = await SeedAsync<ContentDbContext, CategoryEntity>(context =>
+        {
+            CategoryEntity entity = CategoryFactory.Create(contentType.Id);
+            context.Categories.Add(entity);
+            return entity;
+        });
 
-        var article = ArticleFactory.CreatePublished(category.Id);
-        context.Articles.Add(article);
-        await context.SaveChangesAsync();
+        ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(context =>
+        {
+            ArticleEntity entity = ArticleFactory.CreatePublished(category.Id);
+            context.Articles.Add(entity);
+            return entity;
+        });
 
         return article.Id;
     }
@@ -123,18 +178,26 @@ public class InteractionFlowTests(PostgresFixture db) : BaseApiTest(db)
     /// </summary>
     private async Task<Guid> SeedPublishedVideoAsync()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create("Video");
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
+        ContentTypeEntity contentType = await SeedAsync<ContentDbContext, ContentTypeEntity>(context =>
+        {
+            ContentTypeEntity entity = ContentTypeFactory.Create("Video");
+            context.ContentTypes.Add(entity);
+            return entity;
+        });
 
-        var category = CategoryFactory.Create(contentType.Id);
-        context.Categories.Add(category);
-        await context.SaveChangesAsync();
+        CategoryEntity category = await SeedAsync<ContentDbContext, CategoryEntity>(context =>
+        {
+            CategoryEntity entity = CategoryFactory.Create(contentType.Id);
+            context.Categories.Add(entity);
+            return entity;
+        });
 
-        var video = VideoFactory.CreatePublished(category.Id);
-        context.Videos.Add(video);
-        await context.SaveChangesAsync();
+        VideoEntity video = await SeedAsync<ContentDbContext, VideoEntity>(context =>
+        {
+            VideoEntity entity = VideoFactory.CreatePublished(category.Id);
+            context.Videos.Add(entity);
+            return entity;
+        });
 
         return video.Id;
     }

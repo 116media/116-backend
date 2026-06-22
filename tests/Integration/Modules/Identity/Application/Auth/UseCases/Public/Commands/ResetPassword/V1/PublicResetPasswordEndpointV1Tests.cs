@@ -1,6 +1,8 @@
-using System.Text.Json;
+using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword.V1;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword.V1;
@@ -11,14 +13,15 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private const string ResetPasswordUrl = $"{ApiRoutes.Public.Auth}/reset-password";
-
     /// <summary>
-    /// Verifies that a valid used OTP with matching code successfully resets the password.
+    /// Verifies that a valid used OTP with matching code successfully resets the password
+    /// and that the persisted password hash now matches the new password.
     /// </summary>
     [Fact]
     public async Task ResetPassword_WithValidOtp_ReturnsOk()
     {
+        var passwordService = Api.Services.GetRequiredService<IPasswordService>();
+
         await using var seedContext = CreateDbContext<IdentityDbContext>();
 
         var userId = Guid.NewGuid();
@@ -34,16 +37,22 @@ public class PublicResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         Client.ClearAuthentication();
 
-        var request = new
-        {
-            Email = "reset-valid@test.com",
-            Code = Otp.ValidCode,
-            NewPassword = TestAuth.ResetNewPassword,
-        };
+        var request = new PublicResetPasswordRequestBuilder()
+            .WithEmail("reset-valid@test.com")
+            .WithCode(Otp.ValidCode)
+            .WithNewPassword(TestAuth.ResetNewPassword)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync(ResetPasswordUrl, request);
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.ResetPassword(), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicResetPasswordResponse body = await response.ReadAsAsync<PublicResetPasswordResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using var verifyContext = CreateDbContext<IdentityDbContext>();
+        var updated = await verifyContext.Users.FirstAsync(u => u.Id == userId);
+        passwordService.Verify(request.NewPassword, updated.PasswordHash).Should().BeTrue();
     }
 
     /// <summary>
@@ -67,16 +76,15 @@ public class PublicResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         Client.ClearAuthentication();
 
-        var request = new
-        {
-            Email = "reset-invalid@test.com",
-            Code = Otp.InvalidCode,
-            NewPassword = TestAuth.ResetNewPassword,
-        };
+        var request = new PublicResetPasswordRequestBuilder()
+            .WithEmail("reset-invalid@test.com")
+            .WithCode(Otp.InvalidCode)
+            .WithNewPassword(TestAuth.ResetNewPassword)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync(ResetPasswordUrl, request);
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.ResetPassword(), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -87,15 +95,14 @@ public class PublicResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
     {
         Client.ClearAuthentication();
 
-        var request = new
-        {
-            Email = "",
-            Code = Otp.ValidCode,
-            NewPassword = TestAuth.ResetNewPassword,
-        };
+        var request = new PublicResetPasswordRequestBuilder()
+            .WithEmail(string.Empty)
+            .WithCode(Otp.ValidCode)
+            .WithNewPassword(TestAuth.ResetNewPassword)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync(ResetPasswordUrl, request);
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.ResetPassword(), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }

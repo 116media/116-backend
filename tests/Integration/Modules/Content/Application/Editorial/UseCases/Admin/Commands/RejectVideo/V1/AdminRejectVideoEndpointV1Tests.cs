@@ -1,4 +1,9 @@
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectVideo.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.RejectVideo.V1;
@@ -9,14 +14,34 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminRejectVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<VideoEntity> SeedVideoAsync(Func<Guid, VideoEntity> create)
+    {
+        return await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            VideoEntity video = create(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Videos.Add(video);
+            return video;
+        });
+    }
+
+    private async Task<VideoEntity> GetVideoAsync(Guid id)
+    {
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        VideoEntity? video = await ctx.Videos.FindAsync(id);
+        return video!;
+    }
+
     [Fact]
     public async Task RejectVideo_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var nonExistentId = Guid.NewGuid();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Videos}/{nonExistentId}/reject",
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Videos, Guid.NewGuid()),
             new { Reason = "test" }
         );
 
@@ -27,10 +52,9 @@ public class AdminRejectVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     public async Task RejectVideo_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var nonExistentId = Guid.NewGuid();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Videos}/{nonExistentId}/reject",
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Videos, Guid.NewGuid()),
             new { Reason = "test" }
         );
 
@@ -41,10 +65,9 @@ public class AdminRejectVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     public async Task RejectVideo_AsAdmin_ReturnsForbidden()
     {
         Client.AuthenticateAsAdmin();
-        var nonExistentId = Guid.NewGuid();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Videos}/{nonExistentId}/reject",
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Videos, Guid.NewGuid()),
             new { Reason = "test" }
         );
 
@@ -55,81 +78,64 @@ public class AdminRejectVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     public async Task RejectVideo_AsSuperAdmin_WithNonExistentId_ReturnsError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var nonExistentId = Guid.NewGuid();
+        AdminRejectVideoRequest request = new AdminRejectVideoRequestBuilder().Build();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Videos}/{nonExistentId}/reject",
-            new { Reason = "test" }
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Videos, Guid.NewGuid()),
+            request
         );
 
-        response
-            .StatusCode.Should()
-            .BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.NotFound, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task RejectVideo_AsSuperAdmin_AlreadyRejected_ReturnsConflict()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var video = VideoFactory.CreateRejected(category.Id);
-        context.ContentTypes.Add(contentType);
-        context.Categories.Add(category);
-        context.Videos.Add(video);
-        await context.SaveChangesAsync();
-
+        VideoEntity video = await SeedVideoAsync(categoryId => VideoFactory.CreateRejected(categoryId));
         Client.AuthenticateAsSuperAdmin();
+        AdminRejectVideoRequest request = new AdminRejectVideoRequestBuilder().Build();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Videos}/{video.Id}/reject",
-            new { Reason = "Content quality insufficient" }
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Videos, video.Id),
+            request
         );
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await GetVideoAsync(video.Id)).Status.Should().Be(EnumContentStatus.Rejected);
     }
 
     [Fact]
     public async Task RejectVideo_AsSuperAdmin_DraftVideo_ReturnsBadRequest()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var video = VideoFactory.Create(category.Id);
-        context.ContentTypes.Add(contentType);
-        context.Categories.Add(category);
-        context.Videos.Add(video);
-        await context.SaveChangesAsync();
-
+        VideoEntity video = await SeedVideoAsync(categoryId => VideoFactory.Create(categoryId));
         Client.AuthenticateAsSuperAdmin();
+        AdminRejectVideoRequest request = new AdminRejectVideoRequestBuilder().Build();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Videos}/{video.Id}/reject",
-            new { Reason = "Content quality insufficient" }
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Videos, video.Id),
+            request
         );
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        (await GetVideoAsync(video.Id)).Status.Should().Be(EnumContentStatus.Draft);
     }
 
     [Fact]
     public async Task RejectVideo_AsSuperAdmin_PendingReviewVideo_ReturnsOk()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var video = VideoFactory.CreatePendingReview(category.Id);
-        context.ContentTypes.Add(contentType);
-        context.Categories.Add(category);
-        context.Videos.Add(video);
-        await context.SaveChangesAsync();
-
+        VideoEntity video = await SeedVideoAsync(categoryId => VideoFactory.CreatePendingReview(categoryId));
         Client.AuthenticateAsSuperAdmin();
+        AdminRejectVideoRequest request = new AdminRejectVideoRequestBuilder().Build();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Videos}/{video.Id}/reject",
-            new { Reason = "Content quality insufficient" }
+            Routes.Admin.Editorial.Reject(EditorialRouteConstants.Videos, video.Id),
+            request
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        VideoEntity persisted = await GetVideoAsync(video.Id);
+        persisted.Status.Should().Be(EnumContentStatus.Rejected);
+        persisted.RejectionReason.Should().Be(request.Reason);
     }
 }

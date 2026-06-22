@@ -1,3 +1,10 @@
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyricsSeo.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyricsSeo.V1;
 
 /// <summary>
@@ -10,11 +17,10 @@ public class AdminUpdateLyricsSeoEndpointV1Tests(PostgresFixture db) : BaseApiTe
     public async Task UpdateLyricsSeo_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var nonExistentId = Guid.NewGuid();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Lyrics}/{nonExistentId}/seo",
-            new { Reason = "test" }
+            Routes.Admin.Editorial.Seo(EditorialRouteConstants.Lyrics, Guid.NewGuid()),
+            new { }
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -24,11 +30,10 @@ public class AdminUpdateLyricsSeoEndpointV1Tests(PostgresFixture db) : BaseApiTe
     public async Task UpdateLyricsSeo_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var nonExistentId = Guid.NewGuid();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Lyrics}/{nonExistentId}/seo",
-            new { Reason = "test" }
+            Routes.Admin.Editorial.Seo(EditorialRouteConstants.Lyrics, Guid.NewGuid()),
+            new { }
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -38,13 +43,47 @@ public class AdminUpdateLyricsSeoEndpointV1Tests(PostgresFixture db) : BaseApiTe
     public async Task UpdateLyricsSeo_AsAdmin_IsAllowed()
     {
         Client.AuthenticateAsAdmin();
-        var nonExistentId = Guid.NewGuid();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Lyrics}/{nonExistentId}/seo",
-            new { Reason = "test" }
+            Routes.Admin.Editorial.Seo(EditorialRouteConstants.Lyrics, Guid.NewGuid()),
+            new { }
         );
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    /// <summary>
+    /// Verifies that updating a lyrics page's SEO metadata returns 200 OK, echoes the
+    /// new meta title/description in the typed response, and persists them.
+    /// </summary>
+    [Fact]
+    public async Task UpdateLyricsSeo_AsSuperAdmin_WithValidData_PersistsMeta()
+    {
+        LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
+        {
+            LyricsEntity l = LyricsFactory.Create();
+            ctx.Lyrics.Add(l);
+            return l;
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        AdminUpdateLyricsSeoRequest request = new AdminUpdateLyricsSeoRequestBuilder().Build();
+
+        var response = await Client.PatchAsJsonAsync(
+            Routes.Admin.Editorial.Seo(EditorialRouteConstants.Lyrics, lyrics.Id),
+            request
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminUpdateLyricsSeoResponse>();
+        body.Lyrics.Id.Should().Be(lyrics.Id);
+        body.Lyrics.MetaTitle.Should().Be(request.MetaTitle);
+        body.Lyrics.MetaDescription.Should().Be(request.MetaDescription);
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        LyricsEntity? persisted = await ctx.Lyrics.FindAsync(lyrics.Id);
+        persisted.Should().NotBeNull();
+        persisted!.MetaTitle.Should().Be(request.MetaTitle);
+        persisted.MetaDescription.Should().Be(request.MetaDescription);
     }
 }

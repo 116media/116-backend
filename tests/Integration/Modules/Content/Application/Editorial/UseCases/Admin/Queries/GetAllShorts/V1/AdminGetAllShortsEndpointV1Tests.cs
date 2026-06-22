@@ -1,3 +1,5 @@
+using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllShorts.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -32,11 +34,24 @@ public class AdminGetAllShortsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     [Fact]
     public async Task GetAllShorts_AsAdmin_IsAllowed()
     {
+        ShortVideoEntity shortVideo = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.Create();
+            ctx.ShortVideos.Add(entity);
+            return entity;
+        });
+
         Client.AuthenticateAsAdmin();
 
         var response = await Client.GetAsync(ApiRoutes.Admin.Shorts);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetAllShortsResponse body = await response.ReadAsAsync<AdminGetAllShortsResponse>();
+        body.ShortVideos.Items.Should().Contain(item => item.Id == shortVideo.Id);
+        body.ShortVideos.Count.Should().BeGreaterThanOrEqualTo(1);
+        body.ShortVideos.PageIndex.Should().Be(0);
+        body.ShortVideos.PageSize.Should().Be(10);
     }
 
     [Fact]
@@ -47,6 +62,9 @@ public class AdminGetAllShortsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Shorts}?search=test");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetAllShortsResponse body = await response.ReadAsAsync<AdminGetAllShortsResponse>();
+        body.ShortVideos.Should().NotBeNull();
     }
 
     /// <summary>
@@ -56,16 +74,27 @@ public class AdminGetAllShortsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     [Fact]
     public async Task GetAllShorts_WithSearchQuery_ReturnsFilteredResults()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var matchingShort = ShortVideoFactory.Create();
-        var otherShort = ShortVideoFactory.Create();
-        context.ShortVideos.AddRange(matchingShort, otherShort);
-        await context.SaveChangesAsync();
+        ShortVideoEntity matchingShort = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.CreateWithSlug("unique-search-term-short");
+            ctx.ShortVideos.Add(entity);
+            return entity;
+        });
+        ShortVideoEntity otherShort = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.Create();
+            ctx.ShortVideos.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Shorts}?search=UniqueSearchTerm");
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Shorts}?search={matchingShort.Title}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetAllShortsResponse body = await response.ReadAsAsync<AdminGetAllShortsResponse>();
+        body.ShortVideos.Items.Should().Contain(item => item.Id == matchingShort.Id);
+        body.ShortVideos.Items.Should().NotContain(item => item.Id == otherShort.Id);
     }
 }

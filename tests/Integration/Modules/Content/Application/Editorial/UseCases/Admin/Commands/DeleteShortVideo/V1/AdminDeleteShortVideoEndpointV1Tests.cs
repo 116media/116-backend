@@ -1,3 +1,8 @@
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteShortVideo.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.DeleteShortVideo.V1;
 
 /// <summary>
@@ -10,7 +15,7 @@ public class AdminDeleteShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
     public async Task DeleteShortVideo_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Shorts}/{nonExistentId}");
 
@@ -21,7 +26,7 @@ public class AdminDeleteShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
     public async Task DeleteShortVideo_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Shorts}/{nonExistentId}");
 
@@ -32,7 +37,7 @@ public class AdminDeleteShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
     public async Task DeleteShortVideo_AsAdmin_ReturnsForbidden()
     {
         Client.AuthenticateAsAdmin();
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Shorts}/{nonExistentId}");
 
@@ -43,10 +48,38 @@ public class AdminDeleteShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
     public async Task DeleteShortVideo_AsSuperAdmin_WithNonExistentId_ReturnsError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Shorts}/{nonExistentId}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    /// <summary>
+    /// Verifies that deleting an existing short video succeeds and removes the row,
+    /// exercising the happy path of the delete handler.
+    /// </summary>
+    [Fact]
+    public async Task DeleteShortVideo_AsSuperAdmin_ExistingShortVideo_ReturnsOk()
+    {
+        ShortVideoEntity shortVideo = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.Create();
+            ctx.ShortVideos.Add(entity);
+            return entity;
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Shorts}/{shortVideo.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminDeleteShortVideoResponse body = await response.ReadAsAsync<AdminDeleteShortVideoResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using ContentDbContext verifyContext = CreateDbContext<ContentDbContext>();
+        ShortVideoEntity? persisted = await verifyContext.ShortVideos.FindAsync(shortVideo.Id);
+        persisted.Should().BeNull();
     }
 }

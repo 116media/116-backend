@@ -1,5 +1,4 @@
-using System.Net.Http.Json;
-using System.Text.Json;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -11,12 +10,29 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminDeactivatePackageEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<PackageEntity> SeedPackageAsync(bool active)
+    {
+        return await SeedAsync<ContentDbContext, PackageEntity>(ctx =>
+        {
+            PackageEntity package = active ? PackageFactory.Create() : PackageFactory.CreateInactive();
+            ctx.Packages.Add(package);
+            return package;
+        });
+    }
+
+    private async Task<bool> IsPackageActiveAsync(Guid id)
+    {
+        await using var ctx = CreateDbContext<ContentDbContext>();
+        PackageEntity? package = await ctx.Packages.FindAsync(id);
+        return package!.IsActive;
+    }
+
     [Fact]
     public async Task DeactivatePackage_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Packages}/{Guid.NewGuid()}/deactivate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Packages.Deactivate(Guid.NewGuid()), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -24,14 +40,11 @@ public class AdminDeactivatePackageEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task DeactivatePackage_AsVisitor_ReturnsForbidden()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var package = PackageFactory.Create();
-        context.Packages.Add(package);
-        await context.SaveChangesAsync();
+        PackageEntity package = await SeedPackageAsync(active: true);
 
         Client.AuthenticateAsVisitor();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Packages}/{package.Id}/deactivate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Packages.Deactivate(package.Id), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -39,16 +52,14 @@ public class AdminDeactivatePackageEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task DeactivatePackage_AsSuperAdmin_WithExistingActivePackage_ReturnsOk()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var package = PackageFactory.Create();
-        context.Packages.Add(package);
-        await context.SaveChangesAsync();
+        PackageEntity package = await SeedPackageAsync(active: true);
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Packages}/{package.Id}/deactivate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Packages.Deactivate(package.Id), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await IsPackageActiveAsync(package.Id)).Should().BeFalse();
     }
 
     [Fact]
@@ -56,23 +67,21 @@ public class AdminDeactivatePackageEndpointV1Tests(PostgresFixture db) : BaseApi
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Packages}/{Guid.NewGuid()}/deactivate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Packages.Deactivate(Guid.NewGuid()), null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task DeactivatePackage_AsSuperAdmin_AlreadyInactive_ReturnsConflict()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var package = PackageFactory.CreateInactive();
-        context.Packages.Add(package);
-        await context.SaveChangesAsync();
+        PackageEntity package = await SeedPackageAsync(active: false);
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Packages}/{package.Id}/deactivate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Packages.Deactivate(package.Id), null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await IsPackageActiveAsync(package.Id)).Should().BeFalse();
     }
 }

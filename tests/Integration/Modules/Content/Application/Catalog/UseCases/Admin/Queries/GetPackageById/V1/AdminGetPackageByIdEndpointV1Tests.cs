@@ -1,5 +1,5 @@
-using System.Net.Http.Json;
-using System.Text.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetPackageById.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -11,6 +11,16 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminGetPackageByIdEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<PackageEntity> SeedPackageAsync()
+    {
+        return await SeedAsync<ContentDbContext, PackageEntity>(ctx =>
+        {
+            PackageEntity package = PackageFactory.Create();
+            ctx.Packages.Add(package);
+            return package;
+        });
+    }
+
     [Fact]
     public async Task GetPackageById_WithNoAuth_ReturnsUnauthorized()
     {
@@ -24,10 +34,7 @@ public class AdminGetPackageByIdEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task GetPackageById_AsVisitor_ReturnsForbidden()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var package = PackageFactory.Create();
-        context.Packages.Add(package);
-        await context.SaveChangesAsync();
+        PackageEntity package = await SeedPackageAsync();
 
         Client.AuthenticateAsVisitor();
 
@@ -39,10 +46,7 @@ public class AdminGetPackageByIdEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task GetPackageById_AsSuperAdmin_WithExistingPackage_ReturnsOk()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var package = PackageFactory.Create();
-        context.Packages.Add(package);
-        await context.SaveChangesAsync();
+        PackageEntity package = await SeedPackageAsync();
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -50,11 +54,10 @@ public class AdminGetPackageByIdEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var packageProp = doc.RootElement.GetProperty("package");
-
-        packageProp.GetProperty("id").GetString().Should().Be(package.Id.ToString());
+        var body = await response.ReadAsAsync<AdminGetPackageByIdResponse>();
+        body.Package.Id.Should().Be(package.Id);
+        body.Package.Name.Should().Be(package.Name);
+        body.Package.Description.Should().Be(package.Description);
     }
 
     [Fact]
@@ -64,21 +67,21 @@ public class AdminGetPackageByIdEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Packages}/{Guid.NewGuid()}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task GetPackageById_AsAdmin_WithExistingPackage_ReturnsOk()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var package = PackageFactory.Create();
-        context.Packages.Add(package);
-        await context.SaveChangesAsync();
+        PackageEntity package = await SeedPackageAsync();
 
         Client.AuthenticateAsAdmin();
 
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Packages}/{package.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminGetPackageByIdResponse>();
+        body.Package.Id.Should().Be(package.Id);
     }
 }

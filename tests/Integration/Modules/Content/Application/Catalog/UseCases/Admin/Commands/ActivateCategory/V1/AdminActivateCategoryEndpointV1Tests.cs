@@ -1,4 +1,4 @@
-using System.Net.Http.Json;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -10,52 +10,59 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminActivateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ShortName(string prefix = "c") => $"{prefix}{Guid.NewGuid().ToString("N")[..8]}";
-
-    private static string ShortSlug(string prefix = "s") => $"{prefix}-{Guid.NewGuid().ToString("N")[..8]}";
-
-    [Fact]
-    public async Task ActivateCategory_AsSuperAdmin_ReturnsOk()
+    private async Task<CategoryEntity> SeedCategoryAsync(bool active)
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.CreateInactive(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
+        return await SeedAsync<ContentDbContext, CategoryEntity>(ctx =>
+        {
+            var contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity category = active
+                ? CategoryFactory.Create(contentType.Id)
+                : CategoryFactory.CreateInactive(contentType.Id);
+            ctx.Categories.Add(category);
+            return category;
+        });
+    }
 
-        Client.AuthenticateAsSuperAdmin();
-
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/activate", null);
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    private async Task<bool> IsCategoryActiveAsync(Guid id)
+    {
+        await using var ctx = CreateDbContext<ContentDbContext>();
+        CategoryEntity? category = await ctx.Categories.FindAsync(id);
+        return category!.IsActive;
     }
 
     [Fact]
-    public async Task ActivateCategory_AsAdmin_ReturnsOk()
+    public async Task ActivateCategory_AsSuperAdmin_ActivatesAndPersists()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.CreateInactive(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = await SeedCategoryAsync(active: false);
+        Client.AuthenticateAsSuperAdmin();
 
+        var response = await Client.PatchAsync(Routes.Admin.Categories.Activate(category.Id), null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await IsCategoryActiveAsync(category.Id)).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ActivateCategory_AsAdmin_ActivatesAndPersists()
+    {
+        CategoryEntity category = await SeedCategoryAsync(active: false);
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/activate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Categories.Activate(category.Id), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await IsCategoryActiveAsync(category.Id)).Should().BeTrue();
     }
 
     [Fact]
-    public async Task ActivateCategory_NonExistentCategory_ReturnsNotFound()
+    public async Task ActivateCategory_NonExistentCategory_ReturnsNotFoundProblem()
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/activate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Categories.Activate(Guid.NewGuid()), null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -63,29 +70,24 @@ public class AdminActivateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiT
     {
         Client.ClearAuthentication();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/activate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Categories.Activate(Guid.NewGuid()), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     /// <summary>
-    /// Verifies that activating a category that is already active
-    /// returns a 409 Conflict response.
+    /// Verifies that activating an already-active category returns a 409 Conflict
+    /// problem and leaves the category active.
     /// </summary>
     [Fact]
-    public async Task ActivateCategory_WhenAlreadyActive_ReturnsConflict()
+    public async Task ActivateCategory_WhenAlreadyActive_ReturnsConflictProblem()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
-
+        CategoryEntity category = await SeedCategoryAsync(active: true);
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/activate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Categories.Activate(category.Id), null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await IsCategoryActiveAsync(category.Id)).Should().BeTrue();
     }
 }

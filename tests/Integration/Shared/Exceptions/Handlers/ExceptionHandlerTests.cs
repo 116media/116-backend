@@ -1,4 +1,4 @@
-using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 
 namespace _116.Integration.Tests.Shared.Exceptions.Handlers;
 
@@ -37,10 +37,10 @@ public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Roles}/{nonExistentId}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -48,15 +48,14 @@ public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Roles}/{nonExistentId}");
 
-        string body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var root = doc.RootElement;
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
 
-        root.TryGetProperty("status", out var status).Should().BeTrue();
-        status.GetInt32().Should().Be(404);
+        ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
+        problem.Status.Should().Be(404);
+        problem.Title.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -66,7 +65,7 @@ public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, new { Name = "", Description = "" });
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -76,39 +75,37 @@ public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, new { Name = "", Description = "" });
 
-        string body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var root = doc.RootElement;
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
 
-        root.TryGetProperty("status", out var status).Should().BeTrue();
-        status.GetInt32().Should().Be(400);
+        ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
+        problem.Status.Should().Be(400);
+        problem.Title.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
     public async Task ResourceNotFoundExceptionHandler_ShouldReturn404_ForNonExistentRoute()
     {
-        var response = await Client.GetAsync("/api/v1/public/nonexistent-resource");
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Base}/nonexistent-resource");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task ResourceNotFoundExceptionHandler_ShouldReturnProblemDetails_ForNonExistentRoute()
     {
-        var response = await Client.GetAsync("/api/v1/public/nonexistent-resource");
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Base}/nonexistent-resource");
 
-        string body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var root = doc.RootElement;
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
 
-        root.TryGetProperty("status", out var status).Should().BeTrue();
-        status.GetInt32().Should().Be(404);
+        ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
+        problem.Status.Should().Be(404);
+        problem.Title.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
     public async Task MethodNotAllowedExceptionHandler_ShouldReturn405_ForWrongMethod()
     {
-        var response = await Client.DeleteAsync(ApiRoutes.Public.Auth + "/login");
+        var response = await Client.DeleteAsync(Routes.Public.Auth.Login());
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.MethodNotAllowed, HttpStatusCode.NotFound);
     }
@@ -120,7 +117,7 @@ public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Roles}/not-a-uuid");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -134,6 +131,6 @@ public class ExceptionHandlerTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, rolePayload);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
     }
 }

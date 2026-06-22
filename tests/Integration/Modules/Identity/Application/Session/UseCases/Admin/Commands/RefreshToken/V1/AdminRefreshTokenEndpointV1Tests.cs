@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
+using _116.Identity.Application.Session.UseCases.Admin.Commands.RefreshToken.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -16,9 +18,9 @@ public class AdminRefreshTokenEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     {
         Client.ClearAuthentication();
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Sessions}/refresh-token", null);
+        var response = await Client.PostAsync(Routes.Admin.Sessions.RefreshToken(), null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await response.ShouldBeProblem(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -27,13 +29,14 @@ public class AdminRefreshTokenEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         Client.ClearAuthentication();
         var request = new { RefreshToken = "invalid-refresh-token" };
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Sessions}/refresh-token", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Sessions.RefreshToken(), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await response.ShouldBeProblem(HttpStatusCode.Forbidden);
     }
 
     /// <summary>
-    /// Verifies that refreshing with a valid token cookie returns 200 OK and new tokens.
+    /// Verifies that refreshing with a valid token cookie returns 200 OK and the
+    /// authenticated admin profile in the body (tokens are delivered via cookies).
     /// </summary>
     [Fact]
     public async Task RefreshToken_WithValidToken_ReturnsOk()
@@ -41,20 +44,25 @@ public class AdminRefreshTokenEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         const string rawRefreshToken = "test-valid-refresh-token-for-admin";
         string refreshTokenHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(rawRefreshToken)));
 
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var session = SessionFactory.CreateWithRefreshTokenHash(TestUser.SuperAdminId, refreshTokenHash);
-        context.Sessions.Add(session);
-        await context.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            SessionEntity session = SessionFactory.CreateWithRefreshTokenHash(TestUser.SuperAdminId, refreshTokenHash);
+            ctx.Sessions.Add(session);
+        });
 
         Client.ClearAuthentication();
 
-        var msg = new HttpRequestMessage(HttpMethod.Post, $"{ApiRoutes.Admin.Sessions}/refresh-token");
+        var msg = new HttpRequestMessage(HttpMethod.Post, Routes.Admin.Sessions.RefreshToken());
         msg.Headers.Add("Client-App", "Dashboard");
         msg.Headers.Add("Cookie", $"refreshToken={rawRefreshToken}");
 
         var response = await Client.SendAsync(msg);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminRefreshTokenResponse body = await response.ReadAsAsync<AdminRefreshTokenResponse>();
+        body.User.Should().NotBeNull();
+        body.User.Id.Should().Be(TestUser.SuperAdminId);
     }
 
     /// <summary>
@@ -65,13 +73,13 @@ public class AdminRefreshTokenEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     {
         Client.ClearAuthentication();
 
-        var msg = new HttpRequestMessage(HttpMethod.Post, $"{ApiRoutes.Admin.Sessions}/refresh-token");
+        var msg = new HttpRequestMessage(HttpMethod.Post, Routes.Admin.Sessions.RefreshToken());
         msg.Headers.Add("Client-App", "Dashboard");
         msg.Headers.Add("Cookie", "refreshToken=this-token-does-not-exist-in-db");
 
         var response = await Client.SendAsync(msg);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await response.ShouldBeProblem(HttpStatusCode.Forbidden);
     }
 
     /// <summary>
@@ -82,12 +90,12 @@ public class AdminRefreshTokenEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     {
         Client.ClearAuthentication();
 
-        var msg = new HttpRequestMessage(HttpMethod.Post, $"{ApiRoutes.Admin.Sessions}/refresh-token");
+        var msg = new HttpRequestMessage(HttpMethod.Post, Routes.Admin.Sessions.RefreshToken());
         msg.Headers.Add("Client-App", "Dashboard");
         msg.Headers.Add("Cookie", "refreshToken=");
 
         var response = await Client.SendAsync(msg);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await response.ShouldBeProblem(HttpStatusCode.Forbidden);
     }
 }

@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Identity.Application.Roles.UseCases.Admin.Queries.GetOwnRoles.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -15,26 +16,22 @@ public class AdminGetOwnRolesEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     [Fact]
     public async Task GetOwnRoles_AsSuperAdminWithSeededRoles_ReturnsOk()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.Create(ShortName("own"), "Role assigned to SuperAdmin.");
-        context.Roles.Add(role);
-        await context.SaveChangesAsync();
-
-        var userRole = UserRoleFactory.Create(TestUser.SuperAdminId, role.Id);
-        context.UserRoles.Add(userRole);
-        await context.SaveChangesAsync();
+        RoleEntity role = await SeedAsync<IdentityDbContext, RoleEntity>(ctx =>
+        {
+            RoleEntity entity = RoleFactory.Create(ShortName("own"), "Role assigned to SuperAdmin.");
+            ctx.Roles.Add(entity);
+            ctx.UserRoles.Add(UserRoleFactory.Create(TestUser.SuperAdminId, entity.Id));
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.GetAsync("/api/v1/admin/me/roles");
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Base}/me/roles");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var rolesProp = doc.RootElement.GetProperty("roles");
-
-        rolesProp.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
+        var body = await response.ReadAsAsync<AdminGetOwnRolesResponse>();
+        body.Roles.Should().Contain(r => r.Id == role.Id);
     }
 
     [Fact]
@@ -42,7 +39,7 @@ public class AdminGetOwnRolesEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     {
         Client.ClearAuthentication();
 
-        var response = await Client.GetAsync("/api/v1/admin/me/roles");
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Base}/me/roles");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -56,14 +53,16 @@ public class AdminGetOwnRolesEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     [Fact]
     public async Task GetOwnRoles_WithInactiveAccount_ReturnsForbidden()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var inactiveUser = UserFactory.CreateInactive();
-        context.Users.Add(inactiveUser);
-        await context.SaveChangesAsync();
+        UserEntity inactiveUser = await SeedAsync<IdentityDbContext, UserEntity>(ctx =>
+        {
+            UserEntity entity = UserFactory.CreateInactive();
+            ctx.Users.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAs(inactiveUser.Id, "SuperAdmin");
 
-        var response = await Client.GetAsync("/api/v1/admin/me/roles");
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Base}/me/roles");
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }

@@ -1,3 +1,6 @@
+using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllVideos.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -9,6 +12,20 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminGetAllVideosEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<Guid> SeedCategoryAsync()
+    {
+        return await SeedAsync<ContentDbContext, Guid>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+
+            return category.Id;
+        });
+    }
+
     [Fact]
     public async Task GetAllVideos_WithNoAuth_ReturnsUnauthorized()
     {
@@ -32,11 +49,25 @@ public class AdminGetAllVideosEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     [Fact]
     public async Task GetAllVideos_AsAdmin_IsAllowed()
     {
+        Guid categoryId = await SeedCategoryAsync();
+        VideoEntity video = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            VideoEntity entity = VideoFactory.Create(categoryId);
+            ctx.Videos.Add(entity);
+            return entity;
+        });
+
         Client.AuthenticateAsAdmin();
 
         var response = await Client.GetAsync(ApiRoutes.Admin.Videos);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetAllVideosResponse body = await response.ReadAsAsync<AdminGetAllVideosResponse>();
+        body.Videos.Items.Should().Contain(item => item.Id == video.Id);
+        body.Videos.Count.Should().BeGreaterThanOrEqualTo(1);
+        body.Videos.PageIndex.Should().Be(0);
+        body.Videos.PageSize.Should().Be(10);
     }
 
     [Fact]
@@ -47,6 +78,43 @@ public class AdminGetAllVideosEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Videos}?search=test");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetAllVideosResponse body = await response.ReadAsAsync<AdminGetAllVideosResponse>();
+        body.Videos.Should().NotBeNull();
+    }
+
+    /// <summary>
+    /// Verifies that the status query parameter filters videos by editorial status,
+    /// returning only videos whose status matches the requested value.
+    /// </summary>
+    [Fact]
+    public async Task GetAllVideos_WithStatusFilter_ReturnsFilteredResults()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+
+        VideoEntity publishedVideo = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            VideoEntity entity = VideoFactory.CreatePublished(categoryId);
+            ctx.Videos.Add(entity);
+            return entity;
+        });
+        VideoEntity draftVideo = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            VideoEntity entity = VideoFactory.Create(categoryId);
+            ctx.Videos.Add(entity);
+            return entity;
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Videos}?status={nameof(EnumContentStatus.Published)}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetAllVideosResponse body = await response.ReadAsAsync<AdminGetAllVideosResponse>();
+        body.Videos.Items.Should().Contain(item => item.Id == publishedVideo.Id);
+        body.Videos.Items.Should().NotContain(item => item.Id == draftVideo.Id);
+        body.Videos.Items.Should().OnlyContain(item => item.Status == EnumContentStatus.Published);
     }
 
     /// <summary>
@@ -56,24 +124,30 @@ public class AdminGetAllVideosEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     [Fact]
     public async Task GetAllVideos_WithSearchQuery_ReturnsFilteredResults()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
+        Guid categoryId = await SeedCategoryAsync();
 
-        var category = CategoryFactory.Create(contentType.Id);
-        context.Categories.Add(category);
-        await context.SaveChangesAsync();
-
-        var matchingVideo = VideoFactory.Create(category.Id);
-        var otherVideo = VideoFactory.Create(category.Id);
-        context.Videos.AddRange(matchingVideo, otherVideo);
-        await context.SaveChangesAsync();
+        VideoEntity matchingVideo = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            VideoEntity entity = VideoFactory.CreateWithTitle(categoryId, "UniqueSearchTerm Video");
+            ctx.Videos.Add(entity);
+            return entity;
+        });
+        VideoEntity otherVideo = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            VideoEntity entity = VideoFactory.CreateWithTitle(categoryId, "Completely Different Title");
+            ctx.Videos.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Videos}?search=UniqueSearchTerm");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetAllVideosResponse body = await response.ReadAsAsync<AdminGetAllVideosResponse>();
+        body.Videos.Items.Should().Contain(item => item.Id == matchingVideo.Id);
+        body.Videos.Items.Should().NotContain(item => item.Id == otherVideo.Id);
+        body.Videos.Items.Should().OnlyContain(item => item.Title.Contains("UniqueSearchTerm"));
     }
 }

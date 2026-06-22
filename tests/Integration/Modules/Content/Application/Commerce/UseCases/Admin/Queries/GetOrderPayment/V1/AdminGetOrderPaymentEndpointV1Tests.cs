@@ -1,4 +1,6 @@
-using System.Net.Http.Json;
+using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderPayment.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -13,24 +15,25 @@ public class AdminGetOrderPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTe
     [Fact]
     public async Task GetOrderPayment_AsSuperAdmin_WithSeededPayment_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var customer = CustomerFactory.Create();
-        seedContext.Customers.Add(customer);
-        await seedContext.SaveChangesAsync();
-
-        var order = ContentOrderFactory.CreateForCustomer(customer.Id);
-        seedContext.ContentOrders.Add(order);
-        await seedContext.SaveChangesAsync();
-
-        var payment = ContentPaymentFactory.Create(order.Id);
-        seedContext.ContentPayments.Add(payment);
-        await seedContext.SaveChangesAsync();
+        CustomerEntity customer = CustomerFactory.Create();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentPayments.Add(payment);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Orders}/{order.Id}/payment");
+        var response = await Client.GetAsync(Routes.Admin.Orders.Payment(order.Id));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminGetOrderPaymentResponse>();
+        body.Payment.Id.Should().Be(payment.Id);
+        body.Payment.Status.Should().Be(EnumPaymentStatus.Pending);
+        body.Payment.AmountUsd.Should().Be(payment.AmountUsd);
     }
 
     [Fact]
@@ -38,9 +41,9 @@ public class AdminGetOrderPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTe
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Orders}/{Guid.NewGuid()}/payment");
+        var response = await Client.GetAsync(Routes.Admin.Orders.Payment(Guid.NewGuid()));
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -48,7 +51,7 @@ public class AdminGetOrderPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTe
     {
         Client.ClearAuthentication();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Orders}/{Guid.NewGuid()}/payment");
+        var response = await Client.GetAsync(Routes.Admin.Orders.Payment(Guid.NewGuid()));
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }

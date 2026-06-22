@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeletePermission.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -20,26 +21,35 @@ public class AdminSoftDeletePermissionEndpointV1Tests(PostgresFixture db) : Base
     /// </summary>
     private static string UniqueAction(string prefix = "act") => $"{prefix}_{Guid.NewGuid().ToString("N")[..8]}";
 
+    private async Task<bool> IsPermissionDeletedAsync(Guid id)
+    {
+        await using IdentityDbContext ctx = CreateDbContext<IdentityDbContext>();
+        PermissionEntity? permission = await ctx.Permissions.FindAsync(id);
+        return permission!.IsDeleted;
+    }
+
     [Fact]
     public async Task SoftDeletePermission_ShouldReturn200_WhenSuperAdmin()
     {
+        PermissionEntity permission = await SeedAsync<IdentityDbContext, PermissionEntity>(ctx =>
+        {
+            PermissionEntity entity = PermissionFactory.Create(UniqueResource("sd"), UniqueAction("sd"));
+            ctx.Permissions.Add(entity);
+            return entity;
+        });
+
         Client.AuthenticateAsSuperAdmin();
 
-        var createPayload = new
-        {
-            Resource = UniqueResource("sd"),
-            Action = UniqueAction("sd"),
-            Description = "To be soft deleted",
-        };
-
-        var createResponse = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, createPayload);
-        var createBody = await createResponse.Content.ReadAsStringAsync();
-        using var createDoc = JsonDocument.Parse(createBody);
-        var permissionId = createDoc.RootElement.GetProperty("permission").GetProperty("id").GetString();
-
-        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Permissions}/{permissionId}");
+        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Permissions}/{permission.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminSoftDeletePermissionResponse>();
+        body.IsSuccess.Should().BeTrue();
+        body.Permission.Id.Should().Be(permission.Id);
+        body.Permission.IsDeleted.Should().BeTrue();
+
+        (await IsPermissionDeletedAsync(permission.Id)).Should().BeTrue();
     }
 
     /// <summary>
@@ -48,15 +58,18 @@ public class AdminSoftDeletePermissionEndpointV1Tests(PostgresFixture db) : Base
     [Fact]
     public async Task SoftDeletePermission_WhenAlreadyDeleted_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var permission = PermissionFactory.CreateDeleted();
-        seedContext.Permissions.Add(permission);
-        await seedContext.SaveChangesAsync();
+        PermissionEntity permission = await SeedAsync<IdentityDbContext, PermissionEntity>(ctx =>
+        {
+            PermissionEntity entity = PermissionFactory.CreateDeleted();
+            ctx.Permissions.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Permissions}/{permission.Id}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await IsPermissionDeletedAsync(permission.Id)).Should().BeTrue();
     }
 }

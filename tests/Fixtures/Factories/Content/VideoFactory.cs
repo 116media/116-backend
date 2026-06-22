@@ -66,10 +66,15 @@ public static class VideoFactory
         Enumerable.Range(0, count).Select(_ => CreatePublished(categoryId)).ToList();
 
     /// <summary>
-    /// Creates a promoted published video with a future expiry.
+    /// Creates a promoted published video with a future expiry. Pass
+    /// <paramref name="promotionLevelId" /> referencing a seeded promotion level to satisfy
+    /// the foreign key when the video is persisted.
     /// </summary>
-    public static VideoEntity CreatePromoted(Guid categoryId) =>
-        new VideoBuilder(categoryId).AsPublished().AsPromoted(DateTimeOffset.UtcNow.AddDays(7)).Build();
+    public static VideoEntity CreatePromoted(Guid categoryId, Guid? promotionLevelId = null) =>
+        new VideoBuilder(categoryId)
+            .AsPublished()
+            .AsPromoted(DateTimeOffset.UtcNow.AddDays(7), promotionLevelId)
+            .Build();
 
     /// <summary>
     /// Creates a free video in PendingReview status.

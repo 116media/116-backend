@@ -1,6 +1,8 @@
-using System.Text.Json;
+using _116.Identity.Application.Session.Constants;
+using _116.Identity.Application.Session.UseCases.Public.Commands.RevokeSession.V1;
+using _116.Identity.Domain.Constants;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Session.UseCases.Public.Commands.RevokeSession.V1;
@@ -11,14 +13,15 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Session.UseCases.P
 [Collection("Database")]
 public class PublicRevokeSessionEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private const string RevokeSessionBaseUrl = $"{ApiRoutes.Public.Me}/sessions/revoke";
+    private const string RevokeSessionBaseUrl =
+        $"{ApiRoutes.Public.Me}/{SessionRouteConstants.Endpoint}/{SessionRouteConstants.Revoke}";
 
     [Fact]
     public async Task PublicRevokeSession_WithNoAuth_Returns401()
     {
         Client.ClearAuthentication();
 
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
         var response = await Client.PostAsync($"{RevokeSessionBaseUrl}/{nonExistentId}", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -30,19 +33,26 @@ public class PublicRevokeSessionEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task RevokeSession_AsVisitor_WithOwnSession_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-
-        var sessionId = Guid.NewGuid();
-        var session = SessionFactory.CreateWithId(sessionId, TestConstants.User.VisitorId);
-
-        seedContext.Sessions.Add(session);
-        await seedContext.SaveChangesAsync();
+        Guid sessionId = Guid.NewGuid();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            SessionEntity session = SessionFactory.CreateWithId(sessionId, TestUser.VisitorId);
+            ctx.Sessions.Add(session);
+        });
 
         Client.AuthenticateAsVisitor();
 
         var response = await Client.PostAsync($"{RevokeSessionBaseUrl}/{sessionId}", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicRevokeSessionResponse body = await response.ReadAsAsync<PublicRevokeSessionResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using IdentityDbContext context = CreateDbContext<IdentityDbContext>();
+        SessionEntity? persisted = await context.Sessions.FirstOrDefaultAsync(s => s.Id == sessionId);
+        persisted.Should().NotBeNull();
+        persisted!.IsRevoked.Should().BeTrue();
     }
 
     /// <summary>
@@ -52,22 +62,20 @@ public class PublicRevokeSessionEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task RevokeSession_WithOtherUsersSession_ReturnsNotFound()
     {
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-
-        var otherUser = UserFactory.CreateVerifiedActive();
-
-        var otherSessionId = Guid.NewGuid();
-        var otherSession = SessionFactory.CreateWithId(otherSessionId, otherUser.Id);
-
-        seedContext.Users.Add(otherUser);
-        seedContext.Sessions.Add(otherSession);
-        await seedContext.SaveChangesAsync();
+        Guid otherSessionId = Guid.NewGuid();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            UserEntity otherUser = UserFactory.CreateVerifiedActive();
+            SessionEntity otherSession = SessionFactory.CreateWithId(otherSessionId, otherUser.Id);
+            ctx.Users.Add(otherUser);
+            ctx.Sessions.Add(otherSession);
+        });
 
         Client.AuthenticateAsVisitor();
 
         var response = await Client.PostAsync($"{RevokeSessionBaseUrl}/{otherSessionId}", null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     /// <summary>
@@ -78,9 +86,9 @@ public class PublicRevokeSessionEndpointV1Tests(PostgresFixture db) : BaseApiTes
     {
         Client.AuthenticateAsVisitor();
 
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
         var response = await Client.PostAsync($"{RevokeSessionBaseUrl}/{nonExistentId}", null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 }

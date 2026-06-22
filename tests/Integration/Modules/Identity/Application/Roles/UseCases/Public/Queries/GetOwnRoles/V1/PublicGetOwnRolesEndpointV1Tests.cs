@@ -1,3 +1,5 @@
+using _116.Identity.Application.Roles.UseCases.Public.Queries.GetOwnRoles.V1;
+
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Public.Queries.GetOwnRoles.V1;
 
 /// <summary>
@@ -11,7 +13,7 @@ public class PublicGetOwnRolesEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     {
         Client.ClearAuthentication();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Public.Me}/roles");
+        var response = await Client.GetAsync(Routes.Public.Me.Roles());
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -21,9 +23,12 @@ public class PublicGetOwnRolesEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     {
         Client.AuthenticateAsVisitor();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Public.Me}/roles");
+        var response = await Client.GetAsync(Routes.Public.Me.Roles());
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<PublicGetOwnRolesResponse>();
+        body.Roles.Should().NotBeNull();
     }
 
     [Fact]
@@ -31,7 +36,7 @@ public class PublicGetOwnRolesEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     {
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Public.Me}/roles");
+        var response = await Client.GetAsync(Routes.Public.Me.Roles());
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }

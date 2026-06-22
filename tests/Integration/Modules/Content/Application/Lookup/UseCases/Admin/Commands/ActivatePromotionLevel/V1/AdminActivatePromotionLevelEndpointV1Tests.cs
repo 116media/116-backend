@@ -1,3 +1,5 @@
+using _116.Content.Application.Lookup.Constants;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -9,12 +11,22 @@ namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Adm
 [Collection("Database")]
 public class AdminActivatePromotionLevelEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<bool> IsPromotionLevelActiveAsync(Guid id)
+    {
+        await using ContentDbContext context = CreateDbContext<ContentDbContext>();
+        PromotionLevelEntity? promotionLevel = await context.PromotionLevels.FindAsync(id);
+        return promotionLevel!.IsActive;
+    }
+
     [Fact]
     public async Task ActivatePromotionLevel_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.PromotionLevels}/{Guid.NewGuid()}/activate", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Lookup.Activate(LookupRouteConstants.PromotionLevels, Guid.NewGuid()),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -24,25 +36,33 @@ public class AdminActivatePromotionLevelEndpointV1Tests(PostgresFixture db) : Ba
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.PromotionLevels}/{Guid.NewGuid()}/activate", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Lookup.Activate(LookupRouteConstants.PromotionLevels, Guid.NewGuid()),
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task ActivatePromotionLevel_AsSuperAdmin_WithValidId_ReturnsOk()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var promotionLevel = PromotionLevelFactory.Create();
-        promotionLevel.Deactivate();
-        context.PromotionLevels.Add(promotionLevel);
-        await context.SaveChangesAsync();
+        PromotionLevelEntity promotionLevel = await SeedAsync<ContentDbContext, PromotionLevelEntity>(ctx =>
+        {
+            PromotionLevelEntity entity = PromotionLevelFactory.CreateInactive();
+            ctx.PromotionLevels.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.PromotionLevels}/{promotionLevel.Id}/activate", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Lookup.Activate(LookupRouteConstants.PromotionLevels, promotionLevel.Id),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await IsPromotionLevelActiveAsync(promotionLevel.Id)).Should().BeTrue();
     }
 
     /// <summary>
@@ -51,15 +71,21 @@ public class AdminActivatePromotionLevelEndpointV1Tests(PostgresFixture db) : Ba
     [Fact]
     public async Task ActivatePromotionLevel_WhenAlreadyActive_ReturnsConflict()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var promotionLevel = PromotionLevelFactory.Create();
-        context.PromotionLevels.Add(promotionLevel);
-        await context.SaveChangesAsync();
+        PromotionLevelEntity promotionLevel = await SeedAsync<ContentDbContext, PromotionLevelEntity>(ctx =>
+        {
+            PromotionLevelEntity entity = PromotionLevelFactory.Create();
+            ctx.PromotionLevels.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.PromotionLevels}/{promotionLevel.Id}/activate", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Lookup.Activate(LookupRouteConstants.PromotionLevels, promotionLevel.Id),
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await IsPromotionLevelActiveAsync(promotionLevel.Id)).Should().BeTrue();
     }
 }

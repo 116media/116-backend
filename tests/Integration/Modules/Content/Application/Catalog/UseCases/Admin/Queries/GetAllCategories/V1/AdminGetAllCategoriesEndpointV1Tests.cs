@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetAllCategories.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -33,14 +34,14 @@ public class AdminGetAllCategoriesEndpointV1Tests(PostgresFixture db) : BaseApiT
     [Fact]
     public async Task AdminGetAllCategories_AsSuperAdmin_ReturnsOkWithItems()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
-
-        var categories = CategoryFactory.CreateMany(contentType.Id, 3);
-        context.Categories.AddRange(categories);
-        await context.SaveChangesAsync();
+        List<CategoryEntity> categories = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            categories = CategoryFactory.CreateMany(contentType.Id, 3);
+            ctx.Categories.AddRange(categories);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -48,27 +49,25 @@ public class AdminGetAllCategoriesEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var root = doc.RootElement;
-
-        root.TryGetProperty("categories", out var categoriesProp).Should().BeTrue();
-        categoriesProp.TryGetProperty("items", out var items).Should().BeTrue();
-        items.GetArrayLength().Should().BeGreaterThanOrEqualTo(3);
+        var body = await response.ReadAsAsync<AdminGetAllCategoriesResponse>();
+        body.Categories.PageIndex.Should().Be(0);
+        body.Categories.PageSize.Should().Be(10);
+        body.Categories.Count.Should().BeGreaterThanOrEqualTo(3);
+        body.Categories.Items.Should().Contain(c => c.Id == categories[0].Id);
     }
 
     [Fact]
     public async Task AdminGetAllCategories_WithIsActiveFilter_ReturnsOnlyActiveCategories()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
-
-        var activeCategory = CategoryFactory.Create(contentType.Id);
-        var inactiveCategory = CategoryFactory.CreateInactive(contentType.Id);
-        context.Categories.AddRange(activeCategory, inactiveCategory);
-        await context.SaveChangesAsync();
+        CategoryEntity activeCategory = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            activeCategory = CategoryFactory.Create(contentType.Id);
+            CategoryEntity inactiveCategory = CategoryFactory.CreateInactive(contentType.Id);
+            ctx.Categories.AddRange(activeCategory, inactiveCategory);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -76,29 +75,23 @@ public class AdminGetAllCategoriesEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var categoriesProp = doc.RootElement.GetProperty("categories");
-        var items = categoriesProp.GetProperty("items");
-
-        for (var i = 0; i < items.GetArrayLength(); i++)
-        {
-            items[i].GetProperty("isActive").GetBoolean().Should().BeTrue();
-        }
+        var body = await response.ReadAsAsync<AdminGetAllCategoriesResponse>();
+        body.Categories.Items.Should().OnlyContain(c => c.IsActive);
+        body.Categories.Items.Should().Contain(c => c.Id == activeCategory.Id);
     }
 
     [Fact]
     public async Task AdminGetAllCategories_WithIsFreeFilter_ReturnsOnlyFreeCategories()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
-
-        var freeCategory = CategoryFactory.CreateFree(contentType.Id);
-        var paidCategory = CategoryFactory.CreatePaid(contentType.Id);
-        context.Categories.AddRange(freeCategory, paidCategory);
-        await context.SaveChangesAsync();
+        CategoryEntity freeCategory = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            freeCategory = CategoryFactory.CreateFree(contentType.Id);
+            CategoryEntity paidCategory = CategoryFactory.CreatePaid(contentType.Id);
+            ctx.Categories.AddRange(freeCategory, paidCategory);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -106,14 +99,8 @@ public class AdminGetAllCategoriesEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var categoriesProp = doc.RootElement.GetProperty("categories");
-        var items = categoriesProp.GetProperty("items");
-
-        for (var i = 0; i < items.GetArrayLength(); i++)
-        {
-            items[i].GetProperty("isFree").GetBoolean().Should().BeTrue();
-        }
+        var body = await response.ReadAsAsync<AdminGetAllCategoriesResponse>();
+        body.Categories.Items.Should().OnlyContain(c => c.IsFree);
+        body.Categories.Items.Should().Contain(c => c.Id == freeCategory.Id);
     }
 }

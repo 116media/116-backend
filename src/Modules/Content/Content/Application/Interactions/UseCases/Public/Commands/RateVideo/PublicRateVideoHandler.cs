@@ -43,6 +43,10 @@ public class PublicRateVideoHandler(IVideoRepository videoRepository, IContentUn
             await videoRepository.AddRatingAsync(rating: newRating, cancellationToken: cancellationToken);
         }
 
+        // Persist the rating before recomputing aggregates so the freshly added/updated
+        // rating is reflected in the count and average (the read below queries the store).
+        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
         List<VideoRatingEntity> allRatings = await videoRepository.GetAllRatingsForVideoAsync(
             videoId: command.VideoId,
             cancellationToken: cancellationToken

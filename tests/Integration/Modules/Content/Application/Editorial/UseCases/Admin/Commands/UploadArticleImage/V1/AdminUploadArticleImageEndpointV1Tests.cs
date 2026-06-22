@@ -1,3 +1,7 @@
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArticleImage.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -13,12 +17,14 @@ public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseAp
     public async Task UploadArticleImage_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var nonExistentId = Guid.NewGuid();
 
         using var formContent = new MultipartFormDataContent();
         formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}/images", formContent);
+        var response = await Client.PostAsync(
+            Routes.Admin.Editorial.Images(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            formContent
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -27,12 +33,14 @@ public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseAp
     public async Task UploadArticleImage_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var nonExistentId = Guid.NewGuid();
 
         using var formContent = new MultipartFormDataContent();
         formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}/images", formContent);
+        var response = await Client.PostAsync(
+            Routes.Admin.Editorial.Images(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            formContent
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -41,12 +49,14 @@ public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseAp
     public async Task UploadArticleImage_AsAdmin_ReturnsForbidden()
     {
         Client.AuthenticateAsAdmin();
-        var nonExistentId = Guid.NewGuid();
 
         using var formContent = new MultipartFormDataContent();
         formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}/images", formContent);
+        var response = await Client.PostAsync(
+            Routes.Admin.Editorial.Images(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            formContent
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -55,12 +65,15 @@ public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseAp
     public async Task UploadArticleImage_AsSuperAdmin_WithNonExistentId_ReturnsError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var nonExistentId = Guid.NewGuid();
 
         using var formContent = new MultipartFormDataContent();
         formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
+        formContent.Add(new StringContent("Cover"), "imageType");
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}/images", formContent);
+        var response = await Client.PostAsync(
+            Routes.Admin.Editorial.Images(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            formContent
+        );
 
         response
             .StatusCode.Should()
@@ -75,7 +88,10 @@ public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseAp
         using var formContent = new MultipartFormDataContent();
         formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Articles}/not-a-guid/images", formContent);
+        var response = await Client.PostAsync(
+            $"{ApiRoutes.Admin.Articles}/not-a-guid/{EditorialRouteConstants.Images}",
+            formContent
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -84,27 +100,36 @@ public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseAp
     public async Task UploadArticleImage_WithNoFile_ShouldReturnBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
-        var id = Guid.NewGuid();
+        Guid id = Guid.NewGuid();
 
         using var formContent = new MultipartFormDataContent();
         formContent.Add(new StringContent("Cover"), "imageType");
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Articles}/{id}/images", formContent);
+        var response = await Client.PostAsync(
+            Routes.Admin.Editorial.Images(EditorialRouteConstants.Articles, id),
+            formContent
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+    /// <summary>
+    /// Verifies that uploading a cover image returns 201 Created, returns the stubbed
+    /// Cloudinary URL in the typed response, and persists a Cover ArticleImage row.
+    /// </summary>
     [Fact]
     public async Task UploadArticleImage_AsSuperAdmin_WithCoverImage_ReturnsCreated()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var article = ArticleFactory.Create(category.Id);
-        seedContext.ContentTypes.Add(contentType);
-        seedContext.Categories.Add(category);
-        seedContext.Articles.Add(article);
-        await seedContext.SaveChangesAsync();
+        ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ArticleEntity a = ArticleFactory.Create(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Articles.Add(a);
+            return a;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -112,15 +137,30 @@ public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseAp
         var fileContent = new ByteArrayContent(new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 });
         fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
         formContent.Add(fileContent, "file", "cover.jpg");
-        formContent.Add(new StringContent("Cover"), "imageType");
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Articles}/{article.Id}/images", formContent);
+        // imageType is a plain minimal-API parameter bound from the query string.
+        var response = await Client.PostAsync(
+            $"{Routes.Admin.Editorial.Images(EditorialRouteConstants.Articles, article.Id)}"
+                + $"?imageType={EnumArticleImageType.Cover}",
+            formContent
+        );
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.Created, HttpStatusCode.OK, HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var body = await response.ReadAsAsync<AdminUploadArticleImageResponse>();
+        body.Image.Id.Should().NotBeEmpty();
+        body.Image.ImageType.Should().Be(EnumArticleImageType.Cover);
+        body.Image.Url.Should().Contain("res.cloudinary.com/test-cloud");
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        ArticleImageEntity? persisted = await ctx.ArticleImages.FindAsync(body.Image.Id);
+        persisted.Should().NotBeNull();
+        persisted!.ArticleId.Should().Be(article.Id);
+        persisted.ImageType.Should().Be(EnumArticleImageType.Cover);
+        persisted.Url.Should().Contain("res.cloudinary.com/test-cloud");
     }
 
     /// <summary>
-    /// Verifies that uploading an article image with an invalid article ID format
+    /// Verifies that uploading an article image with an empty article ID
     /// returns a 400 Bad Request response from the IsValidGuid validator rule.
     /// </summary>
     [Fact]
@@ -133,7 +173,10 @@ public class AdminUploadArticleImageEndpointV1Tests(PostgresFixture db) : BaseAp
         fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
         formContent.Add(fileContent, "file", "test.jpg");
 
-        var response = await Client.PostAsync($"{ApiRoutes.Admin.Articles}/{Guid.Empty}/images", formContent);
+        var response = await Client.PostAsync(
+            Routes.Admin.Editorial.Images(EditorialRouteConstants.Articles, Guid.Empty),
+            formContent
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }

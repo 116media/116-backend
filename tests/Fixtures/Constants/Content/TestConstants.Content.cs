@@ -235,6 +235,8 @@ public static partial class TestConstants
         /// </summary>
         public static class Interactions
         {
+            public const int MaxCommentBodyLength = 1000;
+            public const int MaxPlaylistNameLength = 100;
             public const string ValidCommentBody = "This is a valid test comment body.";
             public const string ValidPlaylistName = "My Test Playlist";
             public const short ValidStarRating = 4;

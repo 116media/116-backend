@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetAllCustomers.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -33,10 +34,12 @@ public class AdminGetAllCustomersEndpointV1Tests(PostgresFixture db) : BaseApiTe
     [Fact]
     public async Task GetAllCustomers_AsSuperAdmin_ReturnsOkWithItems()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var customers = CustomerFactory.CreateMany(3);
-        context.Customers.AddRange(customers);
-        await context.SaveChangesAsync();
+        List<CustomerEntity> customers = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            customers = CustomerFactory.CreateMany(3);
+            ctx.Customers.AddRange(customers);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -44,13 +47,11 @@ public class AdminGetAllCustomersEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var root = doc.RootElement;
-
-        root.TryGetProperty("customers", out var customersProp).Should().BeTrue();
-        customersProp.TryGetProperty("items", out var items).Should().BeTrue();
-        items.GetArrayLength().Should().BeGreaterThanOrEqualTo(3);
+        var body = await response.ReadAsAsync<AdminGetAllCustomersResponse>();
+        body.Customers.PageIndex.Should().Be(0);
+        body.Customers.PageSize.Should().Be(10);
+        body.Customers.Count.Should().BeGreaterThanOrEqualTo(3);
+        body.Customers.Items.Should().Contain(c => c.Id == customers[0].Id);
     }
 
     [Fact]
@@ -61,5 +62,8 @@ public class AdminGetAllCustomersEndpointV1Tests(PostgresFixture db) : BaseApiTe
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Customers}?pageIndex=0&pageSize=10");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminGetAllCustomersResponse>();
+        body.Customers.Should().NotBeNull();
     }
 }

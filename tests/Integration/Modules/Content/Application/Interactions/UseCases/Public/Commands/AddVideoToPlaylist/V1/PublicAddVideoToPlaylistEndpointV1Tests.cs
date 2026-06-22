@@ -1,5 +1,7 @@
+using _116.Content.Application.Interactions.UseCases.Public.Commands.AddVideoToPlaylist.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Public.Commands.AddVideoToPlaylist.V1;
@@ -10,13 +12,37 @@ namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCas
 [Collection("Database")]
 public class PublicAddVideoToPlaylistEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<VideoEntity> SeedPublishedVideoAsync()
+    {
+        return await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            VideoEntity video = VideoFactory.CreatePublished(category.Id);
+            ctx.Videos.Add(video);
+            return video;
+        });
+    }
+
+    private async Task<PlaylistEntity> SeedPlaylistAsync(Guid userId)
+    {
+        return await SeedAsync<ContentDbContext, PlaylistEntity>(ctx =>
+        {
+            PlaylistEntity playlist = PlaylistFactory.Create(userId);
+            ctx.Playlists.Add(playlist);
+            return playlist;
+        });
+    }
+
     [Fact]
     public async Task AddVideoToPlaylist_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var request = new { VideoId = Guid.NewGuid(), SortOrder = 1 };
+        PublicAddVideoToPlaylistRequest request = new PublicAddVideoToPlaylistRequestBuilder().Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Public.Playlists}/{Guid.NewGuid()}/videos", request);
+        var response = await Client.PostAsJsonAsync(Routes.Public.Playlists.Videos(Guid.NewGuid()), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -25,11 +51,33 @@ public class PublicAddVideoToPlaylistEndpointV1Tests(PostgresFixture db) : BaseA
     public async Task AddVideoToPlaylist_AsVisitor_NonExistentPlaylist_ReturnsNotFound()
     {
         Client.AuthenticateAsVisitor();
-        var request = new { VideoId = Guid.NewGuid(), SortOrder = 1 };
+        PublicAddVideoToPlaylistRequest request = new PublicAddVideoToPlaylistRequestBuilder().Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Public.Playlists}/{Guid.NewGuid()}/videos", request);
+        var response = await Client.PostAsJsonAsync(Routes.Public.Playlists.Videos(Guid.NewGuid()), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task AddVideoToPlaylist_AsVisitor_WithValidData_AddsJoinRow()
+    {
+        VideoEntity video = await SeedPublishedVideoAsync();
+        PlaylistEntity playlist = await SeedPlaylistAsync(TestUser.VisitorId);
+        Client.AuthenticateAsVisitor();
+        PublicAddVideoToPlaylistRequest request = new PublicAddVideoToPlaylistRequestBuilder()
+            .WithVideoId(video.Id)
+            .Build();
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Playlists.Videos(playlist.Id), request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        PublicAddVideoToPlaylistResponse body = await response.ReadAsAsync<PublicAddVideoToPlaylistResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using ContentDbContext verifyDb = CreateDbContext<ContentDbContext>();
+        (await verifyDb.PlaylistVideos.AnyAsync(pv => pv.PlaylistId == playlist.Id && pv.VideoId == video.Id))
+            .Should()
+            .BeTrue();
     }
 
     /// <summary>
@@ -38,32 +86,27 @@ public class PublicAddVideoToPlaylistEndpointV1Tests(PostgresFixture db) : BaseA
     [Fact]
     public async Task AddVideo_WhenAlreadyInPlaylist_ReturnsConflict()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
+        VideoEntity video = await SeedPublishedVideoAsync();
+        PlaylistEntity playlist = await SeedPlaylistAsync(TestUser.VisitorId);
 
-        var category = CategoryFactory.Create(contentType.Id);
-        context.Categories.Add(category);
-        await context.SaveChangesAsync();
-
-        var video = VideoFactory.CreatePublished(category.Id);
-        context.Videos.Add(video);
-        await context.SaveChangesAsync();
-
-        var playlist = PlaylistFactory.Create(User.VisitorId);
-        context.Playlists.Add(playlist);
-        await context.SaveChangesAsync();
-
-        var playlistVideo = PlaylistVideoEntity.Create(Guid.NewGuid(), playlist.Id, video.Id, sortOrder: 1);
-        context.PlaylistVideos.Add(playlistVideo);
-        await context.SaveChangesAsync();
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.PlaylistVideos.Add(PlaylistVideoEntity.Create(Guid.NewGuid(), playlist.Id, video.Id, sortOrder: 1));
+        });
 
         Client.AuthenticateAsVisitor();
-        var request = new { VideoId = video.Id, SortOrder = 2 };
+        PublicAddVideoToPlaylistRequest request = new PublicAddVideoToPlaylistRequestBuilder()
+            .WithVideoId(video.Id)
+            .WithSortOrder(2)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Public.Playlists}/{playlist.Id}/videos", request);
+        var response = await Client.PostAsJsonAsync(Routes.Public.Playlists.Videos(playlist.Id), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+
+        await using ContentDbContext verifyDb = CreateDbContext<ContentDbContext>();
+        (await verifyDb.PlaylistVideos.CountAsync(pv => pv.PlaylistId == playlist.Id && pv.VideoId == video.Id))
+            .Should()
+            .Be(1);
     }
 }

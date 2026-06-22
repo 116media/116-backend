@@ -1,6 +1,8 @@
+using _116.Content.Application.Interactions.UseCases.Public.Commands.EditArticleComment.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
-using static _116.Tests.Fixtures.Constants.TestConstants;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Public.Commands.EditArticleComment.V1;
 
@@ -10,14 +12,38 @@ namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCas
 [Collection("Database")]
 public class PublicEditArticleCommentEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<ArticleEntity> SeedArticleAsync()
+    {
+        return await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            ArticleEntity article = ArticleFactory.CreatePublished(category.Id);
+            ctx.Articles.Add(article);
+            return article;
+        });
+    }
+
+    private async Task<ArticleCommentEntity> SeedCommentAsync(Guid articleId, Guid authorId)
+    {
+        return await SeedAsync<ContentDbContext, ArticleCommentEntity>(ctx =>
+        {
+            ArticleCommentEntity comment = ArticleCommentFactory.Create(articleId, authorId);
+            ctx.ArticleComments.Add(comment);
+            return comment;
+        });
+    }
+
     [Fact]
     public async Task EditArticleComment_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var request = new { Body = "Updated comment body." };
+        PublicEditArticleCommentRequest request = new PublicEditArticleCommentRequestBuilder().Build();
 
         var response = await Client.PutAsJsonAsync(
-            $"{ApiRoutes.Public.Articles}/{Guid.NewGuid()}/comments/{Guid.NewGuid()}",
+            Routes.Public.Articles.Comment(Guid.NewGuid(), Guid.NewGuid()),
             request
         );
 
@@ -28,14 +54,14 @@ public class PublicEditArticleCommentEndpointV1Tests(PostgresFixture db) : BaseA
     public async Task EditArticleComment_AsVisitor_NonExistentComment_ReturnsNotFound()
     {
         Client.AuthenticateAsVisitor();
-        var request = new { Body = "Updated comment body." };
+        PublicEditArticleCommentRequest request = new PublicEditArticleCommentRequestBuilder().Build();
 
         var response = await Client.PutAsJsonAsync(
-            $"{ApiRoutes.Public.Articles}/{Guid.NewGuid()}/comments/{Guid.NewGuid()}",
+            Routes.Public.Articles.Comment(Guid.NewGuid(), Guid.NewGuid()),
             request
         );
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     /// <summary>
@@ -44,28 +70,13 @@ public class PublicEditArticleCommentEndpointV1Tests(PostgresFixture db) : BaseA
     [Fact]
     public async Task EditComment_WhenNotExists_ReturnsNotFound()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
-
-        var category = CategoryFactory.Create(contentType.Id);
-        context.Categories.Add(category);
-        await context.SaveChangesAsync();
-
-        var article = ArticleFactory.CreatePublished(category.Id);
-        context.Articles.Add(article);
-        await context.SaveChangesAsync();
-
+        ArticleEntity article = await SeedArticleAsync();
         Client.AuthenticateAsVisitor();
-        var request = new { Body = "Updated comment body." };
+        PublicEditArticleCommentRequest request = new PublicEditArticleCommentRequestBuilder().Build();
 
-        var response = await Client.PutAsJsonAsync(
-            $"{ApiRoutes.Public.Articles}/{article.Id}/comments/{Guid.NewGuid()}",
-            request
-        );
+        var response = await Client.PutAsJsonAsync(Routes.Public.Articles.Comment(article.Id, Guid.NewGuid()), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     /// <summary>
@@ -74,31 +85,37 @@ public class PublicEditArticleCommentEndpointV1Tests(PostgresFixture db) : BaseA
     [Fact]
     public async Task EditComment_WhenNotOwner_ReturnsBadRequest()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
-
-        var category = CategoryFactory.Create(contentType.Id);
-        context.Categories.Add(category);
-        await context.SaveChangesAsync();
-
-        var article = ArticleFactory.CreatePublished(category.Id);
-        context.Articles.Add(article);
-        await context.SaveChangesAsync();
-
-        var comment = ArticleCommentFactory.Create(article.Id, User.SuperAdminId);
-        context.ArticleComments.Add(comment);
-        await context.SaveChangesAsync();
+        ArticleEntity article = await SeedArticleAsync();
+        ArticleCommentEntity comment = await SeedCommentAsync(article.Id, TestUser.SuperAdminId);
 
         Client.AuthenticateAsVisitor();
-        var request = new { Body = "Trying to edit someone else's comment." };
+        PublicEditArticleCommentRequest request = new PublicEditArticleCommentRequestBuilder().Build();
 
-        var response = await Client.PutAsJsonAsync(
-            $"{ApiRoutes.Public.Articles}/{article.Id}/comments/{comment.Id}",
-            request
-        );
+        var response = await Client.PutAsJsonAsync(Routes.Public.Articles.Comment(article.Id, comment.Id), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+    }
+
+    /// <summary>
+    /// Verifies that the owner can edit their own comment and the new body persists.
+    /// </summary>
+    [Fact]
+    public async Task EditComment_AsOwner_UpdatesCommentBody()
+    {
+        ArticleEntity article = await SeedArticleAsync();
+        ArticleCommentEntity comment = await SeedCommentAsync(article.Id, TestUser.VisitorId);
+
+        Client.AuthenticateAsVisitor();
+        PublicEditArticleCommentRequest request = new PublicEditArticleCommentRequestBuilder().Build();
+
+        var response = await Client.PutAsJsonAsync(Routes.Public.Articles.Comment(article.Id, comment.Id), request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        PublicEditArticleCommentResponse body = await response.ReadAsAsync<PublicEditArticleCommentResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using ContentDbContext verifyDb = CreateDbContext<ContentDbContext>();
+        ArticleCommentEntity? stored = await verifyDb.ArticleComments.FindAsync(comment.Id);
+        stored!.Body.Should().Be(request.Body);
     }
 }

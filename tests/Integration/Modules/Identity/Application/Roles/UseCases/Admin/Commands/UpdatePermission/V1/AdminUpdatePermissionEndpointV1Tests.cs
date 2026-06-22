@@ -1,5 +1,7 @@
-using System.Text.Json;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdatePermission.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Commands.UpdatePermission.V1;
@@ -23,30 +25,36 @@ public class AdminUpdatePermissionEndpointV1Tests(PostgresFixture db) : BaseApiT
     [Fact]
     public async Task UpdatePermission_ShouldReturn200_WhenSuperAdminWithValidData()
     {
+        PermissionEntity permission = await SeedAsync<IdentityDbContext, PermissionEntity>(ctx =>
+        {
+            PermissionEntity entity = PermissionFactory.Create(
+                UniqueResource("up"),
+                UniqueAction("up"),
+                "To be updated"
+            );
+            ctx.Permissions.Add(entity);
+            return entity;
+        });
+
         Client.AuthenticateAsSuperAdmin();
 
-        var createPayload = new
-        {
-            Resource = UniqueResource("up"),
-            Action = UniqueAction("up"),
-            Description = "To be updated",
-        };
+        AdminUpdatePermissionRequest request = new AdminUpdatePermissionRequestBuilder().Build();
 
-        var createResponse = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, createPayload);
-        var createBody = await createResponse.Content.ReadAsStringAsync();
-        using var createDoc = JsonDocument.Parse(createBody);
-        var permissionId = createDoc.RootElement.GetProperty("permission").GetProperty("id").GetString();
-
-        var updatePayload = new
-        {
-            Resource = UniqueResource("upd"),
-            Action = UniqueAction("upd"),
-            Description = "Updated description",
-        };
-
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Permissions}/{permissionId}", updatePayload);
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Permissions}/{permission.Id}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminUpdatePermissionResponse>();
+        body.Permission.Id.Should().Be(permission.Id);
+        body.Permission.Resource.Should().Be(request.Resource);
+        body.Permission.Action.Should().Be(request.Action);
+        body.Permission.Description.Should().Be(request.Description);
+
+        await using IdentityDbContext context = CreateDbContext<IdentityDbContext>();
+        PermissionEntity? updated = await context.Permissions.FindAsync(permission.Id);
+        updated!.Resource.Should().Be(request.Resource);
+        updated.Action.Should().Be(request.Action);
+        updated.Description.Should().Be(request.Description);
     }
 
     [Fact]
@@ -54,16 +62,11 @@ public class AdminUpdatePermissionEndpointV1Tests(PostgresFixture db) : BaseApiT
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var nonExistentId = Guid.NewGuid();
-        var updatePayload = new
-        {
-            Resource = UniqueResource("nf"),
-            Action = UniqueAction("nf"),
-            Description = "Should not be found",
-        };
+        Guid nonExistentId = Guid.NewGuid();
+        AdminUpdatePermissionRequest request = new AdminUpdatePermissionRequestBuilder().Build();
 
-        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Permissions}/{nonExistentId}", updatePayload);
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Permissions}/{nonExistentId}", request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 }

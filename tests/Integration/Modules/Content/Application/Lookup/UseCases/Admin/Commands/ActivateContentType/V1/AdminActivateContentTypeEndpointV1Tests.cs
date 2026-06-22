@@ -1,3 +1,5 @@
+using _116.Content.Application.Lookup.Constants;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -9,12 +11,22 @@ namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Adm
 [Collection("Database")]
 public class AdminActivateContentTypeEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<bool> IsContentTypeActiveAsync(Guid id)
+    {
+        await using ContentDbContext context = CreateDbContext<ContentDbContext>();
+        ContentTypeEntity? contentType = await context.ContentTypes.FindAsync(id);
+        return contentType!.IsActive;
+    }
+
     [Fact]
     public async Task ActivateContentType_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.ContentTypes}/{Guid.NewGuid()}/activate", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Lookup.Activate(LookupRouteConstants.ContentTypes, Guid.NewGuid()),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -24,39 +36,53 @@ public class AdminActivateContentTypeEndpointV1Tests(PostgresFixture db) : BaseA
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.ContentTypes}/{Guid.NewGuid()}/activate", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Lookup.Activate(LookupRouteConstants.ContentTypes, Guid.NewGuid()),
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task ActivateContentType_AsSuperAdmin_WithValidId_ReturnsOk()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        contentType.Deactivate();
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
+        ContentTypeEntity contentType = await SeedAsync<ContentDbContext, ContentTypeEntity>(ctx =>
+        {
+            ContentTypeEntity entity = ContentTypeFactory.CreateInactive();
+            ctx.ContentTypes.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.ContentTypes}/{contentType.Id}/activate", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Lookup.Activate(LookupRouteConstants.ContentTypes, contentType.Id),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await IsContentTypeActiveAsync(contentType.Id)).Should().BeTrue();
     }
 
     [Fact]
     public async Task ActivateContentType_AsSuperAdmin_AlreadyActive_ReturnsConflict()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        context.ContentTypes.Add(contentType);
-        await context.SaveChangesAsync();
+        ContentTypeEntity contentType = await SeedAsync<ContentDbContext, ContentTypeEntity>(ctx =>
+        {
+            ContentTypeEntity entity = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.ContentTypes}/{contentType.Id}/activate", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Lookup.Activate(LookupRouteConstants.ContentTypes, contentType.Id),
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await IsContentTypeActiveAsync(contentType.Id)).Should().BeTrue();
     }
 }

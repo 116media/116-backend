@@ -1,0 +1,314 @@
+using _116.Content.Application.Catalog.Constants;
+using _116.Content.Application.Commerce.Constants;
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Interactions.Constants;
+using _116.Content.Application.Lookup.Constants;
+using _116.Identity.Application.Auth.Constants;
+using _116.Identity.Application.Roles.Constants;
+using _116.Identity.Application.Session.Constants;
+using _116.Identity.Application.User.Constants;
+using static _116.Tests.Fixtures.Constants.TestConstants;
+
+namespace _116.Tests.Fixtures.Routes;
+
+/// <summary>
+/// Builds sub-resource and action URLs for integration tests from the production
+/// route constants, so no test ever concatenates a literal route segment.
+/// Base collection URLs come from <see cref="Constants.TestConstants.ApiRoutes" />.
+/// </summary>
+public static class Routes
+{
+    /// <summary>
+    /// Admin-scoped route builders.
+    /// </summary>
+    public static class Admin
+    {
+        /// <summary>
+        /// Category sub-resources and actions.
+        /// </summary>
+        public static class Categories
+        {
+            public static string Activate(Guid id) =>
+                $"{ApiRoutes.Admin.Categories}/{id}/{CatalogRouteConstants.Activate}";
+
+            public static string Deactivate(Guid id) =>
+                $"{ApiRoutes.Admin.Categories}/{id}/{CatalogRouteConstants.Deactivate}";
+
+            public static string Pricing(Guid id) =>
+                $"{ApiRoutes.Admin.Categories}/{id}/{CatalogRouteConstants.Pricing}";
+
+            public static string PricingItem(Guid id, Guid pricingId) => $"{Pricing(id)}/{pricingId}";
+        }
+
+        /// <summary>
+        /// Package sub-resources and actions.
+        /// </summary>
+        public static class Packages
+        {
+            public static string Activate(Guid id) =>
+                $"{ApiRoutes.Admin.Packages}/{id}/{CatalogRouteConstants.Activate}";
+
+            public static string Deactivate(Guid id) =>
+                $"{ApiRoutes.Admin.Packages}/{id}/{CatalogRouteConstants.Deactivate}";
+
+            public static string Slots(Guid id) => $"{ApiRoutes.Admin.Packages}/{id}/{CatalogRouteConstants.Slots}";
+
+            public static string Slot(Guid id, Guid slotId) => $"{Slots(id)}/{slotId}";
+        }
+
+        /// <summary>
+        /// Order sub-resources and actions.
+        /// </summary>
+        public static class Orders
+        {
+            public static string Items(Guid orderId) =>
+                $"{ApiRoutes.Admin.Orders}/{orderId}/{CommerceRouteConstants.Items}";
+
+            public static string Item(Guid orderId, Guid itemId) => $"{Items(orderId)}/{itemId}";
+
+            public static string ItemTiers(Guid orderId, Guid itemId) =>
+                $"{Item(orderId, itemId)}/{CommerceRouteConstants.Tiers}";
+
+            public static string ItemTier(Guid orderId, Guid itemId, Guid tierId) =>
+                $"{ItemTiers(orderId, itemId)}/{tierId}";
+
+            public static string Submit(Guid orderId) =>
+                $"{ApiRoutes.Admin.Orders}/{orderId}/{CommerceRouteConstants.Submit}";
+
+            public static string Cancel(Guid orderId) =>
+                $"{ApiRoutes.Admin.Orders}/{orderId}/{CommerceRouteConstants.Cancel}";
+
+            public static string Payment(Guid orderId) =>
+                $"{ApiRoutes.Admin.Orders}/{orderId}/{CommerceRouteConstants.Payment}";
+
+            public static string PaymentProof(Guid orderId) => $"{Payment(orderId)}/{CommerceRouteConstants.Proof}";
+
+            public static string VerifyPayment(Guid orderId) => $"{Payment(orderId)}/{CommerceRouteConstants.Verify}";
+
+            public static string RejectPayment(Guid orderId) => $"{Payment(orderId)}/{CommerceRouteConstants.Reject}";
+        }
+
+        /// <summary>
+        /// Role sub-resources and actions.
+        /// </summary>
+        public static class Roles
+        {
+            public static string Activate(Guid id) => $"{ApiRoutes.Admin.Roles}/{id}/{RoleRouteConstants.Activate}";
+
+            public static string Deactivate(Guid id) => $"{ApiRoutes.Admin.Roles}/{id}/{RoleRouteConstants.Deactivate}";
+
+            public static string Restore(Guid id) => $"{ApiRoutes.Admin.Roles}/{id}/{RoleRouteConstants.Restore}";
+
+            public static string Hard(Guid id) => $"{ApiRoutes.Admin.Roles}/{id}/{RoleRouteConstants.Hard}";
+
+            public static string Permissions(Guid id) =>
+                $"{ApiRoutes.Admin.Roles}/{id}/{RoleRouteConstants.Permissions}";
+
+            public static string Permission(Guid id, Guid permissionId) => $"{Permissions(id)}/{permissionId}";
+        }
+
+        /// <summary>
+        /// Permission actions.
+        /// </summary>
+        public static class Permissions
+        {
+            public static string Activate(Guid id) =>
+                $"{ApiRoutes.Admin.Permissions}/{id}/{PermissionRouteConstants.Activate}";
+
+            public static string Deactivate(Guid id) =>
+                $"{ApiRoutes.Admin.Permissions}/{id}/{PermissionRouteConstants.Deactivate}";
+
+            public static string Restore(Guid id) =>
+                $"{ApiRoutes.Admin.Permissions}/{id}/{PermissionRouteConstants.Restore}";
+
+            public static string Hard(Guid id) => $"{ApiRoutes.Admin.Permissions}/{id}/{PermissionRouteConstants.Hard}";
+        }
+
+        /// <summary>
+        /// Session actions.
+        /// </summary>
+        public static class Sessions
+        {
+            public static string Revoke(Guid sessionId) =>
+                $"{ApiRoutes.Admin.Sessions}/{SessionRouteConstants.Revoke}/{sessionId}";
+
+            public static string ForceLogout(Guid userId) =>
+                $"{ApiRoutes.Admin.Sessions}/{SessionRouteConstants.ForceLogout}/{userId}";
+
+            public static string RefreshToken() => $"{ApiRoutes.Admin.Sessions}/{SessionRouteConstants.RefreshToken}";
+
+            public static string Metrics() => $"{ApiRoutes.Admin.Sessions}/{SessionRouteConstants.Metrics}";
+
+            public static string Export() => $"{ApiRoutes.Admin.Sessions}/{SessionRouteConstants.Export}";
+
+            public static string Cleanup() => $"{ApiRoutes.Admin.Sessions}/{SessionRouteConstants.Cleanup}";
+        }
+
+        /// <summary>
+        /// Editorial (articles/videos/shorts/lyrics) actions.
+        /// </summary>
+        public static class Editorial
+        {
+            public static string Action(string collection, Guid id, string action) =>
+                $"{ApiRoutes.Admin.Base}/{collection}/{id}/{action}";
+
+            public static string Submit(string collection, Guid id) =>
+                Action(collection, id, EditorialRouteConstants.Submit);
+
+            public static string Approve(string collection, Guid id) =>
+                Action(collection, id, EditorialRouteConstants.Approve);
+
+            public static string Publish(string collection, Guid id) =>
+                Action(collection, id, EditorialRouteConstants.Publish);
+
+            public static string Reject(string collection, Guid id) =>
+                Action(collection, id, EditorialRouteConstants.Reject);
+
+            public static string Archive(string collection, Guid id) =>
+                Action(collection, id, EditorialRouteConstants.Archive);
+
+            public static string Seo(string collection, Guid id) => Action(collection, id, EditorialRouteConstants.Seo);
+
+            public static string Tags(string collection, Guid id) =>
+                Action(collection, id, EditorialRouteConstants.Tags);
+
+            public static string Thumbnail(string collection, Guid id) =>
+                Action(collection, id, EditorialRouteConstants.Thumbnail);
+
+            public static string Images(string collection, Guid id) =>
+                Action(collection, id, EditorialRouteConstants.Images);
+
+            public static string Youtube(string collection, Guid id) =>
+                Action(collection, id, EditorialRouteConstants.Youtube);
+
+            public static string Shoot(string collection, Guid id) =>
+                Action(collection, id, EditorialRouteConstants.Shoot);
+
+            public static string Unpromote(string collection, Guid id) =>
+                Action(collection, id, EditorialRouteConstants.Unpromote);
+        }
+
+        /// <summary>
+        /// Lookup (content-types/pricing-tiers/promotion-levels/tags) actions.
+        /// </summary>
+        public static class Lookup
+        {
+            public static string Activate(string collection, Guid id) =>
+                $"{ApiRoutes.Admin.Base}/{collection}/{id}/{LookupRouteConstants.Activate}";
+
+            public static string Deactivate(string collection, Guid id) =>
+                $"{ApiRoutes.Admin.Base}/{collection}/{id}/{LookupRouteConstants.Deactivate}";
+        }
+    }
+
+    /// <summary>
+    /// Public-scoped route builders.
+    /// </summary>
+    public static class Public
+    {
+        /// <summary>
+        /// Public auth action endpoints.
+        /// </summary>
+        public static class Auth
+        {
+            public static string Login() => $"{ApiRoutes.Public.Auth}/{AuthRouteConstants.Login}";
+
+            public static string SignUp() => $"{ApiRoutes.Public.Auth}/{AuthRouteConstants.SignUp}";
+
+            public static string ChangePassword() => $"{ApiRoutes.Public.Auth}/{AuthRouteConstants.ChangePassword}";
+
+            public static string SetPassword() => $"{ApiRoutes.Public.Auth}/{AuthRouteConstants.SetPassword}";
+
+            public static string ForgotPassword() => $"{ApiRoutes.Public.Auth}/{AuthRouteConstants.ForgotPassword}";
+
+            public static string ResetPassword() => $"{ApiRoutes.Public.Auth}/{AuthRouteConstants.ResetPassword}";
+
+            public static string ResendOtp() => $"{ApiRoutes.Public.Auth}/{AuthRouteConstants.ResendOtp}";
+
+            public static string VerifyOtp() => $"{ApiRoutes.Public.Auth}/{AuthRouteConstants.VerifyOtp}";
+
+            public static string SignOut() => $"{ApiRoutes.Public.Auth}/{AuthRouteConstants.SignOut}";
+
+            public static string SignOutAll() => $"{ApiRoutes.Public.Auth}/{AuthRouteConstants.SignOutAll}";
+
+            public static string SocialLogin() => $"{ApiRoutes.Public.Auth}/{AuthRouteConstants.SocialLogin}";
+        }
+
+        /// <summary>
+        /// Authenticated-user ("me") endpoints.
+        /// </summary>
+        public static class Me
+        {
+            public static string Roles() => $"{ApiRoutes.Public.Me}/{RoleRouteConstants.Endpoint}";
+
+            public static string Avatar() => $"{ApiRoutes.Public.Me}/{UserRouteConstants.Avatar}";
+
+            public static string Profile() => $"{ApiRoutes.Public.Me}/{UserRouteConstants.Profile}";
+
+            public static string Bookmarks() => $"{ApiRoutes.Public.Me}/{InteractionsRouteConstants.Bookmarks}";
+
+            public static string Playlists() => $"{ApiRoutes.Public.Me}/{InteractionsRouteConstants.Playlists}";
+        }
+
+        /// <summary>
+        /// Article interaction endpoints.
+        /// </summary>
+        public static class Articles
+        {
+            public static string Likes(Guid id) =>
+                $"{ApiRoutes.Public.Articles}/{id}/{InteractionsRouteConstants.Likes}";
+
+            public static string Bookmarks(Guid id) =>
+                $"{ApiRoutes.Public.Articles}/{id}/{InteractionsRouteConstants.Bookmarks}";
+
+            public static string Comments(Guid id) =>
+                $"{ApiRoutes.Public.Articles}/{id}/{InteractionsRouteConstants.Comments}";
+
+            public static string Comment(Guid id, Guid commentId) => $"{Comments(id)}/{commentId}";
+
+            public static string Shares(Guid id) =>
+                $"{ApiRoutes.Public.Articles}/{id}/{InteractionsRouteConstants.Shares}";
+        }
+
+        /// <summary>
+        /// Video interaction endpoints.
+        /// </summary>
+        public static class Videos
+        {
+            public static string Ratings(Guid id) =>
+                $"{ApiRoutes.Public.Videos}/{id}/{InteractionsRouteConstants.Ratings}";
+
+            public static string Shares(Guid id) =>
+                $"{ApiRoutes.Public.Videos}/{id}/{InteractionsRouteConstants.Shares}";
+        }
+
+        /// <summary>
+        /// Short-video interaction endpoints.
+        /// </summary>
+        public static class Shorts
+        {
+            public static string Likes(Guid id) => $"{ApiRoutes.Public.Shorts}/{id}/{InteractionsRouteConstants.Likes}";
+
+            public static string Bookmarks(Guid id) =>
+                $"{ApiRoutes.Public.Shorts}/{id}/{InteractionsRouteConstants.Bookmarks}";
+
+            public static string Shares(Guid id) =>
+                $"{ApiRoutes.Public.Shorts}/{id}/{InteractionsRouteConstants.Shares}";
+
+            public static string Views(Guid id) => $"{ApiRoutes.Public.Shorts}/{id}/{InteractionsRouteConstants.Views}";
+        }
+
+        /// <summary>
+        /// Playlist endpoints.
+        /// </summary>
+        public static class Playlists
+        {
+            public static string ById(Guid id) => $"{ApiRoutes.Public.Playlists}/{id}";
+
+            public static string Videos(Guid id) =>
+                $"{ApiRoutes.Public.Playlists}/{id}/{InteractionsRouteConstants.PlaylistVideos}";
+
+            public static string Video(Guid id, Guid videoId) => $"{Videos(id)}/{videoId}";
+        }
+    }
+}

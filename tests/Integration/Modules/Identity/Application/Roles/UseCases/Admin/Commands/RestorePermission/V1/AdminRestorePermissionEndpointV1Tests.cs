@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.RestorePermission.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -20,28 +21,34 @@ public class AdminRestorePermissionEndpointV1Tests(PostgresFixture db) : BaseApi
     /// </summary>
     private static string UniqueAction(string prefix = "act") => $"{prefix}_{Guid.NewGuid().ToString("N")[..8]}";
 
+    private async Task<bool> IsPermissionDeletedAsync(Guid id)
+    {
+        await using IdentityDbContext ctx = CreateDbContext<IdentityDbContext>();
+        PermissionEntity? permission = await ctx.Permissions.FindAsync(id);
+        return permission!.IsDeleted;
+    }
+
     [Fact]
     public async Task RestorePermission_ShouldReturn200_WhenSuperAdminAfterSoftDelete()
     {
+        PermissionEntity permission = await SeedAsync<IdentityDbContext, PermissionEntity>(ctx =>
+        {
+            PermissionEntity entity = PermissionFactory.CreateDeleted();
+            ctx.Permissions.Add(entity);
+            return entity;
+        });
+
         Client.AuthenticateAsSuperAdmin();
 
-        var createPayload = new
-        {
-            Resource = UniqueResource("rs"),
-            Action = UniqueAction("rs"),
-            Description = "To be restored",
-        };
-
-        var createResponse = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, createPayload);
-        var createBody = await createResponse.Content.ReadAsStringAsync();
-        using var createDoc = JsonDocument.Parse(createBody);
-        var permissionId = createDoc.RootElement.GetProperty("permission").GetProperty("id").GetString();
-
-        await Client.DeleteAsync($"{ApiRoutes.Admin.Permissions}/{permissionId}");
-
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Permissions}/{permissionId}/restore", null);
+        var response = await Client.PatchAsync(Routes.Admin.Permissions.Restore(permission.Id), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminRestorePermissionResponse>();
+        body.Permission.Id.Should().Be(permission.Id);
+        body.Permission.IsDeleted.Should().BeFalse();
+
+        (await IsPermissionDeletedAsync(permission.Id)).Should().BeFalse();
     }
 
     /// <summary>
@@ -50,15 +57,18 @@ public class AdminRestorePermissionEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task RestorePermission_WhenNotDeleted_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var permission = PermissionFactory.Create(UniqueResource("rn"), UniqueAction("rn"));
-        seedContext.Permissions.Add(permission);
-        await seedContext.SaveChangesAsync();
+        PermissionEntity permission = await SeedAsync<IdentityDbContext, PermissionEntity>(ctx =>
+        {
+            PermissionEntity entity = PermissionFactory.Create(UniqueResource("rn"), UniqueAction("rn"));
+            ctx.Permissions.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Permissions}/{permission.Id}/restore", null);
+        var response = await Client.PatchAsync(Routes.Admin.Permissions.Restore(permission.Id), null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await IsPermissionDeletedAsync(permission.Id)).Should().BeFalse();
     }
 }

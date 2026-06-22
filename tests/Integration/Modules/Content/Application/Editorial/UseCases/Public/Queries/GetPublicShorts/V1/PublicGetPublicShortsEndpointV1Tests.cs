@@ -1,3 +1,8 @@
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicShorts.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetPublicShorts.V1;
 
 /// <summary>
@@ -9,10 +14,30 @@ public class PublicGetPublicShortsEndpointV1Tests(PostgresFixture db) : BaseApiT
     [Fact]
     public async Task GetShorts_AsAnonymous_ReturnsOk()
     {
+        ShortVideoEntity activeShort = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.Create();
+            ctx.ShortVideos.Add(entity);
+            return entity;
+        });
+        ShortVideoEntity inactiveShort = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.CreateInactive();
+            ctx.ShortVideos.Add(entity);
+            return entity;
+        });
+
         Client.ClearAuthentication();
 
         var response = await Client.GetAsync(ApiRoutes.Public.Shorts);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetPublicShortsResponse body = await response.ReadAsAsync<PublicGetPublicShortsResponse>();
+        body.ShortVideos.Items.Should().Contain(item => item.Id == activeShort.Id);
+        body.ShortVideos.Items.Should().NotContain(item => item.Id == inactiveShort.Id);
+        body.ShortVideos.Items.Should().OnlyContain(item => item.IsActive);
+        body.ShortVideos.PageIndex.Should().Be(0);
+        body.ShortVideos.PageSize.Should().Be(10);
     }
 }

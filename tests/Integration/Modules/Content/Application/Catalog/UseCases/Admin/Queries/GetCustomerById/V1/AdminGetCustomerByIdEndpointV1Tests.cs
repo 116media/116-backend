@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Queries.GetCustomerById.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -10,6 +11,16 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminGetCustomerByIdEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<CustomerEntity> SeedCustomerAsync()
+    {
+        return await SeedAsync<ContentDbContext, CustomerEntity>(ctx =>
+        {
+            CustomerEntity customer = CustomerFactory.Create();
+            ctx.Customers.Add(customer);
+            return customer;
+        });
+    }
+
     [Fact]
     public async Task GetCustomerById_WithNoAuth_ReturnsUnauthorized()
     {
@@ -23,10 +34,7 @@ public class AdminGetCustomerByIdEndpointV1Tests(PostgresFixture db) : BaseApiTe
     [Fact]
     public async Task GetCustomerById_AsVisitor_ReturnsForbidden()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var customer = CustomerFactory.Create();
-        context.Customers.Add(customer);
-        await context.SaveChangesAsync();
+        CustomerEntity customer = await SeedCustomerAsync();
 
         Client.AuthenticateAsVisitor();
 
@@ -38,10 +46,7 @@ public class AdminGetCustomerByIdEndpointV1Tests(PostgresFixture db) : BaseApiTe
     [Fact]
     public async Task GetCustomerById_AsSuperAdmin_WithExistingCustomer_ReturnsOk()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var customer = CustomerFactory.Create();
-        context.Customers.Add(customer);
-        await context.SaveChangesAsync();
+        CustomerEntity customer = await SeedCustomerAsync();
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -49,11 +54,10 @@ public class AdminGetCustomerByIdEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var customerProp = doc.RootElement.GetProperty("customer");
-
-        customerProp.GetProperty("id").GetString().Should().Be(customer.Id.ToString());
+        var body = await response.ReadAsAsync<AdminGetCustomerByIdResponse>();
+        body.Customer.Id.Should().Be(customer.Id);
+        body.Customer.FullName.Should().Be(customer.FullName);
+        body.Customer.Email.Should().Be(customer.Email);
     }
 
     [Fact]
@@ -63,6 +67,6 @@ public class AdminGetCustomerByIdEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Customers}/{Guid.NewGuid()}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 }

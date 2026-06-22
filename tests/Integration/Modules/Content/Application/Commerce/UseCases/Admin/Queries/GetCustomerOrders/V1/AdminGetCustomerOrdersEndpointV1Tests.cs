@@ -1,4 +1,7 @@
-using System.Net.Http.Json;
+using _116.Content.Application.Commerce.Constants;
+using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetCustomerOrders.V1;
+using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -13,30 +16,43 @@ public class AdminGetCustomerOrdersEndpointV1Tests(PostgresFixture db) : BaseApi
     [Fact]
     public async Task GetCustomerOrders_AsSuperAdmin_WithValidCustomer_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var customer = CustomerFactory.Create();
-        seedContext.Customers.Add(customer);
-        await seedContext.SaveChangesAsync();
-
-        var order = ContentOrderFactory.CreateForCustomer(customer.Id);
-        seedContext.ContentOrders.Add(order);
-        await seedContext.SaveChangesAsync();
+        CustomerEntity customer = CustomerFactory.Create();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Customers}/{customer.Id}/orders");
+        var response = await Client.GetAsync(
+            $"{ApiRoutes.Admin.Customers}/{customer.Id}/{CommerceRouteConstants.Orders}"
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminGetCustomerOrdersResponse>();
+        body.Orders.Items.Should().Contain(o => o.Id == order.Id);
+
+        ContentOrderSummaryDto dto = body.Orders.Items.Single(o => o.Id == order.Id);
+        dto.CustomerName.Should().Be(customer.FullName);
     }
 
     [Fact]
-    public async Task GetCustomerOrders_WithNonExistentCustomer_ReturnsOkOrNotFound()
+    public async Task GetCustomerOrders_WithNonExistentCustomer_ReturnsEmptyResult()
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Customers}/{Guid.NewGuid()}/orders");
+        var response = await Client.GetAsync(
+            $"{ApiRoutes.Admin.Customers}/{Guid.NewGuid()}/{CommerceRouteConstants.Orders}"
+        );
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.NotFound);
+        if (response.StatusCode == HttpStatusCode.OK)
+        {
+            var body = await response.ReadAsAsync<AdminGetCustomerOrdersResponse>();
+            body.Orders.Items.Should().BeEmpty();
+        }
     }
 
     [Fact]
@@ -44,7 +60,7 @@ public class AdminGetCustomerOrdersEndpointV1Tests(PostgresFixture db) : BaseApi
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Customers}/not-a-guid/orders");
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Customers}/not-a-guid/{CommerceRouteConstants.Orders}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -54,7 +70,9 @@ public class AdminGetCustomerOrdersEndpointV1Tests(PostgresFixture db) : BaseApi
     {
         Client.ClearAuthentication();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Customers}/{Guid.NewGuid()}/orders");
+        var response = await Client.GetAsync(
+            $"{ApiRoutes.Admin.Customers}/{Guid.NewGuid()}/{CommerceRouteConstants.Orders}"
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }

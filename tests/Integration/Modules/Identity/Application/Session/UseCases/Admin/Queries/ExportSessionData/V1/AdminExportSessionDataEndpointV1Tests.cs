@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSessionData.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -15,7 +16,7 @@ public class AdminExportSessionDataEndpointV1Tests(PostgresFixture db) : BaseApi
     {
         Client.ClearAuthentication();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Sessions}/export");
+        var response = await Client.GetAsync(Routes.Admin.Sessions.Export());
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -25,7 +26,7 @@ public class AdminExportSessionDataEndpointV1Tests(PostgresFixture db) : BaseApi
     {
         Client.AuthenticateAsVisitor();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Sessions}/export");
+        var response = await Client.GetAsync(Routes.Admin.Sessions.Export());
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -35,24 +36,31 @@ public class AdminExportSessionDataEndpointV1Tests(PostgresFixture db) : BaseApi
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Sessions}/export");
+        var response = await Client.GetAsync(Routes.Admin.Sessions.Export());
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminExportSessionDataResponse body = await response.ReadAsAsync<AdminExportSessionDataResponse>();
+        body.SessionData.Should().NotBeNull();
     }
 
     [Fact]
     public async Task AdminExportSessions_AsSuperAdmin_WithSeededSessions_Returns200()
     {
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var sessions = SessionFactory.CreateMany(TestUser.SuperAdminId, 5);
-        seedContext.Sessions.AddRange(sessions);
-        await seedContext.SaveChangesAsync();
+        List<SessionEntity> sessions = SessionFactory.CreateMany(TestUser.SuperAdminId, 5);
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Sessions.AddRange(sessions);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Sessions}/export");
+        var response = await Client.GetAsync(Routes.Admin.Sessions.Export());
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminExportSessionDataResponse body = await response.ReadAsAsync<AdminExportSessionDataResponse>();
+        body.SessionData.Should().Contain(s => s.UserId == TestUser.SuperAdminId);
     }
 
     /// <summary>
@@ -64,52 +72,56 @@ public class AdminExportSessionDataEndpointV1Tests(PostgresFixture db) : BaseApi
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Sessions}/export?format=invalid_format");
+        var response = await Client.GetAsync($"{Routes.Admin.Sessions.Export()}?format=invalid_format");
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
     /// Verifies that requesting a session data export with CSV format returns
-    /// a 200 OK response with the correct CSV content type. This exercises
-    /// the ExportFile branch of the endpoint.
+    /// a 200 OK response with the correct CSV content type and a non-empty body.
+    /// This exercises the ExportFile branch of the endpoint.
     /// </summary>
     [Fact]
     public async Task AdminExportSessions_WithCsvFormat_ReturnsFileResponse()
     {
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var sessions = SessionFactory.CreateMany(TestUser.SuperAdminId, 2);
-        seedContext.Sessions.AddRange(sessions);
-        await seedContext.SaveChangesAsync();
+        List<SessionEntity> sessions = SessionFactory.CreateMany(TestUser.SuperAdminId, 2);
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Sessions.AddRange(sessions);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Sessions}/export?format=csv");
+        var response = await Client.GetAsync($"{Routes.Admin.Sessions.Export()}?format=csv");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        response.Content.Headers.ContentType?.MediaType.Should().Be("text/csv");
+        response.Content.Headers.ContentType!.MediaType.Should().Be("text/csv");
+        (await response.Content.ReadAsByteArrayAsync()).Should().NotBeEmpty();
     }
 
     /// <summary>
     /// Verifies that requesting a session data export with XLSX format returns
-    /// a 200 OK response with the correct spreadsheet content type.
+    /// a 200 OK response with the correct spreadsheet content type and a non-empty body.
     /// </summary>
     [Fact]
     public async Task AdminExportSessions_WithXlsxFormat_ReturnsFileResponse()
     {
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var sessions = SessionFactory.CreateMany(TestUser.SuperAdminId, 2);
-        seedContext.Sessions.AddRange(sessions);
-        await seedContext.SaveChangesAsync();
+        List<SessionEntity> sessions = SessionFactory.CreateMany(TestUser.SuperAdminId, 2);
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Sessions.AddRange(sessions);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Sessions}/export?format=xlsx");
+        var response = await Client.GetAsync($"{Routes.Admin.Sessions.Export()}?format=xlsx");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response
-            .Content.Headers.ContentType?.MediaType.Should()
+            .Content.Headers.ContentType!.MediaType.Should()
             .Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        (await response.Content.ReadAsByteArrayAsync()).Should().NotBeEmpty();
     }
 
     /// <summary>
@@ -121,8 +133,8 @@ public class AdminExportSessionDataEndpointV1Tests(PostgresFixture db) : BaseApi
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Admin.Sessions}/export?status=invalid_status");
+        var response = await Client.GetAsync($"{Routes.Admin.Sessions.Export()}?status=invalid_status");
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }

@@ -1,3 +1,7 @@
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveArticle.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -9,13 +13,36 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminApproveArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<ArticleEntity> SeedArticleAsync(Func<Guid, ArticleEntity> create)
+    {
+        return await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ArticleEntity article = create(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Articles.Add(article);
+            return article;
+        });
+    }
+
+    private async Task<EnumContentStatus> GetArticleStatusAsync(Guid id)
+    {
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        ArticleEntity? article = await ctx.Articles.FindAsync(id);
+        return article!.Status;
+    }
+
     [Fact]
     public async Task ApproveArticle_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}/approve", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Approve(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -24,9 +51,11 @@ public class AdminApproveArticleEndpointV1Tests(PostgresFixture db) : BaseApiTes
     public async Task ApproveArticle_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}/approve", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Approve(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -35,9 +64,11 @@ public class AdminApproveArticleEndpointV1Tests(PostgresFixture db) : BaseApiTes
     public async Task ApproveArticle_AsAdmin_ReturnsForbidden()
     {
         Client.AuthenticateAsAdmin();
-        var nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}/approve", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Approve(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -46,56 +77,52 @@ public class AdminApproveArticleEndpointV1Tests(PostgresFixture db) : BaseApiTes
     public async Task ApproveArticle_AsSuperAdmin_WithNonExistentId_ReturnsError()
     {
         Client.AuthenticateAsSuperAdmin();
-        var nonExistentId = Guid.NewGuid();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}/approve", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Approve(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     /// <summary>
     /// Verifies that approving an article that is already in Approved status
-    /// returns a 409 Conflict response.
+    /// returns a 409 Conflict problem and leaves the article approved.
     /// </summary>
     [Fact]
     public async Task ApproveArticle_WhenAlreadyApproved_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var article = ArticleFactory.CreateApproved(category.Id);
-        seedContext.ContentTypes.Add(contentType);
-        seedContext.Categories.Add(category);
-        seedContext.Articles.Add(article);
-        await seedContext.SaveChangesAsync();
-
+        ArticleEntity article = await SeedArticleAsync(ArticleFactory.CreateApproved);
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Articles}/{article.Id}/approve", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Approve(EditorialRouteConstants.Articles, article.Id),
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await GetArticleStatusAsync(article.Id)).Should().Be(EnumContentStatus.Approved);
     }
 
     /// <summary>
-    /// Verifies that approving a PendingReview article succeeds and returns a 200 OK response,
-    /// exercising the happy path of <c>ArticleEntity.Approve</c>.
+    /// Verifies that approving a PendingReview article succeeds, returns IsSuccess true,
+    /// and transitions the persisted status to Approved.
     /// </summary>
     [Fact]
     public async Task ApproveArticle_AsSuperAdmin_PendingReviewArticle_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        var category = CategoryFactory.Create(contentType.Id);
-        var article = ArticleFactory.CreatePendingReview(category.Id);
-        seedContext.ContentTypes.Add(contentType);
-        seedContext.Categories.Add(category);
-        seedContext.Articles.Add(article);
-        await seedContext.SaveChangesAsync();
-
+        ArticleEntity article = await SeedArticleAsync(ArticleFactory.CreatePendingReview);
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Articles}/{article.Id}/approve", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Approve(EditorialRouteConstants.Articles, article.Id),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminApproveArticleResponse>();
+        body.IsSuccess.Should().BeTrue();
+        (await GetArticleStatusAsync(article.Id)).Should().Be(EnumContentStatus.Approved);
     }
 }

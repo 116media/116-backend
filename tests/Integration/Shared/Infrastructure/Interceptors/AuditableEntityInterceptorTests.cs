@@ -1,4 +1,6 @@
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Domain;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Shared.Infrastructure.Interceptors;
@@ -19,11 +21,16 @@ public class AuditableEntityInterceptorTests(PostgresFixture db) : BaseApiTest(d
         context.Permissions.Add(permission);
         await context.SaveChangesAsync();
 
-        var saved = await context.Permissions.FindAsync(permission.Id);
+        await using var queryContext = CreateDbContext<IdentityDbContext>();
+        PermissionEntity? saved = await queryContext.Permissions.FindAsync(permission.Id);
 
+        saved.Should().NotBeNull();
         saved!.CreatedAt.Should().NotBeNull();
         saved.UpdatedAt.Should().NotBeNull();
         saved.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+
+        saved.CreatedBy.Should().Be(nameof(EnumAuditActor.System), "non-HTTP saves are attributed to the system actor");
+        saved.UpdatedBy.Should().Be(nameof(EnumAuditActor.System));
     }
 
     [Fact]
@@ -45,17 +52,18 @@ public class AuditableEntityInterceptorTests(PostgresFixture db) : BaseApiTest(d
         await context.SaveChangesAsync();
 
         await using var queryContext = CreateDbContext<IdentityDbContext>();
-        var updated = await queryContext.Permissions.FindAsync(permission.Id);
+        PermissionEntity? updated = await queryContext.Permissions.FindAsync(permission.Id);
 
+        updated.Should().NotBeNull();
         updated!.CreatedAt.Should().BeCloseTo(originalCreatedAt!.Value, TimeSpan.FromMicroseconds(1));
         updated.UpdatedAt.Should().BeOnOrAfter(originalUpdatedAt!.Value);
+        updated.UpdatedBy.Should().Be(nameof(EnumAuditActor.System));
     }
 
     [Fact]
     public async Task SaveChanges_ViaApi_ShouldSetCreatedByToAuthenticatedUserId()
     {
-        var userId = Guid.NewGuid();
-        Client.AuthenticateAs(userId, "SuperAdmin");
+        Client.AuthenticateAsSuperAdmin();
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Permissions,
@@ -67,15 +75,14 @@ public class AuditableEntityInterceptorTests(PostgresFixture db) : BaseApiTest(d
             }
         );
 
-        if (response.StatusCode is HttpStatusCode.Created or HttpStatusCode.OK)
-        {
-            await using var context = CreateDbContext<IdentityDbContext>();
-            var saved = await context.Permissions.FirstOrDefaultAsync(p =>
-                p.Resource == "audit_api" && p.Action == "create"
-            );
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.Created);
 
-            saved.Should().NotBeNull();
-            saved!.CreatedBy.Should().Be(userId.ToString());
-        }
+        await using var context = CreateDbContext<IdentityDbContext>();
+        PermissionEntity? saved = await context.Permissions.FirstOrDefaultAsync(p =>
+            p.Resource == "audit_api" && p.Action == "create"
+        );
+
+        saved.Should().NotBeNull();
+        saved!.CreatedBy.Should().Be(User.SuperAdminId.ToString());
     }
 }

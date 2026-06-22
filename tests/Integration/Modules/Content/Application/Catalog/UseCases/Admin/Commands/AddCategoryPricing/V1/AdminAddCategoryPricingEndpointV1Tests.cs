@@ -1,5 +1,8 @@
 using System.Net.Http.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPricing.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPricing.V1;
@@ -10,34 +13,41 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ShortName(string prefix = "c") => $"{prefix}{Guid.NewGuid().ToString("N")[..8]}";
-
-    private static string ShortSlug(string prefix = "s") => $"{prefix}-{Guid.NewGuid().ToString("N")[..8]}";
-
     [Fact]
     public async Task AddCategoryPricing_AsSuperAdmin_WithValidData_ReturnsCreated()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        var pricingTier = PricingTierFactory.Create();
-        seedContext.PricingTiers.Add(pricingTier);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = null!;
+        PricingTierEntity pricingTier = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            pricingTier = PricingTierFactory.Create();
+            ctx.PricingTiers.Add(pricingTier);
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { PricingTierId = pricingTier.Id, PriceUsd = 9.99m };
+        AdminAddCategoryPricingRequest request = new AdminAddCategoryPricingRequestBuilder()
+            .WithPricingTierId(pricingTier.Id)
+            .WithPriceUsd(9.99m)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/pricing", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Categories.Pricing(category.Id), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
+        var body = await response.ReadAsAsync<AdminAddCategoryPricingResponse>();
+        body.Pricing.TierId.Should().Be(pricingTier.Id);
+        body.Pricing.PriceUsd.Should().Be(request.PriceUsd);
+
         await using var verifyContext = CreateDbContext<ContentDbContext>();
-        var pricing = await verifyContext.CategoryPricing.FirstOrDefaultAsync(cp =>
+        CategoryPricingEntity? pricing = await verifyContext.CategoryPricing.FirstOrDefaultAsync(cp =>
             cp.CategoryId == category.Id && cp.PricingTierId == pricingTier.Id
         );
         pricing.Should().NotBeNull();
+        pricing!.PriceUsd.Should().Be(request.PriceUsd);
     }
 
     [Fact]
@@ -46,7 +56,7 @@ public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseAp
         Client.AuthenticateAsAdmin();
         var request = new { PricingTierId = Guid.NewGuid(), PriceUsd = 4.99m };
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/pricing", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Categories.Pricing(Guid.NewGuid()), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -57,7 +67,7 @@ public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseAp
         Client.ClearAuthentication();
         var request = new { PricingTierId = Guid.NewGuid(), PriceUsd = 4.99m };
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/pricing", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Categories.Pricing(Guid.NewGuid()), request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -65,17 +75,22 @@ public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseAp
     [Fact]
     public async Task AddCategoryPricing_NonExistentCategory_ReturnsNotFound()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var pricingTier = PricingTierFactory.Create();
-        seedContext.PricingTiers.Add(pricingTier);
-        await seedContext.SaveChangesAsync();
+        PricingTierEntity pricingTier = await SeedAsync<ContentDbContext, PricingTierEntity>(ctx =>
+        {
+            PricingTierEntity tier = PricingTierFactory.Create();
+            ctx.PricingTiers.Add(tier);
+            return tier;
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { PricingTierId = pricingTier.Id, PriceUsd = 4.99m };
+        AdminAddCategoryPricingRequest request = new AdminAddCategoryPricingRequestBuilder()
+            .WithPricingTierId(pricingTier.Id)
+            .WithPriceUsd(4.99m)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/pricing", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Categories.Pricing(Guid.NewGuid()), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     /// <summary>
@@ -85,23 +100,29 @@ public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseAp
     [Fact]
     public async Task AddCategoryPricing_WithDuplicateTier_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        var pricingTier = PricingTierFactory.Create();
-        seedContext.PricingTiers.Add(pricingTier);
-        var existingPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 5.99m);
-        seedContext.CategoryPricing.Add(existingPricing);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = null!;
+        PricingTierEntity pricingTier = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            pricingTier = PricingTierFactory.Create();
+            ctx.PricingTiers.Add(pricingTier);
+            CategoryPricingEntity existingPricing = CategoryPricingFactory.Create(category.Id, pricingTier.Id, 5.99m);
+            ctx.CategoryPricing.Add(existingPricing);
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { PricingTierId = pricingTier.Id, PriceUsd = 12.99m };
+        AdminAddCategoryPricingRequest request = new AdminAddCategoryPricingRequestBuilder()
+            .WithPricingTierId(pricingTier.Id)
+            .WithPriceUsd(12.99m)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/pricing", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Categories.Pricing(category.Id), request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
     }
 
     /// <summary>
@@ -111,21 +132,27 @@ public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseAp
     [Fact]
     public async Task AddCategoryPricing_WithInactiveTier_ReturnsBadRequest()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        var inactiveTier = PricingTierFactory.CreateInactive();
-        seedContext.PricingTiers.Add(inactiveTier);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = null!;
+        PricingTierEntity inactiveTier = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            inactiveTier = PricingTierFactory.CreateInactive();
+            ctx.PricingTiers.Add(inactiveTier);
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { PricingTierId = inactiveTier.Id, PriceUsd = 9.99m };
+        AdminAddCategoryPricingRequest request = new AdminAddCategoryPricingRequestBuilder()
+            .WithPricingTierId(inactiveTier.Id)
+            .WithPriceUsd(9.99m)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/pricing", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Categories.Pricing(category.Id), request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -135,20 +162,26 @@ public class AdminAddCategoryPricingEndpointV1Tests(PostgresFixture db) : BaseAp
     [Fact]
     public async Task AddPricing_WithNegativePrice_ReturnsBadRequest()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        var pricingTier = PricingTierFactory.Create();
-        seedContext.PricingTiers.Add(pricingTier);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = null!;
+        PricingTierEntity pricingTier = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            pricingTier = PricingTierFactory.Create();
+            ctx.PricingTiers.Add(pricingTier);
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { PricingTierId = pricingTier.Id, PriceUsd = -1m };
+        AdminAddCategoryPricingRequest request = new AdminAddCategoryPricingRequestBuilder()
+            .WithPricingTierId(pricingTier.Id)
+            .WithPriceUsd(-1m)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/pricing", request);
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Categories.Pricing(category.Id), request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }

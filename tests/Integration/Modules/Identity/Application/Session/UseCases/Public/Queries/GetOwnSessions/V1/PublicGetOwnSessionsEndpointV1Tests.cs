@@ -1,4 +1,6 @@
-using System.Text.Json;
+using _116.Identity.Application.Session.Constants;
+using _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessions.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -10,26 +12,26 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Session.UseCases.P
 [Collection("Database")]
 public class PublicGetOwnSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private const string PublicMeSessions = $"{ApiRoutes.Public.Me}/{SessionRouteConstants.Endpoint}";
+
     [Fact]
     public async Task PublicGetOwnSessions_AsVisitor_Returns200()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var session = SessionFactory.Create(TestUser.VisitorId);
-        context.Sessions.Add(session);
-        await context.SaveChangesAsync();
+        SessionEntity session = await SeedAsync<IdentityDbContext, SessionEntity>(ctx =>
+        {
+            SessionEntity entity = SessionFactory.Create(TestUser.VisitorId);
+            ctx.Sessions.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsVisitor();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Public.Me}/sessions");
+        var response = await Client.GetAsync(PublicMeSessions);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var root = doc.RootElement;
-
-        root.TryGetProperty("sessions", out var sessionsProp).Should().BeTrue();
-        sessionsProp.ValueKind.Should().Be(JsonValueKind.Array);
+        PublicGetOwnSessionsResponse body = await response.ReadAsAsync<PublicGetOwnSessionsResponse>();
+        body.Sessions.Should().Contain(s => s.Id == session.Id);
     }
 
     [Fact]
@@ -37,7 +39,7 @@ public class PublicGetOwnSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTe
     {
         Client.ClearAuthentication();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Public.Me}/sessions");
+        var response = await Client.GetAsync(PublicMeSessions);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -47,7 +49,7 @@ public class PublicGetOwnSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTe
     {
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Public.Me}/sessions");
+        var response = await Client.GetAsync(PublicMeSessions);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }

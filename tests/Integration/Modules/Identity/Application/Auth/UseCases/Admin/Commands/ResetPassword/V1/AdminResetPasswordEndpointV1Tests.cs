@@ -1,5 +1,9 @@
+using _116.Identity.Application.Auth.Constants;
+using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword.V1;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword.V1;
@@ -11,30 +15,32 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Admi
 public class AdminResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
     private const string AuthUrl = ApiRoutes.Admin.Auth;
+    private const string ResetPasswordUrl = $"{AuthUrl}/{AuthRouteConstants.ResetPassword}";
 
     [Fact]
     public async Task ResetPassword_WithEmptyFields_ReturnsValidationError()
     {
         Client.ClearAuthentication();
-        var request = new
-        {
-            Email = "",
-            Code = "",
-            NewPassword = "",
-        };
+        var request = new AdminResetPasswordRequestBuilder()
+            .WithEmail(string.Empty)
+            .WithCode(string.Empty)
+            .WithNewPassword(string.Empty)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{AuthUrl}/reset-password", request);
+        var response = await Client.PostAsJsonAsync(ResetPasswordUrl, request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
     /// Verifies that a valid OTP code that has been previously verified allows
-    /// the admin user to reset their password successfully.
+    /// the admin user to reset their password successfully and persists the new hash.
     /// </summary>
     [Fact]
     public async Task ResetPassword_WithValidOtp_ReturnsOk()
     {
+        var passwordService = Api.Services.GetRequiredService<IPasswordService>();
+
         Client.ClearAuthentication();
 
         var email = $"admin-reset-ok-{Guid.NewGuid():N}@test.com";
@@ -52,16 +58,22 @@ public class AdminResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest
         seedContext.Otps.Add(otp);
         await seedContext.SaveChangesAsync();
 
-        var request = new
-        {
-            Email = email,
-            Code = Otp.ValidCode,
-            NewPassword = "NewSecure@Pass1",
-        };
+        var request = new AdminResetPasswordRequestBuilder()
+            .WithEmail(email)
+            .WithCode(Otp.ValidCode)
+            .WithNewPassword("NewSecure@Pass1")
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{AuthUrl}/reset-password", request);
+        var response = await Client.PostAsJsonAsync(ResetPasswordUrl, request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminResetPasswordResponse body = await response.ReadAsAsync<AdminResetPasswordResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using var verifyContext = CreateDbContext<IdentityDbContext>();
+        var updated = await verifyContext.Users.FirstAsync(u => u.Id == user.Id);
+        passwordService.Verify(request.NewPassword, updated.PasswordHash).Should().BeTrue();
     }
 
     /// <summary>
@@ -88,16 +100,15 @@ public class AdminResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest
         seedContext.Otps.Add(otp);
         await seedContext.SaveChangesAsync();
 
-        var request = new
-        {
-            Email = email,
-            Code = Otp.InvalidCode,
-            NewPassword = "NewSecure@Pass1",
-        };
+        var request = new AdminResetPasswordRequestBuilder()
+            .WithEmail(email)
+            .WithCode(Otp.InvalidCode)
+            .WithNewPassword("NewSecure@Pass1")
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{AuthUrl}/reset-password", request);
+        var response = await Client.PostAsJsonAsync(ResetPasswordUrl, request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -124,16 +135,15 @@ public class AdminResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest
         seedContext.Otps.Add(otp);
         await seedContext.SaveChangesAsync();
 
-        var request = new
-        {
-            Email = email,
-            Code = Otp.ValidCode,
-            NewPassword = "NewSecure@Pass1",
-        };
+        var request = new AdminResetPasswordRequestBuilder()
+            .WithEmail(email)
+            .WithCode(Otp.ValidCode)
+            .WithNewPassword("NewSecure@Pass1")
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{AuthUrl}/reset-password", request);
+        var response = await Client.PostAsJsonAsync(ResetPasswordUrl, request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Gone);
+        await response.ShouldBeProblem(HttpStatusCode.Gone);
     }
 
     /// <summary>
@@ -161,15 +171,14 @@ public class AdminResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest
         seedContext.Otps.Add(otp);
         await seedContext.SaveChangesAsync();
 
-        var request = new
-        {
-            Email = email,
-            Code = Otp.ValidCode,
-            NewPassword = "NewSecure@Pass1",
-        };
+        var request = new AdminResetPasswordRequestBuilder()
+            .WithEmail(email)
+            .WithCode(Otp.ValidCode)
+            .WithNewPassword("NewSecure@Pass1")
+            .Build();
 
-        var response = await Client.PostAsJsonAsync($"{AuthUrl}/reset-password", request);
+        var response = await Client.PostAsJsonAsync(ResetPasswordUrl, request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }

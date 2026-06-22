@@ -1,4 +1,5 @@
-using System.Text.Json;
+using _116.Identity.Application.Session.UseCases.Admin.Queries.GetAllSessions.V1;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
@@ -34,10 +35,12 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task AdminGetAllSessions_AsSuperAdmin_Returns200()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var session = SessionFactory.Create(TestUser.SuperAdminId);
-        context.Sessions.Add(session);
-        await context.SaveChangesAsync();
+        SessionEntity session = await SeedAsync<IdentityDbContext, SessionEntity>(ctx =>
+        {
+            SessionEntity entity = SessionFactory.Create(TestUser.SuperAdminId);
+            ctx.Sessions.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -45,16 +48,11 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var root = doc.RootElement;
-
-        root.TryGetProperty("sessions", out var sessionsProp).Should().BeTrue();
-        sessionsProp.TryGetProperty("items", out var items).Should().BeTrue();
-        items.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
-        sessionsProp.TryGetProperty("pageIndex", out _).Should().BeTrue();
-        sessionsProp.TryGetProperty("pageSize", out _).Should().BeTrue();
-        sessionsProp.TryGetProperty("count", out _).Should().BeTrue();
+        AdminGetAllSessionsResponse body = await response.ReadAsAsync<AdminGetAllSessionsResponse>();
+        body.Sessions.Items.Should().Contain(s => s.Id == session.Id);
+        body.Sessions.PageIndex.Should().Be(0);
+        body.Sessions.PageSize.Should().Be(10);
+        body.Sessions.Count.Should().BeGreaterThanOrEqualTo(1);
     }
 
     [Fact]
@@ -85,11 +83,12 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task GetAllSessions_FilterByIpAddress_ReturnsFilteredResults()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var matchingSession = CreateSessionWithIp(TestUser.SuperAdminId, "192.168.1.1");
-        var otherSession = CreateSessionWithIp(TestUser.AdminId, "10.0.0.1");
-        context.Sessions.AddRange(matchingSession, otherSession);
-        await context.SaveChangesAsync();
+        SessionEntity matchingSession = CreateSessionWithIp(TestUser.SuperAdminId, "192.168.1.1");
+        SessionEntity otherSession = CreateSessionWithIp(TestUser.AdminId, "10.0.0.1");
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Sessions.AddRange(matchingSession, otherSession);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -99,15 +98,9 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var items = doc.RootElement.GetProperty("sessions").GetProperty("items");
-
-        items.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
-        for (var i = 0; i < items.GetArrayLength(); i++)
-        {
-            items[i].GetProperty("ipAddress").GetString().Should().Contain("192.168.1.1");
-        }
+        AdminGetAllSessionsResponse body = await response.ReadAsAsync<AdminGetAllSessionsResponse>();
+        body.Sessions.Items.Should().NotBeEmpty();
+        body.Sessions.Items.Should().OnlyContain(s => s.IpAddress!.Contains("192.168.1.1"));
     }
 
     /// <summary>
@@ -118,11 +111,12 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task GetAllSessions_FilterByFromDate_ReturnsFilteredResults()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var session = SessionFactory.Create(TestUser.SuperAdminId);
-        session.CreatedAt = new DateTime(2026, 6, 10, 0, 0, 0, DateTimeKind.Utc);
-        context.Sessions.Add(session);
-        await context.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            SessionEntity session = SessionFactory.Create(TestUser.SuperAdminId);
+            session.CreatedAt = new DateTime(2026, 6, 10, 0, 0, 0, DateTimeKind.Utc);
+            ctx.Sessions.Add(session);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -131,6 +125,9 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetAllSessionsResponse body = await response.ReadAsAsync<AdminGetAllSessionsResponse>();
+        body.Sessions.Items.Should().NotBeEmpty();
     }
 
     /// <summary>
@@ -141,10 +138,12 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task GetAllSessions_FilterByToDate_ReturnsFilteredResults()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var session = SessionFactory.Create(TestUser.SuperAdminId);
-        context.Sessions.Add(session);
-        await context.SaveChangesAsync();
+        SessionEntity session = await SeedAsync<IdentityDbContext, SessionEntity>(ctx =>
+        {
+            SessionEntity entity = SessionFactory.Create(TestUser.SuperAdminId);
+            ctx.Sessions.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -153,6 +152,9 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetAllSessionsResponse body = await response.ReadAsAsync<AdminGetAllSessionsResponse>();
+        body.Sessions.Items.Should().Contain(s => s.Id == session.Id);
     }
 
     /// <summary>
@@ -163,11 +165,12 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task GetAllSessions_FilterByStatusActive_ReturnsFilteredResults()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var activeSession = SessionFactory.Create(TestUser.SuperAdminId);
-        var expiredSession = SessionFactory.CreateExpired(TestUser.AdminId);
-        context.Sessions.AddRange(activeSession, expiredSession);
-        await context.SaveChangesAsync();
+        SessionEntity activeSession = SessionFactory.Create(TestUser.SuperAdminId);
+        SessionEntity expiredSession = SessionFactory.CreateExpired(TestUser.AdminId);
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Sessions.AddRange(activeSession, expiredSession);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -175,15 +178,9 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var items = doc.RootElement.GetProperty("sessions").GetProperty("items");
-
-        items.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
-        for (var i = 0; i < items.GetArrayLength(); i++)
-        {
-            items[i].GetProperty("isActive").GetBoolean().Should().BeTrue();
-        }
+        AdminGetAllSessionsResponse body = await response.ReadAsAsync<AdminGetAllSessionsResponse>();
+        body.Sessions.Items.Should().NotBeEmpty();
+        body.Sessions.Items.Should().OnlyContain(s => s.IsActive);
     }
 
     /// <summary>
@@ -194,11 +191,12 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task GetAllSessions_FilterByStatusExpired_ReturnsFilteredResults()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var expiredSession = SessionFactory.CreateExpired(TestUser.SuperAdminId);
-        var activeSession = SessionFactory.Create(TestUser.AdminId);
-        context.Sessions.AddRange(expiredSession, activeSession);
-        await context.SaveChangesAsync();
+        SessionEntity expiredSession = SessionFactory.CreateExpired(TestUser.SuperAdminId);
+        SessionEntity activeSession = SessionFactory.Create(TestUser.AdminId);
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Sessions.AddRange(expiredSession, activeSession);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -206,11 +204,8 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var items = doc.RootElement.GetProperty("sessions").GetProperty("items");
-
-        items.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
+        AdminGetAllSessionsResponse body = await response.ReadAsAsync<AdminGetAllSessionsResponse>();
+        body.Sessions.Items.Should().Contain(s => s.Id == expiredSession.Id);
     }
 
     /// <summary>
@@ -221,11 +216,12 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task GetAllSessions_FilterByStatusRevoked_ReturnsFilteredResults()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var revokedSession = SessionFactory.CreateRevoked(TestUser.SuperAdminId);
-        var activeSession = SessionFactory.Create(TestUser.AdminId);
-        context.Sessions.AddRange(revokedSession, activeSession);
-        await context.SaveChangesAsync();
+        SessionEntity revokedSession = SessionFactory.CreateRevoked(TestUser.SuperAdminId);
+        SessionEntity activeSession = SessionFactory.Create(TestUser.AdminId);
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Sessions.AddRange(revokedSession, activeSession);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -233,15 +229,9 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var items = doc.RootElement.GetProperty("sessions").GetProperty("items");
-
-        items.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
-        for (var i = 0; i < items.GetArrayLength(); i++)
-        {
-            items[i].GetProperty("isActive").GetBoolean().Should().BeFalse();
-        }
+        AdminGetAllSessionsResponse body = await response.ReadAsAsync<AdminGetAllSessionsResponse>();
+        body.Sessions.Items.Should().NotBeEmpty();
+        body.Sessions.Items.Should().OnlyContain(s => !s.IsActive);
     }
 
     /// <summary>
@@ -252,12 +242,13 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task GetAllSessions_FilterByStatusAndIpAddress_ReturnsFilteredResults()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var matchingSession = CreateSessionWithIp(TestUser.SuperAdminId, "203.0.113.50");
-        var nonMatchingSession = CreateSessionWithIp(TestUser.AdminId, "198.51.100.1");
+        SessionEntity matchingSession = CreateSessionWithIp(TestUser.SuperAdminId, "203.0.113.50");
+        SessionEntity nonMatchingSession = CreateSessionWithIp(TestUser.AdminId, "198.51.100.1");
         nonMatchingSession.Revoke();
-        context.Sessions.AddRange(matchingSession, nonMatchingSession);
-        await context.SaveChangesAsync();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Sessions.AddRange(matchingSession, nonMatchingSession);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -267,15 +258,9 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var items = doc.RootElement.GetProperty("sessions").GetProperty("items");
-
-        items.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
-        for (var i = 0; i < items.GetArrayLength(); i++)
-        {
-            items[i].GetProperty("ipAddress").GetString().Should().Contain("203.0.113.50");
-        }
+        AdminGetAllSessionsResponse body = await response.ReadAsAsync<AdminGetAllSessionsResponse>();
+        body.Sessions.Items.Should().NotBeEmpty();
+        body.Sessions.Items.Should().OnlyContain(s => s.IpAddress!.Contains("203.0.113.50") && s.IsActive);
     }
 
     /// <summary>
@@ -286,11 +271,12 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task GetAllSessions_FilterByUserId_ReturnsOnlyMatchingUserSessions()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var targetSession = SessionFactory.Create(TestUser.SuperAdminId);
-        var otherSession = SessionFactory.Create(TestUser.AdminId);
-        context.Sessions.AddRange(targetSession, otherSession);
-        await context.SaveChangesAsync();
+        SessionEntity targetSession = SessionFactory.Create(TestUser.SuperAdminId);
+        SessionEntity otherSession = SessionFactory.Create(TestUser.AdminId);
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Sessions.AddRange(targetSession, otherSession);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -300,11 +286,9 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var items = doc.RootElement.GetProperty("sessions").GetProperty("items");
-
-        items.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
+        AdminGetAllSessionsResponse body = await response.ReadAsAsync<AdminGetAllSessionsResponse>();
+        body.Sessions.Items.Should().Contain(s => s.Id == targetSession.Id);
+        body.Sessions.Items.Should().NotContain(s => s.Id == otherSession.Id);
     }
 
     /// <summary>
@@ -315,12 +299,13 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task GetAllSessions_FilterByUserIdAndStatus_ReturnsFilteredResults()
     {
-        await using var context = CreateDbContext<IdentityDbContext>();
-        var activeSession = SessionFactory.Create(TestUser.SuperAdminId);
-        var revokedSession = SessionFactory.CreateRevoked(TestUser.SuperAdminId);
-        var otherUserSession = SessionFactory.Create(TestUser.AdminId);
-        context.Sessions.AddRange(activeSession, revokedSession, otherUserSession);
-        await context.SaveChangesAsync();
+        SessionEntity activeSession = SessionFactory.Create(TestUser.SuperAdminId);
+        SessionEntity revokedSession = SessionFactory.CreateRevoked(TestUser.SuperAdminId);
+        SessionEntity otherUserSession = SessionFactory.Create(TestUser.AdminId);
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Sessions.AddRange(activeSession, revokedSession, otherUserSession);
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -330,10 +315,8 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(body);
-        var items = doc.RootElement.GetProperty("sessions").GetProperty("items");
-
-        items.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
+        AdminGetAllSessionsResponse body = await response.ReadAsAsync<AdminGetAllSessionsResponse>();
+        body.Sessions.Items.Should().Contain(s => s.Id == activeSession.Id);
+        body.Sessions.Items.Should().OnlyContain(s => s.IsActive);
     }
 }

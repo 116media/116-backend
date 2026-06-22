@@ -1,3 +1,7 @@
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticlePromotionFeed.V1;
+using _116.Content.Application.Shared.DTOs;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -9,14 +13,22 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class PublicGetArticlePromotionFeedEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string FeedUrl => $"{ApiRoutes.Public.Articles}/{EditorialRouteConstants.PromotionFeed}";
+
     [Fact]
     public async Task GetArticlePromotionFeed_AsAnonymous_ReturnsOk()
     {
         Client.ClearAuthentication();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}/promotion/feed");
+        var response = await Client.GetAsync(FeedUrl);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetArticlePromotionFeedResponse body =
+            await response.ReadAsAsync<PublicGetArticlePromotionFeedResponse>();
+        body.Spot1.SpotPriority.Should().Be(EditorialFeedConstants.Spot1);
+        body.Spot2.SpotPriority.Should().Be(EditorialFeedConstants.Spot2);
+        body.Spot3.SpotPriority.Should().Be(EditorialFeedConstants.Spot3);
     }
 
     /// <summary>
@@ -28,38 +40,57 @@ public class PublicGetArticlePromotionFeedEndpointV1Tests(PostgresFixture db) : 
     {
         Client.AuthenticateAsVisitor();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}/promotion/feed");
+        var response = await Client.GetAsync(FeedUrl);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetArticlePromotionFeedResponse body =
+            await response.ReadAsAsync<PublicGetArticlePromotionFeedResponse>();
+        body.Spot1.SpotPriority.Should().Be(EditorialFeedConstants.Spot1);
     }
 
     /// <summary>
-    /// Verifies that the promotion feed endpoint returns OK when a gossip category with
-    /// published articles exists in the database. Seeding the gossip category causes the
-    /// handler to call <c>GetGossipCategoryAsync</c> which internally uses
-    /// <c>GossipCategorySpecification</c>, and the subsequent article query uses
-    /// <c>GossipArticleSpecification</c>, bringing both specifications to 100% coverage.
+    /// Verifies that the promotion feed endpoint surfaces a published gossip article when a gossip
+    /// category with published articles exists. Seeding the gossip category causes the handler to
+    /// call <c>GetGossipCategoryAsync</c> (using <c>GossipCategorySpecification</c>) and the gossip
+    /// fallback query (<c>GossipArticleSpecification</c>), and the seeded article is expected to
+    /// appear somewhere in the feed (a spot fallback or the gossip strip).
     /// </summary>
     [Fact]
     public async Task GetArticlePromotionFeed_WithGossipArticles_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        await seedContext.SaveChangesAsync();
+        Guid gossipCategoryId = await SeedAsync<ContentDbContext, Guid>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
 
-        var gossipCategory = CategoryFactory.CreateGossip(contentType.Id);
-        seedContext.Categories.Add(gossipCategory);
-        await seedContext.SaveChangesAsync();
+            CategoryEntity gossipCategory = CategoryFactory.CreateGossip(contentType.Id);
+            ctx.Categories.Add(gossipCategory);
 
-        var publishedArticle = ArticleFactory.CreatePublished(gossipCategory.Id);
-        seedContext.Articles.Add(publishedArticle);
-        await seedContext.SaveChangesAsync();
+            return gossipCategory.Id;
+        });
+
+        ArticleEntity publishedArticle = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ArticleEntity entity = ArticleFactory.CreatePublished(gossipCategoryId);
+            ctx.Articles.Add(entity);
+            return entity;
+        });
 
         Client.ClearAuthentication();
 
-        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}/promotion/feed");
+        var response = await Client.GetAsync(FeedUrl);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetArticlePromotionFeedResponse body =
+            await response.ReadAsAsync<PublicGetArticlePromotionFeedResponse>();
+
+        IEnumerable<ArticleSummaryDto> allFeedArticles = body
+            .Spot1.Articles.Concat(body.Spot2.Articles)
+            .Concat(body.Spot3.Slots.SelectMany(slot => slot.Articles))
+            .Concat(body.GossipStrip);
+
+        allFeedArticles.Should().Contain(item => item.Id == publishedArticle.Id);
     }
 }

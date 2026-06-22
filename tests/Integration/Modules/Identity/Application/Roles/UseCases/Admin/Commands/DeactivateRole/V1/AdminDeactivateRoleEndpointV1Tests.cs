@@ -1,3 +1,5 @@
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.DeactivateRole.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -11,19 +13,34 @@ public class AdminDeactivateRoleEndpointV1Tests(PostgresFixture db) : BaseApiTes
 {
     private static string ShortName(string prefix = "r") => $"{prefix}{Guid.NewGuid().ToString("N")[..8]}";
 
+    private async Task<bool> IsRoleActiveAsync(Guid id)
+    {
+        await using IdentityDbContext ctx = CreateDbContext<IdentityDbContext>();
+        RoleEntity? role = await ctx.Roles.FindAsync(id);
+        return role!.IsActive;
+    }
+
     [Fact]
     public async Task DeactivateRole_AsSuperAdmin_ReturnsSuccess()
     {
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.Create(ShortName("da"), "Will be deactivated");
-        seedContext.Roles.Add(role);
-        await seedContext.SaveChangesAsync();
+        RoleEntity role = await SeedAsync<IdentityDbContext, RoleEntity>(ctx =>
+        {
+            RoleEntity entity = RoleFactory.Create(ShortName("da"), "Will be deactivated");
+            ctx.Roles.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Roles}/{role.Id}/deactivate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Roles.Deactivate(role.Id), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminDeactivateRoleResponse>();
+        body.Role.Id.Should().Be(role.Id);
+        body.Role.IsActive.Should().BeFalse();
+
+        (await IsRoleActiveAsync(role.Id)).Should().BeFalse();
     }
 
     /// <summary>
@@ -32,15 +49,18 @@ public class AdminDeactivateRoleEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task DeactivateRole_WhenAlreadyInactive_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.CreateInactive(ShortName("di"));
-        seedContext.Roles.Add(role);
-        await seedContext.SaveChangesAsync();
+        RoleEntity role = await SeedAsync<IdentityDbContext, RoleEntity>(ctx =>
+        {
+            RoleEntity entity = RoleFactory.CreateInactive(ShortName("di"));
+            ctx.Roles.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Roles}/{role.Id}/deactivate", null);
+        var response = await Client.PatchAsync(Routes.Admin.Roles.Deactivate(role.Id), null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await IsRoleActiveAsync(role.Id)).Should().BeFalse();
     }
 }

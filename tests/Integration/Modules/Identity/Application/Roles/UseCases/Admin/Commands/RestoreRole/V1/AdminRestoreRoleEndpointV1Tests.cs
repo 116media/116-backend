@@ -1,3 +1,5 @@
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.RestoreRole.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -11,19 +13,34 @@ public class AdminRestoreRoleEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 {
     private static string ShortName(string prefix = "r") => $"{prefix}{Guid.NewGuid().ToString("N")[..8]}";
 
+    private async Task<bool> IsRoleDeletedAsync(Guid id)
+    {
+        await using IdentityDbContext ctx = CreateDbContext<IdentityDbContext>();
+        RoleEntity? role = await ctx.Roles.FindAsync(id);
+        return role!.IsDeleted;
+    }
+
     [Fact]
     public async Task RestoreRole_AsSuperAdmin_AfterSoftDelete_ReturnsSuccess()
     {
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.CreateDeleted(ShortName("rs"));
-        seedContext.Roles.Add(role);
-        await seedContext.SaveChangesAsync();
+        RoleEntity role = await SeedAsync<IdentityDbContext, RoleEntity>(ctx =>
+        {
+            RoleEntity entity = RoleFactory.CreateDeleted(ShortName("rs"));
+            ctx.Roles.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Roles}/{role.Id}/restore", null);
+        var response = await Client.PatchAsync(Routes.Admin.Roles.Restore(role.Id), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminRestoreRoleResponse>();
+        body.Role.Id.Should().Be(role.Id);
+        body.Role.IsDeleted.Should().BeFalse();
+
+        (await IsRoleDeletedAsync(role.Id)).Should().BeFalse();
     }
 
     /// <summary>
@@ -32,15 +49,18 @@ public class AdminRestoreRoleEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
     [Fact]
     public async Task RestoreRole_WhenNotDeleted_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var role = RoleFactory.Create(ShortName("rn"));
-        seedContext.Roles.Add(role);
-        await seedContext.SaveChangesAsync();
+        RoleEntity role = await SeedAsync<IdentityDbContext, RoleEntity>(ctx =>
+        {
+            RoleEntity entity = RoleFactory.Create(ShortName("rn"));
+            ctx.Roles.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Roles}/{role.Id}/restore", null);
+        var response = await Client.PatchAsync(Routes.Admin.Roles.Restore(role.Id), null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await IsRoleDeletedAsync(role.Id)).Should().BeFalse();
     }
 }

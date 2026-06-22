@@ -1,5 +1,10 @@
+using _116.Identity.Application.Auth.Constants;
+using _116.Identity.Application.Auth.Services;
+using _116.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword.V1;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Helpers;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword.V1;
 
@@ -10,14 +15,16 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Admi
 public class AdminChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
     private const string AuthUrl = ApiRoutes.Admin.Auth;
+    private const string ChangePasswordUrl = $"{AuthUrl}/{AuthRouteConstants.ChangePassword}";
+    private const string KnownPassword = TestAuth.ValidPassword;
 
     [Fact]
     public async Task ChangePassword_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var request = new { OldPassword = "OldPass1", NewPassword = "NewPass1" };
+        var request = new AdminChangePasswordRequestBuilder().Build();
 
-        var response = await Client.PatchAsJsonAsync($"{AuthUrl}/change-password", request);
+        var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -26,11 +33,11 @@ public class AdminChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
     public async Task ChangePassword_WithWeakPassword_ReturnsValidationError()
     {
         Client.AuthenticateAsAdmin();
-        var request = new { OldPassword = "OldPass1", NewPassword = "weak" };
+        var request = new AdminChangePasswordRequestBuilder().WithNewPassword("weak").Build();
 
-        var response = await Client.PatchAsJsonAsync($"{AuthUrl}/change-password", request);
+        var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -42,9 +49,60 @@ public class AdminChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var request = new { OldPassword = "", NewPassword = "" };
-        var response = await Client.PatchAsJsonAsync($"{AuthUrl}/change-password", request);
+        var request = new AdminChangePasswordRequestBuilder()
+            .WithOldPassword(string.Empty)
+            .WithNewPassword(string.Empty)
+            .Build();
+        var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+    }
+
+    /// <summary>
+    /// Verifies that an admin with a correct current password can change it successfully and
+    /// that the persisted password hash is updated to the new value.
+    /// </summary>
+    [Fact]
+    public async Task ChangePassword_AsAdmin_WithCorrectPassword_ReturnsOk()
+    {
+        var passwordService = Api.Services.GetRequiredService<IPasswordService>();
+        string hashedPassword = passwordService.Hash(KnownPassword);
+        var errors = TestErrorsFactory.CreateUserErrors();
+
+        var email = $"admin-chg-ok-{Guid.NewGuid():N}@test.com";
+        var adminRole = RoleFactory.CreateAdmin();
+        var user = UserFactory.Create(email);
+        user.MarkAsVerified();
+        user.Activate();
+        user.UpdatePassword(hashedPassword, errors);
+        var userRole = UserRoleFactory.Create(user.Id, adminRole.Id);
+
+        var sessionId = Guid.NewGuid();
+        var session = SessionFactory.CreateWithId(sessionId, user.Id);
+
+        await using var seedContext = CreateDbContext<IdentityDbContext>();
+        seedContext.Roles.Add(adminRole);
+        seedContext.Users.Add(user);
+        seedContext.UserRoles.Add(userRole);
+        seedContext.Sessions.Add(session);
+        await seedContext.SaveChangesAsync();
+
+        Client.AuthenticateAs(user.Id, "Admin", sessionId);
+
+        var request = new AdminChangePasswordRequestBuilder()
+            .WithOldPassword(KnownPassword)
+            .WithNewPassword(TestAuth.ChangedPassword)
+            .Build();
+
+        var response = await Client.PatchAsJsonAsync(ChangePasswordUrl, request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminChangePasswordResponse body = await response.ReadAsAsync<AdminChangePasswordResponse>();
+        body.IsSuccess.Should().BeTrue();
+
+        await using var verifyContext = CreateDbContext<IdentityDbContext>();
+        var updated = await verifyContext.Users.FirstAsync(u => u.Id == user.Id);
+        passwordService.Verify(request.NewPassword, updated.PasswordHash).Should().BeTrue();
     }
 }

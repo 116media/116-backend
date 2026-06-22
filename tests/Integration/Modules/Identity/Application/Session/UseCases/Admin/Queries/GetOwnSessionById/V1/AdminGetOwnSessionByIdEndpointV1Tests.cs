@@ -1,3 +1,7 @@
+using _116.Identity.Application.Session.Constants;
+using _116.Identity.Application.Session.UseCases.Admin.Queries.GetOwnSessionById.V1;
+using _116.Identity.Domain.Constants;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -9,13 +13,14 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Session.UseCases.A
 [Collection("Database")]
 public class AdminGetOwnSessionByIdEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private const string AdminMeSessions = $"{ApiRoutes.Admin.Base}/me/sessions";
+    private const string AdminMeSessions =
+        $"{ApiRoutes.Admin.Base}/{IdentityConstants.Me}/{SessionRouteConstants.Endpoint}";
 
     [Fact]
     public async Task GetOwnSessionById_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var sessionId = Guid.NewGuid();
+        Guid sessionId = Guid.NewGuid();
 
         var response = await Client.GetAsync($"{AdminMeSessions}/{sessionId}");
 
@@ -26,25 +31,30 @@ public class AdminGetOwnSessionByIdEndpointV1Tests(PostgresFixture db) : BaseApi
     public async Task GetOwnSessionById_AsSuperAdmin_WithNonExistentId_ReturnsNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
-        var nonExistentId = Guid.NewGuid();
+        Guid nonExistentId = Guid.NewGuid();
 
         var response = await Client.GetAsync($"{AdminMeSessions}/{nonExistentId}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task GetOwnSessionById_AsSuperAdmin_WithExistingSession_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<IdentityDbContext>();
-        var session = SessionFactory.Create(TestUser.SuperAdminId);
-        seedContext.Sessions.Add(session);
-        await seedContext.SaveChangesAsync();
+        SessionEntity session = await SeedAsync<IdentityDbContext, SessionEntity>(ctx =>
+        {
+            SessionEntity entity = SessionFactory.Create(TestUser.SuperAdminId);
+            ctx.Sessions.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
         var response = await Client.GetAsync($"{AdminMeSessions}/{session.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetOwnSessionByIdResponse body = await response.ReadAsAsync<AdminGetOwnSessionByIdResponse>();
+        body.Session.Id.Should().Be(session.Id);
     }
 }

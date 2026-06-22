@@ -1,4 +1,5 @@
-using System.Net.Http.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.SetExclusiveCategory.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -10,25 +11,41 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminSetExclusiveCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ShortName(string prefix = "c") => $"{prefix}{Guid.NewGuid().ToString("N")[..8]}";
+    private const string SetExclusiveSegment = "set-exclusive";
 
-    private static string ShortSlug(string prefix = "s") => $"{prefix}-{Guid.NewGuid().ToString("N")[..8]}";
+    private async Task<bool> IsCategoryExclusiveAsync(Guid id)
+    {
+        await using var ctx = CreateDbContext<ContentDbContext>();
+        CategoryEntity? category = await ctx.Categories.FindAsync(id);
+        return category!.IsExclusive;
+    }
 
     [Fact]
     public async Task SetExclusiveCategory_AsSuperAdmin_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create("Video");
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = await SeedAsync<ContentDbContext, CategoryEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create("Video");
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity cat = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(cat);
+            return cat;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/set-exclusive", null);
+        var response = await Client.PatchAsync(
+            $"{ApiRoutes.Admin.Categories}/{category.Id}/{SetExclusiveSegment}",
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminSetExclusiveCategoryResponse>();
+        body.Category.Id.Should().Be(category.Id);
+        body.Category.IsExclusive.Should().BeTrue();
+
+        (await IsCategoryExclusiveAsync(category.Id)).Should().BeTrue();
     }
 
     [Fact]
@@ -36,7 +53,10 @@ public class AdminSetExclusiveCategoryEndpointV1Tests(PostgresFixture db) : Base
     {
         Client.AuthenticateAsAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/set-exclusive", null);
+        var response = await Client.PatchAsync(
+            $"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/{SetExclusiveSegment}",
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -46,9 +66,12 @@ public class AdminSetExclusiveCategoryEndpointV1Tests(PostgresFixture db) : Base
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/set-exclusive", null);
+        var response = await Client.PatchAsync(
+            $"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/{SetExclusiveSegment}",
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -56,7 +79,10 @@ public class AdminSetExclusiveCategoryEndpointV1Tests(PostgresFixture db) : Base
     {
         Client.ClearAuthentication();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/set-exclusive", null);
+        var response = await Client.PatchAsync(
+            $"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/{SetExclusiveSegment}",
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -68,18 +94,24 @@ public class AdminSetExclusiveCategoryEndpointV1Tests(PostgresFixture db) : Base
     [Fact]
     public async Task SetExclusive_WhenInactive_ReturnsBadRequest()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create("Video");
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.CreateInactive(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = await SeedAsync<ContentDbContext, CategoryEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create("Video");
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity cat = CategoryFactory.CreateInactive(contentType.Id);
+            ctx.Categories.Add(cat);
+            return cat;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/set-exclusive", null);
+        var response = await Client.PatchAsync(
+            $"{ApiRoutes.Admin.Categories}/{category.Id}/{SetExclusiveSegment}",
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        (await IsCategoryExclusiveAsync(category.Id)).Should().BeFalse();
     }
 
     /// <summary>
@@ -89,17 +121,23 @@ public class AdminSetExclusiveCategoryEndpointV1Tests(PostgresFixture db) : Base
     [Fact]
     public async Task SetExclusive_WhenNonVideoCategory_ReturnsBadRequest()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create("Article");
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = await SeedAsync<ContentDbContext, CategoryEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create("Article");
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity cat = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(cat);
+            return cat;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/set-exclusive", null);
+        var response = await Client.PatchAsync(
+            $"{ApiRoutes.Admin.Categories}/{category.Id}/{SetExclusiveSegment}",
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        (await IsCategoryExclusiveAsync(category.Id)).Should().BeFalse();
     }
 }

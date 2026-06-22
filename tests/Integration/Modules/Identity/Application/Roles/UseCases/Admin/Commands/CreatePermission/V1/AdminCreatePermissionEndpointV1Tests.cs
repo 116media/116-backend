@@ -1,6 +1,7 @@
-using System.Text.Json;
+using _116.Identity.Application.Roles.UseCases.Admin.Commands.CreatePermission.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
-using _116.Tests.Fixtures.Factories.Identity;
+using _116.Tests.Fixtures.Builders.Requests.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Commands.CreatePermission.V1;
 
@@ -10,31 +11,28 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Adm
 [Collection("Database")]
 public class AdminCreatePermissionEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    /// <summary>
-    /// Generates a unique resource name that fits the 15-char max length.
-    /// </summary>
-    private static string UniqueResource(string prefix = "pt") => $"{prefix}_{Guid.NewGuid().ToString("N")[..8]}";
-
-    /// <summary>
-    /// Generates a unique action name that fits the 15-char max length.
-    /// </summary>
-    private static string UniqueAction(string prefix = "act") => $"{prefix}_{Guid.NewGuid().ToString("N")[..8]}";
-
     [Fact]
     public async Task CreatePermission_ShouldReturnSuccess_WhenSuperAdminWithValidData()
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var payload = new
-        {
-            Resource = UniqueResource("cr"),
-            Action = UniqueAction("cr"),
-            Description = "Test permission for creation",
-        };
+        AdminCreatePermissionRequest request = new AdminCreatePermissionRequestBuilder().Build();
 
-        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, payload);
+        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, request);
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.Created);
+
+        var body = await response.ReadAsAsync<AdminCreatePermissionResponse>();
+        body.Permission.Id.Should().NotBeEmpty();
+        body.Permission.Resource.Should().Be(request.Resource);
+        body.Permission.Action.Should().Be(request.Action);
+        body.Permission.Description.Should().Be(request.Description);
+
+        await using IdentityDbContext context = CreateDbContext<IdentityDbContext>();
+        PermissionEntity? permission = await context.Permissions.FirstOrDefaultAsync(p => p.Id == body.Permission.Id);
+        permission.Should().NotBeNull();
+        permission!.Resource.Should().Be(request.Resource);
+        permission.Action.Should().Be(request.Action);
     }
 
     [Fact]
@@ -42,14 +40,9 @@ public class AdminCreatePermissionEndpointV1Tests(PostgresFixture db) : BaseApiT
     {
         Client.AuthenticateAsAdmin();
 
-        var payload = new
-        {
-            Resource = UniqueResource("ad"),
-            Action = UniqueAction("ad"),
-            Description = "Admin should not be allowed",
-        };
+        AdminCreatePermissionRequest request = new AdminCreatePermissionRequestBuilder().Build();
 
-        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, payload);
+        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -59,14 +52,9 @@ public class AdminCreatePermissionEndpointV1Tests(PostgresFixture db) : BaseApiT
     {
         Client.ClearAuthentication();
 
-        var payload = new
-        {
-            Resource = UniqueResource("na"),
-            Action = UniqueAction("na"),
-            Description = "No auth should be rejected",
-        };
+        AdminCreatePermissionRequest request = new AdminCreatePermissionRequestBuilder().Build();
 
-        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, payload);
+        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -76,28 +64,17 @@ public class AdminCreatePermissionEndpointV1Tests(PostgresFixture db) : BaseApiT
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var resource = UniqueResource("dup");
-        var action = UniqueAction("dup");
+        AdminCreatePermissionRequest request = new AdminCreatePermissionRequestBuilder().Build();
+        await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, request);
 
-        var payload = new
-        {
-            Resource = resource,
-            Action = action,
-            Description = "First creation",
-        };
+        AdminCreatePermissionRequest duplicateRequest = new AdminCreatePermissionRequestBuilder()
+            .WithResource(request.Resource)
+            .WithAction(request.Action)
+            .Build();
 
-        await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, payload);
+        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, duplicateRequest);
 
-        var duplicatePayload = new
-        {
-            Resource = resource,
-            Action = action,
-            Description = "Duplicate creation",
-        };
-
-        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, duplicatePayload);
-
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
     }
 
     [Fact]
@@ -105,15 +82,12 @@ public class AdminCreatePermissionEndpointV1Tests(PostgresFixture db) : BaseApiT
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var payload = new
-        {
-            Resource = "",
-            Action = UniqueAction("ev"),
-            Description = "Empty resource should fail",
-        };
+        AdminCreatePermissionRequest request = new AdminCreatePermissionRequestBuilder()
+            .WithResource(string.Empty)
+            .Build();
 
-        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, payload);
+        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Permissions, request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }

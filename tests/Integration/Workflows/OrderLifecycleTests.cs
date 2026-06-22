@@ -1,4 +1,8 @@
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.CancelOrder.V1;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder.V1;
+using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder.V1;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -14,76 +18,105 @@ public class OrderLifecycleTests(PostgresFixture db) : BaseApiTest(db)
     [Fact]
     public async Task CreateAndSubmitOrder_ShouldTransitionStatus()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create("Video");
-        seedContext.ContentTypes.Add(contentType);
-        await seedContext.SaveChangesAsync();
+        ContentTypeEntity contentType = await SeedAsync<ContentDbContext, ContentTypeEntity>(context =>
+        {
+            ContentTypeEntity entity = ContentTypeFactory.Create("Video");
+            context.ContentTypes.Add(entity);
+            return entity;
+        });
 
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
+        CategoryEntity category = await SeedAsync<ContentDbContext, CategoryEntity>(context =>
+        {
+            CategoryEntity entity = CategoryFactory.Create(contentType.Id);
+            context.Categories.Add(entity);
+            return entity;
+        });
 
-        var pricingTier = PricingTierFactory.Create("base_upload");
-        seedContext.PricingTiers.Add(pricingTier);
-        await seedContext.SaveChangesAsync();
+        PricingTierEntity pricingTier = await SeedAsync<ContentDbContext, PricingTierEntity>(context =>
+        {
+            PricingTierEntity entity = PricingTierFactory.Create("base_upload");
+            context.PricingTiers.Add(entity);
+            return entity;
+        });
 
-        var customer = CustomerFactory.Create($"submit-{Guid.NewGuid():N}@test.com");
-        seedContext.Customers.Add(customer);
-        await seedContext.SaveChangesAsync();
+        CustomerEntity customer = await SeedAsync<ContentDbContext, CustomerEntity>(context =>
+        {
+            CustomerEntity entity = CustomerFactory.Create($"submit-{Guid.NewGuid():N}@test.com");
+            context.Customers.Add(entity);
+            return entity;
+        });
 
-        var order = ContentOrderFactory.CreateForCustomer(customer.Id);
-        seedContext.ContentOrders.Add(order);
-        await seedContext.SaveChangesAsync();
+        ContentOrderEntity order = await SeedAsync<ContentDbContext, ContentOrderEntity>(context =>
+        {
+            ContentOrderEntity entity = ContentOrderFactory.CreateForCustomer(customer.Id);
+            context.ContentOrders.Add(entity);
+            return entity;
+        });
 
-        var item = ContentOrderItemFactory.Create(order.Id, category.Id);
-        seedContext.ContentOrderItems.Add(item);
-        await seedContext.SaveChangesAsync();
+        ContentOrderItemEntity item = await SeedAsync<ContentDbContext, ContentOrderItemEntity>(context =>
+        {
+            ContentOrderItemEntity entity = ContentOrderItemFactory.Create(order.Id, category.Id);
+            context.ContentOrderItems.Add(entity);
+            return entity;
+        });
 
-        var tier = ContentItemTierFactory.Create(item.Id, pricingTier.Id, 25.00m);
-        seedContext.ContentItemTiers.Add(tier);
-        await seedContext.SaveChangesAsync();
+        await SeedAsync<ContentDbContext>(context =>
+            context.ContentItemTiers.Add(ContentItemTierFactory.Create(item.Id, pricingTier.Id, 25.00m))
+        );
+
+        order.Status.Should().Be(EnumOrderStatus.Draft);
 
         Client.AuthenticateAsSuperAdmin();
 
-        HttpResponseMessage submitResponse = await Client.PatchAsync(
-            $"{ApiRoutes.Admin.Orders}/{order.Id}/submit",
-            null
-        );
+        HttpResponseMessage submitResponse = await Client.PatchAsync(Routes.Admin.Orders.Submit(order.Id), null);
         submitResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        AdminSubmitOrderResponse submitBody = await submitResponse.ReadAsAsync<AdminSubmitOrderResponse>();
+        submitBody.IsSuccess.Should().BeTrue();
+
+        await using ContentDbContext verifyContext = CreateDbContext<ContentDbContext>();
         ContentOrderEntity submitted = await verifyContext.ContentOrders.FirstAsync(o => o.Id == order.Id);
-        submitted.Status.Should().NotBe(order.Status);
+        submitted.Status.Should().Be(EnumOrderStatus.PendingPayment);
     }
 
     [Fact]
     public async Task CancelOrder_ShouldTransitionToCancelled()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create("Video");
-        seedContext.ContentTypes.Add(contentType);
-        await seedContext.SaveChangesAsync();
+        ContentTypeEntity contentType = await SeedAsync<ContentDbContext, ContentTypeEntity>(context =>
+        {
+            ContentTypeEntity entity = ContentTypeFactory.Create("Video");
+            context.ContentTypes.Add(entity);
+            return entity;
+        });
 
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
+        await SeedAsync<ContentDbContext>(context => context.Categories.Add(CategoryFactory.Create(contentType.Id)));
 
-        var customer = CustomerFactory.Create($"cancel-{Guid.NewGuid():N}@test.com");
-        seedContext.Customers.Add(customer);
-        await seedContext.SaveChangesAsync();
+        CustomerEntity customer = await SeedAsync<ContentDbContext, CustomerEntity>(context =>
+        {
+            CustomerEntity entity = CustomerFactory.Create($"cancel-{Guid.NewGuid():N}@test.com");
+            context.Customers.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var orderRequest = new { CustomerId = customer.Id, CategoryId = category.Id };
+        var orderRequest = new AdminCreateOrderRequest(CustomerId: customer.Id.ToString(), PackageId: null);
         HttpResponseMessage orderResponse = await Client.PostAsJsonAsync(ApiRoutes.Admin.Orders, orderRequest);
         orderResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        await using var orderContext = CreateDbContext<ContentDbContext>();
-        ContentOrderEntity order = await orderContext.ContentOrders.FirstAsync(o => o.CustomerId == customer.Id);
+        AdminCreateOrderResponse createBody = await orderResponse.ReadAsAsync<AdminCreateOrderResponse>();
+        Guid orderId = createBody.Order.Id;
+        createBody.Order.Status.Should().Be(EnumOrderStatus.Draft);
 
-        HttpResponseMessage cancelResponse = await Client.PatchAsync(
-            $"{ApiRoutes.Admin.Orders}/{order.Id}/cancel",
-            null
-        );
+        HttpResponseMessage cancelResponse = await Client.PatchAsync(Routes.Admin.Orders.Cancel(orderId), null);
         cancelResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminCancelOrderResponse cancelBody = await cancelResponse.ReadAsAsync<AdminCancelOrderResponse>();
+        cancelBody.IsSuccess.Should().BeTrue();
+
+        await using ContentDbContext verifyContext = CreateDbContext<ContentDbContext>();
+        ContentOrderEntity cancelled = await verifyContext.ContentOrders.FirstAsync(o => o.Id == orderId);
+        cancelled.Status.Should().Be(EnumOrderStatus.Cancelled);
     }
 
     [Fact]
@@ -91,7 +124,7 @@ public class OrderLifecycleTests(PostgresFixture db) : BaseApiTest(db)
     {
         Client.AuthenticateAsVisitor();
 
-        var request = new { CustomerId = Guid.NewGuid(), CategoryId = Guid.NewGuid() };
+        var request = new AdminCreateOrderRequest(CustomerId: Guid.NewGuid().ToString(), PackageId: null);
         HttpResponseMessage response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Orders, request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -102,7 +135,7 @@ public class OrderLifecycleTests(PostgresFixture db) : BaseApiTest(db)
     {
         Client.ClearAuthentication();
 
-        var request = new { CustomerId = Guid.NewGuid(), CategoryId = Guid.NewGuid() };
+        var request = new AdminCreateOrderRequest(CustomerId: Guid.NewGuid().ToString(), PackageId: null);
         HttpResponseMessage response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Orders, request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);

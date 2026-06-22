@@ -1,3 +1,5 @@
+using _116.Content.Application.Lookup.Constants;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -9,12 +11,22 @@ namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Adm
 [Collection("Database")]
 public class AdminActivatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<bool> IsPricingTierActiveAsync(Guid id)
+    {
+        await using ContentDbContext context = CreateDbContext<ContentDbContext>();
+        PricingTierEntity? pricingTier = await context.PricingTiers.FindAsync(id);
+        return pricingTier!.IsActive;
+    }
+
     [Fact]
     public async Task ActivatePricingTier_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.PricingTiers}/{Guid.NewGuid()}/activate", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Lookup.Activate(LookupRouteConstants.PricingTiers, Guid.NewGuid()),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -24,25 +36,33 @@ public class AdminActivatePricingTierEndpointV1Tests(PostgresFixture db) : BaseA
     {
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.PricingTiers}/{Guid.NewGuid()}/activate", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Lookup.Activate(LookupRouteConstants.PricingTiers, Guid.NewGuid()),
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task ActivatePricingTier_AsSuperAdmin_WithValidId_ReturnsOk()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var pricingTier = PricingTierFactory.Create();
-        pricingTier.Deactivate();
-        context.PricingTiers.Add(pricingTier);
-        await context.SaveChangesAsync();
+        PricingTierEntity pricingTier = await SeedAsync<ContentDbContext, PricingTierEntity>(ctx =>
+        {
+            PricingTierEntity entity = PricingTierFactory.CreateInactive();
+            ctx.PricingTiers.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.PricingTiers}/{pricingTier.Id}/activate", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Lookup.Activate(LookupRouteConstants.PricingTiers, pricingTier.Id),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await IsPricingTierActiveAsync(pricingTier.Id)).Should().BeTrue();
     }
 
     /// <summary>
@@ -52,15 +72,21 @@ public class AdminActivatePricingTierEndpointV1Tests(PostgresFixture db) : BaseA
     [Fact]
     public async Task ActivatePricingTier_WhenAlreadyActive_ReturnsConflict()
     {
-        await using var context = CreateDbContext<ContentDbContext>();
-        var pricingTier = PricingTierFactory.Create();
-        context.PricingTiers.Add(pricingTier);
-        await context.SaveChangesAsync();
+        PricingTierEntity pricingTier = await SeedAsync<ContentDbContext, PricingTierEntity>(ctx =>
+        {
+            PricingTierEntity entity = PricingTierFactory.Create();
+            ctx.PricingTiers.Add(entity);
+            return entity;
+        });
 
         Client.AuthenticateAsSuperAdmin();
 
-        var response = await Client.PatchAsync($"{ApiRoutes.Admin.PricingTiers}/{pricingTier.Id}/activate", null);
+        var response = await Client.PatchAsync(
+            Routes.Admin.Lookup.Activate(LookupRouteConstants.PricingTiers, pricingTier.Id),
+            null
+        );
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await IsPricingTierActiveAsync(pricingTier.Id)).Should().BeTrue();
     }
 }

@@ -72,10 +72,15 @@ public static class ArticleFactory
         Enumerable.Range(0, count).Select(_ => CreatePublished(categoryId)).ToList();
 
     /// <summary>
-    /// Creates a promoted published article with a future expiry date.
+    /// Creates a promoted published article with a future expiry date. Pass
+    /// <paramref name="promotionLevelId" /> referencing a seeded promotion level to satisfy
+    /// the foreign key when the article is persisted.
     /// </summary>
-    public static ArticleEntity CreatePromoted(Guid categoryId) =>
-        new ArticleBuilder(categoryId).AsPublished().AsPromoted(DateTimeOffset.UtcNow.AddDays(7)).Build();
+    public static ArticleEntity CreatePromoted(Guid categoryId, Guid? promotionLevelId = null) =>
+        new ArticleBuilder(categoryId)
+            .AsPublished()
+            .AsPromoted(DateTimeOffset.UtcNow.AddDays(7), promotionLevelId)
+            .Build();
 
     /// <summary>
     /// Creates a free article in PendingReview status.

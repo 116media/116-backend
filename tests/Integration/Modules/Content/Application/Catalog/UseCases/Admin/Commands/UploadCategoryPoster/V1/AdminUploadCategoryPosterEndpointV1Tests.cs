@@ -1,4 +1,5 @@
-using System.Net.Http.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.UploadCategoryPoster.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -10,39 +11,54 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminUploadCategoryPosterEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private static string ShortName(string prefix = "c") => $"{prefix}{Guid.NewGuid().ToString("N")[..8]}";
+    private const string PosterSegment = "poster";
 
-    private static string ShortSlug(string prefix = "s") => $"{prefix}-{Guid.NewGuid().ToString("N")[..8]}";
+    private static MultipartFormDataContent BuildPosterContent()
+    {
+        var content = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 });
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        content.Add(fileContent, "file", "poster.jpg");
+        return content;
+    }
 
     [Fact]
     public async Task UploadCategoryPoster_AsSuperAdmin_WithFile_ReturnsOk()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var category = CategoryFactory.Create(contentType.Id);
-        seedContext.Categories.Add(category);
-        await seedContext.SaveChangesAsync();
+        CategoryEntity category = await SeedAsync<ContentDbContext, CategoryEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity cat = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(cat);
+            return cat;
+        });
 
         Client.AuthenticateAsSuperAdmin();
-        using var content = new MultipartFormDataContent();
-        var fileContent = new ByteArrayContent(new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 });
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
-        content.Add(fileContent, "file", "poster.jpg");
+        using MultipartFormDataContent content = BuildPosterContent();
 
-        var response = await Client.PutAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/poster", content);
+        var response = await Client.PutAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/{PosterSegment}", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminUploadCategoryPosterResponse>();
+        body.Category.Id.Should().Be(category.Id);
+        body.Category.PosterUrl.Should().NotBeNullOrEmpty();
+        body.Category.PosterUrl.Should().Contain("res.cloudinary.com/test-cloud");
+
+        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        CategoryEntity? updated = await verifyContext.Categories.FindAsync(category.Id);
+        updated.Should().NotBeNull();
+        updated!.PosterFileId.Should().NotBeNull();
     }
 
     [Fact]
     public async Task UploadCategoryPoster_AsAdmin_ReturnsForbidden()
     {
         Client.AuthenticateAsAdmin();
-        using var content = new MultipartFormDataContent();
-        content.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "poster.jpg");
+        using MultipartFormDataContent content = BuildPosterContent();
 
-        var response = await Client.PutAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/poster", content);
+        var response = await Client.PutAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/{PosterSegment}", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -51,10 +67,9 @@ public class AdminUploadCategoryPosterEndpointV1Tests(PostgresFixture db) : Base
     public async Task UploadCategoryPoster_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        using var content = new MultipartFormDataContent();
-        content.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "poster.jpg");
+        using MultipartFormDataContent content = BuildPosterContent();
 
-        var response = await Client.PutAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/poster", content);
+        var response = await Client.PutAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/{PosterSegment}", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -63,11 +78,10 @@ public class AdminUploadCategoryPosterEndpointV1Tests(PostgresFixture db) : Base
     public async Task UploadCategoryPoster_NonExistentCategory_ReturnsNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
-        using var content = new MultipartFormDataContent();
-        content.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "poster.jpg");
+        using MultipartFormDataContent content = BuildPosterContent();
 
-        var response = await Client.PutAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/poster", content);
+        var response = await Client.PutAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/{PosterSegment}", content);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 }

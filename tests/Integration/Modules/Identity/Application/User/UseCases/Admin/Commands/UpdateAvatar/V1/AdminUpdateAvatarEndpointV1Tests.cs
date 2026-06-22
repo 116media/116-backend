@@ -1,4 +1,7 @@
-using System.Text.Json;
+using System.Net.Http.Headers;
+using _116.Identity.Application.User.Constants;
+using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateAvatar.V1;
+using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
@@ -11,10 +14,37 @@ namespace _116.Integration.Tests.Modules.Identity.Application.User.UseCases.Admi
 [Collection("Database")]
 public class AdminUpdateAvatarEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    private const string AdminMeProfile = $"{ApiRoutes.Admin.Base}/me/profile";
-    private const string AdminMeAvatar = $"{ApiRoutes.Admin.Base}/me/avatar";
-    private const string PublicMeProfile = $"{ApiRoutes.Public.Me}/profile";
-    private const string PublicMeAvatar = $"{ApiRoutes.Public.Me}/avatar";
+    private const string AdminMeAvatar = $"{ApiRoutes.Admin.Base}/{IdentityConstants.Me}/{UserRouteConstants.Avatar}";
+
+    [Fact]
+    public async Task AdminUpdateAvatar_AsSuperAdmin_WithValidSession_UpdatesAvatar()
+    {
+        var sessionId = Guid.NewGuid();
+        await SeedAsync<IdentityDbContext>(context =>
+        {
+            context.Sessions.Add(SessionFactory.CreateWithId(sessionId, TestUser.SuperAdminId));
+        });
+
+        Client.AuthenticateAs(TestUser.SuperAdminId, "SuperAdmin", sessionId);
+
+        using var content = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 });
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+        content.Add(fileContent, "avatarFile", "avatar.jpg");
+
+        var response = await Client.PatchAsync(AdminMeAvatar, content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminUpdateAvatarResponse body = await response.ReadAsAsync<AdminUpdateAvatarResponse>();
+        body.User.Id.Should().Be(TestUser.SuperAdminId);
+        body.User.Avatar.Should().NotBeNull();
+        body.User.Avatar!.StorageUrl.Should().Contain("res.cloudinary.com/test-cloud");
+
+        await using var verifyContext = CreateDbContext<IdentityDbContext>();
+        UserEntity? user = await verifyContext.Users.FindAsync(TestUser.SuperAdminId);
+        user!.AvatarFileId.Should().NotBeNull();
+    }
 
     [Fact]
     public async Task AdminUpdateAvatar_WithNoAuth_Returns401()
@@ -36,12 +66,12 @@ public class AdminUpdateAvatarEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         using var content = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent(new byte[] { 0xFF, 0xD8, 0xFF });
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
         content.Add(fileContent, "avatarFile", "avatar.bmp");
 
         var response = await Client.PatchAsync(AdminMeAvatar, content);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -51,11 +81,11 @@ public class AdminUpdateAvatarEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         using var content = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent(new byte[] { 0x00, 0x01, 0x02 });
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/pdf");
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
         content.Add(fileContent, "avatarFile", "document.pdf");
 
         var response = await Client.PatchAsync(AdminMeAvatar, content);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }

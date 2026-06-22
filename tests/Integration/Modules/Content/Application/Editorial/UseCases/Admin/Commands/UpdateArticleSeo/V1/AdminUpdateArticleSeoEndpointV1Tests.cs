@@ -1,3 +1,10 @@
+using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticleSeo.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
+using _116.Tests.Fixtures.Factories.Content;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticleSeo.V1;
 
 /// <summary>
@@ -10,11 +17,10 @@ public class AdminUpdateArticleSeoEndpointV1Tests(PostgresFixture db) : BaseApiT
     public async Task UpdateArticleSeo_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var nonExistentId = Guid.NewGuid();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Articles}/{nonExistentId}/seo",
-            new { Reason = "test" }
+            Routes.Admin.Editorial.Seo(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            new { }
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -24,11 +30,10 @@ public class AdminUpdateArticleSeoEndpointV1Tests(PostgresFixture db) : BaseApiT
     public async Task UpdateArticleSeo_AsVisitor_ReturnsForbidden()
     {
         Client.AuthenticateAsVisitor();
-        var nonExistentId = Guid.NewGuid();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Articles}/{nonExistentId}/seo",
-            new { Reason = "test" }
+            Routes.Admin.Editorial.Seo(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            new { }
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -38,13 +43,51 @@ public class AdminUpdateArticleSeoEndpointV1Tests(PostgresFixture db) : BaseApiT
     public async Task UpdateArticleSeo_AsAdmin_IsAllowed()
     {
         Client.AuthenticateAsAdmin();
-        var nonExistentId = Guid.NewGuid();
 
         var response = await Client.PatchAsJsonAsync(
-            $"{ApiRoutes.Admin.Articles}/{nonExistentId}/seo",
-            new { Reason = "test" }
+            Routes.Admin.Editorial.Seo(EditorialRouteConstants.Articles, Guid.NewGuid()),
+            new { }
         );
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    /// <summary>
+    /// Verifies that updating an article's SEO metadata returns 200 OK, echoes the new
+    /// meta title/description in the typed response, and persists them on the article.
+    /// </summary>
+    [Fact]
+    public async Task UpdateArticleSeo_AsSuperAdmin_WithValidData_PersistsMeta()
+    {
+        ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ArticleEntity a = ArticleFactory.Create(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Articles.Add(a);
+            return a;
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        AdminUpdateArticleSeoRequest request = new AdminUpdateArticleSeoRequestBuilder().Build();
+
+        var response = await Client.PatchAsJsonAsync(
+            Routes.Admin.Editorial.Seo(EditorialRouteConstants.Articles, article.Id),
+            request
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminUpdateArticleSeoResponse>();
+        body.Article.Id.Should().Be(article.Id);
+        body.Article.MetaTitle.Should().Be(request.MetaTitle);
+        body.Article.MetaDescription.Should().Be(request.MetaDescription);
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        ArticleEntity? persisted = await ctx.Articles.FindAsync(article.Id);
+        persisted.Should().NotBeNull();
+        persisted!.MetaTitle.Should().Be(request.MetaTitle);
+        persisted.MetaDescription.Should().Be(request.MetaDescription);
     }
 }

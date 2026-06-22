@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 
 namespace _116.Integration.Tests.Shared.Application.Decorators;
 
@@ -16,7 +17,7 @@ public class ValidationDecoratorTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, new { Name = "", Description = "" });
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -39,13 +40,15 @@ public class ValidationDecoratorTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, new { Name = "", Description = "" });
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
 
-        string body = await response.Content.ReadAsStringAsync();
-        body.Should().NotBeNullOrEmpty();
+        ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
+        problem.Status.Should().Be(400);
 
-        using var doc = JsonDocument.Parse(body);
-        doc.RootElement.TryGetProperty("status", out var status);
-        status.GetInt32().Should().Be(400);
+        problem.Extensions.Should().ContainKey("errors", "the validation problem should enumerate the failed fields");
+
+        JsonElement errors = (JsonElement)problem.Extensions["errors"]!;
+        string serializedErrors = errors.GetRawText();
+        serializedErrors.Should().Contain("Name", "the empty Name field should be reported as a validation failure");
     }
 }

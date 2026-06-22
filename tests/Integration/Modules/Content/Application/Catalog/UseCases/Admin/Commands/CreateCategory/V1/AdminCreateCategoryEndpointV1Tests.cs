@@ -1,4 +1,6 @@
 using System.Net.Http.Json;
+using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory.V1;
+using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -14,17 +16,24 @@ public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
     private static string ShortSlug(string prefix = "s") => $"{prefix}-{Guid.NewGuid().ToString("N")[..8]}";
 
+    private async Task<ContentTypeEntity> SeedContentTypeAsync()
+    {
+        return await SeedAsync<ContentDbContext, ContentTypeEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            return contentType;
+        });
+    }
+
     [Fact]
     public async Task CreateCategory_AsSuperAdmin_WithValidData_ReturnsCreated()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        await seedContext.SaveChangesAsync();
+        ContentTypeEntity contentType = await SeedContentTypeAsync();
 
         Client.AuthenticateAsSuperAdmin();
-        var name = ShortName("cc");
-        var slug = ShortSlug("cc");
+        string name = ShortName("cc");
+        string slug = ShortSlug("cc");
         var request = new
         {
             Name = name,
@@ -39,19 +48,23 @@ public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
+        var body = await response.ReadAsAsync<AdminCreateCategoryResponse>();
+        body.Category.Id.Should().NotBeEmpty();
+        body.Category.Name.Should().Be(name);
+        body.Category.Slug.Should().Be(slug);
+        body.Category.ContentTypeId.Should().Be(contentType.Id);
+
         await using var verifyContext = CreateDbContext<ContentDbContext>();
-        var category = await verifyContext.Categories.FirstOrDefaultAsync(c => c.Slug == slug);
+        CategoryEntity? category = await verifyContext.Categories.FirstOrDefaultAsync(c => c.Id == body.Category.Id);
         category.Should().NotBeNull();
         category!.Name.Should().Be(name);
+        category.Slug.Should().Be(slug);
     }
 
     [Fact]
     public async Task CreateCategory_AsAdmin_ReturnsForbidden()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        await seedContext.SaveChangesAsync();
+        ContentTypeEntity contentType = await SeedContentTypeAsync();
 
         Client.AuthenticateAsAdmin();
         var request = new
@@ -91,12 +104,12 @@ public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
     [Fact]
     public async Task CreateCategory_WithDuplicateSlug_ReturnsConflict()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        var existing = CategoryFactory.Create(contentType.Id, ShortName("dup"), "dup-slug-test");
-        seedContext.Categories.Add(existing);
-        await seedContext.SaveChangesAsync();
+        ContentTypeEntity contentType = await SeedContentTypeAsync();
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            CategoryEntity existing = CategoryFactory.Create(contentType.Id, ShortName("dup"), "dup-slug-test");
+            ctx.Categories.Add(existing);
+        });
 
         Client.AuthenticateAsSuperAdmin();
         var request = new
@@ -111,16 +124,13 @@ public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{contentType.Id}", request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
     }
 
     [Fact]
     public async Task CreateCategory_WithEmptyName_ReturnsValidationError()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        await seedContext.SaveChangesAsync();
+        ContentTypeEntity contentType = await SeedContentTypeAsync();
 
         Client.AuthenticateAsSuperAdmin();
         var request = new
@@ -135,16 +145,13 @@ public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{contentType.Id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task CreateCategory_WithEmptySlug_ReturnsValidationError()
     {
-        await using var seedContext = CreateDbContext<ContentDbContext>();
-        var contentType = ContentTypeFactory.Create();
-        seedContext.ContentTypes.Add(contentType);
-        await seedContext.SaveChangesAsync();
+        ContentTypeEntity contentType = await SeedContentTypeAsync();
 
         Client.AuthenticateAsSuperAdmin();
         var request = new
@@ -159,7 +166,7 @@ public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{contentType.Id}", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -178,7 +185,7 @@ public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/not-a-guid", request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -197,6 +204,6 @@ public class AdminCreateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}", request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 }

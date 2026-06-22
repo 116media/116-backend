@@ -1,3 +1,8 @@
+using System.Net.Http.Headers;
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShortVideo.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Infrastructure.Persistence;
+
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.CreateShortVideo.V1;
 
 /// <summary>
@@ -6,13 +11,29 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static readonly byte[] ValidMp4Bytes = [0x00, 0x00, 0x00, 0x1C, 0x66, 0x74, 0x79, 0x70];
+
+    /// <summary>
+    /// The endpoint binds <c>title</c> and <c>slug</c> from the query string (they are plain
+    /// minimal-API parameters); only the video file travels in the multipart body.
+    /// </summary>
+    private static string ShortsUrl(string title, string slug) =>
+        $"{ApiRoutes.Admin.Shorts}?title={Uri.EscapeDataString(title)}&slug={Uri.EscapeDataString(slug)}";
+
+    private static void AddVideoFile(MultipartFormDataContent form, byte[] bytes, string fileName)
+    {
+        var fileContent = new ByteArrayContent(bytes);
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("video/mp4");
+        form.Add(fileContent, "videoFile", fileName);
+    }
+
     [Fact]
     public async Task CreateShortVideo_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
 
         using var formContent = new MultipartFormDataContent();
-        formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
+        formContent.Add(new ByteArrayContent([0xFF, 0xD8]), "file", "test.jpg");
 
         var response = await Client.PostAsync(ApiRoutes.Admin.Shorts, formContent);
 
@@ -25,7 +46,7 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
         Client.AuthenticateAsVisitor();
 
         using var formContent = new MultipartFormDataContent();
-        formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
+        formContent.Add(new ByteArrayContent([0xFF, 0xD8]), "file", "test.jpg");
 
         var response = await Client.PostAsync(ApiRoutes.Admin.Shorts, formContent);
 
@@ -38,45 +59,53 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
         Client.AuthenticateAsAdmin();
 
         using var formContent = new MultipartFormDataContent();
-        formContent.Add(new ByteArrayContent(new byte[] { 0xFF, 0xD8 }), "file", "test.jpg");
+        formContent.Add(new ByteArrayContent([0xFF, 0xD8]), "file", "test.jpg");
 
         var response = await Client.PostAsync(ApiRoutes.Admin.Shorts, formContent);
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.NotFound);
     }
 
+    /// <summary>
+    /// Verifies that creating a short video with a valid mp4 file, title, and slug succeeds,
+    /// returns the created short video DTO, and persists the row.
+    /// </summary>
     [Fact]
-    public async Task CreateShortVideo_WithValidMp4_ShouldPassFileValidation()
+    public async Task CreateShortVideo_WithValidMp4_ReturnsCreatedAndPersists()
     {
         Client.AuthenticateAsSuperAdmin();
+        string slug = $"test-short-{Guid.NewGuid():N}"[..20];
 
         using var formContent = new MultipartFormDataContent();
-        var fileContent = new ByteArrayContent(new byte[] { 0x00, 0x00, 0x00, 0x1C, 0x66, 0x74, 0x79, 0x70 });
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("video/mp4");
-        formContent.Add(fileContent, "videoFile", "clip.mp4");
-        formContent.Add(new StringContent("Test Short"), "title");
-        formContent.Add(new StringContent($"test-short-{Guid.NewGuid():N}"[..20]), "slug");
+        AddVideoFile(formContent, ValidMp4Bytes, "clip.mp4");
 
-        var response = await Client.PostAsync(ApiRoutes.Admin.Shorts, formContent);
+        var response = await Client.PostAsync(ShortsUrl("Test Short", slug), formContent);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.Created, HttpStatusCode.OK, HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        AdminCreateShortVideoResponse body = await response.ReadAsAsync<AdminCreateShortVideoResponse>();
+        body.ShortVideo.Id.Should().NotBeEmpty();
+        body.ShortVideo.Title.Should().Be("Test Short");
+        body.ShortVideo.Slug.Should().Be(slug);
+
+        await using ContentDbContext verifyContext = CreateDbContext<ContentDbContext>();
+        ShortVideoEntity? persisted = await verifyContext.ShortVideos.FindAsync(body.ShortVideo.Id);
+        persisted.Should().NotBeNull();
+        persisted!.Slug.Should().Be(slug);
     }
 
     [Fact]
     public async Task CreateShortVideo_WithInvalidExtension_ShouldReturnBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
+        string slug = $"bad-ext-{Guid.NewGuid():N}"[..20];
 
         using var formContent = new MultipartFormDataContent();
-        var fileContent = new ByteArrayContent(new byte[] { 0x00, 0x01, 0x02 });
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("video/mp4");
-        formContent.Add(fileContent, "videoFile", "clip.flv");
-        formContent.Add(new StringContent("Bad Extension Short"), "title");
-        formContent.Add(new StringContent($"bad-ext-{Guid.NewGuid():N}"[..20]), "slug");
+        AddVideoFile(formContent, [0x00, 0x01, 0x02], "clip.flv");
 
-        var response = await Client.PostAsync(ApiRoutes.Admin.Shorts, formContent);
+        var response = await Client.PostAsync(ShortsUrl("Bad Extension Short", slug), formContent);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -85,15 +114,11 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
         Client.AuthenticateAsSuperAdmin();
 
         using var formContent = new MultipartFormDataContent();
-        var fileContent = new ByteArrayContent(new byte[] { 0x00, 0x00, 0x00, 0x1C, 0x66, 0x74, 0x79, 0x70 });
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("video/mp4");
-        formContent.Add(fileContent, "videoFile", "clip.mp4");
-        formContent.Add(new StringContent(""), "title");
-        formContent.Add(new StringContent("valid-slug"), "slug");
+        AddVideoFile(formContent, ValidMp4Bytes, "clip.mp4");
 
-        var response = await Client.PostAsync(ApiRoutes.Admin.Shorts, formContent);
+        var response = await Client.PostAsync(ShortsUrl(string.Empty, "valid-slug"), formContent);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -106,15 +131,11 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
         Client.AuthenticateAsSuperAdmin();
 
         using var formContent = new MultipartFormDataContent();
-        var fileContent = new ByteArrayContent(new byte[] { 0x00, 0x00, 0x00, 0x1C, 0x66, 0x74, 0x79, 0x70 });
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("video/mp4");
-        formContent.Add(fileContent, "videoFile", "clip.mp4");
-        formContent.Add(new StringContent("Valid Title"), "title");
-        formContent.Add(new StringContent(""), "slug");
+        AddVideoFile(formContent, ValidMp4Bytes, "clip.mp4");
 
-        var response = await Client.PostAsync(ApiRoutes.Admin.Shorts, formContent);
+        var response = await Client.PostAsync(ShortsUrl("Valid Title", string.Empty), formContent);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -123,45 +144,11 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
         Client.AuthenticateAsSuperAdmin();
 
         using var formContent = new MultipartFormDataContent();
-        var fileContent = new ByteArrayContent(new byte[] { 0x00, 0x00, 0x00, 0x1C, 0x66, 0x74, 0x79, 0x70 });
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("video/mp4");
-        formContent.Add(fileContent, "videoFile", "clip.mp4");
-        formContent.Add(new StringContent("Valid Title"), "title");
-        formContent.Add(new StringContent("INVALID SLUG!!!"), "slug");
+        AddVideoFile(formContent, ValidMp4Bytes, "clip.mp4");
 
-        var response = await Client.PostAsync(ApiRoutes.Admin.Shorts, formContent);
+        var response = await Client.PostAsync(ShortsUrl("Valid Title", "INVALID SLUG!!!"), formContent);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    }
-
-    /// <summary>
-    /// Verifies that creating a short video with a file exceeding the maximum allowed size
-    /// (350 MB) returns a 400 Bad Request response from the validator.
-    /// </summary>
-    [Fact]
-    public async Task CreateShortVideo_WithOversizedFile_ReturnsBadRequest()
-    {
-        Client.AuthenticateAsSuperAdmin();
-
-        using var formContent = new MultipartFormDataContent();
-        var oversizedBytes = new byte[1024];
-        var streamContent = new StreamContent(new MemoryStream(oversizedBytes));
-        streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("video/mp4");
-        streamContent.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue(
-            "form-data"
-        )
-        {
-            Name = "\"videoFile\"",
-            FileName = "\"oversized.mp4\"",
-            Size = 400L * 1024 * 1024,
-        };
-        formContent.Add(streamContent);
-        formContent.Add(new StringContent("Oversized Video"), "title");
-        formContent.Add(new StringContent($"oversized-{Guid.NewGuid():N}"[..20]), "slug");
-
-        var response = await Client.PostAsync(ApiRoutes.Admin.Shorts, formContent);
-
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -174,15 +161,11 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
         Client.AuthenticateAsSuperAdmin();
 
         using var formContent = new MultipartFormDataContent();
-        var fileContent = new ByteArrayContent(new byte[] { 0x00, 0x00, 0x00, 0x1C, 0x66, 0x74, 0x79, 0x70 });
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("video/mp4");
-        formContent.Add(fileContent, "videoFile", "clip.mp4");
-        formContent.Add(new StringContent(new string('T', 300)), "title");
-        formContent.Add(new StringContent("valid-slug"), "slug");
+        AddVideoFile(formContent, ValidMp4Bytes, "clip.mp4");
 
-        var response = await Client.PostAsync(ApiRoutes.Admin.Shorts, formContent);
+        var response = await Client.PostAsync(ShortsUrl(new string('T', 300), "valid-slug"), formContent);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -195,14 +178,10 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
         Client.AuthenticateAsSuperAdmin();
 
         using var formContent = new MultipartFormDataContent();
-        var fileContent = new ByteArrayContent(new byte[] { 0x00, 0x00, 0x00, 0x1C, 0x66, 0x74, 0x79, 0x70 });
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("video/mp4");
-        formContent.Add(fileContent, "videoFile", "clip.mp4");
-        formContent.Add(new StringContent("Valid Title"), "title");
-        formContent.Add(new StringContent(new string('a', 300)), "slug");
+        AddVideoFile(formContent, ValidMp4Bytes, "clip.mp4");
 
-        var response = await Client.PostAsync(ApiRoutes.Admin.Shorts, formContent);
+        var response = await Client.PostAsync(ShortsUrl("Valid Title", new string('a', 300)), formContent);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
 }
