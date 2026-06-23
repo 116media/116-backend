@@ -21,6 +21,7 @@ public class FileRepositoryTests : IDisposable
     private readonly CoreI18n _coreErrors = TestErrorsFactory.CreateCoreI18n();
     private readonly CoreDbContext _context;
     private readonly Mock<IFileService> _mockFileService;
+    private readonly Mock<IImageColorService> _mockImageColorService;
     private readonly FileRepository _repository;
 
     public FileRepositoryTests()
@@ -31,10 +32,11 @@ public class FileRepositoryTests : IDisposable
 
         _context = new CoreDbContext(options);
         _mockFileService = new Mock<IFileService>();
+        _mockImageColorService = new Mock<IImageColorService>();
 
         CoreI18n coreI18n = TestErrorsFactory.CreateCoreI18n();
 
-        _repository = new FileRepository(_context, _mockFileService.Object, coreI18n);
+        _repository = new FileRepository(_context, _mockFileService.Object, _mockImageColorService.Object, coreI18n);
     }
 
     public void Dispose()
