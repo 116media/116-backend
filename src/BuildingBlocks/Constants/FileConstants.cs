@@ -31,6 +31,11 @@ public static class FileConstants
     public const int MaxStorageKeyLength = 100;
 
     /// <summary>
+    /// Length of a stored color hex string in the canonical <c>#RRGGBB</c> form.
+    /// </summary>
+    public const int ColorHexLength = 7;
+
+    /// <summary>
     /// Default deletion status for new files.
     /// </summary>
     public const bool DefaultIsDeleted = false;
