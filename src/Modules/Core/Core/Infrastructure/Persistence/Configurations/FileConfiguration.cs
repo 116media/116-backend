@@ -33,6 +33,10 @@ public class FileConfiguration : IEntityTypeConfiguration<FileEntity>
 
         builder.Property(f => f.StorageKey).HasMaxLength(FileConstants.MaxStorageKeyLength).IsRequired(false);
 
+        builder.Property(f => f.DominantColorHex).HasMaxLength(FileConstants.ColorHexLength).IsRequired(false);
+
+        builder.Property(f => f.ForegroundColorHex).HasMaxLength(FileConstants.ColorHexLength).IsRequired(false);
+
         builder.Property(f => f.IsDeleted).HasDefaultValue(FileConstants.DefaultIsDeleted);
 
         builder.Property(f => f.DeletedAt).IsRequired(false);
