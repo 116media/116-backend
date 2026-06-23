@@ -31,8 +31,21 @@ public static class CategoryMapper
             .NewConfig<CategoryEntity, CategoryDto>()
             .Map(dest => dest.ContentTypeName, src => src.ContentType.Name)
             .Map(dest => dest.PosterUrl, _ => (string?)null)
+            .Map(dest => dest.Colors, _ => (CategoryColorsDto?)null)
             .Map(dest => dest.Pricing, src => src.Pricing);
     }
+
+    /// <summary>
+    /// Reads the background/foreground color pair from a poster file. Pure
+    /// pass-through — the colors were computed once at upload time and stored on
+    /// the file, so listing many categories costs no per-card computation.
+    /// </summary>
+    /// <param name="posterFile">The poster file, or null when the category has no poster.</param>
+    /// <returns>The color pair, or null when the file carries no extracted colors.</returns>
+    private static CategoryColorsDto? ResolveColors(FileEntity? posterFile) =>
+        posterFile?.DominantColorHex is { } background && posterFile.ForegroundColorHex is { } foreground
+            ? new CategoryColorsDto(background, foreground)
+            : null;
 
     /// <summary>
     /// Maps a <see cref="CategoryEntity" /> to a <see cref="CategoryDto" />,
@@ -48,15 +61,18 @@ public static class CategoryMapper
         var dto = mapper.Map<CategoryDto>(entity);
 
         string? posterUrl = null;
+        CategoryColorsDto? colors = null;
         if (entity.PosterFileId.HasValue)
         {
             FileEntity? posterFile = await fileRepository.GetByIdAsync(entity.PosterFileId.Value, ct);
             posterUrl = posterFile?.StorageUrl;
+            colors = ResolveColors(posterFile);
         }
 
         return dto with
         {
             PosterUrl = posterUrl,
+            Colors = colors,
             Pricing = mapper.Map<IReadOnlyList<CategoryPricingDto>>(entity.Pricing),
         };
     }
@@ -95,14 +111,17 @@ public static class CategoryMapper
         var dto = mapper.Map<CategoryDto>(entity);
 
         string? posterUrl = null;
+        CategoryColorsDto? colors = null;
         if (entity.PosterFileId is { } posterId && files.TryGetValue(posterId, out FileEntity? poster))
         {
             posterUrl = poster.StorageUrl;
+            colors = ResolveColors(poster);
         }
 
         return dto with
         {
             PosterUrl = posterUrl,
+            Colors = colors,
             Pricing = mapper.Map<IReadOnlyList<CategoryPricingDto>>(entity.Pricing),
         };
     }
