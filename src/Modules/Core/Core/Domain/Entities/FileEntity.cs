@@ -53,6 +53,22 @@ public class FileEntity : Aggregate<Guid>
     public string? StorageKey { get; private set; }
 
     /// <summary>
+    /// The dominant color of the image as <c>#RRGGBB</c>, used as a background
+    /// color on the frontend. Null for non-image files or when extraction yields
+    /// no usable color.
+    /// </summary>
+    [MaxLength(FileConstants.ColorHexLength)]
+    public string? DominantColorHex { get; private set; }
+
+    /// <summary>
+    /// The accessible foreground (text) color as <c>#RRGGBB</c>, computed from
+    /// <see cref="DominantColorHex" /> via WCAG contrast (black or white). Null
+    /// whenever <see cref="DominantColorHex" /> is null.
+    /// </summary>
+    [MaxLength(FileConstants.ColorHexLength)]
+    public string? ForegroundColorHex { get; private set; }
+
+    /// <summary>
     /// Indicates whether the file has been deleted (soft delete).
     /// </summary>
     public bool IsDeleted { get; private set; } = FileConstants.DefaultIsDeleted;
@@ -71,6 +87,10 @@ public class FileEntity : Aggregate<Guid>
     /// <param name="mimeType">MIME type of the file.</param>
     /// <param name="storageUrl">Storage URL or path.</param>
     /// <param name="sizeInBytes">File size in bytes.</param>
+    /// <param name="i18n">Localized error factory used for validation failures.</param>
+    /// <param name="storageKey">Provider-agnostic storage key (e.g. Cloudinary public ID).</param>
+    /// <param name="dominantColorHex">Optional dominant color as <c>#RRGGBB</c> (background).</param>
+    /// <param name="foregroundColorHex">Optional contrasting foreground color as <c>#RRGGBB</c> (text).</param>
     /// <returns>A new <see cref="FileEntity"/> instance.</returns>
     public static FileEntity Create(
         Guid id,
@@ -80,7 +100,9 @@ public class FileEntity : Aggregate<Guid>
         string storageUrl,
         long sizeInBytes,
         CoreI18n i18n,
-        string? storageKey = null
+        string? storageKey = null,
+        string? dominantColorHex = null,
+        string? foregroundColorHex = null
     )
     {
         BadRequestException? error = (fileName, originalFileName, mimeType, storageUrl, sizeInBytes) switch
@@ -107,6 +129,8 @@ public class FileEntity : Aggregate<Guid>
             StorageUrl = storageUrl,
             SizeInBytes = sizeInBytes,
             StorageKey = storageKey,
+            DominantColorHex = dominantColorHex,
+            ForegroundColorHex = foregroundColorHex,
         };
     }
 
