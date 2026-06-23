@@ -21,6 +21,8 @@ internal class FileBuilder
     private long _sizeInBytes;
     private bool _isDeleted;
     private string? _storageKey;
+    private string? _dominantColorHex;
+    private string? _foregroundColorHex;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileBuilder"/> class with random default values.
@@ -115,6 +117,19 @@ internal class FileBuilder
     }
 
     /// <summary>
+    /// Sets the extracted dominant and foreground color hex values.
+    /// </summary>
+    /// <param name="dominantColorHex">The dominant color as <c>#RRGGBB</c>, or null.</param>
+    /// <param name="foregroundColorHex">The contrasting foreground color as <c>#RRGGBB</c>, or null.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public FileBuilder WithColors(string? dominantColorHex, string? foregroundColorHex)
+    {
+        _dominantColorHex = dominantColorHex;
+        _foregroundColorHex = foregroundColorHex;
+        return this;
+    }
+
+    /// <summary>
     /// Marks the file as deleted.
     /// </summary>
     /// <returns>The builder instance for chaining.</returns>
@@ -174,7 +189,9 @@ internal class FileBuilder
             _storageUrl,
             _sizeInBytes,
             TestErrorsFactory.CreateCoreI18n(),
-            _storageKey
+            _storageKey,
+            _dominantColorHex,
+            _foregroundColorHex
         );
 
         if (_isDeleted)
