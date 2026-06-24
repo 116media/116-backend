@@ -433,4 +433,75 @@ public class CategoryRepositoryTests : BaseRepositoryTest
 
         result.Should().BeNull();
     }
+
+    [Fact]
+    public async Task GetPinnedToFeedCategoriesAsync_ReturnsOnlyActivePinned()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        seedContext.ContentTypes.Add(contentType);
+        await seedContext.SaveChangesAsync();
+
+        var pinned = CategoryFactory.CreatePinned(contentType.Id);
+        var unpinned = CategoryFactory.Create(contentType.Id);
+        var pinnedInactive = CategoryFactory.CreatePinned(contentType.Id);
+        pinnedInactive.Deactivate();
+        seedContext.Categories.AddRange(pinned, unpinned, pinnedInactive);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<ICategoryRepository>();
+        var result = await repo.GetPinnedToFeedCategoriesAsync();
+
+        result.Should().Contain(c => c.Id == pinned.Id);
+        result.Should().NotContain(c => c.Id == unpinned.Id);
+        result.Should().NotContain(c => c.Id == pinnedInactive.Id);
+    }
+
+    [Fact]
+    public async Task GetPinnedToFeedCategoriesAsync_OrdersByPinnedDescending()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        seedContext.ContentTypes.Add(contentType);
+        await seedContext.SaveChangesAsync();
+
+        var older = CategoryFactory.CreatePinned(
+            contentType.Id,
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero)
+        );
+        var newer = CategoryFactory.CreatePinned(
+            contentType.Id,
+            new DateTimeOffset(2026, 2, 1, 0, 0, 0, TimeSpan.Zero)
+        );
+        seedContext.Categories.AddRange(older, newer);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<ICategoryRepository>();
+        var result = await repo.GetPinnedToFeedCategoriesAsync(contentType.Id);
+
+        result.Should().HaveCount(2);
+        result[0].Id.Should().Be(newer.Id);
+        result[1].Id.Should().Be(older.Id);
+    }
+
+    [Fact]
+    public async Task GetPinnedToFeedCategoriesAsync_WithContentTypeFilter_ScopesToType()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var videoType = ContentTypeFactory.Create("Video");
+        var articleType = ContentTypeFactory.Create("Article");
+        seedContext.ContentTypes.AddRange(videoType, articleType);
+        await seedContext.SaveChangesAsync();
+
+        var videoCategory = CategoryFactory.CreatePinned(videoType.Id);
+        var articleCategory = CategoryFactory.CreatePinned(articleType.Id);
+        seedContext.Categories.AddRange(videoCategory, articleCategory);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<ICategoryRepository>();
+        var result = await repo.GetPinnedToFeedCategoriesAsync(videoType.Id);
+
+        result.Should().Contain(c => c.Id == videoCategory.Id);
+        result.Should().NotContain(c => c.Id == articleCategory.Id);
+    }
 }

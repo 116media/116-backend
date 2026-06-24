@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
 using _116.Shared.Domain;
@@ -70,6 +71,23 @@ public class CategoryEntity : Aggregate<Guid>
     /// before setting the new one.
     /// </summary>
     public bool IsExclusive { get; private set; }
+
+    /// <summary>
+    /// The moment this category was pinned to the content feed, or null if it is not pinned.
+    /// A non-null value means the category appears as a section in its content-type feed
+    /// (video feed, and later the article feed). The timestamp also serves as the FIFO
+    /// eviction key: when the per-content-type cap is exceeded, the category with the
+    /// oldest PinnedToFeedAt is unpinned first.
+    /// </summary>
+    public DateTimeOffset? PinnedToFeedAt { get; private set; }
+
+    /// <summary>
+    /// Whether this category is currently pinned to the content feed.
+    /// Derived from <see cref="PinnedToFeedAt" /> — true when a pin timestamp is set.
+    /// Not mapped: EF reads and writes <see cref="PinnedToFeedAt" /> only.
+    /// </summary>
+    [NotMapped]
+    public bool IsPinnedToFeed => PinnedToFeedAt is not null;
 
     /// <summary>
     /// The content type this category is classified under.
@@ -246,5 +264,33 @@ public class CategoryEntity : Aggregate<Guid>
     public void ClearExclusive()
     {
         IsExclusive = false;
+    }
+
+    /// <summary>
+    /// Pins this category to the content feed, stamping the current time.
+    /// The handler is responsible for enforcing the per-content-type cap and unpinning
+    /// the oldest pinned category when the cap would be exceeded. Re-pinning an already
+    /// pinned category refreshes its timestamp (moving it to the front of the FIFO queue).
+    /// </summary>
+    public void PinToFeed()
+    {
+        PinnedToFeedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// Removes this category from the content feed.
+    /// Called by the handler directly (unpin endpoint) or as part of FIFO eviction
+    /// when the per-content-type cap is exceeded.
+    /// </summary>
+    /// <returns>True if the category was pinned and is now removed, false if it was not pinned.</returns>
+    public bool UnpinFromFeed()
+    {
+        if (PinnedToFeedAt is null)
+        {
+            return false;
+        }
+
+        PinnedToFeedAt = null;
+        return true;
     }
 }

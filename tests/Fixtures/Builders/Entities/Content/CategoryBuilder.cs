@@ -24,6 +24,7 @@ internal class CategoryBuilder
     private bool _isExclusive;
     private bool _isGossip;
     private Guid? _posterFileId;
+    private DateTimeOffset? _pinnedToFeedAt;
     private ContentTypeEntity? _contentType;
 
     /// <summary>
@@ -130,6 +131,16 @@ internal class CategoryBuilder
     }
 
     /// <summary>
+    /// Marks the category as pinned to the feed at the given time (defaults to "now").
+    /// Pass distinct timestamps across categories to exercise FIFO ordering/eviction.
+    /// </summary>
+    public CategoryBuilder PinnedToFeedAt(DateTimeOffset? pinnedAt = null)
+    {
+        _pinnedToFeedAt = pinnedAt ?? DateTimeOffset.UtcNow;
+        return this;
+    }
+
+    /// <summary>
     /// Sets the content type navigation property via reflection.
     /// </summary>
     public CategoryBuilder WithContentType(ContentTypeEntity contentType)
@@ -173,6 +184,16 @@ internal class CategoryBuilder
         if (_posterFileId.HasValue)
         {
             entity.SetPosterFileId(_posterFileId);
+        }
+
+        if (_pinnedToFeedAt.HasValue)
+        {
+            PropertyInfo pinnedProp = typeof(CategoryEntity).GetProperty(
+                nameof(CategoryEntity.PinnedToFeedAt),
+                BindingFlags.Public | BindingFlags.Instance
+            )!;
+
+            pinnedProp.SetValue(entity, _pinnedToFeedAt);
         }
 
         if (_contentType is not null)

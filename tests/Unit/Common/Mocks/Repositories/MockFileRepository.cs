@@ -468,6 +468,34 @@ public static class MockFileRepository
     /// <summary>
     /// Sets up default behaviors for the mock.
     /// </summary>
+    /// <summary>
+    /// Sets up GetByIdsAsync to return the specified file map.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="files">The file map keyed by id to return.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IFileRepository> SetupGetByIds(
+        this Mock<IFileRepository> mock,
+        IReadOnlyDictionary<Guid, FileEntity> files
+    )
+    {
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(files);
+        return mock;
+    }
+
+    /// <summary>
+    /// Verifies GetByIdsAsync was invoked exactly once (asserts batching, not per-item N+1).
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    public static void VerifyGetByIdsCalledOnce(this Mock<IFileRepository> mock)
+    {
+        mock.Verify(
+            x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
     private static void SetupDefaults(Mock<IFileRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<FileEntity>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
@@ -476,5 +504,8 @@ public static class MockFileRepository
             .Returns(Task.CompletedTask);
 
         mock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        mock.Setup(x => x.GetByIdsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, FileEntity>());
     }
 }

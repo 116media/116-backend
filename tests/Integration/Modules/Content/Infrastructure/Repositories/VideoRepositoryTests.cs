@@ -319,4 +319,79 @@ public class VideoRepositoryTests : BaseRepositoryTest
         result.Should().Contain(v => v.Id == matchingVideo.Id);
         result.Should().NotContain(v => v.Id == nonMatchingVideo.Id);
     }
+
+    [Fact]
+    public async Task GetLatestPublishedByCategoryAsync_OrdersByPublishedAtDescending()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var (_, category) = await SeedCategoryChainAsync(seedContext);
+
+        VideoEntity older = VideoFactory.CreatePublishedAt(
+            category.Id,
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero)
+        );
+        VideoEntity newer = VideoFactory.CreatePublishedAt(
+            category.Id,
+            new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero)
+        );
+        seedContext.Videos.AddRange(older, newer);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IVideoRepository>();
+        IReadOnlyList<VideoEntity> result = await repo.GetLatestPublishedByCategoryAsync(category.Id, 8);
+
+        result.Should().HaveCount(2);
+        result[0].Id.Should().Be(newer.Id);
+        result[1].Id.Should().Be(older.Id);
+    }
+
+    [Fact]
+    public async Task GetLatestPublishedByCategoryAsync_ReturnsOnlyPublished()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var (_, category) = await SeedCategoryChainAsync(seedContext);
+
+        VideoEntity published = VideoFactory.CreatePublished(category.Id);
+        VideoEntity draft = VideoFactory.Create(category.Id);
+        seedContext.Videos.AddRange(published, draft);
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IVideoRepository>();
+        IReadOnlyList<VideoEntity> result = await repo.GetLatestPublishedByCategoryAsync(category.Id, 8);
+
+        result.Should().OnlyContain(v => v.Status == EnumContentStatus.Published);
+        result.Should().Contain(v => v.Id == published.Id);
+        result.Should().NotContain(v => v.Id == draft.Id);
+    }
+
+    [Fact]
+    public async Task GetLatestPublishedByCategoryAsync_RespectsLimit()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var (_, category) = await SeedCategoryChainAsync(seedContext);
+
+        seedContext.Videos.AddRange(VideoFactory.CreateManyPublished(category.Id, 12));
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IVideoRepository>();
+        IReadOnlyList<VideoEntity> result = await repo.GetLatestPublishedByCategoryAsync(category.Id, 8);
+
+        result.Should().HaveCount(8);
+    }
+
+    [Fact]
+    public async Task CountPublishedByCategoryAsync_CountsOnlyPublished()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var (_, category) = await SeedCategoryChainAsync(seedContext);
+
+        seedContext.Videos.AddRange(VideoFactory.CreateManyPublished(category.Id, 4));
+        seedContext.Videos.AddRange(VideoFactory.CreateMany(category.Id, 3)); // drafts
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<IVideoRepository>();
+        int count = await repo.CountPublishedByCategoryAsync(category.Id);
+
+        count.Should().Be(4);
+    }
 }

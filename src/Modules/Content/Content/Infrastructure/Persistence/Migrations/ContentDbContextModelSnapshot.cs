@@ -536,6 +536,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(60)")
                         .HasColumnName("name");
 
+                    b.Property<DateTimeOffset?>("PinnedToFeedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("pinned_to_feed_at");
+
                     b.Property<Guid?>("PosterFileId")
                         .HasColumnType("uuid")
                         .HasColumnName("poster_file_id");
@@ -573,6 +577,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.HasIndex("Name")
                         .IsUnique()
                         .HasDatabaseName("ix_categories_name");
+
+                    b.HasIndex("PinnedToFeedAt")
+                        .HasDatabaseName("ix_categories_pinned_to_feed_at")
+                        .HasFilter("pinned_to_feed_at IS NOT NULL");
 
                     b.HasIndex("Slug")
                         .IsUnique()

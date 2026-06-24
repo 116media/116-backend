@@ -18,6 +18,18 @@ public interface IFileRepository : IRepository<FileEntity>
     Task<FileEntity?> GetByIdAsync(Guid fileId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves multiple non-deleted files by id in a single query, keyed by file id.
+    /// Ids that do not resolve (missing or deleted) are simply absent from the dictionary.
+    /// </summary>
+    /// <param name="fileIds">The file identifiers to fetch.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>A read-only map of file id to <see cref="FileEntity" />.</returns>
+    Task<IReadOnlyDictionary<Guid, FileEntity>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> fileIds,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Adds a new file entity to the repository.
     /// </summary>
     /// <param name="file">The file entity to add.</param>

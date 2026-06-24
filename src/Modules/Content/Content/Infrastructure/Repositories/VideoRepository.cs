@@ -238,4 +238,33 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
             .Take(limit)
             .ToListAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<VideoEntity>> GetLatestPublishedByCategoryAsync(
+        Guid categoryId,
+        int limit,
+        CancellationToken cancellationToken = default
+    )
+    {
+        Specification<VideoEntity> specification = new VideoByStatusSpecification(EnumContentStatus.Published).And(
+            new VideoByCategorySpecification(categoryId: categoryId)
+        );
+
+        return await context
+            .Videos.ApplySpecification(specification: specification)
+            .Include(v => v.Category)
+            .OrderByDescending(v => v.PublishedAt ?? v.CreatedAt)
+            .Take(limit)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<int> CountPublishedByCategoryAsync(Guid categoryId, CancellationToken cancellationToken = default)
+    {
+        Specification<VideoEntity> specification = new VideoByStatusSpecification(EnumContentStatus.Published).And(
+            new VideoByCategorySpecification(categoryId: categoryId)
+        );
+
+        return await context.Videos.ApplySpecification(specification: specification).CountAsync(cancellationToken);
+    }
 }

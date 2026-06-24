@@ -48,4 +48,16 @@ public static class CatalogRouteConstants
     /// Example: /api/v1/admin/categories/{id}/deactivate.
     /// </summary>
     public const string Deactivate = "deactivate";
+
+    /// <summary>
+    /// Route segment for pinning a category to the content feed.
+    /// Example: /api/v1/admin/categories/{id}/pin-to-feed.
+    /// </summary>
+    public const string PinToFeed = "pin-to-feed";
+
+    /// <summary>
+    /// Route segment for unpinning a category from the content feed.
+    /// Example: /api/v1/admin/categories/{id}/unpin-from-feed.
+    /// </summary>
+    public const string UnpinFromFeed = "unpin-from-feed";
 }

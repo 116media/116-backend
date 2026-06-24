@@ -38,6 +38,12 @@ public static class VideoFactory
     public static VideoEntity CreatePublished(Guid categoryId) => new VideoBuilder(categoryId).AsPublished().Build();
 
     /// <summary>
+    /// Creates a published free video with an explicit PublishedAt, for deterministic ordering.
+    /// </summary>
+    public static VideoEntity CreatePublishedAt(Guid categoryId, DateTimeOffset publishedAt) =>
+        new VideoBuilder(categoryId).AsPublishedAt(publishedAt).Build();
+
+    /// <summary>
     /// Creates a rejected free video.
     /// </summary>
     public static VideoEntity CreateRejected(Guid categoryId) => new VideoBuilder(categoryId).AsRejected().Build();

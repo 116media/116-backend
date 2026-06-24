@@ -6,6 +6,7 @@ using _116.Core.Domain.Entities;
 using _116.Core.Infrastructure.Persistence;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace _116.Core.Infrastructure.Repositories;
 
@@ -20,6 +21,22 @@ public class FileRepository(CoreDbContext context, IFileService fileService, Cor
         var specification = new FileByIdNotDeletedSpecification(fileId);
 
         return await context.Files.FirstOrDefaultBySpecificationAsync(specification, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, FileEntity>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> fileIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (fileIds.Count == 0)
+        {
+            return new Dictionary<Guid, FileEntity>();
+        }
+
+        return await context
+            .Files.Where(file => fileIds.Contains(file.Id) && !file.IsDeleted)
+            .ToDictionaryAsync(file => file.Id, cancellationToken);
     }
 
     /// <inheritdoc />

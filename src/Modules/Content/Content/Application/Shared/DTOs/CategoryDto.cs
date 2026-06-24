@@ -13,6 +13,8 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="IsActive">Whether the category is currently active.</param>
 /// <param name="IsGossip">Whether this is the gossip category used for homepage feed fallbacks and the gossip strip.</param>
 /// <param name="IsExclusive">Whether this category is the exclusive show featured on the homepage.</param>
+/// <param name="IsPinnedToFeed">Whether this category is currently pinned as a section in the content feed.</param>
+/// <param name="PinnedToFeedAt">When the category was pinned to the feed, or null if it is not pinned.</param>
 /// <param name="PosterUrl">The resolved URL of the show's poster image, or null if no poster is set.</param>
 /// <param name="Pricing">The pricing tiers configured for this category.</param>
 public record CategoryDto(
@@ -26,6 +28,8 @@ public record CategoryDto(
     bool IsActive,
     bool IsGossip,
     bool IsExclusive,
+    bool IsPinnedToFeed,
+    DateTimeOffset? PinnedToFeedAt,
     string? PosterUrl,
     IReadOnlyList<CategoryPricingDto> Pricing
 );

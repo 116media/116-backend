@@ -128,6 +128,9 @@ jobs:
             contents: read
             pull-requests: write
         steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
             - name: Download unit coverage
               uses: actions/download-artifact@v4
               with:
@@ -140,33 +143,30 @@ jobs:
                   name: integration-coverage
                   path: coverage/integration
 
-            - name: Generate combined coverage summary
+            - name: Generate unit coverage summary
               uses: danielpalme/ReportGenerator-GitHub-Action@5
               with:
-                  reports: coverage/**/coverage.cobertura.xml
-                  targetdir: coverage/report
+                  reports: coverage/unit/**/coverage.cobertura.xml
+                  targetdir: coverage/report/unit
                   reporttypes: MarkdownSummaryGithub
                   assemblyfilters: -*Tests*;-*Migrations*
-                  title: Test Coverage
+                  title: Unit
+
+            - name: Generate integration coverage summary
+              uses: danielpalme/ReportGenerator-GitHub-Action@5
+              with:
+                  reports: coverage/integration/**/coverage.cobertura.xml
+                  targetdir: coverage/report/integration
+                  reporttypes: MarkdownSummaryGithub
+                  assemblyfilters: -*Tests*;-*Migrations*
+                  title: Integration
 
             - name: Assemble PR comment
               run: |
-                  md=coverage/report/SummaryGithub.md
-                  {
-                    echo "# Test Coverage (Unit + Integration)"
-                    echo ""
-                    # Headline metrics block: everything before the per-class
-                    # "## Coverage" section, minus the leading H1.
-                    awk '/^## Coverage/{exit} !/^# Summary$/{print}' "$md"
-                    echo ""
-                    echo "## Coverage by module"
-                    echo ""
-                    echo "| Module | Line | Branch |"
-                    echo "|:---|---:|---:|"
-                    # Per-assembly total rows are the bold rows in the coverage
-                    # section; the bold "Name" header rows are excluded.
-                    awk '/^## Coverage/{c=1} c && /^\|\*\*/ && !/Name/{gsub(/\*\*/,""); print}' "$md"
-                  } > coverage/comment.md
+                  bash scripts/coverage-comment.sh \
+                    coverage/report/unit/SummaryGithub.md \
+                    coverage/report/integration/SummaryGithub.md \
+                    coverage/comment.md
 
             - name: Post coverage comment
               uses: marocchino/sticky-pull-request-comment@v2

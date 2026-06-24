@@ -170,4 +170,28 @@ public interface IVideoRepository : IRepository<VideoEntity>
         IEnumerable<Guid> excludeIds,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Retrieves the latest published videos for a single category, newest first.
+    /// Ordered by PublishedAt descending, falling back to CreatedAt for rows with a
+    /// null PublishedAt. Used to populate a category section in the content feed.
+    /// </summary>
+    /// <param name="categoryId">The category to fetch videos for.</param>
+    /// <param name="limit">The maximum number of videos to return.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>A read-only list of published video entities, newest first.</returns>
+    Task<IReadOnlyList<VideoEntity>> GetLatestPublishedByCategoryAsync(
+        Guid categoryId,
+        int limit,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Counts the published videos belonging to a single category.
+    /// Used by the pin handler to enforce the minimum-videos eligibility gate.
+    /// </summary>
+    /// <param name="categoryId">The category to count videos for.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The number of published videos in the category.</returns>
+    Task<int> CountPublishedByCategoryAsync(Guid categoryId, CancellationToken cancellationToken = default);
 }

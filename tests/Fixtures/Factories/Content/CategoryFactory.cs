@@ -65,4 +65,45 @@ public static class CategoryFactory
     /// </summary>
     public static List<CategoryEntity> CreateMany(Guid contentTypeId, int count) =>
         Enumerable.Range(0, count).Select(_ => Create(contentTypeId)).ToList();
+
+    /// <summary>
+    /// Creates a category pinned to the feed at the given time (defaults to "now"),
+    /// with its content type navigation populated.
+    /// </summary>
+    public static CategoryEntity CreatePinned(ContentTypeEntity contentType, DateTimeOffset? pinnedAt = null) =>
+        new CategoryBuilder(contentType.Id).WithContentType(contentType).PinnedToFeedAt(pinnedAt).Build();
+
+    /// <summary>
+    /// Creates several categories of a content type, each pinned at staggered times so the
+    /// oldest is deterministic (index 0 = oldest).
+    /// </summary>
+    public static List<CategoryEntity> CreateManyPinned(
+        ContentTypeEntity contentType,
+        int count,
+        DateTimeOffset baseTime
+    ) => Enumerable.Range(0, count).Select(i => CreatePinned(contentType, baseTime.AddMinutes(i))).ToList();
+
+    /// <summary>
+    /// Creates a category pinned to the feed by content type id (no navigation populated).
+    /// Suited to integration seeding where the content type is added to the context separately.
+    /// </summary>
+    public static CategoryEntity CreatePinned(Guid contentTypeId, DateTimeOffset? pinnedAt = null) =>
+        new CategoryBuilder(contentTypeId).PinnedToFeedAt(pinnedAt).Build();
+
+    /// <summary>
+    /// Creates several categories pinned by content type id at staggered times (index 0 = oldest).
+    /// </summary>
+    public static List<CategoryEntity> CreateManyPinned(Guid contentTypeId, int count, DateTimeOffset baseTime) =>
+        Enumerable.Range(0, count).Select(i => CreatePinned(contentTypeId, baseTime.AddMinutes(i))).ToList();
+
+    /// <summary>
+    /// Creates a category pinned to the feed with a poster file reference, by content type id.
+    /// The referenced <paramref name="posterFileId" /> must point to a persisted file when used
+    /// in integration tests so the poster URL can be resolved.
+    /// </summary>
+    public static CategoryEntity CreatePinnedWithPoster(
+        Guid contentTypeId,
+        Guid posterFileId,
+        DateTimeOffset? pinnedAt = null
+    ) => new CategoryBuilder(contentTypeId).WithPosterFileId(posterFileId).PinnedToFeedAt(pinnedAt).Build();
 }
