@@ -3,18 +3,14 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
-using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
-using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
-using Microsoft.AspNetCore.Http;
 using Moq;
 using Xunit;
 
@@ -36,10 +32,6 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
         _fileRepositoryMock = MockFileRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
 
-        FileEntity videoFile = FileFactory.CreateVideo();
-        _fileRepositoryMock.SetupUploadAndStoreVideoFile(videoFile);
-        _fileRepositoryMock.SetupGetById(videoFile);
-
         _handler = new AdminUpdateShortVideoHandler(
             _shortVideoRepositoryMock.Object,
             _fileRepositoryMock.Object,
@@ -52,14 +44,12 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
     private static AdminUpdateShortVideoCommand BuildCommand(
         string? id = null,
         string? title = null,
-        Guid? videoId = null,
-        IFormFile? videoFile = null
+        Guid? videoId = null
     ) =>
         new(
             Id: id ?? Guid.NewGuid().ToString(),
             Title: title ?? TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            VideoId: videoId,
-            VideoFile: videoFile
+            VideoId: videoId
         );
 
     #region Success Cases
@@ -127,32 +117,11 @@ public class AdminUpdateShortVideoHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task Handle_WithVideoFile_ShouldUploadViaFileRepositoryAndReplaceFileId()
+    public async Task Handle_ShouldNotUploadAnyVideoFile()
     {
         // Arrange
         ShortVideoEntity existing = ShortVideoFactory.Create();
-        IFormFile videoFile = FileTestHelpers.CreateMockVideoFile();
-        var command = BuildCommand(id: existing.Id.ToString(), videoFile: videoFile);
-
-        _shortVideoRepositoryMock
-            .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(existing);
-
-        // Act
-        AdminUpdateShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-        _fileRepositoryMock.VerifyUploadAndStoreVideoFileCalled();
-        _unitOfWorkMock.VerifyCommitCalled();
-    }
-
-    [Fact]
-    public async Task Handle_WithoutVideoFile_ShouldNotUpload()
-    {
-        // Arrange
-        ShortVideoEntity existing = ShortVideoFactory.Create();
-        var command = BuildCommand(id: existing.Id.ToString(), videoFile: null);
+        var command = BuildCommand(id: existing.Id.ToString());
 
         _shortVideoRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(existing.Id, It.IsAny<CancellationToken>()))

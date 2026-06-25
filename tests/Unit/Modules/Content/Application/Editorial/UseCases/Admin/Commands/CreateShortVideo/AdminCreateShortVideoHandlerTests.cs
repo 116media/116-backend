@@ -3,16 +3,13 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
-using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
-using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
@@ -36,9 +33,6 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
         _fileRepositoryMock = MockFileRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
 
-        FileEntity fileEntity = FileFactory.CreateVideo();
-        _fileRepositoryMock.SetupUploadAndStoreVideoFile(fileEntity);
-
         _handler = new AdminCreateShortVideoHandler(
             _shortVideoRepositoryMock.Object,
             _fileRepositoryMock.Object,
@@ -49,14 +43,12 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task Handle_WhenValidStandaloneShortVideo_ShouldCreateAndReturnShortVideo()
+    public async Task Handle_WhenValidStandaloneShortVideo_ShouldCreateInactiveDraftWithoutVideoFile()
     {
         // Arrange
-        IFormFile fileMock = FileTestHelpers.CreateMockVideoFile();
         var command = new AdminCreateShortVideoCommand(
             Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
             Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            VideoFile: fileMock,
             AuthorId: Guid.NewGuid(),
             VideoId: null
         );
@@ -77,21 +69,33 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
         // Assert
         result.Should().NotBeNull();
         result.ShortVideo.Should().NotBeNull();
+        capturedEntity.Should().NotBeNull();
+        capturedEntity!.VideoFileId.Should().BeNull();
+        capturedEntity.IsActive.Should().BeFalse();
         _shortVideoRepositoryMock.VerifyAddCalled();
         _unitOfWorkMock.VerifyCommitCalled();
-        _fileRepositoryMock.VerifyUploadAndStoreVideoFileCalled();
+        _fileRepositoryMock.Verify(
+            x =>
+                x.UploadAndStoreVideoFileAsync(
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
     }
 
     [Fact]
     public async Task Handle_WhenValidTeaserShortVideo_ShouldCreateAndReturnShortVideo()
     {
         // Arrange
-        IFormFile fileMock = FileTestHelpers.CreateMockVideoFile();
         Guid videoId = Guid.NewGuid();
         var command = new AdminCreateShortVideoCommand(
             Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
             Slug: TestConstants.Content.Editorial.ShortVideo.ValidSlug,
-            VideoFile: fileMock,
             AuthorId: Guid.NewGuid(),
             VideoId: videoId
         );
@@ -120,12 +124,10 @@ public class AdminCreateShortVideoHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenSlugAlreadyExists_ShouldThrowConflictException()
     {
         // Arrange
-        IFormFile fileMock = FileTestHelpers.CreateMockVideoFile();
         string slug = TestConstants.Content.Editorial.ShortVideo.ValidSlug;
         var command = new AdminCreateShortVideoCommand(
             Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
             Slug: slug,
-            VideoFile: fileMock,
             AuthorId: Guid.NewGuid(),
             VideoId: null
         );

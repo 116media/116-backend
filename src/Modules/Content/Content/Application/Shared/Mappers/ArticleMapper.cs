@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using Mapster;
@@ -174,21 +175,29 @@ public static class ArticleMapper
     }
 
     /// <summary>
-    /// Resolves the cover image URL from the associated FileEntity, or returns null
-    /// if no cover image has been uploaded.
+    /// Resolves the cover image URL for an article.
     /// </summary>
+    /// <remarks>
+    /// Prefers the FileEntity referenced by <c>CoverImageFileId</c>. Falls back to the
+    /// <c>Cover</c> entry in the <c>Images</c> collection (when loaded) for covers that predate
+    /// FileEntity-backed tracking, where <c>CoverImageFileId</c> was never populated. Returns
+    /// null when no cover image exists.
+    /// </remarks>
     private static async Task<string?> ResolveCoverImageUrlAsync(
         ArticleEntity entity,
         IFileRepository fileRepository,
         CancellationToken ct
     )
     {
-        if (!entity.CoverImageFileId.HasValue)
+        if (entity.CoverImageFileId.HasValue)
         {
-            return null;
+            FileEntity? coverFile = await fileRepository.GetByIdAsync(entity.CoverImageFileId.Value, ct);
+            if (coverFile?.StorageUrl is not null)
+            {
+                return coverFile.StorageUrl;
+            }
         }
 
-        FileEntity? coverFile = await fileRepository.GetByIdAsync(entity.CoverImageFileId.Value, ct);
-        return coverFile?.StorageUrl;
+        return entity.Images?.FirstOrDefault(img => img.ImageType == EnumArticleImageType.Cover)?.Url;
     }
 }

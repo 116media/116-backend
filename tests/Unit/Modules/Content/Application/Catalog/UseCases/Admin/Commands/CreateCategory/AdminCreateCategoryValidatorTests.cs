@@ -35,8 +35,7 @@ public class AdminCreateCategoryValidatorTests
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         // Act
@@ -58,8 +57,7 @@ public class AdminCreateCategoryValidatorTests
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: true,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         // Act
@@ -84,8 +82,7 @@ public class AdminCreateCategoryValidatorTests
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         // Act
@@ -116,8 +113,7 @@ public class AdminCreateCategoryValidatorTests
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         // Act
@@ -144,8 +140,7 @@ public class AdminCreateCategoryValidatorTests
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         // Act
@@ -172,8 +167,7 @@ public class AdminCreateCategoryValidatorTests
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         // Act
@@ -204,8 +198,7 @@ public class AdminCreateCategoryValidatorTests
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         // Act
@@ -232,8 +225,7 @@ public class AdminCreateCategoryValidatorTests
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         // Act
@@ -260,8 +252,7 @@ public class AdminCreateCategoryValidatorTests
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         // Act
@@ -292,8 +283,7 @@ public class AdminCreateCategoryValidatorTests
             Description: new string('d', TestConstants.Content.Category.DescriptionMaxLength + 1),
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         // Act
@@ -321,8 +311,7 @@ public class AdminCreateCategoryValidatorTests
             Description: null!,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         // Act
@@ -353,8 +342,7 @@ public class AdminCreateCategoryValidatorTests
             Description: TestConstants.Content.Category.ValidDescription,
             IsFree: false,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         // Act

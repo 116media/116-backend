@@ -58,8 +58,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: newSlug,
             Description: "Updated description",
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -97,8 +96,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: slug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -130,8 +128,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: true,
-            Poster: null
+            IsExclusive: true
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -159,8 +156,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: true,
-            Poster: null
+            IsExclusive: true
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -187,8 +183,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -214,8 +209,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: true,
-            Poster: null
+            IsExclusive: true
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -245,8 +239,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: true,
-            Poster: null
+            IsExclusive: true
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(inactive);
@@ -271,8 +264,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
@@ -298,8 +290,7 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: conflictingSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: false,
-            Poster: null
+            IsExclusive: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);

@@ -30,6 +30,12 @@ public static class ShortVideoFactory
     public static ShortVideoEntity CreateInactive() => new ShortVideoBuilder().AsInactive().Build();
 
     /// <summary>
+    /// Creates a file-less inactive draft short video, simulating a short video created before its
+    /// video file has been uploaded.
+    /// </summary>
+    public static ShortVideoEntity CreateDraft() => new ShortVideoBuilder().WithoutVideoFile().AsInactive().Build();
+
+    /// <summary>
     /// Creates a short video with a known slug.
     /// </summary>
     public static ShortVideoEntity CreateWithSlug(string slug) => new ShortVideoBuilder().WithSlug(slug).Build();

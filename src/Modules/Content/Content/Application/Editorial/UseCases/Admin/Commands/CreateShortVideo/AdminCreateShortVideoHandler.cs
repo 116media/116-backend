@@ -4,18 +4,18 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShortVideo;
 
 /// <summary>
-/// Handles the <see cref="AdminCreateShortVideoCommand" /> to upload and create a new short video clip.
-/// The video file is tracked via <see cref="FileEntity" /> in the Core module.
+/// Handles the <see cref="AdminCreateShortVideoCommand" /> to create a new short video draft.
+/// The video file is uploaded separately afterwards via the dedicated upload endpoint, so the
+/// draft starts inactive (hidden from the feed) until a file is attached and it is activated.
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
-/// <param name="fileRepository">Repository for centralized file entity management.</param>
+/// <param name="fileRepository">Repository for resolving file URLs during mapping.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
@@ -43,17 +43,6 @@ public class AdminCreateShortVideoHandler(
             throw i18n.ShortVideo.SlugAlreadyExists(slug: command.Slug);
         }
 
-        string publicId = Guid.NewGuid().ToString();
-
-        FileEntity videoFile = await fileRepository.UploadAndStoreVideoFileAsync(
-            file: command.VideoFile,
-            publicId: publicId,
-            folder: "content/short-videos",
-            originalFileName: command.VideoFile.FileName,
-            mimeType: command.VideoFile.ContentType,
-            cancellationToken: cancellationToken
-        );
-
         ShortVideoEntity shortVideo;
 
         if (command.VideoId.HasValue)
@@ -62,7 +51,6 @@ public class AdminCreateShortVideoHandler(
                 id: Guid.NewGuid(),
                 title: command.Title,
                 slug: command.Slug,
-                videoFileId: videoFile.Id,
                 videoId: command.VideoId.Value,
                 authorId: command.AuthorId,
                 errors: i18n.ShortVideo
@@ -74,7 +62,6 @@ public class AdminCreateShortVideoHandler(
                 id: Guid.NewGuid(),
                 title: command.Title,
                 slug: command.Slug,
-                videoFileId: videoFile.Id,
                 authorId: command.AuthorId,
                 errors: i18n.ShortVideo
             );

@@ -255,6 +255,29 @@ public static class MockFileRepository
     }
 
     /// <summary>
+    /// Sets up ReplaceVideoFileAsync to return the specified file.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    /// <param name="file">The file to return.</param>
+    /// <returns>The mock instance for chaining.</returns>
+    public static Mock<IFileRepository> SetupReplaceVideoFile(this Mock<IFileRepository> mock, FileEntity file)
+    {
+        mock.Setup(x =>
+                x.ReplaceVideoFileAsync(
+                    It.IsAny<Guid?>(),
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(file);
+        return mock;
+    }
+
+    /// <summary>
     /// Sets up SoftDeleteByIdAsync to return the specified result.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
@@ -357,6 +380,27 @@ public static class MockFileRepository
         mock.Verify(
             x =>
                 x.ReplaceImageFileAsync(
+                    It.IsAny<Guid?>(),
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
+    /// <summary>
+    /// Verifies that ReplaceVideoFileAsync was called.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    public static void VerifyReplaceVideoFileCalled(this Mock<IFileRepository> mock)
+    {
+        mock.Verify(
+            x =>
+                x.ReplaceVideoFileAsync(
                     It.IsAny<Guid?>(),
                     It.IsAny<IFormFile>(),
                     It.IsAny<string>(),

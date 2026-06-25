@@ -4,18 +4,17 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateShortVideo;
 
 /// <summary>
-/// Handles the <see cref="AdminUpdateShortVideoCommand" /> to update short video metadata
-/// and optionally replace the video file via <see cref="FileEntity" />.
+/// Handles the <see cref="AdminUpdateShortVideoCommand" /> to update short video metadata.
+/// The video file is replaced separately via the dedicated upload endpoint.
 /// </summary>
 /// <param name="shortVideoRepository">Repository for short video data access operations.</param>
-/// <param name="fileRepository">Repository for centralized file entity management.</param>
+/// <param name="fileRepository">Repository for resolving file URLs during mapping.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
@@ -41,20 +40,6 @@ public class AdminUpdateShortVideoHandler(
         );
 
         shortVideo.Update(title: command.Title, videoId: command.VideoId, errors: i18n.ShortVideo);
-
-        if (command.VideoFile is not null)
-        {
-            FileEntity videoFile = await fileRepository.UploadAndStoreVideoFileAsync(
-                file: command.VideoFile,
-                publicId: shortVideo.VideoFileId.ToString(),
-                folder: "content/short-videos",
-                originalFileName: command.VideoFile.FileName,
-                mimeType: command.VideoFile.ContentType,
-                cancellationToken: cancellationToken
-            );
-
-            shortVideo.ReplaceVideoFile(videoFileId: videoFile.Id);
-        }
 
         shortVideoRepository.Update(shortVideo);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);

@@ -5,7 +5,6 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -69,22 +68,8 @@ public class AdminUpdateCategoryHandler(
             if (currentExclusive is not null && currentExclusive.Id != category.Id)
             {
                 currentExclusive.ClearExclusive();
+                await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
             }
-        }
-
-        if (command.Poster is not null)
-        {
-            FileEntity posterFile = await fileRepository.ReplaceImageFileAsync(
-                currentFileId: category.PosterFileId,
-                file: command.Poster,
-                publicId: category.Id.ToString(),
-                folder: "content/category-posters",
-                originalFileName: command.Poster.FileName,
-                mimeType: command.Poster.ContentType,
-                cancellationToken: cancellationToken
-            );
-
-            category.SetPosterFileId(posterFileId: posterFile.Id);
         }
 
         category.Update(

@@ -32,8 +32,7 @@ public class AdminUpdateShortVideoValidatorTests
         var command = new AdminUpdateShortVideoCommand(
             Id: Guid.NewGuid().ToString(),
             Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            VideoId: null,
-            VideoFile: null
+            VideoId: null
         );
 
         // Act
@@ -55,8 +54,7 @@ public class AdminUpdateShortVideoValidatorTests
         var command = new AdminUpdateShortVideoCommand(
             Id: "not-a-guid",
             Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            VideoId: null,
-            VideoFile: null
+            VideoId: null
         );
 
         // Act
@@ -74,8 +72,7 @@ public class AdminUpdateShortVideoValidatorTests
         var command = new AdminUpdateShortVideoCommand(
             Id: string.Empty,
             Title: TestConstants.Content.Editorial.ShortVideo.ValidTitle,
-            VideoId: null,
-            VideoFile: null
+            VideoId: null
         );
 
         // Act
@@ -97,8 +94,7 @@ public class AdminUpdateShortVideoValidatorTests
         var command = new AdminUpdateShortVideoCommand(
             Id: Guid.NewGuid().ToString(),
             Title: string.Empty,
-            VideoId: null,
-            VideoFile: null
+            VideoId: null
         );
 
         // Act
@@ -121,8 +117,7 @@ public class AdminUpdateShortVideoValidatorTests
         var command = new AdminUpdateShortVideoCommand(
             Id: Guid.NewGuid().ToString(),
             Title: new string('a', TestConstants.Content.Editorial.ShortVideo.TitleMaxLength + 1),
-            VideoId: null,
-            VideoFile: null
+            VideoId: null
         );
 
         // Act
@@ -155,8 +150,7 @@ public class AdminUpdateShortVideoValidatorTests
         var command = new AdminUpdateShortVideoCommand(
             Id: Guid.NewGuid().ToString(),
             Title: string.Empty,
-            VideoId: null,
-            VideoFile: null
+            VideoId: null
         );
 
         // Act

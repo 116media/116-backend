@@ -13,22 +13,15 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategory.V1;
 
 /// <summary>
-/// Request model for updating a category.
+/// Request model for updating a category. The poster image is uploaded separately via the
+/// dedicated <c>PUT /api/v1/admin/categories/{id}/poster</c> endpoint.
 /// </summary>
 /// <param name="Name">The new display name for the category.</param>
 /// <param name="Slug">The new URL-safe slug for the category.</param>
 /// <param name="Description">The new description.</param>
 /// <param name="IsGossip">Whether this is the gossip category used for homepage feed fallbacks and the gossip strip.</param>
 /// <param name="IsExclusive">Whether this category is the exclusive show featured on the homepage.</param>
-/// <param name="Poster">Optional poster image file for the show.</param>
-public record AdminUpdateCategoryRequest(
-    string Name,
-    string Slug,
-    string Description,
-    bool IsGossip,
-    bool IsExclusive,
-    IFormFile? Poster
-);
+public record AdminUpdateCategoryRequest(string Name, string Slug, string Description, bool IsGossip, bool IsExclusive);
 
 /// <summary>
 /// Response model for a successful category update.
@@ -64,8 +57,7 @@ public class AdminUpdateCategoryEndpointV1 : ICarterModule
                         Slug: request.Slug,
                         Description: request.Description,
                         IsGossip: request.IsGossip,
-                        IsExclusive: request.IsExclusive,
-                        Poster: request.Poster
+                        IsExclusive: request.IsExclusive
                     );
 
                     AdminUpdateCategoryResult result = await dispatcher.Send(request: command);

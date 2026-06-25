@@ -31,10 +31,12 @@ public class ShortVideoEntity : Aggregate<Guid>
     public string Slug { get; private set; } = null!;
 
     /// <summary>
-    /// ID of the uploaded video file tracked in the Core module.
-    /// The video URL and storage key are resolved from the associated FileEntity.
+    /// ID of the uploaded video file tracked in the Core module, or null while the short video
+    /// is still a draft. A short video is created as a draft (no file) and the video file is
+    /// attached afterwards via the dedicated upload endpoint. The video URL and storage key are
+    /// resolved from the associated FileEntity.
     /// </summary>
-    public Guid VideoFileId { get; private set; }
+    public Guid? VideoFileId { get; private set; }
 
     /// <summary>
     /// ID of the uploaded thumbnail file tracked in the Core module.
@@ -97,22 +99,20 @@ public class ShortVideoEntity : Aggregate<Guid>
     private ShortVideoEntity() { }
 
     /// <summary>
-    /// Creates a standalone short video clip with no parent video.
+    /// Creates a standalone short video draft with no parent video and no video file yet.
+    /// The video file is attached afterwards via the dedicated upload endpoint; the draft stays
+    /// inactive (hidden from the feed) until a file is uploaded and it is activated.
     /// </summary>
     /// <param name="id">The unique identifier.</param>
     /// <param name="title">The display title.</param>
     /// <param name="slug">The URL-safe slug for the short video permalink.</param>
-    /// <param name="videoFileId">
-    /// The FileEntity ID for the uploaded video file in the Core module.
-    /// </param>
     /// <param name="authorId">The identity user UUID of the admin uploading this short video.</param>
     /// <param name="errors">The errors factory instance.</param>
-    /// <returns>A new active <see cref="ShortVideoEntity" />.</returns>
+    /// <returns>A new inactive draft <see cref="ShortVideoEntity" />.</returns>
     public static ShortVideoEntity CreateStandalone(
         Guid id,
         string title,
         string slug,
-        Guid videoFileId,
         Guid authorId,
         ShortVideoErrors errors
     )
@@ -127,10 +127,9 @@ public class ShortVideoEntity : Aggregate<Guid>
             Id = id,
             Title = title,
             Slug = slug,
-            VideoFileId = videoFileId,
             AuthorId = authorId,
             HasFullVideo = false,
-            IsActive = true,
+            IsActive = false,
         };
     }
 
@@ -140,18 +139,14 @@ public class ShortVideoEntity : Aggregate<Guid>
     /// <param name="id">The unique identifier.</param>
     /// <param name="title">The display title.</param>
     /// <param name="slug">The URL-safe slug for the short video permalink.</param>
-    /// <param name="videoFileId">
-    /// The FileEntity ID for the uploaded video file in the Core module.
-    /// </param>
     /// <param name="videoId">The parent full video this clip previews.</param>
     /// <param name="authorId">The identity user UUID of the admin uploading this short video.</param>
     /// <param name="errors">The errors factory instance.</param>
-    /// <returns>A new active <see cref="ShortVideoEntity" /> linked to a parent video.</returns>
+    /// <returns>A new inactive draft <see cref="ShortVideoEntity" /> linked to a parent video.</returns>
     public static ShortVideoEntity CreateTeaser(
         Guid id,
         string title,
         string slug,
-        Guid videoFileId,
         Guid videoId,
         Guid authorId,
         ShortVideoErrors errors
@@ -167,11 +162,10 @@ public class ShortVideoEntity : Aggregate<Guid>
             Id = id,
             Title = title,
             Slug = slug,
-            VideoFileId = videoFileId,
             VideoId = videoId,
             AuthorId = authorId,
             HasFullVideo = true,
-            IsActive = true,
+            IsActive = false,
         };
     }
 
@@ -217,11 +211,18 @@ public class ShortVideoEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Makes the short video visible on the public feed.
+    /// Makes the short video visible on the public feed. A short video cannot be activated
+    /// until its video file has been uploaded.
     /// </summary>
+    /// <param name="errors">The errors factory instance.</param>
     /// <returns><c>true</c> if activated; <c>false</c> if already active.</returns>
-    public bool Activate()
+    public bool Activate(ShortVideoErrors errors)
     {
+        if (VideoFileId is null)
+        {
+            throw errors.VideoFileRequired();
+        }
+
         if (IsActive)
         {
             return false;

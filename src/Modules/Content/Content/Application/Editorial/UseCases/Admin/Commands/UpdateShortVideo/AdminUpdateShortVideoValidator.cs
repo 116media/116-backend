@@ -19,13 +19,5 @@ public class AdminUpdateShortVideoValidator : AbstractValidator<AdminUpdateShort
         RuleFor(x => x.Id).IsValidGuid(i18n.ShortVideo.Msg.Localizer);
 
         RuleFor(x => x.Title).ValidShortVideoTitle(i18n.ShortVideo.Msg);
-
-        When(
-            x => x.VideoFile is not null,
-            () =>
-            {
-                RuleFor(x => x.VideoFile).ValidShortVideoFile(i18n.ShortVideo.Msg);
-            }
-        );
     }
 }

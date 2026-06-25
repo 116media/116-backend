@@ -61,7 +61,7 @@ public class AdminDeleteShortVideoHandlerTests
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
 
         _fileRepositoryMock
-            .Setup(x => x.GetByIdAsync(shortVideo.VideoFileId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetByIdAsync(shortVideo.VideoFileId!.Value, It.IsAny<CancellationToken>()))
             .ReturnsAsync(_videoFileEntity);
         _fileRepositoryMock
             .Setup(x => x.GetByIdAsync(shortVideo.ThumbnailFileId!.Value, It.IsAny<CancellationToken>()))
@@ -86,7 +86,7 @@ public class AdminDeleteShortVideoHandlerTests
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
 
         _fileRepositoryMock
-            .Setup(x => x.GetByIdAsync(shortVideo.VideoFileId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetByIdAsync(shortVideo.VideoFileId!.Value, It.IsAny<CancellationToken>()))
             .ReturnsAsync(_videoFileEntity);
 
         // Act

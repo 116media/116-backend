@@ -220,6 +220,27 @@ public interface IFileRepository : IRepository<FileEntity>
     );
 
     /// <summary>
+    /// Replaces a tracked video file: soft-deletes the old FileEntity if it exists, then uploads a new video.
+    /// </summary>
+    /// <param name="currentFileId">The ID of the current video file to replace, or null if none exists.</param>
+    /// <param name="file">The new video file to upload.</param>
+    /// <param name="publicId">The public ID used in cloud storage.</param>
+    /// <param name="folder">The destination folder in cloud storage.</param>
+    /// <param name="originalFileName">The original filename as submitted by the client.</param>
+    /// <param name="mimeType">The MIME type of the file.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The created <see cref="FileEntity" /> for the new upload.</returns>
+    Task<FileEntity> ReplaceVideoFileAsync(
+        Guid? currentFileId,
+        IFormFile file,
+        string publicId,
+        string folder,
+        string originalFileName,
+        string mimeType,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Soft-deletes a file entity by its ID.
     /// </summary>
     /// <param name="fileId">The unique identifier of the file to soft-delete.</param>

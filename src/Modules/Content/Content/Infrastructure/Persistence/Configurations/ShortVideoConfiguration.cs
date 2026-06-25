@@ -22,7 +22,7 @@ public class ShortVideoConfiguration : IEntityTypeConfiguration<ShortVideoEntity
 
         builder.Property(x => x.Slug).HasMaxLength(ContentConstants.MaxSlugLength).IsRequired();
 
-        builder.Property(x => x.VideoFileId).IsRequired();
+        builder.Property(x => x.VideoFileId).IsRequired(false);
 
         builder.Property(x => x.ThumbnailFileId).IsRequired(false);
 

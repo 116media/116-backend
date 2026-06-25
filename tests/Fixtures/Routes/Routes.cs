@@ -175,6 +175,9 @@ public static class Routes
             public static string Thumbnail(string collection, Guid id) =>
                 Action(collection, id, EditorialRouteConstants.Thumbnail);
 
+            public static string Video(string collection, Guid id) =>
+                Action(collection, id, EditorialRouteConstants.Video);
+
             public static string Images(string collection, Guid id) =>
                 Action(collection, id, EditorialRouteConstants.Images);
 

@@ -92,6 +92,12 @@ public static class EditorialRouteConstants
     public const string Thumbnail = "thumbnail";
 
     /// <summary>
+    /// Route segment for uploading or replacing the video file of a short video.
+    /// Example: /api/v1/admin/shorts/{id}/video.
+    /// </summary>
+    public const string Video = "video";
+
+    /// <summary>
     /// Route segment for scheduling a video shoot.
     /// Example: /api/v1/admin/videos/{id}/shoot.
     /// </summary>

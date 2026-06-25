@@ -16,6 +16,15 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShortVideo.V1;
 
 /// <summary>
+/// Request model for creating a short video draft. The video file is uploaded separately via the
+/// dedicated <c>POST /api/v1/admin/shorts/{id}/video</c> endpoint.
+/// </summary>
+/// <param name="Title">The display title of the short video.</param>
+/// <param name="Slug">The URL-safe slug for the short video permalink.</param>
+/// <param name="VideoId">Optional parent full video identifier. When provided, creates a teaser.</param>
+public record AdminCreateShortVideoRequest(string Title, string Slug, Guid? VideoId);
+
+/// <summary>
 /// Response model for successful short video creation.
 /// </summary>
 /// <param name="ShortVideo">The created short video information.</param>
@@ -23,7 +32,7 @@ public record AdminCreateShortVideoResponse(ShortVideoDto ShortVideo);
 
 /// <summary>
 /// Defines the admin create short video endpoint.
-/// Handles upload and creation of new short video clips via multipart/form-data.
+/// Creates a short video draft; the video file is uploaded separately.
 /// </summary>
 public class AdminCreateShortVideoEndpointV1 : ICarterModule
 {
@@ -42,24 +51,20 @@ public class AdminCreateShortVideoEndpointV1 : ICarterModule
             .MapPost(
                 "/",
                 async (
-                    IFormFile videoFile,
+                    AdminCreateShortVideoRequest request,
                     ClaimsPrincipal user,
                     IClaimsProvider claimsProvider,
                     IDispatcher dispatcher,
-                    HttpContext httpContext,
-                    string title,
-                    string slug,
-                    Guid? videoId = null
+                    HttpContext httpContext
                 ) =>
                 {
                     Guid authorId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new AdminCreateShortVideoCommand(
-                        Title: title,
-                        Slug: slug,
-                        VideoFile: videoFile,
+                        Title: request.Title,
+                        Slug: request.Slug,
                         AuthorId: authorId,
-                        VideoId: videoId
+                        VideoId: request.VideoId
                     );
 
                     AdminCreateShortVideoResult result = await dispatcher.Send(request: command);
@@ -78,8 +83,7 @@ public class AdminCreateShortVideoEndpointV1 : ICarterModule
             .WithDescription(description: AdminCreateShortVideoMetaField.AdminCreateShortVideo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
-            .RequireRateLimiting(policyName: RateLimitPolicies.FileUpload)
-            .DisableAntiforgery()
+            .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
             .Produces<AdminCreateShortVideoResponse>(statusCode: StatusCodes.Status201Created)
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)

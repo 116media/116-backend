@@ -1,6 +1,5 @@
 using _116.Content.Application.Shared.DTOs;
 using _116.Shared.Contracts.Application.CQRS;
-using Microsoft.AspNetCore.Http;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategory;
 
@@ -13,15 +12,13 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategor
 /// <param name="Description">The new description.</param>
 /// <param name="IsGossip">Whether this is the gossip category used for homepage feed fallbacks and the gossip strip.</param>
 /// <param name="IsExclusive">Whether this category is the exclusive show featured on the homepage.</param>
-/// <param name="Poster">Optional poster image file for the show.</param>
 public record AdminUpdateCategoryCommand(
     string Id,
     string Name,
     string Slug,
     string Description,
     bool IsGossip,
-    bool IsExclusive,
-    IFormFile? Poster
+    bool IsExclusive
 ) : ICommand<AdminUpdateCategoryResult>;
 
 /// <summary>
