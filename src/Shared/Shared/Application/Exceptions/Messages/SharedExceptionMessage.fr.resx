@@ -15,11 +15,86 @@
   <data name="RateLimitExceeded" xml:space="preserve">
     <value>Limite de requêtes dépassée. Veuillez réessayer dans {0} secondes.</value>
   </data>
-  <data name="EntityNotFoundById" xml:space="preserve">
-    <value>Impossible de trouver {0} avec l'identifiant : {1}.</value>
+  <data name="EntityNotFound" xml:space="preserve">
+    <value>Impossible de trouver {0}.</value>
   </data>
-  <data name="EntityNotFoundByKey" xml:space="preserve">
-    <value>Impossible de trouver {0} avec {1} : {2}.</value>
+  <data name="Entity_Default" xml:space="preserve">
+    <value>la ressource demandée</value>
+  </data>
+  <data name="Entity_User" xml:space="preserve">
+    <value>le compte utilisateur demandé</value>
+  </data>
+  <data name="Entity_Session" xml:space="preserve">
+    <value>la session demandée</value>
+  </data>
+  <data name="Entity_Role" xml:space="preserve">
+    <value>le rôle demandé</value>
+  </data>
+  <data name="Entity_Permission" xml:space="preserve">
+    <value>la permission demandée</value>
+  </data>
+  <data name="Entity_Otp" xml:space="preserve">
+    <value>le code de vérification demandé</value>
+  </data>
+  <data name="Entity_File" xml:space="preserve">
+    <value>le fichier demandé</value>
+  </data>
+  <data name="Entity_Article" xml:space="preserve">
+    <value>l'article demandé</value>
+  </data>
+  <data name="Entity_ArticleComment" xml:space="preserve">
+    <value>le commentaire demandé</value>
+  </data>
+  <data name="Entity_Video" xml:space="preserve">
+    <value>la vidéo demandée</value>
+  </data>
+  <data name="Entity_ShortVideo" xml:space="preserve">
+    <value>la vidéo courte demandée</value>
+  </data>
+  <data name="Entity_Lyrics" xml:space="preserve">
+    <value>les paroles demandées</value>
+  </data>
+  <data name="Entity_Playlist" xml:space="preserve">
+    <value>la playlist demandée</value>
+  </data>
+  <data name="Entity_Tag" xml:space="preserve">
+    <value>le tag demandé</value>
+  </data>
+  <data name="Entity_Category" xml:space="preserve">
+    <value>la catégorie demandée</value>
+  </data>
+  <data name="Entity_Package" xml:space="preserve">
+    <value>le forfait demandé</value>
+  </data>
+  <data name="Entity_PackageSlot" xml:space="preserve">
+    <value>l'emplacement de forfait demandé</value>
+  </data>
+  <data name="Entity_PricingTier" xml:space="preserve">
+    <value>le niveau tarifaire demandé</value>
+  </data>
+  <data name="Entity_PromotionLevel" xml:space="preserve">
+    <value>le niveau de promotion demandé</value>
+  </data>
+  <data name="Entity_Customer" xml:space="preserve">
+    <value>le client demandé</value>
+  </data>
+  <data name="Entity_ContentType" xml:space="preserve">
+    <value>le type de contenu demandé</value>
+  </data>
+  <data name="Entity_ContentOrder" xml:space="preserve">
+    <value>la commande demandée</value>
+  </data>
+  <data name="Entity_ContentOrderItem" xml:space="preserve">
+    <value>l'article de commande demandé</value>
+  </data>
+  <data name="Entity_ContentPayment" xml:space="preserve">
+    <value>le paiement demandé</value>
+  </data>
+  <data name="Entity_ContentItemTier" xml:space="preserve">
+    <value>le niveau d'article demandé</value>
+  </data>
+  <data name="Entity_CategoryPricing" xml:space="preserve">
+    <value>la tarification de catégorie demandée</value>
   </data>
   <data name="InvalidIdentifier" xml:space="preserve">
     <value>L'identifiant fourni est invalide.</value>
