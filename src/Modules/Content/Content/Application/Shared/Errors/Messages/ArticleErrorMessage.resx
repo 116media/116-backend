@@ -13,81 +13,81 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="SlugAlreadyExists" xml:space="preserve">
-    <value>Un article avec le slug « {0} » existe déjà.</value>
+    <value>Article with slug '{0}' already exists.</value>
   </data>
   <data name="TitleRequired" xml:space="preserve">
-    <value>Le titre de l'article est obligatoire.</value>
+    <value>Article title is required.</value>
   </data>
   <data name="SlugRequired" xml:space="preserve">
-    <value>Le slug de l'article est obligatoire.</value>
+    <value>Article slug is required.</value>
   </data>
   <data name="InvalidStatusTransition" xml:space="preserve">
-    <value>Impossible de faire passer l'article de « {0} » à « {1} ».</value>
+    <value>Cannot transition article from '{0}' to '{1}'.</value>
   </data>
   <data name="AlreadySubmitted" xml:space="preserve">
-    <value>L'article est déjà en attente de paiement.</value>
+    <value>Article is already pending payment.</value>
   </data>
   <data name="AlreadyPendingReview" xml:space="preserve">
-    <value>L'article est déjà en attente de révision.</value>
+    <value>Article is already pending review.</value>
   </data>
   <data name="AlreadyApproved" xml:space="preserve">
-    <value>L'article est déjà approuvé.</value>
+    <value>Article is already approved.</value>
   </data>
   <data name="AlreadyPublished" xml:space="preserve">
-    <value>L'article est déjà publié.</value>
+    <value>Article is already published.</value>
   </data>
   <data name="AlreadyRejected" xml:space="preserve">
-    <value>L'article est déjà rejeté.</value>
+    <value>Article is already rejected.</value>
   </data>
   <data name="AlreadyArchived" xml:space="preserve">
-    <value>L'article est déjà archivé.</value>
+    <value>Article is already archived.</value>
   </data>
   <data name="CannotDeletePublishedArticle" xml:space="preserve">
-    <value>Seuls les articles en statut Brouillon ou Rejeté peuvent être supprimés définitivement. Archivez les articles publiés à la place.</value>
+    <value>Only articles in Draft or Rejected status can be permanently deleted. Archive published articles instead.</value>
   </data>
   <data name="TitleTooLong" xml:space="preserve">
-    <value>Le titre de l'article ne doit pas dépasser {0} caractères.</value>
+    <value>Article title must not exceed {0} characters.</value>
   </data>
   <data name="SlugTooLong" xml:space="preserve">
-    <value>Le slug de l'article ne doit pas dépasser {0} caractères.</value>
+    <value>Article slug must not exceed {0} characters.</value>
   </data>
   <data name="SlugInvalidFormat" xml:space="preserve">
-    <value>Le slug de l'article doit être en minuscules et ne contenir que des lettres, des chiffres et des tirets.</value>
+    <value>Article slug must be lowercase and contain only letters, numbers, and hyphens.</value>
   </data>
   <data name="HeadlineRequired" xml:space="preserve">
-    <value>L'accroche de l'article est obligatoire.</value>
+    <value>Article headline is required.</value>
   </data>
   <data name="HeadlineTooShort" xml:space="preserve">
-    <value>L'accroche de l'article doit comporter au moins {0} caractères.</value>
+    <value>Article headline must be at least {0} characters.</value>
   </data>
   <data name="HeadlineTooLong" xml:space="preserve">
-    <value>L'accroche de l'article ne doit pas dépasser {0} caractères.</value>
+    <value>Article headline must not exceed {0} characters.</value>
   </data>
   <data name="BodyRequired" xml:space="preserve">
-    <value>Le corps de l'article est obligatoire.</value>
+    <value>Article body is required.</value>
   </data>
   <data name="RejectionReasonRequired" xml:space="preserve">
-    <value>La raison du rejet est obligatoire.</value>
+    <value>Rejection reason is required.</value>
   </data>
   <data name="RejectionReasonTooLong" xml:space="preserve">
-    <value>La raison du rejet ne doit pas dépasser {0} caractères.</value>
+    <value>Rejection reason must not exceed {0} characters.</value>
   </data>
   <data name="MetaTitleTooShort" xml:space="preserve">
-    <value>Le méta-titre doit comporter au moins {0} caractères.</value>
+    <value>Meta title must be at least {0} characters.</value>
   </data>
   <data name="MetaTitleTooLong" xml:space="preserve">
-    <value>Le méta-titre ne doit pas dépasser {0} caractères.</value>
+    <value>Meta title must not exceed {0} characters.</value>
   </data>
   <data name="MetaDescriptionTooShort" xml:space="preserve">
-    <value>La méta-description doit comporter au moins {0} caractères.</value>
+    <value>Meta description must be at least {0} characters.</value>
   </data>
   <data name="MetaDescriptionTooLong" xml:space="preserve">
-    <value>La méta-description ne doit pas dépasser {0} caractères.</value>
+    <value>Meta description must not exceed {0} characters.</value>
   </data>
   <data name="FileRequired" xml:space="preserve">
-    <value>Le fichier image de l'article est obligatoire.</value>
+    <value>Article image file is required.</value>
   </data>
   <data name="CategoryIdRequired" xml:space="preserve">
-    <value>L'identifiant de la catégorie de l'article est obligatoire.</value>
+    <value>Article category ID is required.</value>
   </data>
 </root>
