@@ -20,24 +20,31 @@ public class SharedExceptionMessage(IStringLocalizer<SharedExceptionMessage> loc
     public string RateLimitExceeded(int seconds) => string.Format(localizer["RateLimitExceeded"], seconds);
 
     /// <summary>
-    /// Error message indicating that an entity was not found by its identifier.
+    /// User-friendly, localized "not found" message for an entity. Resolves the entity
+    /// to a friendly localized label (e.g. "User" -> "the requested user account") and
+    /// never exposes the raw entity class name, the lookup key, or the searched value —
+    /// those stay in the exception message for logs only.
     /// </summary>
-    /// <param name="entityName">The display name of the entity.</param>
-    /// <param name="key">The identifier value.</param>
-    public string EntityNotFoundById(string entityName, object? key) =>
-        string.Format(localizer["EntityNotFoundById"], entityName, key);
-
-    /// <summary>
-    /// Error message indicating that an entity was not found by a named key.
-    /// </summary>
-    /// <param name="entityName">The display name of the entity.</param>
-    /// <param name="keyName">The name of the lookup key.</param>
-    /// <param name="keyValue">The value that was searched for.</param>
-    public string EntityNotFoundByKey(string entityName, string keyName, object keyValue) =>
-        string.Format(localizer["EntityNotFoundByKey"], entityName, keyName, keyValue);
+    /// <param name="entityName">The entity's technical name (e.g. "User", "Article").</param>
+    /// <returns>A friendly, localized not-found message.</returns>
+    public string EntityNotFound(string entityName) =>
+        string.Format(localizer["EntityNotFound"], ResolveEntityLabel(entityName));
 
     /// <summary>
     /// Error message indicating that a provided identifier has an invalid format.
     /// </summary>
     public string InvalidIdentifier() => localizer["InvalidIdentifier"];
+
+    /// <summary>
+    /// Maps a technical entity name to its friendly localized label (keyed
+    /// <c>Entity_{entityName}</c> in the resources), falling back to a generic
+    /// "requested resource" label when no specific label is defined.
+    /// </summary>
+    /// <param name="entityName">The entity's technical name.</param>
+    /// <returns>The friendly localized label to interpolate into the message.</returns>
+    private string ResolveEntityLabel(string entityName)
+    {
+        LocalizedString label = localizer[$"Entity_{entityName}"];
+        return label.ResourceNotFound ? localizer["Entity_Default"] : label.Value;
+    }
 }
