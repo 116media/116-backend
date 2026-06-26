@@ -13,51 +13,51 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AlreadySubmitted" xml:space="preserve">
-    <value>La commande a déjà été soumise.</value>
+    <value>Order has already been submitted.</value>
   </data>
   <data name="AlreadyPaid" xml:space="preserve">
-    <value>La commande est déjà payée.</value>
+    <value>Order is already paid.</value>
   </data>
   <data name="AlreadyCancelled" xml:space="preserve">
-    <value>La commande a déjà été annulée.</value>
+    <value>Order has already been cancelled.</value>
   </data>
   <data name="CannotCancelPaidOrder" xml:space="preserve">
-    <value>Une commande déjà payée ne peut pas être annulée.</value>
+    <value>A paid order cannot be cancelled.</value>
   </data>
   <data name="CannotAddItemToNonDraftOrder" xml:space="preserve">
-    <value>Cette commande ne peut être modifiée que lorsqu'elle est en statut Brouillon.</value>
+    <value>This order can only be modified while in Draft status.</value>
   </data>
   <data name="MustHaveAtLeastOneItemWithTier" xml:space="preserve">
-    <value>La commande doit avoir au moins un article avec au moins un niveau de tarification avant de pouvoir être soumise.</value>
+    <value>The order must have at least one item with at least one pricing tier before it can be submitted.</value>
   </data>
   <data name="PaymentAlreadyVerified" xml:space="preserve">
-    <value>Le paiement a déjà été vérifié.</value>
+    <value>Payment has already been verified.</value>
   </data>
   <data name="PaymentAlreadyRejected" xml:space="preserve">
-    <value>Le paiement a déjà été rejeté.</value>
+    <value>Payment has already been rejected.</value>
   </data>
   <data name="TierAlreadyAttached" xml:space="preserve">
-    <value>Ce niveau de tarification est déjà attaché à l'article.</value>
+    <value>This pricing tier is already attached to the item.</value>
   </data>
   <data name="ReceiptUrlRequired" xml:space="preserve">
-    <value>L'URL du reçu est obligatoire.</value>
+    <value>Receipt URL is required.</value>
   </data>
   <data name="ReceiptUrlTooLong" xml:space="preserve">
-    <value>L'URL du reçu ne doit pas dépasser {0} caractères.</value>
+    <value>Receipt URL must not exceed {0} characters.</value>
   </data>
   <data name="PaymentProofRequired" xml:space="preserve">
-    <value>Le justificatif de paiement est obligatoire.</value>
+    <value>Payment proof file is required.</value>
   </data>
   <data name="InvalidOrderItemContentKind" xml:space="preserve">
-    <value>Le type de contenu doit être Article ou Vidéo.</value>
+    <value>Content kind must be Article or Video.</value>
   </data>
   <data name="AdminUserIdRequired" xml:space="preserve">
-    <value>L'identifiant de l'utilisateur administrateur est obligatoire.</value>
+    <value>Admin user ID is required.</value>
   </data>
   <data name="InvalidPaymentMethod" xml:space="preserve">
-    <value>La méthode de paiement est invalide.</value>
+    <value>Payment method is invalid.</value>
   </data>
   <data name="OrderItemIdRequired" xml:space="preserve">
-    <value>L'identifiant de l'article de commande est obligatoire.</value>
+    <value>Order item ID is required.</value>
   </data>
 </root>
