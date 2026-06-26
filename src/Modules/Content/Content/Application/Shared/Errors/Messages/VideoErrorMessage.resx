@@ -13,66 +13,66 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="SlugAlreadyExists" xml:space="preserve">
-    <value>Une vidéo avec le slug « {0} » existe déjà.</value>
+    <value>Video with slug '{0}' already exists.</value>
   </data>
   <data name="TitleRequired" xml:space="preserve">
-    <value>Le titre de la vidéo est obligatoire.</value>
+    <value>Video title is required.</value>
   </data>
   <data name="SlugRequired" xml:space="preserve">
-    <value>Le slug de la vidéo est obligatoire.</value>
+    <value>Video slug is required.</value>
   </data>
   <data name="CannotPublishWithoutYoutubeUrl" xml:space="preserve">
-    <value>Une URL YouTube doit être attachée avant que cette vidéo puisse être publiée.</value>
+    <value>A YouTube video URL must be attached before this video can be published.</value>
   </data>
   <data name="CannotDeletePublishedVideo" xml:space="preserve">
-    <value>Seules les vidéos en statut Brouillon ou Rejeté peuvent être supprimées définitivement. Archivez les vidéos publiées à la place.</value>
+    <value>Only videos in Draft or Rejected status can be permanently deleted. Archive published videos instead.</value>
   </data>
   <data name="AlreadySubmitted" xml:space="preserve">
-    <value>La vidéo est déjà en attente de paiement.</value>
+    <value>Video is already pending payment.</value>
   </data>
   <data name="AlreadyPendingReview" xml:space="preserve">
-    <value>La vidéo est déjà en attente de révision.</value>
+    <value>Video is already pending review.</value>
   </data>
   <data name="AlreadyApproved" xml:space="preserve">
-    <value>La vidéo est déjà approuvée.</value>
+    <value>Video is already approved.</value>
   </data>
   <data name="AlreadyPublished" xml:space="preserve">
-    <value>La vidéo est déjà publiée.</value>
+    <value>Video is already published.</value>
   </data>
   <data name="AlreadyRejected" xml:space="preserve">
-    <value>La vidéo est déjà rejetée.</value>
+    <value>Video is already rejected.</value>
   </data>
   <data name="AlreadyArchived" xml:space="preserve">
-    <value>La vidéo est déjà archivée.</value>
+    <value>Video is already archived.</value>
   </data>
   <data name="InvalidStatusTransition" xml:space="preserve">
-    <value>Impossible de faire passer la vidéo de « {0} » à « {1} ».</value>
+    <value>Cannot transition video from '{0}' to '{1}'.</value>
   </data>
   <data name="CannotAttachYoutubeUrlBeforeShoot" xml:space="preserve">
-    <value>L'URL YouTube ne peut pas être ajoutée avant la date de tournage ({0}).</value>
+    <value>YouTube URL cannot be added before the shooting date ({0}).</value>
   </data>
   <data name="TitleTooLong" xml:space="preserve">
-    <value>Le titre de la vidéo ne doit pas dépasser {0} caractères.</value>
+    <value>Video title must not exceed {0} characters.</value>
   </data>
   <data name="SlugTooLong" xml:space="preserve">
-    <value>Le slug de la vidéo ne doit pas dépasser {0} caractères.</value>
+    <value>Video slug must not exceed {0} characters.</value>
   </data>
   <data name="SlugInvalidFormat" xml:space="preserve">
-    <value>Le slug de la vidéo doit être en minuscules et ne contenir que des lettres, des chiffres et des tirets.</value>
+    <value>Video slug must be lowercase and contain only letters, numbers, and hyphens.</value>
   </data>
   <data name="DescriptionRequired" xml:space="preserve">
-    <value>La description de la vidéo est obligatoire.</value>
+    <value>Video description is required.</value>
   </data>
   <data name="YoutubeUrlRequired" xml:space="preserve">
-    <value>L'URL de la vidéo YouTube est obligatoire.</value>
+    <value>YouTube video URL is required.</value>
   </data>
   <data name="YoutubeUrlTooLong" xml:space="preserve">
-    <value>L'URL de la vidéo YouTube ne doit pas dépasser {0} caractères.</value>
+    <value>YouTube video URL must not exceed {0} characters.</value>
   </data>
   <data name="YoutubeUrlInvalidFormat" xml:space="preserve">
-    <value>Doit être une URL YouTube valide.</value>
+    <value>Must be a valid YouTube video URL.</value>
   </data>
   <data name="VideoIdRequired" xml:space="preserve">
-    <value>L'identifiant de la vidéo est obligatoire.</value>
+    <value>Video ID is required.</value>
   </data>
 </root>
