@@ -94,10 +94,10 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseSerilogRequestLogging();
+app.UseAppLocalization();
 app.UseAppExceptionHandler();
 app.UseCors();
 app.UseRateLimiter();
-app.UseAppLocalization();
 app.UseAuthentication();
 app.UseAuthorization();
 
