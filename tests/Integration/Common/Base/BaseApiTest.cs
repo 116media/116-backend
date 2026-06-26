@@ -50,6 +50,37 @@ public abstract class BaseApiTest : IAsyncLifetime
     }
 
     /// <summary>
+    /// Seeds data within a scoped <typeparamref name="TDbContext" /> and saves,
+    /// removing the create-context / add / save boilerplate repeated across tests.
+    /// </summary>
+    /// <typeparam name="TDbContext">The database context to seed against.</typeparam>
+    /// <param name="seed">An action that adds entities to the context.</param>
+    protected async Task SeedAsync<TDbContext>(Func<TDbContext, Task> seed)
+        where TDbContext : DbContext
+    {
+        await using var context = CreateDbContext<TDbContext>();
+        await seed(context);
+        await context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Seeds an entity within a scoped <typeparamref name="TDbContext" />, saves,
+    /// and returns the seeded entity for use in the test.
+    /// </summary>
+    /// <typeparam name="TDbContext">The database context to seed against.</typeparam>
+    /// <typeparam name="TEntity">The seeded entity type.</typeparam>
+    /// <param name="seed">A function that adds and returns an entity.</param>
+    /// <returns>The seeded entity.</returns>
+    protected async Task<TEntity> SeedAsync<TDbContext, TEntity>(Func<TDbContext, TEntity> seed)
+        where TDbContext : DbContext
+    {
+        await using var context = CreateDbContext<TDbContext>();
+        TEntity entity = seed(context);
+        await context.SaveChangesAsync();
+        return entity;
+    }
+
+    /// <summary>
     /// Override to seed test data after the database has been reset.
     /// Called once per test method, after the well-known test users have been seeded.
     /// </summary>
