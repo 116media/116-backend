@@ -13,12 +13,12 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AccountInactive" xml:space="preserve">
-    <value>Le compte associé à « {0} » est inactif. Veuillez contacter le support pour obtenir de l'aide.</value>
+    <value>Account associated with '{0}' is inactive. Please contact support for assistance.</value>
   </data>
   <data name="AccountNotVerified" xml:space="preserve">
-    <value>Le compte associé à « {0} » n'est pas vérifié. Veuillez compléter le processus de vérification pour continuer.</value>
+    <value>The account associated with '{0}' is not verified. Please complete the verification process to continue.</value>
   </data>
   <data name="AccessDenied" xml:space="preserve">
-    <value>Accès refusé. Vous ne disposez pas des permissions suffisantes pour accéder à cette ressource.</value>
+    <value>Access denied. You don't have sufficient permissions to access this resource.</value>
   </data>
 </root>
