@@ -13,18 +13,18 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NotFound" xml:space="preserve">
-    <value>Liste de lecture « {0} » introuvable.</value>
+    <value>Playlist '{0}' not found.</value>
   </data>
   <data name="NotOwner" xml:space="preserve">
-    <value>Vous ne pouvez gérer que vos propres listes de lecture.</value>
+    <value>You can only manage your own playlists.</value>
   </data>
   <data name="VideoAlreadyInPlaylist" xml:space="preserve">
-    <value>Cette vidéo est déjà dans la liste de lecture.</value>
+    <value>This video is already in the playlist.</value>
   </data>
   <data name="NameRequired" xml:space="preserve">
-    <value>Le nom de la liste de lecture est obligatoire.</value>
+    <value>Playlist name is required.</value>
   </data>
   <data name="NameTooLong" xml:space="preserve">
-    <value>Le nom de la liste de lecture ne doit pas dépasser {0} caractères.</value>
+    <value>Playlist name must not exceed {0} characters.</value>
   </data>
 </root>
