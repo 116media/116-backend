@@ -4,6 +4,7 @@ global using _116.Integration.Tests.Common.Base;
 global using _116.Integration.Tests.Common.Extensions;
 global using _116.Integration.Tests.Common.Fixtures;
 global using static _116.Tests.Fixtures.Constants.TestConstants;
+global using _116.Tests.Fixtures.Routes;
 global using AwesomeAssertions;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.DependencyInjection;
