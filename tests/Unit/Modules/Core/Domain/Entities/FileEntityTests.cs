@@ -43,6 +43,47 @@ public class FileEntityTests
         file.DeletedAt.Should().BeNull();
     }
 
+    [Fact]
+    public void Create_WithoutColors_ShouldDefaultColorsToNull()
+    {
+        // Act
+        var file = FileEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.File.ValidFileName,
+            TestConstants.File.ValidOriginalFileName,
+            TestConstants.File.ValidMimeType,
+            TestConstants.File.ValidStorageUrl,
+            TestConstants.File.ValidSizeInBytes,
+            _coreErrors
+        );
+
+        // Assert
+        file.DominantColorHex.Should().BeNull();
+        file.ForegroundColorHex.Should().BeNull();
+    }
+
+    [Fact]
+    public void Create_WithColors_ShouldStoreDominantAndForegroundColors()
+    {
+        // Act
+        var file = FileEntity.Create(
+            Guid.NewGuid(),
+            TestConstants.File.ValidFileName,
+            TestConstants.File.ValidOriginalFileName,
+            TestConstants.File.ValidMimeType,
+            TestConstants.File.ValidStorageUrl,
+            TestConstants.File.ValidSizeInBytes,
+            _coreErrors,
+            storageKey: TestConstants.File.ValidStorageKey,
+            dominantColorHex: "#FFEB3B",
+            foregroundColorHex: "#000000"
+        );
+
+        // Assert
+        file.DominantColorHex.Should().Be("#FFEB3B");
+        file.ForegroundColorHex.Should().Be("#000000");
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]

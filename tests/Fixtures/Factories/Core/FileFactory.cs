@@ -131,4 +131,13 @@ public static class FileFactory
     /// <returns>A new FileEntity with the specified storage key.</returns>
     public static FileEntity CreateWithStorageKey(string storageKey) =>
         new FileBuilder().WithStorageKey(storageKey).Build();
+
+    /// <summary>
+    /// Creates a file with the specified extracted dominant and foreground colors.
+    /// </summary>
+    /// <param name="dominantColorHex">The dominant color as <c>#RRGGBB</c>, or null.</param>
+    /// <param name="foregroundColorHex">The contrasting foreground color as <c>#RRGGBB</c>, or null.</param>
+    /// <returns>A new FileEntity carrying the specified colors.</returns>
+    public static FileEntity CreateWithColors(string? dominantColorHex, string? foregroundColorHex) =>
+        new FileBuilder().WithColors(dominantColorHex, foregroundColorHex).Build();
 }

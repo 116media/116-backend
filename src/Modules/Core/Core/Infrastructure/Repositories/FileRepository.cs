@@ -13,7 +13,12 @@ namespace _116.Core.Infrastructure.Repositories;
 /// <summary>
 /// Implementation of <see cref="IFileRepository"/> using Entity Framework Core.
 /// </summary>
-public class FileRepository(CoreDbContext context, IFileService fileService, CoreI18n i18n) : IFileRepository
+public class FileRepository(
+    CoreDbContext context,
+    IFileService fileService,
+    IImageColorService imageColorService,
+    CoreI18n i18n
+) : IFileRepository
 {
     /// <inheritdoc />
     public async Task<FileEntity?> GetByIdAsync(Guid fileId, CancellationToken cancellationToken = default)
@@ -285,6 +290,10 @@ public class FileRepository(CoreDbContext context, IFileService fileService, Cor
             cancellationToken: cancellationToken
         );
 
+        // Best-effort: derive the poster's dominant/foreground colors from the
+        // image bytes; a null result simply leaves both color columns unset.
+        ImageColors? colors = await imageColorService.ExtractAsync(file, cancellationToken);
+
         var fileEntity = FileEntity.Create(
             id: uploadResult.FileId,
             fileName: publicId,
@@ -293,7 +302,9 @@ public class FileRepository(CoreDbContext context, IFileService fileService, Cor
             storageUrl: uploadResult.SecureUrl,
             sizeInBytes: uploadResult.Bytes,
             i18n: i18n,
-            storageKey: uploadResult.PublicId
+            storageKey: uploadResult.PublicId,
+            dominantColorHex: colors?.DominantColorHex,
+            foregroundColorHex: colors?.ForegroundColorHex
         );
 
         await AddAsync(fileEntity, cancellationToken);

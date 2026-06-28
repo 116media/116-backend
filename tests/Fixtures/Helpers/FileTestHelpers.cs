@@ -44,4 +44,23 @@ public static class FileTestHelpers
         fileMock.Setup(f => f.Length).Returns(length);
         return fileMock.Object;
     }
+
+    /// <summary>
+    /// Creates a real IFormFile backed by the given bytes so that
+    /// <see cref="IFormFile.OpenReadStream"/> returns the actual content — needed
+    /// for code paths that read the uploaded stream (e.g. image color extraction).
+    /// </summary>
+    /// <param name="content">The raw file bytes served by the form file.</param>
+    /// <param name="fileName">The file name.</param>
+    /// <param name="contentType">The MIME content type.</param>
+    /// <returns>A backed <see cref="FormFile"/> instance.</returns>
+    public static IFormFile CreateFormFileWithContent(byte[] content, string fileName, string contentType)
+    {
+        var stream = new MemoryStream(content);
+        return new FormFile(stream, 0, content.Length, "file", fileName)
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = contentType,
+        };
+    }
 }

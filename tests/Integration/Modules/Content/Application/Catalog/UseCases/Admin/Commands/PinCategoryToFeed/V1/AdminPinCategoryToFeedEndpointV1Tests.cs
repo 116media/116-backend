@@ -1,4 +1,5 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.PinCategoryToFeed.V1;
+using _116.Content.Application.Editorial.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
@@ -126,7 +127,9 @@ public class AdminPinCategoryToFeedEndpointV1Tests(PostgresFixture db) : BaseApi
             ctx.ContentTypes.Add(type);
             CategoryEntity cat = CategoryFactory.Create(type.Id);
             ctx.Categories.Add(cat);
-            ctx.Videos.AddRange(VideoFactory.CreateManyPublished(cat.Id, 3));
+            ctx.Videos.AddRange(
+                VideoFactory.CreateManyPublished(cat.Id, EditorialFeedConstants.MinVideosToPinToFeed - 1)
+            );
             return cat;
         });
 
