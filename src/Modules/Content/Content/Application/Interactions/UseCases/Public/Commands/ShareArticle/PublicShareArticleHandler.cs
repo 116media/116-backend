@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -10,8 +11,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareAr
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicShareArticleHandler(IArticleRepository articleRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<PublicShareArticleCommand, PublicShareArticleResult>
+/// <param name="cacheInvalidator">Invalidates the popular-articles cache after the share count changes.</param>
+public class PublicShareArticleHandler(
+    IArticleRepository articleRepository,
+    IContentUnitOfWork unitOfWork,
+    IPopularArticlesCacheInvalidator cacheInvalidator
+) : ICommandHandler<PublicShareArticleCommand, PublicShareArticleResult>
 {
     /// <inheritdoc />
     public async Task<PublicShareArticleResult> Handle(
@@ -32,6 +37,8 @@ public class PublicShareArticleHandler(IArticleRepository articleRepository, ICo
         articleRepository.Update(article: article);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        cacheInvalidator.Invalidate();
 
         return new PublicShareArticleResult(IsSuccess: true);
     }
