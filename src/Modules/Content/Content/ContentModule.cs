@@ -145,13 +145,11 @@ public static class ContentModule
         ModuleOptions<ContentDbContext> options = GetModuleOptions();
         app.UseModuleDatabase(options);
 
-        if (!options.EnableSeeding)
+        if (options.EnableSeeding)
         {
-            return app;
+            using IServiceScope scope = app.ApplicationServices.CreateScope();
+            scope.ServiceProvider.GetRequiredService<ContentTypeSeeder>().SeedAllAsync().GetAwaiter().GetResult();
         }
-
-        using IServiceScope scope = app.ApplicationServices.CreateScope();
-        scope.ServiceProvider.GetRequiredService<ContentTypeSeeder>().SeedAllAsync().GetAwaiter().GetResult();
 
         return app;
     }
