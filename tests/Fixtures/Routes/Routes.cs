@@ -271,6 +271,8 @@ public static class Routes
 
             public static string Shares(Guid id) =>
                 $"{ApiRoutes.Public.Articles}/{id}/{InteractionsRouteConstants.Shares}";
+
+            public static string Popular() => $"{ApiRoutes.Public.Articles}/{EditorialRouteConstants.Popular}";
         }
 
         /// <summary>
