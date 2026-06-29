@@ -128,6 +128,12 @@ public static class EditorialRouteConstants
     public const string Active = "active";
 
     /// <summary>
+    /// Route segment for retrieving popularity-ranked editorial entities.
+    /// Example: /api/v1/public/articles/popular.
+    /// </summary>
+    public const string Popular = "popular";
+
+    /// <summary>
     /// Route segment for force-unpromoting a promoted editorial entity (SuperAdmin only).
     /// Example: /api/v1/admin/articles/{slug}/unpromote.
     /// </summary>
