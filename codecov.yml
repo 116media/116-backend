@@ -55,6 +55,10 @@ flag_management:
           paths:
               - src/
           statuses:
+              - type: project
+                target: auto
+                threshold: 0%
+                informational: true
               - type: patch
                 target: 60%
                 threshold: 0%
@@ -62,6 +66,10 @@ flag_management:
           paths:
               - src/
           statuses:
+              - type: project
+                target: auto
+                threshold: 0%
+                informational: true
               - type: patch
                 target: 80%
                 threshold: 0%
