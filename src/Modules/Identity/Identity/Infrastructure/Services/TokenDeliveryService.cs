@@ -1,7 +1,6 @@
 using System.Text.RegularExpressions;
 using _116.Identity.Application.Auth.Constants;
 using _116.Identity.Application.Auth.Services;
-using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Enums;
@@ -129,8 +128,12 @@ public class TokenDeliveryService(
 
     /// <summary>
     /// Builds the refresh token cookie path dynamically from the current request path.
-    /// Extracts the API version prefix and combines it with the scope and session endpoint.
-    /// Example: /api/v1/public/sessions or /api/v1/admin/sessions.
+    /// Combines the API version prefix with the scope so the cookie is sent to every
+    /// endpoint that consumes the refresh token — both the session refresh
+    /// (<c>/{scope}/sessions/refresh-token</c>) and sign-out (<c>/{scope}/auth/sign-out</c>)
+    /// branches. Scoping it any narrower (e.g. to <c>/sessions</c>) would keep the
+    /// cookie from reaching sign-out, so the token would never be revoked.
+    /// Example: /api/v1/public or /api/v1/admin.
     /// </summary>
     private string BuildRefreshTokenCookiePath()
     {
@@ -138,7 +141,7 @@ public class TokenDeliveryService(
         string apiPrefix = ExtractApiVersionPrefix(requestPath: requestPath);
         string scope = IsAdminClient() ? IdentityConstants.Admin : IdentityConstants.Public;
 
-        return $"{apiPrefix}/{scope}/{SessionRouteConstants.Endpoint}";
+        return $"{apiPrefix}/{scope}";
     }
 
     /// <summary>
