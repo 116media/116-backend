@@ -168,6 +168,13 @@ jobs:
                     coverage/report/integration/SummaryGithub.md \
                     coverage/comment.md
 
+            - name: Append per-suite uncovered files
+              run: |
+                  bash scripts/coverage-uncovered.sh \
+                    coverage/unit \
+                    coverage/integration \
+                    coverage/comment.md
+
             - name: Post coverage comment
               uses: marocchino/sticky-pull-request-comment@v2
               with:
