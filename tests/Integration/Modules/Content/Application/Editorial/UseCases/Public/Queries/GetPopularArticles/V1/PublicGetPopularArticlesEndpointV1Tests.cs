@@ -199,6 +199,31 @@ public class PublicGetPopularArticlesEndpointV1Tests(PostgresFixture db) : BaseA
     }
 
     [Fact]
+    public async Task GetPopularArticles_WithCategoryExcludeAndLimit_AppliesAllFilters()
+    {
+        Guid categoryA = await SeedCategoryAsync();
+        Guid categoryB = await SeedCategoryAsync();
+
+        ArticleEntity excluded = await SeedArticleAsync(categoryA, likes: 9);
+        ArticleEntity topKept = await SeedArticleAsync(categoryA, likes: 5);
+        await SeedArticleAsync(categoryA, likes: 1);
+        await SeedArticleAsync(categoryB, likes: 8);
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync(
+            $"{Routes.Public.Articles.Popular()}?categoryId={categoryA}&excludeId={excluded.Id}&limit=1"
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        PublicGetPopularArticlesResponse body = await response.ReadAsAsync<PublicGetPopularArticlesResponse>();
+        body.Articles.Should().ContainSingle();
+        body.Articles.Should().OnlyContain(a => a.CategoryId == categoryA);
+        body.Articles.Should().NotContain(a => a.Id == excluded.Id);
+        body.Articles.First().Id.Should().Be(topKept.Id);
+    }
+
+    [Fact]
     public async Task GetPopularArticles_AfterEngagementChange_ReflectsNewRanking()
     {
         Guid categoryId = await SeedCategoryAsync();
