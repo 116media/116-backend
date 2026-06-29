@@ -106,6 +106,7 @@ public static class ContentModule
         services.AddScoped<IMapper>(sp => new Mapper(sp.GetRequiredService<TypeAdapterConfig>()));
 
         services.AddSingleton<IPopularTagsCacheInvalidator, PopularTagsCacheInvalidator>();
+        services.AddSingleton<IPopularArticlesCacheInvalidator, PopularArticlesCacheInvalidator>();
 
         services.AddScoped<IContentUnitOfWork, ContentUnitOfWork>();
         services.AddScoped<ILookupRepository, LookupRepository>();
