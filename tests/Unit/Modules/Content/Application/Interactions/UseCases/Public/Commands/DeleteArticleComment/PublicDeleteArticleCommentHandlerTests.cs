@@ -1,4 +1,5 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.DeleteArticleComment;
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -20,6 +21,7 @@ public class PublicDeleteArticleCommentHandlerTests
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IPopularArticlesCacheInvalidator> _cacheInvalidatorMock;
     private readonly PublicDeleteArticleCommentHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -28,9 +30,11 @@ public class PublicDeleteArticleCommentHandlerTests
     {
         _articleRepositoryMock = MockArticleRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _cacheInvalidatorMock = MockPopularArticlesCacheInvalidator.Create();
         _handler = new PublicDeleteArticleCommentHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
+            _cacheInvalidatorMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -60,6 +64,7 @@ public class PublicDeleteArticleCommentHandlerTests
         _articleRepositoryMock.VerifyUpdateCommentCalled();
         _articleRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
+        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     #endregion
