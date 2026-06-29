@@ -102,4 +102,7 @@
   <data name="IdInvalid" xml:space="preserve">
     <value>Article ID is invalid.</value>
   </data>
+  <data name="PopularLimitOutOfRange" xml:space="preserve">
+    <value>Limit must be between {0} and {1}.</value>
+  </data>
 </root>
