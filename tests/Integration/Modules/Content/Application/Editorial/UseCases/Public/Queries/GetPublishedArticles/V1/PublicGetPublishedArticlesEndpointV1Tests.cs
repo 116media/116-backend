@@ -56,4 +56,67 @@ public class PublicGetPublishedArticlesEndpointV1Tests(PostgresFixture db) : Bas
         body.Articles.PageIndex.Should().Be(0);
         body.Articles.PageSize.Should().Be(10);
     }
+
+    /// <summary>
+    /// Verifies that an authenticated user's feed stamps IsLiked / IsBookmarked only on the
+    /// articles that user actually interacted with, leaving the rest false.
+    /// </summary>
+    [Fact]
+    public async Task GetPublishedArticles_WhenAuthenticated_StampsOnlyTheUsersInteractions()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        Guid userId = Guid.NewGuid();
+        List<ArticleEntity> articles = await SeedAsync<ContentDbContext, List<ArticleEntity>>(ctx =>
+        {
+            List<ArticleEntity> entities = ArticleFactory.CreateManyPublished(categoryId, 3);
+            ctx.Articles.AddRange(entities);
+            ctx.ArticleLikes.Add(ArticleLikeEntity.Create(Guid.NewGuid(), userId, entities[0].Id));
+            ctx.ArticleBookmarks.Add(ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, entities[1].Id));
+            return entities;
+        });
+
+        Client.AuthenticateAs(userId, "Visitor");
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}?categoryId={categoryId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetPublishedArticlesResponse body = await response.ReadAsAsync<PublicGetPublishedArticlesResponse>();
+        body.Articles.Items.Single(item => item.Id == articles[0].Id).IsLiked.Should().BeTrue();
+        body.Articles.Items.Single(item => item.Id == articles[0].Id).IsBookmarked.Should().BeFalse();
+        body.Articles.Items.Single(item => item.Id == articles[1].Id).IsBookmarked.Should().BeTrue();
+        body.Articles.Items.Single(item => item.Id == articles[1].Id).IsLiked.Should().BeFalse();
+        body.Articles.Items.Single(item => item.Id == articles[2].Id).IsLiked.Should().BeFalse();
+        body.Articles.Items.Single(item => item.Id == articles[2].Id).IsBookmarked.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Verifies that one user's interaction state never leaks into another user's feed
+    /// response. This is the caching-correctness gate: it must keep passing if the feed
+    /// ever gains a response cache.
+    /// </summary>
+    [Fact]
+    public async Task GetPublishedArticles_DoesNotLeakInteractionStateAcrossUsers()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        Guid userAId = Guid.NewGuid();
+        Guid userBId = Guid.NewGuid();
+        ArticleEntity likedArticle = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ArticleEntity entity = ArticleFactory.CreatePublished(categoryId);
+            ctx.Articles.Add(entity);
+            ctx.ArticleLikes.Add(ArticleLikeEntity.Create(Guid.NewGuid(), userAId, entity.Id));
+            return entity;
+        });
+
+        Client.AuthenticateAs(userAId, "Visitor");
+        var responseA = await Client.GetAsync($"{ApiRoutes.Public.Articles}?categoryId={categoryId}");
+        PublicGetPublishedArticlesResponse bodyA = await responseA.ReadAsAsync<PublicGetPublishedArticlesResponse>();
+        bodyA.Articles.Items.Single(item => item.Id == likedArticle.Id).IsLiked.Should().BeTrue();
+
+        Client.AuthenticateAs(userBId, "Visitor");
+        var responseB = await Client.GetAsync($"{ApiRoutes.Public.Articles}?categoryId={categoryId}");
+        PublicGetPublishedArticlesResponse bodyB = await responseB.ReadAsAsync<PublicGetPublishedArticlesResponse>();
+        bodyB.Articles.Items.Single(item => item.Id == likedArticle.Id).IsLiked.Should().BeFalse();
+    }
 }
