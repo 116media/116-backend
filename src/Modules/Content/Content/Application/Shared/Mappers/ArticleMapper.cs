@@ -250,6 +250,46 @@ public static class ArticleMapper
     }
 
     /// <summary>
+    /// Maps a list of <see cref="ArticleCommentEntity" /> to a list of
+    /// <see cref="ArticleCommentDto" />, attaching each commenter's resolved author profile.
+    /// Deleted comments carry a null body and a null author; commenters absent from
+    /// <paramref name="authorsByUserId" /> also carry a null author.
+    /// </summary>
+    /// <param name="entities">
+    /// The comment entities to map.
+    /// </param>
+    /// <param name="mapper">
+    /// The Mapster mapper.
+    /// </param>
+    /// <param name="authorsByUserId">
+    /// The resolved author profiles keyed by commenter user ID.
+    /// </param>
+    /// <returns>
+    /// The mapped comment DTOs with authors attached.
+    /// </returns>
+    public static IReadOnlyList<ArticleCommentDto> ToArticleCommentDtos(
+        this IReadOnlyList<ArticleCommentEntity> entities,
+        IMapper mapper,
+        IReadOnlyDictionary<Guid, AuthorDto> authorsByUserId
+    )
+    {
+        return entities
+            .Select(entity =>
+            {
+                ArticleCommentDto dto = entity.ToArticleCommentDto(mapper);
+
+                if (entity.IsDeleted)
+                {
+                    return dto;
+                }
+
+                AuthorDto? author = authorsByUserId.GetValueOrDefault(entity.UserId);
+                return dto with { Author = author };
+            })
+            .ToList();
+    }
+
+    /// <summary>
     /// Resolves the cover image URL for an article.
     /// </summary>
     /// <remarks>
