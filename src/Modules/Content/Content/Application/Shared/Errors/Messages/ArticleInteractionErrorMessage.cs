@@ -8,11 +8,6 @@ namespace _116.Content.Application.Shared.Errors.Messages;
 public class ArticleInteractionErrorMessage(IStringLocalizer<ArticleInteractionErrorMessage> localizer)
 {
     /// <summary>
-    /// Exposes the underlying localizer for shared validation extensions.
-    /// </summary>
-    public IStringLocalizer Localizer => localizer;
-
-    /// <summary>
     /// Gets an error message for when a user has already liked an article.
     /// </summary>
     /// <returns>
@@ -54,18 +49,6 @@ public class ArticleInteractionErrorMessage(IStringLocalizer<ArticleInteractionE
     public string BookmarkNotFound()
     {
         return localizer["BookmarkNotFound"];
-    }
-
-    /// <summary>
-    /// Gets an error message for when a comment is not found by its identifier.
-    /// </summary>
-    /// <param name="commentId">The identifier of the comment that was not found.</param>
-    /// <returns>
-    /// A formatted error message indicating the comment was not found.
-    /// </returns>
-    public string CommentNotFound(Guid commentId)
-    {
-        return string.Format(localizer["CommentNotFound"], commentId);
     }
 
     /// <summary>
