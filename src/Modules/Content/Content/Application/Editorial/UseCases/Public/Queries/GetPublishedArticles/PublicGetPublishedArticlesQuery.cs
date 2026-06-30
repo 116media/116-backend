@@ -12,11 +12,16 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 /// <param name="Search">Optional search term matched against title, headline, body, meta title, and meta description.</param>
 /// <param name="CategoryId">Optional filter by category identifier.</param>
 /// <param name="TagSlug">Optional filter by tag slug (aspirational — reserved for future use).</param>
+/// <param name="CurrentUserId">
+/// The authenticated caller's id, or null for an anonymous request. When null, the per-user
+/// interaction flags on the returned summaries resolve to false.
+/// </param>
 public record PublicGetPublishedArticlesQuery(
     PaginatedRequest PaginatedRequest,
     string? Search,
     Guid? CategoryId,
-    string? TagSlug
+    string? TagSlug,
+    Guid? CurrentUserId = null
 ) : IQuery<PublicGetPublishedArticlesResult>;
 
 /// <summary>
