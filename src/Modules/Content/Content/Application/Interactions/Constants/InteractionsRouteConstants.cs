@@ -48,6 +48,11 @@ public static class InteractionsRouteConstants
     public const string Comments = "comments";
 
     /// <summary>
+    /// Route segment for reply sub-resources within a comment.
+    /// </summary>
+    public const string Replies = "replies";
+
+    /// <summary>
     /// Route segment for rating sub-resources.
     /// </summary>
     public const string Ratings = "ratings";
