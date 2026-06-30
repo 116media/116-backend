@@ -53,6 +53,14 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="BookmarkCount">
 /// Cached number of bookmarks. Incremented and decremented by interaction events.
 /// </param>
+/// <param name="IsLiked">
+/// Whether the current authenticated user has liked this article. False for anonymous
+/// requests and for authenticated users who have not liked it.
+/// </param>
+/// <param name="IsBookmarked">
+/// Whether the current authenticated user has bookmarked this article. False for anonymous
+/// requests and for authenticated users who have not bookmarked it.
+/// </param>
 public record ArticleSummaryDto(
     Guid Id,
     Guid CategoryId,
@@ -68,5 +76,7 @@ public record ArticleSummaryDto(
     int LikeCount,
     int CommentCount,
     int ShareCount,
-    int BookmarkCount
+    int BookmarkCount,
+    bool IsLiked = false,
+    bool IsBookmarked = false
 ) : AuditableDto;
