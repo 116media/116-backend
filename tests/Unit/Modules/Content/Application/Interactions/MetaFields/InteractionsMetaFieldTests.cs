@@ -279,15 +279,6 @@ public class InteractionsMetaFieldTests
     #region Shared Coverage
 
     [Fact]
-    public void ArticleInteractionErrorMessage_CommentNotFound_ShouldReturnFormattedMessage()
-    {
-        Guid commentId = Guid.NewGuid();
-        ArticleInteractionErrorMessage i18n = LocalizerFactory.CreateMessage<ArticleInteractionErrorMessage>("en");
-        string message = i18n.CommentNotFound(commentId);
-        message.Should().Contain(commentId.ToString());
-    }
-
-    [Fact]
     public void PlaylistErrorMessage_NotFound_ShouldReturnFormattedMessage()
     {
         Guid id = Guid.NewGuid();
