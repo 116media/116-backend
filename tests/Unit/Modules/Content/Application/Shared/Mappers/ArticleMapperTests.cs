@@ -805,7 +805,10 @@ public class ArticleMapperTests : BaseContentHandlerTest
         ];
 
         // Act
-        IReadOnlyList<ArticleCommentDto> dtos = comments.ToArticleCommentDtos(Mapper);
+        IReadOnlyList<ArticleCommentDto> dtos = comments.ToArticleCommentDtos(
+            Mapper,
+            new Dictionary<Guid, AuthorDto>()
+        );
 
         // Assert
         dtos.Should().HaveCount(2);
@@ -820,7 +823,10 @@ public class ArticleMapperTests : BaseContentHandlerTest
         IReadOnlyList<ArticleCommentEntity> comments = [];
 
         // Act
-        IReadOnlyList<ArticleCommentDto> dtos = comments.ToArticleCommentDtos(Mapper);
+        IReadOnlyList<ArticleCommentDto> dtos = comments.ToArticleCommentDtos(
+            Mapper,
+            new Dictionary<Guid, AuthorDto>()
+        );
 
         // Assert
         dtos.Should().BeEmpty();
