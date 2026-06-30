@@ -24,9 +24,6 @@
   <data name="BookmarkNotFound" xml:space="preserve">
     <value>Bookmark not found for this article.</value>
   </data>
-  <data name="CommentNotFound" xml:space="preserve">
-    <value>Comment '{0}' not found.</value>
-  </data>
   <data name="CannotReplyToReply" xml:space="preserve">
     <value>You can only reply to a top-level comment.</value>
   </data>
