@@ -30,6 +30,9 @@
   <data name="NotCommentOwner" xml:space="preserve">
     <value>You can only modify your own comments.</value>
   </data>
+  <data name="CannotReplyToReply" xml:space="preserve">
+    <value>You can only reply to a top-level comment.</value>
+  </data>
   <data name="CommentBodyRequired" xml:space="preserve">
     <value>Comment body is required.</value>
   </data>
