@@ -45,6 +45,24 @@ public class FileRepository(
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, string>> GetStorageUrlsByIdsAsync(
+        IReadOnlyCollection<Guid> fileIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (fileIds.Count == 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        Guid[] distinctIds = fileIds.Distinct().ToArray();
+
+        return await context
+            .Files.Where(file => distinctIds.Contains(file.Id) && !file.IsDeleted)
+            .ToDictionaryAsync(file => file.Id, file => file.StorageUrl, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task AddAsync(FileEntity file, CancellationToken cancellationToken = default)
     {
         await context.Files.AddAsync(file, cancellationToken);
