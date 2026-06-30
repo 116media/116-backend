@@ -39,7 +39,30 @@ public class PublicGetArticleBySlugHandler(
             throw i18n.Article.NotFound(Guid.Empty);
         }
 
-        var dto = await article.ToArticleDetailDtoAsync(mapper, fileRepository, cancellationToken);
+        bool isLiked = false;
+        bool isBookmarked = false;
+
+        if (query.CurrentUserId is Guid userId)
+        {
+            isLiked = await articleRepository.HasLikedAsync(
+                userId: userId,
+                articleId: article.Id,
+                cancellationToken: cancellationToken
+            );
+            isBookmarked = await articleRepository.HasBookmarkedAsync(
+                userId: userId,
+                articleId: article.Id,
+                cancellationToken: cancellationToken
+            );
+        }
+
+        var dto = await article.ToArticleDetailDtoAsync(
+            mapper,
+            fileRepository,
+            cancellationToken,
+            isLiked: isLiked,
+            isBookmarked: isBookmarked
+        );
         return new PublicGetArticleBySlugResult(Article: dto);
     }
 }
