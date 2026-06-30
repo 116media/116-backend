@@ -61,4 +61,13 @@ public class ArticleInteractionErrors(ArticleInteractionErrorMessage i18n)
     {
         return new BadRequestException(i18n.NotCommentOwner());
     }
+
+    /// <summary>
+    /// Throws when a user attempts to reply to a comment that is itself a reply
+    /// (only single-level threading is supported).
+    /// </summary>
+    public BadRequestException CannotReplyToReply()
+    {
+        return new BadRequestException(i18n.CannotReplyToReply());
+    }
 }
