@@ -93,4 +93,54 @@ public class PublicGetArticlePromotionFeedEndpointV1Tests(PostgresFixture db) : 
 
         allFeedArticles.Should().Contain(item => item.Id == publishedArticle.Id);
     }
+
+    /// <summary>
+    /// Verifies that the promotion feed stamps the caller's interaction state on the feed
+    /// articles and never surfaces another user's state — regardless of which spot or the
+    /// gossip strip the article lands in.
+    /// </summary>
+    [Fact]
+    public async Task GetArticlePromotionFeed_WhenAuthenticated_StampsOnlyTheUsersInteractions()
+    {
+        Guid gossipCategoryId = await SeedAsync<ContentDbContext, Guid>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+
+            CategoryEntity gossipCategory = CategoryFactory.CreateGossip(contentType.Id);
+            ctx.Categories.Add(gossipCategory);
+
+            return gossipCategory.Id;
+        });
+
+        Guid userId = Guid.NewGuid();
+        Guid otherUserId = Guid.NewGuid();
+        ArticleEntity likedArticle = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ArticleEntity entity = ArticleFactory.CreatePublished(gossipCategoryId);
+            ctx.Articles.Add(entity);
+            ctx.ArticleLikes.Add(ArticleLikeEntity.Create(Guid.NewGuid(), userId, entity.Id));
+            ctx.ArticleBookmarks.Add(ArticleBookmarkEntity.Create(Guid.NewGuid(), otherUserId, entity.Id));
+            return entity;
+        });
+
+        Client.AuthenticateAs(userId, "Visitor");
+
+        var response = await Client.GetAsync(FeedUrl);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetArticlePromotionFeedResponse body =
+            await response.ReadAsAsync<PublicGetArticlePromotionFeedResponse>();
+
+        List<ArticleSummaryDto> allFeedArticles = body
+            .Spot1.Articles.Concat(body.Spot2.Articles)
+            .Concat(body.Spot3.Slots.SelectMany(slot => slot.Articles))
+            .Concat(body.GossipStrip)
+            .ToList();
+
+        ArticleSummaryDto stamped = allFeedArticles.Single(item => item.Id == likedArticle.Id);
+        stamped.IsLiked.Should().BeTrue();
+        stamped.IsBookmarked.Should().BeFalse();
+    }
 }
