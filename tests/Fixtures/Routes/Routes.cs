@@ -269,6 +269,15 @@ public static class Routes
 
             public static string Comment(Guid id, Guid commentId) => $"{Comments(id)}/{commentId}";
 
+            public static string CommentReplies(Guid id, Guid commentId) =>
+                $"{Comment(id, commentId)}/{InteractionsRouteConstants.Replies}";
+
+            public static string CommentRepliesList(Guid commentId) =>
+                $"{ApiRoutes.Public.Articles}/{InteractionsRouteConstants.Comments}/{commentId}/{InteractionsRouteConstants.Replies}";
+
+            public static string CommentLike(Guid commentId) =>
+                $"{ApiRoutes.Public.Articles}/{InteractionsRouteConstants.Comments}/{commentId}/{InteractionsRouteConstants.Likes}";
+
             public static string Shares(Guid id) =>
                 $"{ApiRoutes.Public.Articles}/{id}/{InteractionsRouteConstants.Shares}";
 
