@@ -25,8 +25,20 @@ public class ArticleCommentConfiguration : IEntityTypeConfiguration<ArticleComme
 
         builder.Property(x => x.DeletedAt).IsRequired(false);
 
+        builder.Property(x => x.ParentCommentId).IsRequired(false);
+
+        builder.Property(x => x.LikeCount).HasDefaultValue(0).IsRequired();
+
         builder.HasOne(x => x.Article).WithMany().HasForeignKey(x => x.ArticleId).OnDelete(DeleteBehavior.Cascade);
 
+        builder
+            .HasOne(x => x.ParentComment)
+            .WithMany()
+            .HasForeignKey(x => x.ParentCommentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasIndex(x => x.ArticleId).HasDatabaseName("ix_article_comments_article");
+
+        builder.HasIndex(x => x.ParentCommentId).HasDatabaseName("ix_article_comments_parent");
     }
 }
