@@ -183,14 +183,15 @@ public class ArticleBookmarkByUserIdSpecification(Guid userId) : Specification<A
 }
 
 /// <summary>
-/// Specification that matches article comments belonging to a specific article.
+/// Specification that matches top-level article comments belonging to a specific article.
+/// Replies (comments with a parent) are excluded and fetched separately.
 /// </summary>
 public class ArticleCommentByArticleIdSpecification(Guid articleId) : Specification<ArticleCommentEntity>
 {
     /// <inheritdoc />
     public override Expression<Func<ArticleCommentEntity, bool>> ToExpression()
     {
-        return comment => comment.ArticleId == articleId;
+        return comment => comment.ArticleId == articleId && comment.ParentCommentId == null;
     }
 }
 
@@ -203,6 +204,31 @@ public class ArticleCommentByIdSpecification(Guid commentId) : Specification<Art
     public override Expression<Func<ArticleCommentEntity, bool>> ToExpression()
     {
         return comment => comment.Id == commentId;
+    }
+}
+
+/// <summary>
+/// Specification that matches non-deleted replies to a specific parent comment.
+/// </summary>
+public class ArticleCommentReplyByParentSpecification(Guid parentCommentId) : Specification<ArticleCommentEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleCommentEntity, bool>> ToExpression()
+    {
+        return comment => comment.ParentCommentId == parentCommentId && !comment.IsDeleted;
+    }
+}
+
+/// <summary>
+/// Specification that matches a comment like by the liking user and the liked comment.
+/// </summary>
+public class ArticleCommentLikeByUserAndCommentSpecification(Guid userId, Guid commentId)
+    : Specification<ArticleCommentLikeEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleCommentLikeEntity, bool>> ToExpression()
+    {
+        return like => like.UserId == userId && like.CommentId == commentId;
     }
 }
 
