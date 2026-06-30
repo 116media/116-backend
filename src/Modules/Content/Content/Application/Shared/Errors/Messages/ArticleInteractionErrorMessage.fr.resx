@@ -24,9 +24,6 @@
   <data name="BookmarkNotFound" xml:space="preserve">
     <value>Aucun favori trouvé pour cet article.</value>
   </data>
-  <data name="CommentNotFound" xml:space="preserve">
-    <value>Commentaire « {0} » introuvable.</value>
-  </data>
   <data name="NotCommentOwner" xml:space="preserve">
     <value>Vous ne pouvez modifier que vos propres commentaires.</value>
   </data>
