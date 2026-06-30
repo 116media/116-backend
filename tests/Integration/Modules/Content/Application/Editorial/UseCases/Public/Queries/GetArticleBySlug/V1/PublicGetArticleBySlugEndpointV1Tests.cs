@@ -79,4 +79,90 @@ public class PublicGetArticleBySlugEndpointV1Tests(PostgresFixture db) : BaseApi
 
         await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
+
+    /// <summary>
+    /// Verifies that an authenticated user who has liked and bookmarked the article
+    /// receives both interaction flags set to true.
+    /// </summary>
+    [Fact]
+    public async Task GetArticleBySlug_WhenUserLikedAndBookmarked_ReturnsTrueFlags()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        Guid userId = Guid.NewGuid();
+        ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ArticleEntity entity = ArticleFactory.CreatePublished(categoryId);
+            ctx.Articles.Add(entity);
+            ctx.ArticleLikes.Add(ArticleLikeEntity.Create(Guid.NewGuid(), userId, entity.Id));
+            ctx.ArticleBookmarks.Add(ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, entity.Id));
+            return entity;
+        });
+
+        Client.AuthenticateAs(userId, "Visitor");
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}/{article.Slug}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetArticleBySlugResponse body = await response.ReadAsAsync<PublicGetArticleBySlugResponse>();
+        body.Article.IsLiked.Should().BeTrue();
+        body.Article.IsBookmarked.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Verifies that an anonymous request always receives false interaction flags,
+    /// even when other users have liked the article.
+    /// </summary>
+    [Fact]
+    public async Task GetArticleBySlug_WhenAnonymous_ReturnsFalseFlags()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ArticleEntity entity = ArticleFactory.CreatePublished(categoryId);
+            ctx.Articles.Add(entity);
+            ctx.ArticleLikes.Add(ArticleLikeEntity.Create(Guid.NewGuid(), Guid.NewGuid(), entity.Id));
+            return entity;
+        });
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}/{article.Slug}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetArticleBySlugResponse body = await response.ReadAsAsync<PublicGetArticleBySlugResponse>();
+        body.Article.IsLiked.Should().BeFalse();
+        body.Article.IsBookmarked.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Verifies that one user's like and bookmark never surface on another user's
+    /// response — the flags are strictly per-caller.
+    /// </summary>
+    [Fact]
+    public async Task GetArticleBySlug_WhenDifferentUser_DoesNotLeakAnotherUsersState()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        Guid likingUserId = Guid.NewGuid();
+        Guid otherUserId = Guid.NewGuid();
+        ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ArticleEntity entity = ArticleFactory.CreatePublished(categoryId);
+            ctx.Articles.Add(entity);
+            ctx.ArticleLikes.Add(ArticleLikeEntity.Create(Guid.NewGuid(), likingUserId, entity.Id));
+            ctx.ArticleBookmarks.Add(ArticleBookmarkEntity.Create(Guid.NewGuid(), likingUserId, entity.Id));
+            return entity;
+        });
+
+        Client.AuthenticateAs(otherUserId, "Visitor");
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}/{article.Slug}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetArticleBySlugResponse body = await response.ReadAsAsync<PublicGetArticleBySlugResponse>();
+        body.Article.IsLiked.Should().BeFalse();
+        body.Article.IsBookmarked.Should().BeFalse();
+    }
 }
