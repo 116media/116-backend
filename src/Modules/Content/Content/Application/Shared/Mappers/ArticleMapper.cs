@@ -239,17 +239,6 @@ public static class ArticleMapper
     }
 
     /// <summary>
-    /// Maps a list of <see cref="ArticleCommentEntity" /> to a list of <see cref="ArticleCommentDto" />.
-    /// </summary>
-    public static IReadOnlyList<ArticleCommentDto> ToArticleCommentDtos(
-        this IReadOnlyList<ArticleCommentEntity> entities,
-        IMapper mapper
-    )
-    {
-        return entities.Select(e => e.ToArticleCommentDto(mapper)).ToList();
-    }
-
-    /// <summary>
     /// Maps a list of <see cref="ArticleCommentEntity" /> to a list of
     /// <see cref="ArticleCommentDto" />, attaching each commenter's resolved author profile.
     /// Deleted comments carry a null body and a null author; commenters absent from
