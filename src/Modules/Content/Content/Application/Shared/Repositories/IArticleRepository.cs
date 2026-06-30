@@ -212,12 +212,41 @@ public interface IArticleRepository : IRepository<ArticleEntity>
     Task AddCommentAsync(ArticleCommentEntity comment, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Returns a paginated list of non-deleted comments for an article, along with total count.
+    /// Returns a paginated list of top-level comments for an article (replies excluded),
+    /// along with the total top-level count. Soft-deleted comments are included with a null body.
     /// </summary>
     Task<(List<ArticleCommentEntity> Comments, int TotalCount)> GetCommentsAsync(
         Guid articleId,
         int page,
         int pageSize,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Returns a paginated list of non-deleted replies to a comment, along with total count,
+    /// ordered by creation time ascending.
+    /// </summary>
+    /// <param name="parentCommentId">The parent (top-level) comment identifier.</param>
+    /// <param name="page">The 1-based page number.</param>
+    /// <param name="pageSize">The number of replies per page.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The page of replies and the total non-deleted reply count.</returns>
+    Task<(List<ArticleCommentEntity> Replies, int TotalCount)> GetRepliesAsync(
+        Guid parentCommentId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Returns the number of non-deleted direct replies for each of the given parent comment ids.
+    /// Parents with no replies are absent from the result.
+    /// </summary>
+    /// <param name="parentCommentIds">The parent comment ids to count replies for.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>A map of parent comment id to its non-deleted reply count.</returns>
+    Task<IReadOnlyDictionary<Guid, int>> GetReplyCountsAsync(
+        IReadOnlyCollection<Guid> parentCommentIds,
         CancellationToken cancellationToken = default
     );
 
@@ -230,6 +259,35 @@ public interface IArticleRepository : IRepository<ArticleEntity>
     /// Marks an existing comment as modified.
     /// </summary>
     void UpdateComment(ArticleCommentEntity comment);
+
+    /// <summary>
+    /// Returns true if the user has already liked the given comment.
+    /// </summary>
+    Task<bool> HasLikedCommentAsync(Guid userId, Guid commentId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a comment-like record to the repository.
+    /// </summary>
+    Task AddCommentLikeAsync(ArticleCommentLikeEntity like, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes the comment-like record for the given user and comment, if present.
+    /// </summary>
+    Task RemoveCommentLikeAsync(Guid userId, Guid commentId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns the subset of the given comment ids that the viewer has liked. Executes as a
+    /// single query; ids the viewer has not liked are absent from the result.
+    /// </summary>
+    /// <param name="viewerUserId">The current viewer's user id.</param>
+    /// <param name="commentIds">The candidate comment ids, typically one page of comments.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The distinct set of input ids the viewer has liked.</returns>
+    Task<IReadOnlySet<Guid>> GetLikedCommentIdsAsync(
+        Guid viewerUserId,
+        IReadOnlyCollection<Guid> commentIds,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Returns a paginated list of articles bookmarked by the given user, along with total count.
