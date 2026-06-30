@@ -30,6 +30,18 @@ public interface IFileRepository : IRepository<FileEntity>
     );
 
     /// <summary>
+    /// Returns the storage URLs for the given file IDs, keyed by file ID.
+    /// Missing or soft-deleted files are absent from the result.
+    /// </summary>
+    /// <param name="fileIds">The file UUIDs to resolve. Duplicates and unknown IDs are ignored.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>A dictionary keyed by file ID containing each file's storage URL.</returns>
+    Task<IReadOnlyDictionary<Guid, string>> GetStorageUrlsByIdsAsync(
+        IReadOnlyCollection<Guid> fileIds,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Adds a new file entity to the repository.
     /// </summary>
     /// <param name="file">The file entity to add.</param>
