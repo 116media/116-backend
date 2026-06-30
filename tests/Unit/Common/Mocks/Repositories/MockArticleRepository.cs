@@ -189,6 +189,59 @@ public static class MockArticleRepository
         return mock;
     }
 
+    /// <summary>
+    /// Configures GetLikedAndBookmarkedIdsAsync to return the given liked and bookmarked id sets
+    /// for any user/id-list input.
+    /// </summary>
+    public static Mock<IArticleRepository> SetupGetLikedAndBookmarkedIds(
+        this Mock<IArticleRepository> mock,
+        HashSet<Guid> likedIds,
+        HashSet<Guid> bookmarkedIds
+    )
+    {
+        mock.Setup(x =>
+                x.GetLikedAndBookmarkedIdsAsync(
+                    It.IsAny<Guid?>(),
+                    It.IsAny<IReadOnlyCollection<Guid>>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((likedIds, bookmarkedIds));
+        return mock;
+    }
+
+    /// <summary>
+    /// Verifies GetLikedAndBookmarkedIdsAsync was invoked exactly the given number of times
+    /// with a non-null user id.
+    /// </summary>
+    public static void VerifyGetLikedAndBookmarkedIdsCalledWithUser(this Mock<IArticleRepository> mock, Times times)
+    {
+        mock.Verify(
+            x =>
+                x.GetLikedAndBookmarkedIdsAsync(
+                    It.Is<Guid?>(userId => userId != null),
+                    It.IsAny<IReadOnlyCollection<Guid>>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            times
+        );
+    }
+
+    /// <summary>
+    /// Verifies neither HasLikedAsync nor HasBookmarkedAsync was invoked (anonymous fast path).
+    /// </summary>
+    public static void VerifyExistenceChecksNotCalled(this Mock<IArticleRepository> mock)
+    {
+        mock.Verify(
+            x => x.HasLikedAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        mock.Verify(
+            x => x.HasBookmarkedAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+    }
+
     public static Mock<IArticleRepository> SetupGetCommentByIdAsync(
         this Mock<IArticleRepository> mock,
         ArticleCommentEntity? comment
@@ -306,6 +359,14 @@ public static class MockArticleRepository
             .ReturnsAsync(false);
         mock.Setup(x => x.HasBookmarkedAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
+        mock.Setup(x =>
+                x.GetLikedAndBookmarkedIdsAsync(
+                    It.IsAny<Guid?>(),
+                    It.IsAny<IReadOnlyCollection<Guid>>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((new HashSet<Guid>(), new HashSet<Guid>()));
         mock.Setup(x => x.GetCommentByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((ArticleCommentEntity?)null);
         mock.Setup(x =>
