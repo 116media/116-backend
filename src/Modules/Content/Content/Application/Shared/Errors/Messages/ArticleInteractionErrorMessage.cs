@@ -80,6 +80,11 @@ public class ArticleInteractionErrorMessage(IStringLocalizer<ArticleInteractionE
     }
 
     /// <summary>
+    /// Gets an error message for when a user attempts to reply to a comment that is itself a reply.
+    /// </summary>
+    public string CannotReplyToReply() => localizer["CannotReplyToReply"];
+
+    /// <summary>
     /// Gets an error message for when a comment body is required.
     /// </summary>
     public string CommentBodyRequired() => localizer["CommentBodyRequired"];
