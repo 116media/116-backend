@@ -73,6 +73,15 @@ public class ArticleInteractionErrorsTests
     }
 
     [Fact]
+    public void CannotReplyToReply_ShouldReturnBadRequestException()
+    {
+        BadRequestException ex = _errors.CannotReplyToReply();
+
+        ex.Should().NotBeNull();
+        ex.Message.Should().Contain(_message.CannotReplyToReply());
+    }
+
+    [Fact]
     public void Msg_Localizer_AlreadyLiked_ShouldReturnLocalizedString()
     {
         _errors.Msg.Localizer["AlreadyLiked"].Value.Should().Be(_message.AlreadyLiked());
