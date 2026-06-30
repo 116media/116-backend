@@ -82,13 +82,27 @@ public static class ArticleMapper
 
     /// <summary>
     /// Maps an <see cref="ArticleEntity" /> to an <see cref="ArticleDetailDto" />,
-    /// resolving the cover image URL from the associated FileEntity.
+    /// resolving the cover image URL from the associated FileEntity and stamping the
+    /// current user's interaction flags.
     /// </summary>
+    /// <param name="entity">The article to map.</param>
+    /// <param name="mapper">The Mapster mapper used for images and tags.</param>
+    /// <param name="fileRepository">Repository used to resolve the cover image URL.</param>
+    /// <param name="ct">Token to observe for cancellation requests.</param>
+    /// <param name="isLiked">
+    /// Whether the current user has liked this article. False when anonymous.
+    /// </param>
+    /// <param name="isBookmarked">
+    /// Whether the current user has bookmarked this article. False when anonymous.
+    /// </param>
+    /// <returns>The mapped detail DTO.</returns>
     public static async Task<ArticleDetailDto> ToArticleDetailDtoAsync(
         this ArticleEntity entity,
         IMapper mapper,
         IFileRepository fileRepository,
-        CancellationToken ct = default
+        CancellationToken ct = default,
+        bool isLiked = false,
+        bool isBookmarked = false
     )
     {
         string? coverImageUrl = await ResolveCoverImageUrlAsync(entity, fileRepository, ct);
@@ -132,6 +146,8 @@ public static class ArticleMapper
             CreatedBy = entity.CreatedBy,
             UpdatedAt = entity.UpdatedAt,
             UpdatedBy = entity.UpdatedBy,
+            IsLiked = isLiked,
+            IsBookmarked = isBookmarked,
         };
     }
 
@@ -150,6 +166,65 @@ public static class ArticleMapper
         foreach (ArticleEntity entity in entities)
         {
             results.Add(await entity.ToArticleSummaryDtoAsync(mapper, fileRepository, ct));
+        }
+        return results;
+    }
+
+    /// <summary>
+    /// Maps an <see cref="ArticleEntity" /> to an <see cref="ArticleSummaryDto" />, stamping the
+    /// current user's interaction flags from the supplied liked/bookmarked id sets. Pass empty
+    /// sets for an anonymous request.
+    /// </summary>
+    /// <param name="entity">The article to map.</param>
+    /// <param name="mapper">The Mapster mapper.</param>
+    /// <param name="fileRepository">Repository used to resolve the cover image URL.</param>
+    /// <param name="likedArticleIds">Ids the current user has liked.</param>
+    /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
+    /// <param name="ct">Token to observe for cancellation requests.</param>
+    /// <returns>The mapped summary with interaction flags applied.</returns>
+    public static async Task<ArticleSummaryDto> ToArticleSummaryDtoAsync(
+        this ArticleEntity entity,
+        IMapper mapper,
+        IFileRepository fileRepository,
+        IReadOnlySet<Guid> likedArticleIds,
+        IReadOnlySet<Guid> bookmarkedArticleIds,
+        CancellationToken ct = default
+    )
+    {
+        ArticleSummaryDto dto = await entity.ToArticleSummaryDtoAsync(mapper, fileRepository, ct);
+        return dto with
+        {
+            IsLiked = likedArticleIds.Contains(entity.Id),
+            IsBookmarked = bookmarkedArticleIds.Contains(entity.Id),
+        };
+    }
+
+    /// <summary>
+    /// Maps a list of articles to summaries, stamping each with the current user's interaction
+    /// flags from the supplied liked/bookmarked id sets. Pass empty sets for an anonymous request.
+    /// </summary>
+    /// <param name="entities">The articles to map.</param>
+    /// <param name="mapper">The Mapster mapper.</param>
+    /// <param name="fileRepository">Repository used to resolve cover image URLs.</param>
+    /// <param name="likedArticleIds">Ids the current user has liked.</param>
+    /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
+    /// <param name="ct">Token to observe for cancellation requests.</param>
+    /// <returns>The mapped summaries with interaction flags applied.</returns>
+    public static async Task<IReadOnlyList<ArticleSummaryDto>> ToArticleSummaryDtosAsync(
+        this IReadOnlyList<ArticleEntity> entities,
+        IMapper mapper,
+        IFileRepository fileRepository,
+        IReadOnlySet<Guid> likedArticleIds,
+        IReadOnlySet<Guid> bookmarkedArticleIds,
+        CancellationToken ct = default
+    )
+    {
+        var results = new List<ArticleSummaryDto>(entities.Count);
+        foreach (ArticleEntity entity in entities)
+        {
+            results.Add(
+                await entity.ToArticleSummaryDtoAsync(mapper, fileRepository, likedArticleIds, bookmarkedArticleIds, ct)
+            );
         }
         return results;
     }
