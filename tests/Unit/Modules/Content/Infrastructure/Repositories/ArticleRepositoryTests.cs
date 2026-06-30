@@ -670,6 +670,107 @@ public class ArticleRepositoryTests : IDisposable
 
     #endregion
 
+    #region GetLikedAndBookmarkedIdsAsync Tests
+
+    [Fact]
+    public async Task GetLikedAndBookmarkedIdsAsync_ShouldReturnOnlyIdsTheUserInteractedWith()
+    {
+        // Arrange — user liked first and third, bookmarked second; another user liked/bookmarked the rest
+        Guid userId = Guid.NewGuid();
+        Guid otherUserId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        List<ArticleEntity> articles = ArticleFactory.CreateManyPublished(categoryId, 3);
+        _context.Articles.AddRange(articles);
+        _context.ArticleLikes.AddRange(
+            ArticleLikeEntity.Create(Guid.NewGuid(), userId, articles[0].Id),
+            ArticleLikeEntity.Create(Guid.NewGuid(), otherUserId, articles[1].Id),
+            ArticleLikeEntity.Create(Guid.NewGuid(), userId, articles[2].Id)
+        );
+        _context.ArticleBookmarks.AddRange(
+            ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, articles[1].Id),
+            ArticleBookmarkEntity.Create(Guid.NewGuid(), otherUserId, articles[0].Id)
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        (IReadOnlySet<Guid> liked, IReadOnlySet<Guid> bookmarked) = await _repository.GetLikedAndBookmarkedIdsAsync(
+            userId,
+            [articles[0].Id, articles[1].Id, articles[2].Id]
+        );
+
+        // Assert
+        liked.Should().BeEquivalentTo([articles[0].Id, articles[2].Id]);
+        liked.Should().NotContain(articles[1].Id);
+        bookmarked.Should().BeEquivalentTo([articles[1].Id]);
+        bookmarked.Should().NotContain(articles[0].Id);
+    }
+
+    [Fact]
+    public async Task GetLikedAndBookmarkedIdsAsync_ShouldNotReturnIdsOutsideTheInputList()
+    {
+        // Arrange — user liked and bookmarked both, but only the first is in the candidate list
+        Guid userId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        List<ArticleEntity> articles = ArticleFactory.CreateManyPublished(categoryId, 2);
+        _context.Articles.AddRange(articles);
+        _context.ArticleLikes.AddRange(
+            ArticleLikeEntity.Create(Guid.NewGuid(), userId, articles[0].Id),
+            ArticleLikeEntity.Create(Guid.NewGuid(), userId, articles[1].Id)
+        );
+        _context.ArticleBookmarks.AddRange(
+            ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, articles[0].Id),
+            ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, articles[1].Id)
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        (IReadOnlySet<Guid> liked, IReadOnlySet<Guid> bookmarked) = await _repository.GetLikedAndBookmarkedIdsAsync(
+            userId,
+            [articles[0].Id]
+        );
+
+        // Assert
+        liked.Should().BeEquivalentTo([articles[0].Id]);
+        bookmarked.Should().BeEquivalentTo([articles[0].Id]);
+    }
+
+    [Fact]
+    public async Task GetLikedAndBookmarkedIdsAsync_WithNullUser_ShouldReturnEmptySets()
+    {
+        // Arrange — the article has interactions from other users
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.CreatePublished(categoryId);
+        _context.Articles.Add(article);
+        _context.ArticleLikes.Add(ArticleLikeEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id));
+        await _context.SaveChangesAsync();
+
+        // Act
+        (IReadOnlySet<Guid> liked, IReadOnlySet<Guid> bookmarked) = await _repository.GetLikedAndBookmarkedIdsAsync(
+            currentUserId: null,
+            articleIds: [article.Id]
+        );
+
+        // Assert
+        liked.Should().BeEmpty();
+        bookmarked.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetLikedAndBookmarkedIdsAsync_WithEmptyInput_ShouldReturnEmptySets()
+    {
+        // Act
+        (IReadOnlySet<Guid> liked, IReadOnlySet<Guid> bookmarked) = await _repository.GetLikedAndBookmarkedIdsAsync(
+            Guid.NewGuid(),
+            []
+        );
+
+        // Assert
+        liked.Should().BeEmpty();
+        bookmarked.Should().BeEmpty();
+    }
+
+    #endregion
+
     #region AddShareAsync Tests
 
     [Fact]
