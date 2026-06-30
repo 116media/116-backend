@@ -264,6 +264,68 @@ public static class MockArticleRepository
         return mock;
     }
 
+    public static Mock<IArticleRepository> SetupGetRepliesAsync(
+        this Mock<IArticleRepository> mock,
+        List<ArticleCommentEntity> replies,
+        int totalCount
+    )
+    {
+        mock.Setup(x =>
+                x.GetRepliesAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync((replies, totalCount));
+        return mock;
+    }
+
+    public static Mock<IArticleRepository> SetupGetReplyCounts(
+        this Mock<IArticleRepository> mock,
+        IReadOnlyDictionary<Guid, int> counts
+    )
+    {
+        mock.Setup(x => x.GetReplyCountsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(counts);
+        return mock;
+    }
+
+    public static Mock<IArticleRepository> SetupHasLikedCommentAsync(this Mock<IArticleRepository> mock, bool result)
+    {
+        mock.Setup(x => x.HasLikedCommentAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+        return mock;
+    }
+
+    public static Mock<IArticleRepository> SetupGetLikedCommentIds(
+        this Mock<IArticleRepository> mock,
+        HashSet<Guid> commentIds
+    )
+    {
+        mock.Setup(x =>
+                x.GetLikedCommentIdsAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<IReadOnlyCollection<Guid>>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(commentIds);
+        return mock;
+    }
+
+    public static void VerifyAddCommentLikeCalled(this Mock<IArticleRepository> mock, Times times)
+    {
+        mock.Verify(
+            x => x.AddCommentLikeAsync(It.IsAny<ArticleCommentLikeEntity>(), It.IsAny<CancellationToken>()),
+            times
+        );
+    }
+
+    public static void VerifyRemoveCommentLikeCalled(this Mock<IArticleRepository> mock, Times times)
+    {
+        mock.Verify(
+            x => x.RemoveCommentLikeAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            times
+        );
+    }
+
     public static Mock<IArticleRepository> SetupGetBookmarkedArticlesAsync(
         this Mock<IArticleRepository> mock,
         List<ArticleEntity> articles,
@@ -373,6 +435,26 @@ public static class MockArticleRepository
                 x.GetCommentsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>())
             )
             .ReturnsAsync((new List<ArticleCommentEntity>(), 0));
+        mock.Setup(x =>
+                x.GetRepliesAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync((new List<ArticleCommentEntity>(), 0));
+        mock.Setup(x => x.GetReplyCountsAsync(It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, int>());
+        mock.Setup(x => x.HasLikedCommentAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        mock.Setup(x =>
+                x.GetLikedCommentIdsAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<IReadOnlyCollection<Guid>>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(new HashSet<Guid>());
+        mock.Setup(x => x.AddCommentLikeAsync(It.IsAny<ArticleCommentLikeEntity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x => x.RemoveCommentLikeAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
         mock.Setup(x =>
                 x.GetBookmarkedArticlesAsync(
                     It.IsAny<Guid>(),
