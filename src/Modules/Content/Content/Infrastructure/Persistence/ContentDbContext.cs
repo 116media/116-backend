@@ -133,6 +133,11 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options) : DbCo
     public DbSet<ArticleCommentEntity> ArticleComments => Set<ArticleCommentEntity>();
 
     /// <summary>
+    /// Gets the DbSet for article comment like entities.
+    /// </summary>
+    public DbSet<ArticleCommentLikeEntity> ArticleCommentLikes => Set<ArticleCommentLikeEntity>();
+
+    /// <summary>
     /// Gets the DbSet for video rating entities.
     /// </summary>
     public DbSet<VideoRatingEntity> VideoRatings => Set<VideoRatingEntity>();
