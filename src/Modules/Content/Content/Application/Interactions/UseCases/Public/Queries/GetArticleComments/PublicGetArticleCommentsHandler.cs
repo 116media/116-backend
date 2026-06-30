@@ -1,4 +1,3 @@
-using _116.Content.Application.Interactions.Shared;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
@@ -46,12 +45,7 @@ public class PublicGetArticleCommentsHandler(
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyDictionary<Guid, AuthorDto> authorsByUserId = await CommentAuthorResolver.ResolveAsync(
-            userLookup,
-            fileRepository,
-            comments,
-            cancellationToken
-        );
+        IReadOnlyDictionary<Guid, AuthorDto> authorsByUserId = await ResolveAuthorsAsync(comments, cancellationToken);
 
         IReadOnlyList<ArticleCommentDto> dtoList = comments.AsReadOnly().ToArticleCommentDtos(mapper, authorsByUserId);
 
@@ -67,6 +61,57 @@ public class PublicGetArticleCommentsHandler(
         );
 
         return new PublicGetArticleCommentsResult(Comments: paginated);
+    }
+
+    /// <summary>
+    /// Batch-resolves the public author profile for every distinct non-deleted commenter on the
+    /// page, keyed by commenter user id. Executes one identity lookup plus one avatar-URL lookup
+    /// for the whole page (no N+1). Deleted comments are excluded so no identity is leaked, and
+    /// the commenter email is never populated on the public projection.
+    /// </summary>
+    /// <param name="comments">The page of comment entities.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Resolved author profiles keyed by commenter user id.</returns>
+    private async Task<IReadOnlyDictionary<Guid, AuthorDto>> ResolveAuthorsAsync(
+        IReadOnlyList<ArticleCommentEntity> comments,
+        CancellationToken cancellationToken
+    )
+    {
+        Guid[] userIds = comments.Where(c => !c.IsDeleted).Select(c => c.UserId).Distinct().ToArray();
+
+        if (userIds.Length == 0)
+        {
+            return new Dictionary<Guid, AuthorDto>();
+        }
+
+        IReadOnlyDictionary<Guid, AuthorInfo> authorInfos = await userLookup.GetAuthorInfosByIdsAsync(
+            userIds: userIds,
+            ct: cancellationToken
+        );
+
+        Guid[] avatarFileIds = authorInfos
+            .Values.Where(info => info.AvatarFileId.HasValue)
+            .Select(info => info.AvatarFileId!.Value)
+            .Distinct()
+            .ToArray();
+
+        IReadOnlyDictionary<Guid, string> avatarUrls =
+            avatarFileIds.Length == 0
+                ? new Dictionary<Guid, string>()
+                : await fileRepository.GetStorageUrlsByIdsAsync(avatarFileIds, cancellationToken);
+
+        return authorInfos.ToDictionary(
+            pair => pair.Key,
+            pair =>
+            {
+                AuthorInfo info = pair.Value;
+                string? avatarUrl = info.AvatarFileId.HasValue
+                    ? avatarUrls.GetValueOrDefault(info.AvatarFileId.Value)
+                    : null;
+
+                return new AuthorDto(UserName: info.UserName, Email: null, AvatarUrl: avatarUrl, Role: info.Role);
+            }
+        );
     }
 
     /// <summary>
