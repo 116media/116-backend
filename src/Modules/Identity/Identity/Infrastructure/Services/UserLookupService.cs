@@ -1,4 +1,5 @@
 using _116.Identity.Contracts.Application;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,6 +37,36 @@ public class UserLookupService(IdentityDbContext context) : IUserLookupService
             user.Email,
             user.AvatarFileId,
             user.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault()
+        );
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, AuthorInfo>> GetAuthorInfosByIdsAsync(
+        IReadOnlyCollection<Guid> userIds,
+        CancellationToken ct = default
+    )
+    {
+        if (userIds.Count == 0)
+        {
+            return new Dictionary<Guid, AuthorInfo>();
+        }
+
+        Guid[] distinctIds = userIds.Distinct().ToArray();
+
+        List<UserEntity> users = await context
+            .Users.Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+            .Where(u => distinctIds.Contains(u.Id))
+            .ToListAsync(ct);
+
+        return users.ToDictionary(
+            user => user.Id,
+            user => new AuthorInfo(
+                user.UserName,
+                user.Email,
+                user.AvatarFileId,
+                user.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault()
+            )
         );
     }
 }
