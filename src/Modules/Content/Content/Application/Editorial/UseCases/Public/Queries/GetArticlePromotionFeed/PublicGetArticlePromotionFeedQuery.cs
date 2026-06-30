@@ -11,8 +11,14 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleP
 /// Number of gossip articles to include in the gossip strip.
 /// Defaults to <see cref="EditorialFeedConstants.DefaultStripSize" />.
 /// </param>
-public record PublicGetArticlePromotionFeedQuery(int StripSize = EditorialFeedConstants.DefaultStripSize)
-    : IQuery<PublicGetArticlePromotionFeedResult>;
+/// <param name="CurrentUserId">
+/// The authenticated caller's id, or null for an anonymous request. When null, the per-user
+/// interaction flags on the returned summaries resolve to false.
+/// </param>
+public record PublicGetArticlePromotionFeedQuery(
+    int StripSize = EditorialFeedConstants.DefaultStripSize,
+    Guid? CurrentUserId = null
+) : IQuery<PublicGetArticlePromotionFeedResult>;
 
 /// <summary>
 /// A single promoted article entry for the feed.
