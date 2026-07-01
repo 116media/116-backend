@@ -2,6 +2,7 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.Login.V1;
 
@@ -209,5 +210,68 @@ public class PublicLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.Login(), loginRequest);
 
         await response.ShouldBeProblem(HttpStatusCode.Forbidden);
+    }
+
+    /// <summary>
+    /// Reproduces the reported bug: a non-existent login (Accept-Language: en) must
+    /// return a friendly English message that never leaks the raw entity class name,
+    /// the "credentials" key, or the searched email.
+    /// </summary>
+    [Fact]
+    public async Task Login_WithNonExistentCredentials_ReturnsFriendlyDetailWithoutLeakingEmail()
+    {
+        Client.ClearAuthentication();
+        const string email = "ghost-en@nowhere.com";
+        var request = new PublicLoginRequestBuilder()
+            .WithCredentials(email)
+            .WithPassword(TestAuth.ValidPassword)
+            .Build();
+
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, Routes.Public.Auth.Login())
+        {
+            Content = JsonContent.Create(request),
+        };
+        httpRequest.Headers.Add("Accept-Language", "en");
+
+        var response = await Client.SendAsync(httpRequest);
+
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+
+        ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
+        problem.Detail.Should().Contain("user account");
+        problem.Detail.Should().NotContain(email);
+        problem.Detail.Should().NotContain("credentials");
+        problem.Detail.Should().NotContain("User with");
+    }
+
+    /// <summary>
+    /// Verifies the localization fix end-to-end: with Accept-Language: fr the same
+    /// not-found returns the friendly French message — proving request localization now
+    /// wraps the exception handler — still without leaking the searched email.
+    /// </summary>
+    [Fact]
+    public async Task Login_WithNonExistentCredentials_InFrench_ReturnsLocalizedFriendlyDetail()
+    {
+        Client.ClearAuthentication();
+        const string email = "fantome-fr@nowhere.com";
+        var request = new PublicLoginRequestBuilder()
+            .WithCredentials(email)
+            .WithPassword(TestAuth.ValidPassword)
+            .Build();
+
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, Routes.Public.Auth.Login())
+        {
+            Content = JsonContent.Create(request),
+        };
+        httpRequest.Headers.Add("Accept-Language", "fr");
+
+        var response = await Client.SendAsync(httpRequest);
+
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+
+        ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
+        problem.Detail.Should().Contain("Impossible de trouver");
+        problem.Detail.Should().Contain("compte utilisateur");
+        problem.Detail.Should().NotContain(email);
     }
 }

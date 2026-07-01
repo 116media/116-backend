@@ -19,9 +19,7 @@ public sealed class NotFoundExceptionHandler : BaseExceptionStrategy<NotFoundExc
         if (exception.EntityName is not null)
         {
             var msg = context.RequestServices.GetRequiredService<SharedExceptionMessage>();
-            detail = exception.KeyName is not null
-                ? msg.EntityNotFoundByKey(exception.EntityName, exception.KeyName, exception.KeyValue!)
-                : msg.EntityNotFoundById(exception.EntityName, exception.Key);
+            detail = msg.EntityNotFound(exception.EntityName);
         }
 
         return CreateStandardProblemDetails(

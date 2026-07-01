@@ -128,10 +128,10 @@ public class NotFoundExceptionHandlerTests
 
     #endregion
 
-    #region Localized Message Tests
+    #region Friendly Localized Message Tests
 
     [Fact]
-    public void CreateProblemDetails_WithEntityNameAndId_ShouldUseLocalizedMessage()
+    public void CreateProblemDetails_WithEntityNameAndId_ShouldUseFriendlyLocalizedMessage()
     {
         // Arrange
         NotFoundException exception = new("UserEntity", (object)"abc-123");
@@ -140,12 +140,12 @@ public class NotFoundExceptionHandlerTests
         // Act
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
-        // Assert
-        problemDetails.Detail.Should().Be(i18n.EntityNotFoundById("User", "abc-123"));
+        // Assert — friendly per-entity label, keyed on the cleaned entity name
+        problemDetails.Detail.Should().Be(i18n.EntityNotFound("User"));
     }
 
     [Fact]
-    public void CreateProblemDetails_WithEntityNameAndKeyNameAndKeyValue_ShouldUseLocalizedMessage()
+    public void CreateProblemDetails_WithEntityNameKeyNameAndKeyValue_ShouldUseFriendlyLocalizedMessage()
     {
         // Arrange
         NotFoundException exception = new("UserEntity", "email", "test@test.com");
@@ -154,12 +154,12 @@ public class NotFoundExceptionHandlerTests
         // Act
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
-        // Assert
-        problemDetails.Detail.Should().Be(i18n.EntityNotFoundByKey("User", "email", "test@test.com"));
+        // Assert — same friendly message regardless of which key the lookup used
+        problemDetails.Detail.Should().Be(i18n.EntityNotFound("User"));
     }
 
     [Fact]
-    public void CreateProblemDetails_WithStringOnlyConstructor_ShouldUseFallbackMessage()
+    public void CreateProblemDetails_WithStringOnlyConstructor_ShouldUseExceptionMessage()
     {
         // Arrange
         string customMessage = "Custom not found message";
@@ -169,26 +169,12 @@ public class NotFoundExceptionHandlerTests
         // Act
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
-        // Assert
+        // Assert — no structured entity, so the raw (already-localized) message is used
         problemDetails.Detail.Should().Be(customMessage);
     }
 
     [Fact]
-    public void CreateProblemDetails_WithEntityNameAndId_ShouldContainEntityName()
-    {
-        // Arrange
-        NotFoundException exception = new("RoleEntity", (object)"role-uuid");
-        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
-
-        // Act
-        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
-
-        // Assert
-        problemDetails.Detail.Should().Contain("Role");
-    }
-
-    [Fact]
-    public void CreateProblemDetails_WithEntityNameAndId_ShouldContainKey()
+    public void CreateProblemDetails_WithEntityNameAndId_ShouldNotLeakEntityNameOrKeyValue()
     {
         // Arrange
         NotFoundException exception = new("SessionEntity", (object)"session-uuid");
@@ -197,12 +183,14 @@ public class NotFoundExceptionHandlerTests
         // Act
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
-        // Assert
-        problemDetails.Detail.Should().Contain("session-uuid");
+        // Assert — the raw class name and the searched value never reach the user
+        problemDetails.Detail.Should().Be(i18n.EntityNotFound("Session"));
+        problemDetails.Detail.Should().NotContain("session-uuid");
+        problemDetails.Detail.Should().NotContain("SessionEntity");
     }
 
     [Fact]
-    public void CreateProblemDetails_WithEntityNameKeyNameAndKeyValue_ShouldContainAllParts()
+    public void CreateProblemDetails_WithEntityNameKeyNameAndKeyValue_ShouldNotLeakKeyNameOrValue()
     {
         // Arrange
         NotFoundException exception = new("PermissionEntity", "resource", "articles.read");
@@ -211,17 +199,33 @@ public class NotFoundExceptionHandlerTests
         // Act
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
-        // Assert
-        problemDetails.Detail.Should().Contain("Permission");
-        problemDetails.Detail.Should().Contain("resource");
-        problemDetails.Detail.Should().Contain("articles.read");
+        // Assert — neither the key name nor its value are exposed
+        problemDetails.Detail.Should().Be(i18n.EntityNotFound("Permission"));
+        problemDetails.Detail.Should().NotContain("resource");
+        problemDetails.Detail.Should().NotContain("articles.read");
     }
 
     [Fact]
-    public void CreateProblemDetails_WithEntityNameAndId_InFrench_ShouldReturnFrenchMessage()
+    public void CreateProblemDetails_WithUnmappedEntity_ShouldFallBackToGenericLabel()
+    {
+        // Arrange — an entity with no specific label falls back to the generic one
+        NotFoundException exception = new("SomethingObscureEntity", (object)"xyz-789");
+        DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
+
+        // Act
+        ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
+
+        // Assert
+        problemDetails.Detail.Should().Be(i18n.EntityNotFound("SomethingObscure"));
+        problemDetails.Detail.Should().NotContain("SomethingObscure");
+        problemDetails.Detail.Should().NotContain("xyz-789");
+    }
+
+    [Fact]
+    public void CreateProblemDetails_WithEntityNameAndId_InFrench_ShouldReturnFrenchFriendlyMessage()
     {
         // Arrange
-        string enDetail = i18n.EntityNotFoundById("User", "abc-123");
+        string enDetail = i18n.EntityNotFound("User");
         using var scope = new CultureScope("fr");
         NotFoundException exception = new("UserEntity", (object)"abc-123");
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
@@ -229,17 +233,17 @@ public class NotFoundExceptionHandlerTests
         // Act
         ProblemDetails problemDetails = _handler.CreateProblemDetails(exception, context);
 
-        // Assert
+        // Assert — localized to French, still friendly, still no leak
         problemDetails.Detail.Should().NotBe(enDetail);
-        problemDetails.Detail.Should().Contain("User");
-        problemDetails.Detail.Should().Contain("abc-123");
+        problemDetails.Detail.Should().Be(i18n.EntityNotFound("User"));
+        problemDetails.Detail.Should().NotContain("abc-123");
     }
 
     [Fact]
-    public void CreateProblemDetails_WithEntityNameAndKeyNameAndKeyValue_InFrench_ShouldReturnFrenchMessage()
+    public void CreateProblemDetails_WithEntityNameKeyNameAndKeyValue_InFrench_ShouldReturnFrenchFriendlyMessage()
     {
         // Arrange
-        string enDetail = i18n.EntityNotFoundByKey("User", "email", "test@test.com");
+        string enDetail = i18n.EntityNotFound("User");
         using var scope = new CultureScope("fr");
         NotFoundException exception = new("UserEntity", "email", "test@test.com");
         DefaultHttpContext context = HttpTestHelpers.CreateDefaultHttpContext();
@@ -249,8 +253,8 @@ public class NotFoundExceptionHandlerTests
 
         // Assert
         problemDetails.Detail.Should().NotBe(enDetail);
-        problemDetails.Detail.Should().Contain("User");
-        problemDetails.Detail.Should().Contain("test@test.com");
+        problemDetails.Detail.Should().Be(i18n.EntityNotFound("User"));
+        problemDetails.Detail.Should().NotContain("test@test.com");
     }
 
     #endregion
