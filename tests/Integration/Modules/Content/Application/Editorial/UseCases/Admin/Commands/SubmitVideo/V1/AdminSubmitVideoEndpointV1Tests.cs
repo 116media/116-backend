@@ -114,4 +114,35 @@ public class AdminSubmitVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         (await GetVideoStatusAsync(video.Id)).Should().Be(EnumContentStatus.PendingReview);
     }
+
+    /// <summary>
+    /// Submitting a paid video whose order is not yet paid moves it to PendingPayment; submitting
+    /// it again conflicts because it is already awaiting payment.
+    /// </summary>
+    [Fact]
+    public async Task SubmitVideo_AsSuperAdmin_PaidVideoAlreadySubmitted_ReturnsConflict()
+    {
+        VideoEntity video = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            CustomerEntity customer = CustomerFactory.Create();
+            VideoEntity paidVideo = VideoFactory.CreatePaid(category.Id, customer.Id, Guid.NewGuid());
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Customers.Add(customer);
+            ctx.Videos.Add(paidVideo);
+            return paidVideo;
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        string url = Routes.Admin.Editorial.Submit(EditorialRouteConstants.Videos, video.Id);
+
+        var firstResponse = await Client.PatchAsync(url, null);
+        firstResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await GetVideoStatusAsync(video.Id)).Should().Be(EnumContentStatus.PendingPayment);
+
+        var secondResponse = await Client.PatchAsync(url, null);
+        await secondResponse.ShouldBeProblem(HttpStatusCode.Conflict);
+    }
 }
