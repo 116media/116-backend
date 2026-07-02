@@ -47,9 +47,9 @@ public class PublicGetLyricsBySlugEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetLyricsBySlugMetaField.PublicGetLyricsBySlug.Name)
-            .WithSummary(summary: PublicGetLyricsBySlugMetaField.PublicGetLyricsBySlug.Summary)
-            .WithDescription(description: PublicGetLyricsBySlugMetaField.PublicGetLyricsBySlug.Description)
+            .WithName(endpointName: PublicGetLyricsBySlugMetaField.GetLyricsBySlug.Name)
+            .WithSummary(summary: PublicGetLyricsBySlugMetaField.GetLyricsBySlug.Summary)
+            .WithDescription(description: PublicGetLyricsBySlugMetaField.GetLyricsBySlug.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetLyricsBySlugResponse>(statusCode: StatusCodes.Status200OK)
