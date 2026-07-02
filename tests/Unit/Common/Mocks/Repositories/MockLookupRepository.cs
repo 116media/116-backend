@@ -245,7 +245,10 @@ public static class MockLookupRepository
         IReadOnlyList<TagEntity> list
     )
     {
-        mock.Setup(x => x.GetAllTagsAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>())).ReturnsAsync(list);
+        mock.Setup(x =>
+                x.GetAllTagsAsync(It.IsAny<string?>(), It.IsAny<EnumCoreContentType?>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(list);
         return mock;
     }
 
@@ -316,7 +319,9 @@ public static class MockLookupRepository
             .ReturnsAsync((TagEntity?)null);
         mock.Setup(x => x.AddTagAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        mock.Setup(x => x.GetAllTagsAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        mock.Setup(x =>
+                x.GetAllTagsAsync(It.IsAny<string?>(), It.IsAny<EnumCoreContentType?>(), It.IsAny<CancellationToken>())
+            )
             .ReturnsAsync(new List<TagEntity>());
     }
 }
