@@ -84,4 +84,7 @@
   <data name="ShootingScheduledDateMustBeInFuture" xml:space="preserve">
     <value>La date de tournage prévue doit être dans le futur.</value>
   </data>
+  <data name="PopularLimitOutOfRange" xml:space="preserve">
+    <value>La limite doit être comprise entre {0} et {1}.</value>
+  </data>
 </root>
