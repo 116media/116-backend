@@ -70,6 +70,22 @@ public interface IVideoRepository : IRepository<VideoEntity>
     Task<IReadOnlyList<VideoEntity>> GetPromotedAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves published videos ranked by a weighted engagement score (rating volume
+    /// weighted by rating quality, plus shares), tie-broken by publish date descending.
+    /// </summary>
+    /// <param name="limit">Maximum number of videos to return.</param>
+    /// <param name="categoryId">Optional category filter; when supplied, only videos in that category are ranked.</param>
+    /// <param name="excludeId">Optional video id to omit, e.g. the video currently being viewed.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>A read-only list of the most popular published video entities.</returns>
+    Task<IReadOnlyList<VideoEntity>> GetPopularVideosAsync(
+        int limit,
+        Guid? categoryId,
+        Guid? excludeId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Retrieves a video linked to the given order item identifier. Returns null if not found.
     /// </summary>
     /// <param name="orderItemId">The order item identifier.</param>
