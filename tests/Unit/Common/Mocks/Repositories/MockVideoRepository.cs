@@ -99,6 +99,23 @@ public static class MockVideoRepository
         return mock;
     }
 
+    public static Mock<IVideoRepository> SetupGetPopularVideosAsync(
+        this Mock<IVideoRepository> mock,
+        IReadOnlyList<VideoEntity> videos
+    )
+    {
+        mock.Setup(x =>
+                x.GetPopularVideosAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(videos);
+        return mock;
+    }
+
     public static Mock<IVideoRepository> SetupGetTagsByVideoId(
         this Mock<IVideoRepository> mock,
         Guid videoId,
