@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategory.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
