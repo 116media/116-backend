@@ -595,6 +595,24 @@ public static partial class EditorialValidation
     }
 
     /// <summary>
+    /// Validates the popular-videos limit — must stay within the bounds defined by
+    /// <see cref="PopularVideosLimits" />.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the limit property.</param>
+    /// <param name="i18n">The video error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, int> ValidPopularVideosLimit<T>(
+        this IRuleBuilder<T, int> ruleBuilder,
+        VideoErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .InclusiveBetween(from: PopularVideosLimits.MinLimit, to: PopularVideosLimits.MaxLimit)
+            .WithMessage(i18n.PopularLimitOutOfRange(PopularVideosLimits.MinLimit, PopularVideosLimits.MaxLimit));
+    }
+
+    /// <summary>
     /// Generated regex for slug validation — lowercase letters, numbers, and hyphens only.
     /// Uses compile-time generation for better performance, AOT compatibility, and reduced startup time.
     /// </summary>
