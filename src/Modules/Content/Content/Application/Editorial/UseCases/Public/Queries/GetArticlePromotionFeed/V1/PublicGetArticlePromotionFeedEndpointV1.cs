@@ -72,11 +72,9 @@ public class PublicGetArticlePromotionFeedEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetArticlePromotionFeedMetaField.PublicGetArticlePromotionFeed.Name)
-            .WithSummary(summary: PublicGetArticlePromotionFeedMetaField.PublicGetArticlePromotionFeed.Summary)
-            .WithDescription(
-                description: PublicGetArticlePromotionFeedMetaField.PublicGetArticlePromotionFeed.Description
-            )
+            .WithName(endpointName: PublicGetArticlePromotionFeedMetaField.GetArticlePromotionFeed.Name)
+            .WithSummary(summary: PublicGetArticlePromotionFeedMetaField.GetArticlePromotionFeed.Summary)
+            .WithDescription(description: PublicGetArticlePromotionFeedMetaField.GetArticlePromotionFeed.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetArticlePromotionFeedResponse>(statusCode: StatusCodes.Status200OK)
