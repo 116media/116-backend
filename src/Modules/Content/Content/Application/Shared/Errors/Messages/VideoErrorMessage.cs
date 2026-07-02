@@ -194,4 +194,12 @@ public class VideoErrorMessage(IStringLocalizer<VideoErrorMessage> localizer)
     /// Gets an error message for when the shooting scheduled date is not in the future.
     /// </summary>
     public string ShootingScheduledDateMustBeInFuture() => localizer["ShootingScheduledDateMustBeInFuture"];
+
+    /// <summary>
+    /// Gets an error message for when the popular-videos limit is outside the accepted range.
+    /// </summary>
+    /// <param name="min">The smallest accepted limit value.</param>
+    /// <param name="max">The largest accepted limit value.</param>
+    public string PopularLimitOutOfRange(int min, int max) =>
+        string.Format(localizer["PopularLimitOutOfRange"], min, max);
 }
