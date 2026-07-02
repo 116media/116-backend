@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBy
 /// </summary>
 public static class PublicGetLyricsBySlugMetaField
 {
-    public static readonly RouteMetadata PublicGetLyricsBySlug = new(
+    public static readonly RouteMetadata GetLyricsBySlug = new(
         "GetLyricsBySlug",
         "Get lyrics by song title and artist name",
         """
