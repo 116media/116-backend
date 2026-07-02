@@ -1,6 +1,5 @@
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Editorial.Constants;
-using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Constants;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
