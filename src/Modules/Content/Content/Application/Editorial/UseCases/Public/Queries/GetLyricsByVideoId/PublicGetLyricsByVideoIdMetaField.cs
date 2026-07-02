@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBy
 /// </summary>
 public static class PublicGetLyricsByVideoIdMetaField
 {
-    public static readonly RouteMetadata PublicGetLyricsByVideoId = new(
+    public static readonly RouteMetadata GetLyricsByVideoId = new(
         "GetLyricsByVideoId",
         "Get lyrics linked to a video",
         """
