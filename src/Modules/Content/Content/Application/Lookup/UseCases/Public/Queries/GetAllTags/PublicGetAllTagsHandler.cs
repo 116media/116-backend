@@ -20,6 +20,7 @@ public class PublicGetAllTagsHandler(ILookupRepository lookupRepository, IMapper
     {
         IReadOnlyList<TagEntity> tags = await lookupRepository.GetAllTagsAsync(
             search: query.Search,
+            contentType: query.ContentType,
             cancellationToken: cancellationToken
         );
 
