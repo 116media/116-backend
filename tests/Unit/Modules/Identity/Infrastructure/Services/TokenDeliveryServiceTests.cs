@@ -1,5 +1,4 @@
 using _116.Identity.Application.Auth.Constants;
-using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Session.Services;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Enums;
@@ -162,7 +161,7 @@ public class TokenDeliveryServiceTests : IDisposable
 
         // Assert
         string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string expectedPath = $"/api/v1/{IdentityConstants.Admin}/{SessionRouteConstants.Endpoint}";
+        string expectedPath = $"/api/v1/{IdentityConstants.Admin}";
         setCookieHeader.Should().Contain($"path={expectedPath}");
     }
 
@@ -179,7 +178,7 @@ public class TokenDeliveryServiceTests : IDisposable
 
         // Assert
         string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string expectedPath = $"/api/v1/{IdentityConstants.Public}/{SessionRouteConstants.Endpoint}";
+        string expectedPath = $"/api/v1/{IdentityConstants.Public}";
         setCookieHeader.Should().Contain($"path={expectedPath}");
     }
 
@@ -391,7 +390,7 @@ public class TokenDeliveryServiceTests : IDisposable
 
         // Assert
         string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string expectedPath = $"/api/v1/{IdentityConstants.Public}/{SessionRouteConstants.Endpoint}";
+        string expectedPath = $"/api/v1/{IdentityConstants.Public}";
         setCookieHeader.Should().Contain($"path={expectedPath}");
     }
 
@@ -407,7 +406,7 @@ public class TokenDeliveryServiceTests : IDisposable
 
         // Assert
         string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string expectedPath = $"/api/v2/{IdentityConstants.Admin}/{SessionRouteConstants.Endpoint}";
+        string expectedPath = $"/api/v2/{IdentityConstants.Admin}";
         setCookieHeader.Should().Contain($"path={expectedPath}");
     }
 
@@ -624,7 +623,7 @@ public class TokenDeliveryServiceTests : IDisposable
 
         // Assert
         string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string expectedPath = $"/api/v2/{IdentityConstants.Admin}/{SessionRouteConstants.Endpoint}";
+        string expectedPath = $"/api/v2/{IdentityConstants.Admin}";
         setCookieHeader.Should().Contain($"path={expectedPath}");
     }
 
@@ -641,7 +640,7 @@ public class TokenDeliveryServiceTests : IDisposable
 
         // Assert
         string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string expectedPath = $"/api/v1/{IdentityConstants.Admin}/{SessionRouteConstants.Endpoint}";
+        string expectedPath = $"/api/v1/{IdentityConstants.Admin}";
         setCookieHeader.Should().Contain($"path={expectedPath}");
     }
 
@@ -658,7 +657,7 @@ public class TokenDeliveryServiceTests : IDisposable
 
         // Assert
         string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string expectedPath = $"/api/v1/{IdentityConstants.Admin}/{SessionRouteConstants.Endpoint}";
+        string expectedPath = $"/api/v1/{IdentityConstants.Admin}";
         setCookieHeader.Should().Contain($"path={expectedPath}");
     }
 
@@ -674,8 +673,29 @@ public class TokenDeliveryServiceTests : IDisposable
 
         // Assert
         string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
-        string expectedPath = $"/api/v1/{IdentityConstants.Admin}/{SessionRouteConstants.Endpoint}";
+        string expectedPath = $"/api/v1/{IdentityConstants.Admin}";
         setCookieHeader.Should().Contain($"path={expectedPath}");
+    }
+
+    [Fact]
+    public void SetTokenCookies_ShouldScopeRefreshCookie_SoSignOutReceivesIt()
+    {
+        // Arrange — a public (web) login, exactly the reported sign-out scenario
+        DefaultHttpContext httpContext = CreateHttpContext("/api/v1/public/auth/login");
+        SetupHttpContext(httpContext, EnumClient.WebApp);
+        AuthenticationResult authResult = CreateAuthResult();
+
+        // Act
+        _sut.SetTokenCookies(authResult);
+
+        // Assert — the refresh cookie must be scoped to a parent of BOTH the refresh and
+        // sign-out routes; scoping it to /sessions kept it from reaching /auth/sign-out,
+        // so the token was never sent there and revocation failed with a 400.
+        string setCookieHeader = httpContext.Response.Headers.SetCookie.ToString();
+        string cookiePath = $"/api/v1/{IdentityConstants.Public}";
+        setCookieHeader.Should().Contain($"path={cookiePath}");
+        $"/api/v1/{IdentityConstants.Public}/auth/sign-out".Should().StartWith(cookiePath);
+        $"/api/v1/{IdentityConstants.Public}/sessions/refresh-token".Should().StartWith(cookiePath);
     }
 
     #endregion
