@@ -1,4 +1,5 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.RateVideo;
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -21,13 +22,19 @@ public class PublicRateVideoHandlerTests
 
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IPopularVideosCacheInvalidator> _cacheInvalidatorMock;
     private readonly PublicRateVideoHandler _handler;
 
     public PublicRateVideoHandlerTests()
     {
         _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new PublicRateVideoHandler(_videoRepositoryMock.Object, _unitOfWorkMock.Object);
+        _cacheInvalidatorMock = MockPopularVideosCacheInvalidator.Create();
+        _handler = new PublicRateVideoHandler(
+            _videoRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            _cacheInvalidatorMock.Object
+        );
     }
 
     #region Success Cases
