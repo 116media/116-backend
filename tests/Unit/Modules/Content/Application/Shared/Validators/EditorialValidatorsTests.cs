@@ -9,40 +9,6 @@ using Xunit;
 
 namespace _116.Unit.Tests.Modules.Content.Application.Shared.Validators;
 
-// Records for ValidArticleId / ValidVideoId / ValidLyricsId
-internal record ArticleIdInput(Guid ArticleId);
-
-internal record VideoIdInput(Guid VideoId);
-
-internal record LyricsIdInput(Guid LyricsId);
-
-internal class ArticleIdValidator : AbstractValidator<ArticleIdInput>
-{
-    public ArticleIdValidator()
-    {
-        ArticleErrorMessage i18n = LocalizerFactory.CreateMessage<ArticleErrorMessage>();
-        RuleFor(x => x.ArticleId).ValidArticleId(i18n);
-    }
-}
-
-internal class VideoIdValidator : AbstractValidator<VideoIdInput>
-{
-    public VideoIdValidator()
-    {
-        VideoErrorMessage i18n = LocalizerFactory.CreateMessage<VideoErrorMessage>();
-        RuleFor(x => x.VideoId).ValidVideoId(i18n);
-    }
-}
-
-internal class LyricsIdValidator : AbstractValidator<LyricsIdInput>
-{
-    public LyricsIdValidator()
-    {
-        LyricsErrorMessage i18n = LocalizerFactory.CreateMessage<LyricsErrorMessage>();
-        RuleFor(x => x.LyricsId).ValidLyricsId(i18n);
-    }
-}
-
 // Records must expose "Title" and "Slug" properties so ValidationUtils.GetPropertyValue can find them.
 internal record ArticleOptionalTitleInput(string? Title);
 
@@ -219,61 +185,6 @@ public class EditorialValidatorsTests
         ValidationResult result = await validator.ValidateAsync(new VideoOptionalTitleInput(Title: tooLong));
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == nameof(VideoOptionalTitleInput.Title));
-    }
-
-    #endregion
-
-    #region EditorialValidation — ValidArticleId / ValidVideoId / ValidLyricsId
-
-    [Fact]
-    public async Task ValidArticleId_WithValidGuid_ShouldNotHaveErrors()
-    {
-        var validator = new ArticleIdValidator();
-        ValidationResult result = await validator.ValidateAsync(new ArticleIdInput(Guid.NewGuid()));
-        result.IsValid.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task ValidArticleId_WithEmptyGuid_ShouldHaveError()
-    {
-        var validator = new ArticleIdValidator();
-        ValidationResult result = await validator.ValidateAsync(new ArticleIdInput(Guid.Empty));
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(ArticleIdInput.ArticleId));
-    }
-
-    [Fact]
-    public async Task ValidVideoId_WithValidGuid_ShouldNotHaveErrors()
-    {
-        var validator = new VideoIdValidator();
-        ValidationResult result = await validator.ValidateAsync(new VideoIdInput(Guid.NewGuid()));
-        result.IsValid.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task ValidVideoId_WithEmptyGuid_ShouldHaveError()
-    {
-        var validator = new VideoIdValidator();
-        ValidationResult result = await validator.ValidateAsync(new VideoIdInput(Guid.Empty));
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(VideoIdInput.VideoId));
-    }
-
-    [Fact]
-    public async Task ValidLyricsId_WithValidGuid_ShouldNotHaveErrors()
-    {
-        var validator = new LyricsIdValidator();
-        ValidationResult result = await validator.ValidateAsync(new LyricsIdInput(Guid.NewGuid()));
-        result.IsValid.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task ValidLyricsId_WithEmptyGuid_ShouldHaveError()
-    {
-        var validator = new LyricsIdValidator();
-        ValidationResult result = await validator.ValidateAsync(new LyricsIdInput(Guid.Empty));
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(LyricsIdInput.LyricsId));
     }
 
     #endregion
