@@ -47,9 +47,9 @@ public class PublicGetLyricsByVideoIdEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetLyricsByVideoIdMetaField.PublicGetLyricsByVideoId.Name)
-            .WithSummary(summary: PublicGetLyricsByVideoIdMetaField.PublicGetLyricsByVideoId.Summary)
-            .WithDescription(description: PublicGetLyricsByVideoIdMetaField.PublicGetLyricsByVideoId.Description)
+            .WithName(endpointName: PublicGetLyricsByVideoIdMetaField.GetLyricsByVideoId.Name)
+            .WithSummary(summary: PublicGetLyricsByVideoIdMetaField.GetLyricsByVideoId.Summary)
+            .WithDescription(description: PublicGetLyricsByVideoIdMetaField.GetLyricsByVideoId.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetLyricsByVideoIdResponse>(statusCode: StatusCodes.Status200OK)
