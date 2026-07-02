@@ -16,8 +16,14 @@ public static class PublicGetAllTagsMetaField
             Supports optional search filtering via the `search` query parameter.
             The search performs a case-insensitive partial match on both tag name and slug.
             \n
+            Supports optional content-type filtering via the `contentType` query parameter.
+            When set, only tags associated with that content type are returned.
+            \n
             **Query Parameters:**\n
             - `search` (optional): filter tags by name or slug (e.g. `?search=fally`)\n
+            - `contentType` (optional): restrict to tags used by a content type; accepts
+              `article` or `video` (e.g. `?contentType=article`). Omit to return all tags.
+              Unrecognized values are ignored and all tags are returned.\n
             \n
             This endpoint is publicly accessible and does not require authentication.
             \n
