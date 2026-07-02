@@ -186,11 +186,6 @@ public class VideoErrorMessage(IStringLocalizer<VideoErrorMessage> localizer)
     public string YoutubeUrlInvalidFormat() => localizer["YoutubeUrlInvalidFormat"];
 
     /// <summary>
-    /// Gets an error message for when a video ID is required.
-    /// </summary>
-    public string VideoIdRequired() => localizer["VideoIdRequired"];
-
-    /// <summary>
     /// Gets an error message for when the shooting scheduled date is not in the future.
     /// </summary>
     public string ShootingScheduledDateMustBeInFuture() => localizer["ShootingScheduledDateMustBeInFuture"];
