@@ -81,9 +81,4 @@ public class LyricsErrorMessage(IStringLocalizer<LyricsErrorMessage> localizer)
     /// </summary>
     /// <param name="max">The maximum allowed length.</param>
     public string LanguageTooLong(int max) => string.Format(localizer["LanguageTooLong"], max);
-
-    /// <summary>
-    /// Gets an error message for when a lyrics ID is required.
-    /// </summary>
-    public string LyricsIdRequired() => localizer["LyricsIdRequired"];
 }
