@@ -94,6 +94,7 @@ public abstract class BaseApiTest : IAsyncLifetime
         await Db.ResetAsync();
         InvalidateTagCache();
         InvalidatePopularArticlesCache();
+        InvalidatePopularVideosCache();
         await SeedTestUsersAsync();
         await SeedAsync();
     }
@@ -124,6 +125,19 @@ public abstract class BaseApiTest : IAsyncLifetime
     {
         using var scope = Api.Services.CreateScope();
         var invalidator = scope.ServiceProvider.GetRequiredService<IPopularArticlesCacheInvalidator>();
+        invalidator.Invalidate();
+    }
+
+    /// <summary>
+    /// Clears the in-process popular-videos cache before each test, for the same reason as
+    /// <see cref="InvalidatePopularArticlesCache" />: the shared <see cref="IMemoryCache" />
+    /// outlives the database reset, so ranked video lists cached by one test would otherwise
+    /// be served to the next.
+    /// </summary>
+    private void InvalidatePopularVideosCache()
+    {
+        using var scope = Api.Services.CreateScope();
+        var invalidator = scope.ServiceProvider.GetRequiredService<IPopularVideosCacheInvalidator>();
         invalidator.Invalidate();
     }
 
