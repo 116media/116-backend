@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleP
 /// </summary>
 public static class PublicGetArticlePromotionFeedMetaField
 {
-    public static readonly RouteMetadata PublicGetArticlePromotionFeed = new(
+    public static readonly RouteMetadata GetArticlePromotionFeed = new(
         "GetArticlePromotionFeed",
         "Article homepage promotion feed",
         """
