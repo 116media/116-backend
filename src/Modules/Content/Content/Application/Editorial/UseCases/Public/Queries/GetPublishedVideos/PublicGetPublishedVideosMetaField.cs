@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 /// </summary>
 public static class PublicGetPublishedVideosMetaField
 {
-    public static readonly RouteMetadata PublicGetPublishedVideos = new(
+    public static readonly RouteMetadata GetPublishedVideos = new(
         "GetPublishedVideos",
         "List published videos",
         """
