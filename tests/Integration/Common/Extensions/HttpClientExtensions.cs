@@ -3,7 +3,6 @@ using System.Security.Claims;
 using System.Text;
 using _116.BuildingBlocks.Constants;
 using Microsoft.IdentityModel.Tokens;
-using static _116.Tests.Fixtures.Constants.TestConstants;
 
 namespace _116.Integration.Tests.Common.Extensions;
 
