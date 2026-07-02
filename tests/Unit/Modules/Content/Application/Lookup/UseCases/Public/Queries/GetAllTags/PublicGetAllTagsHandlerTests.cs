@@ -1,6 +1,7 @@
 using _116.Content.Application.Lookup.UseCases.Public.Queries.GetAllTags;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
@@ -60,7 +61,64 @@ public class PublicGetAllTagsHandlerTests : BaseContentHandlerTest
         // Assert
         result.Should().NotBeNull();
         result.Tags.Should().ContainSingle();
-        _lookupRepositoryMock.Verify(x => x.GetAllTagsAsync(searchTerm, It.IsAny<CancellationToken>()), Times.Once);
+        _lookupRepositoryMock.Verify(
+            x => x.GetAllTagsAsync(searchTerm, It.IsAny<EnumCoreContentType?>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_WithArticleContentType_ShouldPassContentTypeToRepository()
+    {
+        // Arrange
+        _lookupRepositoryMock.SetupGetAllTags(TagFactory.CreateMany(3));
+
+        var query = new PublicGetAllTagsQuery(ContentType: EnumCoreContentType.Article);
+
+        // Act
+        await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        _lookupRepositoryMock.Verify(
+            x => x.GetAllTagsAsync(It.IsAny<string?>(), EnumCoreContentType.Article, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_WithVideoContentType_ShouldPassContentTypeToRepository()
+    {
+        // Arrange
+        _lookupRepositoryMock.SetupGetAllTags(TagFactory.CreateMany(3));
+
+        var query = new PublicGetAllTagsQuery(ContentType: EnumCoreContentType.Video);
+
+        // Act
+        await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        _lookupRepositoryMock.Verify(
+            x => x.GetAllTagsAsync(It.IsAny<string?>(), EnumCoreContentType.Video, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_WithNullContentType_ShouldPassNullToRepository()
+    {
+        // Arrange
+        _lookupRepositoryMock.SetupGetAllTags(TagFactory.CreateMany(3));
+
+        var query = new PublicGetAllTagsQuery(ContentType: null);
+
+        // Act
+        await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        _lookupRepositoryMock.Verify(
+            x => x.GetAllTagsAsync(It.IsAny<string?>(), (EnumCoreContentType?)null, It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Fact]
