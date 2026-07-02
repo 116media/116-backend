@@ -22,9 +22,10 @@ namespace _116.Content.Application.Editorial.Builders;
 ///     .Build(context);
 /// </code>
 /// The score weights come from <see cref="PopularVideosScoring" /> so the ranking is tunable
-/// in one place. The rating-volume term <c>RatingAverage * RatingCount</c> is a decimal
-/// expression (RatingAverage is decimal); PostgreSQL evaluates it directly in the
-/// <c>ORDER BY</c> alongside the integer share term.
+/// in one place. The rating-volume term <c>RatingAverage * RatingCount</c> is cast to
+/// <see langword="double" /> so the whole score is evaluated in floating point: leaving it in
+/// the narrow <c>numeric</c> precision of <c>RatingAverage</c> makes PostgreSQL raise a numeric
+/// field overflow as soon as the score exceeds that column's range.
 /// </remarks>
 public class PopularVideosQueryBuilder : IPopularVideosQueryBuilder
 {
@@ -74,7 +75,9 @@ public class PopularVideosQueryBuilder : IPopularVideosQueryBuilder
         }
 
         query = query
-            .OrderByDescending(v => (ratingWeight * (v.RatingAverage * v.RatingCount)) + (shareWeight * v.ShareCount))
+            .OrderByDescending(v =>
+                (ratingWeight * ((double)v.RatingAverage * v.RatingCount)) + (shareWeight * v.ShareCount)
+            )
             .ThenByDescending(v => v.PublishedAt);
 
         if (_limit.HasValue)
