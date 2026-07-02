@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicSh
 /// </summary>
 public static class PublicGetPublicShortBySlugMetaField
 {
-    public static readonly RouteMetadata PublicGetPublicShortBySlug = new(
+    public static readonly RouteMetadata GetPublicShortBySlug = new(
         "GetPublicShortBySlug",
         "Get active short video by slug",
         """
