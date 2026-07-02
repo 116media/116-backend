@@ -1,4 +1,6 @@
 using _116.Content.Application.Shared.Repositories;
+using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
@@ -268,6 +270,90 @@ public class LookupRepositoryTests : BaseRepositoryTest
         var result = await repo.GetPopularTagsAsync(limit: 3);
 
         result.Should().HaveCountLessThanOrEqualTo(3);
+    }
+
+    [Fact]
+    public async Task GetAllTagsAsync_WithArticleContentType_ReturnsOnlyArticleAssociatedTags()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var article = ArticleFactory.Create(category.Id);
+        var video = VideoFactory.Create(category.Id);
+        var articleTag = TagFactory.Create("AllTagsArticleTag", "all-tags-article-tag");
+        var videoTag = TagFactory.Create("AllTagsVideoTag", "all-tags-video-tag");
+        seedContext.ContentTypes.Add(contentType);
+        seedContext.Categories.Add(category);
+        seedContext.Articles.Add(article);
+        seedContext.Videos.Add(video);
+        seedContext.Tags.AddRange(articleTag, videoTag);
+        seedContext.ArticleTags.Add(ArticleTagEntity.Create(Guid.NewGuid(), article.Id, articleTag.Id));
+        seedContext.VideoTags.Add(VideoTagEntity.Create(Guid.NewGuid(), video.Id, videoTag.Id));
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<ILookupRepository>();
+
+        var result = await repo.GetAllTagsAsync(search: null, contentType: EnumCoreContentType.Article);
+
+        result.Should().Contain(t => t.Id == articleTag.Id);
+        result.Should().NotContain(t => t.Id == videoTag.Id);
+    }
+
+    [Fact]
+    public async Task GetAllTagsAsync_WithVideoContentType_ReturnsOnlyVideoAssociatedTags()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var article = ArticleFactory.Create(category.Id);
+        var video = VideoFactory.Create(category.Id);
+        var articleTag = TagFactory.Create("AllTagsArticleOnly", "all-tags-article-only");
+        var videoTag = TagFactory.Create("AllTagsVideoOnly", "all-tags-video-only");
+        seedContext.ContentTypes.Add(contentType);
+        seedContext.Categories.Add(category);
+        seedContext.Articles.Add(article);
+        seedContext.Videos.Add(video);
+        seedContext.Tags.AddRange(articleTag, videoTag);
+        seedContext.ArticleTags.Add(ArticleTagEntity.Create(Guid.NewGuid(), article.Id, articleTag.Id));
+        seedContext.VideoTags.Add(VideoTagEntity.Create(Guid.NewGuid(), video.Id, videoTag.Id));
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<ILookupRepository>();
+
+        var result = await repo.GetAllTagsAsync(search: null, contentType: EnumCoreContentType.Video);
+
+        result.Should().Contain(t => t.Id == videoTag.Id);
+        result.Should().NotContain(t => t.Id == articleTag.Id);
+    }
+
+    [Fact]
+    public async Task GetAllTagsAsync_WithSearchAndContentType_ComposesBothFilters()
+    {
+        await using var seedContext = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        var category = CategoryFactory.Create(contentType.Id);
+        var article = ArticleFactory.Create(category.Id);
+        var video = VideoFactory.Create(category.Id);
+        var matching = TagFactory.Create("ComposeAfrobeats", "compose-afrobeats");
+        var searchMismatch = TagFactory.Create("ComposeReggae", "compose-reggae");
+        var associationMismatch = TagFactory.Create("ComposeAfropop", "compose-afropop");
+        seedContext.ContentTypes.Add(contentType);
+        seedContext.Categories.Add(category);
+        seedContext.Articles.Add(article);
+        seedContext.Videos.Add(video);
+        seedContext.Tags.AddRange(matching, searchMismatch, associationMismatch);
+        seedContext.ArticleTags.Add(ArticleTagEntity.Create(Guid.NewGuid(), article.Id, matching.Id));
+        seedContext.ArticleTags.Add(ArticleTagEntity.Create(Guid.NewGuid(), article.Id, searchMismatch.Id));
+        seedContext.VideoTags.Add(VideoTagEntity.Create(Guid.NewGuid(), video.Id, associationMismatch.Id));
+        await seedContext.SaveChangesAsync();
+
+        var repo = Resolve<ILookupRepository>();
+
+        var result = await repo.GetAllTagsAsync(search: "Afro", contentType: EnumCoreContentType.Article);
+
+        result.Should().Contain(t => t.Id == matching.Id);
+        result.Should().NotContain(t => t.Id == searchMismatch.Id);
+        result.Should().NotContain(t => t.Id == associationMismatch.Id);
     }
 
     [Fact]
