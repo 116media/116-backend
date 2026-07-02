@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -10,8 +11,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.RateVid
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class PublicRateVideoHandler(IVideoRepository videoRepository, IContentUnitOfWork unitOfWork)
-    : ICommandHandler<PublicRateVideoCommand, PublicRateVideoResult>
+/// <param name="cacheInvalidator">Invalidates the popular-videos cache after the rating aggregates change.</param>
+public class PublicRateVideoHandler(
+    IVideoRepository videoRepository,
+    IContentUnitOfWork unitOfWork,
+    IPopularVideosCacheInvalidator cacheInvalidator
+) : ICommandHandler<PublicRateVideoCommand, PublicRateVideoResult>
 {
     /// <inheritdoc />
     public async Task<PublicRateVideoResult> Handle(PublicRateVideoCommand command, CancellationToken cancellationToken)
@@ -59,6 +64,8 @@ public class PublicRateVideoHandler(IVideoRepository videoRepository, IContentUn
         videoRepository.Update(video: video);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        cacheInvalidator.Invalidate();
 
         return new PublicRateVideoResult(IsSuccess: true);
     }
