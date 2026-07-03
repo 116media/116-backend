@@ -14,7 +14,11 @@ namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetAllTags;
 /// return only tags that have at least one video association. When <see langword="null" />, all
 /// tags are returned regardless of content-type usage.
 /// </param>
-public record PublicGetAllTagsQuery(string? Search = null, EnumCoreContentType? ContentType = null)
+/// <param name="Limit">
+/// Maximum number of tags to return. When <see langword="null" /> all matching tags are
+/// returned ordered by name. Defaults to <see langword="null" />.
+/// </param>
+public record PublicGetAllTagsQuery(string? Search = null, EnumCoreContentType? ContentType = null, int? Limit = null)
     : IQuery<PublicGetAllTagsResult>;
 
 /// <summary>
