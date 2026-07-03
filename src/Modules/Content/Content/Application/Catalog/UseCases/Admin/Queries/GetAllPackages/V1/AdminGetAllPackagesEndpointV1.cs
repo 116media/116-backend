@@ -50,9 +50,9 @@ public class AdminGetAllPackagesEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetAllPackagesMetaField.AdminGetAllPackages.Name)
-            .WithSummary(summary: AdminGetAllPackagesMetaField.AdminGetAllPackages.Summary)
-            .WithDescription(description: AdminGetAllPackagesMetaField.AdminGetAllPackages.Description)
+            .WithName(endpointName: AdminGetAllPackagesMetaField.GetAllPackages.Name)
+            .WithSummary(summary: AdminGetAllPackagesMetaField.GetAllPackages.Summary)
+            .WithDescription(description: AdminGetAllPackagesMetaField.GetAllPackages.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
