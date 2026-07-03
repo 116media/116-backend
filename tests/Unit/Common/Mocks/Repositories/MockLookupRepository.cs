@@ -246,7 +246,12 @@ public static class MockLookupRepository
     )
     {
         mock.Setup(x =>
-                x.GetAllTagsAsync(It.IsAny<string?>(), It.IsAny<EnumCoreContentType?>(), It.IsAny<CancellationToken>())
+                x.GetAllTagsAsync(
+                    It.IsAny<string?>(),
+                    It.IsAny<EnumCoreContentType?>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CancellationToken>()
+                )
             )
             .ReturnsAsync(list);
         return mock;
@@ -320,7 +325,12 @@ public static class MockLookupRepository
         mock.Setup(x => x.AddTagAsync(It.IsAny<TagEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         mock.Setup(x =>
-                x.GetAllTagsAsync(It.IsAny<string?>(), It.IsAny<EnumCoreContentType?>(), It.IsAny<CancellationToken>())
+                x.GetAllTagsAsync(
+                    It.IsAny<string?>(),
+                    It.IsAny<EnumCoreContentType?>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CancellationToken>()
+                )
             )
             .ReturnsAsync(new List<TagEntity>());
     }
