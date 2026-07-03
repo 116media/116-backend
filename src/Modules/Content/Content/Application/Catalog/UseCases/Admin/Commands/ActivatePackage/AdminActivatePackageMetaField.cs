@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.ActivatePacka
 /// </summary>
 public static class AdminActivatePackageMetaField
 {
-    public static readonly RouteMetadata AdminActivatePackage = new(
+    public static readonly RouteMetadata ActivatePackage = new(
         "AdminActivatePackage",
         "Activate a package",
         """
