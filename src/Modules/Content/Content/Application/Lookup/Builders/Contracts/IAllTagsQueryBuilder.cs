@@ -27,7 +27,13 @@ public interface IAllTagsQueryBuilder
     IAllTagsQueryBuilder WithContentType(EnumCoreContentType? contentType);
 
     /// <summary>
-    /// Builds and returns the final ordered <see cref="IQueryable" />.
+    /// Limits the number of tags returned.
+    /// When not called, all tags ordered by name are returned.
+    /// </summary>
+    IAllTagsQueryBuilder WithLimit(int? limit);
+
+    /// <summary>
+    /// Builds and returns the final ordered, optionally limited <see cref="IQueryable" />.
     /// </summary>
     IQueryable<TagEntity> Build(ContentDbContext context);
 }
