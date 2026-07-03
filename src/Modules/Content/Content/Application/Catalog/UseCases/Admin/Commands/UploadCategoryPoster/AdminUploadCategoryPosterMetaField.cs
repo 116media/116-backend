@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UploadCategor
 /// </summary>
 public static class AdminUploadCategoryPosterMetaField
 {
-    public static readonly RouteMetadata AdminUploadCategoryPoster = new(
+    public static readonly RouteMetadata UploadCategoryPoster = new(
         "AdminUploadCategoryPoster",
         "Upload a poster image for a category",
         """
