@@ -55,9 +55,9 @@ public class AdminEditOrderEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminEditOrderMetaField.AdminEditOrder.Name)
-            .WithSummary(summary: AdminEditOrderMetaField.AdminEditOrder.Summary)
-            .WithDescription(description: AdminEditOrderMetaField.AdminEditOrder.Description)
+            .WithName(endpointName: AdminEditOrderMetaField.EditOrder.Name)
+            .WithSummary(summary: AdminEditOrderMetaField.EditOrder.Summary)
+            .WithDescription(description: AdminEditOrderMetaField.EditOrder.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
