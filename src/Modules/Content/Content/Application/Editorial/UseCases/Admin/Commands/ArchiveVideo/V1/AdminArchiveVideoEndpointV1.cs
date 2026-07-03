@@ -46,9 +46,9 @@ public class AdminArchiveVideoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminArchiveVideoMetaField.AdminArchiveVideo.Name)
-            .WithSummary(summary: AdminArchiveVideoMetaField.AdminArchiveVideo.Summary)
-            .WithDescription(description: AdminArchiveVideoMetaField.AdminArchiveVideo.Description)
+            .WithName(endpointName: AdminArchiveVideoMetaField.ArchiveVideo.Name)
+            .WithSummary(summary: AdminArchiveVideoMetaField.ArchiveVideo.Summary)
+            .WithDescription(description: AdminArchiveVideoMetaField.ArchiveVideo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
