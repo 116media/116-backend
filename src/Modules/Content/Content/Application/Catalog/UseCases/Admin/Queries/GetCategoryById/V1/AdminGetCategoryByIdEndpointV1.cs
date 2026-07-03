@@ -48,9 +48,9 @@ public class AdminGetCategoryByIdEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetCategoryByIdMetaField.AdminGetCategoryById.Name)
-            .WithSummary(summary: AdminGetCategoryByIdMetaField.AdminGetCategoryById.Summary)
-            .WithDescription(description: AdminGetCategoryByIdMetaField.AdminGetCategoryById.Description)
+            .WithName(endpointName: AdminGetCategoryByIdMetaField.GetCategoryById.Name)
+            .WithSummary(summary: AdminGetCategoryByIdMetaField.GetCategoryById.Summary)
+            .WithDescription(description: AdminGetCategoryByIdMetaField.GetCategoryById.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
