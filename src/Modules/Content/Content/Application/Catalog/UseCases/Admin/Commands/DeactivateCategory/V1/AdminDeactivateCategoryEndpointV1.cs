@@ -46,9 +46,9 @@ public class AdminDeactivateCategoryEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminDeactivateCategoryMetaField.AdminDeactivateCategory.Name)
-            .WithSummary(summary: AdminDeactivateCategoryMetaField.AdminDeactivateCategory.Summary)
-            .WithDescription(description: AdminDeactivateCategoryMetaField.AdminDeactivateCategory.Description)
+            .WithName(endpointName: AdminDeactivateCategoryMetaField.DeactivateCategory.Name)
+            .WithSummary(summary: AdminDeactivateCategoryMetaField.DeactivateCategory.Summary)
+            .WithDescription(description: AdminDeactivateCategoryMetaField.DeactivateCategory.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
