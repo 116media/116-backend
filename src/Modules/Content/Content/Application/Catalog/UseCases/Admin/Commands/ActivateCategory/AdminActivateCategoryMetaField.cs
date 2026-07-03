@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.ActivateCateg
 /// </summary>
 public static class AdminActivateCategoryMetaField
 {
-    public static readonly RouteMetadata AdminActivateCategory = new(
+    public static readonly RouteMetadata ActivateCategory = new(
         "AdminActivateCategory",
         "Activate a category",
         """
