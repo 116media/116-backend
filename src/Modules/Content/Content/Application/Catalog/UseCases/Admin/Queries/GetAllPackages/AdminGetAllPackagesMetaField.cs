@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetAllPackages
 /// </summary>
 public static class AdminGetAllPackagesMetaField
 {
-    public static readonly RouteMetadata AdminGetAllPackages = new(
+    public static readonly RouteMetadata GetAllPackages = new(
         "AdminGetAllPackages",
         "List all packages",
         """
