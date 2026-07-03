@@ -43,9 +43,9 @@ public class AdminGetOrderPaymentEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetOrderPaymentMetaField.AdminGetOrderPayment.Name)
-            .WithSummary(summary: AdminGetOrderPaymentMetaField.AdminGetOrderPayment.Summary)
-            .WithDescription(description: AdminGetOrderPaymentMetaField.AdminGetOrderPayment.Description)
+            .WithName(endpointName: AdminGetOrderPaymentMetaField.GetOrderPayment.Name)
+            .WithSummary(summary: AdminGetOrderPaymentMetaField.GetOrderPayment.Summary)
+            .WithDescription(description: AdminGetOrderPaymentMetaField.GetOrderPayment.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
