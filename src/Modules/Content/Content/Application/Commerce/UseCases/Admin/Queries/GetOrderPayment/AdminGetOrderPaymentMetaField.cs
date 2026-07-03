@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderPayme
 /// </summary>
 public static class AdminGetOrderPaymentMetaField
 {
-    public static readonly RouteMetadata AdminGetOrderPayment = new(
+    public static readonly RouteMetadata GetOrderPayment = new(
         "AdminGetOrderPayment",
         "Get the payment record of an order",
         """
