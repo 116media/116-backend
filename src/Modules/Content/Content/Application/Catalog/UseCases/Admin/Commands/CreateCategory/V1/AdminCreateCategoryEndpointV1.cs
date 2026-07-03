@@ -86,9 +86,9 @@ public class AdminCreateCategoryEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: AdminCreateCategoryMetaField.AdminCreateCategory.Name)
-            .WithSummary(summary: AdminCreateCategoryMetaField.AdminCreateCategory.Summary)
-            .WithDescription(description: AdminCreateCategoryMetaField.AdminCreateCategory.Description)
+            .WithName(endpointName: AdminCreateCategoryMetaField.CreateCategory.Name)
+            .WithSummary(summary: AdminCreateCategoryMetaField.CreateCategory.Summary)
+            .WithDescription(description: AdminCreateCategoryMetaField.CreateCategory.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
