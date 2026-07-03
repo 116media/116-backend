@@ -46,9 +46,9 @@ public class AdminArchiveArticleEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminArchiveArticleMetaField.AdminArchiveArticle.Name)
-            .WithSummary(summary: AdminArchiveArticleMetaField.AdminArchiveArticle.Summary)
-            .WithDescription(description: AdminArchiveArticleMetaField.AdminArchiveArticle.Description)
+            .WithName(endpointName: AdminArchiveArticleMetaField.ArchiveArticle.Name)
+            .WithSummary(summary: AdminArchiveArticleMetaField.ArchiveArticle.Summary)
+            .WithDescription(description: AdminArchiveArticleMetaField.ArchiveArticle.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
