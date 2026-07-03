@@ -49,9 +49,9 @@ public class AdminUploadCategoryPosterEndpointV1 : ICarterModule
                 }
             )
             .DisableAntiforgery()
-            .WithName(endpointName: AdminUploadCategoryPosterMetaField.AdminUploadCategoryPoster.Name)
-            .WithSummary(summary: AdminUploadCategoryPosterMetaField.AdminUploadCategoryPoster.Summary)
-            .WithDescription(description: AdminUploadCategoryPosterMetaField.AdminUploadCategoryPoster.Description)
+            .WithName(endpointName: AdminUploadCategoryPosterMetaField.UploadCategoryPoster.Name)
+            .WithSummary(summary: AdminUploadCategoryPosterMetaField.UploadCategoryPoster.Summary)
+            .WithDescription(description: AdminUploadCategoryPosterMetaField.UploadCategoryPoster.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.FileUpload)
