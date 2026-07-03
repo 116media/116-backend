@@ -403,6 +403,25 @@ public class LookupRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task GetAllTagsAsync_WithLimit_ShouldCapResultCountAndPreserveNameOrder()
+    {
+        // Arrange
+        _context.Tags.Add(TagFactory.Create("Delta", "delta"));
+        _context.Tags.Add(TagFactory.Create("Alpha", "alpha"));
+        _context.Tags.Add(TagFactory.Create("Charlie", "charlie"));
+        _context.Tags.Add(TagFactory.Create("Bravo", "bravo"));
+        await _context.SaveChangesAsync();
+
+        // Act
+        IReadOnlyList<TagEntity> result = await _repository.GetAllTagsAsync(search: null, contentType: null, limit: 2);
+
+        // Assert
+        result.Should().HaveCount(2);
+        result[0].Name.Should().Be("Alpha");
+        result[1].Name.Should().Be("Bravo");
+    }
+
+    [Fact]
     public async Task Remove_ShouldDeleteTagFromDatabase()
     {
         // Arrange
