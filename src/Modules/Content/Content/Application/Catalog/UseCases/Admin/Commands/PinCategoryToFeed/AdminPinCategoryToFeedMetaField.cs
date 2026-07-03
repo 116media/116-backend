@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.PinCategoryTo
 /// </summary>
 public static class AdminPinCategoryToFeedMetaField
 {
-    public static readonly RouteMetadata AdminPinCategoryToFeed = new(
+    public static readonly RouteMetadata PinCategoryToFeed = new(
         "AdminPinCategoryToFeed",
         "Pin a category to the content feed",
         """
