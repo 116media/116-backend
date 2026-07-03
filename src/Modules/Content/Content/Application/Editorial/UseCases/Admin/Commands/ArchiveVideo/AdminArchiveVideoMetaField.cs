@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveVide
 /// </summary>
 public static class AdminArchiveVideoMetaField
 {
-    public static readonly RouteMetadata AdminArchiveVideo = new(
+    public static readonly RouteMetadata ArchiveVideo = new(
         "ArchiveVideo",
         "Archive a video",
         """
