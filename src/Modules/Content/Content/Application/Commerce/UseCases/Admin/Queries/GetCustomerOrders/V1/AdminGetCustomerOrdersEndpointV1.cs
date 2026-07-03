@@ -45,9 +45,9 @@ public class AdminGetCustomerOrdersEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetCustomerOrdersMetaField.AdminGetCustomerOrders.Name)
-            .WithSummary(summary: AdminGetCustomerOrdersMetaField.AdminGetCustomerOrders.Summary)
-            .WithDescription(description: AdminGetCustomerOrdersMetaField.AdminGetCustomerOrders.Description)
+            .WithName(endpointName: AdminGetCustomerOrdersMetaField.GetCustomerOrders.Name)
+            .WithSummary(summary: AdminGetCustomerOrdersMetaField.GetCustomerOrders.Summary)
+            .WithDescription(description: AdminGetCustomerOrdersMetaField.GetCustomerOrders.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
