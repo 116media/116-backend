@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteLyric
 /// </summary>
 public static class AdminDeleteLyricsMetaField
 {
-    public static readonly RouteMetadata AdminDeleteLyrics = new(
+    public static readonly RouteMetadata DeleteLyrics = new(
         "DeleteLyrics",
         "Permanently delete a lyrics page",
         """
