@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCustome
 /// </summary>
 public static class AdminCreateCustomerMetaField
 {
-    public static readonly RouteMetadata AdminCreateCustomer = new(
+    public static readonly RouteMetadata CreateCustomer = new(
         "AdminCreateCustomer",
         "Create a new customer",
         """
