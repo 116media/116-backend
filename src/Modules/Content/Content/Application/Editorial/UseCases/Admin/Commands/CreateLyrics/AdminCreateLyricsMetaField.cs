@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyric
 /// </summary>
 public static class AdminCreateLyricsMetaField
 {
-    public static readonly RouteMetadata AdminCreateLyrics = new(
+    public static readonly RouteMetadata CreateLyrics = new(
         "CreateLyrics",
         "Create a lyrics page",
         """
