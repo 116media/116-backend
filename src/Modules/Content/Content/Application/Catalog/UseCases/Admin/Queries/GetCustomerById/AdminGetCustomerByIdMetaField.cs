@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetCustomerByI
 /// </summary>
 public static class AdminGetCustomerByIdMetaField
 {
-    public static readonly RouteMetadata AdminGetCustomerById = new(
+    public static readonly RouteMetadata GetCustomerById = new(
         "AdminGetCustomerById",
         "Get a customer by ID",
         """
