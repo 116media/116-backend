@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.RemoveCategor
 /// </summary>
 public static class AdminRemoveCategoryPricingMetaField
 {
-    public static readonly RouteMetadata AdminRemoveCategoryPricing = new(
+    public static readonly RouteMetadata RemoveCategoryPricing = new(
         "AdminRemoveCategoryPricing",
         "Remove a pricing tier from a category",
         """
