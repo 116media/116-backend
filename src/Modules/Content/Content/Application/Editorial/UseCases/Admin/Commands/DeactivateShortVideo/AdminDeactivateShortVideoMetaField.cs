@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.DeactivateS
 /// </summary>
 public static class AdminDeactivateShortVideoMetaField
 {
-    public static readonly RouteMetadata AdminDeactivateShortVideo = new(
+    public static readonly RouteMetadata DeactivateShortVideo = new(
         "DeactivateShortVideo",
         "Deactivate a short video",
         """
