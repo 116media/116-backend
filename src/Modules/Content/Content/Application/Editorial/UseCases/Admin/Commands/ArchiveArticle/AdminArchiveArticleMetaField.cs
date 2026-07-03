@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveArti
 /// </summary>
 public static class AdminArchiveArticleMetaField
 {
-    public static readonly RouteMetadata AdminArchiveArticle = new(
+    public static readonly RouteMetadata ArchiveArticle = new(
         "ArchiveArticle",
         "Archive an article",
         """
