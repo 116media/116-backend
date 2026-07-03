@@ -42,9 +42,9 @@ public class AdminRemoveItemTierEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminRemoveItemTierMetaField.AdminRemoveItemTier.Name)
-            .WithSummary(summary: AdminRemoveItemTierMetaField.AdminRemoveItemTier.Summary)
-            .WithDescription(description: AdminRemoveItemTierMetaField.AdminRemoveItemTier.Description)
+            .WithName(endpointName: AdminRemoveItemTierMetaField.RemoveItemTier.Name)
+            .WithSummary(summary: AdminRemoveItemTierMetaField.RemoveItemTier.Summary)
+            .WithDescription(description: AdminRemoveItemTierMetaField.RemoveItemTier.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
