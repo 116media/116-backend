@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetAllPayment
 /// </summary>
 public static class AdminGetAllPaymentsMetaField
 {
-    public static readonly RouteMetadata AdminGetAllPayments = new(
+    public static readonly RouteMetadata GetAllPayments = new(
         "AdminGetAllPayments",
         "List all payments",
         """
