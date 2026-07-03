@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveVide
 /// </summary>
 public static class AdminApproveVideoMetaField
 {
-    public static readonly RouteMetadata AdminApproveVideo = new(
+    public static readonly RouteMetadata ApproveVideo = new(
         "ApproveVideo",
         "Approve a video for publication",
         """
