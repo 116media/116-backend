@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.EditOrder;
 /// </summary>
 public static class AdminEditOrderMetaField
 {
-    public static readonly RouteMetadata AdminEditOrder = new(
+    public static readonly RouteMetadata EditOrder = new(
         "AdminEditOrder",
         "Edit a draft order",
         """
