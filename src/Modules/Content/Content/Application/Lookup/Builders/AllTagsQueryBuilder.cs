@@ -17,6 +17,7 @@ namespace _116.Content.Application.Lookup.Builders;
 /// IQueryable&lt;TagEntity&gt; query = new AllTagsQueryBuilder()
 ///     .WithSearch("fally")
 ///     .WithContentType(EnumCoreContentType.Article)
+///     .WithLimit(50)
 ///     .Build(context);
 /// </code>
 /// </remarks>
@@ -24,6 +25,7 @@ public class AllTagsQueryBuilder : IAllTagsQueryBuilder
 {
     private string? _search;
     private EnumCoreContentType? _contentType;
+    private int? _limit;
 
     /// <inheritdoc />
     public IAllTagsQueryBuilder WithSearch(string? search)
@@ -36,6 +38,13 @@ public class AllTagsQueryBuilder : IAllTagsQueryBuilder
     public IAllTagsQueryBuilder WithContentType(EnumCoreContentType? contentType)
     {
         _contentType = contentType;
+        return this;
+    }
+
+    /// <inheritdoc />
+    public IAllTagsQueryBuilder WithLimit(int? limit)
+    {
+        _limit = limit;
         return this;
     }
 
@@ -53,6 +62,13 @@ public class AllTagsQueryBuilder : IAllTagsQueryBuilder
             _ => query,
         };
 
-        return query.OrderBy(tag => tag.Name);
+        query = query.OrderBy(tag => tag.Name);
+
+        if (_limit.HasValue)
+        {
+            query = query.Take(_limit.Value);
+        }
+
+        return query;
     }
 }
