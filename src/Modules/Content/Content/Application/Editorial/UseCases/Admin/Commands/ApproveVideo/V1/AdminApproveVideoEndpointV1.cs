@@ -46,9 +46,9 @@ public class AdminApproveVideoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminApproveVideoMetaField.AdminApproveVideo.Name)
-            .WithSummary(summary: AdminApproveVideoMetaField.AdminApproveVideo.Summary)
-            .WithDescription(description: AdminApproveVideoMetaField.AdminApproveVideo.Description)
+            .WithName(endpointName: AdminApproveVideoMetaField.ApproveVideo.Name)
+            .WithSummary(summary: AdminApproveVideoMetaField.ApproveVideo.Summary)
+            .WithDescription(description: AdminApproveVideoMetaField.ApproveVideo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
