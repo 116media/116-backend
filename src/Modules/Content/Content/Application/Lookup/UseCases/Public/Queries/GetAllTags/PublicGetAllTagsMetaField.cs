@@ -19,11 +19,19 @@ public static class PublicGetAllTagsMetaField
             Supports optional content-type filtering via the `contentType` query parameter.
             When set, only tags associated with that content type are returned.
             \n
+            Supports an optional `limit` query parameter that caps the number of tags
+            returned after ordering by name.
+            \n
+            Unfiltered results (no `search` term) are cached server-side for 10 minutes,
+            keyed by content type and limit; requests carrying a `search` term bypass the cache.
+            \n
             **Query Parameters:**\n
             - `search` (optional): filter tags by name or slug (e.g. `?search=fally`)\n
             - `contentType` (optional): restrict to tags used by a content type; accepts
               `article` or `video` (e.g. `?contentType=article`). Omit to return all tags.
               Unrecognized values are ignored and all tags are returned.\n
+            - `limit` (optional): maximum number of tags to return (e.g. `?limit=50`).
+              Omit to return all matching tags.\n
             \n
             This endpoint is publicly accessible and does not require authentication.
             \n
