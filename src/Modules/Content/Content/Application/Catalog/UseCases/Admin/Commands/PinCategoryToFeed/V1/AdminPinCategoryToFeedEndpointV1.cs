@@ -48,9 +48,9 @@ public class AdminPinCategoryToFeedEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminPinCategoryToFeedMetaField.AdminPinCategoryToFeed.Name)
-            .WithSummary(summary: AdminPinCategoryToFeedMetaField.AdminPinCategoryToFeed.Summary)
-            .WithDescription(description: AdminPinCategoryToFeedMetaField.AdminPinCategoryToFeed.Description)
+            .WithName(endpointName: AdminPinCategoryToFeedMetaField.PinCategoryToFeed.Name)
+            .WithSummary(summary: AdminPinCategoryToFeedMetaField.PinCategoryToFeed.Summary)
+            .WithDescription(description: AdminPinCategoryToFeedMetaField.PinCategoryToFeed.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
