@@ -72,9 +72,9 @@ public class AdminAddPackageSlotEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: AdminAddPackageSlotMetaField.AdminAddPackageSlot.Name)
-            .WithSummary(summary: AdminAddPackageSlotMetaField.AdminAddPackageSlot.Summary)
-            .WithDescription(description: AdminAddPackageSlotMetaField.AdminAddPackageSlot.Description)
+            .WithName(endpointName: AdminAddPackageSlotMetaField.AddPackageSlot.Name)
+            .WithSummary(summary: AdminAddPackageSlotMetaField.AddPackageSlot.Summary)
+            .WithDescription(description: AdminAddPackageSlotMetaField.AddPackageSlot.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
