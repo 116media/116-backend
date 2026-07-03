@@ -48,9 +48,9 @@ public class AdminRejectPaymentEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminRejectPaymentMetaField.AdminRejectPayment.Name)
-            .WithSummary(summary: AdminRejectPaymentMetaField.AdminRejectPayment.Summary)
-            .WithDescription(description: AdminRejectPaymentMetaField.AdminRejectPayment.Description)
+            .WithName(endpointName: AdminRejectPaymentMetaField.RejectPayment.Name)
+            .WithSummary(summary: AdminRejectPaymentMetaField.RejectPayment.Summary)
+            .WithDescription(description: AdminRejectPaymentMetaField.RejectPayment.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
