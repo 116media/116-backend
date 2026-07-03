@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderById;
 /// </summary>
 public static class AdminGetOrderByIdMetaField
 {
-    public static readonly RouteMetadata AdminGetOrderById = new(
+    public static readonly RouteMetadata GetOrderById = new(
         "AdminGetOrderById",
         "Get a single order by ID",
         """
