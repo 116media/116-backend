@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetPackageById
 /// </summary>
 public static class AdminGetPackageByIdMetaField
 {
-    public static readonly RouteMetadata AdminGetPackageById = new(
+    public static readonly RouteMetadata GetPackageById = new(
         "AdminGetPackageById",
         "Get a package by ID",
         """
