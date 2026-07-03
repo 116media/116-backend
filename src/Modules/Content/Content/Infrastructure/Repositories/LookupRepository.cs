@@ -209,12 +209,14 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
     public async Task<IReadOnlyList<TagEntity>> GetAllTagsAsync(
         string? search = null,
         EnumCoreContentType? contentType = null,
+        int? limit = null,
         CancellationToken cancellationToken = default
     )
     {
         IQueryable<TagEntity> query = new AllTagsQueryBuilder()
             .WithSearch(search)
             .WithContentType(contentType)
+            .WithLimit(limit)
             .Build(context);
 
         return await query.ToListAsync(cancellationToken);
