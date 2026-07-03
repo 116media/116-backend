@@ -59,9 +59,9 @@ public class AdminAttachYoutubeVideoUrlEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminAttachYoutubeVideoUrlMetaField.AdminAttachYoutubeVideoUrl.Name)
-            .WithSummary(summary: AdminAttachYoutubeVideoUrlMetaField.AdminAttachYoutubeVideoUrl.Summary)
-            .WithDescription(description: AdminAttachYoutubeVideoUrlMetaField.AdminAttachYoutubeVideoUrl.Description)
+            .WithName(endpointName: AdminAttachYoutubeVideoUrlMetaField.AttachYoutubeVideoUrl.Name)
+            .WithSummary(summary: AdminAttachYoutubeVideoUrlMetaField.AttachYoutubeVideoUrl.Summary)
+            .WithDescription(description: AdminAttachYoutubeVideoUrlMetaField.AttachYoutubeVideoUrl.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
