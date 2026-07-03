@@ -61,9 +61,9 @@ public class AdminCreatePackageEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: AdminCreatePackageMetaField.AdminCreatePackage.Name)
-            .WithSummary(summary: AdminCreatePackageMetaField.AdminCreatePackage.Summary)
-            .WithDescription(description: AdminCreatePackageMetaField.AdminCreatePackage.Description)
+            .WithName(endpointName: AdminCreatePackageMetaField.CreatePackage.Name)
+            .WithSummary(summary: AdminCreatePackageMetaField.CreatePackage.Summary)
+            .WithDescription(description: AdminCreatePackageMetaField.CreatePackage.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
