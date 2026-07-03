@@ -41,9 +41,9 @@ public class AdminSubmitOrderEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminSubmitOrderMetaField.AdminSubmitOrder.Name)
-            .WithSummary(summary: AdminSubmitOrderMetaField.AdminSubmitOrder.Summary)
-            .WithDescription(description: AdminSubmitOrderMetaField.AdminSubmitOrder.Description)
+            .WithName(endpointName: AdminSubmitOrderMetaField.SubmitOrder.Name)
+            .WithSummary(summary: AdminSubmitOrderMetaField.SubmitOrder.Summary)
+            .WithDescription(description: AdminSubmitOrderMetaField.SubmitOrder.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
