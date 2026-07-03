@@ -72,9 +72,9 @@ public class AdminAddOrderItemEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: AdminAddOrderItemMetaField.AdminAddOrderItem.Name)
-            .WithSummary(summary: AdminAddOrderItemMetaField.AdminAddOrderItem.Summary)
-            .WithDescription(description: AdminAddOrderItemMetaField.AdminAddOrderItem.Description)
+            .WithName(endpointName: AdminAddOrderItemMetaField.AddOrderItem.Name)
+            .WithSummary(summary: AdminAddOrderItemMetaField.AddOrderItem.Summary)
+            .WithDescription(description: AdminAddOrderItemMetaField.AddOrderItem.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
