@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.SetExclusiveC
 /// </summary>
 public static class AdminSetExclusiveCategoryMetaField
 {
-    public static readonly RouteMetadata AdminSetExclusiveCategory = new(
+    public static readonly RouteMetadata SetExclusiveCategory = new(
         "AdminSetExclusiveCategory",
         "Set a category as the exclusive show",
         """
