@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.AddPackageSlo
 /// </summary>
 public static class AdminAddPackageSlotMetaField
 {
-    public static readonly RouteMetadata AdminAddPackageSlot = new(
+    public static readonly RouteMetadata AddPackageSlot = new(
         "AdminAddPackageSlot",
         "Add a slot to a package",
         """
