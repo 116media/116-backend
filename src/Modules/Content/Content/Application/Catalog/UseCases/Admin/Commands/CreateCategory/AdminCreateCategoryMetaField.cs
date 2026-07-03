@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.CreateCategor
 /// </summary>
 public static class AdminCreateCategoryMetaField
 {
-    public static readonly RouteMetadata AdminCreateCategory = new(
+    public static readonly RouteMetadata CreateCategory = new(
         "AdminCreateCategory",
         "Create a new category",
         """
