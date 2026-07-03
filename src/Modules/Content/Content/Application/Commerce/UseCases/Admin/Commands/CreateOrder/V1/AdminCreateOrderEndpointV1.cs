@@ -58,9 +58,9 @@ public class AdminCreateOrderEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: AdminCreateOrderMetaField.AdminCreateOrder.Name)
-            .WithSummary(summary: AdminCreateOrderMetaField.AdminCreateOrder.Summary)
-            .WithDescription(description: AdminCreateOrderMetaField.AdminCreateOrder.Description)
+            .WithName(endpointName: AdminCreateOrderMetaField.CreateOrder.Name)
+            .WithSummary(summary: AdminCreateOrderMetaField.CreateOrder.Summary)
+            .WithDescription(description: AdminCreateOrderMetaField.CreateOrder.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
