@@ -46,9 +46,9 @@ public class AdminDeactivatePackageEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminDeactivatePackageMetaField.AdminDeactivatePackage.Name)
-            .WithSummary(summary: AdminDeactivatePackageMetaField.AdminDeactivatePackage.Summary)
-            .WithDescription(description: AdminDeactivatePackageMetaField.AdminDeactivatePackage.Description)
+            .WithName(endpointName: AdminDeactivatePackageMetaField.DeactivatePackage.Name)
+            .WithSummary(summary: AdminDeactivatePackageMetaField.DeactivatePackage.Summary)
+            .WithDescription(description: AdminDeactivatePackageMetaField.DeactivatePackage.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
