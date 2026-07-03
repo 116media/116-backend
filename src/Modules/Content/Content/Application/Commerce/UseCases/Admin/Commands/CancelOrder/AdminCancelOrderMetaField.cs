@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.CancelOrder;
 /// </summary>
 public static class AdminCancelOrderMetaField
 {
-    public static readonly RouteMetadata AdminCancelOrder = new(
+    public static readonly RouteMetadata CancelOrder = new(
         "AdminCancelOrder",
         "Cancel a draft or pending-payment order",
         """
