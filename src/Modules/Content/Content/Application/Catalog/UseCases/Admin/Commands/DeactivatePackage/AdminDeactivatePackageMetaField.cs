@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivatePac
 /// </summary>
 public static class AdminDeactivatePackageMetaField
 {
-    public static readonly RouteMetadata AdminDeactivatePackage = new(
+    public static readonly RouteMetadata DeactivatePackage = new(
         "AdminDeactivatePackage",
         "Deactivate a package",
         """
