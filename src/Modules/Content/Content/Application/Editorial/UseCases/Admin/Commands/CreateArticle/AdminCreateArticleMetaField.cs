@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtic
 /// </summary>
 public static class AdminCreateArticleMetaField
 {
-    public static readonly RouteMetadata AdminCreateArticle = new(
+    public static readonly RouteMetadata CreateArticle = new(
         "CreateArticle",
         "Create a new article draft",
         """
