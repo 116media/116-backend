@@ -58,9 +58,9 @@ public class AdminUpdateCategoryPricingEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminUpdateCategoryPricingMetaField.AdminUpdateCategoryPricing.Name)
-            .WithSummary(summary: AdminUpdateCategoryPricingMetaField.AdminUpdateCategoryPricing.Summary)
-            .WithDescription(description: AdminUpdateCategoryPricingMetaField.AdminUpdateCategoryPricing.Description)
+            .WithName(endpointName: AdminUpdateCategoryPricingMetaField.UpdateCategoryPricing.Name)
+            .WithSummary(summary: AdminUpdateCategoryPricingMetaField.UpdateCategoryPricing.Summary)
+            .WithDescription(description: AdminUpdateCategoryPricingMetaField.UpdateCategoryPricing.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
