@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 /// </summary>
 public static class AdminSubmitOrderMetaField
 {
-    public static readonly RouteMetadata AdminSubmitOrder = new(
+    public static readonly RouteMetadata SubmitOrder = new(
         "AdminSubmitOrder",
         "Submit a draft order for payment",
         """
