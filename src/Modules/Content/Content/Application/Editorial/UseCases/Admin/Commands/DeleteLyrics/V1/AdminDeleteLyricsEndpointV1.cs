@@ -46,9 +46,9 @@ public class AdminDeleteLyricsEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminDeleteLyricsMetaField.AdminDeleteLyrics.Name)
-            .WithSummary(summary: AdminDeleteLyricsMetaField.AdminDeleteLyrics.Summary)
-            .WithDescription(description: AdminDeleteLyricsMetaField.AdminDeleteLyrics.Description)
+            .WithName(endpointName: AdminDeleteLyricsMetaField.DeleteLyrics.Name)
+            .WithSummary(summary: AdminDeleteLyricsMetaField.DeleteLyrics.Summary)
+            .WithDescription(description: AdminDeleteLyricsMetaField.DeleteLyrics.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
