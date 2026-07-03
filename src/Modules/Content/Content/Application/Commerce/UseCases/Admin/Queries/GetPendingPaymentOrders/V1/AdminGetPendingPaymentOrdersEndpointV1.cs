@@ -45,11 +45,9 @@ public class AdminGetPendingPaymentOrdersEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetPendingPaymentOrdersMetaField.AdminGetPendingPaymentOrders.Name)
-            .WithSummary(summary: AdminGetPendingPaymentOrdersMetaField.AdminGetPendingPaymentOrders.Summary)
-            .WithDescription(
-                description: AdminGetPendingPaymentOrdersMetaField.AdminGetPendingPaymentOrders.Description
-            )
+            .WithName(endpointName: AdminGetPendingPaymentOrdersMetaField.GetPendingPaymentOrders.Name)
+            .WithSummary(summary: AdminGetPendingPaymentOrdersMetaField.GetPendingPaymentOrders.Summary)
+            .WithDescription(description: AdminGetPendingPaymentOrdersMetaField.GetPendingPaymentOrders.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
