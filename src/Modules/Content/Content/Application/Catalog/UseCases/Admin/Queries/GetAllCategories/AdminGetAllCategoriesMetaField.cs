@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetAllCategori
 /// </summary>
 public static class AdminGetAllCategoriesMetaField
 {
-    public static readonly RouteMetadata AdminGetAllCategories = new(
+    public static readonly RouteMetadata GetAllCategories = new(
         "AdminGetAllCategories",
         "List all categories",
         """
