@@ -64,9 +64,9 @@ public class AdminAddItemTierEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: AdminAddItemTierMetaField.AdminAddItemTier.Name)
-            .WithSummary(summary: AdminAddItemTierMetaField.AdminAddItemTier.Summary)
-            .WithDescription(description: AdminAddItemTierMetaField.AdminAddItemTier.Description)
+            .WithName(endpointName: AdminAddItemTierMetaField.AddItemTier.Name)
+            .WithSummary(summary: AdminAddItemTierMetaField.AddItemTier.Summary)
+            .WithDescription(description: AdminAddItemTierMetaField.AddItemTier.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
