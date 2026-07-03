@@ -62,7 +62,13 @@ public class AdminGetAllTagsHandlerTests : BaseContentHandlerTest
         result.Should().NotBeNull();
         result.Tags.Should().ContainSingle();
         _lookupRepositoryMock.Verify(
-            x => x.GetAllTagsAsync(searchTerm, It.IsAny<EnumCoreContentType?>(), It.IsAny<CancellationToken>()),
+            x =>
+                x.GetAllTagsAsync(
+                    searchTerm,
+                    It.IsAny<EnumCoreContentType?>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CancellationToken>()
+                ),
             Times.Once
         );
     }
