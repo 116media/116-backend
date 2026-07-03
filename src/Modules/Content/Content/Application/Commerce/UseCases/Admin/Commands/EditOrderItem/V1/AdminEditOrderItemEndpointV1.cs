@@ -68,9 +68,9 @@ public class AdminEditOrderItemEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminEditOrderItemMetaField.AdminEditOrderItem.Name)
-            .WithSummary(summary: AdminEditOrderItemMetaField.AdminEditOrderItem.Summary)
-            .WithDescription(description: AdminEditOrderItemMetaField.AdminEditOrderItem.Description)
+            .WithName(endpointName: AdminEditOrderItemMetaField.EditOrderItem.Name)
+            .WithSummary(summary: AdminEditOrderItemMetaField.EditOrderItem.Summary)
+            .WithDescription(description: AdminEditOrderItemMetaField.EditOrderItem.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
