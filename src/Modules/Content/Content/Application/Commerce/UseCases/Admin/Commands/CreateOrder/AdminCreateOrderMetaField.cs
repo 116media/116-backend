@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.CreateOrder;
 /// </summary>
 public static class AdminCreateOrderMetaField
 {
-    public static readonly RouteMetadata AdminCreateOrder = new(
+    public static readonly RouteMetadata CreateOrder = new(
         "AdminCreateOrder",
         "Create a new content order",
         """
