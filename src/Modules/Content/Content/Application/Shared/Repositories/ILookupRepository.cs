@@ -190,11 +190,16 @@ public interface ILookupRepository : IRepository<ContentTypeEntity>
     /// return only tags that have at least one video association. When <see langword="null" />, all
     /// tags are returned regardless of content-type usage.
     /// </param>
+    /// <param name="limit">
+    /// Maximum number of tags to return. When <see langword="null" /> all matching tags are
+    /// returned ordered by name. The limit is applied after ordering.
+    /// </param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>A read-only list of matching tag entities.</returns>
     Task<IReadOnlyList<TagEntity>> GetAllTagsAsync(
         string? search = null,
         EnumCoreContentType? contentType = null,
+        int? limit = null,
         CancellationToken cancellationToken = default
     );
 
