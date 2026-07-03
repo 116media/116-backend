@@ -46,9 +46,9 @@ public class AdminActivateShortVideoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminActivateShortVideoMetaField.AdminActivateShortVideo.Name)
-            .WithSummary(summary: AdminActivateShortVideoMetaField.AdminActivateShortVideo.Summary)
-            .WithDescription(description: AdminActivateShortVideoMetaField.AdminActivateShortVideo.Description)
+            .WithName(endpointName: AdminActivateShortVideoMetaField.ActivateShortVideo.Name)
+            .WithSummary(summary: AdminActivateShortVideoMetaField.ActivateShortVideo.Summary)
+            .WithDescription(description: AdminActivateShortVideoMetaField.ActivateShortVideo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
