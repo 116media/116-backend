@@ -58,9 +58,9 @@ public class AdminGetAllOrdersEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetAllOrdersMetaField.AdminGetAllOrders.Name)
-            .WithSummary(summary: AdminGetAllOrdersMetaField.AdminGetAllOrders.Summary)
-            .WithDescription(description: AdminGetAllOrdersMetaField.AdminGetAllOrders.Description)
+            .WithName(endpointName: AdminGetAllOrdersMetaField.GetAllOrders.Name)
+            .WithSummary(summary: AdminGetAllOrdersMetaField.GetAllOrders.Summary)
+            .WithDescription(description: AdminGetAllOrdersMetaField.GetAllOrders.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
