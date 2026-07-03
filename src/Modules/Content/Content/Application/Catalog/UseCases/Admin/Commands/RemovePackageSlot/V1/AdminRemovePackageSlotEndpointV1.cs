@@ -52,9 +52,9 @@ public class AdminRemovePackageSlotEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminRemovePackageSlotMetaField.AdminRemovePackageSlot.Name)
-            .WithSummary(summary: AdminRemovePackageSlotMetaField.AdminRemovePackageSlot.Summary)
-            .WithDescription(description: AdminRemovePackageSlotMetaField.AdminRemovePackageSlot.Description)
+            .WithName(endpointName: AdminRemovePackageSlotMetaField.RemovePackageSlot.Name)
+            .WithSummary(summary: AdminRemovePackageSlotMetaField.RemovePackageSlot.Summary)
+            .WithDescription(description: AdminRemovePackageSlotMetaField.RemovePackageSlot.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
