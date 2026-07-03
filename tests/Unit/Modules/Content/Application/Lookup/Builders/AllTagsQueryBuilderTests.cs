@@ -149,4 +149,35 @@ public class AllTagsQueryBuilderTests : IDisposable
     }
 
     #endregion
+
+    #region WithLimit
+
+    [Fact]
+    public async Task Build_WithLimit_ShouldReturnAtMostLimitTagsOrderedByName()
+    {
+        await SeedTagAsync("Delta");
+        await SeedTagAsync("Alpha");
+        await SeedTagAsync("Charlie");
+        await SeedTagAsync("Bravo");
+
+        List<TagEntity> result = await new AllTagsQueryBuilder().WithLimit(2).Build(_context).ToListAsync();
+
+        result.Should().HaveCount(2);
+        result[0].Name.Should().Be("Alpha");
+        result[1].Name.Should().Be("Bravo");
+    }
+
+    [Fact]
+    public async Task Build_WithNullLimit_ShouldReturnAllTags()
+    {
+        await SeedTagAsync("Kinshasa");
+        await SeedTagAsync("Afrobeats");
+        await SeedTagAsync("Rumba");
+
+        List<TagEntity> result = await new AllTagsQueryBuilder().WithLimit(null).Build(_context).ToListAsync();
+
+        result.Should().HaveCount(3);
+    }
+
+    #endregion
 }
