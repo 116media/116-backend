@@ -58,9 +58,9 @@ public class AdminGetAllPaymentsEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetAllPaymentsMetaField.AdminGetAllPayments.Name)
-            .WithSummary(summary: AdminGetAllPaymentsMetaField.AdminGetAllPayments.Summary)
-            .WithDescription(description: AdminGetAllPaymentsMetaField.AdminGetAllPayments.Description)
+            .WithName(endpointName: AdminGetAllPaymentsMetaField.GetAllPayments.Name)
+            .WithSummary(summary: AdminGetAllPaymentsMetaField.GetAllPayments.Summary)
+            .WithDescription(description: AdminGetAllPaymentsMetaField.GetAllPayments.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
