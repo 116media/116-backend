@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategor
 /// </summary>
 public static class AdminUpdateCategoryMetaField
 {
-    public static readonly RouteMetadata AdminUpdateCategory = new(
+    public static readonly RouteMetadata UpdateCategory = new(
         "AdminUpdateCategory",
         "Update a category",
         """
