@@ -47,9 +47,9 @@ public class PublicGetActiveCategoriesEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetActiveCategoriesMetaField.PublicGetActiveCategories.Name)
-            .WithSummary(summary: PublicGetActiveCategoriesMetaField.PublicGetActiveCategories.Summary)
-            .WithDescription(description: PublicGetActiveCategoriesMetaField.PublicGetActiveCategories.Description)
+            .WithName(endpointName: PublicGetActiveCategoriesMetaField.GetActiveCategories.Name)
+            .WithSummary(summary: PublicGetActiveCategoriesMetaField.GetActiveCategories.Summary)
+            .WithDescription(description: PublicGetActiveCategoriesMetaField.GetActiveCategories.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetActiveCategoriesResponse>(statusCode: StatusCodes.Status200OK)
