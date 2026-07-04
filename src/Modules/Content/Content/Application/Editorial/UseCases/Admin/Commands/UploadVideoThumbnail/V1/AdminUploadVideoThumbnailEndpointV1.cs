@@ -52,9 +52,9 @@ public class AdminUploadVideoThumbnailEndpointV1 : ICarterModule
                 }
             )
             .DisableAntiforgery()
-            .WithName(endpointName: AdminUploadVideoThumbnailMetaField.AdminUploadVideoThumbnail.Name)
-            .WithSummary(summary: AdminUploadVideoThumbnailMetaField.AdminUploadVideoThumbnail.Summary)
-            .WithDescription(description: AdminUploadVideoThumbnailMetaField.AdminUploadVideoThumbnail.Description)
+            .WithName(endpointName: AdminUploadVideoThumbnailMetaField.UploadVideoThumbnail.Name)
+            .WithSummary(summary: AdminUploadVideoThumbnailMetaField.UploadVideoThumbnail.Summary)
+            .WithDescription(description: AdminUploadVideoThumbnailMetaField.UploadVideoThumbnail.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.FileUpload)
