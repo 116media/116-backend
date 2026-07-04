@@ -46,9 +46,9 @@ public class PublicUnlikeShortVideoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicUnlikeShortVideoMetaField.PublicUnlikeShortVideo.Name)
-            .WithSummary(summary: PublicUnlikeShortVideoMetaField.PublicUnlikeShortVideo.Summary)
-            .WithDescription(description: PublicUnlikeShortVideoMetaField.PublicUnlikeShortVideo.Description)
+            .WithName(endpointName: PublicUnlikeShortVideoMetaField.UnlikeShortVideo.Name)
+            .WithSummary(summary: PublicUnlikeShortVideoMetaField.UnlikeShortVideo.Summary)
+            .WithDescription(description: PublicUnlikeShortVideoMetaField.UnlikeShortVideo.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicUnlikeShortVideoResponse>(statusCode: StatusCodes.Status200OK)
