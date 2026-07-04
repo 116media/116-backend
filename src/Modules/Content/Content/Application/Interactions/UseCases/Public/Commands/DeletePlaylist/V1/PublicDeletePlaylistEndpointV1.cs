@@ -46,9 +46,9 @@ public class PublicDeletePlaylistEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicDeletePlaylistMetaField.PublicDeletePlaylist.Name)
-            .WithSummary(summary: PublicDeletePlaylistMetaField.PublicDeletePlaylist.Summary)
-            .WithDescription(description: PublicDeletePlaylistMetaField.PublicDeletePlaylist.Description)
+            .WithName(endpointName: PublicDeletePlaylistMetaField.DeletePlaylist.Name)
+            .WithSummary(summary: PublicDeletePlaylistMetaField.DeletePlaylist.Summary)
+            .WithDescription(description: PublicDeletePlaylistMetaField.DeletePlaylist.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicDeletePlaylistResponse>(statusCode: StatusCodes.Status200OK)
