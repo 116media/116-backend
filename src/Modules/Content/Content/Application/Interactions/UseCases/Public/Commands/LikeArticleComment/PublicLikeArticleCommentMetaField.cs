@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.LikeArt
 /// </summary>
 public static class PublicLikeArticleCommentMetaField
 {
-    public static readonly RouteMetadata PublicLikeArticleComment = new(
+    public static readonly RouteMetadata LikeArticleComment = new(
         "PublicLikeArticleComment",
         "Like an article comment",
         """
