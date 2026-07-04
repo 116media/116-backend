@@ -47,9 +47,9 @@ public class AdminGetShortByIdEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetShortByIdMetaField.AdminGetShortById.Name)
-            .WithSummary(summary: AdminGetShortByIdMetaField.AdminGetShortById.Summary)
-            .WithDescription(description: AdminGetShortByIdMetaField.AdminGetShortById.Description)
+            .WithName(endpointName: AdminGetShortByIdMetaField.GetShortById.Name)
+            .WithSummary(summary: AdminGetShortByIdMetaField.GetShortById.Summary)
+            .WithDescription(description: AdminGetShortByIdMetaField.GetShortById.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
