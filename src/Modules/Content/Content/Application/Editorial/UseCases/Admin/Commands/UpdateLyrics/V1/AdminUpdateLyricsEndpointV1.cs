@@ -71,9 +71,9 @@ public class AdminUpdateLyricsEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminUpdateLyricsMetaField.AdminUpdateLyrics.Name)
-            .WithSummary(summary: AdminUpdateLyricsMetaField.AdminUpdateLyrics.Summary)
-            .WithDescription(description: AdminUpdateLyricsMetaField.AdminUpdateLyrics.Description)
+            .WithName(endpointName: AdminUpdateLyricsMetaField.UpdateLyrics.Name)
+            .WithSummary(summary: AdminUpdateLyricsMetaField.UpdateLyrics.Summary)
+            .WithDescription(description: AdminUpdateLyricsMetaField.UpdateLyrics.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
