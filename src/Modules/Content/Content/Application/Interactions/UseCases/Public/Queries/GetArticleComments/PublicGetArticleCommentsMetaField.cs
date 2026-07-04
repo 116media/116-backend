@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetArtic
 /// </summary>
 public static class PublicGetArticleCommentsMetaField
 {
-    public static readonly RouteMetadata PublicGetArticleComments = new(
+    public static readonly RouteMetadata GetArticleComments = new(
         "PublicGetArticleComments",
         "List comments for an article",
         """
