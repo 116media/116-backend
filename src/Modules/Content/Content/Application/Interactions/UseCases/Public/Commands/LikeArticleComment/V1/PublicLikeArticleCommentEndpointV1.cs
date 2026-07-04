@@ -45,9 +45,9 @@ public class PublicLikeArticleCommentEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicLikeArticleCommentMetaField.PublicLikeArticleComment.Name)
-            .WithSummary(summary: PublicLikeArticleCommentMetaField.PublicLikeArticleComment.Summary)
-            .WithDescription(description: PublicLikeArticleCommentMetaField.PublicLikeArticleComment.Description)
+            .WithName(endpointName: PublicLikeArticleCommentMetaField.LikeArticleComment.Name)
+            .WithSummary(summary: PublicLikeArticleCommentMetaField.LikeArticleComment.Summary)
+            .WithDescription(description: PublicLikeArticleCommentMetaField.LikeArticleComment.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicLikeArticleCommentResponse>(statusCode: StatusCodes.Status200OK)
