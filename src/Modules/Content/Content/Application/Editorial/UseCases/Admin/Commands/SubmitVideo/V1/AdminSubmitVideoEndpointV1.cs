@@ -46,9 +46,9 @@ public class AdminSubmitVideoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminSubmitVideoMetaField.AdminSubmitVideo.Name)
-            .WithSummary(summary: AdminSubmitVideoMetaField.AdminSubmitVideo.Summary)
-            .WithDescription(description: AdminSubmitVideoMetaField.AdminSubmitVideo.Description)
+            .WithName(endpointName: AdminSubmitVideoMetaField.SubmitVideo.Name)
+            .WithSummary(summary: AdminSubmitVideoMetaField.SubmitVideo.Summary)
+            .WithDescription(description: AdminSubmitVideoMetaField.SubmitVideo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
