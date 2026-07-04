@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnprom
 /// </summary>
 public static class AdminForceUnpromoteVideoMetaField
 {
-    public static readonly RouteMetadata AdminForceUnpromoteVideo = new(
+    public static readonly RouteMetadata ForceUnpromoteVideo = new(
         "ForceUnpromoteVideo",
         "Force-unpromote a promoted video (SuperAdmin only)",
         """
