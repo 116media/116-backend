@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.RateVid
 /// </summary>
 public static class PublicRateVideoMetaField
 {
-    public static readonly RouteMetadata PublicRateVideo = new(
+    public static readonly RouteMetadata RateVideo = new(
         "PublicRateVideo",
         "Rate a video",
         """
