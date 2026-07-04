@@ -51,9 +51,9 @@ public class PublicShareVideoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicShareVideoMetaField.PublicShareVideo.Name)
-            .WithSummary(summary: PublicShareVideoMetaField.PublicShareVideo.Summary)
-            .WithDescription(description: PublicShareVideoMetaField.PublicShareVideo.Description)
+            .WithName(endpointName: PublicShareVideoMetaField.ShareVideo.Name)
+            .WithSummary(summary: PublicShareVideoMetaField.ShareVideo.Summary)
+            .WithDescription(description: PublicShareVideoMetaField.ShareVideo.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicShareVideoResponse>(statusCode: StatusCodes.Status200OK)
