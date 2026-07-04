@@ -87,9 +87,9 @@ public class AdminUpdateArticleEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminUpdateArticleMetaField.AdminUpdateArticle.Name)
-            .WithSummary(summary: AdminUpdateArticleMetaField.AdminUpdateArticle.Summary)
-            .WithDescription(description: AdminUpdateArticleMetaField.AdminUpdateArticle.Description)
+            .WithName(endpointName: AdminUpdateArticleMetaField.UpdateArticle.Name)
+            .WithSummary(summary: AdminUpdateArticleMetaField.UpdateArticle.Summary)
+            .WithDescription(description: AdminUpdateArticleMetaField.UpdateArticle.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
