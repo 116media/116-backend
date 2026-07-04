@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishArti
 /// </summary>
 public static class AdminPublishArticleMetaField
 {
-    public static readonly RouteMetadata AdminPublishArticle = new(
+    public static readonly RouteMetadata PublishArticle = new(
         "PublishArticle",
         "Publish an approved article",
         """
