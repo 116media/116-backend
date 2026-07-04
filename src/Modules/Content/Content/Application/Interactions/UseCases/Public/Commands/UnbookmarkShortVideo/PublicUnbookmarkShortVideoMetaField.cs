@@ -10,7 +10,7 @@ public static class PublicUnbookmarkShortVideoMetaField
     /// <summary>
     /// Route metadata for the PublicUnbookmarkShortVideo endpoint.
     /// </summary>
-    public static readonly RouteMetadata PublicUnbookmarkShortVideo = new(
+    public static readonly RouteMetadata UnbookmarkShortVideo = new(
         "PublicUnbookmarkShortVideo",
         "Remove a bookmark from a short video",
         """
