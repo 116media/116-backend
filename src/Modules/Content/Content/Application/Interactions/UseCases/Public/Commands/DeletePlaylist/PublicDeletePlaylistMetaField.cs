@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.DeleteP
 /// </summary>
 public static class PublicDeletePlaylistMetaField
 {
-    public static readonly RouteMetadata PublicDeletePlaylist = new(
+    public static readonly RouteMetadata DeletePlaylist = new(
         "PublicDeletePlaylist",
         "Delete a playlist",
         """
