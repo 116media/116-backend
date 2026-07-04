@@ -52,9 +52,9 @@ public class AdminRejectArticleEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminRejectArticleMetaField.AdminRejectArticle.Name)
-            .WithSummary(summary: AdminRejectArticleMetaField.AdminRejectArticle.Summary)
-            .WithDescription(description: AdminRejectArticleMetaField.AdminRejectArticle.Description)
+            .WithName(endpointName: AdminRejectArticleMetaField.RejectArticle.Name)
+            .WithSummary(summary: AdminRejectArticleMetaField.RejectArticle.Summary)
+            .WithDescription(description: AdminRejectArticleMetaField.RejectArticle.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
