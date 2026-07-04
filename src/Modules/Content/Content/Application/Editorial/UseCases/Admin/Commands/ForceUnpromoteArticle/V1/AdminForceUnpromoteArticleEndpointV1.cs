@@ -59,9 +59,9 @@ public class AdminForceUnpromoteArticleEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminForceUnpromoteArticleMetaField.AdminForceUnpromoteArticle.Name)
-            .WithSummary(summary: AdminForceUnpromoteArticleMetaField.AdminForceUnpromoteArticle.Summary)
-            .WithDescription(description: AdminForceUnpromoteArticleMetaField.AdminForceUnpromoteArticle.Description)
+            .WithName(endpointName: AdminForceUnpromoteArticleMetaField.ForceUnpromoteArticle.Name)
+            .WithSummary(summary: AdminForceUnpromoteArticleMetaField.ForceUnpromoteArticle.Summary)
+            .WithDescription(description: AdminForceUnpromoteArticleMetaField.ForceUnpromoteArticle.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
