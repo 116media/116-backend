@@ -59,9 +59,9 @@ public class AdminForceUnpromoteVideoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminForceUnpromoteVideoMetaField.AdminForceUnpromoteVideo.Name)
-            .WithSummary(summary: AdminForceUnpromoteVideoMetaField.AdminForceUnpromoteVideo.Summary)
-            .WithDescription(description: AdminForceUnpromoteVideoMetaField.AdminForceUnpromoteVideo.Description)
+            .WithName(endpointName: AdminForceUnpromoteVideoMetaField.ForceUnpromoteVideo.Name)
+            .WithSummary(summary: AdminForceUnpromoteVideoMetaField.ForceUnpromoteVideo.Summary)
+            .WithDescription(description: AdminForceUnpromoteVideoMetaField.ForceUnpromoteVideo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
