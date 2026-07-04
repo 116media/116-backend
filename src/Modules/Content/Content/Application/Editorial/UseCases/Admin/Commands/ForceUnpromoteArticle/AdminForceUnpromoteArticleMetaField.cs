@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnprom
 /// </summary>
 public static class AdminForceUnpromoteArticleMetaField
 {
-    public static readonly RouteMetadata AdminForceUnpromoteArticle = new(
+    public static readonly RouteMetadata ForceUnpromoteArticle = new(
         "ForceUnpromoteArticle",
         "Force-unpromote a promoted article (SuperAdmin only)",
         """
