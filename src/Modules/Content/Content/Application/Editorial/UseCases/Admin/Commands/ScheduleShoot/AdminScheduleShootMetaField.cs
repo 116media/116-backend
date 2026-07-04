@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ScheduleSho
 /// </summary>
 public static class AdminScheduleShootMetaField
 {
-    public static readonly RouteMetadata AdminScheduleShoot = new(
+    public static readonly RouteMetadata ScheduleShoot = new(
         "ScheduleShoot",
         "Schedule a video shoot",
         """
