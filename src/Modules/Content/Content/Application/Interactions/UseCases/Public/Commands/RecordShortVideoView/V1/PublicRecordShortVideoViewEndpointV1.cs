@@ -42,9 +42,9 @@ public class PublicRecordShortVideoViewEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicRecordShortVideoViewMetaField.PublicRecordShortVideoView.Name)
-            .WithSummary(summary: PublicRecordShortVideoViewMetaField.PublicRecordShortVideoView.Summary)
-            .WithDescription(description: PublicRecordShortVideoViewMetaField.PublicRecordShortVideoView.Description)
+            .WithName(endpointName: PublicRecordShortVideoViewMetaField.RecordShortVideoView.Name)
+            .WithSummary(summary: PublicRecordShortVideoViewMetaField.RecordShortVideoView.Summary)
+            .WithDescription(description: PublicRecordShortVideoViewMetaField.RecordShortVideoView.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicRecordShortVideoViewResponse>(statusCode: StatusCodes.Status200OK)
