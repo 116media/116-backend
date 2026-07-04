@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.RecordS
 /// </summary>
 public static class PublicRecordShortVideoViewMetaField
 {
-    public static readonly RouteMetadata PublicRecordShortVideoView = new(
+    public static readonly RouteMetadata RecordShortVideoView = new(
         "PublicRecordShortVideoView",
         "Record a view for a short video",
         """
