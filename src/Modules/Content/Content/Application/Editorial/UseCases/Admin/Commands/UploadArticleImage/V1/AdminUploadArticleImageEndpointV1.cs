@@ -63,9 +63,9 @@ public class AdminUploadArticleImageEndpointV1 : ICarterModule
                 }
             )
             .DisableAntiforgery()
-            .WithName(endpointName: AdminUploadArticleImageMetaField.AdminUploadArticleImage.Name)
-            .WithSummary(summary: AdminUploadArticleImageMetaField.AdminUploadArticleImage.Summary)
-            .WithDescription(description: AdminUploadArticleImageMetaField.AdminUploadArticleImage.Description)
+            .WithName(endpointName: AdminUploadArticleImageMetaField.UploadArticleImage.Name)
+            .WithSummary(summary: AdminUploadArticleImageMetaField.UploadArticleImage.Summary)
+            .WithDescription(description: AdminUploadArticleImageMetaField.UploadArticleImage.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.FileUpload)
