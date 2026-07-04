@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllLyrics
 /// </summary>
 public static class AdminGetAllLyricsMetaField
 {
-    public static readonly RouteMetadata AdminGetAllLyrics = new(
+    public static readonly RouteMetadata GetAllLyrics = new(
         "AdminGetAllLyrics",
         "List all lyrics pages",
         """
