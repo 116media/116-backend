@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.RenameP
 /// </summary>
 public static class PublicRenamePlaylistMetaField
 {
-    public static readonly RouteMetadata PublicRenamePlaylist = new(
+    public static readonly RouteMetadata RenamePlaylist = new(
         "PublicRenamePlaylist",
         "Rename a playlist",
         """
