@@ -82,9 +82,9 @@ public class AdminUpdateVideoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminUpdateVideoMetaField.AdminUpdateVideo.Name)
-            .WithSummary(summary: AdminUpdateVideoMetaField.AdminUpdateVideo.Summary)
-            .WithDescription(description: AdminUpdateVideoMetaField.AdminUpdateVideo.Description)
+            .WithName(endpointName: AdminUpdateVideoMetaField.UpdateVideo.Name)
+            .WithSummary(summary: AdminUpdateVideoMetaField.UpdateVideo.Summary)
+            .WithDescription(description: AdminUpdateVideoMetaField.UpdateVideo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
