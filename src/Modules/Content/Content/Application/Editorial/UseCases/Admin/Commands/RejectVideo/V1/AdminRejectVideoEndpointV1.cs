@@ -52,9 +52,9 @@ public class AdminRejectVideoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminRejectVideoMetaField.AdminRejectVideo.Name)
-            .WithSummary(summary: AdminRejectVideoMetaField.AdminRejectVideo.Summary)
-            .WithDescription(description: AdminRejectVideoMetaField.AdminRejectVideo.Description)
+            .WithName(endpointName: AdminRejectVideoMetaField.RejectVideo.Name)
+            .WithSummary(summary: AdminRejectVideoMetaField.RejectVideo.Summary)
+            .WithDescription(description: AdminRejectVideoMetaField.RejectVideo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
