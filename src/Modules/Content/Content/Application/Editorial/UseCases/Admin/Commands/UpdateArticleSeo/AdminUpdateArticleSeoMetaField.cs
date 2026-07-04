@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 /// </summary>
 public static class AdminUpdateArticleSeoMetaField
 {
-    public static readonly RouteMetadata AdminUpdateArticleSeo = new(
+    public static readonly RouteMetadata UpdateArticleSeo = new(
         "UpdateArticleSeo",
         "Update article SEO metadata",
         """
