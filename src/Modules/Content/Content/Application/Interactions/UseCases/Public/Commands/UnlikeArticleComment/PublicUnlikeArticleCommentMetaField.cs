@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeA
 /// </summary>
 public static class PublicUnlikeArticleCommentMetaField
 {
-    public static readonly RouteMetadata PublicUnlikeArticleComment = new(
+    public static readonly RouteMetadata UnlikeArticleComment = new(
         "PublicUnlikeArticleComment",
         "Unlike an article comment",
         """
