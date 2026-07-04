@@ -46,9 +46,9 @@ public class AdminPublishArticleEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminPublishArticleMetaField.AdminPublishArticle.Name)
-            .WithSummary(summary: AdminPublishArticleMetaField.AdminPublishArticle.Summary)
-            .WithDescription(description: AdminPublishArticleMetaField.AdminPublishArticle.Description)
+            .WithName(endpointName: AdminPublishArticleMetaField.PublishArticle.Name)
+            .WithSummary(summary: AdminPublishArticleMetaField.PublishArticle.Summary)
+            .WithDescription(description: AdminPublishArticleMetaField.PublishArticle.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
