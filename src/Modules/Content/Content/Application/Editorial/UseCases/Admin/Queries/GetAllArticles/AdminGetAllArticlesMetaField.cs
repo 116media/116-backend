@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllArticl
 /// </summary>
 public static class AdminGetAllArticlesMetaField
 {
-    public static readonly RouteMetadata AdminGetAllArticles = new(
+    public static readonly RouteMetadata GetAllArticles = new(
         "AdminGetAllArticles",
         "List all articles",
         """
