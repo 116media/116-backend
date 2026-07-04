@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareAr
 /// </summary>
 public static class PublicShareArticleMetaField
 {
-    public static readonly RouteMetadata PublicShareArticle = new(
+    public static readonly RouteMetadata ShareArticle = new(
         "PublicShareArticle",
         "Record an article share",
         """
