@@ -56,11 +56,9 @@ public class PublicRemoveVideoFromPlaylistEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicRemoveVideoFromPlaylistMetaField.PublicRemoveVideoFromPlaylist.Name)
-            .WithSummary(summary: PublicRemoveVideoFromPlaylistMetaField.PublicRemoveVideoFromPlaylist.Summary)
-            .WithDescription(
-                description: PublicRemoveVideoFromPlaylistMetaField.PublicRemoveVideoFromPlaylist.Description
-            )
+            .WithName(endpointName: PublicRemoveVideoFromPlaylistMetaField.RemoveVideoFromPlaylist.Name)
+            .WithSummary(summary: PublicRemoveVideoFromPlaylistMetaField.RemoveVideoFromPlaylist.Summary)
+            .WithDescription(description: PublicRemoveVideoFromPlaylistMetaField.RemoveVideoFromPlaylist.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicRemoveVideoFromPlaylistResponse>(statusCode: StatusCodes.Status200OK)
