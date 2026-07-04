@@ -65,9 +65,9 @@ public class PublicAddVideoToPlaylistEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicAddVideoToPlaylistMetaField.PublicAddVideoToPlaylist.Name)
-            .WithSummary(summary: PublicAddVideoToPlaylistMetaField.PublicAddVideoToPlaylist.Summary)
-            .WithDescription(description: PublicAddVideoToPlaylistMetaField.PublicAddVideoToPlaylist.Description)
+            .WithName(endpointName: PublicAddVideoToPlaylistMetaField.AddVideoToPlaylist.Name)
+            .WithSummary(summary: PublicAddVideoToPlaylistMetaField.AddVideoToPlaylist.Summary)
+            .WithDescription(description: PublicAddVideoToPlaylistMetaField.AddVideoToPlaylist.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicAddVideoToPlaylistResponse>(statusCode: StatusCodes.Status200OK)
