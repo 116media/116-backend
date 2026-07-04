@@ -46,9 +46,9 @@ public class AdminPublishVideoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminPublishVideoMetaField.AdminPublishVideo.Name)
-            .WithSummary(summary: AdminPublishVideoMetaField.AdminPublishVideo.Summary)
-            .WithDescription(description: AdminPublishVideoMetaField.AdminPublishVideo.Description)
+            .WithName(endpointName: AdminPublishVideoMetaField.PublishVideo.Name)
+            .WithSummary(summary: AdminPublishVideoMetaField.PublishVideo.Summary)
+            .WithDescription(description: AdminPublishVideoMetaField.PublishVideo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
