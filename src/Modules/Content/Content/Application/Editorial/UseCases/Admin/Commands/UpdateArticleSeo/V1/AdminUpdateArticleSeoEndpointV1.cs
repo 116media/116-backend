@@ -59,9 +59,9 @@ public class AdminUpdateArticleSeoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminUpdateArticleSeoMetaField.AdminUpdateArticleSeo.Name)
-            .WithSummary(summary: AdminUpdateArticleSeoMetaField.AdminUpdateArticleSeo.Summary)
-            .WithDescription(description: AdminUpdateArticleSeoMetaField.AdminUpdateArticleSeo.Description)
+            .WithName(endpointName: AdminUpdateArticleSeoMetaField.UpdateArticleSeo.Name)
+            .WithSummary(summary: AdminUpdateArticleSeoMetaField.UpdateArticleSeo.Summary)
+            .WithDescription(description: AdminUpdateArticleSeoMetaField.UpdateArticleSeo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
