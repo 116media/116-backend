@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectVideo
 /// </summary>
 public static class AdminRejectVideoMetaField
 {
-    public static readonly RouteMetadata AdminRejectVideo = new(
+    public static readonly RouteMetadata RejectVideo = new(
         "RejectVideo",
         "Reject a video during editorial review",
         """
