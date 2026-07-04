@@ -10,7 +10,7 @@ public static class PublicBookmarkShortVideoMetaField
     /// <summary>
     /// Route metadata for the PublicBookmarkShortVideo endpoint.
     /// </summary>
-    public static readonly RouteMetadata PublicBookmarkShortVideo = new(
+    public static readonly RouteMetadata BookmarkShortVideo = new(
         "PublicBookmarkShortVideo",
         "Bookmark a short video",
         """
