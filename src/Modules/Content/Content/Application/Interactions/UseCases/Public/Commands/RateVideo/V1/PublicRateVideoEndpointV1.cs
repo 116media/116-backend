@@ -58,9 +58,9 @@ public class PublicRateVideoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicRateVideoMetaField.PublicRateVideo.Name)
-            .WithSummary(summary: PublicRateVideoMetaField.PublicRateVideo.Summary)
-            .WithDescription(description: PublicRateVideoMetaField.PublicRateVideo.Description)
+            .WithName(endpointName: PublicRateVideoMetaField.RateVideo.Name)
+            .WithSummary(summary: PublicRateVideoMetaField.RateVideo.Summary)
+            .WithDescription(description: PublicRateVideoMetaField.RateVideo.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicRateVideoResponse>(statusCode: StatusCodes.Status200OK)
