@@ -64,9 +64,9 @@ public class AdminGetAllVideosEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetAllVideosMetaField.AdminGetAllVideos.Name)
-            .WithSummary(summary: AdminGetAllVideosMetaField.AdminGetAllVideos.Summary)
-            .WithDescription(description: AdminGetAllVideosMetaField.AdminGetAllVideos.Description)
+            .WithName(endpointName: AdminGetAllVideosMetaField.GetAllVideos.Name)
+            .WithSummary(summary: AdminGetAllVideosMetaField.GetAllVideos.Summary)
+            .WithDescription(description: AdminGetAllVideosMetaField.GetAllVideos.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
