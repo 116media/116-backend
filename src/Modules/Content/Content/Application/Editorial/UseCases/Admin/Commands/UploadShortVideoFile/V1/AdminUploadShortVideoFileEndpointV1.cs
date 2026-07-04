@@ -51,9 +51,9 @@ public class AdminUploadShortVideoFileEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminUploadShortVideoFileMetaField.AdminUploadShortVideoFile.Name)
-            .WithSummary(summary: AdminUploadShortVideoFileMetaField.AdminUploadShortVideoFile.Summary)
-            .WithDescription(description: AdminUploadShortVideoFileMetaField.AdminUploadShortVideoFile.Description)
+            .WithName(endpointName: AdminUploadShortVideoFileMetaField.UploadShortVideoFile.Name)
+            .WithSummary(summary: AdminUploadShortVideoFileMetaField.UploadShortVideoFile.Summary)
+            .WithDescription(description: AdminUploadShortVideoFileMetaField.UploadShortVideoFile.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.FileUpload)
