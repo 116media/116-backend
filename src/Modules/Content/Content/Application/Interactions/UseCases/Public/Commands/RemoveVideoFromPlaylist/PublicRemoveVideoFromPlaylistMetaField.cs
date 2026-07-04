@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.RemoveV
 /// </summary>
 public static class PublicRemoveVideoFromPlaylistMetaField
 {
-    public static readonly RouteMetadata PublicRemoveVideoFromPlaylist = new(
+    public static readonly RouteMetadata RemoveVideoFromPlaylist = new(
         "PublicRemoveVideoFromPlaylist",
         "Remove a video from a playlist",
         """
