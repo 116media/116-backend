@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyric
 /// </summary>
 public static class AdminUpdateLyricsMetaField
 {
-    public static readonly RouteMetadata AdminUpdateLyrics = new(
+    public static readonly RouteMetadata UpdateLyrics = new(
         "UpdateLyrics",
         "Update the lyrics text",
         """
