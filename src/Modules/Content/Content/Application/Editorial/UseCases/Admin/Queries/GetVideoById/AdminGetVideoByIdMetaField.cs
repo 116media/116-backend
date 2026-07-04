@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetVideoById
 /// </summary>
 public static class AdminGetVideoByIdMetaField
 {
-    public static readonly RouteMetadata AdminGetVideoById = new(
+    public static readonly RouteMetadata GetVideoById = new(
         "AdminGetVideoById",
         "Get video details by ID",
         """
