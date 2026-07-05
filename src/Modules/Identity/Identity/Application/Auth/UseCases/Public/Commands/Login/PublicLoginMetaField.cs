@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.Login;
 /// </summary>
 public static class PublicLoginMetaField
 {
-    public static readonly RouteMetadata PublicLogin = new(
+    public static readonly RouteMetadata Login = new(
         "PublicLogin",
         "Authenticate public user and return JWT token with user claims",
         """
