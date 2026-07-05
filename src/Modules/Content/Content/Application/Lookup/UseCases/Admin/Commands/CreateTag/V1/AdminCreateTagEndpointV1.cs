@@ -60,9 +60,9 @@ public class AdminCreateTagEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: AdminCreateTagMetaField.AdminCreateTag.Name)
-            .WithSummary(summary: AdminCreateTagMetaField.AdminCreateTag.Summary)
-            .WithDescription(description: AdminCreateTagMetaField.AdminCreateTag.Description)
+            .WithName(endpointName: AdminCreateTagMetaField.CreateTag.Name)
+            .WithSummary(summary: AdminCreateTagMetaField.CreateTag.Summary)
+            .WithDescription(description: AdminCreateTagMetaField.CreateTag.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
