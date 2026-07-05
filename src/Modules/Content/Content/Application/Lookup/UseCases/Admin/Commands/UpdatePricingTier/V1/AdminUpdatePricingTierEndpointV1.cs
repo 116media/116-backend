@@ -60,9 +60,9 @@ public class AdminUpdatePricingTierEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminUpdatePricingTierMetaField.AdminUpdatePricingTier.Name)
-            .WithSummary(summary: AdminUpdatePricingTierMetaField.AdminUpdatePricingTier.Summary)
-            .WithDescription(description: AdminUpdatePricingTierMetaField.AdminUpdatePricingTier.Description)
+            .WithName(endpointName: AdminUpdatePricingTierMetaField.UpdatePricingTier.Name)
+            .WithSummary(summary: AdminUpdatePricingTierMetaField.UpdatePricingTier.Summary)
+            .WithDescription(description: AdminUpdatePricingTierMetaField.UpdatePricingTier.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
