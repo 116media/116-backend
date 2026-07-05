@@ -56,9 +56,9 @@ public class PublicGetAllTagsEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetAllTagsMetaField.PublicGetAllTags.Name)
-            .WithSummary(summary: PublicGetAllTagsMetaField.PublicGetAllTags.Summary)
-            .WithDescription(description: PublicGetAllTagsMetaField.PublicGetAllTags.Description)
+            .WithName(endpointName: PublicGetAllTagsMetaField.GetAllTags.Name)
+            .WithSummary(summary: PublicGetAllTagsMetaField.GetAllTags.Summary)
+            .WithDescription(description: PublicGetAllTagsMetaField.GetAllTags.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetAllTagsResponse>(statusCode: StatusCodes.Status200OK)
