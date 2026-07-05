@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Queries.GetSessionMet
 /// </summary>
 public static class AdminGetSessionMetricsMetaField
 {
-    public static readonly RouteMetadata AdminGetSessionMetrics = new(
+    public static readonly RouteMetadata GetSessionMetrics = new(
         "AdminGetSessionMetrics",
         "Get session metrics and statistics",
         """
