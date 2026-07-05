@@ -63,9 +63,9 @@ public class AdminGetAllPermissionsEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminGetAllPermissionsMetaField.AdminGetAllPermissions.Name)
-            .WithSummary(summary: AdminGetAllPermissionsMetaField.AdminGetAllPermissions.Summary)
-            .WithDescription(description: AdminGetAllPermissionsMetaField.AdminGetAllPermissions.Description)
+            .WithName(endpointName: AdminGetAllPermissionsMetaField.GetAllPermissions.Name)
+            .WithSummary(summary: AdminGetAllPermissionsMetaField.GetAllPermissions.Summary)
+            .WithDescription(description: AdminGetAllPermissionsMetaField.GetAllPermissions.Description)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
