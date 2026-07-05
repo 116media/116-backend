@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.RestorePermiss
 /// </summary>
 public static class AdminRestorePermissionMetaField
 {
-    public static readonly RouteMetadata AdminRestorePermission = new(
+    public static readonly RouteMetadata RestorePermission = new(
         "AdminRestorePermission",
         "Restore a soft-deleted permission",
         """
