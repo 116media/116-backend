@@ -63,9 +63,9 @@ public class AdminGetAllRolesEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminGetAllRolesMetaField.AdminGetAllRoles.Name)
-            .WithSummary(summary: AdminGetAllRolesMetaField.AdminGetAllRoles.Summary)
-            .WithDescription(description: AdminGetAllRolesMetaField.AdminGetAllRoles.Description)
+            .WithName(endpointName: AdminGetAllRolesMetaField.GetAllRoles.Name)
+            .WithSummary(summary: AdminGetAllRolesMetaField.GetAllRoles.Summary)
+            .WithDescription(description: AdminGetAllRolesMetaField.GetAllRoles.Description)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
