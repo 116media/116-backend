@@ -48,9 +48,9 @@ public class AdminDeactivateRoleEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminDeactivateRoleMetaField.AdminDeactivateRole.Name)
-            .WithSummary(summary: AdminDeactivateRoleMetaField.AdminDeactivateRole.Summary)
-            .WithDescription(description: AdminDeactivateRoleMetaField.AdminDeactivateRole.Description)
+            .WithName(endpointName: AdminDeactivateRoleMetaField.DeactivateRole.Name)
+            .WithSummary(summary: AdminDeactivateRoleMetaField.DeactivateRole.Summary)
+            .WithDescription(description: AdminDeactivateRoleMetaField.DeactivateRole.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
