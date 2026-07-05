@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivateProm
 /// </summary>
 public static class AdminDeactivatePromotionLevelMetaField
 {
-    public static readonly RouteMetadata AdminDeactivatePromotionLevel = new(
+    public static readonly RouteMetadata DeactivatePromotionLevel = new(
         "AdminDeactivatePromotionLevel",
         "Deactivate a promotion level",
         """
