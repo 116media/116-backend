@@ -1,7 +1,6 @@
 using _116.Shared.Application.Extensions;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

@@ -2,7 +2,6 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
 using _116.Shared.Application.DTOs;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;

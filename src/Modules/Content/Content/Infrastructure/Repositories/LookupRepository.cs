@@ -208,14 +208,18 @@ public class LookupRepository(ContentDbContext context) : ILookupRepository
     /// <inheritdoc />
     public async Task<IReadOnlyList<TagEntity>> GetAllTagsAsync(
         string? search = null,
+        EnumCoreContentType? contentType = null,
+        int? limit = null,
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<TagEntity> query = string.IsNullOrWhiteSpace(search)
-            ? context.Tags
-            : context.Tags.ApplySpecification(new TagSearchSpecification(search: search));
+        IQueryable<TagEntity> query = new AllTagsQueryBuilder()
+            .WithSearch(search)
+            .WithContentType(contentType)
+            .WithLimit(limit)
+            .Build(context);
 
-        return await query.OrderBy(x => x.Name).ToListAsync(cancellationToken);
+        return await query.ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />

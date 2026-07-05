@@ -1,5 +1,7 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace _116.Integration.Tests.Common.Base;
 
@@ -90,8 +92,25 @@ public abstract class BaseApiTest : IAsyncLifetime
     public async ValueTask InitializeAsync()
     {
         await Db.ResetAsync();
+        InvalidateTagCache();
         await SeedTestUsersAsync();
         await SeedAsync();
+    }
+
+    /// <summary>
+    /// Clears the in-process tag cache before each test.
+    /// The <see cref="IMemoryCache" /> lives in the shared <see cref="ApiFixture" /> singleton and
+    /// is not touched by <see cref="PostgresFixture.ResetAsync" />, so cached tag lists would
+    /// otherwise leak across tests. Integration tests seed rows directly via
+    /// <see cref="SeedAsync{TDbContext}" />, bypassing the mutation handlers that invalidate the
+    /// eviction token in production; cancelling the shared token here reproduces that invalidation
+    /// so each test reads its own freshly seeded data.
+    /// </summary>
+    private void InvalidateTagCache()
+    {
+        using var scope = Api.Services.CreateScope();
+        var invalidator = scope.ServiceProvider.GetRequiredService<IPopularTagsCacheInvalidator>();
+        invalidator.Invalidate();
     }
 
     /// <inheritdoc />

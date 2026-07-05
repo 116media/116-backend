@@ -5,7 +5,6 @@ using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace _116.Unit.Tests.Shared.Exceptions.Handlers.Strategies;

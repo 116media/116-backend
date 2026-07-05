@@ -1,5 +1,4 @@
 using _116.Identity.Application.Session.UseCases.Admin.Queries.GetAllSessions.V1;
-using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;

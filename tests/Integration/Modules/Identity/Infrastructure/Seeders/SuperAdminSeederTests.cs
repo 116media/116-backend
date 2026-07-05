@@ -1,7 +1,6 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
-using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
 
 namespace _116.Integration.Tests.Modules.Identity.Seeders;
 

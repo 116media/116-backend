@@ -1,7 +1,5 @@
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.V1;
-using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
-using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.V1;
 

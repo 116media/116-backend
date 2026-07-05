@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.IdentityModel.Tokens;
-using static _116.Tests.Fixtures.Constants.TestConstants;
 
 namespace _116.Integration.Tests.Common.Fixtures;
 

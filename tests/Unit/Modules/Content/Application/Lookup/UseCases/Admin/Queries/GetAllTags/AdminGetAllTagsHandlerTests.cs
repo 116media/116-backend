@@ -1,6 +1,7 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllTags;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
@@ -60,7 +61,16 @@ public class AdminGetAllTagsHandlerTests : BaseContentHandlerTest
         // Assert
         result.Should().NotBeNull();
         result.Tags.Should().ContainSingle();
-        _lookupRepositoryMock.Verify(x => x.GetAllTagsAsync(searchTerm, It.IsAny<CancellationToken>()), Times.Once);
+        _lookupRepositoryMock.Verify(
+            x =>
+                x.GetAllTagsAsync(
+                    searchTerm,
+                    It.IsAny<EnumCoreContentType?>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
     }
 
     [Fact]

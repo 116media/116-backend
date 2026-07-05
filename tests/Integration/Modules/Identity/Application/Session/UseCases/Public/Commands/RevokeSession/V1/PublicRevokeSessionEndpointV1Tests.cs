@@ -1,6 +1,5 @@
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RevokeSession.V1;
-using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;

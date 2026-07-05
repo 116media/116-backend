@@ -181,13 +181,25 @@ public interface ILookupRepository : IRepository<ContentTypeEntity>
     void Remove(TagEntity entity);
 
     /// <summary>
-    /// Retrieves all tags ordered by name, with optional search filtering.
+    /// Retrieves all tags ordered by name, with optional search and content-type filtering.
     /// </summary>
     /// <param name="search">Optional search term for case-insensitive partial match on Name and Slug.</param>
+    /// <param name="contentType">
+    /// Optional content type filter. Pass <see cref="EnumCoreContentType.Article"/> to return only
+    /// tags that have at least one article association, <see cref="EnumCoreContentType.Video"/> to
+    /// return only tags that have at least one video association. When <see langword="null" />, all
+    /// tags are returned regardless of content-type usage.
+    /// </param>
+    /// <param name="limit">
+    /// Maximum number of tags to return. When <see langword="null" /> all matching tags are
+    /// returned ordered by name. The limit is applied after ordering.
+    /// </param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>A read-only list of matching tag entities.</returns>
     Task<IReadOnlyList<TagEntity>> GetAllTagsAsync(
         string? search = null,
+        EnumCoreContentType? contentType = null,
+        int? limit = null,
         CancellationToken cancellationToken = default
     );
 

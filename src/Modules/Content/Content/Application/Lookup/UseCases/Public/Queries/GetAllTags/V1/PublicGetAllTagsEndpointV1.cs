@@ -2,6 +2,7 @@ using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Lookup.Constants;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
 using Carter;
@@ -37,9 +38,17 @@ public class PublicGetAllTagsEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher, string? search = null) =>
+                async (IDispatcher dispatcher, string? search = null, string? contentType = null, int? limit = null) =>
                 {
-                    var query = new PublicGetAllTagsQuery(Search: search);
+                    EnumCoreContentType? parsedContentType = Enum.TryParse(
+                        contentType,
+                        ignoreCase: true,
+                        out EnumCoreContentType parsed
+                    )
+                        ? parsed
+                        : null;
+
+                    var query = new PublicGetAllTagsQuery(Search: search, ContentType: parsedContentType, Limit: limit);
 
                     PublicGetAllTagsResult result = await dispatcher.Send(request: query);
 
