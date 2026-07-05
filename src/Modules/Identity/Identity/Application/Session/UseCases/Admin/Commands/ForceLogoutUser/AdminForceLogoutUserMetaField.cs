@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Commands.ForceLogoutU
 /// </summary>
 public static class AdminForceLogoutUserMetaField
 {
-    public static readonly RouteMetadata AdminForceLogoutUser = new(
+    public static readonly RouteMetadata ForceLogoutUser = new(
         "AdminForceLogoutUser",
         "Force logout a user from all devices",
         """
