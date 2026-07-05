@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOutFromAllD
 /// </summary>
 public static class AdminSignOutFromAllDevicesMetaField
 {
-    public static readonly RouteMetadata AdminSignOutFromAllDevices = new(
+    public static readonly RouteMetadata SignOutFromAllDevices = new(
         "AdminSignOutFromAllDevices",
         "Sign out the authenticated admin user from all devices",
         """
