@@ -98,6 +98,14 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="Author">
 /// The resolved author profile with avatar URL, or null if the author could not be found.
 /// </param>
+/// <param name="IsLiked">
+/// Whether the current authenticated user has liked this article. False for anonymous
+/// requests and for authenticated users who have not liked it.
+/// </param>
+/// <param name="IsBookmarked">
+/// Whether the current authenticated user has bookmarked this article. False for anonymous
+/// requests and for authenticated users who have not bookmarked it.
+/// </param>
 public record ArticleDetailDto(
     Guid Id,
     Guid CategoryId,
@@ -128,5 +136,7 @@ public record ArticleDetailDto(
     Guid? CustomerId = null,
     string? CustomerName = null,
     Guid? OrderItemId = null,
-    AuthorDto? Author = null
+    AuthorDto? Author = null,
+    bool IsLiked = false,
+    bool IsBookmarked = false
 ) : AuditableDto;

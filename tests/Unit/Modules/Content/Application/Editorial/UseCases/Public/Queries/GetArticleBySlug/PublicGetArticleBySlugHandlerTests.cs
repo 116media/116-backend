@@ -91,4 +91,60 @@ public class PublicGetArticleBySlugHandlerTests : BaseContentHandlerTest
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
     }
+
+    [Fact]
+    public async Task Handle_WhenAnonymous_ShouldReturnFalseFlagsAndSkipExistenceChecks()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
+        var query = new PublicGetArticleBySlugQuery(Slug: article.Slug, CurrentUserId: null);
+
+        _articleRepositoryMock.SetupGetBySlug(article.Slug, article);
+
+        // Act
+        PublicGetArticleBySlugResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.Article.IsLiked.Should().BeFalse();
+        result.Article.IsBookmarked.Should().BeFalse();
+        _articleRepositoryMock.VerifyExistenceChecksNotCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenUserLikedAndBookmarked_ShouldReturnTrueFlags()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
+        var query = new PublicGetArticleBySlugQuery(Slug: article.Slug, CurrentUserId: Guid.NewGuid());
+
+        _articleRepositoryMock.SetupGetBySlug(article.Slug, article);
+        _articleRepositoryMock.SetupHasLikedAsync(true);
+        _articleRepositoryMock.SetupHasBookmarkedAsync(true);
+
+        // Act
+        PublicGetArticleBySlugResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.Article.IsLiked.Should().BeTrue();
+        result.Article.IsBookmarked.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Handle_WhenUserLikedButNotBookmarked_ShouldReflectEachFlagIndependently()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
+        var query = new PublicGetArticleBySlugQuery(Slug: article.Slug, CurrentUserId: Guid.NewGuid());
+
+        _articleRepositoryMock.SetupGetBySlug(article.Slug, article);
+        _articleRepositoryMock.SetupHasLikedAsync(true);
+        _articleRepositoryMock.SetupHasBookmarkedAsync(false);
+
+        // Act
+        PublicGetArticleBySlugResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.Article.IsLiked.Should().BeTrue();
+        result.Article.IsBookmarked.Should().BeFalse();
+    }
 }

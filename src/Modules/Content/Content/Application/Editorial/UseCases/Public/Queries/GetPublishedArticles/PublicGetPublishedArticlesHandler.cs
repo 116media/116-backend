@@ -40,9 +40,19 @@ public class PublicGetPublishedArticlesHandler(
             cancellationToken: cancellationToken
         );
 
+        List<Guid> articleIds = articles.Select(article => article.Id).ToList();
+        (IReadOnlySet<Guid> liked, IReadOnlySet<Guid> bookmarked) =
+            await articleRepository.GetLikedAndBookmarkedIdsAsync(
+                currentUserId: query.CurrentUserId,
+                articleIds: articleIds,
+                cancellationToken: cancellationToken
+            );
+
         IReadOnlyList<ArticleSummaryDto> dtoList = await articles.ToArticleSummaryDtosAsync(
             mapper,
             fileRepository,
+            liked,
+            bookmarked,
             cancellationToken
         );
 

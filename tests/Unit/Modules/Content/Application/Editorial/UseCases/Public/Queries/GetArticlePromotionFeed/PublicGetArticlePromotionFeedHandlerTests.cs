@@ -367,4 +367,75 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
     }
 
     #endregion
+
+    #region Interaction state flags
+
+    [Fact]
+    public async Task Handle_WhenAnonymous_ShouldReturnAllFalseFlagsAndSkipBatchLookups()
+    {
+        // Arrange
+        CategoryEntity gossipCategory = CategoryFactory.Create(Guid.NewGuid());
+        List<ArticleEntity> spot1 = ArticleFactory.CreateManyPublished(CategoryId, 1);
+        List<ArticleEntity> spot2 = ArticleFactory.CreateManyPublished(CategoryId, 1);
+        List<ArticleEntity> spot3 = ArticleFactory.CreateManyPublished(CategoryId, 2);
+        List<ArticleEntity> gossipPool = ArticleFactory.CreateManyPublished(CategoryId, 5);
+
+        _categoryRepositoryMock.SetupGetGossipCategory(gossipCategory);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(1, spot1);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(2, spot2);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(3, spot3);
+        _articleRepositoryMock.SetupGetGossipFallback(gossipPool);
+
+        // Act
+        PublicGetArticlePromotionFeedResult result = await _handler.Handle(
+            new PublicGetArticlePromotionFeedQuery(),
+            CancellationToken.None
+        );
+
+        // Assert
+        IEnumerable<ArticleSummaryDto> allSummaries = result
+            .Spot1.Articles.Concat(result.Spot2.Articles)
+            .Concat(result.Spot3.Slots.SelectMany(slot => slot.Articles))
+            .Concat(result.GossipStrip);
+
+        allSummaries.Should().OnlyContain(article => !article.IsLiked && !article.IsBookmarked);
+        _articleRepositoryMock.VerifyGetLikedAndBookmarkedIdsCalledWithUser(Times.Never());
+    }
+
+    [Fact]
+    public async Task Handle_WhenAuthenticated_ShouldStampAllSubCollections_WithSingleBatchPerType()
+    {
+        // Arrange
+        CategoryEntity gossipCategory = CategoryFactory.Create(Guid.NewGuid());
+        List<ArticleEntity> spot1 = ArticleFactory.CreateManyPublished(CategoryId, 1);
+        List<ArticleEntity> spot2 = ArticleFactory.CreateManyPublished(CategoryId, 1);
+        List<ArticleEntity> spot3 = ArticleFactory.CreateManyPublished(CategoryId, 2);
+        List<ArticleEntity> gossipPool = ArticleFactory.CreateManyPublished(CategoryId, 5);
+
+        Guid likedSpot1Id = spot1[0].Id;
+        Guid bookmarkedGossipId = gossipPool[0].Id;
+
+        _categoryRepositoryMock.SetupGetGossipCategory(gossipCategory);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(1, spot1);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(2, spot2);
+        _articleRepositoryMock.SetupGetActivePromotedBySpot(3, spot3);
+        _articleRepositoryMock.SetupGetGossipFallback(gossipPool);
+        _articleRepositoryMock.SetupGetLikedAndBookmarkedIds([likedSpot1Id], [bookmarkedGossipId]);
+
+        // Act
+        PublicGetArticlePromotionFeedResult result = await _handler.Handle(
+            new PublicGetArticlePromotionFeedQuery(CurrentUserId: Guid.NewGuid()),
+            CancellationToken.None
+        );
+
+        // Assert — the liked spot 1 article and the bookmarked gossip strip article are stamped
+        result.Spot1.Articles.Single(article => article.Id == likedSpot1Id).IsLiked.Should().BeTrue();
+        result.GossipStrip.Single(article => article.Id == bookmarkedGossipId).IsBookmarked.Should().BeTrue();
+        result.Spot2.Articles.Should().OnlyContain(article => !article.IsLiked && !article.IsBookmarked);
+
+        // The batch lookup runs exactly once across all sub-collections
+        _articleRepositoryMock.VerifyGetLikedAndBookmarkedIdsCalledWithUser(Times.Once());
+    }
+
+    #endregion
 }

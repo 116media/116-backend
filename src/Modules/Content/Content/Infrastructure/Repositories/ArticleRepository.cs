@@ -274,6 +274,31 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     }
 
     /// <inheritdoc />
+    public async Task<(IReadOnlySet<Guid> Liked, IReadOnlySet<Guid> Bookmarked)> GetLikedAndBookmarkedIdsAsync(
+        Guid? currentUserId,
+        IReadOnlyCollection<Guid> articleIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (currentUserId is not Guid userId || articleIds.Count == 0)
+        {
+            return (new HashSet<Guid>(), new HashSet<Guid>());
+        }
+
+        List<Guid> likedIds = await context
+            .ArticleLikes.Where(like => like.UserId == userId && articleIds.Contains(like.ArticleId))
+            .Select(like => like.ArticleId)
+            .ToListAsync(cancellationToken);
+
+        List<Guid> bookmarkedIds = await context
+            .ArticleBookmarks.Where(bookmark => bookmark.UserId == userId && articleIds.Contains(bookmark.ArticleId))
+            .Select(bookmark => bookmark.ArticleId)
+            .ToListAsync(cancellationToken);
+
+        return (likedIds.ToHashSet(), bookmarkedIds.ToHashSet());
+    }
+
+    /// <inheritdoc />
     public async Task AddShareAsync(ArticleShareEntity share, CancellationToken cancellationToken = default)
     {
         await context.ArticleShares.AddAsync(share, cancellationToken);

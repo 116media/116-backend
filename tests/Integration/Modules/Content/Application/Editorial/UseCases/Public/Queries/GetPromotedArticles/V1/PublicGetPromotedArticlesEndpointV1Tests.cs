@@ -59,4 +59,43 @@ public class PublicGetPromotedArticlesEndpointV1Tests(PostgresFixture db) : Base
         body.Articles.Should().NotContain(item => item.Id == publishedArticle.Id);
         body.Articles.Should().OnlyContain(item => item.IsPromoted);
     }
+
+    /// <summary>
+    /// Verifies that an authenticated user's promoted list stamps IsLiked / IsBookmarked
+    /// on their own interactions and never surfaces another user's state.
+    /// </summary>
+    [Fact]
+    public async Task GetPromotedArticles_WhenAuthenticated_StampsOnlyTheUsersInteractions()
+    {
+        (Guid categoryId, Guid promotionLevelId) = await SeedCategoryAsync();
+        Guid userId = Guid.NewGuid();
+        Guid otherUserId = Guid.NewGuid();
+        ArticleEntity interactedArticle = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ArticleEntity entity = ArticleFactory.CreatePromoted(categoryId, promotionLevelId);
+            ctx.Articles.Add(entity);
+            ctx.ArticleLikes.Add(ArticleLikeEntity.Create(Guid.NewGuid(), userId, entity.Id));
+            ctx.ArticleBookmarks.Add(ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, entity.Id));
+            return entity;
+        });
+        ArticleEntity otherUsersArticle = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ArticleEntity entity = ArticleFactory.CreatePromoted(categoryId, promotionLevelId);
+            ctx.Articles.Add(entity);
+            ctx.ArticleLikes.Add(ArticleLikeEntity.Create(Guid.NewGuid(), otherUserId, entity.Id));
+            return entity;
+        });
+
+        Client.AuthenticateAs(userId, "Visitor");
+
+        var response = await Client.GetAsync(PromotedUrl);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetPromotedArticlesResponse body = await response.ReadAsAsync<PublicGetPromotedArticlesResponse>();
+        body.Articles.Single(item => item.Id == interactedArticle.Id).IsLiked.Should().BeTrue();
+        body.Articles.Single(item => item.Id == interactedArticle.Id).IsBookmarked.Should().BeTrue();
+        body.Articles.Single(item => item.Id == otherUsersArticle.Id).IsLiked.Should().BeFalse();
+        body.Articles.Single(item => item.Id == otherUsersArticle.Id).IsBookmarked.Should().BeFalse();
+    }
 }

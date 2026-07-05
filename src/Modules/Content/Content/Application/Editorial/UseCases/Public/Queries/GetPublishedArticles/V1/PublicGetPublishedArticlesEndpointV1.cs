@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Constants;
+using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
@@ -39,6 +41,8 @@ public class PublicGetPublishedArticlesEndpointV1 : ICarterModule
             .MapGet(
                 "/",
                 async (
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
                     IDispatcher dispatcher,
                     int pageIndex = 0,
                     int pageSize = 10,
@@ -47,13 +51,21 @@ public class PublicGetPublishedArticlesEndpointV1 : ICarterModule
                     string? tagSlug = null
                 ) =>
                 {
+                    Guid? userId = null;
+
+                    if (user.Identity?.IsAuthenticated == true)
+                    {
+                        userId = claimsProvider.GetUserIdFromClaims(user: user);
+                    }
+
                     var paginatedRequest = new PaginatedRequest(pageIndex, pageSize);
 
                     var query = new PublicGetPublishedArticlesQuery(
                         PaginatedRequest: paginatedRequest,
                         Search: search,
                         CategoryId: categoryId,
-                        TagSlug: tagSlug
+                        TagSlug: tagSlug,
+                        CurrentUserId: userId
                     );
 
                     PublicGetPublishedArticlesResult result = await dispatcher.Send(request: query);

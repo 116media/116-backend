@@ -62,6 +62,21 @@ public class PublicGetArticlePromotionFeedHandler(
 
         var gossipQueue = new Queue<ArticleEntity>(gossipPool);
 
+        List<Guid> allFeedIds = spot1Articles
+            .Concat(spot2Articles)
+            .Concat(spot3Articles)
+            .Concat(gossipPool)
+            .Select(article => article.Id)
+            .Distinct()
+            .ToList();
+
+        (IReadOnlySet<Guid> liked, IReadOnlySet<Guid> bookmarked) =
+            await articleRepository.GetLikedAndBookmarkedIdsAsync(
+                currentUserId: query.CurrentUserId,
+                articleIds: allFeedIds,
+                cancellationToken: cancellationToken
+            );
+
         ArticlePromotionSpotDto spot1 = await BuildSimpleSpotAsync(
             spotPriority: EditorialFeedConstants.Spot1,
             promoted: spot1Articles,
@@ -69,6 +84,8 @@ public class PublicGetArticlePromotionFeedHandler(
             usedIds: usedIds,
             mapper: mapper,
             fileRepository: fileRepository,
+            likedArticleIds: liked,
+            bookmarkedArticleIds: bookmarked,
             cancellationToken: cancellationToken
         );
 
@@ -79,6 +96,8 @@ public class PublicGetArticlePromotionFeedHandler(
             usedIds: usedIds,
             mapper: mapper,
             fileRepository: fileRepository,
+            likedArticleIds: liked,
+            bookmarkedArticleIds: bookmarked,
             cancellationToken: cancellationToken
         );
 
@@ -88,6 +107,8 @@ public class PublicGetArticlePromotionFeedHandler(
             usedIds: usedIds,
             mapper: mapper,
             fileRepository: fileRepository,
+            likedArticleIds: liked,
+            bookmarkedArticleIds: bookmarked,
             cancellationToken: cancellationToken
         );
 
@@ -96,6 +117,8 @@ public class PublicGetArticlePromotionFeedHandler(
             stripSize: query.StripSize,
             mapper: mapper,
             fileRepository: fileRepository,
+            likedArticleIds: liked,
+            bookmarkedArticleIds: bookmarked,
             cancellationToken: cancellationToken
         );
 
@@ -117,6 +140,8 @@ public class PublicGetArticlePromotionFeedHandler(
     /// <param name="usedIds">Tracks all article IDs already placed in the feed to prevent duplicates.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
     /// <param name="fileRepository">Repository for resolving file URLs.</param>
+    /// <param name="likedArticleIds">Ids the current user has liked.</param>
+    /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>A <see cref="ArticlePromotionSpotDto" /> with promoted articles or a single gossip fallback.</returns>
     private static async Task<ArticlePromotionSpotDto> BuildSimpleSpotAsync(
@@ -126,6 +151,8 @@ public class PublicGetArticlePromotionFeedHandler(
         HashSet<Guid> usedIds,
         IMapper mapper,
         IFileRepository fileRepository,
+        IReadOnlySet<Guid> likedArticleIds,
+        IReadOnlySet<Guid> bookmarkedArticleIds,
         CancellationToken cancellationToken
     )
     {
@@ -133,7 +160,13 @@ public class PublicGetArticlePromotionFeedHandler(
         {
             return new ArticlePromotionSpotDto(
                 SpotPriority: spotPriority,
-                Articles: await promoted.ToArticleSummaryDtosAsync(mapper, fileRepository, cancellationToken)
+                Articles: await promoted.ToArticleSummaryDtosAsync(
+                    mapper,
+                    fileRepository,
+                    likedArticleIds,
+                    bookmarkedArticleIds,
+                    cancellationToken
+                )
             );
         }
 
@@ -142,7 +175,15 @@ public class PublicGetArticlePromotionFeedHandler(
         if (gossipQueue.TryDequeue(out ArticleEntity? gossip))
         {
             usedIds.Add(gossip.Id);
-            fallback.Add(await gossip.ToArticleSummaryDtoAsync(mapper, fileRepository, cancellationToken));
+            fallback.Add(
+                await gossip.ToArticleSummaryDtoAsync(
+                    mapper,
+                    fileRepository,
+                    likedArticleIds,
+                    bookmarkedArticleIds,
+                    cancellationToken
+                )
+            );
         }
 
         return new ArticlePromotionSpotDto(SpotPriority: spotPriority, Articles: fallback);
@@ -157,6 +198,8 @@ public class PublicGetArticlePromotionFeedHandler(
     /// <param name="usedIds">Tracks all article IDs already placed in the feed to prevent duplicates.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
     /// <param name="fileRepository">Repository for resolving file URLs.</param>
+    /// <param name="likedArticleIds">Ids the current user has liked.</param>
+    /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>
     /// A <see cref="ArticlePromotionSpot3Dto" /> with two named slots (<c>"a"</c> and <c>"b"</c>),
@@ -168,6 +211,8 @@ public class PublicGetArticlePromotionFeedHandler(
         HashSet<Guid> usedIds,
         IMapper mapper,
         IFileRepository fileRepository,
+        IReadOnlySet<Guid> likedArticleIds,
+        IReadOnlySet<Guid> bookmarkedArticleIds,
         CancellationToken cancellationToken
     )
     {
@@ -177,20 +222,42 @@ public class PublicGetArticlePromotionFeedHandler(
         for (int i = 0; i < promoted.Count; i++)
         {
             ArticleSummaryDto dto = await promoted[i]
-                .ToArticleSummaryDtoAsync(mapper, fileRepository, cancellationToken);
+                .ToArticleSummaryDtoAsync(
+                    mapper,
+                    fileRepository,
+                    likedArticleIds,
+                    bookmarkedArticleIds,
+                    cancellationToken
+                );
             (i % 2 == 0 ? columnA : columnB).Add(dto);
         }
 
         if (columnA.Count == 0 && gossipQueue.TryDequeue(out ArticleEntity? gossipA))
         {
             usedIds.Add(gossipA.Id);
-            columnA.Add(await gossipA.ToArticleSummaryDtoAsync(mapper, fileRepository, cancellationToken));
+            columnA.Add(
+                await gossipA.ToArticleSummaryDtoAsync(
+                    mapper,
+                    fileRepository,
+                    likedArticleIds,
+                    bookmarkedArticleIds,
+                    cancellationToken
+                )
+            );
         }
 
         if (columnB.Count == 0 && gossipQueue.TryDequeue(out ArticleEntity? gossipB))
         {
             usedIds.Add(gossipB.Id);
-            columnB.Add(await gossipB.ToArticleSummaryDtoAsync(mapper, fileRepository, cancellationToken));
+            columnB.Add(
+                await gossipB.ToArticleSummaryDtoAsync(
+                    mapper,
+                    fileRepository,
+                    likedArticleIds,
+                    bookmarkedArticleIds,
+                    cancellationToken
+                )
+            );
         }
 
         var slots = new List<ArticlePromotionSlotDto>
@@ -210,6 +277,8 @@ public class PublicGetArticlePromotionFeedHandler(
     /// <param name="stripSize">Maximum number of articles to include in the strip.</param>
     /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
     /// <param name="fileRepository">Repository for resolving file URLs.</param>
+    /// <param name="likedArticleIds">Ids the current user has liked.</param>
+    /// <param name="bookmarkedArticleIds">Ids the current user has bookmarked.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>
     /// An ordered list of up to <paramref name="stripSize" /> gossip article summaries.
@@ -220,6 +289,8 @@ public class PublicGetArticlePromotionFeedHandler(
         int stripSize,
         IMapper mapper,
         IFileRepository fileRepository,
+        IReadOnlySet<Guid> likedArticleIds,
+        IReadOnlySet<Guid> bookmarkedArticleIds,
         CancellationToken cancellationToken
     )
     {
@@ -227,7 +298,15 @@ public class PublicGetArticlePromotionFeedHandler(
 
         while (strip.Count < stripSize && gossipQueue.TryDequeue(out ArticleEntity? article))
         {
-            strip.Add(await article.ToArticleSummaryDtoAsync(mapper, fileRepository, cancellationToken));
+            strip.Add(
+                await article.ToArticleSummaryDtoAsync(
+                    mapper,
+                    fileRepository,
+                    likedArticleIds,
+                    bookmarkedArticleIds,
+                    cancellationToken
+                )
+            );
         }
 
         return strip;

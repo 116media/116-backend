@@ -185,6 +185,23 @@ public interface IArticleRepository : IRepository<ArticleEntity>
     Task RemoveBookmarkAsync(Guid userId, Guid articleId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Returns the subsets of the given article ids that the specified user has liked and
+    /// bookmarked, used to stamp the per-user interaction flags on article DTOs. Executes
+    /// one query per interaction type; returns empty sets for an anonymous caller
+    /// (<paramref name="currentUserId" /> null) or an empty id list, running no queries
+    /// in that case.
+    /// </summary>
+    /// <param name="currentUserId">The authenticated caller's id, or null when anonymous.</param>
+    /// <param name="articleIds">The candidate article ids, typically one page of a feed.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The liked and bookmarked id sets for the current user.</returns>
+    Task<(IReadOnlySet<Guid> Liked, IReadOnlySet<Guid> Bookmarked)> GetLikedAndBookmarkedIdsAsync(
+        Guid? currentUserId,
+        IReadOnlyCollection<Guid> articleIds,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Adds a share record to the repository.
     /// </summary>
     Task AddShareAsync(ArticleShareEntity share, CancellationToken cancellationToken = default);

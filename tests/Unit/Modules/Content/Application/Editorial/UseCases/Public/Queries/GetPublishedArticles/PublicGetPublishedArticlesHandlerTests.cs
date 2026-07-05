@@ -81,4 +81,58 @@ public class PublicGetPublishedArticlesHandlerTests : BaseContentHandlerTest
         result.Articles.Items.Should().BeEmpty();
         result.Articles.Count.Should().Be(0);
     }
+
+    [Fact]
+    public async Task Handle_WhenAnonymous_ShouldReturnAllFalseFlagsAndSkipBatchLookups()
+    {
+        // Arrange
+        List<ArticleEntity> articles = ArticleFactory.CreateManyPublished(CategoryId, 3);
+        var query = new PublicGetPublishedArticlesQuery(
+            PaginatedRequest: new PaginatedRequest(0, 10),
+            Search: null,
+            CategoryId: null,
+            TagSlug: null
+        );
+
+        _articleRepositoryMock.SetupGetAllAsync(articles, articles.Count);
+
+        // Act
+        PublicGetPublishedArticlesResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.Articles.Items.Should().OnlyContain(article => !article.IsLiked && !article.IsBookmarked);
+        _articleRepositoryMock.VerifyGetLikedAndBookmarkedIdsCalledWithUser(Times.Never());
+    }
+
+    [Fact]
+    public async Task Handle_WhenAuthenticated_ShouldStampOnlyInteractedItems_WithSingleBatchPerType()
+    {
+        // Arrange
+        List<ArticleEntity> articles = ArticleFactory.CreateManyPublished(CategoryId, 3);
+        Guid likedId = articles[0].Id;
+        Guid bookmarkedId = articles[1].Id;
+        var query = new PublicGetPublishedArticlesQuery(
+            PaginatedRequest: new PaginatedRequest(0, 10),
+            Search: null,
+            CategoryId: null,
+            TagSlug: null,
+            CurrentUserId: Guid.NewGuid()
+        );
+
+        _articleRepositoryMock.SetupGetAllAsync(articles, articles.Count);
+        _articleRepositoryMock.SetupGetLikedAndBookmarkedIds([likedId], [bookmarkedId]);
+
+        // Act
+        PublicGetPublishedArticlesResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.Articles.Items.Single(article => article.Id == likedId).IsLiked.Should().BeTrue();
+        result.Articles.Items.Single(article => article.Id == likedId).IsBookmarked.Should().BeFalse();
+        result.Articles.Items.Single(article => article.Id == bookmarkedId).IsBookmarked.Should().BeTrue();
+        result.Articles.Items.Single(article => article.Id == bookmarkedId).IsLiked.Should().BeFalse();
+        result.Articles.Items.Single(article => article.Id == articles[2].Id).IsLiked.Should().BeFalse();
+        result.Articles.Items.Single(article => article.Id == articles[2].Id).IsBookmarked.Should().BeFalse();
+
+        _articleRepositoryMock.VerifyGetLikedAndBookmarkedIdsCalledWithUser(Times.Once());
+    }
 }

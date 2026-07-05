@@ -6,7 +6,11 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPromoted
 /// <summary>
 /// Query for retrieving the list of currently promoted published articles.
 /// </summary>
-public record PublicGetPromotedArticlesQuery() : IQuery<PublicGetPromotedArticlesResult>;
+/// <param name="CurrentUserId">
+/// The authenticated caller's id, or null for an anonymous request. When null, the per-user
+/// interaction flags on the returned summaries resolve to false.
+/// </param>
+public record PublicGetPromotedArticlesQuery(Guid? CurrentUserId = null) : IQuery<PublicGetPromotedArticlesResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicGetPromotedArticlesQuery" /> containing promoted article summaries.

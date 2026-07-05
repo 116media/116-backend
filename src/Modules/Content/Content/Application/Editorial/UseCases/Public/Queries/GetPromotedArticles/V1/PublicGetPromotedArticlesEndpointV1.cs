@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Constants;
+using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
 using Carter;
@@ -37,9 +39,16 @@ public class PublicGetPromotedArticlesEndpointV1 : ICarterModule
         group
             .MapGet(
                 $"/{EditorialRouteConstants.Promoted}",
-                async (IDispatcher dispatcher) =>
+                async (ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
                 {
-                    var query = new PublicGetPromotedArticlesQuery();
+                    Guid? userId = null;
+
+                    if (user.Identity?.IsAuthenticated == true)
+                    {
+                        userId = claimsProvider.GetUserIdFromClaims(user: user);
+                    }
+
+                    var query = new PublicGetPromotedArticlesQuery(CurrentUserId: userId);
                     PublicGetPromotedArticlesResult result = await dispatcher.Send(request: query);
 
                     var response = new PublicGetPromotedArticlesResponse(Articles: result.Articles);
