@@ -52,11 +52,9 @@ public class AdminRemovePermissionFromRoleEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminRemovePermissionFromRoleMetaField.AdminRemovePermissionFromRole.Name)
-            .WithSummary(summary: AdminRemovePermissionFromRoleMetaField.AdminRemovePermissionFromRole.Summary)
-            .WithDescription(
-                description: AdminRemovePermissionFromRoleMetaField.AdminRemovePermissionFromRole.Description
-            )
+            .WithName(endpointName: AdminRemovePermissionFromRoleMetaField.RemovePermissionFromRole.Name)
+            .WithSummary(summary: AdminRemovePermissionFromRoleMetaField.RemovePermissionFromRole.Summary)
+            .WithDescription(description: AdminRemovePermissionFromRoleMetaField.RemovePermissionFromRole.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
