@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Queries.GetRoleById;
 /// </summary>
 public static class AdminGetRoleByIdMetaField
 {
-    public static readonly RouteMetadata AdminGetRoleById = new(
+    public static readonly RouteMetadata GetRoleById = new(
         "AdminGetRoleById",
         "Retrieve a role by ID with its permissions",
         """
