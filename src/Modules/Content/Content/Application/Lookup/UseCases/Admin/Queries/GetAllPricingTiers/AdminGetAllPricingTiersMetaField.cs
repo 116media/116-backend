@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllPricingTi
 /// </summary>
 public static class AdminGetAllPricingTiersMetaField
 {
-    public static readonly RouteMetadata AdminGetAllPricingTiers = new(
+    public static readonly RouteMetadata GetAllPricingTiers = new(
         "AdminGetAllPricingTiers",
         "List all pricing tiers",
         """
