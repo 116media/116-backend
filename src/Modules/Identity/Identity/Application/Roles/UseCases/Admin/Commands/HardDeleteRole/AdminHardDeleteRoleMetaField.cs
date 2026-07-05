@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.HardDeleteRole
 /// </summary>
 public static class AdminHardDeleteRoleMetaField
 {
-    public static readonly RouteMetadata AdminHardDeleteRole = new(
+    public static readonly RouteMetadata HardDeleteRole = new(
         "AdminHardDeleteRole",
         "Permanently delete a role",
         """
