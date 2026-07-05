@@ -67,9 +67,9 @@ public class AdminGetAllSessionsEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminGetAllSessionsMetaField.AdminGetAllSessions.Name)
-            .WithSummary(summary: AdminGetAllSessionsMetaField.AdminGetAllSessions.Summary)
-            .WithDescription(description: AdminGetAllSessionsMetaField.AdminGetAllSessions.Description)
+            .WithName(endpointName: AdminGetAllSessionsMetaField.GetAllSessions.Name)
+            .WithSummary(summary: AdminGetAllSessionsMetaField.GetAllSessions.Summary)
+            .WithDescription(description: AdminGetAllSessionsMetaField.GetAllSessions.Description)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
