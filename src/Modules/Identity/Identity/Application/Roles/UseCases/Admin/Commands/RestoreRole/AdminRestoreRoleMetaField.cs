@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.RestoreRole;
 /// </summary>
 public static class AdminRestoreRoleMetaField
 {
-    public static readonly RouteMetadata AdminRestoreRole = new(
+    public static readonly RouteMetadata RestoreRole = new(
         "AdminRestoreRole",
         "Restore a soft-deleted role",
         """
