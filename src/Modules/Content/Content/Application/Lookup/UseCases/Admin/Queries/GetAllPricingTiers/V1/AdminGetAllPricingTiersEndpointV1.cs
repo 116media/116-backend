@@ -49,9 +49,9 @@ public class AdminGetAllPricingTiersEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetAllPricingTiersMetaField.AdminGetAllPricingTiers.Name)
-            .WithSummary(summary: AdminGetAllPricingTiersMetaField.AdminGetAllPricingTiers.Summary)
-            .WithDescription(description: AdminGetAllPricingTiersMetaField.AdminGetAllPricingTiers.Description)
+            .WithName(endpointName: AdminGetAllPricingTiersMetaField.GetAllPricingTiers.Name)
+            .WithSummary(summary: AdminGetAllPricingTiersMetaField.GetAllPricingTiers.Summary)
+            .WithDescription(description: AdminGetAllPricingTiersMetaField.GetAllPricingTiers.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
