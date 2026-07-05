@@ -54,9 +54,9 @@ public class AdminUpdateContentTypeEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminUpdateContentTypeMetaField.AdminUpdateContentType.Name)
-            .WithSummary(summary: AdminUpdateContentTypeMetaField.AdminUpdateContentType.Summary)
-            .WithDescription(description: AdminUpdateContentTypeMetaField.AdminUpdateContentType.Description)
+            .WithName(endpointName: AdminUpdateContentTypeMetaField.UpdateContentType.Name)
+            .WithSummary(summary: AdminUpdateContentTypeMetaField.UpdateContentType.Summary)
+            .WithDescription(description: AdminUpdateContentTypeMetaField.UpdateContentType.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
