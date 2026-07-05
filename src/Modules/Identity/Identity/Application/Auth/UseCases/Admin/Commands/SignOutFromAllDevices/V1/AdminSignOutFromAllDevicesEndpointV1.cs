@@ -58,9 +58,9 @@ public class AdminSignOutFromAllDevicesEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminSignOutFromAllDevicesMetaField.AdminSignOutFromAllDevices.Name)
-            .WithSummary(summary: AdminSignOutFromAllDevicesMetaField.AdminSignOutFromAllDevices.Summary)
-            .WithDescription(description: AdminSignOutFromAllDevicesMetaField.AdminSignOutFromAllDevices.Description)
+            .WithName(endpointName: AdminSignOutFromAllDevicesMetaField.SignOutFromAllDevices.Name)
+            .WithSummary(summary: AdminSignOutFromAllDevicesMetaField.SignOutFromAllDevices.Summary)
+            .WithDescription(description: AdminSignOutFromAllDevicesMetaField.SignOutFromAllDevices.Description)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .Produces<AdminSignOutFromAllDevicesResponse>()
