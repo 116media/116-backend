@@ -47,9 +47,9 @@ public class AdminGetPermissionByIdEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminGetPermissionByIdMetaField.AdminGetPermissionById.Name)
-            .WithSummary(summary: AdminGetPermissionByIdMetaField.AdminGetPermissionById.Summary)
-            .WithDescription(description: AdminGetPermissionByIdMetaField.AdminGetPermissionById.Description)
+            .WithName(endpointName: AdminGetPermissionByIdMetaField.GetPermissionById.Name)
+            .WithSummary(summary: AdminGetPermissionByIdMetaField.GetPermissionById.Summary)
+            .WithDescription(description: AdminGetPermissionByIdMetaField.GetPermissionById.Description)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
