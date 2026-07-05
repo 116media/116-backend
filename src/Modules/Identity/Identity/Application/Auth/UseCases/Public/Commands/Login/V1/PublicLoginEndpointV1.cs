@@ -88,9 +88,9 @@ public class PublicLoginEndpointV1 : ICarterModule
                     return Results.Ok(value: mobileResponse);
                 }
             )
-            .WithName(endpointName: PublicLoginMetaField.PublicLogin.Name)
-            .WithSummary(summary: PublicLoginMetaField.PublicLogin.Summary)
-            .WithDescription(description: PublicLoginMetaField.PublicLogin.Description)
+            .WithName(endpointName: PublicLoginMetaField.Login.Name)
+            .WithSummary(summary: PublicLoginMetaField.Login.Summary)
+            .WithDescription(description: PublicLoginMetaField.Login.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.Authentication)
             .ProducesValidationProblem()
