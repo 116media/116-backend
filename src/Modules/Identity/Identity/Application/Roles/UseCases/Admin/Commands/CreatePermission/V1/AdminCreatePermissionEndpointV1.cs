@@ -66,9 +66,9 @@ public class AdminCreatePermissionEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: AdminCreatePermissionMetaField.AdminCreatePermission.Name)
-            .WithSummary(summary: AdminCreatePermissionMetaField.AdminCreatePermission.Summary)
-            .WithDescription(description: AdminCreatePermissionMetaField.AdminCreatePermission.Description)
+            .WithName(endpointName: AdminCreatePermissionMetaField.CreatePermission.Name)
+            .WithSummary(summary: AdminCreatePermissionMetaField.CreatePermission.Summary)
+            .WithDescription(description: AdminCreatePermissionMetaField.CreatePermission.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
