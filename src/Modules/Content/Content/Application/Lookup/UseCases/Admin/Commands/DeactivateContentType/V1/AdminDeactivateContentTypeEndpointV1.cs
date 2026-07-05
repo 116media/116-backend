@@ -46,9 +46,9 @@ public class AdminDeactivateContentTypeEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminDeactivateContentTypeMetaField.AdminDeactivateContentType.Name)
-            .WithSummary(summary: AdminDeactivateContentTypeMetaField.AdminDeactivateContentType.Summary)
-            .WithDescription(description: AdminDeactivateContentTypeMetaField.AdminDeactivateContentType.Description)
+            .WithName(endpointName: AdminDeactivateContentTypeMetaField.DeactivateContentType.Name)
+            .WithSummary(summary: AdminDeactivateContentTypeMetaField.DeactivateContentType.Summary)
+            .WithDescription(description: AdminDeactivateContentTypeMetaField.DeactivateContentType.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
