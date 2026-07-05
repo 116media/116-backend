@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreatePromotio
 /// </summary>
 public static class AdminCreatePromotionLevelMetaField
 {
-    public static readonly RouteMetadata AdminCreatePromotionLevel = new(
+    public static readonly RouteMetadata CreatePromotionLevel = new(
         "AdminCreatePromotionLevel",
         "Create a new promotion level",
         """
