@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePricingT
 /// </summary>
 public static class AdminUpdatePricingTierMetaField
 {
-    public static readonly RouteMetadata AdminUpdatePricingTier = new(
+    public static readonly RouteMetadata UpdatePricingTier = new(
         "AdminUpdatePricingTier",
         "Update a pricing tier",
         """
