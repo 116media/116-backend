@@ -46,11 +46,9 @@ public class AdminDeactivatePromotionLevelEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminDeactivatePromotionLevelMetaField.AdminDeactivatePromotionLevel.Name)
-            .WithSummary(summary: AdminDeactivatePromotionLevelMetaField.AdminDeactivatePromotionLevel.Summary)
-            .WithDescription(
-                description: AdminDeactivatePromotionLevelMetaField.AdminDeactivatePromotionLevel.Description
-            )
+            .WithName(endpointName: AdminDeactivatePromotionLevelMetaField.DeactivatePromotionLevel.Name)
+            .WithSummary(summary: AdminDeactivatePromotionLevelMetaField.DeactivatePromotionLevel.Summary)
+            .WithDescription(description: AdminDeactivatePromotionLevelMetaField.DeactivatePromotionLevel.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
