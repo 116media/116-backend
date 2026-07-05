@@ -59,9 +59,9 @@ public class AdminUpdateRoleEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminUpdateRoleMetaField.AdminUpdateRole.Name)
-            .WithSummary(summary: AdminUpdateRoleMetaField.AdminUpdateRole.Summary)
-            .WithDescription(description: AdminUpdateRoleMetaField.AdminUpdateRole.Description)
+            .WithName(endpointName: AdminUpdateRoleMetaField.UpdateRole.Name)
+            .WithSummary(summary: AdminUpdateRoleMetaField.UpdateRole.Summary)
+            .WithDescription(description: AdminUpdateRoleMetaField.UpdateRole.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
