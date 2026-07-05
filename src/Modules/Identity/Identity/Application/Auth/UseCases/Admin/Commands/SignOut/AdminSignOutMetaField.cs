@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOut;
 /// </summary>
 public static class AdminSignOutMetaField
 {
-    public static readonly RouteMetadata AdminSignOut = new(
+    public static readonly RouteMetadata SignOut = new(
         "AdminSignOut",
         "Sign out the authenticated admin user",
         """
