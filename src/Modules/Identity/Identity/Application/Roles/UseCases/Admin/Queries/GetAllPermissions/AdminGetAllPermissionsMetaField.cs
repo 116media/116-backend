@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Queries.GetAllPermissio
 /// </summary>
 public static class AdminGetAllPermissionsMetaField
 {
-    public static readonly RouteMetadata AdminGetAllPermissions = new(
+    public static readonly RouteMetadata GetAllPermissions = new(
         "AdminGetAllPermissions",
         "Retrieve all permissions with pagination and filtering",
         """
