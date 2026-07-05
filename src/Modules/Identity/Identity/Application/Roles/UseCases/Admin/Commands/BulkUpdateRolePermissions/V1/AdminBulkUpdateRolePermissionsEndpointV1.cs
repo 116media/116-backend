@@ -57,11 +57,9 @@ public class AdminBulkUpdateRolePermissionsEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminBulkUpdateRolePermissionsMetaField.AdminBulkUpdateRolePermissions.Name)
-            .WithSummary(summary: AdminBulkUpdateRolePermissionsMetaField.AdminBulkUpdateRolePermissions.Summary)
-            .WithDescription(
-                description: AdminBulkUpdateRolePermissionsMetaField.AdminBulkUpdateRolePermissions.Description
-            )
+            .WithName(endpointName: AdminBulkUpdateRolePermissionsMetaField.BulkUpdateRolePermissions.Name)
+            .WithSummary(summary: AdminBulkUpdateRolePermissionsMetaField.BulkUpdateRolePermissions.Summary)
+            .WithDescription(description: AdminBulkUpdateRolePermissionsMetaField.BulkUpdateRolePermissions.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
