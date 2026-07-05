@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.DeleteTag;
 /// </summary>
 public static class AdminDeleteTagMetaField
 {
-    public static readonly RouteMetadata AdminDeleteTag = new(
+    public static readonly RouteMetadata DeleteTag = new(
         "AdminDeleteTag",
         "Permanently delete a content tag",
         """
