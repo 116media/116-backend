@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeleteRole
 /// </summary>
 public static class AdminSoftDeleteRoleMetaField
 {
-    public static readonly RouteMetadata AdminSoftDeleteRole = new(
+    public static readonly RouteMetadata SoftDeleteRole = new(
         "AdminSoftDeleteRole",
         "Soft delete a role",
         """
