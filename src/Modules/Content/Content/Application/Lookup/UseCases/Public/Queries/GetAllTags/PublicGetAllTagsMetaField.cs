@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetAllTags;
 /// </summary>
 public static class PublicGetAllTagsMetaField
 {
-    public static readonly RouteMetadata PublicGetAllTags = new(
+    public static readonly RouteMetadata GetAllTags = new(
         "PublicGetAllTags",
         "Get all tags",
         """
