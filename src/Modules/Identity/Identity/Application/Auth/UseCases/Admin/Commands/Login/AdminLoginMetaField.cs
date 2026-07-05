@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.Login;
 /// </summary>
 public static class AdminLoginMetaField
 {
-    public static readonly RouteMetadata AdminLogin = new(
+    public static readonly RouteMetadata Login = new(
         "AdminLogin",
         "Authenticate admin and return JWT token with admin claims",
         """
