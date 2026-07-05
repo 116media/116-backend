@@ -48,9 +48,9 @@ public class AdminRestoreRoleEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminRestoreRoleMetaField.AdminRestoreRole.Name)
-            .WithSummary(summary: AdminRestoreRoleMetaField.AdminRestoreRole.Summary)
-            .WithDescription(description: AdminRestoreRoleMetaField.AdminRestoreRole.Description)
+            .WithName(endpointName: AdminRestoreRoleMetaField.RestoreRole.Name)
+            .WithSummary(summary: AdminRestoreRoleMetaField.RestoreRole.Summary)
+            .WithDescription(description: AdminRestoreRoleMetaField.RestoreRole.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()
