@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.HardDeletePerm
 /// </summary>
 public static class AdminHardDeletePermissionMetaField
 {
-    public static readonly RouteMetadata AdminHardDeletePermission = new(
+    public static readonly RouteMetadata HardDeletePermission = new(
         "AdminHardDeletePermission",
         "Permanently delete a permission",
         """
