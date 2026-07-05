@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.CreateRole;
 /// </summary>
 public static class AdminCreateRoleMetaField
 {
-    public static readonly RouteMetadata AdminCreateRole = new(
+    public static readonly RouteMetadata CreateRole = new(
         "AdminCreateRole",
         "Create a new role",
         """
