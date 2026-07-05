@@ -46,9 +46,9 @@ public class AdminDeleteTagEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminDeleteTagMetaField.AdminDeleteTag.Name)
-            .WithSummary(summary: AdminDeleteTagMetaField.AdminDeleteTag.Summary)
-            .WithDescription(description: AdminDeleteTagMetaField.AdminDeleteTag.Description)
+            .WithName(endpointName: AdminDeleteTagMetaField.DeleteTag.Name)
+            .WithSummary(summary: AdminDeleteTagMetaField.DeleteTag.Summary)
+            .WithDescription(description: AdminDeleteTagMetaField.DeleteTag.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
