@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdateRole;
 /// </summary>
 public static class AdminUpdateRoleMetaField
 {
-    public static readonly RouteMetadata AdminUpdateRole = new(
+    public static readonly RouteMetadata UpdateRole = new(
         "AdminUpdateRole",
         "Update an existing role",
         """
