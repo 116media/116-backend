@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetMyArt
 /// </summary>
 public static class PublicGetMyArticleBookmarksMetaField
 {
-    public static readonly RouteMetadata PublicGetMyArticleBookmarks = new(
+    public static readonly RouteMetadata GetMyArticleBookmarks = new(
         "PublicGetMyArticleBookmarks",
         "Get my bookmarked articles",
         """
