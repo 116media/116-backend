@@ -46,9 +46,9 @@ public class AdminForceLogoutUserEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminForceLogoutUserMetaField.AdminForceLogoutUser.Name)
-            .WithSummary(summary: AdminForceLogoutUserMetaField.AdminForceLogoutUser.Summary)
-            .WithDescription(description: AdminForceLogoutUserMetaField.AdminForceLogoutUser.Description)
+            .WithName(endpointName: AdminForceLogoutUserMetaField.ForceLogoutUser.Name)
+            .WithSummary(summary: AdminForceLogoutUserMetaField.ForceLogoutUser.Summary)
+            .WithDescription(description: AdminForceLogoutUserMetaField.ForceLogoutUser.Description)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
