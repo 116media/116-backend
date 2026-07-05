@@ -48,9 +48,9 @@ public class AdminGetAllTagsEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetAllTagsMetaField.AdminGetAllTags.Name)
-            .WithSummary(summary: AdminGetAllTagsMetaField.AdminGetAllTags.Summary)
-            .WithDescription(description: AdminGetAllTagsMetaField.AdminGetAllTags.Description)
+            .WithName(endpointName: AdminGetAllTagsMetaField.GetAllTags.Name)
+            .WithSummary(summary: AdminGetAllTagsMetaField.GetAllTags.Summary)
+            .WithDescription(description: AdminGetAllTagsMetaField.GetAllTags.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
