@@ -56,9 +56,9 @@ public class PublicGetCommentRepliesEndpointV1 : ICarterModule
                     return Results.Ok(result.Replies);
                 }
             )
-            .WithName(endpointName: PublicGetCommentRepliesMetaField.PublicGetCommentReplies.Name)
-            .WithSummary(summary: PublicGetCommentRepliesMetaField.PublicGetCommentReplies.Summary)
-            .WithDescription(description: PublicGetCommentRepliesMetaField.PublicGetCommentReplies.Description)
+            .WithName(endpointName: PublicGetCommentRepliesMetaField.GetCommentReplies.Name)
+            .WithSummary(summary: PublicGetCommentRepliesMetaField.GetCommentReplies.Summary)
+            .WithDescription(description: PublicGetCommentRepliesMetaField.GetCommentReplies.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PaginatedResult<ArticleCommentDto>>(statusCode: StatusCodes.Status200OK)
