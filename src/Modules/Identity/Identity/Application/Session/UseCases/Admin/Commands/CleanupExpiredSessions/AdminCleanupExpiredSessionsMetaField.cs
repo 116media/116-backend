@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Commands.CleanupExpir
 /// </summary>
 public static class AdminCleanupExpiredSessionsMetaField
 {
-    public static readonly RouteMetadata AdminCleanupExpiredSessions = new(
+    public static readonly RouteMetadata CleanupExpiredSessions = new(
         "AdminCleanupExpiredSessions",
         "Cleanup all expired sessions",
         """
