@@ -1,4 +1,5 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.AddArticleComment;
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -20,6 +21,7 @@ public class PublicAddArticleCommentHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IPopularArticlesCacheInvalidator> _cacheInvalidatorMock;
     private readonly PublicAddArticleCommentHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -28,7 +30,13 @@ public class PublicAddArticleCommentHandlerTests : BaseContentHandlerTest
     {
         _articleRepositoryMock = MockArticleRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new PublicAddArticleCommentHandler(_articleRepositoryMock.Object, _unitOfWorkMock.Object, Mapper);
+        _cacheInvalidatorMock = MockPopularArticlesCacheInvalidator.Create();
+        _handler = new PublicAddArticleCommentHandler(
+            _articleRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            _cacheInvalidatorMock.Object,
+            Mapper
+        );
     }
 
     #region Success Cases
@@ -55,6 +63,7 @@ public class PublicAddArticleCommentHandlerTests : BaseContentHandlerTest
         _articleRepositoryMock.VerifyAddCommentCalled();
         _articleRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
+        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     #endregion

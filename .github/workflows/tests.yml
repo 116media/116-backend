@@ -161,12 +161,48 @@ jobs:
                   assemblyfilters: -*Tests*;-*Migrations*
                   title: Integration
 
-            - name: Assemble PR comment
+            - name: Compute PR changed source files
+              run: |
+                  mkdir -p coverage
+                  git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+                  git diff --name-only --diff-filter=ACMR FETCH_HEAD HEAD -- src \
+                    > coverage/changed-src.txt || true
+                  git diff -U0 --diff-filter=ACMR FETCH_HEAD HEAD -- src \
+                    > coverage/diff-u0.txt || true
+                  echo "Changed source files:"
+                  cat coverage/changed-src.txt || true
+
+            - name: Build Codecov report header
+              run: |
+                  bash scripts/coverage-header.sh \
+                    "${{ github.event.pull_request.number }}" \
+                    "${{ github.repository }}" \
+                    coverage/unit \
+                    coverage/integration \
+                    coverage/diff-u0.txt \
+                    coverage/comment.md
+
+            - name: Append unit-vs-integration breakdown
               run: |
                   bash scripts/coverage-comment.sh \
                     coverage/report/unit/SummaryGithub.md \
                     coverage/report/integration/SummaryGithub.md \
                     coverage/comment.md
+
+            - name: Append per-suite uncovered files
+              run: |
+                  bash scripts/coverage-uncovered.sh \
+                    coverage/unit \
+                    coverage/integration \
+                    coverage/comment.md \
+                    coverage/changed-src.txt
+
+            - name: Append feedback footer
+              run: |
+                  {
+                    echo ""
+                    echo ":loudspeaker: Thoughts on this report? [Let us know!](https://github.com/codecov/feedback/issues/255)"
+                  } >> coverage/comment.md
 
             - name: Post coverage comment
               uses: marocchino/sticky-pull-request-comment@v2

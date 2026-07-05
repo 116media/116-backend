@@ -106,6 +106,41 @@ public class AdminSubmitArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
     }
 
     /// <summary>
+    /// Verifies that submitting a paid article that has already left Draft (it is awaiting
+    /// payment) returns a 409 Conflict via the already-submitted message and leaves the
+    /// status unchanged. This exercises the paid branch that reports AlreadySubmitted, as
+    /// opposed to the free branch that reports AlreadyPendingReview.
+    /// </summary>
+    [Fact]
+    public async Task SubmitArticle_WhenPaidArticleAwaitingPayment_ReturnsConflict()
+    {
+        Guid orderItemId = Guid.NewGuid();
+        ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            CustomerEntity customer = CustomerFactory.Create();
+            ArticleEntity paidArticle = ArticleFactory.CreatePendingPayment(category.Id, customer.Id, orderItemId);
+
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Customers.Add(customer);
+            ctx.Articles.Add(paidArticle);
+            return paidArticle;
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync(
+            Routes.Admin.Editorial.Submit(EditorialRouteConstants.Articles, article.Id),
+            null
+        );
+
+        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await GetArticleStatusAsync(article.Id)).Should().Be(EnumContentStatus.PendingPayment);
+    }
+
+    /// <summary>
     /// Verifies that submitting a free draft article succeeds, returns IsSuccess true,
     /// and transitions the persisted status from Draft to PendingReview.
     /// </summary>

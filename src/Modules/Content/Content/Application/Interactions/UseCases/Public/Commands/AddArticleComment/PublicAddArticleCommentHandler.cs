@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -12,10 +13,12 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddArti
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="cacheInvalidator">Invalidates the popular-articles cache after the comment count changes.</param>
 /// <param name="mapper">The mapper used to project entities to DTOs.</param>
 public class PublicAddArticleCommentHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
+    IPopularArticlesCacheInvalidator cacheInvalidator,
     IMapper mapper
 ) : ICommandHandler<PublicAddArticleCommentCommand, PublicAddArticleCommentResult>
 {
@@ -43,6 +46,8 @@ public class PublicAddArticleCommentHandler(
         articleRepository.Update(article: article);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        cacheInvalidator.Invalidate();
 
         var dto = comment.ToArticleCommentDto(mapper);
         return new PublicAddArticleCommentResult(Comment: dto);

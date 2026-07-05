@@ -106,6 +106,23 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<ArticleEntity>> GetPopularArticlesAsync(
+        int limit,
+        Guid? categoryId,
+        Guid? excludeId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        IQueryable<ArticleEntity> query = new PopularArticlesQueryBuilder()
+            .WithCategory(categoryId: categoryId)
+            .WithExcludeId(excludeId: excludeId)
+            .WithLimit(limit: limit)
+            .Build(context: context);
+
+        return await query.ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<IReadOnlyList<ArticleEntity>> GetAbandonedDraftsAsync(
         DateTime cutoff,
         CancellationToken cancellationToken = default

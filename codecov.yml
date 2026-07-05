@@ -28,14 +28,11 @@ parsers:
             method: no
             macro: no
 
-comment:
-    layout: "reach,diff,flags,components,files,footer"
-    behavior: default
-    require_changes: false
-    require_base: false
-    require_head: true
-    after_n_builds: 2
-    show_carryforward_flags: true
+# Codecov's own PR comment is disabled: the Tests workflow posts a single
+# consolidated comment that reproduces the Codecov report header + patch verdict
+# and adds the per-suite (unit vs integration) breakdown and changed-file gaps.
+# Per-flag project/patch status checks below are unaffected by this.
+comment: false
 
 ignore:
     - "**/Migrations/**"
@@ -55,6 +52,10 @@ flag_management:
           paths:
               - src/
           statuses:
+              - type: project
+                target: auto
+                threshold: 0%
+                informational: true
               - type: patch
                 target: 60%
                 threshold: 0%
@@ -62,6 +63,10 @@ flag_management:
           paths:
               - src/
           statuses:
+              - type: project
+                target: auto
+                threshold: 0%
+                informational: true
               - type: patch
                 target: 80%
                 threshold: 0%

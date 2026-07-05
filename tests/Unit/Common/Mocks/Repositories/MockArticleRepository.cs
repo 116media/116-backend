@@ -93,6 +93,23 @@ public static class MockArticleRepository
         return mock;
     }
 
+    public static Mock<IArticleRepository> SetupGetPopularArticlesAsync(
+        this Mock<IArticleRepository> mock,
+        IReadOnlyList<ArticleEntity> articles
+    )
+    {
+        mock.Setup(x =>
+                x.GetPopularArticlesAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(articles);
+        return mock;
+    }
+
     public static Mock<IArticleRepository> SetupGetAbandonedDraftsAsync(
         this Mock<IArticleRepository> mock,
         IReadOnlyList<ArticleEntity> articles

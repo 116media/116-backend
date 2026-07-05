@@ -63,6 +63,22 @@ public interface IArticleRepository : IRepository<ArticleEntity>
     Task<IReadOnlyList<ArticleEntity>> GetPromotedAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves the most popular published articles, ranked by a weighted engagement score
+    /// (like, comment, share, bookmark) and tie-broken by publish date descending.
+    /// </summary>
+    /// <param name="limit">Maximum number of articles to return.</param>
+    /// <param name="categoryId">Optional category filter.</param>
+    /// <param name="excludeId">Optional article id to omit from the result.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The ranked list of article entities.</returns>
+    Task<IReadOnlyList<ArticleEntity>> GetPopularArticlesAsync(
+        int limit,
+        Guid? categoryId,
+        Guid? excludeId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Retrieves draft articles with no content that were created before the specified cutoff date.
     /// Used by the background cleanup job to purge abandoned drafts.
     /// </summary>

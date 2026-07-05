@@ -106,6 +106,7 @@ public static class ContentModule
         services.AddScoped<IMapper>(sp => new Mapper(sp.GetRequiredService<TypeAdapterConfig>()));
 
         services.AddSingleton<IPopularTagsCacheInvalidator, PopularTagsCacheInvalidator>();
+        services.AddSingleton<IPopularArticlesCacheInvalidator, PopularArticlesCacheInvalidator>();
 
         services.AddScoped<IContentUnitOfWork, ContentUnitOfWork>();
         services.AddScoped<ILookupRepository, LookupRepository>();
@@ -144,13 +145,11 @@ public static class ContentModule
         ModuleOptions<ContentDbContext> options = GetModuleOptions();
         app.UseModuleDatabase(options);
 
-        if (!options.EnableSeeding)
+        if (options.EnableSeeding)
         {
-            return app;
+            using IServiceScope scope = app.ApplicationServices.CreateScope();
+            scope.ServiceProvider.GetRequiredService<ContentTypeSeeder>().SeedAllAsync().GetAwaiter().GetResult();
         }
-
-        using IServiceScope scope = app.ApplicationServices.CreateScope();
-        scope.ServiceProvider.GetRequiredService<ContentTypeSeeder>().SeedAllAsync().GetAwaiter().GetResult();
 
         return app;
     }

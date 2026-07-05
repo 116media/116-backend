@@ -224,14 +224,12 @@ public static class IdentityModule
         ModuleOptions<IdentityDbContext> options = GetModuleOptions();
         app.UseModuleDatabase(options);
 
-        if (!options.EnableSeeding)
+        if (options.EnableSeeding)
         {
-            return app;
+            using IServiceScope scope = app.ApplicationServices.CreateScope();
+            scope.ServiceProvider.GetRequiredService<SuperAdminSeeder>().SeedAllAsync().GetAwaiter().GetResult();
+            scope.ServiceProvider.GetRequiredService<VisitorRoleSeeder>().SeedAllAsync().GetAwaiter().GetResult();
         }
-
-        using IServiceScope scope = app.ApplicationServices.CreateScope();
-        scope.ServiceProvider.GetRequiredService<SuperAdminSeeder>().SeedAllAsync().GetAwaiter().GetResult();
-        scope.ServiceProvider.GetRequiredService<VisitorRoleSeeder>().SeedAllAsync().GetAwaiter().GetResult();
 
         return app;
     }

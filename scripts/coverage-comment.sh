@@ -24,6 +24,7 @@ int_line=$(headline "$INT_MD" "Line coverage:")
 int_branch=$(headline "$INT_MD" "Branch coverage:")
 
 {
+    echo ""
     echo "# Test Coverage (Unit vs Integration)"
     echo ""
     echo "| Metric | 🧪 Unit | 🔗 Integration |"
@@ -66,4 +67,4 @@ int_branch=$(headline "$INT_MD" "Branch coverage:")
             }
         }
     ' "$UNIT_MD" "$INT_MD"
-} > "$OUT"
+} >> "$OUT"

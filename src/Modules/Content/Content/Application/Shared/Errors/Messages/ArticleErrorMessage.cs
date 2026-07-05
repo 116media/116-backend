@@ -202,4 +202,12 @@ public class ArticleErrorMessage(IStringLocalizer<ArticleErrorMessage> localizer
     /// Gets an error message for when a category ID is required.
     /// </summary>
     public string CategoryIdRequired() => localizer["CategoryIdRequired"];
+
+    /// <summary>
+    /// Gets an error message for when the popular-articles limit is outside the accepted range.
+    /// </summary>
+    /// <param name="min">The smallest accepted limit value.</param>
+    /// <param name="max">The largest accepted limit value.</param>
+    public string PopularLimitOutOfRange(int min, int max) =>
+        string.Format(localizer["PopularLimitOutOfRange"], min, max);
 }
