@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Session.UseCases.Public.Commands.RevokeSessi
 /// </summary>
 public static class PublicRevokeSessionMetaField
 {
-    public static readonly RouteMetadata PublicRevokeSession = new(
+    public static readonly RouteMetadata RevokeSession = new(
         "PublicRevokeSession",
         "Revoke a specific session (log out from a device)",
         """
