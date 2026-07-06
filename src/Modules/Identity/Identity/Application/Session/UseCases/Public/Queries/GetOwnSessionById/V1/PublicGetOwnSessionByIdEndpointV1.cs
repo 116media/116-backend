@@ -51,9 +51,9 @@ public class PublicGetOwnSessionByIdEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: PublicGetOwnSessionByIdMetaField.PublicGetOwnSessionById.Name)
-            .WithSummary(summary: PublicGetOwnSessionByIdMetaField.PublicGetOwnSessionById.Summary)
-            .WithDescription(description: PublicGetOwnSessionByIdMetaField.PublicGetOwnSessionById.Description)
+            .WithName(endpointName: PublicGetOwnSessionByIdMetaField.GetOwnSessionById.Name)
+            .WithSummary(summary: PublicGetOwnSessionByIdMetaField.GetOwnSessionById.Summary)
+            .WithDescription(description: PublicGetOwnSessionByIdMetaField.GetOwnSessionById.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
