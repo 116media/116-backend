@@ -300,9 +300,9 @@ public class PublicGetPopularArticlesEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetPopularArticlesMetaField.PublicGetPopularArticles.Name)
-            .WithSummary(summary: PublicGetPopularArticlesMetaField.PublicGetPopularArticles.Summary)
-            .WithDescription(description: PublicGetPopularArticlesMetaField.PublicGetPopularArticles.Description)
+            .WithName(endpointName: PublicGetPopularArticlesMetaField.GetPopularArticles.Name)
+            .WithSummary(summary: PublicGetPopularArticlesMetaField.GetPopularArticles.Summary)
+            .WithDescription(description: PublicGetPopularArticlesMetaField.GetPopularArticles.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetPopularArticlesResponse>(statusCode: StatusCodes.Status200OK)
