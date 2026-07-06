@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Session.UseCases.Public.Queries.GetOwnSessio
 /// </summary>
 public static class PublicGetOwnSessionByIdMetaField
 {
-    public static readonly RouteMetadata PublicGetOwnSessionById = new(
+    public static readonly RouteMetadata GetOwnSessionById = new(
         "PublicGetOwnSessionById",
         "Retrieve a specific session by ID",
         """
