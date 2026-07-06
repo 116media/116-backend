@@ -99,9 +99,9 @@ public class PublicRefreshTokenEndpointV1 : ICarterModule
                     return Results.Ok(value: mobileResponse);
                 }
             )
-            .WithName(endpointName: PublicRefreshTokenMetaField.PublicRefreshToken.Name)
-            .WithSummary(summary: PublicRefreshTokenMetaField.PublicRefreshToken.Summary)
-            .WithDescription(description: PublicRefreshTokenMetaField.PublicRefreshToken.Description)
+            .WithName(endpointName: PublicRefreshTokenMetaField.RefreshToken.Name)
+            .WithSummary(summary: PublicRefreshTokenMetaField.RefreshToken.Summary)
+            .WithDescription(description: PublicRefreshTokenMetaField.RefreshToken.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()
