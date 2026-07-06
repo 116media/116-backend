@@ -205,9 +205,9 @@ public class PublicGetVideoFeedEndpointV1 : ICarterModule
                     return Results.Ok(new PublicGetVideoFeedResponse(Sections: result.Sections));
                 }
             )
-            .WithName(endpointName: PublicGetVideoFeedMetaField.PublicGetVideoFeed.Name)
-            .WithSummary(summary: PublicGetVideoFeedMetaField.PublicGetVideoFeed.Summary)
-            .WithDescription(description: PublicGetVideoFeedMetaField.PublicGetVideoFeed.Description)
+            .WithName(endpointName: PublicGetVideoFeedMetaField.GetVideoFeed.Name)
+            .WithSummary(summary: PublicGetVideoFeedMetaField.GetVideoFeed.Summary)
+            .WithDescription(description: PublicGetVideoFeedMetaField.GetVideoFeed.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetVideoFeedResponse>(statusCode: StatusCodes.Status200OK)
