@@ -1,5 +1,6 @@
 using _116.Content.Application.Interactions.UseCases.Admin.Commands.DeleteArticleComment;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.AddArticleComment;
+using _116.Content.Application.Interactions.UseCases.Public.Commands.AddCommentReply;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.AddVideoToPlaylist;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.BookmarkArticle;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.BookmarkShortVideo;
@@ -8,6 +9,7 @@ using _116.Content.Application.Interactions.UseCases.Public.Commands.DeleteArtic
 using _116.Content.Application.Interactions.UseCases.Public.Commands.DeletePlaylist;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.EditArticleComment;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.LikeArticle;
+using _116.Content.Application.Interactions.UseCases.Public.Commands.LikeArticleComment;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.LikeShortVideo;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.RateVideo;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.RecordShortVideoView;
@@ -19,8 +21,10 @@ using _116.Content.Application.Interactions.UseCases.Public.Commands.ShareVideo;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.UnbookmarkArticle;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.UnbookmarkShortVideo;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeArticle;
+using _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeArticleComment;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeShortVideo;
 using _116.Content.Application.Interactions.UseCases.Public.Queries.GetArticleComments;
+using _116.Content.Application.Interactions.UseCases.Public.Queries.GetCommentReplies;
 using _116.Content.Application.Interactions.UseCases.Public.Queries.GetMyArticleBookmarks;
 using _116.Content.Application.Interactions.UseCases.Public.Queries.GetMyPlaylists;
 using _116.Content.Application.Interactions.UseCases.Public.Queries.GetPlaylistById;
@@ -55,6 +59,27 @@ public class InteractionsMetaFieldTests
     public void PublicAddArticleCommentMetaField_ShouldBeInitialized()
     {
         RouteMetadata metadata = PublicAddArticleCommentMetaField.PublicAddArticleComment;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void PublicAddCommentReplyMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = PublicAddCommentReplyMetaField.PublicAddCommentReply;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void PublicLikeArticleCommentMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = PublicLikeArticleCommentMetaField.PublicLikeArticleComment;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void PublicUnlikeArticleCommentMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = PublicUnlikeArticleCommentMetaField.PublicUnlikeArticleComment;
         metadata.Should().NotBeNull();
     }
 
@@ -222,6 +247,13 @@ public class InteractionsMetaFieldTests
     }
 
     [Fact]
+    public void PublicGetCommentRepliesMetaField_ShouldBeInitialized()
+    {
+        RouteMetadata metadata = PublicGetCommentRepliesMetaField.PublicGetCommentReplies;
+        metadata.Should().NotBeNull();
+    }
+
+    [Fact]
     public void PublicGetMyArticleBookmarksMetaField_ShouldBeInitialized()
     {
         RouteMetadata metadata = PublicGetMyArticleBookmarksMetaField.PublicGetMyArticleBookmarks;
@@ -245,15 +277,6 @@ public class InteractionsMetaFieldTests
     #endregion
 
     #region Shared Coverage
-
-    [Fact]
-    public void ArticleInteractionErrorMessage_CommentNotFound_ShouldReturnFormattedMessage()
-    {
-        Guid commentId = Guid.NewGuid();
-        ArticleInteractionErrorMessage i18n = LocalizerFactory.CreateMessage<ArticleInteractionErrorMessage>("en");
-        string message = i18n.CommentNotFound(commentId);
-        message.Should().Contain(commentId.ToString());
-    }
 
     [Fact]
     public void PlaylistErrorMessage_NotFound_ShouldReturnFormattedMessage()

@@ -28,6 +28,7 @@ collab
 colonne
 colonnes
 commencer
+commenters
 Commissionable
 compléter
 comporter
@@ -48,6 +49,7 @@ d'attribuer
 d'utiliser
 danielpalme
 dawidd
+dedups
 différent
 dind
 disposez
@@ -75,11 +77,13 @@ fournisseur
 futur
 gcov
 getopt
+getpopulararticles
 globaltool
 gsub
 Guids
 Hmac
 Hotfixes
+hotspot
 idempotently
 ILIKE
 indisponible
@@ -143,6 +147,7 @@ resmimetype
 Respawn
 Respawner
 resx
+retunable
 RRGGBB
 runsettings
 répond
@@ -186,8 +191,10 @@ téléchargement
 téléversement
 tête
 uild
+uncacheable
 uncoverable
 unlikes
+unliking
 unpromote
 unpromoted
 unpromoting

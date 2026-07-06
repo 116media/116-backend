@@ -102,6 +102,16 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("is_deleted");
 
+                    b.Property<int>("LikeCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("like_count");
+
+                    b.Property<Guid?>("ParentCommentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("parent_comment_id");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -120,7 +130,51 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.HasIndex("ArticleId")
                         .HasDatabaseName("ix_article_comments_article");
 
+                    b.HasIndex("ParentCommentId")
+                        .HasDatabaseName("ix_article_comments_parent");
+
                     b.ToTable("article_comments", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleCommentLikeEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CommentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("comment_id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_article_comment_likes");
+
+                    b.HasIndex("CommentId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_article_comment_likes_comment_user");
+
+                    b.ToTable("article_comment_likes", "content");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleEntity", b =>
@@ -1967,7 +2021,27 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_article_comments_articles_article_id");
 
+                    b.HasOne("_116.Content.Domain.Entities.ArticleCommentEntity", "ParentComment")
+                        .WithMany()
+                        .HasForeignKey("ParentCommentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_article_comments_article_comments_parent_comment_id");
+
                     b.Navigation("Article");
+
+                    b.Navigation("ParentComment");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArticleCommentLikeEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.ArticleCommentEntity", "Comment")
+                        .WithMany()
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_article_comment_likes_article_comments_comment_id");
+
+                    b.Navigation("Comment");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleEntity", b =>

@@ -34,6 +34,21 @@ public class ArticleCommentEntity : Aggregate<Guid>
     public DateTimeOffset? DeletedAt { get; private set; }
 
     /// <summary>
+    /// The parent comment this comment replies to, or null for a top-level comment.
+    /// </summary>
+    public Guid? ParentCommentId { get; private set; }
+
+    /// <summary>
+    /// Navigation to the parent comment, or null for a top-level comment.
+    /// </summary>
+    public ArticleCommentEntity? ParentComment { get; private set; }
+
+    /// <summary>
+    /// Cached number of likes on this comment. Adjusted by like/unlike interactions.
+    /// </summary>
+    public int LikeCount { get; private set; }
+
+    /// <summary>
     /// Navigation property to the article.
     /// </summary>
     public ArticleEntity Article { get; private set; } = null!;
@@ -61,10 +76,48 @@ public class ArticleCommentEntity : Aggregate<Guid>
     }
 
     /// <summary>
+    /// Creates a reply to an existing top-level comment.
+    /// </summary>
+    /// <param name="id">The unique identifier for the reply.</param>
+    /// <param name="userId">The user who posted the reply.</param>
+    /// <param name="articleId">The article being commented on.</param>
+    /// <param name="parentCommentId">The top-level comment being replied to.</param>
+    /// <param name="body">The reply text.</param>
+    /// <returns>A new reply <see cref="ArticleCommentEntity" />.</returns>
+    public static ArticleCommentEntity CreateReply(
+        Guid id,
+        Guid userId,
+        Guid articleId,
+        Guid parentCommentId,
+        string body
+    )
+    {
+        return new ArticleCommentEntity
+        {
+            Id = id,
+            UserId = userId,
+            ArticleId = articleId,
+            ParentCommentId = parentCommentId,
+            Body = body,
+            IsDeleted = false,
+        };
+    }
+
+    /// <summary>
     /// Updates the comment body.
     /// </summary>
     /// <param name="body">The new comment text.</param>
     public void Edit(string body) => Body = body;
+
+    /// <summary>
+    /// Increments the cached like count.
+    /// </summary>
+    public void IncrementLikeCount() => LikeCount++;
+
+    /// <summary>
+    /// Decrements the cached like count, never below zero.
+    /// </summary>
+    public void DecrementLikeCount() => LikeCount = Math.Max(0, LikeCount - 1);
 
     /// <summary>
     /// Soft-deletes this comment, hiding its body from public view.

@@ -956,4 +956,156 @@ public class ArticleRepositoryTests : IDisposable
     }
 
     #endregion
+
+    #region Comment threading Tests
+
+    [Fact]
+    public async Task GetCommentsAsync_ShouldReturnOnlyTopLevelComments()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+        ArticleCommentEntity top = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "top");
+        ArticleCommentEntity reply = ArticleCommentEntity.CreateReply(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            article.Id,
+            top.Id,
+            "reply"
+        );
+        _context.ArticleComments.AddRange(top, reply);
+        await _context.SaveChangesAsync();
+
+        var (comments, totalCount) = await _repository.GetCommentsAsync(article.Id, page: 1, pageSize: 10);
+
+        comments.Should().ContainSingle(c => c.Id == top.Id);
+        comments.Should().NotContain(c => c.Id == reply.Id);
+        totalCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetRepliesAsync_ShouldReturnOnlyNonDeletedRepliesOfTheParent()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+        ArticleCommentEntity top = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "top");
+        ArticleCommentEntity reply1 = ArticleCommentEntity.CreateReply(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            article.Id,
+            top.Id,
+            "r1"
+        );
+        ArticleCommentEntity reply2 = ArticleCommentEntity.CreateReply(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            article.Id,
+            top.Id,
+            "r2"
+        );
+        reply2.SoftDelete();
+        _context.ArticleComments.AddRange(top, reply1, reply2);
+        await _context.SaveChangesAsync();
+
+        var (replies, totalCount) = await _repository.GetRepliesAsync(top.Id, page: 1, pageSize: 10);
+
+        replies.Should().ContainSingle(c => c.Id == reply1.Id);
+        totalCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetReplyCountsAsync_ShouldCountNonDeletedRepliesPerParent()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+        ArticleCommentEntity parentA = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "A");
+        ArticleCommentEntity parentB = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "B");
+        ArticleCommentEntity a1 = ArticleCommentEntity.CreateReply(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            article.Id,
+            parentA.Id,
+            "a1"
+        );
+        ArticleCommentEntity a2 = ArticleCommentEntity.CreateReply(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            article.Id,
+            parentA.Id,
+            "a2"
+        );
+        _context.ArticleComments.AddRange(parentA, parentB, a1, a2);
+        await _context.SaveChangesAsync();
+
+        IReadOnlyDictionary<Guid, int> counts = await _repository.GetReplyCountsAsync([parentA.Id, parentB.Id]);
+
+        counts.GetValueOrDefault(parentA.Id).Should().Be(2);
+        counts.Should().NotContainKey(parentB.Id);
+    }
+
+    #endregion
+
+    #region Comment like Tests
+
+    [Fact]
+    public async Task HasLikedCommentAsync_WhenLikeExists_ReturnsTrue()
+    {
+        Guid userId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+        ArticleCommentEntity comment = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "c");
+        _context.ArticleComments.Add(comment);
+        _context.ArticleCommentLikes.Add(ArticleCommentLikeEntity.Create(Guid.NewGuid(), userId, comment.Id));
+        await _context.SaveChangesAsync();
+
+        (await _repository.HasLikedCommentAsync(userId, comment.Id)).Should().BeTrue();
+        (await _repository.HasLikedCommentAsync(Guid.NewGuid(), comment.Id)).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetLikedCommentIdsAsync_ShouldReturnOnlyIdsTheViewerLiked()
+    {
+        Guid viewerId = Guid.NewGuid();
+        Guid otherId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+        ArticleCommentEntity c1 = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "c1");
+        ArticleCommentEntity c2 = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "c2");
+        _context.ArticleComments.AddRange(c1, c2);
+        _context.ArticleCommentLikes.AddRange(
+            ArticleCommentLikeEntity.Create(Guid.NewGuid(), viewerId, c1.Id),
+            ArticleCommentLikeEntity.Create(Guid.NewGuid(), otherId, c2.Id)
+        );
+        await _context.SaveChangesAsync();
+
+        IReadOnlySet<Guid> liked = await _repository.GetLikedCommentIdsAsync(viewerId, [c1.Id, c2.Id]);
+
+        liked.Should().BeEquivalentTo([c1.Id]);
+    }
+
+    [Fact]
+    public async Task RemoveCommentLikeAsync_WhenLikeExists_RemovesIt()
+    {
+        Guid userId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _context.Articles.Add(article);
+        ArticleCommentEntity comment = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "c");
+        _context.ArticleComments.Add(comment);
+        _context.ArticleCommentLikes.Add(ArticleCommentLikeEntity.Create(Guid.NewGuid(), userId, comment.Id));
+        await _context.SaveChangesAsync();
+
+        await _repository.RemoveCommentLikeAsync(userId, comment.Id);
+        await _context.SaveChangesAsync();
+
+        (await _context.ArticleCommentLikes.AnyAsync(l => l.UserId == userId && l.CommentId == comment.Id))
+            .Should()
+            .BeFalse();
+    }
+
+    #endregion
 }

@@ -24,11 +24,11 @@
   <data name="BookmarkNotFound" xml:space="preserve">
     <value>Aucun favori trouvé pour cet article.</value>
   </data>
-  <data name="CommentNotFound" xml:space="preserve">
-    <value>Commentaire « {0} » introuvable.</value>
-  </data>
   <data name="NotCommentOwner" xml:space="preserve">
     <value>Vous ne pouvez modifier que vos propres commentaires.</value>
+  </data>
+  <data name="CannotReplyToReply" xml:space="preserve">
+    <value>Vous ne pouvez répondre qu'à un commentaire de premier niveau.</value>
   </data>
   <data name="CommentBodyRequired" xml:space="preserve">
     <value>Le corps du commentaire est obligatoire.</value>

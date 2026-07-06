@@ -347,9 +347,108 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     }
 
     /// <inheritdoc />
+    public async Task<(List<ArticleCommentEntity> Replies, int TotalCount)> GetRepliesAsync(
+        Guid parentCommentId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ArticleCommentReplyByParentSpecification(parentCommentId: parentCommentId);
+        IQueryable<ArticleCommentEntity> query = context.ArticleComments.ApplySpecification(
+            specification: specification
+        );
+
+        int totalCount = await query.CountAsync(cancellationToken);
+
+        List<ArticleCommentEntity> replies = await query
+            .OrderBy(c => c.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (replies, totalCount);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, int>> GetReplyCountsAsync(
+        IReadOnlyCollection<Guid> parentCommentIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (parentCommentIds.Count == 0)
+        {
+            return new Dictionary<Guid, int>();
+        }
+
+        Guid[] distinctIds = parentCommentIds.Distinct().ToArray();
+
+        return await context
+            .ArticleComments.Where(c =>
+                c.ParentCommentId != null && distinctIds.Contains(c.ParentCommentId.Value) && !c.IsDeleted
+            )
+            .GroupBy(c => c.ParentCommentId!.Value)
+            .Select(group => new { ParentCommentId = group.Key, Count = group.Count() })
+            .ToDictionaryAsync(row => row.ParentCommentId, row => row.Count, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public void UpdateComment(ArticleCommentEntity comment)
     {
         context.ArticleComments.Update(comment);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> HasLikedCommentAsync(
+        Guid userId,
+        Guid commentId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ArticleCommentLikeByUserAndCommentSpecification(userId: userId, commentId: commentId);
+        return await context
+            .ArticleCommentLikes.ApplySpecification(specification: specification)
+            .AnyAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task AddCommentLikeAsync(ArticleCommentLikeEntity like, CancellationToken cancellationToken = default)
+    {
+        await context.ArticleCommentLikes.AddAsync(like, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveCommentLikeAsync(Guid userId, Guid commentId, CancellationToken cancellationToken = default)
+    {
+        var specification = new ArticleCommentLikeByUserAndCommentSpecification(userId: userId, commentId: commentId);
+        ArticleCommentLikeEntity? like = await context
+            .ArticleCommentLikes.ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (like is not null)
+        {
+            context.ArticleCommentLikes.Remove(like);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlySet<Guid>> GetLikedCommentIdsAsync(
+        Guid viewerUserId,
+        IReadOnlyCollection<Guid> commentIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (commentIds.Count == 0)
+        {
+            return new HashSet<Guid>();
+        }
+
+        List<Guid> likedIds = await context
+            .ArticleCommentLikes.Where(like => like.UserId == viewerUserId && commentIds.Contains(like.CommentId))
+            .Select(like => like.CommentId)
+            .ToListAsync(cancellationToken);
+
+        return likedIds.ToHashSet();
     }
 
     /// <inheritdoc />
