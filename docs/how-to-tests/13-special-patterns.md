@@ -313,7 +313,7 @@ public class LookupMetaFieldTests
     [Fact]
     public void ActivateContentTypeMetaField_ShouldBeInitialized()
     {
-        RouteMetadata meta = AdminActivateContentTypeMetaField.AdminActivateContentType;
+        RouteMetadata meta = AdminActivateContentTypeMetaField.ActivateContentType;
 
         meta.Should().NotBeNull();
         meta.Name.Should().NotBeNullOrEmpty();
