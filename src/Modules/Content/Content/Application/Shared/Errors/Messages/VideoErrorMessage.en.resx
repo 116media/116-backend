@@ -84,4 +84,7 @@
   <data name="ShootingScheduledDateMustBeInFuture" xml:space="preserve">
     <value>Shooting scheduled date must be in the future.</value>
   </data>
+  <data name="PopularLimitOutOfRange" xml:space="preserve">
+    <value>Limit must be between {0} and {1}.</value>
+  </data>
 </root>

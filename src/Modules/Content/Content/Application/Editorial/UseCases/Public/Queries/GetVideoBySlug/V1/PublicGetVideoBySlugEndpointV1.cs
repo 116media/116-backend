@@ -46,9 +46,9 @@ public class PublicGetVideoBySlugEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetVideoBySlugMetaField.PublicGetVideoBySlug.Name)
-            .WithSummary(summary: PublicGetVideoBySlugMetaField.PublicGetVideoBySlug.Summary)
-            .WithDescription(description: PublicGetVideoBySlugMetaField.PublicGetVideoBySlug.Description)
+            .WithName(endpointName: PublicGetVideoBySlugMetaField.GetVideoBySlug.Name)
+            .WithSummary(summary: PublicGetVideoBySlugMetaField.GetVideoBySlug.Summary)
+            .WithDescription(description: PublicGetVideoBySlugMetaField.GetVideoBySlug.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetVideoBySlugResponse>(statusCode: StatusCodes.Status200OK)

@@ -294,6 +294,8 @@ public static class Routes
 
             public static string Shares(Guid id) =>
                 $"{ApiRoutes.Public.Videos}/{id}/{InteractionsRouteConstants.Shares}";
+
+            public static string Popular() => $"{ApiRoutes.Public.Videos}/{EditorialRouteConstants.Popular}";
         }
 
         /// <summary>

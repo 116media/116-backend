@@ -102,4 +102,49 @@ public class AdminUpdateVideoTagsEndpointV1Tests(PostgresFixture db) : BaseApiTe
             .ToListAsync();
         linkedTagNames.Should().BeEquivalentTo(tagNames);
     }
+
+    /// <summary>
+    /// Verifies that updating the tags of a video that already has tags removes the previous
+    /// associations before attaching the new set, exercising the tag-removal path.
+    /// </summary>
+    [Fact]
+    public async Task UpdateVideoTags_WhenVideoAlreadyHasTags_ReplacesThem()
+    {
+        VideoEntity video = await SeedVideoAsync();
+        Client.AuthenticateAsSuperAdmin();
+
+        string[] initialTags = [$"rock-{Guid.NewGuid():N}"[..12], $"soul-{Guid.NewGuid():N}"[..12]];
+        AdminUpdateVideoTagsRequest initialRequest = new AdminUpdateVideoTagsRequestBuilder()
+            .WithTagNames(initialTags)
+            .Build();
+        var initialResponse = await Client.PutAsJsonAsync(
+            Routes.Admin.Editorial.Tags(EditorialRouteConstants.Videos, video.Id),
+            initialRequest
+        );
+        initialResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        string[] replacementTags = [$"funk-{Guid.NewGuid():N}"[..12], $"blues-{Guid.NewGuid():N}"[..12]];
+        AdminUpdateVideoTagsRequest replacementRequest = new AdminUpdateVideoTagsRequestBuilder()
+            .WithTagNames(replacementTags)
+            .Build();
+        var replacementResponse = await Client.PutAsJsonAsync(
+            Routes.Admin.Editorial.Tags(EditorialRouteConstants.Videos, video.Id),
+            replacementRequest
+        );
+        replacementResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using ContentDbContext verifyContext = CreateDbContext<ContentDbContext>();
+        List<Guid> linkedTagIds = await verifyContext
+            .VideoTags.Where(vt => vt.VideoId == video.Id)
+            .Select(vt => vt.TagId)
+            .ToListAsync();
+
+        List<string> linkedTagNames = await verifyContext
+            .Tags.Where(t => linkedTagIds.Contains(t.Id))
+            .Select(t => t.Name)
+            .ToListAsync();
+
+        linkedTagNames.Should().BeEquivalentTo(replacementTags);
+        linkedTagNames.Should().NotContain(initialTags);
+    }
 }

@@ -55,9 +55,9 @@ public class PublicGetPromotedArticlesEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetPromotedArticlesMetaField.PublicGetPromotedArticles.Name)
-            .WithSummary(summary: PublicGetPromotedArticlesMetaField.PublicGetPromotedArticles.Summary)
-            .WithDescription(description: PublicGetPromotedArticlesMetaField.PublicGetPromotedArticles.Description)
+            .WithName(endpointName: PublicGetPromotedArticlesMetaField.GetPromotedArticles.Name)
+            .WithSummary(summary: PublicGetPromotedArticlesMetaField.GetPromotedArticles.Summary)
+            .WithDescription(description: PublicGetPromotedArticlesMetaField.GetPromotedArticles.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetPromotedArticlesResponse>(statusCode: StatusCodes.Status200OK)

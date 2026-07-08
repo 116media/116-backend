@@ -107,6 +107,7 @@ public static class ContentModule
 
         services.AddSingleton<IPopularTagsCacheInvalidator, PopularTagsCacheInvalidator>();
         services.AddSingleton<IPopularArticlesCacheInvalidator, PopularArticlesCacheInvalidator>();
+        services.AddSingleton<IPopularVideosCacheInvalidator, PopularVideosCacheInvalidator>();
 
         services.AddScoped<IContentUnitOfWork, ContentUnitOfWork>();
         services.AddScoped<ILookupRepository, LookupRepository>();

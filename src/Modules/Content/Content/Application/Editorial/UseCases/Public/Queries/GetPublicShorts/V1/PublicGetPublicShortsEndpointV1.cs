@@ -50,9 +50,9 @@ public class PublicGetPublicShortsEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetPublicShortsMetaField.PublicGetPublicShorts.Name)
-            .WithSummary(summary: PublicGetPublicShortsMetaField.PublicGetPublicShorts.Summary)
-            .WithDescription(description: PublicGetPublicShortsMetaField.PublicGetPublicShorts.Description)
+            .WithName(endpointName: PublicGetPublicShortsMetaField.GetPublicShorts.Name)
+            .WithSummary(summary: PublicGetPublicShortsMetaField.GetPublicShorts.Summary)
+            .WithDescription(description: PublicGetPublicShortsMetaField.GetPublicShorts.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetPublicShortsResponse>(statusCode: StatusCodes.Status200OK)

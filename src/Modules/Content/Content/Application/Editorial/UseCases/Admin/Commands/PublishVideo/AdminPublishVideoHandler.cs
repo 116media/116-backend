@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -13,8 +14,13 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishVide
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
-public class AdminPublishVideoHandler(IVideoRepository videoRepository, IContentUnitOfWork unitOfWork, ContentI18n i18n)
-    : ICommandHandler<AdminPublishVideoCommand, AdminPublishVideoResult>
+/// <param name="cacheInvalidator">Invalidates the popular-videos cache after the published set changes.</param>
+public class AdminPublishVideoHandler(
+    IVideoRepository videoRepository,
+    IContentUnitOfWork unitOfWork,
+    ContentI18n i18n,
+    IPopularVideosCacheInvalidator cacheInvalidator
+) : ICommandHandler<AdminPublishVideoCommand, AdminPublishVideoResult>
 {
     /// <inheritdoc />
     public async Task<AdminPublishVideoResult> Handle(
@@ -42,6 +48,8 @@ public class AdminPublishVideoHandler(IVideoRepository videoRepository, IContent
         video.Publish(i18n.Video);
         videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        cacheInvalidator.Invalidate();
 
         return new AdminPublishVideoResult(IsSuccess: true);
     }

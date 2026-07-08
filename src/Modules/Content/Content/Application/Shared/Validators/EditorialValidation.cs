@@ -544,39 +544,6 @@ public static partial class EditorialValidation
     }
 
     /// <summary>
-    /// Validates that an article ID is not empty.
-    /// </summary>
-    /// <typeparam name="T">The type being validated.</typeparam>
-    /// <param name="ruleBuilder">The rule builder for the article ID property.</param>
-    /// <param name="i18n">The article error message provider.</param>
-    public static void ValidArticleId<T>(this IRuleBuilder<T, Guid> ruleBuilder, ArticleErrorMessage i18n)
-    {
-        ruleBuilder.NotEmpty().WithMessage(i18n.CategoryIdRequired());
-    }
-
-    /// <summary>
-    /// Validates that a video ID is not empty.
-    /// </summary>
-    /// <typeparam name="T">The type being validated.</typeparam>
-    /// <param name="ruleBuilder">The rule builder for the video ID property.</param>
-    /// <param name="i18n">The video error message provider.</param>
-    public static void ValidVideoId<T>(this IRuleBuilder<T, Guid> ruleBuilder, VideoErrorMessage i18n)
-    {
-        ruleBuilder.NotEmpty().WithMessage(i18n.VideoIdRequired());
-    }
-
-    /// <summary>
-    /// Validates that a lyrics ID is not empty.
-    /// </summary>
-    /// <typeparam name="T">The type being validated.</typeparam>
-    /// <param name="ruleBuilder">The rule builder for the lyrics ID property.</param>
-    /// <param name="i18n">The lyrics error message provider.</param>
-    public static void ValidLyricsId<T>(this IRuleBuilder<T, Guid> ruleBuilder, LyricsErrorMessage i18n)
-    {
-        ruleBuilder.NotEmpty().WithMessage(i18n.LyricsIdRequired());
-    }
-
-    /// <summary>
     /// Validates the popular-articles limit — must stay within the bounds defined by
     /// <see cref="PopularArticlesLimits" />.
     /// </summary>
@@ -592,6 +559,24 @@ public static partial class EditorialValidation
         return ruleBuilder
             .InclusiveBetween(from: PopularArticlesLimits.MinLimit, to: PopularArticlesLimits.MaxLimit)
             .WithMessage(i18n.PopularLimitOutOfRange(PopularArticlesLimits.MinLimit, PopularArticlesLimits.MaxLimit));
+    }
+
+    /// <summary>
+    /// Validates the popular-videos limit — must stay within the bounds defined by
+    /// <see cref="PopularVideosLimits" />.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the limit property.</param>
+    /// <param name="i18n">The video error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, int> ValidPopularVideosLimit<T>(
+        this IRuleBuilder<T, int> ruleBuilder,
+        VideoErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .InclusiveBetween(from: PopularVideosLimits.MinLimit, to: PopularVideosLimits.MaxLimit)
+            .WithMessage(i18n.PopularLimitOutOfRange(PopularVideosLimits.MinLimit, PopularVideosLimits.MaxLimit));
     }
 
     /// <summary>

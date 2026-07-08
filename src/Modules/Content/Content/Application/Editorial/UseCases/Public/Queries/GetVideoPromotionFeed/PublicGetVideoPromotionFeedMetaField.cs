@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoPro
 /// </summary>
 public static class PublicGetVideoPromotionFeedMetaField
 {
-    public static readonly RouteMetadata PublicGetVideoPromotionFeed = new(
+    public static readonly RouteMetadata GetVideoPromotionFeed = new(
         "GetVideoPromotionFeed",
         "Video homepage promotion feed",
         """

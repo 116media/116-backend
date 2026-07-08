@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleB
 /// </summary>
 public static class PublicGetArticleBySlugMetaField
 {
-    public static readonly RouteMetadata PublicGetArticleBySlug = new(
+    public static readonly RouteMetadata GetArticleBySlug = new(
         "GetArticleBySlug",
         "Get published article by slug",
         """

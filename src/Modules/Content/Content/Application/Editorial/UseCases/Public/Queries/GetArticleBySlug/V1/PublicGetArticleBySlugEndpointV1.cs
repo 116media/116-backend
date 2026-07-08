@@ -55,9 +55,9 @@ public class PublicGetArticleBySlugEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetArticleBySlugMetaField.PublicGetArticleBySlug.Name)
-            .WithSummary(summary: PublicGetArticleBySlugMetaField.PublicGetArticleBySlug.Summary)
-            .WithDescription(description: PublicGetArticleBySlugMetaField.PublicGetArticleBySlug.Description)
+            .WithName(endpointName: PublicGetArticleBySlugMetaField.GetArticleBySlug.Name)
+            .WithSummary(summary: PublicGetArticleBySlugMetaField.GetArticleBySlug.Summary)
+            .WithDescription(description: PublicGetArticleBySlugMetaField.GetArticleBySlug.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetArticleBySlugResponse>(statusCode: StatusCodes.Status200OK)

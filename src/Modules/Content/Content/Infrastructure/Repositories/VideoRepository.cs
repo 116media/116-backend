@@ -114,6 +114,23 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<VideoEntity>> GetPopularVideosAsync(
+        int limit,
+        Guid? categoryId,
+        Guid? excludeId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        IQueryable<VideoEntity> query = new PopularVideosQueryBuilder()
+            .WithCategory(categoryId: categoryId)
+            .WithExcludeId(excludeId: excludeId)
+            .WithLimit(limit: limit)
+            .Build(context: context);
+
+        return await query.ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<VideoEntity?> GetByOrderItemIdAsync(
         Guid orderItemId,
         CancellationToken cancellationToken = default

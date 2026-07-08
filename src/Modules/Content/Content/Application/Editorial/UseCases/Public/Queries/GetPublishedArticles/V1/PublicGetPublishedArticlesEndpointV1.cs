@@ -74,9 +74,9 @@ public class PublicGetPublishedArticlesEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetPublishedArticlesMetaField.PublicGetPublishedArticles.Name)
-            .WithSummary(summary: PublicGetPublishedArticlesMetaField.PublicGetPublishedArticles.Summary)
-            .WithDescription(description: PublicGetPublishedArticlesMetaField.PublicGetPublishedArticles.Description)
+            .WithName(endpointName: PublicGetPublishedArticlesMetaField.GetPublishedArticles.Name)
+            .WithSummary(summary: PublicGetPublishedArticlesMetaField.GetPublishedArticles.Summary)
+            .WithDescription(description: PublicGetPublishedArticlesMetaField.GetPublishedArticles.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetPublishedArticlesResponse>(statusCode: StatusCodes.Status200OK)

@@ -64,7 +64,7 @@ public class AdminScheduleShootValidatorTests
             .Errors.Should()
             .Contain(e =>
                 e.PropertyName == nameof(AdminScheduleShootCommand.VideoId)
-                && e.ErrorMessage == _i18n.Video.Msg.VideoIdRequired()
+                && e.ErrorMessage == _i18n.Video.Msg.Localizer["VideoIdRequired"].Value
             );
     }
 

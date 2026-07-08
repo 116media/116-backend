@@ -46,9 +46,9 @@ public class PublicGetPublicShortBySlugEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetPublicShortBySlugMetaField.PublicGetPublicShortBySlug.Name)
-            .WithSummary(summary: PublicGetPublicShortBySlugMetaField.PublicGetPublicShortBySlug.Summary)
-            .WithDescription(description: PublicGetPublicShortBySlugMetaField.PublicGetPublicShortBySlug.Description)
+            .WithName(endpointName: PublicGetPublicShortBySlugMetaField.GetPublicShortBySlug.Name)
+            .WithSummary(summary: PublicGetPublicShortBySlugMetaField.GetPublicShortBySlug.Summary)
+            .WithDescription(description: PublicGetPublicShortBySlugMetaField.GetPublicShortBySlug.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetPublicShortBySlugResponse>(statusCode: StatusCodes.Status200OK)

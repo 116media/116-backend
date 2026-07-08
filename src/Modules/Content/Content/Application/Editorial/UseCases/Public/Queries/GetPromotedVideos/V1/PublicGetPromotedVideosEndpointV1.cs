@@ -46,9 +46,9 @@ public class PublicGetPromotedVideosEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetPromotedVideosMetaField.PublicGetPromotedVideos.Name)
-            .WithSummary(summary: PublicGetPromotedVideosMetaField.PublicGetPromotedVideos.Summary)
-            .WithDescription(description: PublicGetPromotedVideosMetaField.PublicGetPromotedVideos.Description)
+            .WithName(endpointName: PublicGetPromotedVideosMetaField.GetPromotedVideos.Name)
+            .WithSummary(summary: PublicGetPromotedVideosMetaField.GetPromotedVideos.Summary)
+            .WithDescription(description: PublicGetPromotedVideosMetaField.GetPromotedVideos.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetPromotedVideosResponse>(statusCode: StatusCodes.Status200OK)
