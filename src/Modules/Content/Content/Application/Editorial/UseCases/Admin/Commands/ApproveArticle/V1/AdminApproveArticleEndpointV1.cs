@@ -46,9 +46,9 @@ public class AdminApproveArticleEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminApproveArticleMetaField.AdminApproveArticle.Name)
-            .WithSummary(summary: AdminApproveArticleMetaField.AdminApproveArticle.Summary)
-            .WithDescription(description: AdminApproveArticleMetaField.AdminApproveArticle.Description)
+            .WithName(endpointName: AdminApproveArticleMetaField.ApproveArticle.Name)
+            .WithSummary(summary: AdminApproveArticleMetaField.ApproveArticle.Summary)
+            .WithDescription(description: AdminApproveArticleMetaField.ApproveArticle.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

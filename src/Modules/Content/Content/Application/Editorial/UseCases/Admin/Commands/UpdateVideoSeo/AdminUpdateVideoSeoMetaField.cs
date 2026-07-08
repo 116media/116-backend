@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 /// </summary>
 public static class AdminUpdateVideoSeoMetaField
 {
-    public static readonly RouteMetadata AdminUpdateVideoSeo = new(
+    public static readonly RouteMetadata UpdateVideoSeo = new(
         "UpdateVideoSeo",
         "Update video SEO metadata",
         """

@@ -58,9 +58,9 @@ public class AdminLoginEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminLoginMetaField.AdminLogin.Name)
-            .WithSummary(summary: AdminLoginMetaField.AdminLogin.Summary)
-            .WithDescription(description: AdminLoginMetaField.AdminLogin.Description)
+            .WithName(endpointName: AdminLoginMetaField.Login.Name)
+            .WithSummary(summary: AdminLoginMetaField.Login.Summary)
+            .WithDescription(description: AdminLoginMetaField.Login.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.Authentication)
             .ProducesValidationProblem()

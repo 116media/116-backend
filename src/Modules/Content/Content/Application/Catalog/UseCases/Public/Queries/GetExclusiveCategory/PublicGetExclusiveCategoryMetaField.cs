@@ -10,7 +10,7 @@ public static class PublicGetExclusiveCategoryMetaField
     /// <summary>
     /// Route metadata for the public exclusive category endpoint.
     /// </summary>
-    public static readonly RouteMetadata PublicGetExclusiveCategory = new(
+    public static readonly RouteMetadata GetExclusiveCategory = new(
         "PublicGetExclusiveCategory",
         "Get the exclusive category with videos",
         """

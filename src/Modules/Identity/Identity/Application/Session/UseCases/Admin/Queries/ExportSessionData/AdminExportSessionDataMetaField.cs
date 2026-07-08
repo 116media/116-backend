@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Queries.ExportSession
 /// </summary>
 public static class AdminExportSessionDataMetaField
 {
-    public static readonly RouteMetadata AdminExportSessionData = new(
+    public static readonly RouteMetadata ExportSessionData = new(
         "AdminExportSessionData",
         "Export session data with optional filtering",
         """

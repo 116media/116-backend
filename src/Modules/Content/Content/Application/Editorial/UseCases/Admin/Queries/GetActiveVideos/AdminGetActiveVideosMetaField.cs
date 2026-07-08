@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetActiveVid
 /// </summary>
 public static class AdminGetActiveVideosMetaField
 {
-    public static readonly RouteMetadata AdminGetActiveVideos = new(
+    public static readonly RouteMetadata GetActiveVideos = new(
         "AdminGetActiveVideos",
         "List all active videos (excludes Archived and Rejected)",
         """

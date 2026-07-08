@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateShort
 /// </summary>
 public static class AdminUpdateShortVideoMetaField
 {
-    public static readonly RouteMetadata AdminUpdateShortVideo = new(
+    public static readonly RouteMetadata UpdateShortVideo = new(
         "UpdateShortVideo",
         "Update short video metadata and optionally replace the video file",
         """

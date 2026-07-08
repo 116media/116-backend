@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPaymen
 /// </summary>
 public static class AdminVerifyPaymentMetaField
 {
-    public static readonly RouteMetadata AdminVerifyPayment = new(
+    public static readonly RouteMetadata VerifyPayment = new(
         "AdminVerifyPayment",
         "Verify an order payment",
         """

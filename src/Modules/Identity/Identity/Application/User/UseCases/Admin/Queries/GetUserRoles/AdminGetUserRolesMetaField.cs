@@ -7,7 +7,7 @@ namespace _116.Identity.Application.User.UseCases.Admin.Queries.GetUserRoles;
 /// </summary>
 public static class AdminGetUserRolesMetaField
 {
-    public static readonly RouteMetadata AdminGetUserRoles = new(
+    public static readonly RouteMetadata GetUserRoles = new(
         "AdminGetUserRoles",
         "Get user's roles",
         """

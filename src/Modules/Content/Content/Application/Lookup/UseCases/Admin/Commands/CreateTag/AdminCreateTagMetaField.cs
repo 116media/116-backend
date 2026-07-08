@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateTag;
 /// </summary>
 public static class AdminCreateTagMetaField
 {
-    public static readonly RouteMetadata AdminCreateTag = new(
+    public static readonly RouteMetadata CreateTag = new(
         "AdminCreateTag",
         "Create a new content tag",
         """

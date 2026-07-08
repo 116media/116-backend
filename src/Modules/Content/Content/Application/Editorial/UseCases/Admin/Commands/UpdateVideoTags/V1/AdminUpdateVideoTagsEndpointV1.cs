@@ -52,9 +52,9 @@ public class AdminUpdateVideoTagsEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminUpdateVideoTagsMetaField.AdminUpdateVideoTags.Name)
-            .WithSummary(summary: AdminUpdateVideoTagsMetaField.AdminUpdateVideoTags.Summary)
-            .WithDescription(description: AdminUpdateVideoTagsMetaField.AdminUpdateVideoTags.Description)
+            .WithName(endpointName: AdminUpdateVideoTagsMetaField.UpdateVideoTags.Name)
+            .WithSummary(summary: AdminUpdateVideoTagsMetaField.UpdateVideoTags.Summary)
+            .WithDescription(description: AdminUpdateVideoTagsMetaField.UpdateVideoTags.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

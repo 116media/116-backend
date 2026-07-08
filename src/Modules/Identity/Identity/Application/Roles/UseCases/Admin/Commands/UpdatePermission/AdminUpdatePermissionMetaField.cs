@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.UpdatePermissi
 /// </summary>
 public static class AdminUpdatePermissionMetaField
 {
-    public static readonly RouteMetadata AdminUpdatePermission = new(
+    public static readonly RouteMetadata UpdatePermission = new(
         "AdminUpdatePermission",
         "Update an existing permission",
         """

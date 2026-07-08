@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.RemoveOrderI
 /// </summary>
 public static class AdminRemoveOrderItemMetaField
 {
-    public static readonly RouteMetadata AdminRemoveOrderItem = new(
+    public static readonly RouteMetadata RemoveOrderItem = new(
         "AdminRemoveOrderItem",
         "Remove an item from a draft order",
         """

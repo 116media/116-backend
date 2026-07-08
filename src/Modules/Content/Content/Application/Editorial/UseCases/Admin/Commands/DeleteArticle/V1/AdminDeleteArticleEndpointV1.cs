@@ -46,9 +46,9 @@ public class AdminDeleteArticleEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminDeleteArticleMetaField.AdminDeleteArticle.Name)
-            .WithSummary(summary: AdminDeleteArticleMetaField.AdminDeleteArticle.Summary)
-            .WithDescription(description: AdminDeleteArticleMetaField.AdminDeleteArticle.Description)
+            .WithName(endpointName: AdminDeleteArticleMetaField.DeleteArticle.Name)
+            .WithSummary(summary: AdminDeleteArticleMetaField.DeleteArticle.Summary)
+            .WithDescription(description: AdminDeleteArticleMetaField.DeleteArticle.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

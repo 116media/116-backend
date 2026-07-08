@@ -59,9 +59,9 @@ public class AdminUpdateVideoSeoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminUpdateVideoSeoMetaField.AdminUpdateVideoSeo.Name)
-            .WithSummary(summary: AdminUpdateVideoSeoMetaField.AdminUpdateVideoSeo.Summary)
-            .WithDescription(description: AdminUpdateVideoSeoMetaField.AdminUpdateVideoSeo.Description)
+            .WithName(endpointName: AdminUpdateVideoSeoMetaField.UpdateVideoSeo.Name)
+            .WithSummary(summary: AdminUpdateVideoSeoMetaField.UpdateVideoSeo.Summary)
+            .WithDescription(description: AdminUpdateVideoSeoMetaField.UpdateVideoSeo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

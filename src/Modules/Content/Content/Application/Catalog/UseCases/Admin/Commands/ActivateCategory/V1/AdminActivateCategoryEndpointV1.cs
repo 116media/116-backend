@@ -46,9 +46,9 @@ public class AdminActivateCategoryEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminActivateCategoryMetaField.AdminActivateCategory.Name)
-            .WithSummary(summary: AdminActivateCategoryMetaField.AdminActivateCategory.Summary)
-            .WithDescription(description: AdminActivateCategoryMetaField.AdminActivateCategory.Description)
+            .WithName(endpointName: AdminActivateCategoryMetaField.ActivateCategory.Name)
+            .WithSummary(summary: AdminActivateCategoryMetaField.ActivateCategory.Summary)
+            .WithDescription(description: AdminActivateCategoryMetaField.ActivateCategory.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

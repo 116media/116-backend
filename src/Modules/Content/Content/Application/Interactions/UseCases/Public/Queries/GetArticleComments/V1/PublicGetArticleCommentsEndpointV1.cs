@@ -56,9 +56,9 @@ public class PublicGetArticleCommentsEndpointV1 : ICarterModule
                     return Results.Ok(result.Comments);
                 }
             )
-            .WithName(endpointName: PublicGetArticleCommentsMetaField.PublicGetArticleComments.Name)
-            .WithSummary(summary: PublicGetArticleCommentsMetaField.PublicGetArticleComments.Summary)
-            .WithDescription(description: PublicGetArticleCommentsMetaField.PublicGetArticleComments.Description)
+            .WithName(endpointName: PublicGetArticleCommentsMetaField.GetArticleComments.Name)
+            .WithSummary(summary: PublicGetArticleCommentsMetaField.GetArticleComments.Summary)
+            .WithDescription(description: PublicGetArticleCommentsMetaField.GetArticleComments.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PaginatedResult<ArticleCommentDto>>(statusCode: StatusCodes.Status200OK)

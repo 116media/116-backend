@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.RemovePermissi
 /// </summary>
 public static class AdminRemovePermissionFromRoleMetaField
 {
-    public static readonly RouteMetadata AdminRemovePermissionFromRole = new(
+    public static readonly RouteMetadata RemovePermissionFromRole = new(
         "AdminRemovePermissionFromRole",
         "Remove a permission from a role",
         """

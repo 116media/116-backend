@@ -69,9 +69,9 @@ public class AdminAddCategoryPricingEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: AdminAddCategoryPricingMetaField.AdminAddCategoryPricing.Name)
-            .WithSummary(summary: AdminAddCategoryPricingMetaField.AdminAddCategoryPricing.Summary)
-            .WithDescription(description: AdminAddCategoryPricingMetaField.AdminAddCategoryPricing.Description)
+            .WithName(endpointName: AdminAddCategoryPricingMetaField.AddCategoryPricing.Name)
+            .WithSummary(summary: AdminAddCategoryPricingMetaField.AddCategoryPricing.Summary)
+            .WithDescription(description: AdminAddCategoryPricingMetaField.AddCategoryPricing.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

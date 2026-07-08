@@ -50,9 +50,9 @@ public class PublicShareArticleEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicShareArticleMetaField.PublicShareArticle.Name)
-            .WithSummary(summary: PublicShareArticleMetaField.PublicShareArticle.Summary)
-            .WithDescription(description: PublicShareArticleMetaField.PublicShareArticle.Description)
+            .WithName(endpointName: PublicShareArticleMetaField.ShareArticle.Name)
+            .WithSummary(summary: PublicShareArticleMetaField.ShareArticle.Summary)
+            .WithDescription(description: PublicShareArticleMetaField.ShareArticle.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicShareArticleResponse>(statusCode: StatusCodes.Status200OK)

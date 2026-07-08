@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetPopularTags
 /// </summary>
 public static class PublicGetPopularTagsMetaField
 {
-    public static readonly RouteMetadata PublicGetPopularTags = new(
+    public static readonly RouteMetadata GetPopularTags = new(
         "PublicGetPopularTags",
         "Get popular tags",
         """

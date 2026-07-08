@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtic
 /// </summary>
 public static class AdminUpdateArticleTagsMetaField
 {
-    public static readonly RouteMetadata AdminUpdateArticleTags = new(
+    public static readonly RouteMetadata UpdateArticleTags = new(
         "UpdateArticleTags",
         "Update article tags",
         """

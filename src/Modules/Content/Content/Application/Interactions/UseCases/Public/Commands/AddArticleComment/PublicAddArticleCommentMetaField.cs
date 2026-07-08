@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddArti
 /// </summary>
 public static class PublicAddArticleCommentMetaField
 {
-    public static readonly RouteMetadata PublicAddArticleComment = new(
+    public static readonly RouteMetadata AddArticleComment = new(
         "PublicAddArticleComment",
         "Post a comment on an article",
         """

@@ -46,9 +46,9 @@ public class PublicUnbookmarkShortVideoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicUnbookmarkShortVideoMetaField.PublicUnbookmarkShortVideo.Name)
-            .WithSummary(summary: PublicUnbookmarkShortVideoMetaField.PublicUnbookmarkShortVideo.Summary)
-            .WithDescription(description: PublicUnbookmarkShortVideoMetaField.PublicUnbookmarkShortVideo.Description)
+            .WithName(endpointName: PublicUnbookmarkShortVideoMetaField.UnbookmarkShortVideo.Name)
+            .WithSummary(summary: PublicUnbookmarkShortVideoMetaField.UnbookmarkShortVideo.Summary)
+            .WithDescription(description: PublicUnbookmarkShortVideoMetaField.UnbookmarkShortVideo.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicUnbookmarkShortVideoResponse>(statusCode: StatusCodes.Status200OK)

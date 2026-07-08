@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutu
 /// </summary>
 public static class AdminAttachYoutubeVideoUrlMetaField
 {
-    public static readonly RouteMetadata AdminAttachYoutubeVideoUrl = new(
+    public static readonly RouteMetadata AttachYoutubeVideoUrl = new(
         "AttachYoutubeVideoUrl",
         "Attach a YouTube video URL",
         """

@@ -46,9 +46,9 @@ public class AdminActivatePackageEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminActivatePackageMetaField.AdminActivatePackage.Name)
-            .WithSummary(summary: AdminActivatePackageMetaField.AdminActivatePackage.Summary)
-            .WithDescription(description: AdminActivatePackageMetaField.AdminActivatePackage.Description)
+            .WithName(endpointName: AdminActivatePackageMetaField.ActivatePackage.Name)
+            .WithSummary(summary: AdminActivatePackageMetaField.ActivatePackage.Summary)
+            .WithDescription(description: AdminActivatePackageMetaField.ActivatePackage.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

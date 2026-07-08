@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.DeactivatePerm
 /// </summary>
 public static class AdminDeactivatePermissionMetaField
 {
-    public static readonly RouteMetadata AdminDeactivatePermission = new(
+    public static readonly RouteMetadata DeactivatePermission = new(
         "AdminDeactivatePermission",
         "Deactivate a permission",
         """

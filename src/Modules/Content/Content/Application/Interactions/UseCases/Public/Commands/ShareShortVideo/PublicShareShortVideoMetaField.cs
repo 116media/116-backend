@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareSh
 /// </summary>
 public static class PublicShareShortVideoMetaField
 {
-    public static readonly RouteMetadata PublicShareShortVideo = new(
+    public static readonly RouteMetadata ShareShortVideo = new(
         "PublicShareShortVideo",
         "Share a short video",
         """

@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Public.Queries.GetActivePromo
 /// </summary>
 public static class PublicGetActivePromotionLevelsMetaField
 {
-    public static readonly RouteMetadata PublicGetActivePromotionLevels = new(
+    public static readonly RouteMetadata GetActivePromotionLevels = new(
         "PublicGetActivePromotionLevels",
         "Get active promotion levels",
         """

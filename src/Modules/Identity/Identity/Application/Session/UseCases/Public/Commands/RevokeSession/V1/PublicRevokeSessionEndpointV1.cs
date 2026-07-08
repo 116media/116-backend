@@ -50,9 +50,9 @@ public class PublicRevokeSessionEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: PublicRevokeSessionMetaField.PublicRevokeSession.Name)
-            .WithSummary(summary: PublicRevokeSessionMetaField.PublicRevokeSession.Summary)
-            .WithDescription(description: PublicRevokeSessionMetaField.PublicRevokeSession.Description)
+            .WithName(endpointName: PublicRevokeSessionMetaField.RevokeSession.Name)
+            .WithSummary(summary: PublicRevokeSessionMetaField.RevokeSession.Summary)
+            .WithDescription(description: PublicRevokeSessionMetaField.RevokeSession.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .ProducesValidationProblem()

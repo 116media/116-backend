@@ -55,9 +55,9 @@ public class PublicGetExclusiveCategoryEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetExclusiveCategoryMetaField.PublicGetExclusiveCategory.Name)
-            .WithSummary(summary: PublicGetExclusiveCategoryMetaField.PublicGetExclusiveCategory.Summary)
-            .WithDescription(description: PublicGetExclusiveCategoryMetaField.PublicGetExclusiveCategory.Description)
+            .WithName(endpointName: PublicGetExclusiveCategoryMetaField.GetExclusiveCategory.Name)
+            .WithSummary(summary: PublicGetExclusiveCategoryMetaField.GetExclusiveCategory.Summary)
+            .WithDescription(description: PublicGetExclusiveCategoryMetaField.GetExclusiveCategory.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetExclusiveCategoryResponse>(statusCode: StatusCodes.Status200OK)

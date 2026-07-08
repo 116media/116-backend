@@ -62,9 +62,9 @@ public class PublicGetOwnSessionsEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Name)
-            .WithSummary(summary: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Summary)
-            .WithDescription(description: PublicGetOwnSessionsMetaField.PublicGetOwnSessions.Description)
+            .WithName(endpointName: PublicGetOwnSessionsMetaField.GetOwnSessions.Name)
+            .WithSummary(summary: PublicGetOwnSessionsMetaField.GetOwnSessions.Summary)
+            .WithDescription(description: PublicGetOwnSessionsMetaField.GetOwnSessions.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .Produces<PublicGetOwnSessionsResponse>()

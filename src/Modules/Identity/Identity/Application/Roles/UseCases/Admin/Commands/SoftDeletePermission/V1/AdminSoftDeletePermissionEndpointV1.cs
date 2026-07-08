@@ -52,9 +52,9 @@ public class AdminSoftDeletePermissionEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminSoftDeletePermissionMetaField.AdminSoftDeletePermission.Name)
-            .WithSummary(summary: AdminSoftDeletePermissionMetaField.AdminSoftDeletePermission.Summary)
-            .WithDescription(description: AdminSoftDeletePermissionMetaField.AdminSoftDeletePermission.Description)
+            .WithName(endpointName: AdminSoftDeletePermissionMetaField.SoftDeletePermission.Name)
+            .WithSummary(summary: AdminSoftDeletePermissionMetaField.SoftDeletePermission.Summary)
+            .WithDescription(description: AdminSoftDeletePermissionMetaField.SoftDeletePermission.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()

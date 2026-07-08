@@ -51,9 +51,9 @@ public class AdminGetAllLyricsEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetAllLyricsMetaField.AdminGetAllLyrics.Name)
-            .WithSummary(summary: AdminGetAllLyricsMetaField.AdminGetAllLyrics.Summary)
-            .WithDescription(description: AdminGetAllLyricsMetaField.AdminGetAllLyrics.Description)
+            .WithName(endpointName: AdminGetAllLyricsMetaField.GetAllLyrics.Name)
+            .WithSummary(summary: AdminGetAllLyricsMetaField.GetAllLyrics.Summary)
+            .WithDescription(description: AdminGetAllLyricsMetaField.GetAllLyrics.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

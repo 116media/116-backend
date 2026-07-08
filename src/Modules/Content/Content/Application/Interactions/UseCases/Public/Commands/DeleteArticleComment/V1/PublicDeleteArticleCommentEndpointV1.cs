@@ -58,9 +58,9 @@ public class PublicDeleteArticleCommentEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicDeleteArticleCommentMetaField.PublicDeleteArticleComment.Name)
-            .WithSummary(summary: PublicDeleteArticleCommentMetaField.PublicDeleteArticleComment.Summary)
-            .WithDescription(description: PublicDeleteArticleCommentMetaField.PublicDeleteArticleComment.Description)
+            .WithName(endpointName: PublicDeleteArticleCommentMetaField.DeleteArticleComment.Name)
+            .WithSummary(summary: PublicDeleteArticleCommentMetaField.DeleteArticleComment.Summary)
+            .WithDescription(description: PublicDeleteArticleCommentMetaField.DeleteArticleComment.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicDeleteArticleCommentResponse>(statusCode: StatusCodes.Status200OK)

@@ -50,9 +50,9 @@ public class AdminGetAllCustomersEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetAllCustomersMetaField.AdminGetAllCustomers.Name)
-            .WithSummary(summary: AdminGetAllCustomersMetaField.AdminGetAllCustomers.Summary)
-            .WithDescription(description: AdminGetAllCustomersMetaField.AdminGetAllCustomers.Description)
+            .WithName(endpointName: AdminGetAllCustomersMetaField.GetAllCustomers.Name)
+            .WithSummary(summary: AdminGetAllCustomersMetaField.GetAllCustomers.Summary)
+            .WithDescription(description: AdminGetAllCustomersMetaField.GetAllCustomers.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

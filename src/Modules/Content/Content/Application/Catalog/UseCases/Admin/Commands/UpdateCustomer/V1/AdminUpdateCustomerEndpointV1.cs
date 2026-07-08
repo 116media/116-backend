@@ -65,9 +65,9 @@ public class AdminUpdateCustomerEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminUpdateCustomerMetaField.AdminUpdateCustomer.Name)
-            .WithSummary(summary: AdminUpdateCustomerMetaField.AdminUpdateCustomer.Summary)
-            .WithDescription(description: AdminUpdateCustomerMetaField.AdminUpdateCustomer.Description)
+            .WithName(endpointName: AdminUpdateCustomerMetaField.UpdateCustomer.Name)
+            .WithSummary(summary: AdminUpdateCustomerMetaField.UpdateCustomer.Summary)
+            .WithDescription(description: AdminUpdateCustomerMetaField.UpdateCustomer.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

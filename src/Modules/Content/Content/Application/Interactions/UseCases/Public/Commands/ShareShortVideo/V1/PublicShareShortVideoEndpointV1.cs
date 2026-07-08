@@ -50,9 +50,9 @@ public class PublicShareShortVideoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicShareShortVideoMetaField.PublicShareShortVideo.Name)
-            .WithSummary(summary: PublicShareShortVideoMetaField.PublicShareShortVideo.Summary)
-            .WithDescription(description: PublicShareShortVideoMetaField.PublicShareShortVideo.Description)
+            .WithName(endpointName: PublicShareShortVideoMetaField.ShareShortVideo.Name)
+            .WithSummary(summary: PublicShareShortVideoMetaField.ShareShortVideo.Summary)
+            .WithDescription(description: PublicShareShortVideoMetaField.ShareShortVideo.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicShareShortVideoResponse>(statusCode: StatusCodes.Status200OK)

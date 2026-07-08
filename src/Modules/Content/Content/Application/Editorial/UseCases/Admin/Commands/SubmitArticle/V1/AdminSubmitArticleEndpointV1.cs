@@ -46,9 +46,9 @@ public class AdminSubmitArticleEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminSubmitArticleMetaField.AdminSubmitArticle.Name)
-            .WithSummary(summary: AdminSubmitArticleMetaField.AdminSubmitArticle.Summary)
-            .WithDescription(description: AdminSubmitArticleMetaField.AdminSubmitArticle.Description)
+            .WithName(endpointName: AdminSubmitArticleMetaField.SubmitArticle.Name)
+            .WithSummary(summary: AdminSubmitArticleMetaField.SubmitArticle.Summary)
+            .WithDescription(description: AdminSubmitArticleMetaField.SubmitArticle.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

@@ -69,9 +69,9 @@ public class PublicAddArticleCommentEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: PublicAddArticleCommentMetaField.PublicAddArticleComment.Name)
-            .WithSummary(summary: PublicAddArticleCommentMetaField.PublicAddArticleComment.Summary)
-            .WithDescription(description: PublicAddArticleCommentMetaField.PublicAddArticleComment.Description)
+            .WithName(endpointName: PublicAddArticleCommentMetaField.AddArticleComment.Name)
+            .WithSummary(summary: PublicAddArticleCommentMetaField.AddArticleComment.Summary)
+            .WithDescription(description: PublicAddArticleCommentMetaField.AddArticleComment.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicAddArticleCommentResponse>(statusCode: StatusCodes.Status201Created)

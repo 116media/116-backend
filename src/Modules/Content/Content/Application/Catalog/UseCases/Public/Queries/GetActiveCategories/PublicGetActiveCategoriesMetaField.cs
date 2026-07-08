@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Public.Queries.GetActiveCate
 /// </summary>
 public static class PublicGetActiveCategoriesMetaField
 {
-    public static readonly RouteMetadata PublicGetActiveCategories = new(
+    public static readonly RouteMetadata GetActiveCategories = new(
         "PublicGetActiveCategories",
         "List public categories",
         """

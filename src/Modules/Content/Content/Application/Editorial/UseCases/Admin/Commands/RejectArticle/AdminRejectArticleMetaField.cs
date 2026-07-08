@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectArtic
 /// </summary>
 public static class AdminRejectArticleMetaField
 {
-    public static readonly RouteMetadata AdminRejectArticle = new(
+    public static readonly RouteMetadata RejectArticle = new(
         "RejectArticle",
         "Reject an article during editorial review",
         """

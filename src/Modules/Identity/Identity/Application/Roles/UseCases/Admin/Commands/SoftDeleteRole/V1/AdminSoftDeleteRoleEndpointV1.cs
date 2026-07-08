@@ -49,9 +49,9 @@ public class AdminSoftDeleteRoleEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminSoftDeleteRoleMetaField.AdminSoftDeleteRole.Name)
-            .WithSummary(summary: AdminSoftDeleteRoleMetaField.AdminSoftDeleteRole.Summary)
-            .WithDescription(description: AdminSoftDeleteRoleMetaField.AdminSoftDeleteRole.Description)
+            .WithName(endpointName: AdminSoftDeleteRoleMetaField.SoftDeleteRole.Name)
+            .WithSummary(summary: AdminSoftDeleteRoleMetaField.SoftDeleteRole.Summary)
+            .WithDescription(description: AdminSoftDeleteRoleMetaField.SoftDeleteRole.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()

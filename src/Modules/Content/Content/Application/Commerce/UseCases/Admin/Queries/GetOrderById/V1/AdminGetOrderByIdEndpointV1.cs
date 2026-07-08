@@ -43,9 +43,9 @@ public class AdminGetOrderByIdEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetOrderByIdMetaField.AdminGetOrderById.Name)
-            .WithSummary(summary: AdminGetOrderByIdMetaField.AdminGetOrderById.Summary)
-            .WithDescription(description: AdminGetOrderByIdMetaField.AdminGetOrderById.Description)
+            .WithName(endpointName: AdminGetOrderByIdMetaField.GetOrderById.Name)
+            .WithSummary(summary: AdminGetOrderByIdMetaField.GetOrderById.Summary)
+            .WithDescription(description: AdminGetOrderByIdMetaField.GetOrderById.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

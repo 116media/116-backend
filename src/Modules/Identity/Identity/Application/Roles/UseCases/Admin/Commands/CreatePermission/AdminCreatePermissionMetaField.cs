@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.CreatePermissi
 /// </summary>
 public static class AdminCreatePermissionMetaField
 {
-    public static readonly RouteMetadata AdminCreatePermission = new(
+    public static readonly RouteMetadata CreatePermission = new(
         "AdminCreatePermission",
         "Create a new permission",
         """

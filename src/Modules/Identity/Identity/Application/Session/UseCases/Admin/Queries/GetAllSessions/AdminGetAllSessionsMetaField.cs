@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Queries.GetAllSession
 /// </summary>
 public static class AdminGetAllSessionsMetaField
 {
-    public static readonly RouteMetadata AdminGetAllSessions = new(
+    public static readonly RouteMetadata GetAllSessions = new(
         "AdminGetAllSessions",
         "Retrieve all sessions with pagination and filtering",
         """

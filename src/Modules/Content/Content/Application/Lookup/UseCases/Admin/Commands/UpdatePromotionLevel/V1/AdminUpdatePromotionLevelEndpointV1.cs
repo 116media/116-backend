@@ -67,9 +67,9 @@ public class AdminUpdatePromotionLevelEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminUpdatePromotionLevelMetaField.AdminUpdatePromotionLevel.Name)
-            .WithSummary(summary: AdminUpdatePromotionLevelMetaField.AdminUpdatePromotionLevel.Summary)
-            .WithDescription(description: AdminUpdatePromotionLevelMetaField.AdminUpdatePromotionLevel.Description)
+            .WithName(endpointName: AdminUpdatePromotionLevelMetaField.UpdatePromotionLevel.Name)
+            .WithSummary(summary: AdminUpdatePromotionLevelMetaField.UpdatePromotionLevel.Summary)
+            .WithDescription(description: AdminUpdatePromotionLevelMetaField.UpdatePromotionLevel.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

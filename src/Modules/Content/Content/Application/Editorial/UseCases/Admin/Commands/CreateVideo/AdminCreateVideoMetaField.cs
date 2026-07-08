@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateVideo
 /// </summary>
 public static class AdminCreateVideoMetaField
 {
-    public static readonly RouteMetadata AdminCreateVideo = new(
+    public static readonly RouteMetadata CreateVideo = new(
         "CreateVideo",
         "Create a new video",
         """

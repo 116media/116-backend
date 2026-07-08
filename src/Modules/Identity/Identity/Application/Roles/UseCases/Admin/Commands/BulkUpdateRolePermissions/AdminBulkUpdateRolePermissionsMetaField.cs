@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.BulkUpdateRole
 /// </summary>
 public static class AdminBulkUpdateRolePermissionsMetaField
 {
-    public static readonly RouteMetadata AdminBulkUpdateRolePermissions = new(
+    public static readonly RouteMetadata BulkUpdateRolePermissions = new(
         "AdminBulkUpdateRolePermissions",
         "Bulk update role permissions",
         """

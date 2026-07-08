@@ -58,9 +58,9 @@ public class PublicRenamePlaylistEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicRenamePlaylistMetaField.PublicRenamePlaylist.Name)
-            .WithSummary(summary: PublicRenamePlaylistMetaField.PublicRenamePlaylist.Summary)
-            .WithDescription(description: PublicRenamePlaylistMetaField.PublicRenamePlaylist.Description)
+            .WithName(endpointName: PublicRenamePlaylistMetaField.RenamePlaylist.Name)
+            .WithSummary(summary: PublicRenamePlaylistMetaField.RenamePlaylist.Summary)
+            .WithDescription(description: PublicRenamePlaylistMetaField.RenamePlaylist.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicRenamePlaylistResponse>(statusCode: StatusCodes.Status200OK)

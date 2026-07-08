@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllShorts
 /// </summary>
 public static class AdminGetAllShortsMetaField
 {
-    public static readonly RouteMetadata AdminGetAllShorts = new(
+    public static readonly RouteMetadata GetAllShorts = new(
         "AdminGetAllShorts",
         "List all short videos",
         """

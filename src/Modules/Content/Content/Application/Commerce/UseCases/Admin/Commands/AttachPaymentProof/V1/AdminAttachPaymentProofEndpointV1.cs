@@ -49,9 +49,9 @@ public class AdminAttachPaymentProofEndpointV1 : ICarterModule
                 }
             )
             .DisableAntiforgery()
-            .WithName(endpointName: AdminAttachPaymentProofMetaField.AdminAttachPaymentProof.Name)
-            .WithSummary(summary: AdminAttachPaymentProofMetaField.AdminAttachPaymentProof.Summary)
-            .WithDescription(description: AdminAttachPaymentProofMetaField.AdminAttachPaymentProof.Description)
+            .WithName(endpointName: AdminAttachPaymentProofMetaField.AttachPaymentProof.Name)
+            .WithSummary(summary: AdminAttachPaymentProofMetaField.AttachPaymentProof.Summary)
+            .WithDescription(description: AdminAttachPaymentProofMetaField.AttachPaymentProof.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.FileUpload)

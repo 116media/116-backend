@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllPromotion
 /// </summary>
 public static class AdminGetAllPromotionLevelsMetaField
 {
-    public static readonly RouteMetadata AdminGetAllPromotionLevels = new(
+    public static readonly RouteMetadata GetAllPromotionLevels = new(
         "AdminGetAllPromotionLevels",
         "List all promotion levels",
         """

@@ -10,7 +10,7 @@ public static class PublicUnlikeShortVideoMetaField
     /// <summary>
     /// Route metadata for the PublicUnlikeShortVideo endpoint.
     /// </summary>
-    public static readonly RouteMetadata PublicUnlikeShortVideo = new(
+    public static readonly RouteMetadata UnlikeShortVideo = new(
         "PublicUnlikeShortVideo",
         "Remove a like from a short video",
         """

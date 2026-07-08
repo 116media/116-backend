@@ -48,9 +48,9 @@ public class AdminGetAllPromotionLevelsEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetAllPromotionLevelsMetaField.AdminGetAllPromotionLevels.Name)
-            .WithSummary(summary: AdminGetAllPromotionLevelsMetaField.AdminGetAllPromotionLevels.Summary)
-            .WithDescription(description: AdminGetAllPromotionLevelsMetaField.AdminGetAllPromotionLevels.Description)
+            .WithName(endpointName: AdminGetAllPromotionLevelsMetaField.GetAllPromotionLevels.Name)
+            .WithSummary(summary: AdminGetAllPromotionLevelsMetaField.GetAllPromotionLevels.Summary)
+            .WithDescription(description: AdminGetAllPromotionLevelsMetaField.GetAllPromotionLevels.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

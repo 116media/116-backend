@@ -46,9 +46,9 @@ public class PublicUnlikeArticleEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicUnlikeArticleMetaField.PublicUnlikeArticle.Name)
-            .WithSummary(summary: PublicUnlikeArticleMetaField.PublicUnlikeArticle.Summary)
-            .WithDescription(description: PublicUnlikeArticleMetaField.PublicUnlikeArticle.Description)
+            .WithName(endpointName: PublicUnlikeArticleMetaField.UnlikeArticle.Name)
+            .WithSummary(summary: PublicUnlikeArticleMetaField.UnlikeArticle.Summary)
+            .WithDescription(description: PublicUnlikeArticleMetaField.UnlikeArticle.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicUnlikeArticleResponse>(statusCode: StatusCodes.Status200OK)

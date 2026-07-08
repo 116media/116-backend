@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.DeactivateCat
 /// </summary>
 public static class AdminDeactivateCategoryMetaField
 {
-    public static readonly RouteMetadata AdminDeactivateCategory = new(
+    public static readonly RouteMetadata DeactivateCategory = new(
         "AdminDeactivateCategory",
         "Deactivate a category",
         """

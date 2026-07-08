@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem
 /// </summary>
 public static class AdminAddOrderItemMetaField
 {
-    public static readonly RouteMetadata AdminAddOrderItem = new(
+    public static readonly RouteMetadata AddOrderItem = new(
         "AdminAddOrderItem",
         "Add a content item to an order",
         """

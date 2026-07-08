@@ -41,9 +41,9 @@ public class AdminCancelOrderEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminCancelOrderMetaField.AdminCancelOrder.Name)
-            .WithSummary(summary: AdminCancelOrderMetaField.AdminCancelOrder.Summary)
-            .WithDescription(description: AdminCancelOrderMetaField.AdminCancelOrder.Description)
+            .WithName(endpointName: AdminCancelOrderMetaField.CancelOrder.Name)
+            .WithSummary(summary: AdminCancelOrderMetaField.CancelOrder.Summary)
+            .WithDescription(description: AdminCancelOrderMetaField.CancelOrder.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

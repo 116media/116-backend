@@ -56,9 +56,9 @@ public class PublicGetPopularTagsEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetPopularTagsMetaField.PublicGetPopularTags.Name)
-            .WithSummary(summary: PublicGetPopularTagsMetaField.PublicGetPopularTags.Summary)
-            .WithDescription(description: PublicGetPopularTagsMetaField.PublicGetPopularTags.Description)
+            .WithName(endpointName: PublicGetPopularTagsMetaField.GetPopularTags.Name)
+            .WithSummary(summary: PublicGetPopularTagsMetaField.GetPopularTags.Summary)
+            .WithDescription(description: PublicGetPopularTagsMetaField.GetPopularTags.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetPopularTagsResponse>(statusCode: StatusCodes.Status200OK)

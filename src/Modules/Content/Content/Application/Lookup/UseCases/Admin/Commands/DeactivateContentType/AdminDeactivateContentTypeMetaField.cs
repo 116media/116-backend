@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivateCont
 /// </summary>
 public static class AdminDeactivateContentTypeMetaField
 {
-    public static readonly RouteMetadata AdminDeactivateContentType = new(
+    public static readonly RouteMetadata DeactivateContentType = new(
         "AdminDeactivateContentType",
         "Deactivate a content type",
         """

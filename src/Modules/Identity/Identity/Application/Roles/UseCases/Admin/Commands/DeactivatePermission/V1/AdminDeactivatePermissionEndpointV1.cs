@@ -48,9 +48,9 @@ public class AdminDeactivatePermissionEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminDeactivatePermissionMetaField.AdminDeactivatePermission.Name)
-            .WithSummary(summary: AdminDeactivatePermissionMetaField.AdminDeactivatePermission.Summary)
-            .WithDescription(description: AdminDeactivatePermissionMetaField.AdminDeactivatePermission.Description)
+            .WithName(endpointName: AdminDeactivatePermissionMetaField.DeactivatePermission.Name)
+            .WithSummary(summary: AdminDeactivatePermissionMetaField.DeactivatePermission.Summary)
+            .WithDescription(description: AdminDeactivatePermissionMetaField.DeactivatePermission.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()

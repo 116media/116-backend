@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteVideo
 /// </summary>
 public static class AdminDeleteVideoMetaField
 {
-    public static readonly RouteMetadata AdminDeleteVideo = new(
+    public static readonly RouteMetadata DeleteVideo = new(
         "DeleteVideo",
         "Permanently delete a video",
         """

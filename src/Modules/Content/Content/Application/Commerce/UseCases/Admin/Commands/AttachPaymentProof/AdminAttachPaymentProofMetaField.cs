@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AttachPaymen
 /// </summary>
 public static class AdminAttachPaymentProofMetaField
 {
-    public static readonly RouteMetadata AdminAttachPaymentProof = new(
+    public static readonly RouteMetadata AttachPaymentProof = new(
         "AdminAttachPaymentProof",
         "Attach a payment proof to an order",
         """

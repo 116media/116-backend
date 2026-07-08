@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateContentT
 /// </summary>
 public static class AdminUpdateContentTypeMetaField
 {
-    public static readonly RouteMetadata AdminUpdateContentType = new(
+    public static readonly RouteMetadata UpdateContentType = new(
         "AdminUpdateContentType",
         "Update a content type",
         """

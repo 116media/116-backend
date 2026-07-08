@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.RejectPaymen
 /// </summary>
 public static class AdminRejectPaymentMetaField
 {
-    public static readonly RouteMetadata AdminRejectPayment = new(
+    public static readonly RouteMetadata RejectPayment = new(
         "AdminRejectPayment",
         "Reject an order payment",
         """

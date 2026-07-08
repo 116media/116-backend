@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.AssignPermissi
 /// </summary>
 public static class AdminAssignPermissionToRoleMetaField
 {
-    public static readonly RouteMetadata AdminAssignPermissionToRole = new(
+    public static readonly RouteMetadata AssignPermissionToRole = new(
         "AdminAssignPermissionToRole",
         "Assign a permission to a role",
         """

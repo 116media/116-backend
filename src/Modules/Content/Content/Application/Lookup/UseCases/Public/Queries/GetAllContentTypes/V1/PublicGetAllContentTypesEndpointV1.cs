@@ -47,9 +47,9 @@ public class PublicGetAllContentTypesEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetAllContentTypesMetaField.PublicGetAllContentTypes.Name)
-            .WithSummary(summary: PublicGetAllContentTypesMetaField.PublicGetAllContentTypes.Summary)
-            .WithDescription(description: PublicGetAllContentTypesMetaField.PublicGetAllContentTypes.Description)
+            .WithName(endpointName: PublicGetAllContentTypesMetaField.GetAllContentTypes.Name)
+            .WithSummary(summary: PublicGetAllContentTypesMetaField.GetAllContentTypes.Summary)
+            .WithDescription(description: PublicGetAllContentTypesMetaField.GetAllContentTypes.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetAllContentTypesResponse>(statusCode: StatusCodes.Status200OK)

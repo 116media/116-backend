@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.DeactivatePric
 /// </summary>
 public static class AdminDeactivatePricingTierMetaField
 {
-    public static readonly RouteMetadata AdminDeactivatePricingTier = new(
+    public static readonly RouteMetadata DeactivatePricingTier = new(
         "AdminDeactivatePricingTier",
         "Deactivate a pricing tier",
         """

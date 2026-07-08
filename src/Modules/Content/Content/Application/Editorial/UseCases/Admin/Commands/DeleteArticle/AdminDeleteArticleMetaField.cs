@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteArtic
 /// </summary>
 public static class AdminDeleteArticleMetaField
 {
-    public static readonly RouteMetadata AdminDeleteArticle = new(
+    public static readonly RouteMetadata DeleteArticle = new(
         "DeleteArticle",
         "Permanently delete an article",
         """

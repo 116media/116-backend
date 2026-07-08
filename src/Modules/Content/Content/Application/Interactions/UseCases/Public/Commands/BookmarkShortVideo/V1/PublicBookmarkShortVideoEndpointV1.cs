@@ -46,9 +46,9 @@ public class PublicBookmarkShortVideoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicBookmarkShortVideoMetaField.PublicBookmarkShortVideo.Name)
-            .WithSummary(summary: PublicBookmarkShortVideoMetaField.PublicBookmarkShortVideo.Summary)
-            .WithDescription(description: PublicBookmarkShortVideoMetaField.PublicBookmarkShortVideo.Description)
+            .WithName(endpointName: PublicBookmarkShortVideoMetaField.BookmarkShortVideo.Name)
+            .WithSummary(summary: PublicBookmarkShortVideoMetaField.BookmarkShortVideo.Summary)
+            .WithDescription(description: PublicBookmarkShortVideoMetaField.BookmarkShortVideo.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicBookmarkShortVideoResponse>(statusCode: StatusCodes.Status200OK)

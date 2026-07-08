@@ -55,9 +55,9 @@ public class AdminScheduleShootEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminScheduleShootMetaField.AdminScheduleShoot.Name)
-            .WithSummary(summary: AdminScheduleShootMetaField.AdminScheduleShoot.Summary)
-            .WithDescription(description: AdminScheduleShootMetaField.AdminScheduleShoot.Description)
+            .WithName(endpointName: AdminScheduleShootMetaField.ScheduleShoot.Name)
+            .WithSummary(summary: AdminScheduleShootMetaField.ScheduleShoot.Summary)
+            .WithDescription(description: AdminScheduleShootMetaField.ScheduleShoot.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

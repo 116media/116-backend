@@ -70,9 +70,9 @@ public class AdminCreateCustomerEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: AdminCreateCustomerMetaField.AdminCreateCustomer.Name)
-            .WithSummary(summary: AdminCreateCustomerMetaField.AdminCreateCustomer.Summary)
-            .WithDescription(description: AdminCreateCustomerMetaField.AdminCreateCustomer.Description)
+            .WithName(endpointName: AdminCreateCustomerMetaField.CreateCustomer.Name)
+            .WithSummary(summary: AdminCreateCustomerMetaField.CreateCustomer.Summary)
+            .WithDescription(description: AdminCreateCustomerMetaField.CreateCustomer.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

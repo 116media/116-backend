@@ -18,7 +18,7 @@ public class PlaylistErrors(PlaylistErrorMessage i18n)
     /// </summary>
     public NotFoundException NotFound(Guid id)
     {
-        return new NotFoundException("Playlist", "id", keyValue: id);
+        return new NotFoundException(i18n.NotFound(id));
     }
 
     /// <summary>

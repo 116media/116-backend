@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetMyPla
 /// </summary>
 public static class PublicGetMyPlaylistsMetaField
 {
-    public static readonly RouteMetadata PublicGetMyPlaylists = new(
+    public static readonly RouteMetadata GetMyPlaylists = new(
         "PublicGetMyPlaylists",
         "Get my playlists",
         """

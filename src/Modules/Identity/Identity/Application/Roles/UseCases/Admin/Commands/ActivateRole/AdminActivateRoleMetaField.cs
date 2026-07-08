@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.ActivateRole;
 /// </summary>
 public static class AdminActivateRoleMetaField
 {
-    public static readonly RouteMetadata AdminActivateRole = new(
+    public static readonly RouteMetadata ActivateRole = new(
         "AdminActivateRole",
         "Activate a role",
         """

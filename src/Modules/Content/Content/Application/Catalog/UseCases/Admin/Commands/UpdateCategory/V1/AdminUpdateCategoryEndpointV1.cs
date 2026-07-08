@@ -66,9 +66,9 @@ public class AdminUpdateCategoryEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminUpdateCategoryMetaField.AdminUpdateCategory.Name)
-            .WithSummary(summary: AdminUpdateCategoryMetaField.AdminUpdateCategory.Summary)
-            .WithDescription(description: AdminUpdateCategoryMetaField.AdminUpdateCategory.Description)
+            .WithName(endpointName: AdminUpdateCategoryMetaField.UpdateCategory.Name)
+            .WithSummary(summary: AdminUpdateCategoryMetaField.UpdateCategory.Summary)
+            .WithDescription(description: AdminUpdateCategoryMetaField.UpdateCategory.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

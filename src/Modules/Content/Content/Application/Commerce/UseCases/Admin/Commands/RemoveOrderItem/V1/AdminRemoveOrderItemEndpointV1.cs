@@ -41,9 +41,9 @@ public class AdminRemoveOrderItemEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminRemoveOrderItemMetaField.AdminRemoveOrderItem.Name)
-            .WithSummary(summary: AdminRemoveOrderItemMetaField.AdminRemoveOrderItem.Summary)
-            .WithDescription(description: AdminRemoveOrderItemMetaField.AdminRemoveOrderItem.Description)
+            .WithName(endpointName: AdminRemoveOrderItemMetaField.RemoveOrderItem.Name)
+            .WithSummary(summary: AdminRemoveOrderItemMetaField.RemoveOrderItem.Summary)
+            .WithDescription(description: AdminRemoveOrderItemMetaField.RemoveOrderItem.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

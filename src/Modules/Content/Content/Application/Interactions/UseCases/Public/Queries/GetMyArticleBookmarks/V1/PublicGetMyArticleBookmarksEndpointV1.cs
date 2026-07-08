@@ -49,9 +49,9 @@ public class PublicGetMyArticleBookmarksEndpointV1 : ICarterModule
                     return Results.Ok(result.Articles);
                 }
             )
-            .WithName(endpointName: PublicGetMyArticleBookmarksMetaField.PublicGetMyArticleBookmarks.Name)
-            .WithSummary(summary: PublicGetMyArticleBookmarksMetaField.PublicGetMyArticleBookmarks.Summary)
-            .WithDescription(description: PublicGetMyArticleBookmarksMetaField.PublicGetMyArticleBookmarks.Description)
+            .WithName(endpointName: PublicGetMyArticleBookmarksMetaField.GetMyArticleBookmarks.Name)
+            .WithSummary(summary: PublicGetMyArticleBookmarksMetaField.GetMyArticleBookmarks.Summary)
+            .WithDescription(description: PublicGetMyArticleBookmarksMetaField.GetMyArticleBookmarks.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PaginatedResult<ArticleSummaryDto>>(statusCode: StatusCodes.Status200OK)

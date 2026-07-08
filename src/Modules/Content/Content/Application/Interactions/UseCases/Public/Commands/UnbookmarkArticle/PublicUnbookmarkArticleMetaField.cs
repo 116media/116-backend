@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.Unbookm
 /// </summary>
 public static class PublicUnbookmarkArticleMetaField
 {
-    public static readonly RouteMetadata PublicUnbookmarkArticle = new(
+    public static readonly RouteMetadata UnbookmarkArticle = new(
         "PublicUnbookmarkArticle",
         "Remove a bookmark from an article",
         """

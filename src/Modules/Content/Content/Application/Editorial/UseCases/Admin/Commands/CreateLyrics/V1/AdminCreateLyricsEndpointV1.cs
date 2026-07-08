@@ -87,9 +87,9 @@ public class AdminCreateLyricsEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: AdminCreateLyricsMetaField.AdminCreateLyrics.Name)
-            .WithSummary(summary: AdminCreateLyricsMetaField.AdminCreateLyrics.Summary)
-            .WithDescription(description: AdminCreateLyricsMetaField.AdminCreateLyrics.Description)
+            .WithName(endpointName: AdminCreateLyricsMetaField.CreateLyrics.Name)
+            .WithSummary(summary: AdminCreateLyricsMetaField.CreateLyrics.Summary)
+            .WithDescription(description: AdminCreateLyricsMetaField.CreateLyrics.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

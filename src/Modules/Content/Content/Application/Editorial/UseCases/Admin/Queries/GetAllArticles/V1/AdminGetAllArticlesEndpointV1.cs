@@ -64,9 +64,9 @@ public class AdminGetAllArticlesEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetAllArticlesMetaField.AdminGetAllArticles.Name)
-            .WithSummary(summary: AdminGetAllArticlesMetaField.AdminGetAllArticles.Summary)
-            .WithDescription(description: AdminGetAllArticlesMetaField.AdminGetAllArticles.Description)
+            .WithName(endpointName: AdminGetAllArticlesMetaField.GetAllArticles.Name)
+            .WithSummary(summary: AdminGetAllArticlesMetaField.GetAllArticles.Summary)
+            .WithDescription(description: AdminGetAllArticlesMetaField.GetAllArticles.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

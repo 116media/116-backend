@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetPendingPay
 /// </summary>
 public static class AdminGetPendingPaymentOrdersMetaField
 {
-    public static readonly RouteMetadata AdminGetPendingPaymentOrders = new(
+    public static readonly RouteMetadata GetPendingPaymentOrders = new(
         "AdminGetPendingPaymentOrders",
         "List orders awaiting payment",
         """

@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetShortById
 /// </summary>
 public static class AdminGetShortByIdMetaField
 {
-    public static readonly RouteMetadata AdminGetShortById = new(
+    public static readonly RouteMetadata GetShortById = new(
         "AdminGetShortById",
         "Get short video details",
         """

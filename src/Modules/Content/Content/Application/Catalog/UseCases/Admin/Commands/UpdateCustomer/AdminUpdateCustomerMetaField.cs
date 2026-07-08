@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCustome
 /// </summary>
 public static class AdminUpdateCustomerMetaField
 {
-    public static readonly RouteMetadata AdminUpdateCustomer = new(
+    public static readonly RouteMetadata UpdateCustomer = new(
         "AdminUpdateCustomer",
         "Update a customer",
         """

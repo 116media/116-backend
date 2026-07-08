@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 /// </summary>
 public static class AdminUpdateVideoTagsMetaField
 {
-    public static readonly RouteMetadata AdminUpdateVideoTags = new(
+    public static readonly RouteMetadata UpdateVideoTags = new(
         "UpdateVideoTags",
         "Replace all tags on a video",
         """

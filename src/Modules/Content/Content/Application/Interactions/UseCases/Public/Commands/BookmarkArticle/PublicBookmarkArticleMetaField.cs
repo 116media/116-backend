@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.Bookmar
 /// </summary>
 public static class PublicBookmarkArticleMetaField
 {
-    public static readonly RouteMetadata PublicBookmarkArticle = new(
+    public static readonly RouteMetadata BookmarkArticle = new(
         "PublicBookmarkArticle",
         "Bookmark an article",
         """

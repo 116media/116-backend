@@ -10,7 +10,7 @@ public static class PublicSignUpMetaField
     /// <summary>
     /// Metadata describing the public user signup endpoint.
     /// </summary>
-    public static readonly RouteMetadata PublicSignUp = new(
+    public static readonly RouteMetadata SignUp = new(
         "PublicSignUp",
         "Register a new public user account",
         """

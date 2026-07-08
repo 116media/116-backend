@@ -46,9 +46,9 @@ public class AdminDeactivatePricingTierEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminDeactivatePricingTierMetaField.AdminDeactivatePricingTier.Name)
-            .WithSummary(summary: AdminDeactivatePricingTierMetaField.AdminDeactivatePricingTier.Summary)
-            .WithDescription(description: AdminDeactivatePricingTierMetaField.AdminDeactivatePricingTier.Description)
+            .WithName(endpointName: AdminDeactivatePricingTierMetaField.DeactivatePricingTier.Name)
+            .WithSummary(summary: AdminDeactivatePricingTierMetaField.DeactivatePricingTier.Summary)
+            .WithDescription(description: AdminDeactivatePricingTierMetaField.DeactivatePricingTier.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

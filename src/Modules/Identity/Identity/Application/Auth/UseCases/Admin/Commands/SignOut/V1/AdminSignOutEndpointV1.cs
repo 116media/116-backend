@@ -70,9 +70,9 @@ public class AdminSignOutEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminSignOutMetaField.AdminSignOut.Name)
-            .WithSummary(summary: AdminSignOutMetaField.AdminSignOut.Summary)
-            .WithDescription(description: AdminSignOutMetaField.AdminSignOut.Description)
+            .WithName(endpointName: AdminSignOutMetaField.SignOut.Name)
+            .WithSummary(summary: AdminSignOutMetaField.SignOut.Summary)
+            .WithDescription(description: AdminSignOutMetaField.SignOut.Description)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.SessionManagement)
             .Produces<AdminSignOutResponse>()

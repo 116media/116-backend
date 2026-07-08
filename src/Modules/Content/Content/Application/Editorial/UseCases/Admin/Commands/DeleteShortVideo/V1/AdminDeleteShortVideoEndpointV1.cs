@@ -46,9 +46,9 @@ public class AdminDeleteShortVideoEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminDeleteShortVideoMetaField.AdminDeleteShortVideo.Name)
-            .WithSummary(summary: AdminDeleteShortVideoMetaField.AdminDeleteShortVideo.Summary)
-            .WithDescription(description: AdminDeleteShortVideoMetaField.AdminDeleteShortVideo.Description)
+            .WithName(endpointName: AdminDeleteShortVideoMetaField.DeleteShortVideo.Name)
+            .WithSummary(summary: AdminDeleteShortVideoMetaField.DeleteShortVideo.Summary)
+            .WithDescription(description: AdminDeleteShortVideoMetaField.DeleteShortVideo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

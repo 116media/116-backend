@@ -65,9 +65,9 @@ public class AdminGetSessionMetricsEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminGetSessionMetricsMetaField.AdminGetSessionMetrics.Name)
-            .WithSummary(summary: AdminGetSessionMetricsMetaField.AdminGetSessionMetrics.Summary)
-            .WithDescription(description: AdminGetSessionMetricsMetaField.AdminGetSessionMetrics.Description)
+            .WithName(endpointName: AdminGetSessionMetricsMetaField.GetSessionMetrics.Name)
+            .WithSummary(summary: AdminGetSessionMetricsMetaField.GetSessionMetrics.Summary)
+            .WithDescription(description: AdminGetSessionMetricsMetaField.GetSessionMetrics.Description)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.AdminMetrics)
             .Produces<AdminGetSessionMetricsResponse>()

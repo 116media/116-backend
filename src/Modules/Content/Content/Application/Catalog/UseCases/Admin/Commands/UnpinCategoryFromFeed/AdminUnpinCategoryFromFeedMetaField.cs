@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UnpinCategory
 /// </summary>
 public static class AdminUnpinCategoryFromFeedMetaField
 {
-    public static readonly RouteMetadata AdminUnpinCategoryFromFeed = new(
+    public static readonly RouteMetadata UnpinCategoryFromFeed = new(
         "AdminUnpinCategoryFromFeed",
         "Unpin a category from the content feed",
         """

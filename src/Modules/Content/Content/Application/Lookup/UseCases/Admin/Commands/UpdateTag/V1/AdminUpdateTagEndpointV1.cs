@@ -55,9 +55,9 @@ public class AdminUpdateTagEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminUpdateTagMetaField.AdminUpdateTag.Name)
-            .WithSummary(summary: AdminUpdateTagMetaField.AdminUpdateTag.Summary)
-            .WithDescription(description: AdminUpdateTagMetaField.AdminUpdateTag.Description)
+            .WithName(endpointName: AdminUpdateTagMetaField.UpdateTag.Name)
+            .WithSummary(summary: AdminUpdateTagMetaField.UpdateTag.Summary)
+            .WithDescription(description: AdminUpdateTagMetaField.UpdateTag.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

@@ -23,7 +23,7 @@ public class PlaylistErrorsTests
         NotFoundException ex = _errors.NotFound(id);
 
         ex.Should().NotBeNull();
-        ex.Should().BeOfType<NotFoundException>();
+        ex.Message.Should().Contain(_message.NotFound(id));
     }
 
     [Fact]

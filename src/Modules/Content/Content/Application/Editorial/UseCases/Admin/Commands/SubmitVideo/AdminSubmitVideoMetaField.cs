@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.SubmitVideo
 /// </summary>
 public static class AdminSubmitVideoMetaField
 {
-    public static readonly RouteMetadata AdminSubmitVideo = new(
+    public static readonly RouteMetadata SubmitVideo = new(
         "SubmitVideo",
         "Submit a video for review or payment",
         """

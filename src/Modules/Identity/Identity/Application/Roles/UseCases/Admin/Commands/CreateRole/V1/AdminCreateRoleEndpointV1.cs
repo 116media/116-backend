@@ -60,9 +60,9 @@ public class AdminCreateRoleEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: AdminCreateRoleMetaField.AdminCreateRole.Name)
-            .WithSummary(summary: AdminCreateRoleMetaField.AdminCreateRole.Summary)
-            .WithDescription(description: AdminCreateRoleMetaField.AdminCreateRole.Description)
+            .WithName(endpointName: AdminCreateRoleMetaField.CreateRole.Name)
+            .WithSummary(summary: AdminCreateRoleMetaField.CreateRole.Summary)
+            .WithDescription(description: AdminCreateRoleMetaField.CreateRole.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()

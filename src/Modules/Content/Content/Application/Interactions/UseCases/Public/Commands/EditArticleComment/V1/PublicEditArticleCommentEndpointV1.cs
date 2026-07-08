@@ -66,9 +66,9 @@ public class PublicEditArticleCommentEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicEditArticleCommentMetaField.PublicEditArticleComment.Name)
-            .WithSummary(summary: PublicEditArticleCommentMetaField.PublicEditArticleComment.Summary)
-            .WithDescription(description: PublicEditArticleCommentMetaField.PublicEditArticleComment.Description)
+            .WithName(endpointName: PublicEditArticleCommentMetaField.EditArticleComment.Name)
+            .WithSummary(summary: PublicEditArticleCommentMetaField.EditArticleComment.Summary)
+            .WithDescription(description: PublicEditArticleCommentMetaField.EditArticleComment.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicEditArticleCommentResponse>(statusCode: StatusCodes.Status200OK)

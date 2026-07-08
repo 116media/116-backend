@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeA
 /// </summary>
 public static class PublicUnlikeArticleMetaField
 {
-    public static readonly RouteMetadata PublicUnlikeArticle = new(
+    public static readonly RouteMetadata UnlikeArticle = new(
         "PublicUnlikeArticle",
         "Remove a like from an article",
         """

@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddVide
 /// </summary>
 public static class PublicAddVideoToPlaylistMetaField
 {
-    public static readonly RouteMetadata PublicAddVideoToPlaylist = new(
+    public static readonly RouteMetadata AddVideoToPlaylist = new(
         "PublicAddVideoToPlaylist",
         "Add a video to a playlist",
         """

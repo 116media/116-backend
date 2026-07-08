@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Queries.GetPermissionBy
 /// </summary>
 public static class AdminGetPermissionByIdMetaField
 {
-    public static readonly RouteMetadata AdminGetPermissionById = new(
+    public static readonly RouteMetadata GetPermissionById = new(
         "AdminGetPermissionById",
         "Retrieve a permission by ID",
         """

@@ -52,9 +52,9 @@ public class AdminRemoveCategoryPricingEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminRemoveCategoryPricingMetaField.AdminRemoveCategoryPricing.Name)
-            .WithSummary(summary: AdminRemoveCategoryPricingMetaField.AdminRemoveCategoryPricing.Summary)
-            .WithDescription(description: AdminRemoveCategoryPricingMetaField.AdminRemoveCategoryPricing.Description)
+            .WithName(endpointName: AdminRemoveCategoryPricingMetaField.RemoveCategoryPricing.Name)
+            .WithSummary(summary: AdminRemoveCategoryPricingMetaField.RemoveCategoryPricing.Summary)
+            .WithDescription(description: AdminRemoveCategoryPricingMetaField.RemoveCategoryPricing.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

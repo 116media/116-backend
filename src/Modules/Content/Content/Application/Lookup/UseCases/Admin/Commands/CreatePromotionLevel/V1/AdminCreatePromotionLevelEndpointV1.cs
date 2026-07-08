@@ -71,9 +71,9 @@ public class AdminCreatePromotionLevelEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: AdminCreatePromotionLevelMetaField.AdminCreatePromotionLevel.Name)
-            .WithSummary(summary: AdminCreatePromotionLevelMetaField.AdminCreatePromotionLevel.Summary)
-            .WithDescription(description: AdminCreatePromotionLevelMetaField.AdminCreatePromotionLevel.Description)
+            .WithName(endpointName: AdminCreatePromotionLevelMetaField.CreatePromotionLevel.Name)
+            .WithSummary(summary: AdminCreatePromotionLevelMetaField.CreatePromotionLevel.Summary)
+            .WithDescription(description: AdminCreatePromotionLevelMetaField.CreatePromotionLevel.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

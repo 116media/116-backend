@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPr
 /// </summary>
 public static class AdminAddCategoryPricingMetaField
 {
-    public static readonly RouteMetadata AdminAddCategoryPricing = new(
+    public static readonly RouteMetadata AddCategoryPricing = new(
         "AdminAddCategoryPricing",
         "Add a pricing tier to a category",
         """

@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetComme
 /// </summary>
 public static class PublicGetCommentRepliesMetaField
 {
-    public static readonly RouteMetadata PublicGetCommentReplies = new(
+    public static readonly RouteMetadata GetCommentReplies = new(
         "PublicGetCommentReplies",
         "List replies to a comment",
         """

@@ -87,9 +87,9 @@ public class AdminCreateArticleEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: AdminCreateArticleMetaField.AdminCreateArticle.Name)
-            .WithSummary(summary: AdminCreateArticleMetaField.AdminCreateArticle.Summary)
-            .WithDescription(description: AdminCreateArticleMetaField.AdminCreateArticle.Description)
+            .WithName(endpointName: AdminCreateArticleMetaField.CreateArticle.Name)
+            .WithSummary(summary: AdminCreateArticleMetaField.CreateArticle.Summary)
+            .WithDescription(description: AdminCreateArticleMetaField.CreateArticle.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

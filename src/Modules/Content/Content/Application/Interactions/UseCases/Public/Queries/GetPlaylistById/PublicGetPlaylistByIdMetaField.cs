@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetPlayl
 /// </summary>
 public static class PublicGetPlaylistByIdMetaField
 {
-    public static readonly RouteMetadata PublicGetPlaylistById = new(
+    public static readonly RouteMetadata GetPlaylistById = new(
         "PublicGetPlaylistById",
         "Get a playlist by ID",
         """

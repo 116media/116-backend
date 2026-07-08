@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.CreateP
 /// </summary>
 public static class PublicCreatePlaylistMetaField
 {
-    public static readonly RouteMetadata PublicCreatePlaylist = new(
+    public static readonly RouteMetadata CreatePlaylist = new(
         "PublicCreatePlaylist",
         "Create a new playlist",
         """

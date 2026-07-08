@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.RemovePackage
 /// </summary>
 public static class AdminRemovePackageSlotMetaField
 {
-    public static readonly RouteMetadata AdminRemovePackageSlot = new(
+    public static readonly RouteMetadata RemovePackageSlot = new(
         "AdminRemovePackageSlot",
         "Remove a slot from a package",
         """

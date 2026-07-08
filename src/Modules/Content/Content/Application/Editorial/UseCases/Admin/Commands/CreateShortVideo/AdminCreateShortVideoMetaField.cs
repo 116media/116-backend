@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShort
 /// </summary>
 public static class AdminCreateShortVideoMetaField
 {
-    public static readonly RouteMetadata AdminCreateShortVideo = new(
+    public static readonly RouteMetadata CreateShortVideo = new(
         "CreateShortVideo",
         "Upload and create a new short video clip",
         """

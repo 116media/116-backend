@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.LikeSho
 /// </summary>
 public static class PublicLikeShortVideoMetaField
 {
-    public static readonly RouteMetadata PublicLikeShortVideo = new(
+    public static readonly RouteMetadata LikeShortVideo = new(
         "PublicLikeShortVideo",
         "Like a short video",
         """

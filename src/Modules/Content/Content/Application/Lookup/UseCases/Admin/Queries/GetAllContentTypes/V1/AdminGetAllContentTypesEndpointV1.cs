@@ -49,9 +49,9 @@ public class AdminGetAllContentTypesEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetAllContentTypesMetaField.AdminGetAllContentTypes.Name)
-            .WithSummary(summary: AdminGetAllContentTypesMetaField.AdminGetAllContentTypes.Summary)
-            .WithDescription(description: AdminGetAllContentTypesMetaField.AdminGetAllContentTypes.Description)
+            .WithName(endpointName: AdminGetAllContentTypesMetaField.GetAllContentTypes.Name)
+            .WithSummary(summary: AdminGetAllContentTypesMetaField.GetAllContentTypes.Summary)
+            .WithDescription(description: AdminGetAllContentTypesMetaField.GetAllContentTypes.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

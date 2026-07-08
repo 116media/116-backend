@@ -66,9 +66,9 @@ public class AdminExportSessionDataEndpointV1 : ICarterModule
                         : ExportFile(exportService: exportService, result: result, format: format, columns: columns);
                 }
             )
-            .WithName(endpointName: AdminExportSessionDataMetaField.AdminExportSessionData.Name)
-            .WithSummary(summary: AdminExportSessionDataMetaField.AdminExportSessionData.Summary)
-            .WithDescription(description: AdminExportSessionDataMetaField.AdminExportSessionData.Description)
+            .WithName(endpointName: AdminExportSessionDataMetaField.ExportSessionData.Name)
+            .WithSummary(summary: AdminExportSessionDataMetaField.ExportSessionData.Summary)
+            .WithDescription(description: AdminExportSessionDataMetaField.ExportSessionData.Description)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.DataExport)
             .ProducesValidationProblem()

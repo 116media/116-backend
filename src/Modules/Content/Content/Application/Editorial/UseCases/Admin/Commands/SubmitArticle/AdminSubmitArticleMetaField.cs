@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.SubmitArtic
 /// </summary>
 public static class AdminSubmitArticleMetaField
 {
-    public static readonly RouteMetadata AdminSubmitArticle = new(
+    public static readonly RouteMetadata SubmitArticle = new(
         "SubmitArticle",
         "Submit article for review",
         """

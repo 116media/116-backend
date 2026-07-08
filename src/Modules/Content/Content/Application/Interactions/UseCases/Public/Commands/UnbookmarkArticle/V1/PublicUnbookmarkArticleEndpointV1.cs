@@ -46,9 +46,9 @@ public class PublicUnbookmarkArticleEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicUnbookmarkArticleMetaField.PublicUnbookmarkArticle.Name)
-            .WithSummary(summary: PublicUnbookmarkArticleMetaField.PublicUnbookmarkArticle.Summary)
-            .WithDescription(description: PublicUnbookmarkArticleMetaField.PublicUnbookmarkArticle.Description)
+            .WithName(endpointName: PublicUnbookmarkArticleMetaField.UnbookmarkArticle.Name)
+            .WithSummary(summary: PublicUnbookmarkArticleMetaField.UnbookmarkArticle.Summary)
+            .WithDescription(description: PublicUnbookmarkArticleMetaField.UnbookmarkArticle.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicUnbookmarkArticleResponse>(statusCode: StatusCodes.Status200OK)

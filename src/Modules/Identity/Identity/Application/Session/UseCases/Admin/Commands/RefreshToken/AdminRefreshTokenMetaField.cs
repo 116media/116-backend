@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Commands.RefreshToken
 /// </summary>
 public static class AdminRefreshTokenMetaField
 {
-    public static readonly RouteMetadata AdminRefreshToken = new(
+    public static readonly RouteMetadata RefreshToken = new(
         "AdminRefreshToken",
         "Refresh admin access token using a valid refresh token",
         """

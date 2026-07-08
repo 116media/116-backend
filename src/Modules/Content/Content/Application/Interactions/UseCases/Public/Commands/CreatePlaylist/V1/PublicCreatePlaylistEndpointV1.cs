@@ -63,9 +63,9 @@ public class PublicCreatePlaylistEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: PublicCreatePlaylistMetaField.PublicCreatePlaylist.Name)
-            .WithSummary(summary: PublicCreatePlaylistMetaField.PublicCreatePlaylist.Summary)
-            .WithDescription(description: PublicCreatePlaylistMetaField.PublicCreatePlaylist.Description)
+            .WithName(endpointName: PublicCreatePlaylistMetaField.CreatePlaylist.Name)
+            .WithSummary(summary: PublicCreatePlaylistMetaField.CreatePlaylist.Summary)
+            .WithDescription(description: PublicCreatePlaylistMetaField.CreatePlaylist.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicCreatePlaylistResponse>(statusCode: StatusCodes.Status201Created)

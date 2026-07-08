@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareVi
 /// </summary>
 public static class PublicShareVideoMetaField
 {
-    public static readonly RouteMetadata PublicShareVideo = new(
+    public static readonly RouteMetadata ShareVideo = new(
         "PublicShareVideo",
         "Record a video share",
         """

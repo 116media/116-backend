@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePromotio
 /// </summary>
 public static class AdminUpdatePromotionLevelMetaField
 {
-    public static readonly RouteMetadata AdminUpdatePromotionLevel = new(
+    public static readonly RouteMetadata UpdatePromotionLevel = new(
         "AdminUpdatePromotionLevel",
         "Update a promotion level",
         """

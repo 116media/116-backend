@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadShort
 /// </summary>
 public static class AdminUploadShortVideoFileMetaField
 {
-    public static readonly RouteMetadata AdminUploadShortVideoFile = new(
+    public static readonly RouteMetadata UploadShortVideoFile = new(
         "UploadShortVideoFile",
         "Upload or replace the video file for a short video",
         """

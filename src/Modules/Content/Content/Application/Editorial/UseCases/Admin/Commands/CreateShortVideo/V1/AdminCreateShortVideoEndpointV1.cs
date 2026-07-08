@@ -78,9 +78,9 @@ public class AdminCreateShortVideoEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: AdminCreateShortVideoMetaField.AdminCreateShortVideo.Name)
-            .WithSummary(summary: AdminCreateShortVideoMetaField.AdminCreateShortVideo.Summary)
-            .WithDescription(description: AdminCreateShortVideoMetaField.AdminCreateShortVideo.Description)
+            .WithName(endpointName: AdminCreateShortVideoMetaField.CreateShortVideo.Name)
+            .WithSummary(summary: AdminCreateShortVideoMetaField.CreateShortVideo.Summary)
+            .WithDescription(description: AdminCreateShortVideoMetaField.CreateShortVideo.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

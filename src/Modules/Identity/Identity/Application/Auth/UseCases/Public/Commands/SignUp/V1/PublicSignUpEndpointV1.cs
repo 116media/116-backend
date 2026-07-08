@@ -112,9 +112,9 @@ public class PublicSignUpEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: mobileResponse);
                 }
             )
-            .WithName(endpointName: PublicSignUpMetaField.PublicSignUp.Name)
-            .WithSummary(summary: PublicSignUpMetaField.PublicSignUp.Summary)
-            .WithDescription(description: PublicSignUpMetaField.PublicSignUp.Description)
+            .WithName(endpointName: PublicSignUpMetaField.SignUp.Name)
+            .WithSummary(summary: PublicSignUpMetaField.SignUp.Summary)
+            .WithDescription(description: PublicSignUpMetaField.SignUp.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.Authentication)
             .ProducesValidationProblem()

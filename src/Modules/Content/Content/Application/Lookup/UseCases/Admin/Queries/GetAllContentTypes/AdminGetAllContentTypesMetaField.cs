@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Queries.GetAllContentTy
 /// </summary>
 public static class AdminGetAllContentTypesMetaField
 {
-    public static readonly RouteMetadata AdminGetAllContentTypes = new(
+    public static readonly RouteMetadata GetAllContentTypes = new(
         "AdminGetAllContentTypes",
         "List all content types",
         """

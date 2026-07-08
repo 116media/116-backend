@@ -47,11 +47,9 @@ public class PublicGetActivePromotionLevelsEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicGetActivePromotionLevelsMetaField.PublicGetActivePromotionLevels.Name)
-            .WithSummary(summary: PublicGetActivePromotionLevelsMetaField.PublicGetActivePromotionLevels.Summary)
-            .WithDescription(
-                description: PublicGetActivePromotionLevelsMetaField.PublicGetActivePromotionLevels.Description
-            )
+            .WithName(endpointName: PublicGetActivePromotionLevelsMetaField.GetActivePromotionLevels.Name)
+            .WithSummary(summary: PublicGetActivePromotionLevelsMetaField.GetActivePromotionLevels.Summary)
+            .WithDescription(description: PublicGetActivePromotionLevelsMetaField.GetActivePromotionLevels.Description)
             .AllowAnonymous()
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicGetActivePromotionLevelsResponse>(statusCode: StatusCodes.Status200OK)

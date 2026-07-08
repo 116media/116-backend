@@ -70,9 +70,9 @@ public class PublicAddCommentReplyEndpointV1 : ICarterModule
                     return Results.Created(uri: locationUrl, value: response);
                 }
             )
-            .WithName(endpointName: PublicAddCommentReplyMetaField.PublicAddCommentReply.Name)
-            .WithSummary(summary: PublicAddCommentReplyMetaField.PublicAddCommentReply.Summary)
-            .WithDescription(description: PublicAddCommentReplyMetaField.PublicAddCommentReply.Description)
+            .WithName(endpointName: PublicAddCommentReplyMetaField.AddCommentReply.Name)
+            .WithSummary(summary: PublicAddCommentReplyMetaField.AddCommentReply.Summary)
+            .WithDescription(description: PublicAddCommentReplyMetaField.AddCommentReply.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicAddCommentReplyResponse>(statusCode: StatusCodes.Status201Created)

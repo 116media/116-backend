@@ -62,9 +62,9 @@ public class AdminVerifyPaymentEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminVerifyPaymentMetaField.AdminVerifyPayment.Name)
-            .WithSummary(summary: AdminVerifyPaymentMetaField.AdminVerifyPayment.Summary)
-            .WithDescription(description: AdminVerifyPaymentMetaField.AdminVerifyPayment.Description)
+            .WithName(endpointName: AdminVerifyPaymentMetaField.VerifyPayment.Name)
+            .WithSummary(summary: AdminVerifyPaymentMetaField.VerifyPayment.Summary)
+            .WithDescription(description: AdminVerifyPaymentMetaField.VerifyPayment.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

@@ -48,9 +48,9 @@ public class AdminUnpinCategoryFromFeedEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminUnpinCategoryFromFeedMetaField.AdminUnpinCategoryFromFeed.Name)
-            .WithSummary(summary: AdminUnpinCategoryFromFeedMetaField.AdminUnpinCategoryFromFeed.Summary)
-            .WithDescription(description: AdminUnpinCategoryFromFeedMetaField.AdminUnpinCategoryFromFeed.Description)
+            .WithName(endpointName: AdminUnpinCategoryFromFeedMetaField.UnpinCategoryFromFeed.Name)
+            .WithSummary(summary: AdminUnpinCategoryFromFeedMetaField.UnpinCategoryFromFeed.Summary)
+            .WithDescription(description: AdminUnpinCategoryFromFeedMetaField.UnpinCategoryFromFeed.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

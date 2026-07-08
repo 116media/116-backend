@@ -7,7 +7,7 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateTag;
 /// </summary>
 public static class AdminUpdateTagMetaField
 {
-    public static readonly RouteMetadata AdminUpdateTag = new(
+    public static readonly RouteMetadata UpdateTag = new(
         "AdminUpdateTag",
         "Update a content tag",
         """

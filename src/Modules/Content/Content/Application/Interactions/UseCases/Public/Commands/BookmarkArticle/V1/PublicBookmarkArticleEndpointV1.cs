@@ -47,9 +47,9 @@ public class PublicBookmarkArticleEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: PublicBookmarkArticleMetaField.PublicBookmarkArticle.Name)
-            .WithSummary(summary: PublicBookmarkArticleMetaField.PublicBookmarkArticle.Summary)
-            .WithDescription(description: PublicBookmarkArticleMetaField.PublicBookmarkArticle.Description)
+            .WithName(endpointName: PublicBookmarkArticleMetaField.BookmarkArticle.Name)
+            .WithSummary(summary: PublicBookmarkArticleMetaField.BookmarkArticle.Summary)
+            .WithDescription(description: PublicBookmarkArticleMetaField.BookmarkArticle.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PublicBookmarkArticleResponse>(statusCode: StatusCodes.Status200OK)

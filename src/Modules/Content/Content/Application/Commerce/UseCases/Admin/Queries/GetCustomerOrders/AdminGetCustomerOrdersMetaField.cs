@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Queries.GetCustomerOr
 /// </summary>
 public static class AdminGetCustomerOrdersMetaField
 {
-    public static readonly RouteMetadata AdminGetCustomerOrders = new(
+    public static readonly RouteMetadata GetCustomerOrders = new(
         "AdminGetCustomerOrders",
         "List orders for a customer",
         """

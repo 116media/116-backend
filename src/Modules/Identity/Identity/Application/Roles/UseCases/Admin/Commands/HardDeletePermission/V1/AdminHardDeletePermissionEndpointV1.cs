@@ -47,9 +47,9 @@ public class AdminHardDeletePermissionEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminHardDeletePermissionMetaField.AdminHardDeletePermission.Name)
-            .WithSummary(summary: AdminHardDeletePermissionMetaField.AdminHardDeletePermission.Summary)
-            .WithDescription(description: AdminHardDeletePermissionMetaField.AdminHardDeletePermission.Description)
+            .WithName(endpointName: AdminHardDeletePermissionMetaField.HardDeletePermission.Name)
+            .WithSummary(summary: AdminHardDeletePermissionMetaField.HardDeletePermission.Summary)
+            .WithDescription(description: AdminHardDeletePermissionMetaField.HardDeletePermission.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()

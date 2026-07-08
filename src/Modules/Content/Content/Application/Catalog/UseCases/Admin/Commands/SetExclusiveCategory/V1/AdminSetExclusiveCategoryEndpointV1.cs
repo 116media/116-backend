@@ -48,9 +48,9 @@ public class AdminSetExclusiveCategoryEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminSetExclusiveCategoryMetaField.AdminSetExclusiveCategory.Name)
-            .WithSummary(summary: AdminSetExclusiveCategoryMetaField.AdminSetExclusiveCategory.Summary)
-            .WithDescription(description: AdminSetExclusiveCategoryMetaField.AdminSetExclusiveCategory.Description)
+            .WithName(endpointName: AdminSetExclusiveCategoryMetaField.SetExclusiveCategory.Name)
+            .WithSummary(summary: AdminSetExclusiveCategoryMetaField.SetExclusiveCategory.Summary)
+            .WithDescription(description: AdminSetExclusiveCategoryMetaField.SetExclusiveCategory.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

@@ -38,9 +38,9 @@ public class PublicGetPlaylistByIdEndpointV1 : ICarterModule
                     return Results.Ok(result.Playlist);
                 }
             )
-            .WithName(endpointName: PublicGetPlaylistByIdMetaField.PublicGetPlaylistById.Name)
-            .WithSummary(summary: PublicGetPlaylistByIdMetaField.PublicGetPlaylistById.Summary)
-            .WithDescription(description: PublicGetPlaylistByIdMetaField.PublicGetPlaylistById.Description)
+            .WithName(endpointName: PublicGetPlaylistByIdMetaField.GetPlaylistById.Name)
+            .WithSummary(summary: PublicGetPlaylistByIdMetaField.GetPlaylistById.Summary)
+            .WithDescription(description: PublicGetPlaylistByIdMetaField.GetPlaylistById.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<PlaylistDetailDto>(statusCode: StatusCodes.Status200OK)

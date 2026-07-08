@@ -190,7 +190,7 @@ group
             return Results.Ok(response);
         }
     )
-    .WithName(endpointName: PublicGetArticleBySlugMetaField.PublicGetArticleBySlug.Name)
+    .WithName(endpointName: PublicGetArticleBySlugMetaField.GetArticleBySlug.Name)
     // ... existing WithSummary / WithDescription / AllowAnonymous / rate limiting / Produces unchanged ...
     ;
 ```

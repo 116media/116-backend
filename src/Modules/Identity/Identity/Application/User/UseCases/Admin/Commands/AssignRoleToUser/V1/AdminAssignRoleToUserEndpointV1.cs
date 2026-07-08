@@ -53,9 +53,9 @@ public class AdminAssignRoleToUserEndpointV1 : ICarterModule
                     return Results.Ok(value: response);
                 }
             )
-            .WithName(endpointName: AdminAssignRoleToUserMetaField.AdminAssignRoleToUser.Name)
-            .WithSummary(summary: AdminAssignRoleToUserMetaField.AdminAssignRoleToUser.Summary)
-            .WithDescription(description: AdminAssignRoleToUserMetaField.AdminAssignRoleToUser.Description)
+            .WithName(endpointName: AdminAssignRoleToUserMetaField.AssignRoleToUser.Name)
+            .WithSummary(summary: AdminAssignRoleToUserMetaField.AssignRoleToUser.Summary)
+            .WithDescription(description: AdminAssignRoleToUserMetaField.AssignRoleToUser.Description)
             .WithAuthorization(UserRolePolicies.RequireSuperAdminOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .ProducesValidationProblem()

@@ -7,7 +7,7 @@ namespace _116.Identity.Application.Roles.UseCases.Admin.Commands.SoftDeletePerm
 /// </summary>
 public static class AdminSoftDeletePermissionMetaField
 {
-    public static readonly RouteMetadata AdminSoftDeletePermission = new(
+    public static readonly RouteMetadata SoftDeletePermission = new(
         "AdminSoftDeletePermission",
         "Soft delete a permission",
         """

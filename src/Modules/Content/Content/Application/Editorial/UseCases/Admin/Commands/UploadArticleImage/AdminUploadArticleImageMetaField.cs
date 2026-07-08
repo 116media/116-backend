@@ -7,7 +7,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArtic
 /// </summary>
 public static class AdminUploadArticleImageMetaField
 {
-    public static readonly RouteMetadata AdminUploadArticleImage = new(
+    public static readonly RouteMetadata UploadArticleImage = new(
         "UploadArticleImage",
         "Upload an image for an article",
         """

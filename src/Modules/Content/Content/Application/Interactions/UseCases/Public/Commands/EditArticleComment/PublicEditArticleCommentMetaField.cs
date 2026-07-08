@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.EditArt
 /// </summary>
 public static class PublicEditArticleCommentMetaField
 {
-    public static readonly RouteMetadata PublicEditArticleComment = new(
+    public static readonly RouteMetadata EditArticleComment = new(
         "PublicEditArticleComment",
         "Edit an article comment",
         """

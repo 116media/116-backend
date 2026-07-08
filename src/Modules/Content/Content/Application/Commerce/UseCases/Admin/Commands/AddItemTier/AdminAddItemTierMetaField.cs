@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier;
 /// </summary>
 public static class AdminAddItemTierMetaField
 {
-    public static readonly RouteMetadata AdminAddItemTier = new(
+    public static readonly RouteMetadata AddItemTier = new(
         "AdminAddItemTier",
         "Attach a pricing tier to an order item",
         """

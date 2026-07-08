@@ -61,9 +61,9 @@ public class AdminGetAllShortsEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminGetAllShortsMetaField.AdminGetAllShorts.Name)
-            .WithSummary(summary: AdminGetAllShortsMetaField.AdminGetAllShorts.Summary)
-            .WithDescription(description: AdminGetAllShortsMetaField.AdminGetAllShorts.Description)
+            .WithName(endpointName: AdminGetAllShortsMetaField.GetAllShorts.Name)
+            .WithSummary(summary: AdminGetAllShortsMetaField.GetAllShorts.Summary)
+            .WithDescription(description: AdminGetAllShortsMetaField.GetAllShorts.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

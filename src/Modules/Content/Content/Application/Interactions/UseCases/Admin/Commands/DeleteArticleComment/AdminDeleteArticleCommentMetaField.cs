@@ -7,7 +7,7 @@ namespace _116.Content.Application.Interactions.UseCases.Admin.Commands.DeleteAr
 /// </summary>
 public static class AdminDeleteArticleCommentMetaField
 {
-    public static readonly RouteMetadata AdminDeleteArticleComment = new(
+    public static readonly RouteMetadata DeleteArticleComment = new(
         "AdminDeleteArticleComment",
         "Delete any article comment",
         """

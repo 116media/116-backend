@@ -52,9 +52,9 @@ public class AdminUpdateArticleTagsEndpointV1 : ICarterModule
                     return Results.Ok(response);
                 }
             )
-            .WithName(endpointName: AdminUpdateArticleTagsMetaField.AdminUpdateArticleTags.Name)
-            .WithSummary(summary: AdminUpdateArticleTagsMetaField.AdminUpdateArticleTags.Summary)
-            .WithDescription(description: AdminUpdateArticleTagsMetaField.AdminUpdateArticleTags.Description)
+            .WithName(endpointName: AdminUpdateArticleTagsMetaField.UpdateArticleTags.Name)
+            .WithSummary(summary: AdminUpdateArticleTagsMetaField.UpdateArticleTags.Summary)
+            .WithDescription(description: AdminUpdateArticleTagsMetaField.UpdateArticleTags.Description)
             .WithAuthorization(AccountStatusPolicies.RequireActiveUser)
             .WithAuthorization(UserRolePolicies.RequireAdminOrSuperAdmin)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)

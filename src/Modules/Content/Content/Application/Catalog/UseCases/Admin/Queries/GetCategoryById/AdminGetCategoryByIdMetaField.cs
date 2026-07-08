@@ -7,7 +7,7 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Queries.GetCategoryByI
 /// </summary>
 public static class AdminGetCategoryByIdMetaField
 {
-    public static readonly RouteMetadata AdminGetCategoryById = new(
+    public static readonly RouteMetadata GetCategoryById = new(
         "AdminGetCategoryById",
         "Get a category by ID",
         """

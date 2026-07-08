@@ -7,7 +7,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.RemoveItemTi
 /// </summary>
 public static class AdminRemoveItemTierMetaField
 {
-    public static readonly RouteMetadata AdminRemoveItemTier = new(
+    public static readonly RouteMetadata RemoveItemTier = new(
         "AdminRemoveItemTier",
         "Remove a pricing tier from an order item",
         """
