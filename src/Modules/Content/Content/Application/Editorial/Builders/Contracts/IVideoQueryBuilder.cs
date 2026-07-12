@@ -26,6 +26,11 @@ public interface IVideoQueryBuilder
     IVideoQueryBuilder WithCategory(Guid? categoryId);
 
     /// <summary>
+    /// Adds a tag-slug filter to the query.
+    /// </summary>
+    IVideoQueryBuilder WithTag(string? tagSlug);
+
+    /// <summary>
     /// Builds and returns the final specification.
     /// Returns null if no filters were applied.
     /// </summary>
