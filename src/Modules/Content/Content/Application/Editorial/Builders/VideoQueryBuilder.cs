@@ -54,6 +54,19 @@ public class VideoQueryBuilder : IVideoQueryBuilder
     }
 
     /// <inheritdoc />
+    public IVideoQueryBuilder WithTag(string? tagSlug)
+    {
+        if (string.IsNullOrWhiteSpace(value: tagSlug))
+        {
+            return this;
+        }
+
+        var tagSpec = new VideoByTagSlugSpecification(tagSlug: tagSlug);
+        CombineSpecification(spec: tagSpec);
+        return this;
+    }
+
+    /// <inheritdoc />
     public Specification<VideoEntity>? Build()
     {
         return _specification;
