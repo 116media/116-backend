@@ -77,6 +77,7 @@ public static class MockVideoRepository
                     It.IsAny<string?>(),
                     It.IsAny<EnumContentStatus?>(),
                     It.IsAny<Guid?>(),
+                    It.IsAny<string?>(),
                     It.IsAny<CancellationToken>()
                 )
             )
@@ -204,6 +205,7 @@ public static class MockVideoRepository
                     It.IsAny<string?>(),
                     It.IsAny<EnumContentStatus?>(),
                     It.IsAny<Guid?>(),
+                    It.IsAny<string?>(),
                     It.IsAny<CancellationToken>()
                 )
             )
