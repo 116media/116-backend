@@ -6,13 +6,18 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublishe
 
 /// <summary>
 /// Query for retrieving a paginated list of published videos for public consumption.
-/// Supports optional filtering by category and search term.
+/// Supports optional filtering by category, tag slug, and search term.
 /// </summary>
 /// <param name="PaginatedRequest">Pagination parameters (page index and page size).</param>
 /// <param name="Search">Optional search term matched against title, description, meta title, and meta description.</param>
 /// <param name="CategoryId">Optional filter by category identifier.</param>
-public record PublicGetPublishedVideosQuery(PaginatedRequest PaginatedRequest, string? Search, Guid? CategoryId)
-    : IQuery<PublicGetPublishedVideosResult>;
+/// <param name="TagSlug">Optional filter by tag slug.</param>
+public record PublicGetPublishedVideosQuery(
+    PaginatedRequest PaginatedRequest,
+    string? Search,
+    Guid? CategoryId,
+    string? TagSlug
+) : IQuery<PublicGetPublishedVideosResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicGetPublishedVideosQuery" /> containing a paginated list of video summaries.
