@@ -37,6 +37,7 @@ public class PublicGetPublishedVideosHandler(
             search: query.Search,
             status: EnumContentStatus.Published,
             categoryId: query.CategoryId,
+            tagSlug: query.TagSlug,
             cancellationToken: cancellationToken
         );
 
