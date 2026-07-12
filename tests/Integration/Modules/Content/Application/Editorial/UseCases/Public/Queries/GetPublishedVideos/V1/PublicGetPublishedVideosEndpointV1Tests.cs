@@ -98,9 +98,7 @@ public class PublicGetPublishedVideosEndpointV1Tests(PostgresFixture db) : BaseA
 
         Client.ClearAuthentication();
 
-        var response = await Client.GetAsync(
-            $"{ApiRoutes.Public.Videos}?tagSlug={tag.Slug.ToUpperInvariant()}"
-        );
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Videos}?tagSlug={tag.Slug.ToUpperInvariant()}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
