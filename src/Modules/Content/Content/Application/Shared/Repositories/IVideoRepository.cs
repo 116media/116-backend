@@ -17,6 +17,7 @@ public interface IVideoRepository : IRepository<VideoEntity>
     /// <param name="search">Optional search term to filter videos by title, description, or meta fields.</param>
     /// <param name="status">Optional filter by content status.</param>
     /// <param name="categoryId">Optional filter by category identifier.</param>
+    /// <param name="tagSlug">Optional filter by tag slug.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>A tuple containing the list of videos and the total count.</returns>
     Task<(List<VideoEntity> Videos, int TotalCount)> GetAllAsync(
@@ -25,6 +26,7 @@ public interface IVideoRepository : IRepository<VideoEntity>
         string? search,
         EnumContentStatus? status,
         Guid? categoryId,
+        string? tagSlug = null,
         CancellationToken cancellationToken = default
     );
 
