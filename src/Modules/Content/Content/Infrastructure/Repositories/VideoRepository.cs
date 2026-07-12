@@ -23,6 +23,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
         string? search,
         EnumContentStatus? status,
         Guid? categoryId,
+        string? tagSlug = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -32,6 +33,7 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
             .WithSearch(search: search)
             .WithStatus(status: status)
             .WithCategory(categoryId: categoryId)
+            .WithTag(tagSlug: tagSlug)
             .Build();
 
         if (spec is not null)
