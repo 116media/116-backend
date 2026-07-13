@@ -120,4 +120,26 @@ public class PublicRecordShortVideoViewEndpointV1Tests(PostgresFixture db) : Bas
         ShortVideoEntity? updated = await verifyDb.ShortVideos.FindAsync(shortVideo.Id);
         updated!.ViewCount.Should().Be(2);
     }
+
+    [Fact]
+    public async Task RecordShortVideoView_WithForwardedIp_DeduplicatesOnClientIp()
+    {
+        ShortVideoEntity shortVideo = await SeedShortVideoAsync();
+        Client.ClearAuthentication();
+
+        // No device id, so the client IP resolved by UseForwardedHeaders is the dedup key.
+        using var request = new HttpRequestMessage(HttpMethod.Post, Routes.Public.Shorts.Views(shortVideo.Id));
+        request.Headers.Add("X-Forwarded-For", "203.0.113.9");
+        var response = await Client.SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using var verifyDb = CreateDbContext<ContentDbContext>();
+        ShortVideoViewEventEntity recorded = await verifyDb.ShortVideoViewEvents.SingleAsync(e =>
+            e.ShortVideoId == shortVideo.Id
+        );
+
+        recorded.DedupKey.Should().Be("ip:203.0.113.9");
+        recorded.IpAddress.Should().Be("203.0.113.9");
+    }
 }
