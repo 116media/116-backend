@@ -470,10 +470,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
-                    b.Property<string>("Platform")
+                    b.Property<string>("ShareChannel")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
-                        .HasColumnName("platform");
+                        .HasColumnName("share_channel");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1622,10 +1622,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
-                    b.Property<string>("Platform")
+                    b.Property<string>("ShareChannel")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
-                        .HasColumnName("platform");
+                        .HasColumnName("share_channel");
 
                     b.Property<Guid>("ShortVideoId")
                         .HasColumnType("uuid")
@@ -2001,10 +2001,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
-                    b.Property<string>("Platform")
+                    b.Property<string>("ShareChannel")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
-                        .HasColumnName("platform");
+                        .HasColumnName("share_channel");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
