@@ -7,7 +7,9 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareSh
 /// </summary>
 /// <param name="ShortVideoId">The unique identifier of the short video being shared.</param>
 /// <param name="UserId">The identity user UUID of the requesting user, or null if anonymous.</param>
-public record PublicShareShortVideoCommand(Guid ShortVideoId, Guid? UserId) : ICommand<PublicShareShortVideoResult>;
+/// <param name="Platform">The channel the share targeted (e.g. facebook, x, whatsapp). Null when unreported.</param>
+public record PublicShareShortVideoCommand(Guid ShortVideoId, Guid? UserId, string? Platform = null)
+    : ICommand<PublicShareShortVideoResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicShareShortVideoCommand" />.
