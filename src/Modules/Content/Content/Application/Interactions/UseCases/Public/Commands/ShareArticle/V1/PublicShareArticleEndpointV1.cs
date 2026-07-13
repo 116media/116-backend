@@ -13,6 +13,12 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareArticle.V1;
 
 /// <summary>
+/// Request body for the PublicShareArticle operation. Optional — a missing body records no platform.
+/// </summary>
+/// <param name="Platform">The channel the share targeted (e.g. facebook, x, whatsapp, clipboard, web-share).</param>
+public record PublicShareArticleRequest(string? Platform);
+
+/// <summary>
 /// Response model for a successful PublicShareArticle operation.
 /// </summary>
 /// <param name="IsSuccess">Indicates if the operation was successful.</param>
@@ -33,7 +39,13 @@ public class PublicShareArticleEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{InteractionsRouteConstants.Shares}",
-                async (string id, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    PublicShareArticleRequest? request,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher
+                ) =>
                 {
                     Guid? userId = null;
                     Guid articleId = Guid.Parse(id);
@@ -43,7 +55,11 @@ public class PublicShareArticleEndpointV1 : ICarterModule
                         userId = claimsProvider.GetUserIdFromClaims(user: user);
                     }
 
-                    var command = new PublicShareArticleCommand(ArticleId: articleId, UserId: userId);
+                    var command = new PublicShareArticleCommand(
+                        ArticleId: articleId,
+                        UserId: userId,
+                        Platform: request?.Platform
+                    );
                     PublicShareArticleResult result = await dispatcher.Send(request: command);
 
                     var response = new PublicShareArticleResponse(IsSuccess: result.IsSuccess);
