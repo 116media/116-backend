@@ -29,7 +29,12 @@ public class PublicShareArticleHandler(
             cancellationToken: cancellationToken
         );
 
-        var share = ArticleShareEntity.Create(id: Guid.NewGuid(), userId: command.UserId, articleId: command.ArticleId);
+        var share = ArticleShareEntity.Create(
+            id: Guid.NewGuid(),
+            userId: command.UserId,
+            articleId: command.ArticleId,
+            platform: command.Platform
+        );
 
         await articleRepository.AddShareAsync(share: share, cancellationToken: cancellationToken);
 
