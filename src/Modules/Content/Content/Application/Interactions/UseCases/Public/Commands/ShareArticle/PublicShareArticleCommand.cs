@@ -7,7 +7,9 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareAr
 /// </summary>
 /// <param name="ArticleId">The unique identifier of the article that was shared.</param>
 /// <param name="UserId">The identity user UUID of the sharer. Null for anonymous shares.</param>
-public record PublicShareArticleCommand(Guid ArticleId, Guid? UserId) : ICommand<PublicShareArticleResult>;
+/// <param name="Platform">The channel the share targeted (e.g. facebook, x, whatsapp). Null when unreported.</param>
+public record PublicShareArticleCommand(Guid ArticleId, Guid? UserId, string? Platform = null)
+    : ICommand<PublicShareArticleResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicShareArticleCommand" />.
