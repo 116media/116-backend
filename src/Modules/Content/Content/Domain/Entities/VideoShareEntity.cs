@@ -20,6 +20,12 @@ public class VideoShareEntity : Aggregate<Guid>
     public Guid VideoId { get; private set; }
 
     /// <summary>
+    /// The channel the share was sent to (e.g. facebook, x, whatsapp, clipboard, web-share).
+    /// Null when the client does not report a target.
+    /// </summary>
+    public string? Platform { get; private set; }
+
+    /// <summary>
     /// Navigation property to the video.
     /// </summary>
     public VideoEntity Video { get; private set; } = null!;
@@ -32,14 +38,16 @@ public class VideoShareEntity : Aggregate<Guid>
     /// <param name="id">The unique identifier for this share.</param>
     /// <param name="userId">The user who shared. Null for anonymous shares.</param>
     /// <param name="videoId">The video that was shared.</param>
+    /// <param name="platform">The channel the share targeted. Null when unreported.</param>
     /// <returns>A new <see cref="VideoShareEntity" />.</returns>
-    public static VideoShareEntity Create(Guid id, Guid? userId, Guid videoId)
+    public static VideoShareEntity Create(Guid id, Guid? userId, Guid videoId, string? platform = null)
     {
         return new VideoShareEntity
         {
             Id = id,
             UserId = userId,
             VideoId = videoId,
+            Platform = platform,
             CreatedAt = DateTime.UtcNow,
         };
     }
