@@ -33,7 +33,7 @@ public class PublicShareVideoHandler(
             id: Guid.NewGuid(),
             userId: command.UserId,
             videoId: command.VideoId,
-            platform: command.Platform
+            shareChannel: command.ShareChannel
         );
 
         await videoRepository.AddShareAsync(share: share, cancellationToken: cancellationToken);
