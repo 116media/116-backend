@@ -95,6 +95,13 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="Author">
 /// The resolved author profile with avatar URL, or null if the author could not be found.
 /// </param>
+/// <param name="IsRated">
+/// Whether the requesting user has rated this video. Always false for anonymous requests.
+/// </param>
+/// <param name="RatedStars">
+/// The star value (1–5) the requesting user gave this video, or null when anonymous or not yet rated.
+/// Seeds the rating UI so a returning rater sees their prior choice.
+/// </param>
 public record VideoDetailDto(
     Guid Id,
     Guid CategoryId,
@@ -124,5 +131,7 @@ public record VideoDetailDto(
     Guid? CustomerId = null,
     string? CustomerName = null,
     Guid? OrderItemId = null,
-    AuthorDto? Author = null
+    AuthorDto? Author = null,
+    bool IsRated = false,
+    short? RatedStars = null
 ) : AuditableDto;
