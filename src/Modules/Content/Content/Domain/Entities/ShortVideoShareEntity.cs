@@ -1,3 +1,4 @@
+using _116.Content.Domain.Enums;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -20,10 +21,9 @@ public class ShortVideoShareEntity : Aggregate<Guid>
     public Guid ShortVideoId { get; private set; }
 
     /// <summary>
-    /// The channel the share was sent to (e.g. facebook, x, whatsapp, clipboard, web-share).
-    /// Null when the client does not report a target.
+    /// The channel the share was sent to. Null when the client does not report a target.
     /// </summary>
-    public string? Platform { get; private set; }
+    public EnumShareChannel? ShareChannel { get; private set; }
 
     /// <summary>
     /// Navigation property to the short video.
@@ -38,16 +38,21 @@ public class ShortVideoShareEntity : Aggregate<Guid>
     /// <param name="id">The unique identifier for this share.</param>
     /// <param name="userId">The user who shared. Null for anonymous shares.</param>
     /// <param name="shortVideoId">The short video that was shared.</param>
-    /// <param name="platform">The channel the share targeted. Null when unreported.</param>
+    /// <param name="shareChannel">The channel the share targeted. Null when unreported.</param>
     /// <returns>A new <see cref="ShortVideoShareEntity" />.</returns>
-    public static ShortVideoShareEntity Create(Guid id, Guid? userId, Guid shortVideoId, string? platform = null)
+    public static ShortVideoShareEntity Create(
+        Guid id,
+        Guid? userId,
+        Guid shortVideoId,
+        EnumShareChannel? shareChannel = null
+    )
     {
         return new ShortVideoShareEntity
         {
             Id = id,
             UserId = userId,
             ShortVideoId = shortVideoId,
-            Platform = platform,
+            ShareChannel = shareChannel,
             CreatedAt = DateTime.UtcNow,
         };
     }
