@@ -20,6 +20,12 @@ public class ShortVideoShareEntity : Aggregate<Guid>
     public Guid ShortVideoId { get; private set; }
 
     /// <summary>
+    /// The channel the share was sent to (e.g. facebook, x, whatsapp, clipboard, web-share).
+    /// Null when the client does not report a target.
+    /// </summary>
+    public string? Platform { get; private set; }
+
+    /// <summary>
     /// Navigation property to the short video.
     /// </summary>
     public ShortVideoEntity ShortVideo { get; private set; } = null!;
@@ -32,14 +38,16 @@ public class ShortVideoShareEntity : Aggregate<Guid>
     /// <param name="id">The unique identifier for this share.</param>
     /// <param name="userId">The user who shared. Null for anonymous shares.</param>
     /// <param name="shortVideoId">The short video that was shared.</param>
+    /// <param name="platform">The channel the share targeted. Null when unreported.</param>
     /// <returns>A new <see cref="ShortVideoShareEntity" />.</returns>
-    public static ShortVideoShareEntity Create(Guid id, Guid? userId, Guid shortVideoId)
+    public static ShortVideoShareEntity Create(Guid id, Guid? userId, Guid shortVideoId, string? platform = null)
     {
         return new ShortVideoShareEntity
         {
             Id = id,
             UserId = userId,
             ShortVideoId = shortVideoId,
+            Platform = platform,
             CreatedAt = DateTime.UtcNow,
         };
     }
