@@ -1,5 +1,6 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.ShareVideo.V1;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -67,5 +68,20 @@ public class PublicShareVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         var response = await Client.PostAsync(Routes.Public.Videos.Shares(Guid.NewGuid()), null);
 
         await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task ShareVideo_WithShareChannel_PersistsChannel()
+    {
+        VideoEntity video = await SeedVideoAsync();
+        Client.ClearAuthentication();
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Videos.Shares(video.Id), new { shareChannel = "x" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using var verifyDb = CreateDbContext<ContentDbContext>();
+        VideoShareEntity share = await verifyDb.VideoShares.SingleAsync(s => s.VideoId == video.Id);
+        share.ShareChannel.Should().Be(EnumShareChannel.X);
     }
 }
