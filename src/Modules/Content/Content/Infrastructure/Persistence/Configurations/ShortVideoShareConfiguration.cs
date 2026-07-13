@@ -19,7 +19,7 @@ public class ShortVideoShareConfiguration : IEntityTypeConfiguration<ShortVideoS
 
         builder.Property(x => x.ShortVideoId).IsRequired();
 
-        builder.Property(x => x.Platform).HasMaxLength(50).IsRequired(false);
+        builder.Property(x => x.ShareChannel).HasConversion<string>().HasMaxLength(50).IsRequired(false);
 
         builder.Property(x => x.CreatedAt).IsRequired();
 
