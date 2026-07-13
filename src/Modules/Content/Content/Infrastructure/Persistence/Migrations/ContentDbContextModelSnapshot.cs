@@ -470,6 +470,11 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
+                    b.Property<string>("Platform")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("platform");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -1617,6 +1622,11 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
+                    b.Property<string>("Platform")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("platform");
+
                     b.Property<Guid>("ShortVideoId")
                         .HasColumnType("uuid")
                         .HasColumnName("short_video_id");
@@ -1640,6 +1650,66 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_short_video_shares_short_video_id");
 
                     b.ToTable("short_video_shares", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoViewEventEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("DedupKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("dedup_key");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("ip_address");
+
+                    b.Property<bool>("IsCounted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_counted");
+
+                    b.Property<Guid>("ShortVideoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("short_video_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("user_agent");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_short_video_view_events");
+
+                    b.HasIndex("ShortVideoId", "DedupKey", "CreatedAt")
+                        .HasDatabaseName("ix_short_video_view_events_short_video_id_dedup_key_created_at");
+
+                    b.ToTable("short_video_view_events", "content");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.TagEntity", b =>
@@ -1930,6 +2000,11 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text")
                         .HasColumnName("created_by");
+
+                    b.Property<string>("Platform")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("platform");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -2339,6 +2414,18 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_short_video_shares_short_videos_short_video_id");
+
+                    b.Navigation("ShortVideo");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.ShortVideoViewEventEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.ShortVideoEntity", "ShortVideo")
+                        .WithMany()
+                        .HasForeignKey("ShortVideoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_short_video_view_events_short_videos_short_video_id");
 
                     b.Navigation("ShortVideo");
                 });
