@@ -2,6 +2,7 @@ using System.Security.Claims;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Interactions.Constants;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.ValueObjects;
 using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -13,10 +14,10 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareShortVideo.V1;
 
 /// <summary>
-/// Request body for the PublicShareShortVideo operation. Optional — a missing body records no platform.
+/// Request body for the PublicShareShortVideo operation. Optional — a missing body records no channel.
 /// </summary>
-/// <param name="Platform">The channel the share targeted (e.g. facebook, x, whatsapp, clipboard, web-share).</param>
-public record PublicShareShortVideoRequest(string? Platform);
+/// <param name="ShareChannel">The channel the share targeted (e.g. facebook, x, whatsapp, clipboard, web-share).</param>
+public record PublicShareShortVideoRequest(string? ShareChannel);
 
 /// <summary>
 /// Response model for a successful PublicShareShortVideo operation.
@@ -58,7 +59,7 @@ public class PublicShareShortVideoEndpointV1 : ICarterModule
                     var command = new PublicShareShortVideoCommand(
                         ShortVideoId: shortVideoId,
                         UserId: userId,
-                        Platform: request?.Platform
+                        ShareChannel: ShareChannel.TryFrom(request?.ShareChannel)?.Value
                     );
                     PublicShareShortVideoResult result = await dispatcher.Send(request: command);
 
