@@ -33,7 +33,7 @@ public class PublicShareArticleHandler(
             id: Guid.NewGuid(),
             userId: command.UserId,
             articleId: command.ArticleId,
-            platform: command.Platform
+            shareChannel: command.ShareChannel
         );
 
         await articleRepository.AddShareAsync(share: share, cancellationToken: cancellationToken);
