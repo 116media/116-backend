@@ -1,5 +1,6 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.ShareArticle.V1;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -67,5 +68,23 @@ public class PublicShareArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
         var response = await Client.PostAsync(Routes.Public.Articles.Shares(Guid.NewGuid()), null);
 
         await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task ShareArticle_WithShareChannel_PersistsChannel()
+    {
+        ArticleEntity article = await SeedArticleAsync();
+        Client.ClearAuthentication();
+
+        var response = await Client.PostAsJsonAsync(
+            Routes.Public.Articles.Shares(article.Id),
+            new { shareChannel = "WebShare" }
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using var verifyDb = CreateDbContext<ContentDbContext>();
+        ArticleShareEntity share = await verifyDb.ArticleShares.SingleAsync(s => s.ArticleId == article.Id);
+        share.ShareChannel.Should().Be(EnumShareChannel.WebShare);
     }
 }
