@@ -19,7 +19,7 @@ public class ArticleShareConfiguration : IEntityTypeConfiguration<ArticleShareEn
 
         builder.Property(x => x.ArticleId).IsRequired();
 
-        builder.Property(x => x.Platform).HasMaxLength(50).IsRequired(false);
+        builder.Property(x => x.ShareChannel).HasConversion<string>().HasMaxLength(50).IsRequired(false);
 
         builder.Property(x => x.CreatedAt).IsRequired();
 
