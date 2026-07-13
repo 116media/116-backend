@@ -28,7 +28,7 @@ public class PublicShareShortVideoHandler(IShortVideoRepository shortVideoReposi
             id: Guid.NewGuid(),
             userId: command.UserId,
             shortVideoId: command.ShortVideoId,
-            platform: command.Platform
+            shareChannel: command.ShareChannel
         );
 
         await shortVideoRepository.AddShareAsync(share: share, cancellationToken: cancellationToken);
