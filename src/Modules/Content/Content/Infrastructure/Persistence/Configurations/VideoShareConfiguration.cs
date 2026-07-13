@@ -19,7 +19,7 @@ public class VideoShareConfiguration : IEntityTypeConfiguration<VideoShareEntity
 
         builder.Property(x => x.VideoId).IsRequired();
 
-        builder.Property(x => x.Platform).HasMaxLength(50).IsRequired(false);
+        builder.Property(x => x.ShareChannel).HasConversion<string>().HasMaxLength(50).IsRequired(false);
 
         builder.Property(x => x.CreatedAt).IsRequired();
 
