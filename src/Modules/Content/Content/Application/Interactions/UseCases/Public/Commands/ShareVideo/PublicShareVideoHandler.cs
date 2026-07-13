@@ -29,7 +29,12 @@ public class PublicShareVideoHandler(
             cancellationToken: cancellationToken
         );
 
-        var share = VideoShareEntity.Create(id: Guid.NewGuid(), userId: command.UserId, videoId: command.VideoId);
+        var share = VideoShareEntity.Create(
+            id: Guid.NewGuid(),
+            userId: command.UserId,
+            videoId: command.VideoId,
+            platform: command.Platform
+        );
 
         await videoRepository.AddShareAsync(share: share, cancellationToken: cancellationToken);
 
