@@ -57,7 +57,9 @@ public class PublicRecordShortVideoViewEndpointV1 : ICarterModule
                     }
 
                     string? deviceId = httpContext.Request.Headers["X-Device-Id"].FirstOrDefault();
-                    string? ipAddress = ResolveClientIp(httpContext: httpContext);
+                    // UseForwardedHeaders already resolves the trusted client IP from
+                    // X-Forwarded-For into RemoteIpAddress, so read it rather than re-parsing.
+                    string? ipAddress = httpContext.Connection.RemoteIpAddress?.ToString();
                     string? userAgent = httpContext.Request.Headers.UserAgent.FirstOrDefault();
 
                     if (userAgent?.Length > MaxUserAgentLength)
@@ -90,21 +92,5 @@ public class PublicRecordShortVideoViewEndpointV1 : ICarterModule
             .Produces<PublicRecordShortVideoViewResponse>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
-    }
-
-    /// <summary>
-    /// Resolves the client IP, preferring the first X-Forwarded-For hop when the API sits
-    /// behind a reverse proxy, else the direct connection address.
-    /// </summary>
-    private static string? ResolveClientIp(HttpContext httpContext)
-    {
-        string? forwarded = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-
-        if (!string.IsNullOrWhiteSpace(forwarded))
-        {
-            return forwarded.Split(',')[0].Trim();
-        }
-
-        return httpContext.Connection.RemoteIpAddress?.ToString();
     }
 }
