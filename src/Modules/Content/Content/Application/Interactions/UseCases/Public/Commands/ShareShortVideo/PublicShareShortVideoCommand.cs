@@ -1,3 +1,4 @@
+using _116.Content.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareShortVideo;
@@ -7,8 +8,8 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareSh
 /// </summary>
 /// <param name="ShortVideoId">The unique identifier of the short video being shared.</param>
 /// <param name="UserId">The identity user UUID of the requesting user, or null if anonymous.</param>
-/// <param name="Platform">The channel the share targeted (e.g. facebook, x, whatsapp). Null when unreported.</param>
-public record PublicShareShortVideoCommand(Guid ShortVideoId, Guid? UserId, string? Platform = null)
+/// <param name="ShareChannel">The channel the share targeted. Null when unreported.</param>
+public record PublicShareShortVideoCommand(Guid ShortVideoId, Guid? UserId, EnumShareChannel? ShareChannel = null)
     : ICommand<PublicShareShortVideoResult>;
 
 /// <summary>
