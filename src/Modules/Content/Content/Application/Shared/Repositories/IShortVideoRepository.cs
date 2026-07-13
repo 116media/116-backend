@@ -102,4 +102,26 @@ public interface IShortVideoRepository : IRepository<ShortVideoEntity>
     /// Adds a share record to the repository.
     /// </summary>
     Task AddShareAsync(ShortVideoShareEntity share, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a raw view event record to the repository.
+    /// </summary>
+    Task AddViewEventAsync(ShortVideoViewEventEntity viewEvent, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns true if a counted view event exists for the given short video and dedup key
+    /// created at or after the given instant.
+    /// </summary>
+    Task<bool> HasCountedViewSinceAsync(
+        Guid shortVideoId,
+        string dedupKey,
+        DateTime since,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Deletes uncounted view events created before the given cutoff.
+    /// Returns the number of rows removed.
+    /// </summary>
+    Task<int> PruneUncountedViewEventsAsync(DateTime cutoff, CancellationToken cancellationToken = default);
 }
