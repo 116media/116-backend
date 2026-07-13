@@ -13,6 +13,12 @@ using Microsoft.AspNetCore.Routing;
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareVideo.V1;
 
 /// <summary>
+/// Request body for the PublicShareVideo operation. Optional — a missing body records no platform.
+/// </summary>
+/// <param name="Platform">The channel the share targeted (e.g. facebook, x, whatsapp, clipboard, web-share).</param>
+public record PublicShareVideoRequest(string? Platform);
+
+/// <summary>
 /// Response model for a successful PublicShareVideo operation.
 /// </summary>
 /// <param name="IsSuccess">Indicates if the operation was successful.</param>
@@ -33,7 +39,13 @@ public class PublicShareVideoEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{InteractionsRouteConstants.Shares}",
-                async (string id, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    PublicShareVideoRequest? request,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher
+                ) =>
                 {
                     Guid videoId = Guid.Parse(id);
                     Guid? userId = null;
@@ -43,7 +55,11 @@ public class PublicShareVideoEndpointV1 : ICarterModule
                         userId = claimsProvider.GetUserIdFromClaims(user: user);
                     }
 
-                    var command = new PublicShareVideoCommand(VideoId: videoId, UserId: userId);
+                    var command = new PublicShareVideoCommand(
+                        VideoId: videoId,
+                        UserId: userId,
+                        Platform: request?.Platform
+                    );
 
                     PublicShareVideoResult result = await dispatcher.Send(request: command);
 
