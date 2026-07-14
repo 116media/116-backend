@@ -39,7 +39,8 @@ public class PublicGetPublishedVideosHandlerTests : BaseContentHandlerTest
         var query = new PublicGetPublishedVideosQuery(
             PaginatedRequest: new PaginatedRequest(0, 10),
             Search: null,
-            CategoryId: null
+            CategoryId: null,
+            TagSlug: null
         );
 
         _videoRepositoryMock.SetupGetAllAsync(videos, videos.Count);
@@ -60,7 +61,8 @@ public class PublicGetPublishedVideosHandlerTests : BaseContentHandlerTest
         var query = new PublicGetPublishedVideosQuery(
             PaginatedRequest: new PaginatedRequest(0, 10),
             Search: null,
-            CategoryId: null
+            CategoryId: null,
+            TagSlug: null
         );
 
         _videoRepositoryMock.SetupGetAllAsync(new List<VideoEntity>(), 0);

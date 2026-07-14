@@ -55,6 +55,18 @@ public class VideoByCategorySpecification(Guid categoryId) : Specification<Video
 }
 
 /// <summary>
+/// Specification that matches videos carrying a tag with the given slug (case-insensitive).
+/// </summary>
+public class VideoByTagSlugSpecification(string tagSlug) : Specification<VideoEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<VideoEntity, bool>> ToExpression()
+    {
+        return video => video.Tags.Any(videoTag => EF.Functions.ILike(videoTag.Tag.Slug, tagSlug));
+    }
+}
+
+/// <summary>
 /// Specification for full-text search across video Title, Description,
 /// MetaTitle, and MetaDescription fields.
 /// Uses case-insensitive matching (ILIKE in PostgreSQL).

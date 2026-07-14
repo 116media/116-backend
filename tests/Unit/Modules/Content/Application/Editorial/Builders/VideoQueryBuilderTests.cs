@@ -132,6 +132,44 @@ public class VideoQueryBuilderTests
 
     #endregion
 
+    #region WithTag
+
+    [Fact]
+    public void WithTag_WithNull_ShouldReturnNullSpec()
+    {
+        var builder = new VideoQueryBuilder();
+        builder.WithTag(null);
+        builder.Build().Should().BeNull();
+    }
+
+    [Fact]
+    public void WithTag_WithWhitespace_ShouldReturnNullSpec()
+    {
+        var builder = new VideoQueryBuilder();
+        builder.WithTag("   ");
+        builder.Build().Should().BeNull();
+    }
+
+    [Fact]
+    public void WithTag_WithSlug_ShouldReturnNonNullSpec()
+    {
+        var builder = new VideoQueryBuilder();
+        builder.WithTag("rumba");
+        // VideoByTagSlugSpecification uses ILike — only verify spec is non-null
+        builder.Build().Should().NotBeNull();
+    }
+
+    [Fact]
+    public void WithTag_AndWithStatus_Combined_ShouldReturnNonNullSpec()
+    {
+        var builder = new VideoQueryBuilder();
+        builder.WithStatus(EnumContentStatus.Published).WithTag("rumba");
+        // Combined spec includes ILike — only verify the chain builds a spec
+        builder.Build().Should().NotBeNull();
+    }
+
+    #endregion
+
     #region Chaining
 
     [Fact]

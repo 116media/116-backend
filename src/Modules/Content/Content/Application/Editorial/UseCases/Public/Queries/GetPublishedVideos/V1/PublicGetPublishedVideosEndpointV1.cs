@@ -43,7 +43,8 @@ public class PublicGetPublishedVideosEndpointV1 : ICarterModule
                     int pageIndex = 0,
                     int pageSize = 10,
                     string? search = null,
-                    Guid? categoryId = null
+                    Guid? categoryId = null,
+                    string? tagSlug = null
                 ) =>
                 {
                     var paginatedRequest = new PaginatedRequest(pageIndex, pageSize);
@@ -51,7 +52,8 @@ public class PublicGetPublishedVideosEndpointV1 : ICarterModule
                     var query = new PublicGetPublishedVideosQuery(
                         PaginatedRequest: paginatedRequest,
                         Search: search,
-                        CategoryId: categoryId
+                        CategoryId: categoryId,
+                        TagSlug: tagSlug
                     );
 
                     PublicGetPublishedVideosResult result = await dispatcher.Send(request: query);

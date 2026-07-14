@@ -148,6 +148,24 @@ public class VideoSpecificationsTests
 
     #endregion
 
+    #region VideoByTagSlugSpecification
+
+    // ILike: requires PostgreSQL provider — compile-only
+    [Fact]
+    public void VideoByTagSlugSpecification_ShouldCompileExpression()
+    {
+        // Arrange
+        var spec = new VideoByTagSlugSpecification("rumba");
+
+        // Act
+        Func<VideoEntity, bool> predicate = spec.ToExpression().Compile();
+
+        // Assert
+        predicate.Should().NotBeNull();
+    }
+
+    #endregion
+
     #region PromotedVideoSpecification
 
     [Fact]

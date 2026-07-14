@@ -56,4 +56,69 @@ public class PublicGetPublishedVideosEndpointV1Tests(PostgresFixture db) : BaseA
         body.Videos.PageIndex.Should().Be(0);
         body.Videos.PageSize.Should().Be(10);
     }
+
+    private async Task<(VideoEntity TaggedVideo, VideoEntity UntaggedVideo, TagEntity Tag)> SeedTaggedVideosAsync()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+
+        return await SeedAsync<ContentDbContext, (VideoEntity, VideoEntity, TagEntity)>(ctx =>
+        {
+            VideoEntity taggedVideo = VideoFactory.CreatePublished(categoryId);
+            VideoEntity untaggedVideo = VideoFactory.CreatePublished(categoryId);
+            ctx.Videos.AddRange(taggedVideo, untaggedVideo);
+
+            TagEntity tag = TagFactory.Create();
+            ctx.Tags.Add(tag);
+            ctx.VideoTags.Add(VideoTagEntity.Create(Guid.NewGuid(), taggedVideo.Id, tag.Id));
+
+            return (taggedVideo, untaggedVideo, tag);
+        });
+    }
+
+    [Fact]
+    public async Task GetPublishedVideos_WithTagSlug_ReturnsOnlyTaggedVideos()
+    {
+        (VideoEntity taggedVideo, VideoEntity untaggedVideo, TagEntity tag) = await SeedTaggedVideosAsync();
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Videos}?tagSlug={tag.Slug}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetPublishedVideosResponse body = await response.ReadAsAsync<PublicGetPublishedVideosResponse>();
+        body.Videos.Items.Should().Contain(item => item.Id == taggedVideo.Id);
+        body.Videos.Items.Should().NotContain(item => item.Id == untaggedVideo.Id);
+    }
+
+    [Fact]
+    public async Task GetPublishedVideos_WithTagSlugInDifferentCase_ReturnsTaggedVideos()
+    {
+        (VideoEntity taggedVideo, _, TagEntity tag) = await SeedTaggedVideosAsync();
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Videos}?tagSlug={tag.Slug.ToUpperInvariant()}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetPublishedVideosResponse body = await response.ReadAsAsync<PublicGetPublishedVideosResponse>();
+        body.Videos.Items.Should().Contain(item => item.Id == taggedVideo.Id);
+    }
+
+    [Fact]
+    public async Task GetPublishedVideos_WithUnknownTagSlug_ReturnsEmptyResult()
+    {
+        await SeedTaggedVideosAsync();
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Videos}?tagSlug=slug-with-no-videos");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicGetPublishedVideosResponse body = await response.ReadAsAsync<PublicGetPublishedVideosResponse>();
+        body.Videos.Items.Should().BeEmpty();
+        body.Videos.Count.Should().Be(0);
+    }
 }
