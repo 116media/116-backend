@@ -102,9 +102,8 @@ public static class MockShortVideoRepository
     {
         mock.Setup(x =>
                 x.GetRandomizedFeedAsync(
-                    It.IsAny<int>(),
-                    It.IsAny<string?>(),
-                    It.IsAny<Guid?>(),
+                    It.IsAny<long>(),
+                    It.IsAny<long?>(),
                     It.IsAny<int>(),
                     It.IsAny<CancellationToken>()
                 )
@@ -116,21 +115,18 @@ public static class MockShortVideoRepository
     public static Mock<IShortVideoRepository> SetupCaptureRandomizedFeedArgs(
         this Mock<IShortVideoRepository> mock,
         IReadOnlyList<ShortVideoEntity> items,
-        Action<int, string?, Guid?, int> capture
+        Action<long, long?, int> capture
     )
     {
         mock.Setup(x =>
                 x.GetRandomizedFeedAsync(
-                    It.IsAny<int>(),
-                    It.IsAny<string?>(),
-                    It.IsAny<Guid?>(),
+                    It.IsAny<long>(),
+                    It.IsAny<long?>(),
                     It.IsAny<int>(),
                     It.IsAny<CancellationToken>()
                 )
             )
-            .Callback<int, string?, Guid?, int, CancellationToken>(
-                (seed, sortKey, afterId, limit, _) => capture(seed, sortKey, afterId, limit)
-            )
+            .Callback<long, long?, int, CancellationToken>((seed, sortKey, limit, _) => capture(seed, sortKey, limit))
             .ReturnsAsync(items);
         return mock;
     }
@@ -282,9 +278,8 @@ public static class MockShortVideoRepository
             .ReturnsAsync(((IReadOnlySet<Guid>)new HashSet<Guid>(), (IReadOnlySet<Guid>)new HashSet<Guid>()));
         mock.Setup(x =>
                 x.GetRandomizedFeedAsync(
-                    It.IsAny<int>(),
-                    It.IsAny<string?>(),
-                    It.IsAny<Guid?>(),
+                    It.IsAny<long>(),
+                    It.IsAny<long?>(),
                     It.IsAny<int>(),
                     It.IsAny<CancellationToken>()
                 )
