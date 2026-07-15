@@ -78,6 +78,63 @@ public static class MockShortVideoRepository
         return mock;
     }
 
+    public static Mock<IShortVideoRepository> SetupGetLikedAndBookmarkedIdsAsync(
+        this Mock<IShortVideoRepository> mock,
+        IReadOnlySet<Guid> liked,
+        IReadOnlySet<Guid> bookmarked
+    )
+    {
+        mock.Setup(x =>
+                x.GetLikedAndBookmarkedIdsAsync(
+                    It.IsAny<Guid?>(),
+                    It.IsAny<IReadOnlyCollection<Guid>>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((liked, bookmarked));
+        return mock;
+    }
+
+    public static Mock<IShortVideoRepository> SetupGetRandomizedFeedAsync(
+        this Mock<IShortVideoRepository> mock,
+        IReadOnlyList<ShortVideoEntity> items
+    )
+    {
+        mock.Setup(x =>
+                x.GetRandomizedFeedAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<int>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(items);
+        return mock;
+    }
+
+    public static Mock<IShortVideoRepository> SetupCaptureRandomizedFeedArgs(
+        this Mock<IShortVideoRepository> mock,
+        IReadOnlyList<ShortVideoEntity> items,
+        Action<int, string?, Guid?, int> capture
+    )
+    {
+        mock.Setup(x =>
+                x.GetRandomizedFeedAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<int>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .Callback<int, string?, Guid?, int, CancellationToken>(
+                (seed, sortKey, afterId, limit, _) => capture(seed, sortKey, afterId, limit)
+            )
+            .ReturnsAsync(items);
+        return mock;
+    }
+
     public static void VerifyAddCalled(this Mock<IShortVideoRepository> mock)
     {
         mock.Verify(x => x.AddAsync(It.IsAny<ShortVideoEntity>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -215,6 +272,24 @@ public static class MockShortVideoRepository
             .ReturnsAsync(false);
         mock.Setup(x => x.HasBookmarkedAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
+        mock.Setup(x =>
+                x.GetLikedAndBookmarkedIdsAsync(
+                    It.IsAny<Guid?>(),
+                    It.IsAny<IReadOnlyCollection<Guid>>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(((IReadOnlySet<Guid>)new HashSet<Guid>(), (IReadOnlySet<Guid>)new HashSet<Guid>()));
+        mock.Setup(x =>
+                x.GetRandomizedFeedAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<int>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((IReadOnlyList<ShortVideoEntity>)new List<ShortVideoEntity>());
         mock.Setup(x => x.AddLikeAsync(It.IsAny<ShortVideoLikeEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.RemoveLikeAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
