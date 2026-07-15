@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Constants;
+using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
@@ -38,11 +40,29 @@ public class PublicGetPublicShortsEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher, int pageIndex = 0, int pageSize = 10, string? search = null) =>
+                async (
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher,
+                    int pageIndex = 0,
+                    int pageSize = 10,
+                    string? search = null
+                ) =>
                 {
+                    Guid? userId = null;
+
+                    if (user.Identity?.IsAuthenticated == true)
+                    {
+                        userId = claimsProvider.GetUserIdFromClaims(user: user);
+                    }
+
                     var paginatedRequest = new PaginatedRequest(pageIndex, pageSize);
 
-                    var query = new PublicGetPublicShortsQuery(PaginatedRequest: paginatedRequest, Search: search);
+                    var query = new PublicGetPublicShortsQuery(
+                        PaginatedRequest: paginatedRequest,
+                        Search: search,
+                        CurrentUserId: userId
+                    );
 
                     PublicGetPublicShortsResult result = await dispatcher.Send(request: query);
 
