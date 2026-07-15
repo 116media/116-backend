@@ -50,8 +50,8 @@ public class PublicGetShortsFeedHandlerTests : BaseContentHandlerTest
         List<ShortVideoEntity> shorts = ShortVideoFactory.CreateMany(2);
         var query = new PublicGetShortsFeedQuery(Cursor: null, PageSize: 2);
 
-        int capturedSeed = 0;
-        _shortVideoRepositoryMock.SetupCaptureRandomizedFeedArgs(shorts, (seed, _, _, _) => capturedSeed = seed);
+        long capturedSeed = 0;
+        _shortVideoRepositoryMock.SetupCaptureRandomizedFeedArgs(shorts, (seed, _, _) => capturedSeed = seed);
 
         // Act
         PublicGetShortsFeedResult result = await _handler.Handle(query, CancellationToken.None);
@@ -62,8 +62,7 @@ public class PublicGetShortsFeedHandlerTests : BaseContentHandlerTest
 
         ShortVideoFeedCursor.TryDecode(result.NextCursor, out ShortVideoFeedCursor cursor).Should().BeTrue();
         cursor.Seed.Should().Be(capturedSeed);
-        cursor.AfterSortKey.Should().Be(ShortVideoFeedCursor.ComputeSortKey(shorts[^1].Id, capturedSeed));
-        cursor.AfterId.Should().Be(shorts[^1].Id);
+        cursor.AfterKey.Should().Be(shorts[^1].FeedRank ^ capturedSeed);
     }
 
     [Fact]
@@ -103,20 +102,17 @@ public class PublicGetShortsFeedHandlerTests : BaseContentHandlerTest
     public async Task Handle_WhenCursorProvided_ShouldReuseSeedAndKeyset()
     {
         // Arrange
-        var afterId = Guid.NewGuid();
-        var incoming = new ShortVideoFeedCursor(Seed: 4242, AfterSortKey: "priorsortkey", AfterId: afterId);
+        var incoming = new ShortVideoFeedCursor(Seed: 4242L, AfterKey: 987654321L);
         var query = new PublicGetShortsFeedQuery(Cursor: incoming.Encode(), PageSize: 3);
 
-        int seedArg = 0;
-        string? sortKeyArg = null;
-        Guid? afterIdArg = null;
+        long seedArg = 0;
+        long? sortKeyArg = null;
         _shortVideoRepositoryMock.SetupCaptureRandomizedFeedArgs(
             ShortVideoFactory.CreateMany(1),
-            (seed, sortKey, id, _) =>
+            (seed, sortKey, _) =>
             {
                 seedArg = seed;
                 sortKeyArg = sortKey;
-                afterIdArg = id;
             }
         );
 
@@ -125,8 +121,7 @@ public class PublicGetShortsFeedHandlerTests : BaseContentHandlerTest
 
         // Assert
         seedArg.Should().Be(4242);
-        sortKeyArg.Should().Be("priorsortkey");
-        afterIdArg.Should().Be(afterId);
+        sortKeyArg.Should().Be(987654321L);
     }
 
     [Fact]
