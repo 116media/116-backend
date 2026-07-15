@@ -31,25 +31,22 @@ public class PublicGetShortsFeedHandler(
         CancellationToken cancellationToken
     )
     {
-        int seed;
-        string? afterSortKey = null;
-        Guid? afterId = null;
+        long seed;
+        long? afterSortKey = null;
 
         if (ShortVideoFeedCursor.TryDecode(query.Cursor, out ShortVideoFeedCursor cursor))
         {
             seed = cursor.Seed;
-            afterSortKey = cursor.AfterSortKey;
-            afterId = cursor.AfterId;
+            afterSortKey = cursor.AfterKey;
         }
         else
         {
-            seed = Random.Shared.Next(1, int.MaxValue);
+            seed = Random.Shared.NextInt64(long.MinValue, long.MaxValue);
         }
 
         IReadOnlyList<ShortVideoEntity> shortVideos = await shortVideoRepository.GetRandomizedFeedAsync(
             seed: seed,
             afterSortKey: afterSortKey,
-            afterId: afterId,
             limit: query.PageSize,
             cancellationToken: cancellationToken
         );
@@ -79,10 +76,10 @@ public class PublicGetShortsFeedHandler(
 
     /// <summary>
     /// Builds the next-page cursor from the last returned short video, or returns null when
-    /// the page was not full (the feed is exhausted). The sort key is computed in-process to
-    /// match the database ordering, avoiding an extra round-trip per page.
+    /// the page was not full (the feed is exhausted). The sort key is the last item's
+    /// <c>FeedRank XOR seed</c>, matching the database ordering with no extra round-trip.
     /// </summary>
-    private static string? BuildNextCursor(IReadOnlyList<ShortVideoEntity> shortVideos, int seed, int pageSize)
+    private static string? BuildNextCursor(IReadOnlyList<ShortVideoEntity> shortVideos, long seed, int pageSize)
     {
         if (shortVideos.Count == 0 || shortVideos.Count < pageSize)
         {
@@ -90,8 +87,8 @@ public class PublicGetShortsFeedHandler(
         }
 
         ShortVideoEntity last = shortVideos[^1];
-        string lastSortKey = ShortVideoFeedCursor.ComputeSortKey(last.Id, seed);
+        long lastSortKey = last.FeedRank ^ seed;
 
-        return new ShortVideoFeedCursor(seed, lastSortKey, last.Id).Encode();
+        return new ShortVideoFeedCursor(seed, lastSortKey).Encode();
     }
 }
