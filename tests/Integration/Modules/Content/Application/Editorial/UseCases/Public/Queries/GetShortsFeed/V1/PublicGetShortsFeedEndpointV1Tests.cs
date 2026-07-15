@@ -1,3 +1,4 @@
+using System.Text;
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetShortsFeed.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
@@ -98,6 +99,65 @@ public class PublicGetShortsFeedEndpointV1Tests(PostgresFixture db) : BaseApiTes
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         PublicGetShortsFeedResponse body = await response.ReadAsAsync<PublicGetShortsFeedResponse>();
         body.Items.Single(item => item.Id == likedShort.Id).IsLiked.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("!!!bad!!!", false)] // not base64 at all -> FormatException branch
+    [InlineData("not-a-valid-cursor", false)] // decodes but wrong component count
+    [InlineData("notanumber|5", true)] // valid base64url, unparseable seed
+    [InlineData("5|", true)] // single-'=' re-pad branch + unparseable after-key
+    public async Task GetShortsFeed_WithMalformedCursor_StartsFreshSession(string payload, bool encode)
+    {
+        ShortVideoEntity seeded = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.Create();
+            ctx.ShortVideos.Add(entity);
+            return entity;
+        });
+
+        Client.ClearAuthentication();
+
+        string badCursor = encode ? ToBase64Url(payload) : payload;
+        var response = await Client.GetAsync($"{FeedUrl}?pageSize=10&cursor={Uri.EscapeDataString(badCursor)}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        PublicGetShortsFeedResponse body = await response.ReadAsAsync<PublicGetShortsFeedResponse>();
+        body.Items.Should().Contain(item => item.Id == seeded.Id);
+    }
+
+    private static string ToBase64Url(string raw) =>
+        Convert.ToBase64String(Encoding.UTF8.GetBytes(raw)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+
+    [Fact]
+    public async Task GetShortsFeed_ForTeaserShort_ExposesParentVideoSlug()
+    {
+        VideoEntity parent = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+            VideoEntity video = VideoFactory.CreatePublished(category.Id);
+            ctx.Videos.Add(video);
+            return video;
+        });
+
+        ShortVideoEntity teaser = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.CreateTeaser(parent.Id);
+            ctx.ShortVideos.Add(entity);
+            return entity;
+        });
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{FeedUrl}?pageSize=10");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        PublicGetShortsFeedResponse body = await response.ReadAsAsync<PublicGetShortsFeedResponse>();
+        var item = body.Items.Single(i => i.Id == teaser.Id);
+        item.VideoSlug.Should().Be(parent.Slug);
+        item.HasFullVideo.Should().BeTrue();
     }
 
     [Fact]
