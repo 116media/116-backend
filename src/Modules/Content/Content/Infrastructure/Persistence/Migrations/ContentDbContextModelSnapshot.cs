@@ -1560,6 +1560,9 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.HasIndex("VideoId")
                         .HasDatabaseName("ix_short_videos_video_id");
 
+                    b.HasIndex("IsActive", "CreatedAt")
+                        .HasDatabaseName("ix_short_videos_is_active_created_at");
+
                     b.ToTable("short_videos", "content");
                 });
 
