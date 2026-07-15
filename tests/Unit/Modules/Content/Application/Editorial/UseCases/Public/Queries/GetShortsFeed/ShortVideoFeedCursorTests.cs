@@ -27,6 +27,23 @@ public class ShortVideoFeedCursorTests
     }
 
     [Fact]
+    public void Encode_ThenTryDecode_WithSingleCharPadding_ShouldRoundTrip()
+    {
+        // "12|34" encodes to a base64url token whose length is 3 mod 4, exercising the
+        // single-'=' re-padding branch on decode.
+        var cursor = new ShortVideoFeedCursor(Seed: 12, AfterKey: 34);
+
+        // Act
+        string token = cursor.Encode();
+        bool decoded = ShortVideoFeedCursor.TryDecode(token, out ShortVideoFeedCursor result);
+
+        // Assert
+        decoded.Should().BeTrue();
+        result.Seed.Should().Be(12);
+        result.AfterKey.Should().Be(34);
+    }
+
+    [Fact]
     public void Encode_ShouldProduceUrlSafeToken()
     {
         // Arrange
