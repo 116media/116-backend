@@ -81,6 +81,28 @@ public class AdminActivateShortVideoEndpointV1Tests(PostgresFixture db) : BaseAp
     }
 
     /// <summary>
+    /// Verifies that activating a file-less draft is rejected, exercising the
+    /// <c>VideoFileRequired</c> guard in <c>ShortVideoEntity.Activate</c>.
+    /// </summary>
+    [Fact]
+    public async Task ActivateShortVideo_AsSuperAdmin_DraftWithoutVideoFile_ReturnsBadRequest()
+    {
+        ShortVideoEntity draft = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.CreateDraft();
+            ctx.ShortVideos.Add(entity);
+            return entity;
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PatchAsync(ActivateUrl(draft.Id), null);
+
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        (await GetIsActiveAsync(draft.Id)).Should().BeFalse();
+    }
+
+    /// <summary>
     /// Verifies that activating an inactive short video succeeds, persists IsActive = true,
     /// exercising the happy path of <c>ShortVideoEntity.Activate</c>.
     /// </summary>
