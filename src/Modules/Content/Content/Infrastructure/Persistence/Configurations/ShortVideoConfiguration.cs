@@ -38,8 +38,11 @@ public class ShortVideoConfiguration : IEntityTypeConfiguration<ShortVideoEntity
 
         builder.Property(x => x.BookmarkCount).HasDefaultValue(0).IsRequired();
 
+        builder.Property(x => x.FeedRank).IsRequired();
+
         builder.HasIndex(x => x.Slug).IsUnique();
         builder.HasIndex(x => x.Title).IsUnique();
+        builder.HasIndex(x => x.FeedRank).IsUnique();
 
         builder.HasIndex(x => new { x.IsActive, x.CreatedAt });
 
