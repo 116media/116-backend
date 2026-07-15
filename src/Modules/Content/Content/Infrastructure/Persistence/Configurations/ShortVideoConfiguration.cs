@@ -41,6 +41,8 @@ public class ShortVideoConfiguration : IEntityTypeConfiguration<ShortVideoEntity
         builder.HasIndex(x => x.Slug).IsUnique();
         builder.HasIndex(x => x.Title).IsUnique();
 
+        builder.HasIndex(x => new { x.IsActive, x.CreatedAt });
+
         builder
             .HasOne(x => x.ParentVideo)
             .WithMany(v => v.Shorts)
