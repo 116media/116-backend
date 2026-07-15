@@ -1,4 +1,3 @@
-using System.Globalization;
 using _116.Content.Application.Editorial.Builders;
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
@@ -50,42 +49,28 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<ShortVideoEntity>> GetRandomizedFeedAsync(
-        int seed,
-        string? afterSortKey,
-        Guid? afterId,
+        long seed,
+        long? afterSortKey,
         int limit,
         CancellationToken cancellationToken = default
     )
     {
-        string seedText = seed.ToString(CultureInfo.InvariantCulture);
+        // Each row's stable, uniformly-random FeedRank XORed with the session seed yields a
+        // fresh uniform ordering per session (XOR-by-constant preserves uniformity), and the
+        // unique FeedRank makes the sort key a strict total order — so keyset paging on it
+        // alone never drifts or repeats, with no id tie-breaker needed.
+        IQueryable<ShortVideoEntity> query = context
+            .ShortVideos.Include(shortVideo => shortVideo.ParentVideo)
+            .Where(shortVideo => shortVideo.IsActive);
 
-        if (afterSortKey is null || afterId is null)
+        if (afterSortKey is long afterKey)
         {
-            return await context
-                .ShortVideos.FromSqlInterpolated(
-                    $"""
-                    SELECT * FROM content.short_videos AS s
-                    WHERE s.is_active = TRUE
-                    ORDER BY md5(s.id::text || {seedText}), s.id
-                    LIMIT {limit}
-                    """
-                )
-                .Include(s => s.ParentVideo)
-                .AsNoTracking()
-                .ToListAsync(cancellationToken);
+            query = query.Where(shortVideo => (shortVideo.FeedRank ^ seed) > afterKey);
         }
 
-        return await context
-            .ShortVideos.FromSqlInterpolated(
-                $"""
-                SELECT * FROM content.short_videos AS s
-                WHERE s.is_active = TRUE
-                    AND (md5(s.id::text || {seedText}), s.id) > ({afterSortKey}, {afterId})
-                ORDER BY md5(s.id::text || {seedText}), s.id
-                LIMIT {limit}
-                """
-            )
-            .Include(s => s.ParentVideo)
+        return await query
+            .OrderBy(shortVideo => shortVideo.FeedRank ^ seed)
+            .Take(limit)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
