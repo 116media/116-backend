@@ -13,9 +13,8 @@ public class ShortVideoFeedCursorTests
     [Fact]
     public void Encode_ThenTryDecode_ShouldRoundTripAllComponents()
     {
-        // Arrange
-        var afterId = Guid.NewGuid();
-        var cursor = new ShortVideoFeedCursor(Seed: 987654, AfterSortKey: "a1b2c3d4e5f6", AfterId: afterId);
+        // Arrange — negative AfterKey exercises the full signed 64-bit range
+        var cursor = new ShortVideoFeedCursor(Seed: 987654L, AfterKey: -1234567890123L);
 
         // Act
         string token = cursor.Encode();
@@ -23,16 +22,15 @@ public class ShortVideoFeedCursorTests
 
         // Assert
         decoded.Should().BeTrue();
-        result.Seed.Should().Be(987654);
-        result.AfterSortKey.Should().Be("a1b2c3d4e5f6");
-        result.AfterId.Should().Be(afterId);
+        result.Seed.Should().Be(987654L);
+        result.AfterKey.Should().Be(-1234567890123L);
     }
 
     [Fact]
     public void Encode_ShouldProduceUrlSafeToken()
     {
         // Arrange
-        var cursor = new ShortVideoFeedCursor(int.MaxValue, "ffffffffffffffffffffffffffffffff", Guid.NewGuid());
+        var cursor = new ShortVideoFeedCursor(long.MaxValue, long.MinValue);
 
         // Act
         string token = cursor.Encode();
@@ -67,8 +65,8 @@ public class ShortVideoFeedCursorTests
     [Fact]
     public void TryDecode_WhenWrongComponentCount_ShouldReturnFalse()
     {
-        // Arrange — base64url of "42|onlytwo"
-        string token = ToBase64Url("42|onlytwo");
+        // Arrange — base64url of "42|100|200" (three parts instead of two)
+        string token = ToBase64Url("42|100|200");
 
         // Act
         bool decoded = ShortVideoFeedCursor.TryDecode(token, out _);
@@ -81,7 +79,7 @@ public class ShortVideoFeedCursorTests
     public void TryDecode_WhenSeedNotInteger_ShouldReturnFalse()
     {
         // Arrange
-        string token = ToBase64Url($"notanint|sortkey|{Guid.NewGuid()}");
+        string token = ToBase64Url("notanint|100");
 
         // Act
         bool decoded = ShortVideoFeedCursor.TryDecode(token, out _);
@@ -91,10 +89,10 @@ public class ShortVideoFeedCursorTests
     }
 
     [Fact]
-    public void TryDecode_WhenAfterIdNotGuid_ShouldReturnFalse()
+    public void TryDecode_WhenAfterKeyNotInteger_ShouldReturnFalse()
     {
         // Arrange
-        string token = ToBase64Url("42|sortkey|not-a-guid");
+        string token = ToBase64Url("42|not-a-number");
 
         // Act
         bool decoded = ShortVideoFeedCursor.TryDecode(token, out _);
