@@ -1,5 +1,3 @@
-using System.Globalization;
-using _116.Content.Application.Editorial.UseCases.Public.Queries.GetShortsFeed;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
@@ -234,7 +232,7 @@ public class ShortVideoRepositoryTests(PostgresFixture postgres) : BaseRepositor
 
         var repo = Resolve<IShortVideoRepository>();
 
-        var result = await repo.GetRandomizedFeedAsync(seed: 123, afterSortKey: null, afterId: null, limit: 50);
+        var result = await repo.GetRandomizedFeedAsync(seed: 123, afterSortKey: null, limit: 50);
 
         result.Should().Contain(s => s.Id == active.Id);
         result.Should().NotContain(s => s.Id == inactive.Id);
@@ -249,14 +247,14 @@ public class ShortVideoRepositoryTests(PostgresFixture postgres) : BaseRepositor
         await seedContext.SaveChangesAsync();
 
         var repo = Resolve<IShortVideoRepository>();
-        const int seed = 777;
+        const long seed = 777;
 
-        var full = await repo.GetRandomizedFeedAsync(seed, afterSortKey: null, afterId: null, limit: 6);
+        var full = await repo.GetRandomizedFeedAsync(seed, afterSortKey: null, limit: 6);
         full.Should().HaveCount(6);
 
-        var firstPage = await repo.GetRandomizedFeedAsync(seed, afterSortKey: null, afterId: null, limit: 3);
-        string afterKey = ShortVideoFeedCursor.ComputeSortKey(firstPage[^1].Id, seed);
-        var secondPage = await repo.GetRandomizedFeedAsync(seed, afterKey, firstPage[^1].Id, limit: 3);
+        var firstPage = await repo.GetRandomizedFeedAsync(seed, afterSortKey: null, limit: 3);
+        long afterKey = firstPage[^1].FeedRank ^ seed;
+        var secondPage = await repo.GetRandomizedFeedAsync(seed, afterKey, limit: 3);
 
         firstPage.Select(s => s.Id).Should().Equal(full.Take(3).Select(s => s.Id));
         secondPage.Select(s => s.Id).Should().Equal(full.Skip(3).Take(3).Select(s => s.Id));
@@ -273,28 +271,27 @@ public class ShortVideoRepositoryTests(PostgresFixture postgres) : BaseRepositor
 
         var repo = Resolve<IShortVideoRepository>();
 
-        var first = await repo.GetRandomizedFeedAsync(seed: 42, afterSortKey: null, afterId: null, limit: 5);
-        var second = await repo.GetRandomizedFeedAsync(seed: 42, afterSortKey: null, afterId: null, limit: 5);
+        var first = await repo.GetRandomizedFeedAsync(seed: 42, afterSortKey: null, limit: 5);
+        var second = await repo.GetRandomizedFeedAsync(seed: 42, afterSortKey: null, limit: 5);
 
         first.Select(s => s.Id).Should().Equal(second.Select(s => s.Id));
     }
 
     [Fact]
-    public async Task ComputeSortKey_MatchesDatabaseMd5()
+    public async Task GetRandomizedFeedAsync_WithDifferentSeeds_ReshufflesTheOrdering()
     {
         await using var seedContext = CreateDbContext<ContentDbContext>();
-        var video = ShortVideoFactory.Create();
-        seedContext.ShortVideos.Add(video);
+        var shorts = ShortVideoFactory.CreateMany(20);
+        seedContext.ShortVideos.AddRange(shorts);
         await seedContext.SaveChangesAsync();
 
-        const int seed = 12345;
-        string seedText = seed.ToString(CultureInfo.InvariantCulture);
+        var repo = Resolve<IShortVideoRepository>();
 
-        await using var ctx = CreateDbContext<ContentDbContext>();
-        List<string> databaseKeys = await ctx
-            .Database.SqlQuery<string>($"SELECT md5({video.Id}::text || {seedText}) AS \"Value\"")
-            .ToListAsync();
+        // Seeds differing in the sign bit swap the negative/positive halves of the key space,
+        // reshuffling the order unless all ranks happen to share a sign (~2e-6 for 20 rows).
+        var first = await repo.GetRandomizedFeedAsync(seed: 0, afterSortKey: null, limit: 20);
+        var second = await repo.GetRandomizedFeedAsync(seed: long.MinValue, afterSortKey: null, limit: 20);
 
-        databaseKeys[0].Should().Be(ShortVideoFeedCursor.ComputeSortKey(video.Id, seed));
+        first.Select(s => s.Id).Should().NotEqual(second.Select(s => s.Id));
     }
 }
