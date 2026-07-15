@@ -7,7 +7,9 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicSh
 /// Query for retrieving a single active short video by its URL slug for public consumption.
 /// </summary>
 /// <param name="Slug">The URL-safe slug of the short video to retrieve.</param>
-public record PublicGetPublicShortBySlugQuery(string Slug) : IQuery<PublicGetPublicShortBySlugResult>;
+/// <param name="CurrentUserId">The requesting user id, or null when anonymous; seeds per-user flags.</param>
+public record PublicGetPublicShortBySlugQuery(string Slug, Guid? CurrentUserId = null)
+    : IQuery<PublicGetPublicShortBySlugResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicGetPublicShortBySlugQuery" /> containing the short video details.
