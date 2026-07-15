@@ -1,3 +1,4 @@
+using System.Globalization;
 using _116.Content.Application.Editorial.Builders;
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Application.Shared.Repositories;
@@ -24,7 +25,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
         CancellationToken cancellationToken = default
     )
     {
-        IQueryable<ShortVideoEntity> query = context.ShortVideos;
+        IQueryable<ShortVideoEntity> query = context.ShortVideos.Include(s => s.ParentVideo);
 
         Specification<ShortVideoEntity>? spec = new ShortVideoQueryBuilder()
             .WithSearch(search: search)
@@ -48,13 +49,82 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<ShortVideoEntity>> GetRandomizedFeedAsync(
+        int seed,
+        string? afterSortKey,
+        Guid? afterId,
+        int limit,
+        CancellationToken cancellationToken = default
+    )
+    {
+        string seedText = seed.ToString(CultureInfo.InvariantCulture);
+
+        if (afterSortKey is null || afterId is null)
+        {
+            return await context
+                .ShortVideos.FromSqlInterpolated(
+                    $"""
+                    SELECT * FROM content.short_videos AS s
+                    WHERE s.is_active = TRUE
+                    ORDER BY md5(s.id::text || {seedText}), s.id
+                    LIMIT {limit}
+                    """
+                )
+                .Include(s => s.ParentVideo)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+        }
+
+        return await context
+            .ShortVideos.FromSqlInterpolated(
+                $"""
+                SELECT * FROM content.short_videos AS s
+                WHERE s.is_active = TRUE
+                    AND (md5(s.id::text || {seedText}), s.id) > ({afterSortKey}, {afterId})
+                ORDER BY md5(s.id::text || {seedText}), s.id
+                LIMIT {limit}
+                """
+            )
+            .Include(s => s.ParentVideo)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<(IReadOnlySet<Guid> Liked, IReadOnlySet<Guid> Bookmarked)> GetLikedAndBookmarkedIdsAsync(
+        Guid? currentUserId,
+        IReadOnlyCollection<Guid> shortVideoIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (currentUserId is not Guid userId || shortVideoIds.Count == 0)
+        {
+            return (new HashSet<Guid>(), new HashSet<Guid>());
+        }
+
+        List<Guid> likedIds = await context
+            .ShortVideoLikes.Where(like => like.UserId == userId && shortVideoIds.Contains(like.ShortVideoId))
+            .Select(like => like.ShortVideoId)
+            .ToListAsync(cancellationToken);
+
+        List<Guid> bookmarkedIds = await context
+            .ShortVideoBookmarks.Where(bookmark =>
+                bookmark.UserId == userId && shortVideoIds.Contains(bookmark.ShortVideoId)
+            )
+            .Select(bookmark => bookmark.ShortVideoId)
+            .ToListAsync(cancellationToken);
+
+        return (likedIds.ToHashSet(), bookmarkedIds.ToHashSet());
+    }
+
+    /// <inheritdoc />
     public async Task<ShortVideoEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
         var specification = new ShortVideoBySlugSpecification(slug: slug);
-        return await context.ShortVideos.FirstOrDefaultBySpecificationAsync(
-            specification: specification,
-            cancellationToken: cancellationToken
-        );
+        return await context
+            .ShortVideos.Include(s => s.ParentVideo)
+            .ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc />
