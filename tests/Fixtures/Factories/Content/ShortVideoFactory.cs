@@ -41,6 +41,12 @@ public static class ShortVideoFactory
     public static ShortVideoEntity CreateWithSlug(string slug) => new ShortVideoBuilder().WithSlug(slug).Build();
 
     /// <summary>
+    /// Creates a standalone active short video authored by a specific user.
+    /// </summary>
+    public static ShortVideoEntity CreateWithAuthorId(Guid authorId) =>
+        new ShortVideoBuilder().WithAuthorId(authorId).Build();
+
+    /// <summary>
     /// Creates a short video with a thumbnail file ID attached.
     /// </summary>
     public static ShortVideoEntity CreateWithThumbnail() => new ShortVideoBuilder().WithThumbnail().Build();
