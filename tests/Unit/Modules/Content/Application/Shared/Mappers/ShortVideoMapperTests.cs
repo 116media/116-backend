@@ -340,5 +340,31 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
         dto.IsBookmarked.Should().BeFalse();
     }
 
+    [Fact]
+    public void ToShortVideoDto_IoFree_WhenThumbnailAndAvatarInMaps_ShouldResolveThem()
+    {
+        // Arrange — an uploaded thumbnail takes precedence over the auto-generated URL,
+        // and the author's avatar resolves from the same pre-fetched file map
+        ShortVideoEntity entity = ShortVideoFactory.CreateWithThumbnail();
+        var avatarFileId = Guid.NewGuid();
+        var files = new Dictionary<Guid, FileEntity>
+        {
+            [entity.VideoFileId!.Value] = FileFactory.CreateWithStorageUrl("https://cdn.example.com/short.mp4"),
+            [entity.ThumbnailFileId!.Value] = FileFactory.CreateWithStorageUrl("https://cdn.example.com/thumb.jpg"),
+            [avatarFileId] = FileFactory.CreateWithStorageUrl("https://cdn.example.com/avatar.png"),
+        };
+        var authors = new Dictionary<Guid, AuthorInfo>
+        {
+            [entity.AuthorId] = new AuthorInfo("editor", "editor@116.com", avatarFileId, "Admin"),
+        };
+
+        // Act
+        ShortVideoDto dto = entity.ToShortVideoDto(Mapper, files, authors, new HashSet<Guid>(), new HashSet<Guid>());
+
+        // Assert
+        dto.ThumbnailUrl.Should().Be("https://cdn.example.com/thumb.jpg");
+        dto.Author!.AvatarUrl.Should().Be("https://cdn.example.com/avatar.png");
+    }
+
     #endregion
 }
