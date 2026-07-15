@@ -1484,6 +1484,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
+                    b.Property<long>("FeedRank")
+                        .HasColumnType("bigint")
+                        .HasColumnName("feed_rank");
+
                     b.Property<bool>("HasFullVideo")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -1548,6 +1552,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_short_videos");
+
+                    b.HasIndex("FeedRank")
+                        .IsUnique()
+                        .HasDatabaseName("ix_short_videos_feed_rank");
 
                     b.HasIndex("Slug")
                         .IsUnique()
