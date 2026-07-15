@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Constants;
+using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
 using Carter;
@@ -37,9 +39,16 @@ public class PublicGetPublicShortBySlugEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/{slug}",
-                async (string slug, IDispatcher dispatcher) =>
+                async (string slug, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
                 {
-                    var query = new PublicGetPublicShortBySlugQuery(Slug: slug);
+                    Guid? userId = null;
+
+                    if (user.Identity?.IsAuthenticated == true)
+                    {
+                        userId = claimsProvider.GetUserIdFromClaims(user: user);
+                    }
+
+                    var query = new PublicGetPublicShortBySlugQuery(Slug: slug, CurrentUserId: userId);
                     PublicGetPublicShortBySlugResult result = await dispatcher.Send(request: query);
 
                     var response = new PublicGetPublicShortBySlugResponse(ShortVideo: result.ShortVideo);
