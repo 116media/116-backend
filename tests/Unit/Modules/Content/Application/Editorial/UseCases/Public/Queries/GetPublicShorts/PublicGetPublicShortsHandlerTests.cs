@@ -3,11 +3,13 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
+using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -20,12 +22,14 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 public class PublicGetPublicShortsHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<IShortVideoRepository> _shortVideoRepositoryMock;
+    private readonly Mock<IUserLookupService> _userLookupMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly PublicGetPublicShortsHandler _handler;
 
     public PublicGetPublicShortsHandlerTests()
     {
         _shortVideoRepositoryMock = MockShortVideoRepository.Create();
+        _userLookupMock = MockUserLookupService.Create();
         _fileRepositoryMock = MockFileRepository.Create();
 
         FileEntity videoFile = FileFactory.CreateVideo();
@@ -33,6 +37,7 @@ public class PublicGetPublicShortsHandlerTests : BaseContentHandlerTest
 
         _handler = new PublicGetPublicShortsHandler(
             _shortVideoRepositoryMock.Object,
+            _userLookupMock.Object,
             _fileRepositoryMock.Object,
             Mapper
         );
@@ -70,5 +75,105 @@ public class PublicGetPublicShortsHandlerTests : BaseContentHandlerTest
         // Assert
         result.ShortVideos.Items.Should().BeEmpty();
         result.ShortVideos.Count.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Handle_WhenUserHasLikedAndBookmarked_ShouldStampFlagsOnMatchingItems()
+    {
+        // Arrange
+        List<ShortVideoEntity> shorts = ShortVideoFactory.CreateMany(3);
+        ShortVideoEntity liked = shorts[0];
+        ShortVideoEntity bookmarked = shorts[1];
+        var userId = Guid.NewGuid();
+        var query = new PublicGetPublicShortsQuery(
+            PaginatedRequest: new PaginatedRequest(0, 10),
+            Search: null,
+            CurrentUserId: userId
+        );
+
+        _shortVideoRepositoryMock.SetupGetAllAsync(shorts, shorts.Count);
+        _shortVideoRepositoryMock.SetupGetLikedAndBookmarkedIdsAsync(
+            new HashSet<Guid> { liked.Id },
+            new HashSet<Guid> { bookmarked.Id }
+        );
+
+        // Act
+        PublicGetPublicShortsResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.ShortVideos.Items.Single(dto => dto.Id == liked.Id).IsLiked.Should().BeTrue();
+        result.ShortVideos.Items.Single(dto => dto.Id == bookmarked.Id).IsBookmarked.Should().BeTrue();
+        result.ShortVideos.Items.Single(dto => dto.Id == shorts[2].Id).IsLiked.Should().BeFalse();
+        result.ShortVideos.Items.Single(dto => dto.Id == shorts[2].Id).IsBookmarked.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Handle_ShouldForwardCurrentUserIdToFlagResolver()
+    {
+        // Arrange
+        List<ShortVideoEntity> shorts = ShortVideoFactory.CreateMany(2);
+        var userId = Guid.NewGuid();
+        var query = new PublicGetPublicShortsQuery(
+            PaginatedRequest: new PaginatedRequest(0, 10),
+            Search: null,
+            CurrentUserId: userId
+        );
+
+        _shortVideoRepositoryMock.SetupGetAllAsync(shorts, shorts.Count);
+
+        // Act
+        await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        _shortVideoRepositoryMock.Verify(
+            x =>
+                x.GetLikedAndBookmarkedIdsAsync(
+                    userId,
+                    It.IsAny<IReadOnlyCollection<Guid>>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_WhenAnonymous_ShouldReturnFalseFlags()
+    {
+        // Arrange
+        List<ShortVideoEntity> shorts = ShortVideoFactory.CreateMany(2);
+        var query = new PublicGetPublicShortsQuery(PaginatedRequest: new PaginatedRequest(0, 10), Search: null);
+
+        _shortVideoRepositoryMock.SetupGetAllAsync(shorts, shorts.Count);
+
+        // Act
+        PublicGetPublicShortsResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.ShortVideos.Items.Should().OnlyContain(dto => !dto.IsLiked && !dto.IsBookmarked);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldBatchResolveAuthorProfileForItems()
+    {
+        // Arrange
+        List<ShortVideoEntity> shorts = ShortVideoFactory.CreateMany(2);
+        var query = new PublicGetPublicShortsQuery(PaginatedRequest: new PaginatedRequest(0, 10), Search: null);
+
+        Dictionary<Guid, AuthorInfo> authors = shorts.ToDictionary(
+            shortVideo => shortVideo.AuthorId,
+            _ => new AuthorInfo("kinix_editor", null, null, "Admin")
+        );
+
+        _shortVideoRepositoryMock.SetupGetAllAsync(shorts, shorts.Count);
+        _userLookupMock.SetupGetAuthorInfosByIds(authors);
+
+        // Act
+        PublicGetPublicShortsResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result
+            .ShortVideos.Items.Should()
+            .OnlyContain(dto => dto.Author != null && dto.Author.UserName == "kinix_editor");
+        _userLookupMock.VerifyGetAuthorInfosByIdsCalledOnce();
     }
 }
