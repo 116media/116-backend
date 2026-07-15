@@ -26,19 +26,18 @@ public interface IShortVideoRepository : IRepository<ShortVideoEntity>
     );
 
     /// <summary>
-    /// Retrieves one page of active short videos ordered by a stable, seeded pseudo-random
-    /// randomized shuffle, using keyset pagination so the ordering never drifts across pages.
+    /// Retrieves one page of active short videos ordered by a per-session randomized shuffle
+    /// (each row's stable <c>FeedRank</c> XOR the session seed), using keyset pagination so the
+    /// ordering never drifts or repeats across pages.
     /// </summary>
-    /// <param name="seed">The shuffle seed; the same seed yields the same ordering.</param>
-    /// <param name="afterSortKey">The last seen sort key, or null for the first page.</param>
-    /// <param name="afterId">The last seen short video id (keyset tie-breaker), or null for the first page.</param>
+    /// <param name="seed">The session shuffle seed; the same seed yields the same ordering.</param>
+    /// <param name="afterSortKey">The last returned item's sort key, or null for the first page.</param>
     /// <param name="limit">The maximum number of short videos to return.</param>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>The ordered slice of active short videos after the cursor position.</returns>
     Task<IReadOnlyList<ShortVideoEntity>> GetRandomizedFeedAsync(
-        int seed,
-        string? afterSortKey,
-        Guid? afterId,
+        long seed,
+        long? afterSortKey,
         int limit,
         CancellationToken cancellationToken = default
     );
