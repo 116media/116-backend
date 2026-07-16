@@ -243,4 +243,158 @@ public class ArticleSpecificationsTests
     }
 
     #endregion
+
+    #region ArticleLikeByUserIdSpecification
+
+    [Fact]
+    public void ArticleLikeByUserIdSpecification_WithMatchingUser_ShouldReturnTrue()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        ArticleLikeEntity like = ArticleLikeEntity.Create(Guid.NewGuid(), userId, Guid.NewGuid());
+        var spec = new ArticleLikeByUserIdSpecification(userId);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(like);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ArticleLikeByUserIdSpecification_WithDifferentUser_ShouldReturnFalse()
+    {
+        // Arrange
+        ArticleLikeEntity like = ArticleLikeEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        var spec = new ArticleLikeByUserIdSpecification(Guid.NewGuid());
+
+        // Act
+        bool result = spec.IsSatisfiedBy(like);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region ArticleShareByUserIdSpecification
+
+    [Fact]
+    public void ArticleShareByUserIdSpecification_WithMatchingUser_ShouldReturnTrue()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        ArticleShareEntity share = ArticleShareEntity.Create(Guid.NewGuid(), userId, Guid.NewGuid());
+        var spec = new ArticleShareByUserIdSpecification(userId);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(share);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ArticleShareByUserIdSpecification_WithDifferentUser_ShouldReturnFalse()
+    {
+        // Arrange
+        ArticleShareEntity share = ArticleShareEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        var spec = new ArticleShareByUserIdSpecification(Guid.NewGuid());
+
+        // Act
+        bool result = spec.IsSatisfiedBy(share);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region ArticleCommentByUserIdSpecification
+
+    [Fact]
+    public void ArticleCommentByUserIdSpecification_WithMatchingUser_ShouldReturnTrue()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        ArticleCommentEntity comment = ArticleCommentEntity.Create(Guid.NewGuid(), userId, Guid.NewGuid(), "body");
+        var spec = new ArticleCommentByUserIdSpecification(userId);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(comment);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ArticleCommentByUserIdSpecification_WithDifferentUser_ShouldReturnFalse()
+    {
+        // Arrange
+        ArticleCommentEntity comment = ArticleCommentEntity.Create(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "body"
+        );
+        var spec = new ArticleCommentByUserIdSpecification(Guid.NewGuid());
+
+        // Act
+        bool result = spec.IsSatisfiedBy(comment);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region ArticleCommentByUserAndArticleSpecification
+
+    [Fact]
+    public void ArticleCommentByUserAndArticleSpecification_WithMatchingUserAndArticle_ShouldReturnTrue()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        Guid articleId = Guid.NewGuid();
+        ArticleCommentEntity comment = ArticleCommentEntity.Create(Guid.NewGuid(), userId, articleId, "body");
+        var spec = new ArticleCommentByUserAndArticleSpecification(userId, articleId);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(comment);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ArticleCommentByUserAndArticleSpecification_WithDifferentArticle_ShouldReturnFalse()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        ArticleCommentEntity comment = ArticleCommentEntity.Create(Guid.NewGuid(), userId, Guid.NewGuid(), "body");
+        var spec = new ArticleCommentByUserAndArticleSpecification(userId, Guid.NewGuid());
+
+        // Act
+        bool result = spec.IsSatisfiedBy(comment);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ArticleCommentByUserAndArticleSpecification_WithDifferentUser_ShouldReturnFalse()
+    {
+        // Arrange
+        Guid articleId = Guid.NewGuid();
+        ArticleCommentEntity comment = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), articleId, "body");
+        var spec = new ArticleCommentByUserAndArticleSpecification(Guid.NewGuid(), articleId);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(comment);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
 }
