@@ -2,18 +2,18 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
 
-namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetMyArticleBookmarks;
+namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnArticleBookmarks;
 
 /// <summary>
 /// Query for retrieving the authenticated user's bookmarked articles.
 /// </summary>
 /// <param name="UserId">The identity user UUID of the requesting user.</param>
 /// <param name="PaginatedRequest">Pagination parameters.</param>
-public record PublicGetMyArticleBookmarksQuery(Guid UserId, PaginatedRequest PaginatedRequest)
-    : IQuery<PublicGetMyArticleBookmarksResult>;
+public record PublicGetOwnArticleBookmarksQuery(Guid UserId, PaginatedRequest PaginatedRequest)
+    : IQuery<PublicGetOwnArticleBookmarksResult>;
 
 /// <summary>
-/// Result of the <see cref="PublicGetMyArticleBookmarksQuery" /> containing paginated article summaries.
+/// Result of the <see cref="PublicGetOwnArticleBookmarksQuery" /> containing paginated article summaries.
 /// </summary>
 /// <param name="Articles">Paginated result containing article summary DTOs.</param>
-public record PublicGetMyArticleBookmarksResult(PaginatedResult<ArticleSummaryDto> Articles);
+public record PublicGetOwnArticleBookmarksResult(PaginatedResult<UserBookmarkedArticleDto> Articles);
