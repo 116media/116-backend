@@ -103,6 +103,108 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
     }
 
     /// <inheritdoc />
+    public async Task<(List<ShortVideoActivity> Items, int TotalCount)> GetLikedShortVideosAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ShortVideoLikeByUserIdSpecification(userId: userId);
+        IQueryable<ShortVideoLikeEntity> query = context
+            .ShortVideoLikes.ApplySpecification(specification: specification)
+            .Where(like => like.ShortVideo.IsActive);
+        int totalCount = await query.CountAsync(cancellationToken);
+        List<ShortVideoLikeEntity> rows = await query
+            .Include(like => like.ShortVideo)
+                .ThenInclude(shortVideo => shortVideo.ParentVideo)
+            .OrderByDescending(like => like.CreatedAt)
+            .ThenByDescending(like => like.ShortVideoId)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        return (
+            rows.Select(row => new ShortVideoActivity(row.ShortVideo, row.CreatedAt ?? DateTime.MinValue)).ToList(),
+            totalCount
+        );
+    }
+
+    /// <inheritdoc />
+    public async Task<(List<ShortVideoActivity> Items, int TotalCount)> GetBookmarkedShortVideosAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ShortVideoBookmarkByUserIdSpecification(userId: userId);
+        IQueryable<ShortVideoBookmarkEntity> query = context
+            .ShortVideoBookmarks.ApplySpecification(specification: specification)
+            .Where(bookmark => bookmark.ShortVideo.IsActive);
+        int totalCount = await query.CountAsync(cancellationToken);
+        List<ShortVideoBookmarkEntity> rows = await query
+            .Include(bookmark => bookmark.ShortVideo)
+                .ThenInclude(shortVideo => shortVideo.ParentVideo)
+            .OrderByDescending(bookmark => bookmark.CreatedAt)
+            .ThenByDescending(bookmark => bookmark.ShortVideoId)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        return (
+            rows.Select(row => new ShortVideoActivity(row.ShortVideo, row.CreatedAt ?? DateTime.MinValue)).ToList(),
+            totalCount
+        );
+    }
+
+    /// <inheritdoc />
+    public async Task<(List<ShortVideoActivity> Items, int TotalCount)> GetSharedShortVideosAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ShortVideoShareByUserIdSpecification(userId: userId);
+        var query = context
+            .ShortVideoShares.ApplySpecification(specification: specification)
+            .Where(share => share.ShortVideo.IsActive)
+            .GroupBy(share => share.ShortVideoId)
+            .Select(group => new
+            {
+                ShortVideoId = group.Key,
+                LastInteractedAt = group.Max(share => share.CreatedAt),
+                InteractionCount = group.Count(),
+            });
+        int totalCount = await query.CountAsync(cancellationToken);
+        var rows = await query
+            .OrderByDescending(row => row.LastInteractedAt)
+            .ThenByDescending(row => row.ShortVideoId)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+        List<Guid> shortVideoIds = rows.Select(row => row.ShortVideoId).ToList();
+        Dictionary<Guid, ShortVideoEntity> shortVideos = await context
+            .ShortVideos.Include(shortVideo => shortVideo.ParentVideo)
+            .Where(shortVideo => shortVideoIds.Contains(shortVideo.Id))
+            .AsNoTracking()
+            .ToDictionaryAsync(shortVideo => shortVideo.Id, cancellationToken);
+
+        return (
+            rows.Select(row => new ShortVideoActivity(
+                    shortVideos[row.ShortVideoId],
+                    row.LastInteractedAt ?? DateTime.MinValue,
+                    row.InteractionCount
+                ))
+                .ToList(),
+            totalCount
+        );
+    }
+
+    /// <inheritdoc />
     public async Task<ShortVideoEntity?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
         var specification = new ShortVideoBySlugSpecification(slug: slug);
