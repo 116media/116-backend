@@ -148,6 +148,20 @@ public static class VideoMapper
     }
 
     /// <summary>
+    /// Maps a list of <see cref="VideoEntity" /> to <see cref="VideoSummaryDto" /> using a
+    /// pre-fetched file map. Performs no IO — intended for batch mapping where files are loaded
+    /// once up front via <c>IFileRepository.GetByIdsAsync</c>.
+    /// </summary>
+    public static IReadOnlyList<VideoSummaryDto> ToVideoSummaryDtos(
+        this IReadOnlyList<VideoEntity> entities,
+        IMapper mapper,
+        IReadOnlyDictionary<Guid, FileEntity> files
+    )
+    {
+        return entities.Select(entity => entity.ToVideoSummaryDto(mapper, files)).ToList();
+    }
+
+    /// <summary>
     /// Maps a <see cref="VideoEntity" /> to a <see cref="VideoSummaryDto" />, resolving the
     /// thumbnail URL from a pre-fetched file map. Performs no IO — intended for batch mapping
     /// (e.g. the content feed) where files are loaded once up front via
