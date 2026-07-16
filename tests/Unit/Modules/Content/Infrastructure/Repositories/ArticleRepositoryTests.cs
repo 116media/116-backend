@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
@@ -1043,6 +1044,141 @@ public class ArticleRepositoryTests : IDisposable
 
         counts.GetValueOrDefault(parentA.Id).Should().Be(2);
         counts.Should().NotContainKey(parentB.Id);
+    }
+
+    #endregion
+
+    #region Article favorite read Tests
+
+    [Fact]
+    public async Task GetBookmarkedArticlesAsync_ReturnsBookmarkTimestampAndPublishedArticlesOnly()
+    {
+        Guid userId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity published = ArticleFactory.CreatePublished(categoryId);
+        ArticleEntity draft = ArticleFactory.Create(categoryId);
+        DateTime bookmarkedAt = DateTime.UtcNow.AddDays(-3);
+        ArticleBookmarkEntity bookmark = ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, published.Id);
+        bookmark.CreatedAt = bookmarkedAt;
+        _context.Articles.AddRange(published, draft);
+        _context.ArticleBookmarks.AddRange(bookmark, ArticleBookmarkEntity.Create(Guid.NewGuid(), userId, draft.Id));
+        await _context.SaveChangesAsync();
+
+        (List<BookmarkedArticleActivity> activities, int count) = await _repository.GetBookmarkedArticlesAsync(
+            userId,
+            1,
+            10
+        );
+
+        count.Should().Be(1);
+        activities.Should().ContainSingle();
+        activities.Single().Article.Id.Should().Be(published.Id);
+        activities.Single().BookmarkedAt.Should().Be(bookmarkedAt);
+    }
+
+    [Fact]
+    public async Task GetCommentedArticlesAsync_GroupsRepliesAndExcludesDeletedAndOtherUsers()
+    {
+        Guid userId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.CreatePublished(categoryId);
+        ArticleCommentEntity parent = ArticleCommentEntity.Create(Guid.NewGuid(), userId, article.Id, "parent");
+        parent.CreatedAt = DateTime.UtcNow.AddHours(-2);
+        ArticleCommentEntity reply = ArticleCommentEntity.CreateReply(
+            Guid.NewGuid(),
+            userId,
+            article.Id,
+            parent.Id,
+            "reply"
+        );
+        reply.CreatedAt = DateTime.UtcNow.AddHours(-1);
+        ArticleCommentEntity deleted = ArticleCommentEntity.Create(Guid.NewGuid(), userId, article.Id, "deleted");
+        deleted.SoftDelete();
+        ArticleCommentEntity other = ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "other");
+        _context.Articles.Add(article);
+        _context.ArticleComments.AddRange(parent, reply, deleted, other);
+        await _context.SaveChangesAsync();
+
+        (List<CommentedArticleActivity> activities, int count) = await _repository.GetCommentedArticlesAsync(
+            userId,
+            1,
+            10
+        );
+
+        count.Should().Be(1);
+        activities.Single().CommentCount.Should().Be(2);
+        activities.Single().LatestComment.Id.Should().Be(reply.Id);
+        activities.Single().LastCommentedAt.Should().Be(reply.CreatedAt);
+    }
+
+    [Fact]
+    public async Task GetSharedArticlesAsync_GroupsOnlyCurrentUsersShares()
+    {
+        Guid userId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.CreatePublished(categoryId);
+        ArticleShareEntity older = ArticleShareEntity.Create(
+            Guid.NewGuid(),
+            userId,
+            article.Id,
+            EnumShareChannel.Facebook
+        );
+        older.CreatedAt = DateTime.UtcNow.AddHours(-2);
+        ArticleShareEntity latest = ArticleShareEntity.Create(
+            Guid.NewGuid(),
+            userId,
+            article.Id,
+            EnumShareChannel.WhatsApp
+        );
+        latest.CreatedAt = DateTime.UtcNow.AddHours(-1);
+        _context.Articles.Add(article);
+        _context.ArticleShares.AddRange(
+            older,
+            latest,
+            ArticleShareEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id),
+            ArticleShareEntity.Create(Guid.NewGuid(), null, article.Id)
+        );
+        await _context.SaveChangesAsync();
+
+        (List<ArticleActivity> activities, int count) = await _repository.GetSharedArticlesAsync(userId, 1, 10);
+
+        count.Should().Be(1);
+        activities.Single().InteractionCount.Should().Be(2);
+        activities.Single().LastInteractedAt.Should().Be(latest.CreatedAt);
+        activities.Single().LastShareChannel.Should().Be(EnumShareChannel.WhatsApp);
+    }
+
+    [Fact]
+    public async Task GetOwnCommentsForArticleAsync_ReturnsOnlyRemainingOwnCommentsWithPagination()
+    {
+        Guid userId = Guid.NewGuid();
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = ArticleFactory.CreatePublished(categoryId);
+        ArticleCommentEntity first = ArticleCommentEntity.Create(Guid.NewGuid(), userId, article.Id, "first");
+        first.CreatedAt = DateTime.UtcNow.AddHours(-2);
+        ArticleCommentEntity second = ArticleCommentEntity.Create(Guid.NewGuid(), userId, article.Id, "second");
+        second.CreatedAt = DateTime.UtcNow.AddHours(-1);
+        ArticleCommentEntity deleted = ArticleCommentEntity.Create(Guid.NewGuid(), userId, article.Id, "deleted");
+        deleted.SoftDelete();
+        _context.Articles.Add(article);
+        _context.ArticleComments.AddRange(
+            first,
+            second,
+            deleted,
+            ArticleCommentEntity.Create(Guid.NewGuid(), Guid.NewGuid(), article.Id, "other")
+        );
+        await _context.SaveChangesAsync();
+
+        (List<ArticleCommentEntity> comments, int count) = await _repository.GetOwnCommentsForArticleAsync(
+            userId,
+            article.Id,
+            1,
+            1
+        );
+
+        count.Should().Be(2);
+        comments.Should().ContainSingle();
+        comments.Single().Id.Should().Be(second.Id);
     }
 
     #endregion
