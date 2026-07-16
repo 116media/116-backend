@@ -12,12 +12,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
-namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetMyPlaylists.V1;
+namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnPlaylists.V1;
 
 /// <summary>
 /// Defines the endpoint to get my playlists.
 /// </summary>
-public class PublicGetMyPlaylistsEndpointV1 : ICarterModule
+public class PublicGetOwnPlaylistsEndpointV1 : ICarterModule
 {
     /// <inheritdoc />
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -32,15 +32,15 @@ public class PublicGetMyPlaylistsEndpointV1 : ICarterModule
                 async (ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
-                    var query = new PublicGetMyPlaylistsQuery(UserId: userId);
+                    var query = new PublicGetOwnPlaylistsQuery(UserId: userId);
 
-                    PublicGetMyPlaylistsResult result = await dispatcher.Send(request: query);
+                    PublicGetOwnPlaylistsResult result = await dispatcher.Send(request: query);
                     return Results.Ok(result.Playlists);
                 }
             )
-            .WithName(endpointName: PublicGetMyPlaylistsMetaField.GetMyPlaylists.Name)
-            .WithSummary(summary: PublicGetMyPlaylistsMetaField.GetMyPlaylists.Summary)
-            .WithDescription(description: PublicGetMyPlaylistsMetaField.GetMyPlaylists.Description)
+            .WithName(endpointName: PublicGetOwnPlaylistsMetaField.GetOwnPlaylists.Name)
+            .WithSummary(summary: PublicGetOwnPlaylistsMetaField.GetOwnPlaylists.Summary)
+            .WithDescription(description: PublicGetOwnPlaylistsMetaField.GetOwnPlaylists.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
             .Produces<IReadOnlyList<PlaylistDto>>(statusCode: StatusCodes.Status200OK)
