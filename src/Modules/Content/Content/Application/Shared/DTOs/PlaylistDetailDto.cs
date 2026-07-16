@@ -5,14 +5,20 @@ namespace _116.Content.Application.Shared.DTOs;
 /// </summary>
 /// <param name="VideoId">The unique identifier of the video.</param>
 /// <param name="Title">The display title of the video.</param>
+/// <param name="Slug">The public route slug of the video.</param>
+/// <param name="CategoryName">The display name of the video's category.</param>
 /// <param name="ThumbnailUrl">The URL of the video thumbnail, or null if not set.</param>
+/// <param name="PublishedAt">When the video was published.</param>
 /// <param name="RatingAverage">The cached average star rating of the video.</param>
 /// <param name="RatingCount">The total number of ratings received by the video.</param>
 /// <param name="SortOrder">The display order of this video within the playlist.</param>
 public record VideoInPlaylistDto(
     Guid VideoId,
     string Title,
+    string Slug,
+    string CategoryName,
     string? ThumbnailUrl,
+    DateTimeOffset? PublishedAt,
     decimal RatingAverage,
     int RatingCount,
     int SortOrder
