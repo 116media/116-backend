@@ -1,6 +1,7 @@
 using _116.Content.Application.Interactions.Persistence;
-using _116.Content.Application.Interactions.UseCases.Public.Queries.GetMyPlaylists;
+using _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnPlaylists;
 using _116.Content.Domain.Entities;
+using _116.Core.Application.Shared.Repositories;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -8,22 +9,24 @@ using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Content.Application.Interactions.UseCases.Public.Queries.GetMyPlaylists;
+namespace _116.Unit.Tests.Modules.Content.Application.Interactions.UseCases.Public.Queries.GetOwnPlaylists;
 
 /// <summary>
-/// Unit tests for <see cref="PublicGetMyPlaylistsHandler"/>.
+/// Unit tests for <see cref="PublicGetOwnPlaylistsHandler"/>.
 /// </summary>
-public class PublicGetMyPlaylistsHandlerTests : BaseContentHandlerTest
+public class PublicGetOwnPlaylistsHandlerTests : BaseContentHandlerTest
 {
     private static readonly Guid UserId = Guid.NewGuid();
 
     private readonly Mock<IPlaylistRepository> _playlistRepositoryMock;
-    private readonly PublicGetMyPlaylistsHandler _handler;
+    private readonly Mock<IFileRepository> _fileRepositoryMock;
+    private readonly PublicGetOwnPlaylistsHandler _handler;
 
-    public PublicGetMyPlaylistsHandlerTests()
+    public PublicGetOwnPlaylistsHandlerTests()
     {
         _playlistRepositoryMock = MockPlaylistRepository.Create();
-        _handler = new PublicGetMyPlaylistsHandler(_playlistRepositoryMock.Object, Mapper);
+        _fileRepositoryMock = MockFileRepository.Create();
+        _handler = new PublicGetOwnPlaylistsHandler(_playlistRepositoryMock.Object, _fileRepositoryMock.Object, Mapper);
     }
 
     #region Success Cases
@@ -35,10 +38,10 @@ public class PublicGetMyPlaylistsHandlerTests : BaseContentHandlerTest
         IReadOnlyList<PlaylistEntity> playlists = PlaylistFactory.CreateMany(2, UserId);
         _playlistRepositoryMock.SetupGetByUserIdAsync(playlists);
 
-        var query = new PublicGetMyPlaylistsQuery(UserId: UserId);
+        var query = new PublicGetOwnPlaylistsQuery(UserId: UserId);
 
         // Act
-        PublicGetMyPlaylistsResult result = await _handler.Handle(query, CancellationToken.None);
+        PublicGetOwnPlaylistsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.Playlists.Count.Should().Be(2);
@@ -50,10 +53,10 @@ public class PublicGetMyPlaylistsHandlerTests : BaseContentHandlerTest
         // Arrange
         _playlistRepositoryMock.SetupGetByUserIdAsync(new List<PlaylistEntity>());
 
-        var query = new PublicGetMyPlaylistsQuery(UserId: UserId);
+        var query = new PublicGetOwnPlaylistsQuery(UserId: UserId);
 
         // Act
-        PublicGetMyPlaylistsResult result = await _handler.Handle(query, CancellationToken.None);
+        PublicGetOwnPlaylistsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.Playlists.Should().BeEmpty();
