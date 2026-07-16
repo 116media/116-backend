@@ -1,3 +1,4 @@
+using _116.Content.Domain.Enums;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -20,6 +21,11 @@ public class ArticleShareEntity : Aggregate<Guid>
     public Guid ArticleId { get; private set; }
 
     /// <summary>
+    /// The channel the share was sent to. Null when the client does not report a target.
+    /// </summary>
+    public EnumShareChannel? ShareChannel { get; private set; }
+
+    /// <summary>
     /// Navigation property to the article.
     /// </summary>
     public ArticleEntity Article { get; private set; } = null!;
@@ -32,14 +38,21 @@ public class ArticleShareEntity : Aggregate<Guid>
     /// <param name="id">The unique identifier for this share.</param>
     /// <param name="userId">The user who shared. Null for anonymous shares.</param>
     /// <param name="articleId">The article that was shared.</param>
+    /// <param name="shareChannel">The channel the share targeted. Null when unreported.</param>
     /// <returns>A new <see cref="ArticleShareEntity" />.</returns>
-    public static ArticleShareEntity Create(Guid id, Guid? userId, Guid articleId)
+    public static ArticleShareEntity Create(
+        Guid id,
+        Guid? userId,
+        Guid articleId,
+        EnumShareChannel? shareChannel = null
+    )
     {
         return new ArticleShareEntity
         {
             Id = id,
             UserId = userId,
             ArticleId = articleId,
+            ShareChannel = shareChannel,
             CreatedAt = DateTime.UtcNow,
         };
     }

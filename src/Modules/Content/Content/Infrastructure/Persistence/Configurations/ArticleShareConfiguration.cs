@@ -19,6 +19,8 @@ public class ArticleShareConfiguration : IEntityTypeConfiguration<ArticleShareEn
 
         builder.Property(x => x.ArticleId).IsRequired();
 
+        builder.Property(x => x.ShareChannel).HasConversion<string>().HasMaxLength(50).IsRequired(false);
+
         builder.Property(x => x.CreatedAt).IsRequired();
 
         builder.HasOne(x => x.Article).WithMany().HasForeignKey(x => x.ArticleId).OnDelete(DeleteBehavior.Cascade);

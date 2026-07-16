@@ -1,3 +1,4 @@
+using _116.Content.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareArticle;
@@ -7,7 +8,9 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareAr
 /// </summary>
 /// <param name="ArticleId">The unique identifier of the article that was shared.</param>
 /// <param name="UserId">The identity user UUID of the sharer. Null for anonymous shares.</param>
-public record PublicShareArticleCommand(Guid ArticleId, Guid? UserId) : ICommand<PublicShareArticleResult>;
+/// <param name="ShareChannel">The channel the share targeted. Null when unreported.</param>
+public record PublicShareArticleCommand(Guid ArticleId, Guid? UserId, EnumShareChannel? ShareChannel = null)
+    : ICommand<PublicShareArticleResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicShareArticleCommand" />.

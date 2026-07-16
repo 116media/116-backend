@@ -172,6 +172,11 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options) : DbCo
     /// </summary>
     public DbSet<ShortVideoShareEntity> ShortVideoShares => Set<ShortVideoShareEntity>();
 
+    /// <summary>
+    /// Gets the DbSet for raw short video view event entities.
+    /// </summary>
+    public DbSet<ShortVideoViewEventEntity> ShortVideoViewEvents => Set<ShortVideoViewEventEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

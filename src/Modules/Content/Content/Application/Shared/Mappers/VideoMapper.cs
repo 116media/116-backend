@@ -82,7 +82,8 @@ public static class VideoMapper
         this VideoEntity entity,
         IMapper mapper,
         IFileRepository fileRepository,
-        CancellationToken ct = default
+        CancellationToken ct = default,
+        short? ratedStars = null
     )
     {
         string? thumbnailUrl = await ResolveThumbnailUrlAsync(entity, fileRepository, ct);
@@ -115,7 +116,9 @@ public static class VideoMapper
             entity.RatingCount,
             entity.CustomerId,
             entity.Customer != null ? entity.Customer.FullName : null,
-            entity.OrderItemId
+            entity.OrderItemId,
+            IsRated: ratedStars.HasValue,
+            RatedStars: ratedStars
         )
         {
             CreatedAt = entity.CreatedAt,

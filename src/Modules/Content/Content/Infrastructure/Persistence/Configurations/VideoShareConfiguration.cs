@@ -19,6 +19,8 @@ public class VideoShareConfiguration : IEntityTypeConfiguration<VideoShareEntity
 
         builder.Property(x => x.VideoId).IsRequired();
 
+        builder.Property(x => x.ShareChannel).HasConversion<string>().HasMaxLength(50).IsRequired(false);
+
         builder.Property(x => x.CreatedAt).IsRequired();
 
         builder.HasOne(x => x.Video).WithMany().HasForeignKey(x => x.VideoId).OnDelete(DeleteBehavior.Cascade);

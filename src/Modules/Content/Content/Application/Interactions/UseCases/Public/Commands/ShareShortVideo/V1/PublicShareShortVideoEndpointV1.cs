@@ -2,6 +2,7 @@ using System.Security.Claims;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Interactions.Constants;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.ValueObjects;
 using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
@@ -11,6 +12,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareShortVideo.V1;
+
+/// <summary>
+/// Request body for the PublicShareShortVideo operation. Optional — a missing body records no channel.
+/// </summary>
+/// <param name="ShareChannel">The channel the share targeted (e.g. facebook, x, whatsapp, clipboard, web-share).</param>
+public record PublicShareShortVideoRequest(string? ShareChannel);
 
 /// <summary>
 /// Response model for a successful PublicShareShortVideo operation.
@@ -33,7 +40,13 @@ public class PublicShareShortVideoEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{InteractionsRouteConstants.Shares}",
-                async (string id, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
+                async (
+                    string id,
+                    PublicShareShortVideoRequest? request,
+                    ClaimsPrincipal user,
+                    IClaimsProvider claimsProvider,
+                    IDispatcher dispatcher
+                ) =>
                 {
                     Guid? userId = null;
                     Guid shortVideoId = Guid.Parse(id);
@@ -43,7 +56,11 @@ public class PublicShareShortVideoEndpointV1 : ICarterModule
                         userId = claimsProvider.GetUserIdFromClaims(user: user);
                     }
 
-                    var command = new PublicShareShortVideoCommand(ShortVideoId: shortVideoId, UserId: userId);
+                    var command = new PublicShareShortVideoCommand(
+                        ShortVideoId: shortVideoId,
+                        UserId: userId,
+                        ShareChannel: ShareChannel.TryFrom(request?.ShareChannel)?.Value
+                    );
                     PublicShareShortVideoResult result = await dispatcher.Send(request: command);
 
                     var response = new PublicShareShortVideoResponse(IsSuccess: result.IsSuccess);

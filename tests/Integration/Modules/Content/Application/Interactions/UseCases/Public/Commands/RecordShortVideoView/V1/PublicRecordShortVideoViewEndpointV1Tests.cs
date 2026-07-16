@@ -21,6 +21,17 @@ public class PublicRecordShortVideoViewEndpointV1Tests(PostgresFixture db) : Bas
         });
     }
 
+    private async Task<HttpResponseMessage> RecordViewAsync(Guid shortVideoId, string? deviceId = null)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, Routes.Public.Shorts.Views(shortVideoId));
+        if (deviceId is not null)
+        {
+            request.Headers.Add("X-Device-Id", deviceId);
+        }
+
+        return await Client.SendAsync(request);
+    }
+
     [Fact]
     public async Task RecordShortVideoView_AsAnonymous_ReturnsOk()
     {
@@ -63,5 +74,72 @@ public class PublicRecordShortVideoViewEndpointV1Tests(PostgresFixture db) : Bas
         var response = await Client.PostAsync(Routes.Public.Shorts.Views(Guid.NewGuid()), null);
 
         await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task RecordShortVideoView_SameDeviceWithinWindow_CountsOnceAndRecordsBothEvents()
+    {
+        ShortVideoEntity shortVideo = await SeedShortVideoAsync();
+        Client.ClearAuthentication();
+
+        var first = await RecordViewAsync(shortVideo.Id, deviceId: "device-int-1");
+        first.StatusCode.Should().Be(HttpStatusCode.OK);
+        var firstBody = await first.ReadAsAsync<PublicRecordShortVideoViewResponse>();
+        firstBody.IsCounted.Should().BeTrue();
+
+        var second = await RecordViewAsync(shortVideo.Id, deviceId: "device-int-1");
+        second.StatusCode.Should().Be(HttpStatusCode.OK);
+        var secondBody = await second.ReadAsAsync<PublicRecordShortVideoViewResponse>();
+        secondBody.IsSuccess.Should().BeTrue();
+        secondBody.IsCounted.Should().BeFalse();
+
+        await using var verifyDb = CreateDbContext<ContentDbContext>();
+
+        ShortVideoEntity? updated = await verifyDb.ShortVideos.FindAsync(shortVideo.Id);
+        updated!.ViewCount.Should().Be(1);
+
+        List<ShortVideoViewEventEntity> events = await verifyDb
+            .ShortVideoViewEvents.Where(e => e.ShortVideoId == shortVideo.Id)
+            .ToListAsync();
+
+        events.Should().HaveCount(2);
+        events.Should().OnlyContain(e => e.DedupKey == "device:device-int-1");
+        events.Count(e => e.IsCounted).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task RecordShortVideoView_DifferentDevices_CountsEach()
+    {
+        ShortVideoEntity shortVideo = await SeedShortVideoAsync();
+        Client.ClearAuthentication();
+
+        await RecordViewAsync(shortVideo.Id, deviceId: "device-int-a");
+        await RecordViewAsync(shortVideo.Id, deviceId: "device-int-b");
+
+        await using var verifyDb = CreateDbContext<ContentDbContext>();
+        ShortVideoEntity? updated = await verifyDb.ShortVideos.FindAsync(shortVideo.Id);
+        updated!.ViewCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task RecordShortVideoView_WithForwardedIp_DeduplicatesOnClientIp()
+    {
+        ShortVideoEntity shortVideo = await SeedShortVideoAsync();
+        Client.ClearAuthentication();
+
+        // No device id, so the client IP resolved by UseForwardedHeaders is the dedup key.
+        using var request = new HttpRequestMessage(HttpMethod.Post, Routes.Public.Shorts.Views(shortVideo.Id));
+        request.Headers.Add("X-Forwarded-For", "203.0.113.9");
+        var response = await Client.SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using var verifyDb = CreateDbContext<ContentDbContext>();
+        ShortVideoViewEventEntity recorded = await verifyDb.ShortVideoViewEvents.SingleAsync(e =>
+            e.ShortVideoId == shortVideo.Id
+        );
+
+        recorded.DedupKey.Should().Be("ip:203.0.113.9");
+        recorded.IpAddress.Should().Be("203.0.113.9");
     }
 }

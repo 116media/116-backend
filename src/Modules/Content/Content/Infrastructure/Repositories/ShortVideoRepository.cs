@@ -173,4 +173,35 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
     {
         await context.ShortVideoShares.AddAsync(share, cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task AddViewEventAsync(
+        ShortVideoViewEventEntity viewEvent,
+        CancellationToken cancellationToken = default
+    )
+    {
+        await context.ShortVideoViewEvents.AddAsync(viewEvent, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> HasCountedViewSinceAsync(
+        Guid shortVideoId,
+        string dedupKey,
+        DateTime since,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await context.ShortVideoViewEvents.AnyAsync(
+            x => x.ShortVideoId == shortVideoId && x.DedupKey == dedupKey && x.IsCounted && x.CreatedAt >= since,
+            cancellationToken
+        );
+    }
+
+    /// <inheritdoc />
+    public async Task<int> PruneUncountedViewEventsAsync(DateTime cutoff, CancellationToken cancellationToken = default)
+    {
+        return await context
+            .ShortVideoViewEvents.Where(x => !x.IsCounted && x.CreatedAt < cutoff)
+            .ExecuteDeleteAsync(cancellationToken);
+    }
 }

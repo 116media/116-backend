@@ -138,6 +138,61 @@ public static class MockShortVideoRepository
         mock.Verify(x => x.AddShareAsync(It.IsAny<ShortVideoShareEntity>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    public static Mock<IShortVideoRepository> SetupHasCountedViewSinceAsync(
+        this Mock<IShortVideoRepository> mock,
+        bool result
+    )
+    {
+        mock.Setup(x =>
+                x.HasCountedViewSinceAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(result);
+        return mock;
+    }
+
+    public static Mock<IShortVideoRepository> SetupCaptureViewEvent(
+        this Mock<IShortVideoRepository> mock,
+        Action<ShortVideoViewEventEntity> capture
+    )
+    {
+        mock.Setup(x => x.AddViewEventAsync(It.IsAny<ShortVideoViewEventEntity>(), It.IsAny<CancellationToken>()))
+            .Callback<ShortVideoViewEventEntity, CancellationToken>((viewEvent, _) => capture(viewEvent))
+            .Returns(Task.CompletedTask);
+        return mock;
+    }
+
+    public static void VerifyAddViewEventCalled(this Mock<IShortVideoRepository> mock)
+    {
+        mock.Verify(
+            x => x.AddViewEventAsync(It.IsAny<ShortVideoViewEventEntity>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    public static void VerifyUpdateNotCalled(this Mock<IShortVideoRepository> mock)
+    {
+        mock.Verify(x => x.Update(It.IsAny<ShortVideoEntity>()), Times.Never);
+    }
+
+    public static void VerifyHasCountedViewSinceNotCalled(this Mock<IShortVideoRepository> mock)
+    {
+        mock.Verify(
+            x =>
+                x.HasCountedViewSinceAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+    }
+
     private static void SetupDefaults(Mock<IShortVideoRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<ShortVideoEntity>(), It.IsAny<CancellationToken>()))
@@ -170,5 +225,18 @@ public static class MockShortVideoRepository
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.AddShareAsync(It.IsAny<ShortVideoShareEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        mock.Setup(x => x.AddViewEventAsync(It.IsAny<ShortVideoViewEventEntity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x =>
+                x.HasCountedViewSinceAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(false);
+        mock.Setup(x => x.PruneUncountedViewEventsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0);
     }
 }

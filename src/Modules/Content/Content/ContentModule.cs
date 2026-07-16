@@ -131,6 +131,7 @@ public static class ContentModule
 
         services.AddHttpClient<IYoutubeThumbnailService, YoutubeThumbnailService>();
         services.AddScheduledJob<AbandonedDraftCleanupJob>(cronExpression: "0 0 * * * ?");
+        services.AddScheduledJob<ShortVideoViewEventCleanupJob>(cronExpression: "0 0 3 * * ?");
         services.AddScoped<ContentTypeSeeder>();
 
         return services;

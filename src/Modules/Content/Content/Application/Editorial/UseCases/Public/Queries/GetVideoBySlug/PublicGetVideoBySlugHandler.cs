@@ -39,7 +39,19 @@ public class PublicGetVideoBySlugHandler(
             throw i18n.Video.NotFound(Guid.Empty);
         }
 
-        var dto = await video.ToVideoDetailDtoAsync(mapper, fileRepository, cancellationToken);
+        short? ratedStars = null;
+
+        if (query.CurrentUserId is Guid userId)
+        {
+            VideoRatingEntity? rating = await videoRepository.GetRatingAsync(
+                userId: userId,
+                videoId: video.Id,
+                cancellationToken: cancellationToken
+            );
+            ratedStars = rating?.Stars;
+        }
+
+        var dto = await video.ToVideoDetailDtoAsync(mapper, fileRepository, cancellationToken, ratedStars: ratedStars);
         return new PublicGetVideoBySlugResult(Video: dto);
     }
 }

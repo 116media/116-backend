@@ -1,5 +1,6 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.ShareShortVideo.V1;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -69,5 +70,23 @@ public class PublicShareShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
         var response = await Client.PostAsync(Routes.Public.Shorts.Shares(Guid.NewGuid()), null);
 
         await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task ShareShortVideo_WithShareChannel_PersistsChannel()
+    {
+        ShortVideoEntity shortVideo = await SeedShortVideoAsync();
+        Client.ClearAuthentication();
+
+        var response = await Client.PostAsJsonAsync(
+            Routes.Public.Shorts.Shares(shortVideo.Id),
+            new { shareChannel = "whatsapp" }
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using var verifyDb = CreateDbContext<ContentDbContext>();
+        ShortVideoShareEntity share = await verifyDb.ShortVideoShares.SingleAsync(s => s.ShortVideoId == shortVideo.Id);
+        share.ShareChannel.Should().Be(EnumShareChannel.WhatsApp);
     }
 }

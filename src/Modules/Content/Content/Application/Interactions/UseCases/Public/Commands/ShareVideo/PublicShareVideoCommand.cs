@@ -1,3 +1,4 @@
+using _116.Content.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareVideo;
@@ -7,7 +8,9 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.ShareVi
 /// </summary>
 /// <param name="VideoId">The unique identifier of the video that was shared.</param>
 /// <param name="UserId">The identity user UUID of the sharer. Null for anonymous shares.</param>
-public record PublicShareVideoCommand(Guid VideoId, Guid? UserId) : ICommand<PublicShareVideoResult>;
+/// <param name="ShareChannel">The channel the share targeted. Null when unreported.</param>
+public record PublicShareVideoCommand(Guid VideoId, Guid? UserId, EnumShareChannel? ShareChannel = null)
+    : ICommand<PublicShareVideoResult>;
 
 /// <summary>
 /// Result of the <see cref="PublicShareVideoCommand" />.
