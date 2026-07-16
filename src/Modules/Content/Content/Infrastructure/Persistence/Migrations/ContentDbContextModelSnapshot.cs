@@ -133,6 +133,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.HasIndex("ParentCommentId")
                         .HasDatabaseName("ix_article_comments_parent");
 
+                    b.HasIndex("UserId", "IsDeleted", "CreatedAt", "ArticleId")
+                        .IsDescending(false, false, true, false)
+                        .HasDatabaseName("ix_article_comments_user_deleted_created_article");
+
                     b.ToTable("article_comments", "content");
                 });
 
@@ -492,6 +496,11 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ArticleId")
                         .HasDatabaseName("ix_article_shares_article_id");
+
+                    b.HasIndex("UserId", "CreatedAt", "ArticleId")
+                        .IsDescending(false, true, false)
+                        .HasDatabaseName("ix_article_shares_user_created_article")
+                        .HasFilter("user_id IS NOT NULL");
 
                     b.ToTable("article_shares", "content");
                 });
@@ -1660,6 +1669,11 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.HasIndex("ShortVideoId")
                         .HasDatabaseName("ix_short_video_shares_short_video_id");
 
+                    b.HasIndex("UserId", "CreatedAt", "ShortVideoId")
+                        .IsDescending(false, true, false)
+                        .HasDatabaseName("ix_short_video_shares_user_created_short")
+                        .HasFilter("user_id IS NOT NULL");
+
                     b.ToTable("short_video_shares", "content");
                 });
 
@@ -2038,6 +2052,11 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("VideoId")
                         .HasDatabaseName("ix_video_shares_video_id");
+
+                    b.HasIndex("UserId", "CreatedAt", "VideoId")
+                        .IsDescending(false, true, false)
+                        .HasDatabaseName("ix_video_shares_user_created_video")
+                        .HasFilter("user_id IS NOT NULL");
 
                     b.ToTable("video_shares", "content");
                 });
