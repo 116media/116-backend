@@ -25,7 +25,12 @@ public class PublicCreatePlaylistHandler(IPlaylistRepository playlistRepository,
         await playlistRepository.AddAsync(playlist: playlist, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-        var dto = new PlaylistDto(Id: playlist.Id, Name: playlist.Name, VideoCount: 0);
+        var dto = new PlaylistDto(
+            Id: playlist.Id,
+            Name: playlist.Name,
+            VideoCount: 0,
+            ThumbnailUrls: Array.Empty<string?>()
+        );
         return new PublicCreatePlaylistResult(Playlist: dto);
     }
 }
