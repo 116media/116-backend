@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
@@ -46,6 +47,12 @@ public class VideoRepositoryTests : IDisposable
         _context.Categories.Add(category);
         await _context.SaveChangesAsync();
         return category.Id;
+    }
+
+    private static void SetActivityTime(VideoRatingEntity rating, DateTime createdAt, DateTime? updatedAt = null)
+    {
+        rating.CreatedAt = createdAt;
+        rating.UpdatedAt = updatedAt;
     }
 
     #region GetAllAsync Tests
@@ -544,6 +551,126 @@ public class VideoRepositoryTests : IDisposable
         // Assert
         IReadOnlyList<VideoTagEntity> result = await _repository.GetTagsByVideoIdAsync(video.Id);
         result.Should().BeEmpty();
+    }
+
+    #endregion
+    #region Favorite Collection Read Tests
+
+    [Fact]
+    public async Task GetRatedVideosByUserAsync_ReturnsOwnPublishedRatingsByLatestActivity()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        Guid userId = Guid.NewGuid();
+        VideoEntity olderVideo = VideoFactory.CreatePublished(categoryId);
+        VideoEntity reratedVideo = VideoFactory.CreatePublished(categoryId);
+        VideoEntity unpublishedVideo = VideoFactory.Create(categoryId);
+        _context.Videos.AddRange(olderVideo, reratedVideo, unpublishedVideo);
+        VideoRatingEntity older = VideoRatingEntity.Create(Guid.NewGuid(), userId, olderVideo.Id, 2);
+        VideoRatingEntity rerated = VideoRatingEntity.Create(Guid.NewGuid(), userId, reratedVideo.Id, 5);
+        VideoRatingEntity unpublished = VideoRatingEntity.Create(Guid.NewGuid(), userId, unpublishedVideo.Id, 4);
+        VideoRatingEntity otherUser = VideoRatingEntity.Create(Guid.NewGuid(), Guid.NewGuid(), olderVideo.Id, 1);
+        DateTime now = DateTime.UtcNow;
+        SetActivityTime(older, now.AddDays(-2));
+        SetActivityTime(rerated, now.AddDays(-3), now);
+        SetActivityTime(unpublished, now.AddDays(1));
+        SetActivityTime(otherUser, now.AddDays(2));
+        _context.VideoRatings.AddRange(older, rerated, unpublished, otherUser);
+        await _context.SaveChangesAsync();
+
+        var (activities, totalCount) = await _repository.GetRatedVideosByUserAsync(userId, 1, 10);
+
+        totalCount.Should().Be(2);
+        activities.Select(activity => activity.Video.Id).Should().Equal(reratedVideo.Id, olderVideo.Id);
+        activities[0].Stars.Should().Be(5);
+        activities[0].LastInteractedAt.Should().Be(now);
+    }
+
+    [Fact]
+    public async Task GetRatedVideosByUserAsync_AppliesStablePagination()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        Guid userId = Guid.NewGuid();
+        VideoEntity[] videos = VideoFactory.CreateManyPublished(categoryId, 3).ToArray();
+        _context.Videos.AddRange(videos);
+        DateTime tie = DateTime.UtcNow;
+        foreach (VideoEntity video in videos)
+        {
+            VideoRatingEntity rating = VideoRatingEntity.Create(Guid.NewGuid(), userId, video.Id, 3);
+            SetActivityTime(rating, tie);
+            _context.VideoRatings.Add(rating);
+        }
+        await _context.SaveChangesAsync();
+
+        var (activities, totalCount) = await _repository.GetRatedVideosByUserAsync(userId, 2, 1);
+
+        totalCount.Should().Be(3);
+        activities.Should().ContainSingle();
+        activities[0].Video.Id.Should().Be(videos.Select(video => video.Id).Order().ElementAt(1));
+    }
+
+    [Fact]
+    public async Task GetSharedVideosByUserAsync_GroupsOwnEventsAndExcludesAnonymousOtherUserAndUnpublished()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        Guid userId = Guid.NewGuid();
+        VideoEntity published = VideoFactory.CreatePublished(categoryId);
+        VideoEntity unpublished = VideoFactory.Create(categoryId);
+        _context.Videos.AddRange(published, unpublished);
+        DateTime latest = DateTime.UtcNow;
+        VideoShareEntity older = VideoShareEntity.Create(
+            Guid.NewGuid(),
+            userId,
+            published.Id,
+            EnumShareChannel.Facebook
+        );
+        VideoShareEntity newer = VideoShareEntity.Create(
+            Guid.NewGuid(),
+            userId,
+            published.Id,
+            EnumShareChannel.WhatsApp
+        );
+        older.CreatedAt = latest.AddDays(-1);
+        newer.CreatedAt = latest;
+        _context.VideoShares.AddRange(
+            older,
+            newer,
+            VideoShareEntity.Create(Guid.NewGuid(), null, published.Id, EnumShareChannel.X),
+            VideoShareEntity.Create(Guid.NewGuid(), Guid.NewGuid(), published.Id, EnumShareChannel.Clipboard),
+            VideoShareEntity.Create(Guid.NewGuid(), userId, unpublished.Id, EnumShareChannel.WebShare)
+        );
+        await _context.SaveChangesAsync();
+
+        var (activities, totalCount) = await _repository.GetSharedVideosByUserAsync(userId, 1, 10);
+
+        totalCount.Should().Be(1);
+        SharedVideoActivity activity = activities.Should().ContainSingle().Subject;
+        activity.Video.Id.Should().Be(published.Id);
+        activity.ShareCount.Should().Be(2);
+        activity.LastInteractedAt.Should().Be(latest);
+        activity.LastShareChannel.Should().Be(EnumShareChannel.WhatsApp);
+    }
+
+    [Fact]
+    public async Task GetSharedVideosByUserAsync_CountsDistinctVideosAndPaginatesGroups()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        Guid userId = Guid.NewGuid();
+        VideoEntity[] videos = VideoFactory.CreateManyPublished(categoryId, 3).ToArray();
+        _context.Videos.AddRange(videos);
+        DateTime baseTime = DateTime.UtcNow;
+        for (int index = 0; index < videos.Length; index++)
+        {
+            VideoShareEntity share = VideoShareEntity.Create(Guid.NewGuid(), userId, videos[index].Id);
+            share.CreatedAt = baseTime.AddMinutes(index);
+            _context.VideoShares.Add(share);
+        }
+        await _context.SaveChangesAsync();
+
+        var (activities, totalCount) = await _repository.GetSharedVideosByUserAsync(userId, 2, 1);
+
+        totalCount.Should().Be(3);
+        activities.Should().ContainSingle();
+        activities[0].Video.Id.Should().Be(videos[1].Id);
     }
 
     #endregion
