@@ -5,6 +5,21 @@ using _116.Shared.Domain;
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
+/// Repository projection for one of the authenticated user's current video ratings.
+/// </summary>
+public sealed record RatedVideoActivity(VideoEntity Video, short Stars, DateTimeOffset LastInteractedAt);
+
+/// <summary>
+/// Repository projection for the authenticated user's grouped shares of one video.
+/// </summary>
+public sealed record SharedVideoActivity(
+    VideoEntity Video,
+    int ShareCount,
+    DateTimeOffset LastInteractedAt,
+    EnumShareChannel? LastShareChannel
+);
+
+/// <summary>
 /// Repository interface for video data access operations.
 /// </summary>
 public interface IVideoRepository : IRepository<VideoEntity>
@@ -157,6 +172,27 @@ public interface IVideoRepository : IRepository<VideoEntity>
     /// Adds a share record to the repository.
     /// </summary>
     Task AddShareAsync(VideoShareEntity share, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns the authenticated user's current ratings of published videos, newest interaction first.
+    /// </summary>
+    Task<(IReadOnlyList<RatedVideoActivity> Activities, int TotalCount)> GetRatedVideosByUserAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Returns published videos shared by the authenticated user, grouped by video.
+    /// Anonymous and other users' share events are excluded.
+    /// </summary>
+    Task<(IReadOnlyList<SharedVideoActivity> Activities, int TotalCount)> GetSharedVideosByUserAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Retrieves all currently active promoted published videos assigned to the given
