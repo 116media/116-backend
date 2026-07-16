@@ -1,14 +1,14 @@
 using _116.Shared.Application.Metadata;
 
-namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetMyPlaylists;
+namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnPlaylists;
 
 /// <summary>
 /// Contains metadata information for the get my playlists route.
 /// </summary>
-public static class PublicGetMyPlaylistsMetaField
+public static class PublicGetOwnPlaylistsMetaField
 {
-    public static readonly RouteMetadata GetMyPlaylists = new(
-        "PublicGetMyPlaylists",
+    public static readonly RouteMetadata GetOwnPlaylists = new(
+        "PublicGetOwnPlaylists",
         "Get my playlists",
         """
             Returns all playlists owned by the authenticated user.
