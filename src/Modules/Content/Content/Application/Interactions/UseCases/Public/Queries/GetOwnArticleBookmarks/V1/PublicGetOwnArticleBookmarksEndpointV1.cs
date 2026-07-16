@@ -13,12 +13,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
-namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetMyArticleBookmarks.V1;
+namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnArticleBookmarks.V1;
 
 /// <summary>
 /// Defines the get my article bookmarks endpoint.
 /// </summary>
-public class PublicGetMyArticleBookmarksEndpointV1 : ICarterModule
+public class PublicGetOwnArticleBookmarksEndpointV1 : ICarterModule
 {
     /// <inheritdoc />
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -40,21 +40,21 @@ public class PublicGetMyArticleBookmarksEndpointV1 : ICarterModule
                 {
                     Guid userId = claimsProvider.GetUserIdFromClaims(user: user);
                     var paginatedRequest = new PaginatedRequest(PageIndex: pageIndex, PageSize: pageSize);
-                    var query = new PublicGetMyArticleBookmarksQuery(
+                    var query = new PublicGetOwnArticleBookmarksQuery(
                         UserId: userId,
                         PaginatedRequest: paginatedRequest
                     );
 
-                    PublicGetMyArticleBookmarksResult result = await dispatcher.Send(request: query);
+                    PublicGetOwnArticleBookmarksResult result = await dispatcher.Send(request: query);
                     return Results.Ok(result.Articles);
                 }
             )
-            .WithName(endpointName: PublicGetMyArticleBookmarksMetaField.GetMyArticleBookmarks.Name)
-            .WithSummary(summary: PublicGetMyArticleBookmarksMetaField.GetMyArticleBookmarks.Summary)
-            .WithDescription(description: PublicGetMyArticleBookmarksMetaField.GetMyArticleBookmarks.Description)
+            .WithName(endpointName: PublicGetOwnArticleBookmarksMetaField.GetOwnArticleBookmarks.Name)
+            .WithSummary(summary: PublicGetOwnArticleBookmarksMetaField.GetOwnArticleBookmarks.Summary)
+            .WithDescription(description: PublicGetOwnArticleBookmarksMetaField.GetOwnArticleBookmarks.Description)
             .WithAuthorization(UserRolePolicies.RequireVisitorOnly)
             .RequireRateLimiting(policyName: RateLimitPolicies.ContentBrowsing)
-            .Produces<PaginatedResult<ArticleSummaryDto>>(statusCode: StatusCodes.Status200OK)
+            .Produces<PaginatedResult<UserBookmarkedArticleDto>>(statusCode: StatusCodes.Status200OK)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
