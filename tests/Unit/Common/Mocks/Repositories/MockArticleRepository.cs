@@ -328,7 +328,7 @@ public static class MockArticleRepository
 
     public static Mock<IArticleRepository> SetupGetBookmarkedArticlesAsync(
         this Mock<IArticleRepository> mock,
-        List<ArticleEntity> articles,
+        List<BookmarkedArticleActivity> activities,
         int totalCount
     )
     {
@@ -340,7 +340,80 @@ public static class MockArticleRepository
                     It.IsAny<CancellationToken>()
                 )
             )
-            .ReturnsAsync((articles, totalCount));
+            .ReturnsAsync((activities, totalCount));
+        return mock;
+    }
+
+    public static Mock<IArticleRepository> SetupGetLikedArticlesAsync(
+        this Mock<IArticleRepository> mock,
+        List<ArticleActivity> activities,
+        int totalCount
+    )
+    {
+        mock.Setup(x =>
+                x.GetLikedArticlesAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((activities, totalCount));
+        return mock;
+    }
+
+    public static Mock<IArticleRepository> SetupGetSharedArticlesAsync(
+        this Mock<IArticleRepository> mock,
+        List<ArticleActivity> activities,
+        int totalCount
+    )
+    {
+        mock.Setup(x =>
+                x.GetSharedArticlesAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((activities, totalCount));
+        return mock;
+    }
+
+    public static Mock<IArticleRepository> SetupGetCommentedArticlesAsync(
+        this Mock<IArticleRepository> mock,
+        List<CommentedArticleActivity> activities,
+        int totalCount
+    )
+    {
+        mock.Setup(x =>
+                x.GetCommentedArticlesAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((activities, totalCount));
+        return mock;
+    }
+
+    public static Mock<IArticleRepository> SetupGetOwnCommentsForArticleAsync(
+        this Mock<IArticleRepository> mock,
+        List<ArticleCommentEntity> comments,
+        int totalCount
+    )
+    {
+        mock.Setup(x =>
+                x.GetOwnCommentsForArticleAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((comments, totalCount));
         return mock;
     }
 
@@ -410,6 +483,43 @@ public static class MockArticleRepository
                 )
             )
             .ReturnsAsync((new List<ArticleEntity>(), 0));
+        mock.Setup(x =>
+                x.GetLikedArticlesAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((new List<ArticleActivity>(), 0));
+        mock.Setup(x =>
+                x.GetSharedArticlesAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((new List<ArticleActivity>(), 0));
+        mock.Setup(x =>
+                x.GetCommentedArticlesAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((new List<CommentedArticleActivity>(), 0));
+        mock.Setup(x =>
+                x.GetOwnCommentsForArticleAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<Guid>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((new List<ArticleCommentEntity>(), 0));
         mock.Setup(x => x.GetPromotedAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<ArticleEntity>());
         mock.Setup(x => x.GetAbandonedDraftsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ArticleEntity>());
@@ -463,7 +573,7 @@ public static class MockArticleRepository
                     It.IsAny<CancellationToken>()
                 )
             )
-            .ReturnsAsync((new List<ArticleEntity>(), 0));
+            .ReturnsAsync((new List<BookmarkedArticleActivity>(), 0));
         mock.Setup(x => x.AddLikeAsync(It.IsAny<ArticleLikeEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         mock.Setup(x => x.RemoveLikeAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
