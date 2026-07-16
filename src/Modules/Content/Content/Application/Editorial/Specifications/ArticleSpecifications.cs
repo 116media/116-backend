@@ -263,3 +263,52 @@ public class GossipArticleSpecification(Guid gossipCategoryId) : Specification<A
         return article => article.Status == EnumContentStatus.Published && article.CategoryId == gossipCategoryId;
     }
 }
+
+/// <summary>
+/// Specification that matches all article likes belonging to a specific user.
+/// </summary>
+public class ArticleLikeByUserIdSpecification(Guid userId) : Specification<ArticleLikeEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleLikeEntity, bool>> ToExpression()
+    {
+        return like => like.UserId == userId;
+    }
+}
+
+/// <summary>
+/// Specification that matches all article shares belonging to a specific user.
+/// </summary>
+public class ArticleShareByUserIdSpecification(Guid userId) : Specification<ArticleShareEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleShareEntity, bool>> ToExpression()
+    {
+        return share => share.UserId == userId;
+    }
+}
+
+/// <summary>
+/// Specification that matches all article comments authored by a specific user.
+/// </summary>
+public class ArticleCommentByUserIdSpecification(Guid userId) : Specification<ArticleCommentEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleCommentEntity, bool>> ToExpression()
+    {
+        return comment => comment.UserId == userId;
+    }
+}
+
+/// <summary>
+/// Specification that matches comments authored by a specific user on a specific article.
+/// </summary>
+public class ArticleCommentByUserAndArticleSpecification(Guid userId, Guid articleId)
+    : Specification<ArticleCommentEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleCommentEntity, bool>> ToExpression()
+    {
+        return comment => comment.UserId == userId && comment.ArticleId == articleId;
+    }
+}
