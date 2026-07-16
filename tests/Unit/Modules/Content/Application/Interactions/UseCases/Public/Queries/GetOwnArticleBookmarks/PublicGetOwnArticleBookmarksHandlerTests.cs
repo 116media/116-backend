@@ -1,4 +1,4 @@
-using _116.Content.Application.Interactions.UseCases.Public.Queries.GetMyArticleBookmarks;
+using _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnArticleBookmarks;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
@@ -12,27 +12,27 @@ using AwesomeAssertions;
 using Moq;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Content.Application.Interactions.UseCases.Public.Queries.GetMyArticleBookmarks;
+namespace _116.Unit.Tests.Modules.Content.Application.Interactions.UseCases.Public.Queries.GetOwnArticleBookmarks;
 
 /// <summary>
-/// Unit tests for <see cref="PublicGetMyArticleBookmarksHandler"/>.
+/// Unit tests for <see cref="PublicGetOwnArticleBookmarksHandler"/>.
 /// </summary>
-public class PublicGetMyArticleBookmarksHandlerTests : BaseContentHandlerTest
+public class PublicGetOwnArticleBookmarksHandlerTests : BaseContentHandlerTest
 {
     private static readonly Guid CategoryId = Guid.NewGuid();
     private static readonly Guid UserId = Guid.NewGuid();
 
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
-    private readonly PublicGetMyArticleBookmarksHandler _handler;
+    private readonly PublicGetOwnArticleBookmarksHandler _handler;
 
-    public PublicGetMyArticleBookmarksHandlerTests()
+    public PublicGetOwnArticleBookmarksHandlerTests()
     {
         _articleRepositoryMock = MockArticleRepository.Create();
         _fileRepositoryMock = MockFileRepository.Create();
         FileEntity coverFile = FileFactory.CreateImage();
         _fileRepositoryMock.SetupGetById(coverFile);
-        _handler = new PublicGetMyArticleBookmarksHandler(
+        _handler = new PublicGetOwnArticleBookmarksHandler(
             _articleRepositoryMock.Object,
             _fileRepositoryMock.Object,
             Mapper
@@ -46,33 +46,43 @@ public class PublicGetMyArticleBookmarksHandlerTests : BaseContentHandlerTest
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
-        _articleRepositoryMock.SetupGetBookmarkedArticlesAsync(new List<ArticleEntity> { article }, totalCount: 1);
+        DateTimeOffset bookmarkedAt = DateTimeOffset.UtcNow.AddDays(-2);
+        _articleRepositoryMock.SetupGetBookmarkedArticlesAsync(
+            new List<BookmarkedArticleActivity> { new(article, bookmarkedAt) },
+            totalCount: 1
+        );
+        _articleRepositoryMock.SetupGetLikedAndBookmarkedIds(
+            likedIds: new HashSet<Guid>(),
+            bookmarkedIds: new HashSet<Guid> { article.Id }
+        );
 
-        var query = new PublicGetMyArticleBookmarksQuery(
+        var query = new PublicGetOwnArticleBookmarksQuery(
             UserId: UserId,
             PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10)
         );
 
         // Act
-        PublicGetMyArticleBookmarksResult result = await _handler.Handle(query, CancellationToken.None);
+        PublicGetOwnArticleBookmarksResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.Articles.Items.Count().Should().Be(1);
+        result.Articles.Items.Single().BookmarkedAt.Should().Be(bookmarkedAt);
+        result.Articles.Items.Single().Article.IsBookmarked.Should().BeTrue();
     }
 
     [Fact]
     public async Task Handle_WhenUserHasNoBookmarks_ShouldReturnEmptyPage()
     {
         // Arrange
-        _articleRepositoryMock.SetupGetBookmarkedArticlesAsync(new List<ArticleEntity>(), totalCount: 0);
+        _articleRepositoryMock.SetupGetBookmarkedArticlesAsync(new List<BookmarkedArticleActivity>(), totalCount: 0);
 
-        var query = new PublicGetMyArticleBookmarksQuery(
+        var query = new PublicGetOwnArticleBookmarksQuery(
             UserId: UserId,
             PaginatedRequest: new PaginatedRequest(PageIndex: 0, PageSize: 10)
         );
 
         // Act
-        PublicGetMyArticleBookmarksResult result = await _handler.Handle(query, CancellationToken.None);
+        PublicGetOwnArticleBookmarksResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.Articles.Items.Should().BeEmpty();
