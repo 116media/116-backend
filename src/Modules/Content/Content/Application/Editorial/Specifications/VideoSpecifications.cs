@@ -195,3 +195,27 @@ public class FreeVideoSpecification : Specification<VideoEntity>
         return video => video.Status == EnumContentStatus.Published && video.CustomerId == null;
     }
 }
+
+/// <summary>
+/// Specification that matches all video ratings belonging to a specific user.
+/// </summary>
+public class VideoRatingByUserIdSpecification(Guid userId) : Specification<VideoRatingEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<VideoRatingEntity, bool>> ToExpression()
+    {
+        return rating => rating.UserId == userId;
+    }
+}
+
+/// <summary>
+/// Specification that matches all video shares belonging to a specific user.
+/// </summary>
+public class VideoShareByUserIdSpecification(Guid userId) : Specification<VideoShareEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<VideoShareEntity, bool>> ToExpression()
+    {
+        return share => share.UserId == userId;
+    }
+}
