@@ -80,3 +80,39 @@ public class ShortVideoBookmarkByUserAndShortVideoSpecification(Guid userId, Gui
         return bookmark => bookmark.UserId == userId && bookmark.ShortVideoId == shortVideoId;
     }
 }
+
+/// <summary>
+/// Specification that matches all short video likes belonging to a specific user.
+/// </summary>
+public class ShortVideoLikeByUserIdSpecification(Guid userId) : Specification<ShortVideoLikeEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ShortVideoLikeEntity, bool>> ToExpression()
+    {
+        return like => like.UserId == userId;
+    }
+}
+
+/// <summary>
+/// Specification that matches all short video bookmarks belonging to a specific user.
+/// </summary>
+public class ShortVideoBookmarkByUserIdSpecification(Guid userId) : Specification<ShortVideoBookmarkEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ShortVideoBookmarkEntity, bool>> ToExpression()
+    {
+        return bookmark => bookmark.UserId == userId;
+    }
+}
+
+/// <summary>
+/// Specification that matches all short video shares belonging to a specific user.
+/// </summary>
+public class ShortVideoShareByUserIdSpecification(Guid userId) : Specification<ShortVideoShareEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ShortVideoShareEntity, bool>> ToExpression()
+    {
+        return share => share.UserId == userId;
+    }
+}
