@@ -1,14 +1,14 @@
 using _116.Shared.Application.Metadata;
 
-namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetMyArticleBookmarks;
+namespace _116.Content.Application.Interactions.UseCases.Public.Queries.GetOwnArticleBookmarks;
 
 /// <summary>
 /// Contains metadata information for the get my article bookmarks route.
 /// </summary>
-public static class PublicGetMyArticleBookmarksMetaField
+public static class PublicGetOwnArticleBookmarksMetaField
 {
-    public static readonly RouteMetadata GetMyArticleBookmarks = new(
-        "PublicGetMyArticleBookmarks",
+    public static readonly RouteMetadata GetOwnArticleBookmarks = new(
+        "PublicGetOwnArticleBookmarks",
         "Get my bookmarked articles",
         """
             Returns a paginated list of articles bookmarked by the authenticated user.
