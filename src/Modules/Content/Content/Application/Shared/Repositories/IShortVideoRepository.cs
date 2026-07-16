@@ -4,6 +4,16 @@ using _116.Shared.Domain;
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
+/// Repository projection for one short video in one of the authenticated user's activity
+/// collections (liked, bookmarked, or shared).
+/// </summary>
+public sealed record ShortVideoActivity(
+    ShortVideoEntity ShortVideo,
+    DateTimeOffset LastInteractedAt,
+    int InteractionCount = 1
+);
+
+/// <summary>
 /// Repository interface for short video data access operations.
 /// </summary>
 public interface IShortVideoRepository : IRepository<ShortVideoEntity>
@@ -53,6 +63,36 @@ public interface IShortVideoRepository : IRepository<ShortVideoEntity>
     Task<(IReadOnlySet<Guid> Liked, IReadOnlySet<Guid> Bookmarked)> GetLikedAndBookmarkedIdsAsync(
         Guid? currentUserId,
         IReadOnlyCollection<Guid> shortVideoIds,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Retrieves active short videos liked by the user, newest like first with stable id ties.
+    /// </summary>
+    Task<(List<ShortVideoActivity> Items, int TotalCount)> GetLikedShortVideosAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Retrieves active short videos bookmarked by the user, newest bookmark first with stable id ties.
+    /// </summary>
+    Task<(List<ShortVideoActivity> Items, int TotalCount)> GetBookmarkedShortVideosAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Retrieves active short videos shared by the user, grouped by short and ordered by latest share.
+    /// </summary>
+    Task<(List<ShortVideoActivity> Items, int TotalCount)> GetSharedShortVideosAsync(
+        Guid userId,
+        int page,
+        int pageSize,
         CancellationToken cancellationToken = default
     );
 
