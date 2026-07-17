@@ -56,6 +56,7 @@ public class PlaylistMapperTests : BaseContentHandlerTest
         var userId = Guid.NewGuid();
         VideoEntity video = VideoFactory.Create(CategoryId);
         video.UpdateRating(average: 4.5m, count: 20);
+        video.IncrementShareCount();
 
         PlaylistEntity playlist = PlaylistFactory.Create(userId);
         playlist.Videos.Add(LinkVideo(playlist.Id, video, sortOrder: 1));
@@ -75,6 +76,7 @@ public class PlaylistMapperTests : BaseContentHandlerTest
         mapped.Slug.Should().Be(video.Slug);
         mapped.CategoryName.Should().BeEmpty();
         mapped.PublishedAt.Should().Be(video.PublishedAt);
+        mapped.ShareCount.Should().Be(1);
         mapped.RatingAverage.Should().Be(4.5m);
         mapped.RatingCount.Should().Be(20);
         mapped.SortOrder.Should().Be(1);
