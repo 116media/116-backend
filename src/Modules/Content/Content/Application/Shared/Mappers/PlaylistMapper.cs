@@ -25,6 +25,7 @@ public static class PlaylistMapper
             .Map(dest => dest.CategoryName, src => src.Video.Category != null ? src.Video.Category.Name : string.Empty)
             .Map(dest => dest.ThumbnailUrl, _ => (string?)null)
             .Map(dest => dest.PublishedAt, src => src.Video.PublishedAt)
+            .Map(dest => dest.ShareCount, src => src.Video.ShareCount)
             .Map(dest => dest.RatingAverage, src => src.Video.RatingAverage)
             .Map(dest => dest.RatingCount, src => src.Video.RatingCount)
             .Map(dest => dest.SortOrder, src => src.SortOrder);
@@ -60,6 +61,7 @@ public static class PlaylistMapper
                 playlistVideo.Video.Category?.Name ?? string.Empty,
                 null,
                 playlistVideo.Video.PublishedAt,
+                playlistVideo.Video.ShareCount,
                 playlistVideo.Video.RatingAverage,
                 playlistVideo.Video.RatingCount,
                 playlistVideo.SortOrder
