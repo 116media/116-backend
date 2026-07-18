@@ -64,4 +64,87 @@ public class PublicGetPublicShortBySlugEndpointV1Tests(PostgresFixture db) : Bas
 
         await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
+
+    [Fact]
+    public async Task GetShortBySlug_WhenVisitorLikedAndBookmarked_ReturnsTrueFlags()
+    {
+        var userId = Guid.NewGuid();
+        ShortVideoEntity shortVideo = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.Create();
+            ctx.ShortVideos.Add(entity);
+            ctx.ShortVideoLikes.Add(ShortVideoLikeEntity.Create(Guid.NewGuid(), userId, entity.Id));
+            ctx.ShortVideoBookmarks.Add(ShortVideoBookmarkEntity.Create(Guid.NewGuid(), userId, entity.Id));
+            return entity;
+        });
+
+        Client.AuthenticateAs(userId, "Visitor");
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Shorts}/{shortVideo.Slug}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        PublicGetPublicShortBySlugResponse body = await response.ReadAsAsync<PublicGetPublicShortBySlugResponse>();
+        body.ShortVideo.IsLiked.Should().BeTrue();
+        body.ShortVideo.IsBookmarked.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetShortBySlug_WhenAnonymous_ReturnsFalseFlags()
+    {
+        ShortVideoEntity shortVideo = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.Create();
+            ctx.ShortVideos.Add(entity);
+            ctx.ShortVideoLikes.Add(ShortVideoLikeEntity.Create(Guid.NewGuid(), Guid.NewGuid(), entity.Id));
+            return entity;
+        });
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Shorts}/{shortVideo.Slug}");
+
+        PublicGetPublicShortBySlugResponse body = await response.ReadAsAsync<PublicGetPublicShortBySlugResponse>();
+        body.ShortVideo.IsLiked.Should().BeFalse();
+        body.ShortVideo.IsBookmarked.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetShortBySlug_WhenDifferentUserLiked_ReturnsFalseFlagsForCaller()
+    {
+        var likerId = Guid.NewGuid();
+        ShortVideoEntity shortVideo = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.Create();
+            ctx.ShortVideos.Add(entity);
+            ctx.ShortVideoLikes.Add(ShortVideoLikeEntity.Create(Guid.NewGuid(), likerId, entity.Id));
+            return entity;
+        });
+
+        Client.AuthenticateAs(Guid.NewGuid(), "Visitor");
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Shorts}/{shortVideo.Slug}");
+
+        PublicGetPublicShortBySlugResponse body = await response.ReadAsAsync<PublicGetPublicShortBySlugResponse>();
+        body.ShortVideo.IsLiked.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetShortBySlug_ResolvesAuthorProfile()
+    {
+        ShortVideoEntity shortVideo = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.CreateWithAuthorId(TestUser.AdminId);
+            ctx.ShortVideos.Add(entity);
+            return entity;
+        });
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Shorts}/{shortVideo.Slug}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        PublicGetPublicShortBySlugResponse body = await response.ReadAsAsync<PublicGetPublicShortBySlugResponse>();
+        body.ShortVideo.Author.Should().NotBeNull();
+        body.ShortVideo.Author!.UserName.Should().NotBeNullOrEmpty();
+    }
 }

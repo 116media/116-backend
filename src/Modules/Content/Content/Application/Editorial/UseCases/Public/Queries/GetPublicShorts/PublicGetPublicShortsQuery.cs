@@ -10,7 +10,8 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicSh
 /// </summary>
 /// <param name="PaginatedRequest">Pagination parameters (page index and page size).</param>
 /// <param name="Search">Optional search term matched against title.</param>
-public record PublicGetPublicShortsQuery(PaginatedRequest PaginatedRequest, string? Search)
+/// <param name="CurrentUserId">The requesting user id, or null when anonymous; seeds per-user flags.</param>
+public record PublicGetPublicShortsQuery(PaginatedRequest PaginatedRequest, string? Search, Guid? CurrentUserId = null)
     : IQuery<PublicGetPublicShortsResult>;
 
 /// <summary>

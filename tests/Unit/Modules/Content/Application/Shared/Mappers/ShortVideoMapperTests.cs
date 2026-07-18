@@ -3,9 +3,12 @@ using _116.Content.Application.Shared.Mappers;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
+using _116.Identity.Contracts.Application;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common;
+using _116.Unit.Tests.Common.Mocks.Repositories;
+using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -18,7 +21,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Shared.Mappers;
 /// </summary>
 public class ShortVideoMapperTests : BaseContentHandlerTest
 {
-    private readonly Mock<IFileRepository> _fileRepositoryMock = new();
+    private readonly Mock<IFileRepository> _fileRepositoryMock = MockFileRepository.Create();
 
     private void SetupFile(Guid fileId, FileEntity file)
     {
@@ -147,6 +150,220 @@ public class ShortVideoMapperTests : BaseContentHandlerTest
 
         // Assert
         dtos.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region per-user flags
+
+    [Fact]
+    public async Task ToShortVideoDtoAsync_WhenFlagsProvided_ShouldStampThem()
+    {
+        // Arrange
+        ShortVideoEntity entity = ShortVideoFactory.Create();
+
+        // Act
+        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None,
+            isLiked: true,
+            isBookmarked: true
+        );
+
+        // Assert
+        dto.IsLiked.Should().BeTrue();
+        dto.IsBookmarked.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ToShortVideoDtoAsync_WhenFlagsOmitted_ShouldDefaultToFalse()
+    {
+        // Arrange
+        ShortVideoEntity entity = ShortVideoFactory.Create();
+
+        // Act
+        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            CancellationToken.None
+        );
+
+        // Assert
+        dto.IsLiked.Should().BeFalse();
+        dto.IsBookmarked.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ToShortVideoDtosAsync_WithFlagSets_ShouldStampEachEntityFromItsMembership()
+    {
+        // Arrange
+        ShortVideoEntity liked = ShortVideoFactory.Create();
+        ShortVideoEntity bookmarked = ShortVideoFactory.Create();
+        ShortVideoEntity neither = ShortVideoFactory.Create();
+        IReadOnlyList<ShortVideoEntity> entities = [liked, bookmarked, neither];
+
+        IReadOnlySet<Guid> likedIds = new HashSet<Guid> { liked.Id };
+        IReadOnlySet<Guid> bookmarkedIds = new HashSet<Guid> { bookmarked.Id };
+
+        // Act
+        IReadOnlyList<ShortVideoDto> dtos = await entities.ToShortVideoDtosAsync(
+            Mapper,
+            _fileRepositoryMock.Object,
+            likedIds,
+            bookmarkedIds,
+            CancellationToken.None
+        );
+
+        // Assert
+        dtos.Single(dto => dto.Id == liked.Id).IsLiked.Should().BeTrue();
+        dtos.Single(dto => dto.Id == liked.Id).IsBookmarked.Should().BeFalse();
+        dtos.Single(dto => dto.Id == bookmarked.Id).IsBookmarked.Should().BeTrue();
+        dtos.Single(dto => dto.Id == bookmarked.Id).IsLiked.Should().BeFalse();
+        dtos.Single(dto => dto.Id == neither.Id).IsLiked.Should().BeFalse();
+        dtos.Single(dto => dto.Id == neither.Id).IsBookmarked.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region author + flags
+
+    [Fact]
+    public async Task ToShortVideoDtoAsync_WithAuthorAndFlags_ShouldResolveBoth()
+    {
+        // Arrange
+        ShortVideoEntity entity = ShortVideoFactory.Create();
+        var userLookup = new Mock<IUserLookupService>();
+        userLookup
+            .Setup(x => x.GetAuthorInfoByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AuthorInfo("kinix_editor", "editor@example.com", null, "Admin"));
+
+        // Act
+        ShortVideoDto dto = await entity.ToShortVideoDtoAsync(
+            Mapper,
+            userLookup.Object,
+            _fileRepositoryMock.Object,
+            CancellationToken.None,
+            isLiked: true,
+            isBookmarked: true
+        );
+
+        // Assert
+        dto.Author.Should().NotBeNull();
+        dto.Author!.UserName.Should().Be("kinix_editor");
+        dto.IsLiked.Should().BeTrue();
+        dto.IsBookmarked.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ToShortVideoDtosAsync_WithAuthorAndFlagSets_ShouldBatchResolveAndStampFlags()
+    {
+        // Arrange
+        ShortVideoEntity liked = ShortVideoFactory.Create();
+        ShortVideoEntity other = ShortVideoFactory.Create();
+        IReadOnlyList<ShortVideoEntity> entities = [liked, other];
+
+        var authors = new Dictionary<Guid, AuthorInfo>
+        {
+            [liked.AuthorId] = new AuthorInfo("kinix_editor", null, null, "Admin"),
+            [other.AuthorId] = new AuthorInfo("kinix_editor", null, null, "Admin"),
+        };
+        Mock<IUserLookupService> userLookup = MockUserLookupService.Create().SetupGetAuthorInfosByIds(authors);
+
+        // Act
+        IReadOnlyList<ShortVideoDto> dtos = await entities.ToShortVideoDtosAsync(
+            Mapper,
+            userLookup.Object,
+            _fileRepositoryMock.Object,
+            new HashSet<Guid> { liked.Id },
+            new HashSet<Guid>(),
+            CancellationToken.None
+        );
+
+        // Assert
+        dtos.Should().OnlyContain(dto => dto.Author != null && dto.Author.UserName == "kinix_editor");
+        dtos.Single(dto => dto.Id == liked.Id).IsLiked.Should().BeTrue();
+        dtos.Single(dto => dto.Id == other.Id).IsLiked.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ToShortVideoDtosAsync_ShouldBatchAuthorsAndFilesInOneQueryEach()
+    {
+        // Arrange
+        List<ShortVideoEntity> shorts = ShortVideoFactory.CreateMany(4);
+        Mock<IUserLookupService> userLookup = MockUserLookupService.Create();
+
+        // Act
+        await shorts.ToShortVideoDtosAsync(
+            Mapper,
+            userLookup.Object,
+            _fileRepositoryMock.Object,
+            new HashSet<Guid>(),
+            new HashSet<Guid>(),
+            CancellationToken.None
+        );
+
+        // Assert — one batch call each, not one per item (no N+1)
+        userLookup.VerifyGetAuthorInfosByIdsCalledOnce();
+        _fileRepositoryMock.VerifyGetByIdsCalledOnce();
+        _fileRepositoryMock.Verify(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public void ToShortVideoDto_IoFree_ShouldResolveUrlsAuthorAndFlagsFromMaps()
+    {
+        // Arrange
+        ShortVideoEntity entity = ShortVideoFactory.Create();
+        var files = new Dictionary<Guid, FileEntity>
+        {
+            [entity.VideoFileId!.Value] = FileFactory.CreateWithStorageUrl("https://cdn.example.com/short.mp4"),
+        };
+        var authors = new Dictionary<Guid, AuthorInfo>
+        {
+            [entity.AuthorId] = new AuthorInfo("editor", null, null, "Admin"),
+        };
+
+        // Act
+        ShortVideoDto dto = entity.ToShortVideoDto(
+            Mapper,
+            files,
+            authors,
+            new HashSet<Guid> { entity.Id },
+            new HashSet<Guid>()
+        );
+
+        // Assert
+        dto.VideoUrl.Should().Be("https://cdn.example.com/short.mp4");
+        dto.Author.Should().NotBeNull();
+        dto.Author!.UserName.Should().Be("editor");
+        dto.IsLiked.Should().BeTrue();
+        dto.IsBookmarked.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ToShortVideoDto_IoFree_WhenThumbnailAndAvatarInMaps_ShouldResolveThem()
+    {
+        // Arrange — an uploaded thumbnail takes precedence over the auto-generated URL,
+        // and the author's avatar resolves from the same pre-fetched file map
+        ShortVideoEntity entity = ShortVideoFactory.CreateWithThumbnail();
+        var avatarFileId = Guid.NewGuid();
+        var files = new Dictionary<Guid, FileEntity>
+        {
+            [entity.VideoFileId!.Value] = FileFactory.CreateWithStorageUrl("https://cdn.example.com/short.mp4"),
+            [entity.ThumbnailFileId!.Value] = FileFactory.CreateWithStorageUrl("https://cdn.example.com/thumb.jpg"),
+            [avatarFileId] = FileFactory.CreateWithStorageUrl("https://cdn.example.com/avatar.png"),
+        };
+        var authors = new Dictionary<Guid, AuthorInfo>
+        {
+            [entity.AuthorId] = new AuthorInfo("editor", "editor@116.com", avatarFileId, "Admin"),
+        };
+
+        // Act
+        ShortVideoDto dto = entity.ToShortVideoDto(Mapper, files, authors, new HashSet<Guid>(), new HashSet<Guid>());
+
+        // Assert
+        dto.ThumbnailUrl.Should().Be("https://cdn.example.com/thumb.jpg");
+        dto.Author!.AvatarUrl.Should().Be("https://cdn.example.com/avatar.png");
     }
 
     #endregion

@@ -40,4 +40,51 @@ public class PublicGetPublicShortsEndpointV1Tests(PostgresFixture db) : BaseApiT
         body.ShortVideos.PageIndex.Should().Be(0);
         body.ShortVideos.PageSize.Should().Be(10);
     }
+
+    [Fact]
+    public async Task GetShorts_WhenVisitorLikedOne_StampsFlagOnlyOnThatItem()
+    {
+        var userId = Guid.NewGuid();
+        ShortVideoEntity likedShort = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.Create();
+            ctx.ShortVideos.Add(entity);
+            ctx.ShortVideoLikes.Add(ShortVideoLikeEntity.Create(Guid.NewGuid(), userId, entity.Id));
+            return entity;
+        });
+        ShortVideoEntity otherShort = await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.Create();
+            ctx.ShortVideos.Add(entity);
+            return entity;
+        });
+
+        Client.AuthenticateAs(userId, "Visitor");
+
+        var response = await Client.GetAsync(ApiRoutes.Public.Shorts);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        PublicGetPublicShortsResponse body = await response.ReadAsAsync<PublicGetPublicShortsResponse>();
+        body.ShortVideos.Items.Single(item => item.Id == likedShort.Id).IsLiked.Should().BeTrue();
+        body.ShortVideos.Items.Single(item => item.Id == otherShort.Id).IsLiked.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetShorts_WhenAnonymous_ReturnsFalseFlags()
+    {
+        await SeedAsync<ContentDbContext, ShortVideoEntity>(ctx =>
+        {
+            ShortVideoEntity entity = ShortVideoFactory.Create();
+            ctx.ShortVideos.Add(entity);
+            ctx.ShortVideoLikes.Add(ShortVideoLikeEntity.Create(Guid.NewGuid(), Guid.NewGuid(), entity.Id));
+            return entity;
+        });
+
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync(ApiRoutes.Public.Shorts);
+
+        PublicGetPublicShortsResponse body = await response.ReadAsAsync<PublicGetPublicShortsResponse>();
+        body.ShortVideos.Items.Should().OnlyContain(item => !item.IsLiked && !item.IsBookmarked);
+    }
 }

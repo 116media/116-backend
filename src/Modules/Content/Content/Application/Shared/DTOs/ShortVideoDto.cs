@@ -16,6 +16,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// thumbnail was uploaded, otherwise auto-generated from the video file URL.
 /// </param>
 /// <param name="VideoId">The parent full video UUID, or null for standalone shorts.</param>
+/// <param name="VideoSlug">The parent full video's slug for deep-linking, or null for standalone shorts.</param>
 /// <param name="HasFullVideo">Whether this short is a teaser linked to a full-length video.</param>
 /// <param name="IsActive">Whether the short video is currently visible to users.</param>
 /// <param name="ViewCount">The cached view count.</param>
@@ -24,6 +25,12 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="BookmarkCount">The cached bookmark count.</param>
 /// <param name="AuthorId">The identity user UUID of the author.</param>
 /// <param name="Author">The resolved author profile, or null when listing.</param>
+/// <param name="IsLiked">
+/// Whether the requesting user has liked this short video. Always false for anonymous requests.
+/// </param>
+/// <param name="IsBookmarked">
+/// Whether the requesting user has bookmarked this short video. Always false for anonymous requests.
+/// </param>
 public record ShortVideoDto(
     Guid Id,
     string Title,
@@ -31,6 +38,7 @@ public record ShortVideoDto(
     string? VideoUrl,
     string? ThumbnailUrl,
     Guid? VideoId,
+    string? VideoSlug,
     bool HasFullVideo,
     bool IsActive,
     int ViewCount,
@@ -38,5 +46,7 @@ public record ShortVideoDto(
     int ShareCount,
     int BookmarkCount,
     string AuthorId,
-    AuthorDto? Author = null
+    AuthorDto? Author = null,
+    bool IsLiked = false,
+    bool IsBookmarked = false
 ) : AuditableDto;

@@ -26,6 +26,37 @@ public interface IShortVideoRepository : IRepository<ShortVideoEntity>
     );
 
     /// <summary>
+    /// Retrieves one page of active short videos ordered by a per-session randomized shuffle
+    /// (each row's stable <c>FeedRank</c> XOR the session seed), using keyset pagination so the
+    /// ordering never drifts or repeats across pages.
+    /// </summary>
+    /// <param name="seed">The session shuffle seed; the same seed yields the same ordering.</param>
+    /// <param name="afterSortKey">The last returned item's sort key, or null for the first page.</param>
+    /// <param name="limit">The maximum number of short videos to return.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The ordered slice of active short videos after the cursor position.</returns>
+    Task<IReadOnlyList<ShortVideoEntity>> GetRandomizedFeedAsync(
+        long seed,
+        long? afterSortKey,
+        int limit,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Resolves which of the given short videos the user has liked and bookmarked, in one
+    /// query per interaction type. Returns empty sets for anonymous callers or an empty id list.
+    /// </summary>
+    /// <param name="currentUserId">The requesting user id, or null when anonymous.</param>
+    /// <param name="shortVideoIds">The short video ids to resolve interaction state for.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The sets of liked and bookmarked short video ids.</returns>
+    Task<(IReadOnlySet<Guid> Liked, IReadOnlySet<Guid> Bookmarked)> GetLikedAndBookmarkedIdsAsync(
+        Guid? currentUserId,
+        IReadOnlyCollection<Guid> shortVideoIds,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Retrieves a short video by its unique identifier.
     /// Returns null if not found.
     /// </summary>

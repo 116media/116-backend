@@ -62,6 +62,13 @@ public class ShortVideoEntity : Aggregate<Guid>
     public bool IsActive { get; private set; } = true;
 
     /// <summary>
+    /// Stable, uniformly-random 64-bit rank used to shuffle the public feed. Combined with a
+    /// per-session seed via bitwise XOR, it yields a fresh random ordering each session while
+    /// keeping keyset pagination stable. Assigned once at creation and never changed.
+    /// </summary>
+    public long FeedRank { get; private set; }
+
+    /// <summary>
     /// Cached view count.
     /// </summary>
     public int ViewCount { get; private set; }
@@ -99,6 +106,12 @@ public class ShortVideoEntity : Aggregate<Guid>
     private ShortVideoEntity() { }
 
     /// <summary>
+    /// Draws a new uniformly-random 64-bit feed rank. Collisions are astronomically unlikely
+    /// and guarded by a unique index, matching how <c>Guid</c> identities are treated.
+    /// </summary>
+    private static long NewFeedRank() => Random.Shared.NextInt64(long.MinValue, long.MaxValue);
+
+    /// <summary>
     /// Creates a standalone short video draft with no parent video and no video file yet.
     /// The video file is attached afterwards via the dedicated upload endpoint; the draft stays
     /// inactive (hidden from the feed) until a file is uploaded and it is activated.
@@ -130,6 +143,7 @@ public class ShortVideoEntity : Aggregate<Guid>
             AuthorId = authorId,
             HasFullVideo = false,
             IsActive = false,
+            FeedRank = NewFeedRank(),
         };
     }
 
@@ -166,6 +180,7 @@ public class ShortVideoEntity : Aggregate<Guid>
             AuthorId = authorId,
             HasFullVideo = true,
             IsActive = false,
+            FeedRank = NewFeedRank(),
         };
     }
 
