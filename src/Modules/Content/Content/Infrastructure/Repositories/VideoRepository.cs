@@ -378,4 +378,31 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
 
         return await context.Videos.ApplySpecification(specification: specification).CountAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<(List<VideoEntity> Videos, int TotalCount)> GetPublishedByArtistAsync(
+        Guid artistId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        Specification<VideoEntity> specification = new VideoByStatusSpecification(EnumContentStatus.Published).And(
+            new VideoByArtistSpecification(artistId: artistId)
+        );
+
+        IQueryable<VideoEntity> query = context
+            .Videos.Include(v => v.Category)
+            .ApplySpecification(specification: specification);
+
+        int totalCount = await query.CountAsync(cancellationToken);
+
+        List<VideoEntity> videos = await query
+            .OrderByDescending(v => v.PublishedAt ?? v.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (videos, totalCount);
+    }
 }
