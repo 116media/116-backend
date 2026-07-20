@@ -23,6 +23,61 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("_116.Content.Domain.Entities.AlbumEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ArtistId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("artist_id");
+
+                    b.Property<Guid?>("CoverImageFileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cover_image_file_id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Label")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("label");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<short?>("ReleaseYear")
+                        .HasColumnType("smallint")
+                        .HasColumnName("release_year");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_albums");
+
+                    b.HasIndex("ArtistId")
+                        .HasDatabaseName("ix_albums_artist_id");
+
+                    b.ToTable("albums", "content");
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleBookmarkEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -549,6 +604,72 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.ToTable("article_tags", "content");
                 });
 
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArtistEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AvatarFileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("avatar_file_id");
+
+                    b.Property<string>("Bio")
+                        .HasColumnType("text")
+                        .HasColumnName("bio");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(220)
+                        .HasColumnType("character varying(220)")
+                        .HasColumnName("slug");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateTimeOffset?>("VerifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("verified_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_artists");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_artists_slug");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_artists_user_id")
+                        .HasFilter("user_id IS NOT NULL");
+
+                    b.ToTable("artists", "content");
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.CategoryEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -579,6 +700,12 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(true)
                         .HasColumnName("is_active");
+
+                    b.Property<bool>("IsDefaultForLyrics")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_default_for_lyrics");
 
                     b.Property<bool>("IsExclusive")
                         .ValueGeneratedOnAdd()
@@ -631,6 +758,11 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ContentTypeId")
                         .HasDatabaseName("ix_categories_content_type_id");
+
+                    b.HasIndex("IsDefaultForLyrics")
+                        .IsUnique()
+                        .HasDatabaseName("ix_categories_is_default_for_lyrics")
+                        .HasFilter("is_default_for_lyrics = true");
 
                     b.HasIndex("IsExclusive")
                         .IsUnique()
@@ -1052,6 +1184,19 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Album")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("album");
+
+                    b.Property<Guid?>("AlbumId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("album_id");
+
+                    b.Property<Guid?>("ArtistId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("artist_id");
+
                     b.Property<string>("ArtistName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -1062,6 +1207,14 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("author_id");
 
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
+
+                    b.Property<Guid?>("CoverImageFileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cover_image_file_id");
+
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -1070,6 +1223,21 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
+                    b.Property<Guid?>("CustomerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
+
+                    b.Property<bool>("IsPromoted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_promoted");
+
+                    b.Property<string>("Label")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("label");
+
                     b.Property<string>("Language")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -1077,6 +1245,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(5)")
                         .HasDefaultValue("fr")
                         .HasColumnName("language");
+
+                    b.Property<int>("LikeCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("like_count");
 
                     b.Property<string>("LyricsText")
                         .IsRequired()
@@ -1093,15 +1265,76 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(70)")
                         .HasColumnName("meta_title");
 
+                    b.Property<Guid?>("OrderItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_item_id");
+
+                    b.Property<string>("Producer")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("producer");
+
+                    b.Property<DateTimeOffset?>("PromotedUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("promoted_until");
+
+                    b.Property<DateTimeOffset?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("rejection_reason");
+
+                    b.Property<short?>("ReleaseYear")
+                        .HasColumnType("smallint")
+                        .HasColumnName("release_year");
+
+                    b.Property<int>("ShareCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("share_count");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(220)
+                        .HasColumnType("character varying(220)")
+                        .HasColumnName("slug");
+
                     b.Property<string>("SongTitle")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
                         .HasColumnName("song_title");
 
+                    b.Property<string>("Songwriter")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("songwriter");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Draft")
+                        .HasColumnName("status");
+
                     b.Property<string>("StructuredData")
                         .HasColumnType("jsonb")
                         .HasColumnName("structured_data");
+
+                    b.Property<DateTimeOffset?>("UnpromotedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("unpromoted_at");
+
+                    b.Property<string>("UnpromotedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("unpromoted_by");
+
+                    b.Property<string>("UnpromotedReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("unpromoted_reason");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1115,13 +1348,586 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("video_id");
 
+                    b.Property<int>("ViewCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("view_count");
+
                     b.HasKey("Id")
                         .HasName("pk_lyrics");
+
+                    b.HasIndex("AlbumId")
+                        .HasDatabaseName("ix_lyrics_album_id");
+
+                    b.HasIndex("ArtistId")
+                        .HasDatabaseName("ix_lyrics_artist_id");
+
+                    b.HasIndex("CategoryId")
+                        .HasDatabaseName("ix_lyrics_category_id");
+
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("ix_lyrics_customer_id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_lyrics_slug");
 
                     b.HasIndex("VideoId")
                         .HasDatabaseName("ix_lyrics_video_id");
 
                     b.ToTable("lyrics", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsLikeEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("LyricsId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lyrics_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_lyrics_likes");
+
+                    b.HasIndex("LyricsId")
+                        .HasDatabaseName("ix_lyrics_likes_lyrics_id");
+
+                    b.HasIndex("UserId", "LyricsId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_lyrics_likes_user_id_lyrics_id");
+
+                    b.ToTable("lyrics_likes", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsRevisionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid?>("DecidedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("decided_by_user_id");
+
+                    b.Property<string>("EditSummary")
+                        .HasColumnType("text")
+                        .HasColumnName("edit_summary");
+
+                    b.Property<Guid>("LyricsId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lyrics_id");
+
+                    b.Property<Guid>("ProposedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("proposed_by_user_id");
+
+                    b.Property<string>("ProposedText")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("proposed_text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Pending")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_lyrics_revisions");
+
+                    b.HasIndex("LyricsId")
+                        .HasDatabaseName("ix_lyrics_revisions_lyrics_id");
+
+                    b.ToTable("lyrics_revisions", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsRevisionVoteEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("text")
+                        .HasColumnName("comment");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("RevisionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("revision_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("Vote")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("vote");
+
+                    b.HasKey("Id")
+                        .HasName("pk_lyrics_revision_votes");
+
+                    b.HasIndex("RevisionId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_lyrics_revision_votes_revision_id_user_id");
+
+                    b.ToTable("lyrics_revision_votes", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsShareEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("LyricsId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lyrics_id");
+
+                    b.Property<string>("ShareChannel")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("share_channel");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_lyrics_shares");
+
+                    b.HasIndex("LyricsId")
+                        .HasDatabaseName("ix_lyrics_shares_lyrics_id");
+
+                    b.HasIndex("UserId", "CreatedAt", "LyricsId")
+                        .IsDescending(false, true, false)
+                        .HasDatabaseName("ix_lyrics_shares_user_created_lyrics")
+                        .HasFilter("user_id IS NOT NULL");
+
+                    b.ToTable("lyrics_shares", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsSubmissionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ArtistName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("artist_name");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)")
+                        .HasColumnName("language");
+
+                    b.Property<string>("LyricsText")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("lyrics_text");
+
+                    b.Property<Guid?>("PublishedLyricsId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("published_lyrics_id");
+
+                    b.Property<string>("ReviewNote")
+                        .HasColumnType("text")
+                        .HasColumnName("review_note");
+
+                    b.Property<Guid?>("ReviewedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reviewed_by_user_id");
+
+                    b.Property<string>("SongTitle")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("song_title");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Pending")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("SubmittedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("submitted_by_user_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_lyrics_submissions");
+
+                    b.ToTable("lyrics_submissions", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsTagEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("LyricsId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lyrics_id");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tag_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_lyrics_tags");
+
+                    b.HasIndex("TagId")
+                        .HasDatabaseName("ix_lyrics_tags_tag_id");
+
+                    b.HasIndex("LyricsId", "TagId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_lyrics_tags_lyrics_id_tag_id");
+
+                    b.ToTable("lyrics_tags", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsTranslationEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("language");
+
+                    b.Property<Guid>("LyricsId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lyrics_id");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("source");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_lyrics_translations");
+
+                    b.HasIndex("LyricsId", "Language")
+                        .IsUnique()
+                        .HasDatabaseName("ix_lyrics_translations_lyrics_id_language");
+
+                    b.ToTable("lyrics_translations", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsTranslationRevisionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid?>("DecidedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("decided_by_user_id");
+
+                    b.Property<string>("EditSummary")
+                        .HasColumnType("text")
+                        .HasColumnName("edit_summary");
+
+                    b.Property<Guid>("ProposedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("proposed_by_user_id");
+
+                    b.Property<string>("ProposedText")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("proposed_text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Pending")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TranslationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("translation_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_lyrics_translation_revisions");
+
+                    b.HasIndex("TranslationId")
+                        .HasDatabaseName("ix_lyrics_translation_revisions_translation_id");
+
+                    b.ToTable("lyrics_translation_revisions", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsTranslationVoteEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("text")
+                        .HasColumnName("comment");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("RevisionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("revision_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("Vote")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("vote");
+
+                    b.HasKey("Id")
+                        .HasName("pk_lyrics_translation_votes");
+
+                    b.HasIndex("RevisionId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_lyrics_translation_votes_revision_id_user_id");
+
+                    b.ToTable("lyrics_translation_votes", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsViewEventEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("DedupKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("dedup_key");
+
+                    b.Property<int>("DwellMs")
+                        .HasColumnType("integer")
+                        .HasColumnName("dwell_ms");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("ip_address");
+
+                    b.Property<bool>("IsCounted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_counted");
+
+                    b.Property<Guid>("LyricsId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lyrics_id");
+
+                    b.Property<double>("ScrollDepthRatio")
+                        .HasColumnType("double precision")
+                        .HasColumnName("scroll_depth_ratio");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("user_agent");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_lyrics_view_events");
+
+                    b.HasIndex("LyricsId", "DedupKey", "CreatedAt")
+                        .HasDatabaseName("ix_lyrics_view_events_lyrics_id_dedup_key_created_at");
+
+                    b.ToTable("lyrics_view_events", "content");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.PackageEntity", b =>
@@ -1737,6 +2543,64 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.ToTable("short_video_view_events", "content");
                 });
 
+            modelBuilder.Entity("_116.Content.Domain.Entities.StreamingLinkEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AlbumId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("album_id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid?>("LyricsId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lyrics_id");
+
+                    b.Property<int>("Platform")
+                        .HasColumnType("integer")
+                        .HasColumnName("platform");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("url");
+
+                    b.HasKey("Id")
+                        .HasName("pk_streaming_links");
+
+                    b.HasIndex("AlbumId", "Platform")
+                        .IsUnique()
+                        .HasDatabaseName("ix_streaming_links_album_id_platform");
+
+                    b.HasIndex("LyricsId", "Platform")
+                        .IsUnique()
+                        .HasDatabaseName("ix_streaming_links_lyrics_id_platform");
+
+                    b.ToTable("streaming_links", "content", t =>
+                        {
+                            t.HasCheckConstraint("ck_streaming_links_exactly_one_target", "(album_id IS NOT NULL AND lyrics_id IS NULL) OR (album_id IS NULL AND lyrics_id IS NOT NULL)");
+                        });
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.TagEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1792,6 +2656,10 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<Guid?>("ArtistId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("artist_id");
 
                     b.Property<Guid>("AuthorId")
                         .HasColumnType("uuid")
@@ -1941,6 +2809,9 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_videos");
+
+                    b.HasIndex("ArtistId")
+                        .HasDatabaseName("ix_videos_artist_id");
 
                     b.HasIndex("CategoryId")
                         .HasDatabaseName("ix_videos_category_id");
@@ -2103,6 +2974,15 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_video_tags_video_id_tag_id");
 
                     b.ToTable("video_tags", "content");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.AlbumEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.ArtistEntity", null)
+                        .WithMany()
+                        .HasForeignKey("ArtistId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_albums_artists_artist_id");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.ArticleBookmarkEntity", b =>
@@ -2351,13 +3231,149 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("_116.Content.Domain.Entities.LyricsEntity", b =>
                 {
+                    b.HasOne("_116.Content.Domain.Entities.AlbumEntity", null)
+                        .WithMany()
+                        .HasForeignKey("AlbumId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_lyrics_albums_album_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.ArtistEntity", null)
+                        .WithMany()
+                        .HasForeignKey("ArtistId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_lyrics_artists_artist_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.CategoryEntity", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_lyrics_categories_category_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.CustomerEntity", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_lyrics_customers_customer_id");
+
                     b.HasOne("_116.Content.Domain.Entities.VideoEntity", "Video")
                         .WithMany()
                         .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_lyrics_videos_video_id");
 
+                    b.Navigation("Category");
+
+                    b.Navigation("Customer");
+
                     b.Navigation("Video");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsLikeEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", "Lyrics")
+                        .WithMany()
+                        .HasForeignKey("LyricsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_lyrics_likes_lyrics_lyrics_id");
+
+                    b.Navigation("Lyrics");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsRevisionEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", null)
+                        .WithMany()
+                        .HasForeignKey("LyricsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_lyrics_revisions_lyrics_lyrics_id");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsRevisionVoteEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.LyricsRevisionEntity", null)
+                        .WithMany()
+                        .HasForeignKey("RevisionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_lyrics_revision_votes_lyrics_revisions_revision_id");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsShareEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", "Lyrics")
+                        .WithMany()
+                        .HasForeignKey("LyricsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_lyrics_shares_lyrics_lyrics_id");
+
+                    b.Navigation("Lyrics");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsTagEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", "Lyrics")
+                        .WithMany("Tags")
+                        .HasForeignKey("LyricsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_lyrics_tags_lyrics_lyrics_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.TagEntity", "Tag")
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_lyrics_tags_tags_tag_id");
+
+                    b.Navigation("Lyrics");
+
+                    b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsTranslationEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", null)
+                        .WithMany()
+                        .HasForeignKey("LyricsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_lyrics_translations_lyrics_lyrics_id");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsTranslationRevisionEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.LyricsTranslationEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TranslationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_lyrics_translation_revisions_lyrics_translations_translatio");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsTranslationVoteEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.LyricsTranslationRevisionEntity", null)
+                        .WithMany()
+                        .HasForeignKey("RevisionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_lyrics_translation_votes_lyrics_translation_revisions_revis");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsViewEventEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", "Lyrics")
+                        .WithMany()
+                        .HasForeignKey("LyricsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_lyrics_view_events_lyrics_lyrics_id");
+
+                    b.Navigation("Lyrics");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.PackageSlotEntity", b =>
@@ -2460,8 +3476,33 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.Navigation("ShortVideo");
                 });
 
+            modelBuilder.Entity("_116.Content.Domain.Entities.StreamingLinkEntity", b =>
+                {
+                    b.HasOne("_116.Content.Domain.Entities.AlbumEntity", "Album")
+                        .WithMany()
+                        .HasForeignKey("AlbumId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_streaming_links_albums_album_id");
+
+                    b.HasOne("_116.Content.Domain.Entities.LyricsEntity", "Lyrics")
+                        .WithMany()
+                        .HasForeignKey("LyricsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_streaming_links_lyrics_lyrics_id");
+
+                    b.Navigation("Album");
+
+                    b.Navigation("Lyrics");
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.VideoEntity", b =>
                 {
+                    b.HasOne("_116.Content.Domain.Entities.ArtistEntity", null)
+                        .WithMany()
+                        .HasForeignKey("ArtistId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_videos_artists_artist_id");
+
                     b.HasOne("_116.Content.Domain.Entities.CategoryEntity", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
@@ -2557,6 +3598,11 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("_116.Content.Domain.Entities.ContentOrderItemEntity", b =>
                 {
                     b.Navigation("Tiers");
+                });
+
+            modelBuilder.Entity("_116.Content.Domain.Entities.LyricsEntity", b =>
+                {
+                    b.Navigation("Tags");
                 });
 
             modelBuilder.Entity("_116.Content.Domain.Entities.PackageEntity", b =>
