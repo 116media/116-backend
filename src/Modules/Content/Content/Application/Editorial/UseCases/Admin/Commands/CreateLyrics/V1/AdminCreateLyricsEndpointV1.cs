@@ -18,24 +18,32 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyric
 /// <summary>
 /// Request model for creating a lyrics page.
 /// </summary>
+/// <param name="CategoryId">The category this lyrics page belongs to.</param>
 /// <param name="SongTitle">The title of the song.</param>
 /// <param name="ArtistName">The name of the performing artist.</param>
+/// <param name="Slug">The URL-safe slug for this lyrics page.</param>
 /// <param name="LyricsText">The full lyrics text of the song.</param>
 /// <param name="Language">The ISO 639-1 language code (e.g., "fr", "en", "ln").</param>
 /// <param name="VideoId">Optional parent video identifier.</param>
+/// <param name="CustomerId">The B2B customer who commissioned this lyrics page. Null for free content.</param>
+/// <param name="OrderItemId">The order item this lyrics page fulfils. Null for free content.</param>
 public record AdminCreateLyricsRequest(
+    Guid CategoryId,
     string SongTitle,
     string ArtistName,
+    string Slug,
     string LyricsText,
     string Language,
-    Guid? VideoId
+    Guid? VideoId,
+    Guid? CustomerId,
+    Guid? OrderItemId
 );
 
 /// <summary>
 /// Response model for successful lyrics creation.
 /// </summary>
 /// <param name="Lyrics">The created lyrics information.</param>
-public record AdminCreateLyricsResponse(LyricsDto Lyrics);
+public record AdminCreateLyricsResponse(LyricsDetailDto Lyrics);
 
 /// <summary>
 /// Defines the admin create lyrics endpoint.
@@ -68,12 +76,16 @@ public class AdminCreateLyricsEndpointV1 : ICarterModule
                     Guid authorId = claimsProvider.GetUserIdFromClaims(user: user);
 
                     var command = new AdminCreateLyricsCommand(
+                        CategoryId: request.CategoryId,
                         SongTitle: request.SongTitle,
                         ArtistName: request.ArtistName,
+                        Slug: request.Slug,
                         LyricsText: request.LyricsText,
                         Language: request.Language,
                         AuthorId: authorId,
-                        VideoId: request.VideoId
+                        VideoId: request.VideoId,
+                        CustomerId: request.CustomerId,
+                        OrderItemId: request.OrderItemId
                     );
 
                     AdminCreateLyricsResult result = await dispatcher.Send(request: command);
@@ -98,6 +110,7 @@ public class AdminCreateLyricsEndpointV1 : ICarterModule
             .ProducesProblem(statusCode: StatusCodes.Status400BadRequest)
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
+            .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
             .ProducesProblem(statusCode: StatusCodes.Status409Conflict)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
