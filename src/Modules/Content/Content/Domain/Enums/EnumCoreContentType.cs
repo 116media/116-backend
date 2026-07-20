@@ -28,4 +28,9 @@ public enum EnumCoreContentType
     /// The actual type is identified by <c>CategoryId</c> and <c>ContentTypeId</c>.
     /// </summary>
     Custom,
+
+    /// <summary>
+    /// SEO-optimised song lyrics pages, standalone or linked to a video, artist, or album.
+    /// </summary>
+    Lyrics,
 }
