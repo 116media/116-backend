@@ -36,6 +36,10 @@ public class CategoryConfiguration : IEntityTypeConfiguration<CategoryEntity>
 
         builder.HasIndex(x => x.IsExclusive).IsUnique().HasFilter("is_exclusive = true");
 
+        builder.Property(x => x.IsDefaultForLyrics).IsRequired().HasDefaultValue(false);
+
+        builder.HasIndex(x => x.IsDefaultForLyrics).IsUnique().HasFilter("is_default_for_lyrics = true");
+
         builder.Property(x => x.PinnedToFeedAt);
 
         builder.HasIndex(x => x.PinnedToFeedAt).HasFilter("pinned_to_feed_at IS NOT NULL");
