@@ -11,6 +11,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPaymen
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
+/// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="contentOrderRepository">Repository for content order data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
@@ -18,6 +19,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPaymen
 public class AdminVerifyPaymentFactory(
     IArticleRepository articleRepository,
     IVideoRepository videoRepository,
+    ILyricsRepository lyricsRepository,
     ILookupRepository lookupRepository,
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
@@ -50,6 +52,14 @@ public class AdminVerifyPaymentFactory(
                 )
                 : null;
 
+            LyricsEntity? lyrics =
+                article is null && video is null
+                    ? await lyricsRepository.GetByOrderItemIdAsync(
+                        orderItemId: item.Id,
+                        cancellationToken: cancellationToken
+                    )
+                    : null;
+
             if (item.SocialBoost)
             {
                 article?.StampSocialBoost();
@@ -66,10 +76,12 @@ public class AdminVerifyPaymentFactory(
                 DateTimeOffset promotedUntil = DateTimeOffset.UtcNow.AddDays(promoLevel.DurationDays);
                 article?.StampPromotion(promotionLevelId: promoLevel.Id, until: promotedUntil);
                 video?.StampPromotion(promotionLevelId: promoLevel.Id, until: promotedUntil);
+                lyrics?.StampPromotion(promotionLevelId: promoLevel.Id, until: promotedUntil);
             }
 
             article?.MarkPendingReview();
             video?.MarkPendingReview();
+            lyrics?.MarkPendingReview();
 
             if (article is not null)
             {
@@ -79,6 +91,11 @@ public class AdminVerifyPaymentFactory(
             if (video is not null)
             {
                 videoRepository.Update(video: video);
+            }
+
+            if (lyrics is not null)
+            {
+                lyricsRepository.Update(lyrics: lyrics);
             }
         }
 
