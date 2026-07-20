@@ -175,6 +175,16 @@ public class CategoryRepository(ContentDbContext context) : ICategoryRepository
     }
 
     /// <inheritdoc />
+    public async Task<CategoryEntity?> GetDefaultLyricsCategoryAsync(CancellationToken cancellationToken = default)
+    {
+        var specification = new DefaultLyricsCategorySpecification();
+        return await context
+            .Categories.ApplySpecification(specification: specification)
+            .Include(c => c.ContentType)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<IReadOnlyList<CategoryEntity>> GetPinnedToFeedCategoriesAsync(
         Guid? contentTypeId = null,
         CancellationToken cancellationToken = default
