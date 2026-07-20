@@ -24,5 +24,16 @@ public class ArticleShareConfiguration : IEntityTypeConfiguration<ArticleShareEn
         builder.Property(x => x.CreatedAt).IsRequired();
 
         builder.HasOne(x => x.Article).WithMany().HasForeignKey(x => x.ArticleId).OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasIndex(x => new
+            {
+                x.UserId,
+                x.CreatedAt,
+                x.ArticleId,
+            })
+            .IsDescending(false, true, false)
+            .HasFilter("user_id IS NOT NULL")
+            .HasDatabaseName("ix_article_shares_user_created_article");
     }
 }

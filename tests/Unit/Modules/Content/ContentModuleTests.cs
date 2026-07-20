@@ -18,6 +18,7 @@ namespace _116.Unit.Tests.Modules.Content;
 /// <summary>
 /// Unit tests for <see cref="ContentModule"/>.
 /// </summary>
+[Collection("EnvironmentVariable")]
 public class ContentModuleTests : IDisposable
 {
     private readonly ServiceCollection _services;

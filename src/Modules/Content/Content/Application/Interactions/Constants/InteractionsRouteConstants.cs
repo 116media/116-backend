@@ -33,9 +33,19 @@ public static class InteractionsRouteConstants
     public const string Likes = "likes";
 
     /// <summary>
+    /// Route segment for the current user's liked-content collection.
+    /// </summary>
+    public const string Liked = "liked";
+
+    /// <summary>
     /// Route segment for bookmark sub-resources.
     /// </summary>
     public const string Bookmarks = "bookmarks";
+
+    /// <summary>
+    /// Route segment for the current user's bookmarked-content collection.
+    /// </summary>
+    public const string Bookmarked = "bookmarked";
 
     /// <summary>
     /// Route segment for share sub-resources.
@@ -43,9 +53,24 @@ public static class InteractionsRouteConstants
     public const string Shares = "shares";
 
     /// <summary>
+    /// Route segment for the current user's grouped share collection.
+    /// </summary>
+    public const string Shared = "shared";
+
+    /// <summary>
     /// Route segment for comment sub-resources.
     /// </summary>
     public const string Comments = "comments";
+
+    /// <summary>
+    /// Route segment for the current user's commented-content collection.
+    /// </summary>
+    public const string Commented = "commented";
+
+    /// <summary>
+    /// Route segment for resources belonging to the current user.
+    /// </summary>
+    public const string Me = "me";
 
     /// <summary>
     /// Route segment for reply sub-resources within a comment.
@@ -56,6 +81,11 @@ public static class InteractionsRouteConstants
     /// Route segment for rating sub-resources.
     /// </summary>
     public const string Ratings = "ratings";
+
+    /// <summary>
+    /// Route segment for the current user's rated-content collection.
+    /// </summary>
+    public const string Rated = "rated";
 
     /// <summary>
     /// Route segment for video sub-resources within playlists.

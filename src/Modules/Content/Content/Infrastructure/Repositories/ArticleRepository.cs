@@ -452,7 +452,7 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     }
 
     /// <inheritdoc />
-    public async Task<(List<ArticleEntity> Articles, int TotalCount)> GetBookmarkedArticlesAsync(
+    public async Task<(List<BookmarkedArticleActivity> Activities, int TotalCount)> GetBookmarkedArticlesAsync(
         Guid userId,
         int page,
         int pageSize,
@@ -462,19 +462,191 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
         var specification = new ArticleBookmarkByUserIdSpecification(userId: userId);
         IQueryable<ArticleBookmarkEntity> bookmarkQuery = context
             .ArticleBookmarks.ApplySpecification(specification: specification)
+            .Where(b => b.Article.Status == EnumContentStatus.Published)
             .Include(b => b.Article)
                 .ThenInclude(a => a.Category)
-            .OrderByDescending(b => b.CreatedAt);
+            .OrderByDescending(b => b.CreatedAt)
+            .ThenBy(b => b.ArticleId);
 
         int totalCount = await bookmarkQuery.CountAsync(cancellationToken);
 
-        List<ArticleEntity> articles = await bookmarkQuery
+        List<BookmarkedArticleActivity> activities = await bookmarkQuery
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(b => b.Article)
+            .Select(b => new BookmarkedArticleActivity(b.Article, b.CreatedAt ?? DateTime.MinValue))
             .ToListAsync(cancellationToken);
 
-        return (articles, totalCount);
+        return (activities, totalCount);
+    }
+
+    /// <inheritdoc />
+    public async Task<(List<CommentedArticleActivity> Activities, int TotalCount)> GetCommentedArticlesAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var commentByUserSpecification = new ArticleCommentByUserIdSpecification(userId: userId);
+        var groupedQuery = context
+            .ArticleComments.ApplySpecification(specification: commentByUserSpecification)
+            .Where(comment => !comment.IsDeleted && comment.Article.Status == EnumContentStatus.Published)
+            .GroupBy(comment => comment.ArticleId)
+            .Select(group => new
+            {
+                ArticleId = group.Key,
+                CommentCount = group.Count(),
+                LastCommentedAt = group.Max(comment => comment.CreatedAt),
+            });
+
+        int totalCount = await groupedQuery.CountAsync(cancellationToken);
+        var pageRows = await groupedQuery
+            .OrderByDescending(row => row.LastCommentedAt)
+            .ThenBy(row => row.ArticleId)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        if (pageRows.Count == 0)
+        {
+            return ([], totalCount);
+        }
+
+        Guid[] articleIds = pageRows.Select(row => row.ArticleId).ToArray();
+        Dictionary<Guid, ArticleEntity> articles = await context
+            .Articles.Where(article => articleIds.Contains(article.Id))
+            .Include(article => article.Category)
+            .ToDictionaryAsync(article => article.Id, cancellationToken);
+
+        List<ArticleCommentEntity> comments = await context
+            .ArticleComments.ApplySpecification(specification: commentByUserSpecification)
+            .Where(comment => !comment.IsDeleted && articleIds.Contains(comment.ArticleId))
+            .OrderByDescending(comment => comment.CreatedAt)
+            .ThenBy(comment => comment.Id)
+            .ToListAsync(cancellationToken);
+
+        Dictionary<Guid, ArticleCommentEntity> latestByArticle = comments
+            .GroupBy(comment => comment.ArticleId)
+            .ToDictionary(group => group.Key, group => group.First());
+
+        List<CommentedArticleActivity> activities = pageRows
+            .Select(row => new CommentedArticleActivity(
+                articles[row.ArticleId],
+                latestByArticle[row.ArticleId],
+                row.CommentCount,
+                row.LastCommentedAt ?? DateTime.MinValue
+            ))
+            .ToList();
+
+        return (activities, totalCount);
+    }
+
+    /// <inheritdoc />
+    public async Task<(List<ArticleActivity> Activities, int TotalCount)> GetLikedArticlesAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ArticleLikeByUserIdSpecification(userId: userId);
+        IQueryable<ArticleLikeEntity> query = context
+            .ArticleLikes.ApplySpecification(specification: specification)
+            .Where(like => like.Article.Status == EnumContentStatus.Published)
+            .Include(like => like.Article)
+                .ThenInclude(article => article.Category)
+            .OrderByDescending(like => like.CreatedAt)
+            .ThenBy(like => like.ArticleId);
+
+        int totalCount = await query.CountAsync(cancellationToken);
+        List<ArticleActivity> activities = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(like => new ArticleActivity(like.Article, like.CreatedAt ?? DateTime.MinValue, 1, null))
+            .ToListAsync(cancellationToken);
+
+        return (activities, totalCount);
+    }
+
+    /// <inheritdoc />
+    public async Task<(List<ArticleActivity> Activities, int TotalCount)> GetSharedArticlesAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ArticleShareByUserIdSpecification(userId: userId);
+        var groupedQuery = context
+            .ArticleShares.ApplySpecification(specification: specification)
+            .Where(share => share.Article.Status == EnumContentStatus.Published)
+            .GroupBy(share => share.ArticleId)
+            .Select(group => new
+            {
+                ArticleId = group.Key,
+                InteractionCount = group.Count(),
+                LastInteractedAt = group.Max(share => share.CreatedAt),
+                LastShareChannel = group
+                    .OrderByDescending(share => share.CreatedAt)
+                    .ThenBy(share => share.Id)
+                    .Select(share => share.ShareChannel)
+                    .FirstOrDefault(),
+            });
+
+        int totalCount = await groupedQuery.CountAsync(cancellationToken);
+        var pageRows = await groupedQuery
+            .OrderByDescending(row => row.LastInteractedAt)
+            .ThenBy(row => row.ArticleId)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        if (pageRows.Count == 0)
+        {
+            return ([], totalCount);
+        }
+
+        Guid[] articleIds = pageRows.Select(row => row.ArticleId).ToArray();
+        Dictionary<Guid, ArticleEntity> articles = await context
+            .Articles.Where(article => articleIds.Contains(article.Id))
+            .Include(article => article.Category)
+            .ToDictionaryAsync(article => article.Id, cancellationToken);
+
+        List<ArticleActivity> activities = pageRows
+            .Select(row => new ArticleActivity(
+                articles[row.ArticleId],
+                row.LastInteractedAt ?? DateTime.MinValue,
+                row.InteractionCount,
+                row.LastShareChannel
+            ))
+            .ToList();
+
+        return (activities, totalCount);
+    }
+
+    /// <inheritdoc />
+    public async Task<(List<ArticleCommentEntity> Comments, int TotalCount)> GetOwnCommentsForArticleAsync(
+        Guid userId,
+        Guid articleId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ArticleCommentByUserAndArticleSpecification(userId: userId, articleId: articleId);
+        IQueryable<ArticleCommentEntity> query = context
+            .ArticleComments.ApplySpecification(specification: specification)
+            .Where(comment => !comment.IsDeleted);
+
+        int totalCount = await query.CountAsync(cancellationToken);
+        List<ArticleCommentEntity> comments = await query
+            .OrderByDescending(comment => comment.CreatedAt)
+            .ThenBy(comment => comment.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (comments, totalCount);
     }
 
     /// <inheritdoc />

@@ -23,6 +23,17 @@ public class VideoShareConfiguration : IEntityTypeConfiguration<VideoShareEntity
 
         builder.Property(x => x.CreatedAt).IsRequired();
 
+        builder
+            .HasIndex(x => new
+            {
+                x.UserId,
+                x.CreatedAt,
+                x.VideoId,
+            })
+            .IsDescending(false, true, false)
+            .HasFilter("user_id IS NOT NULL")
+            .HasDatabaseName("ix_video_shares_user_created_video");
+
         builder.HasOne(x => x.Video).WithMany().HasForeignKey(x => x.VideoId).OnDelete(DeleteBehavior.Cascade);
     }
 }

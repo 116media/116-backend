@@ -1,6 +1,7 @@
 using _116.Content.Application.Interactions.Persistence;
 using _116.Content.Application.Interactions.Specifications;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Shared.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +29,8 @@ public class PlaylistRepository(ContentDbContext context) : IPlaylistRepository
         var specification = new PlaylistByUserIdSpecification(userId: userId);
         return await context
             .Playlists.ApplySpecification(specification: specification)
-            .Include(p => p.Videos)
+            .Include(p => p.Videos.Where(pv => pv.Video.Status == EnumContentStatus.Published))
+                .ThenInclude(pv => pv.Video)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -48,8 +50,9 @@ public class PlaylistRepository(ContentDbContext context) : IPlaylistRepository
         var specification = new PlaylistByIdSpecification(id: id);
         return await context
             .Playlists.ApplySpecification(specification: specification)
-            .Include(p => p.Videos)
+            .Include(p => p.Videos.Where(pv => pv.Video.Status == EnumContentStatus.Published))
                 .ThenInclude(pv => pv.Video)
+                    .ThenInclude(video => video.Category)
             .FirstOrDefaultAsync(cancellationToken);
     }
 

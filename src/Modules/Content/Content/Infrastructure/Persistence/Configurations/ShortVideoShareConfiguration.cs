@@ -24,6 +24,17 @@ public class ShortVideoShareConfiguration : IEntityTypeConfiguration<ShortVideoS
         builder.Property(x => x.CreatedAt).IsRequired();
 
         builder
+            .HasIndex(x => new
+            {
+                x.UserId,
+                x.CreatedAt,
+                x.ShortVideoId,
+            })
+            .IsDescending(false, true, false)
+            .HasFilter("user_id IS NOT NULL")
+            .HasDatabaseName("ix_short_video_shares_user_created_short");
+
+        builder
             .HasOne(x => x.ShortVideo)
             .WithMany()
             .HasForeignKey(x => x.ShortVideoId)

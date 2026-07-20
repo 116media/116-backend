@@ -5,6 +5,31 @@ using _116.Shared.Domain;
 namespace _116.Content.Application.Shared.Repositories;
 
 /// <summary>
+/// Repository projection for a bookmarked article and its interaction timestamp.
+/// </summary>
+public sealed record BookmarkedArticleActivity(ArticleEntity Article, DateTimeOffset BookmarkedAt);
+
+/// <summary>
+/// Repository projection for grouped current-user comment activity on an article.
+/// </summary>
+public sealed record CommentedArticleActivity(
+    ArticleEntity Article,
+    ArticleCommentEntity LatestComment,
+    int CommentCount,
+    DateTimeOffset LastCommentedAt
+);
+
+/// <summary>
+/// Repository projection for current-user like or grouped share activity on an article.
+/// </summary>
+public sealed record ArticleActivity(
+    ArticleEntity Article,
+    DateTimeOffset LastInteractedAt,
+    int InteractionCount,
+    EnumShareChannel? LastShareChannel = null
+);
+
+/// <summary>
 /// Repository interface for article and article-image data access operations.
 /// </summary>
 public interface IArticleRepository : IRepository<ArticleEntity>
@@ -292,8 +317,49 @@ public interface IArticleRepository : IRepository<ArticleEntity>
     /// <summary>
     /// Returns a paginated list of articles bookmarked by the given user, along with total count.
     /// </summary>
-    Task<(List<ArticleEntity> Articles, int TotalCount)> GetBookmarkedArticlesAsync(
+    Task<(List<BookmarkedArticleActivity> Activities, int TotalCount)> GetBookmarkedArticlesAsync(
         Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Returns published articles on which the user has at least one non-deleted comment or reply.
+    /// </summary>
+    Task<(List<CommentedArticleActivity> Activities, int TotalCount)> GetCommentedArticlesAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Returns published articles currently liked by the user.
+    /// </summary>
+    Task<(List<ArticleActivity> Activities, int TotalCount)> GetLikedArticlesAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Returns published articles shared by the user, grouped by article.
+    /// </summary>
+    Task<(List<ArticleActivity> Activities, int TotalCount)> GetSharedArticlesAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Returns the user's non-deleted comments and replies for one published article.
+    /// </summary>
+    Task<(List<ArticleCommentEntity> Comments, int TotalCount)> GetOwnCommentsForArticleAsync(
+        Guid userId,
+        Guid articleId,
         int page,
         int pageSize,
         CancellationToken cancellationToken = default

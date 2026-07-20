@@ -40,5 +40,16 @@ public class ArticleCommentConfiguration : IEntityTypeConfiguration<ArticleComme
         builder.HasIndex(x => x.ArticleId).HasDatabaseName("ix_article_comments_article");
 
         builder.HasIndex(x => x.ParentCommentId).HasDatabaseName("ix_article_comments_parent");
+
+        builder
+            .HasIndex(x => new
+            {
+                x.UserId,
+                x.IsDeleted,
+                x.CreatedAt,
+                x.ArticleId,
+            })
+            .IsDescending(false, false, true, false)
+            .HasDatabaseName("ix_article_comments_user_deleted_created_article");
     }
 }

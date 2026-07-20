@@ -481,4 +481,93 @@ public class ShortVideoRepositoryTests : IDisposable
     }
 
     #endregion
+
+    #region Favorite Collection Read Tests
+
+    [Fact]
+    public async Task GetLikedShortVideosAsync_ReturnsOnlyUsersActiveShortsInStableNewestOrder()
+    {
+        Guid userId = Guid.NewGuid();
+        ShortVideoEntity first = ShortVideoFactory.Create();
+        ShortVideoEntity second = ShortVideoFactory.Create();
+        ShortVideoEntity inactive = ShortVideoFactory.CreateInactive();
+        ShortVideoEntity other = ShortVideoFactory.Create();
+        _context.ShortVideos.AddRange(first, second, inactive, other);
+        DateTime tie = DateTime.UtcNow.AddHours(-1);
+        ShortVideoLikeEntity firstLike = ShortVideoLikeEntity.Create(Guid.NewGuid(), userId, first.Id);
+        ShortVideoLikeEntity secondLike = ShortVideoLikeEntity.Create(Guid.NewGuid(), userId, second.Id);
+        SetCreatedAt(firstLike, tie);
+        SetCreatedAt(secondLike, tie);
+        _context.ShortVideoLikes.AddRange(
+            firstLike,
+            secondLike,
+            ShortVideoLikeEntity.Create(Guid.NewGuid(), userId, inactive.Id),
+            ShortVideoLikeEntity.Create(Guid.NewGuid(), Guid.NewGuid(), other.Id)
+        );
+        await _context.SaveChangesAsync();
+
+        var (items, count) = await _repository.GetLikedShortVideosAsync(userId, page: 1, pageSize: 10);
+
+        count.Should().Be(2);
+        items.Select(item => item.ShortVideo.Id).Should().Equal(new[] { first.Id, second.Id }.OrderDescending());
+        items.Should().OnlyContain(item => item.LastInteractedAt == tie && item.InteractionCount == 1);
+    }
+
+    [Fact]
+    public async Task GetBookmarkedShortVideosAsync_ReturnsActualBookmarkTimeAndPagination()
+    {
+        Guid userId = Guid.NewGuid();
+        ShortVideoEntity olderShort = ShortVideoFactory.Create();
+        ShortVideoEntity newerShort = ShortVideoFactory.Create();
+        _context.ShortVideos.AddRange(olderShort, newerShort);
+        ShortVideoBookmarkEntity older = ShortVideoBookmarkEntity.Create(Guid.NewGuid(), userId, olderShort.Id);
+        ShortVideoBookmarkEntity newer = ShortVideoBookmarkEntity.Create(Guid.NewGuid(), userId, newerShort.Id);
+        DateTime expectedTime = DateTime.UtcNow.AddMinutes(-1);
+        SetCreatedAt(older, expectedTime.AddDays(-1));
+        SetCreatedAt(newer, expectedTime);
+        _context.ShortVideoBookmarks.AddRange(older, newer);
+        await _context.SaveChangesAsync();
+
+        var (items, count) = await _repository.GetBookmarkedShortVideosAsync(userId, page: 1, pageSize: 1);
+
+        count.Should().Be(2);
+        items.Should().ContainSingle();
+        items[0].ShortVideo.Id.Should().Be(newerShort.Id);
+        items[0].LastInteractedAt.Should().Be(expectedTime);
+    }
+
+    [Fact]
+    public async Task GetSharedShortVideosAsync_GroupsOwnEventsAndExcludesAnonymousAndInactive()
+    {
+        Guid userId = Guid.NewGuid();
+        ShortVideoEntity active = ShortVideoFactory.Create();
+        ShortVideoEntity anonymous = ShortVideoFactory.Create();
+        ShortVideoEntity inactive = ShortVideoFactory.CreateInactive();
+        _context.ShortVideos.AddRange(active, anonymous, inactive);
+        DateTime latest = DateTime.UtcNow;
+        ShortVideoShareEntity older = ShortVideoShareEntity.Create(Guid.NewGuid(), userId, active.Id);
+        ShortVideoShareEntity newer = ShortVideoShareEntity.Create(Guid.NewGuid(), userId, active.Id);
+        SetCreatedAt(older, latest.AddDays(-1));
+        SetCreatedAt(newer, latest);
+        _context.ShortVideoShares.AddRange(
+            older,
+            newer,
+            ShortVideoShareEntity.Create(Guid.NewGuid(), null, anonymous.Id),
+            ShortVideoShareEntity.Create(Guid.NewGuid(), userId, inactive.Id)
+        );
+        await _context.SaveChangesAsync();
+
+        var (items, count) = await _repository.GetSharedShortVideosAsync(userId, page: 1, pageSize: 10);
+
+        count.Should().Be(1);
+        items.Should().ContainSingle();
+        items[0].ShortVideo.Id.Should().Be(active.Id);
+        items[0].InteractionCount.Should().Be(2);
+        items[0].LastInteractedAt.Should().Be(latest);
+    }
+
+    private static void SetCreatedAt(object entity, DateTime createdAt) =>
+        entity.GetType().GetProperty("CreatedAt")!.SetValue(entity, createdAt);
+
+    #endregion
 }

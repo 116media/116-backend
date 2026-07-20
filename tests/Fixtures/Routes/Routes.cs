@@ -289,6 +289,10 @@ public static class Routes
         /// </summary>
         public static class Videos
         {
+            public static string Rated() => $"{ApiRoutes.Public.Videos}/{InteractionsRouteConstants.Rated}";
+
+            public static string Shared() => $"{ApiRoutes.Public.Videos}/{InteractionsRouteConstants.Shared}";
+
             public static string Ratings(Guid id) =>
                 $"{ApiRoutes.Public.Videos}/{id}/{InteractionsRouteConstants.Ratings}";
 

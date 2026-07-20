@@ -6,4 +6,5 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="Id">The unique identifier of the playlist.</param>
 /// <param name="Name">The display name of the playlist.</param>
 /// <param name="VideoCount">The number of videos in the playlist.</param>
-public record PlaylistDto(Guid Id, string Name, int VideoCount);
+/// <param name="ThumbnailUrls">Up to four ordered nullable thumbnail slots.</param>
+public record PlaylistDto(Guid Id, string Name, int VideoCount, IReadOnlyList<string?> ThumbnailUrls);

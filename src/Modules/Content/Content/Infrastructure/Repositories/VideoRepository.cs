@@ -228,6 +228,98 @@ public class VideoRepository(ContentDbContext context) : IVideoRepository
     }
 
     /// <inheritdoc />
+    public async Task<(IReadOnlyList<RatedVideoActivity> Activities, int TotalCount)> GetRatedVideosByUserAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new VideoRatingByUserIdSpecification(userId: userId);
+        IQueryable<VideoRatingEntity> query = context
+            .VideoRatings.AsNoTracking()
+            .ApplySpecification(specification: specification)
+            .Where(rating => rating.Video.Status == EnumContentStatus.Published);
+
+        int totalCount = await query.CountAsync(cancellationToken);
+        List<VideoRatingEntity> ratings = await query
+            .Include(rating => rating.Video)
+                .ThenInclude(video => video.Category)
+            .OrderByDescending(rating => rating.UpdatedAt ?? rating.CreatedAt)
+            .ThenBy(rating => rating.VideoId)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        IReadOnlyList<RatedVideoActivity> activities = ratings
+            .Select(rating => new RatedVideoActivity(
+                Video: rating.Video,
+                Stars: rating.Stars,
+                LastInteractedAt: rating.UpdatedAt ?? rating.CreatedAt ?? DateTime.MinValue
+            ))
+            .ToList();
+
+        return (activities, totalCount);
+    }
+
+    /// <inheritdoc />
+    public async Task<(IReadOnlyList<SharedVideoActivity> Activities, int TotalCount)> GetSharedVideosByUserAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new VideoShareByUserIdSpecification(userId: userId);
+        IQueryable<VideoShareEntity> ownPublishedShares = context
+            .VideoShares.AsNoTracking()
+            .ApplySpecification(specification: specification)
+            .Where(share => share.Video.Status == EnumContentStatus.Published);
+
+        int totalCount = await ownPublishedShares
+            .Select(share => share.VideoId)
+            .Distinct()
+            .CountAsync(cancellationToken);
+
+        var pageMetadata = await ownPublishedShares
+            .GroupBy(share => share.VideoId)
+            .Select(group => new
+            {
+                VideoId = group.Key,
+                ShareCount = group.Count(),
+                LastInteractedAt = group.Max(share => share.CreatedAt) ?? DateTime.MinValue,
+                LastShareChannel = group
+                    .OrderByDescending(share => share.CreatedAt)
+                    .ThenByDescending(share => share.Id)
+                    .Select(share => share.ShareChannel)
+                    .FirstOrDefault(),
+            })
+            .OrderByDescending(activity => activity.LastInteractedAt)
+            .ThenBy(activity => activity.VideoId)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        Guid[] videoIds = pageMetadata.Select(activity => activity.VideoId).ToArray();
+        Dictionary<Guid, VideoEntity> videos = await context
+            .Videos.AsNoTracking()
+            .Where(video => videoIds.Contains(video.Id))
+            .Include(video => video.Category)
+            .ToDictionaryAsync(video => video.Id, cancellationToken);
+
+        IReadOnlyList<SharedVideoActivity> activities = pageMetadata
+            .Select(activity => new SharedVideoActivity(
+                Video: videos[activity.VideoId],
+                ShareCount: activity.ShareCount,
+                LastInteractedAt: activity.LastInteractedAt,
+                LastShareChannel: activity.LastShareChannel
+            ))
+            .ToList();
+
+        return (activities, totalCount);
+    }
+
+    /// <inheritdoc />
     public async Task<IReadOnlyList<VideoEntity>> GetActivePromotedBySpotAsync(
         int spotPriority,
         CancellationToken cancellationToken = default

@@ -81,6 +81,9 @@ public class PublicGetPlaylistByIdEndpointV1Tests(PostgresFixture db) : BaseApiT
         PlaylistDetailDto body = await response.ReadAsAsync<PlaylistDetailDto>();
         body.Id.Should().Be(playlist.Id);
         body.Name.Should().Be(playlist.Name);
-        body.Videos.Should().ContainSingle(v => v.VideoId == video.Id);
+        VideoInPlaylistDto item = body.Videos.Should().ContainSingle(v => v.VideoId == video.Id).Subject;
+        item.Slug.Should().Be(video.Slug);
+        item.CategoryName.Should().NotBeNullOrWhiteSpace();
+        item.PublishedAt.Should().Be(video.PublishedAt);
     }
 }
