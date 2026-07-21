@@ -61,6 +61,13 @@ public static class CategoryFactory
         new CategoryBuilder(contentTypeId).AsGossip().Build();
 
     /// <summary>
+    /// Creates a category marked as the default category for lyrics pages
+    /// (IsDefaultForLyrics = true) with the given content type ID.
+    /// </summary>
+    public static CategoryEntity CreateDefaultForLyrics(Guid contentTypeId) =>
+        new CategoryBuilder(contentTypeId).AsDefaultForLyrics().Build();
+
+    /// <summary>
     /// Creates a list of categories with the specified count.
     /// </summary>
     public static List<CategoryEntity> CreateMany(Guid contentTypeId, int count) =>
