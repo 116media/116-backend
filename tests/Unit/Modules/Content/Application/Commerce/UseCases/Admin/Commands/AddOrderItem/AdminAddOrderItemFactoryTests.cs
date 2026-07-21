@@ -1,4 +1,6 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Shared.Application.Exceptions;
@@ -17,11 +19,11 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminAddOrderItemFactoryTests
 {
-    private readonly Mock<_116.Content.Application.Shared.Repositories.ICategoryRepository> _categoryRepositoryMock;
-    private readonly Mock<_116.Content.Application.Shared.Repositories.ILookupRepository> _lookupRepositoryMock;
-    private readonly Mock<_116.Content.Application.Shared.Repositories.IPackageRepository> _packageRepositoryMock;
-    private readonly Mock<_116.Content.Application.Shared.Repositories.IContentOrderRepository> _orderRepositoryMock;
-    private readonly Mock<_116.Content.Application.Shared.Persistence.IContentUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IPackageRepository> _packageRepositoryMock;
+    private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminAddOrderItemFactory _factory;
 
     public AdminAddOrderItemFactoryTests()
