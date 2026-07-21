@@ -60,6 +60,18 @@ public static class VideoFactory
         new VideoBuilder(categoryId).WithSlug(slug).Build();
 
     /// <summary>
+    /// Creates a video linked to a real, addressable artist profile.
+    /// </summary>
+    public static VideoEntity CreateForArtist(Guid categoryId, Guid artistId) =>
+        new VideoBuilder(categoryId).WithArtistId(artistId).Build();
+
+    /// <summary>
+    /// Creates a published video linked to a real, addressable artist profile.
+    /// </summary>
+    public static VideoEntity CreatePublishedForArtist(Guid categoryId, Guid artistId) =>
+        new VideoBuilder(categoryId).WithArtistId(artistId).AsPublished().Build();
+
+    /// <summary>
     /// Creates a list of free videos in Draft status.
     /// </summary>
     public static List<VideoEntity> CreateMany(Guid categoryId, int count) =>
