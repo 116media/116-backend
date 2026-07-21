@@ -1,4 +1,6 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier;
+using _116.Content.Application.Shared.Persistence;
+using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
@@ -16,10 +18,10 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Co
 /// </summary>
 public class AdminAddItemTierFactoryTests
 {
-    private readonly Mock<_116.Content.Application.Shared.Repositories.IContentOrderRepository> _orderRepositoryMock;
-    private readonly Mock<_116.Content.Application.Shared.Repositories.ICategoryRepository> _categoryRepositoryMock;
-    private readonly Mock<_116.Content.Application.Shared.Repositories.ILookupRepository> _lookupRepositoryMock;
-    private readonly Mock<_116.Content.Application.Shared.Persistence.IContentUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
+    private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly Mock<ILookupRepository> _lookupRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminAddItemTierFactory _factory;
 
     public AdminAddItemTierFactoryTests()
