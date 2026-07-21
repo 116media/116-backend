@@ -1,4 +1,5 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.Contracts;
+using _116.Content.Domain.Entities;
 using Moq;
 
 namespace _116.Unit.Tests.Common.Mocks.Factories;
@@ -17,8 +18,8 @@ public static class MockVerifyPaymentFactory
     {
         mock.Setup(x =>
                 x.VerifyAsync(
-                    It.IsAny<_116.Content.Domain.Entities.ContentOrderEntity>(),
-                    It.IsAny<_116.Content.Domain.Entities.ContentPaymentEntity>(),
+                    It.IsAny<ContentOrderEntity>(),
+                    It.IsAny<ContentPaymentEntity>(),
                     It.IsAny<Guid>(),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
@@ -35,8 +36,8 @@ public static class MockVerifyPaymentFactory
     {
         mock.Setup(x =>
                 x.VerifyAsync(
-                    It.IsAny<_116.Content.Domain.Entities.ContentOrderEntity>(),
-                    It.IsAny<_116.Content.Domain.Entities.ContentPaymentEntity>(),
+                    It.IsAny<ContentOrderEntity>(),
+                    It.IsAny<ContentPaymentEntity>(),
                     It.IsAny<Guid>(),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
@@ -51,8 +52,8 @@ public static class MockVerifyPaymentFactory
         mock.Verify(
             x =>
                 x.VerifyAsync(
-                    It.IsAny<_116.Content.Domain.Entities.ContentOrderEntity>(),
-                    It.IsAny<_116.Content.Domain.Entities.ContentPaymentEntity>(),
+                    It.IsAny<ContentOrderEntity>(),
+                    It.IsAny<ContentPaymentEntity>(),
                     It.IsAny<Guid>(),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()
