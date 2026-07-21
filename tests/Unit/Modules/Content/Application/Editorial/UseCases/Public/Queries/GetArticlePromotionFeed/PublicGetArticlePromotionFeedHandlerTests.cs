@@ -67,8 +67,8 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
         );
 
         // Assert
-        result.Spot1.Articles.Should().HaveCount(1);
-        result.Spot2.Articles.Should().HaveCount(1);
+        result.Spot1.Articles.Should().ContainSingle();
+        result.Spot2.Articles.Should().ContainSingle();
         result.Spot3.Slots.Should().HaveCount(2);
         result.GossipStrip.Should().HaveCount(3);
     }
@@ -100,8 +100,8 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Spot1.SpotPriority.Should().Be(1);
-        result.Spot1.Articles.Should().HaveCount(1);
-        result.Spot2.Articles.Should().HaveCount(1);
+        result.Spot1.Articles.Should().ContainSingle();
+        result.Spot2.Articles.Should().ContainSingle();
     }
 
     #endregion
@@ -131,7 +131,7 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Spot2.SpotPriority.Should().Be(2);
-        result.Spot2.Articles.Should().HaveCount(1);
+        result.Spot2.Articles.Should().ContainSingle();
     }
 
     #endregion
@@ -161,8 +161,8 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
         // Assert
         ArticlePromotionSlotDto slotA = result.Spot3.Slots.Single(s => s.Position == "a");
         ArticlePromotionSlotDto slotB = result.Spot3.Slots.Single(s => s.Position == "b");
-        slotA.Articles.Should().HaveCount(1);
-        slotB.Articles.Should().HaveCount(1);
+        slotA.Articles.Should().ContainSingle();
+        slotB.Articles.Should().ContainSingle();
     }
 
     #endregion
@@ -191,8 +191,8 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
         // Assert
         ArticlePromotionSlotDto slotA = result.Spot3.Slots.Single(s => s.Position == "a");
         ArticlePromotionSlotDto slotB = result.Spot3.Slots.Single(s => s.Position == "b");
-        slotA.Articles.Should().HaveCount(1);
-        slotB.Articles.Should().HaveCount(1);
+        slotA.Articles.Should().ContainSingle();
+        slotB.Articles.Should().ContainSingle();
     }
 
     #endregion
@@ -219,8 +219,8 @@ public class PublicGetArticlePromotionFeedHandlerTests : BaseContentHandlerTest
         );
 
         // Assert
-        result.Spot1.Articles.Should().HaveCount(1);
-        result.Spot2.Articles.Should().HaveCount(1);
+        result.Spot1.Articles.Should().ContainSingle();
+        result.Spot2.Articles.Should().ContainSingle();
         result.Spot3.SpotPriority.Should().Be(3);
         result.GossipStrip.Count.Should().BeLessThanOrEqualTo(3);
     }
