@@ -34,17 +34,19 @@ public class AdminUpdateLyricsSeoHandlerTests : BaseContentHandlerTest
         _handler = new AdminUpdateLyricsSeoHandler(
             _lyricsRepositoryMock.Object,
             _unitOfWorkMock.Object,
+            Mapper,
             userLookupMock.Object,
-            fileRepositoryMock.Object,
-            Mapper
+            fileRepositoryMock.Object
         );
     }
+
+    private static readonly Guid CategoryId = Guid.NewGuid();
 
     [Fact]
     public async Task Handle_WhenLyricsExists_ShouldUpdateSeoAndReturnLyrics()
     {
         // Arrange
-        LyricsEntity lyrics = LyricsFactory.Create();
+        LyricsEntity lyrics = LyricsFactory.Create(CategoryId);
         var command = new AdminUpdateLyricsSeoCommand(
             Id: lyrics.Id.ToString(),
             MetaTitle: "Updated SEO Title",
