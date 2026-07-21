@@ -61,7 +61,7 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
         // Assert
         result.Should().NotBeNull();
         result.Payments.Should().NotBeNull();
-        result.Payments.Items.Should().HaveCount(1);
+        result.Payments.Items.Should().ContainSingle();
     }
 
     [Fact]
@@ -94,7 +94,7 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
         AdminGetAllPaymentsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Payments.Items.Should().HaveCount(1);
+        result.Payments.Items.Should().ContainSingle();
         result.Payments.Items.First().VerifiedByUserName.Should().Be(TestConstants.User.ValidUserName);
         _userLookupMock.VerifyGetUserNameByIdCalled(verifierId);
     }
@@ -125,7 +125,7 @@ public class AdminGetAllPaymentsHandlerTests : BaseContentHandlerTest
         AdminGetAllPaymentsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Payments.Items.Should().HaveCount(1);
+        result.Payments.Items.Should().ContainSingle();
         result.Payments.Items.First().VerifiedByUserName.Should().BeNull();
         _userLookupMock.VerifyGetUserNameByIdNotCalled();
     }
