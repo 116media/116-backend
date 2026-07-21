@@ -51,10 +51,10 @@ public class AdminCreateOrderFactoryTests
 
         // Assert
         count.Should().Be(1);
-        order.Items.Should().HaveCount(1);
+        order.Items.Should().ContainSingle();
         order.Items.First().IsBonus.Should().BeFalse();
         order.Items.First().CategoryId.Should().Be(category.Id);
-        order.Items.First().Tiers.Should().HaveCount(1);
+        order.Items.First().Tiers.Should().ContainSingle();
     }
 
     [Fact]
