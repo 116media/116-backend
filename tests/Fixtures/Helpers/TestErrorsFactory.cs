@@ -155,11 +155,62 @@ public static class TestErrorsFactory
     }
 
     /// <summary>
+    /// Creates a real <see cref="LyricsInteractionErrors"/> instance for use in Content lyrics-interaction builders.
+    /// </summary>
+    public static LyricsInteractionErrors CreateLyricsInteractionErrors()
+    {
+        return new LyricsInteractionErrors(LocalizerFactory.CreateMessage<LyricsInteractionErrorMessage>());
+    }
+
+    /// <summary>
     /// Creates a real <see cref="PlaylistErrors"/> instance for use in Content playlist entity builders.
     /// </summary>
     public static PlaylistErrors CreatePlaylistErrors()
     {
         return new PlaylistErrors(LocalizerFactory.CreateMessage<PlaylistErrorMessage>());
+    }
+
+    /// <summary>
+    /// Creates a real <see cref="ArtistErrors"/> instance for use in Content artist entity builders.
+    /// </summary>
+    public static ArtistErrors CreateArtistErrors()
+    {
+        return new ArtistErrors(LocalizerFactory.CreateMessage<ArtistErrorMessage>());
+    }
+
+    /// <summary>
+    /// Creates a real <see cref="AlbumErrors"/> instance for use in Content album entity builders.
+    /// </summary>
+    public static AlbumErrors CreateAlbumErrors()
+    {
+        return new AlbumErrors(LocalizerFactory.CreateMessage<AlbumErrorMessage>());
+    }
+
+    /// <summary>
+    /// Creates a real <see cref="TranslationErrors"/> instance for use in Content lyrics
+    /// translation entity builders.
+    /// </summary>
+    public static TranslationErrors CreateTranslationErrors()
+    {
+        return new TranslationErrors(LocalizerFactory.CreateMessage<TranslationErrorMessage>());
+    }
+
+    /// <summary>
+    /// Creates a real <see cref="SubmissionErrors"/> instance for use in Content lyrics
+    /// submission entity builders.
+    /// </summary>
+    public static SubmissionErrors CreateSubmissionErrors()
+    {
+        return new SubmissionErrors(LocalizerFactory.CreateMessage<SubmissionErrorMessage>());
+    }
+
+    /// <summary>
+    /// Creates a real <see cref="LyricsRevisionErrors"/> instance for use in Content lyrics
+    /// revision entity builders.
+    /// </summary>
+    public static LyricsRevisionErrors CreateLyricsRevisionErrors()
+    {
+        return new LyricsRevisionErrors(LocalizerFactory.CreateMessage<LyricsRevisionErrorMessage>());
     }
 
     /// <summary>
@@ -194,7 +245,13 @@ public static class TestErrorsFactory
             CreatePlaylistErrors(),
             CreateArticleInteractionErrors(),
             CreateShortVideoInteractionErrors(),
-            CreatePromotionLevelErrors()
+            CreateLyricsInteractionErrors(),
+            CreatePromotionLevelErrors(),
+            CreateArtistErrors(),
+            CreateAlbumErrors(),
+            CreateTranslationErrors(),
+            CreateSubmissionErrors(),
+            CreateLyricsRevisionErrors()
         );
     }
 
