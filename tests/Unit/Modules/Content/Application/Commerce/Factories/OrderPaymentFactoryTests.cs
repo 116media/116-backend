@@ -1,4 +1,5 @@
 using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
@@ -15,7 +16,7 @@ namespace _116.Unit.Tests.Modules.Content.Application.Commerce.Factories;
 /// </summary>
 public class OrderPaymentFactoryTests
 {
-    private readonly Mock<_116.Content.Application.Shared.Repositories.IContentOrderRepository> _orderRepositoryMock;
+    private readonly Mock<IContentOrderRepository> _orderRepositoryMock;
     private readonly OrderPaymentFactory _factory;
 
     public OrderPaymentFactoryTests()
