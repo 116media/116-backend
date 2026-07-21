@@ -22,6 +22,8 @@ public class AdminDeleteLyricsHandlerTests
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminDeleteLyricsHandler _handler;
 
+    private static readonly Guid CategoryId = Guid.NewGuid();
+
     public AdminDeleteLyricsHandlerTests()
     {
         _lyricsRepositoryMock = MockLyricsRepository.Create();
@@ -40,7 +42,7 @@ public class AdminDeleteLyricsHandlerTests
     public async Task Handle_WhenStandaloneLyrics_ShouldDeleteAndReturnSuccess()
     {
         // Arrange
-        LyricsEntity lyrics = LyricsFactory.Create();
+        LyricsEntity lyrics = LyricsFactory.Create(CategoryId);
         var command = new AdminDeleteLyricsCommand(Id: lyrics.Id.ToString());
 
         _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
@@ -58,7 +60,7 @@ public class AdminDeleteLyricsHandlerTests
     public async Task Handle_WhenLyricsLinkedToVideo_ShouldUnmarkVideoAndDelete()
     {
         // Arrange
-        LyricsEntity lyrics = LyricsFactory.CreateForVideo(Guid.NewGuid());
+        LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, Guid.NewGuid());
         var command = new AdminDeleteLyricsCommand(Id: lyrics.Id.ToString());
 
         VideoEntity video = VideoFactory.Create(Guid.NewGuid());
