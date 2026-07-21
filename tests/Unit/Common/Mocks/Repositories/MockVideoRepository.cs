@@ -85,6 +85,20 @@ public static class MockVideoRepository
         return mock;
     }
 
+    public static Mock<IVideoRepository> SetupGetPublishedByArtist(
+        this Mock<IVideoRepository> mock,
+        Guid artistId,
+        List<VideoEntity> videos,
+        int totalCount
+    )
+    {
+        mock.Setup(x =>
+                x.GetPublishedByArtistAsync(artistId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync((videos, totalCount));
+        return mock;
+    }
+
     public static Mock<IVideoRepository> SetupGetActiveAsync(this Mock<IVideoRepository> mock, List<VideoEntity> videos)
     {
         mock.Setup(x => x.GetActiveAsync(It.IsAny<CancellationToken>())).ReturnsAsync(videos);
@@ -233,6 +247,15 @@ public static class MockVideoRepository
             .ReturnsAsync(new List<VideoEntity>());
         mock.Setup(x => x.CountPublishedByCategoryAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(0);
+        mock.Setup(x =>
+                x.GetPublishedByArtistAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((new List<VideoEntity>(), 0));
     }
 
     public static Mock<IVideoRepository> SetupGetLatestPublishedByCategory(
