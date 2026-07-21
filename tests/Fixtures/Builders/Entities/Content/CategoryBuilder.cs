@@ -23,6 +23,7 @@ internal class CategoryBuilder
     private bool _isActive = true;
     private bool _isExclusive;
     private bool _isGossip;
+    private bool _isDefaultForLyrics;
     private Guid? _posterFileId;
     private DateTimeOffset? _pinnedToFeedAt;
     private ContentTypeEntity? _contentType;
@@ -131,6 +132,15 @@ internal class CategoryBuilder
     }
 
     /// <summary>
+    /// Marks the category as the default category for lyrics pages (IsDefaultForLyrics = true).
+    /// </summary>
+    public CategoryBuilder AsDefaultForLyrics()
+    {
+        _isDefaultForLyrics = true;
+        return this;
+    }
+
+    /// <summary>
     /// Marks the category as pinned to the feed at the given time (defaults to "now").
     /// Pass distinct timestamps across categories to exercise FIFO ordering/eviction.
     /// </summary>
@@ -173,7 +183,8 @@ internal class CategoryBuilder
             _isFree,
             TestErrorsFactory.CreateCategoryErrors(),
             isGossip: _isGossip,
-            isExclusive: _isExclusive
+            isExclusive: _isExclusive,
+            isDefaultForLyrics: _isDefaultForLyrics
         );
 
         if (!_isActive)
