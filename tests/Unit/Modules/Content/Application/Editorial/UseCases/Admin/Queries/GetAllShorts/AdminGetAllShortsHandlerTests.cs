@@ -55,7 +55,7 @@ public class AdminGetAllShortsHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Should().NotBeNull();
-        result.ShortVideos.Items.Count().Should().Be(shorts.Count);
+        result.ShortVideos.Items.Should().HaveCount(shorts.Count);
         result.ShortVideos.Count.Should().Be((long)shorts.Count);
     }
 
@@ -96,7 +96,7 @@ public class AdminGetAllShortsHandlerTests : BaseContentHandlerTest
         AdminGetAllShortsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.ShortVideos.Items.Count().Should().Be(activeShorts.Count);
+        result.ShortVideos.Items.Should().HaveCount(activeShorts.Count);
         result.ShortVideos.Count.Should().Be((long)activeShorts.Count);
     }
 }
