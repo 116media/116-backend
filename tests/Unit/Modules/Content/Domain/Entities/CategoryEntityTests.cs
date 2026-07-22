@@ -344,4 +344,73 @@ public class CategoryEntityTests
     }
 
     #endregion
+
+    #region IsDefaultForLyrics
+
+    [Fact]
+    public void Create_DefaultIsDefaultForLyrics_ShouldBeFalse()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        category.IsDefaultForLyrics.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Create_WithIsDefaultForLyrics_ShouldSetProperty()
+    {
+        Guid id = Guid.NewGuid();
+        Guid contentTypeId = Guid.NewGuid();
+        var errors = TestErrorsFactory.CreateCategoryErrors();
+
+        CategoryEntity category = CategoryEntity.Create(
+            id,
+            contentTypeId,
+            "Test",
+            "test",
+            "desc",
+            false,
+            errors,
+            isDefaultForLyrics: true
+        );
+
+        category.IsDefaultForLyrics.Should().BeTrue();
+    }
+
+    [Fact]
+    public void SetDefaultForLyrics_ShouldSetToTrue()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+
+        category.SetDefaultForLyrics();
+
+        category.IsDefaultForLyrics.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ClearDefaultForLyrics_ShouldSetToFalse()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+        category.SetDefaultForLyrics();
+
+        category.ClearDefaultForLyrics();
+
+        category.IsDefaultForLyrics.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Update_SetsIsDefaultForLyrics()
+    {
+        Guid contentTypeId = Guid.NewGuid();
+        CategoryEntity category = CategoryFactory.Create(contentTypeId);
+        var errors = TestErrorsFactory.CreateCategoryErrors();
+
+        category.Update("Name", "slug", "desc", false, false, errors, isDefaultForLyrics: true);
+
+        category.IsDefaultForLyrics.Should().BeTrue();
+    }
+
+    #endregion
 }
