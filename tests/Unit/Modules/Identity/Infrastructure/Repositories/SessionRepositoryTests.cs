@@ -669,8 +669,8 @@ public class SessionRepositoryTests : IDisposable
     public async Task GetActiveSessionCountByPlatformAsync_ShouldReturnCountsByPlatform()
     {
         // Arrange
-        SessionEntity windowsSession = SessionFactory.CreateWithPlatform(EnumPlatform.Windows);
         SessionEntity iosSession = SessionFactory.CreateWithPlatform(EnumPlatform.Ios);
+        SessionEntity windowsSession = SessionFactory.CreateWithPlatform(EnumPlatform.Windows);
 
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(windowsSession, DateTime.UtcNow);
         typeof(SessionEntity).GetProperty("CreatedAt")!.SetValue(iosSession, DateTime.UtcNow);
