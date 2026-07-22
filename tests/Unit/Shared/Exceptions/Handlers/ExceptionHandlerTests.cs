@@ -1,6 +1,7 @@
 using System.Text.Json;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Application.Exceptions.Handlers;
+using _116.Shared.Application.Exceptions.Handlers.Contracts;
 using _116.Shared.Application.Exceptions.Handlers.Strategies;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -35,7 +36,7 @@ public class ExceptionHandlerTests
         InternalServerExceptionHandler internalServerStrategy = new();
         FormatExceptionStrategy formatExceptionStrategy = new();
 
-        List<_116.Shared.Application.Exceptions.Handlers.Contracts.IExceptionStrategy> strategies =
+        List<IExceptionStrategy> strategies =
         [
             defaultStrategy,
             badRequestStrategy,
