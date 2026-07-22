@@ -57,7 +57,7 @@ public class PublicGetPublishedArticlesHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Should().NotBeNull();
-        result.Articles.Items.Count().Should().Be(articles.Count);
+        result.Articles.Items.Should().HaveCount(articles.Count);
         result.Articles.Count.Should().Be((long)articles.Count);
     }
 
