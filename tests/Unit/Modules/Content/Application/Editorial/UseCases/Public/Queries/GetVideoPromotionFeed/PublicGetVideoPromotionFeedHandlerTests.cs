@@ -58,8 +58,8 @@ public class PublicGetVideoPromotionFeedHandlerTests : BaseContentHandlerTest
         );
 
         // Assert
-        result.Spot1.Videos.Should().HaveCount(1);
-        result.Spot2.Videos.Should().HaveCount(1);
+        result.Spot1.Videos.Should().ContainSingle();
+        result.Spot2.Videos.Should().ContainSingle();
         result.Spot3.Slots.Should().HaveCount(2);
         result.FreeVideoStrip.Should().HaveCount(3);
     }
@@ -89,8 +89,8 @@ public class PublicGetVideoPromotionFeedHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Spot1.SpotPriority.Should().Be(1);
-        result.Spot1.Videos.Should().HaveCount(1);
-        result.Spot2.Videos.Should().HaveCount(1);
+        result.Spot1.Videos.Should().ContainSingle();
+        result.Spot2.Videos.Should().ContainSingle();
     }
 
     #endregion
@@ -118,7 +118,7 @@ public class PublicGetVideoPromotionFeedHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Spot2.SpotPriority.Should().Be(2);
-        result.Spot2.Videos.Should().HaveCount(1);
+        result.Spot2.Videos.Should().ContainSingle();
     }
 
     #endregion
@@ -146,8 +146,8 @@ public class PublicGetVideoPromotionFeedHandlerTests : BaseContentHandlerTest
         // Assert
         VideoPromotionSlotDto slotA = result.Spot3.Slots.Single(s => s.Position == "a");
         VideoPromotionSlotDto slotB = result.Spot3.Slots.Single(s => s.Position == "b");
-        slotA.Videos.Should().HaveCount(1);
-        slotB.Videos.Should().HaveCount(1);
+        slotA.Videos.Should().ContainSingle();
+        slotB.Videos.Should().ContainSingle();
     }
 
     #endregion
@@ -174,8 +174,8 @@ public class PublicGetVideoPromotionFeedHandlerTests : BaseContentHandlerTest
         // Assert
         VideoPromotionSlotDto slotA = result.Spot3.Slots.Single(s => s.Position == "a");
         VideoPromotionSlotDto slotB = result.Spot3.Slots.Single(s => s.Position == "b");
-        slotA.Videos.Should().HaveCount(1);
-        slotB.Videos.Should().HaveCount(1);
+        slotA.Videos.Should().ContainSingle();
+        slotB.Videos.Should().ContainSingle();
     }
 
     #endregion
@@ -200,8 +200,8 @@ public class PublicGetVideoPromotionFeedHandlerTests : BaseContentHandlerTest
         );
 
         // Assert
-        result.Spot1.Videos.Should().HaveCount(1);
-        result.Spot2.Videos.Should().HaveCount(1);
+        result.Spot1.Videos.Should().ContainSingle();
+        result.Spot2.Videos.Should().ContainSingle();
         result.Spot3.SpotPriority.Should().Be(3);
         result.FreeVideoStrip.Count.Should().BeLessThanOrEqualTo(3);
     }
