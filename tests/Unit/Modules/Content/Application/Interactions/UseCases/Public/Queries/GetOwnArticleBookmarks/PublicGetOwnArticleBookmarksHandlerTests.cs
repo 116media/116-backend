@@ -65,7 +65,7 @@ public class PublicGetOwnArticleBookmarksHandlerTests : BaseContentHandlerTest
         PublicGetOwnArticleBookmarksResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Articles.Items.Count().Should().Be(1);
+        result.Articles.Items.Should().ContainSingle();
         result.Articles.Items.Single().BookmarkedAt.Should().Be(bookmarkedAt);
         result.Articles.Items.Single().Article.IsBookmarked.Should().BeTrue();
     }
