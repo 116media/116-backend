@@ -866,5 +866,101 @@ public class VideoEntityTests
         result.Should().BeFalse();
     }
 
+    [Fact]
+    public void MarkPendingReview_WhenAlreadyPublished_ShouldReturnFalseAndNotDisturbPublishedStatus()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.AttachYoutubeVideoUrl(
+            TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.MarkPendingReview();
+        video.Approve();
+        video.Publish(TestErrorsFactory.CreateVideoErrors());
+
+        // Act
+        bool result = video.MarkPendingReview();
+
+        // Assert
+        result.Should().BeFalse();
+        video.Status.Should().Be(EnumContentStatus.Published);
+    }
+
+    [Fact]
+    public void LinkArtist_ShouldSetArtistId()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        Guid artistId = Guid.NewGuid();
+
+        // Act
+        video.LinkArtist(artistId);
+
+        // Assert
+        video.ArtistId.Should().Be(artistId);
+    }
+
+    [Fact]
+    public void UnlinkArtist_ShouldClearArtistId()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.LinkArtist(Guid.NewGuid());
+
+        // Act
+        video.UnlinkArtist();
+
+        // Assert
+        video.ArtistId.Should().BeNull();
+    }
+
+    [Fact]
+    public void UnlinkArtist_ShouldNotAffectOtherFields()
+    {
+        // Arrange
+        VideoEntity video = VideoEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Video.ValidTitle,
+            TestConstants.Content.Editorial.Video.ValidSlug,
+            AuthorId,
+            Description,
+            TestErrorsFactory.CreateVideoErrors()
+        );
+        video.LinkArtist(Guid.NewGuid());
+
+        // Act
+        video.UnlinkArtist();
+
+        // Assert
+        video.Title.Should().Be(TestConstants.Content.Editorial.Video.ValidTitle);
+        video.Slug.Should().Be(TestConstants.Content.Editorial.Video.ValidSlug);
+    }
+
     #endregion
 }
