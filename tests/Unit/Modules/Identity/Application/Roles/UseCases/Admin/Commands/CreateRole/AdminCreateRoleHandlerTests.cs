@@ -2,6 +2,7 @@ using _116.Identity.Application.Roles.UseCases.Admin.Commands.CreateRole;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
@@ -128,10 +129,7 @@ public class AdminCreateRoleHandlerTests : BaseHandlerTest
         }
 
         // Assert
-        _roleRepositoryMock.Verify(
-            x => x.AddAsync(It.IsAny<_116.Identity.Domain.Entities.RoleEntity>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
+        _roleRepositoryMock.Verify(x => x.AddAsync(It.IsAny<RoleEntity>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
