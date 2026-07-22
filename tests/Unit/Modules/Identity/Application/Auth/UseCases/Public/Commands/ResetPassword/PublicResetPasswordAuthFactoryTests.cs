@@ -5,6 +5,7 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -196,7 +197,7 @@ public class PublicResetPasswordAuthFactoryTests
 
         // Act & Assert
         Func<Task> act = async () => await _factory.ResetPasswordAsync(user, newPassword, CancellationToken.None);
-        await act.Should().ThrowExactlyAsync<_116.Shared.Application.Exceptions.ConflictException>();
+        await act.Should().ThrowExactlyAsync<ConflictException>();
     }
 
     [Fact]
