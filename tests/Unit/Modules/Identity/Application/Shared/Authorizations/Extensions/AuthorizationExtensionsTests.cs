@@ -3,6 +3,7 @@ using _116.Identity.Application.Shared.Authorizations.Configuration;
 using _116.Identity.Application.Shared.Authorizations.Extensions;
 using _116.Identity.Application.Shared.Authorizations.Handlers;
 using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Repositories;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -28,7 +29,7 @@ public class AuthorizationExtensionsTests
         ServiceCollection services = [];
         services.AddLogging(); // Required for handlers
         services.AddAuthorization(); // Required for IAuthorizationHandler registration
-        services.AddScoped(_ => Mock.Of<_116.Identity.Application.Shared.Repositories.IAuthRepository>()); // Required for AccountStatusRequirementHandler
+        services.AddScoped(_ => Mock.Of<IAuthRepository>()); // Required for AccountStatusRequirementHandler
 
         // Act
         services.AddIdentityModuleAuthorization();
@@ -65,7 +66,7 @@ public class AuthorizationExtensionsTests
         ServiceCollection services = [];
         services.AddLogging();
         services.AddAuthorization();
-        services.AddScoped(_ => Mock.Of<_116.Identity.Application.Shared.Repositories.IAuthRepository>());
+        services.AddScoped(_ => Mock.Of<IAuthRepository>());
 
         // Act
         services.AddIdentityModuleAuthorization();
@@ -110,7 +111,7 @@ public class AuthorizationExtensionsTests
         ServiceCollection services = [];
         services.AddLogging();
         services.AddAuthorization();
-        services.AddScoped(_ => Mock.Of<_116.Identity.Application.Shared.Repositories.IAuthRepository>());
+        services.AddScoped(_ => Mock.Of<IAuthRepository>());
         services.AddIdentityModuleAuthorization();
         ServiceProvider provider = services.BuildServiceProvider();
 
@@ -130,7 +131,7 @@ public class AuthorizationExtensionsTests
         ServiceCollection services = [];
         services.AddLogging();
         services.AddAuthorization();
-        services.AddScoped(_ => Mock.Of<_116.Identity.Application.Shared.Repositories.IAuthRepository>());
+        services.AddScoped(_ => Mock.Of<IAuthRepository>());
         services.AddIdentityModuleAuthorization();
         ServiceProvider provider = services.BuildServiceProvider();
 
@@ -150,7 +151,7 @@ public class AuthorizationExtensionsTests
         ServiceCollection services = [];
         services.AddLogging();
         services.AddAuthorization();
-        services.AddScoped(_ => Mock.Of<_116.Identity.Application.Shared.Repositories.IAuthRepository>());
+        services.AddScoped(_ => Mock.Of<IAuthRepository>());
         services.AddIdentityModuleAuthorization();
         ServiceProvider provider = services.BuildServiceProvider();
 
@@ -170,7 +171,7 @@ public class AuthorizationExtensionsTests
         ServiceCollection services = [];
         services.AddLogging();
         services.AddAuthorization();
-        services.AddScoped(_ => Mock.Of<_116.Identity.Application.Shared.Repositories.IAuthRepository>());
+        services.AddScoped(_ => Mock.Of<IAuthRepository>());
         services.AddIdentityModuleAuthorization();
         ServiceProvider provider = services.BuildServiceProvider();
 
@@ -190,7 +191,7 @@ public class AuthorizationExtensionsTests
         ServiceCollection services = [];
         services.AddLogging();
         services.AddAuthorization();
-        services.AddScoped(_ => Mock.Of<_116.Identity.Application.Shared.Repositories.IAuthRepository>());
+        services.AddScoped(_ => Mock.Of<IAuthRepository>());
         services.AddIdentityModuleAuthorization();
         ServiceProvider provider = services.BuildServiceProvider();
 
