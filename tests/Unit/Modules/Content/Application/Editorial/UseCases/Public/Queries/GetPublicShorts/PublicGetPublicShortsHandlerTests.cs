@@ -57,7 +57,7 @@ public class PublicGetPublicShortsHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Should().NotBeNull();
-        result.ShortVideos.Items.Count().Should().Be(shorts.Count);
+        result.ShortVideos.Items.Should().HaveCount(shorts.Count);
         result.ShortVideos.Count.Should().Be((long)shorts.Count);
     }
 
