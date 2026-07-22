@@ -2,6 +2,7 @@ using _116.Identity.Application.Roles.UseCases.Admin.Commands.CreatePermission;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
+using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
@@ -129,7 +130,7 @@ public class AdminCreatePermissionHandlerTests : BaseHandlerTest
 
         // Assert
         _permissionRepositoryMock.Verify(
-            x => x.AddAsync(It.IsAny<_116.Identity.Domain.Entities.PermissionEntity>(), It.IsAny<CancellationToken>()),
+            x => x.AddAsync(It.IsAny<PermissionEntity>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
     }
