@@ -18,12 +18,19 @@ public class AdminUpdateLyricsValidator : AbstractValidator<AdminUpdateLyricsCom
     {
         RuleFor(x => x.Id).IsValidGuid(i18n.Lyrics.Msg.Localizer);
 
+        RuleFor(x => x.CategoryId).ValidLyricsCategoryId(i18n.Lyrics.Msg.CategoryIdRequired());
+
         RuleFor(x => x.SongTitle).ValidSongTitle(i18n.Lyrics.Msg);
 
         RuleFor(x => x.ArtistName).ValidArtistName(i18n.Lyrics.Msg);
 
+        RuleFor(x => x.Slug).ValidLyricsSlug(i18n.Lyrics.Msg);
+
         RuleFor(x => x.LyricsText).ValidLyricsText(i18n.Lyrics.Msg);
 
         RuleFor(x => x.Language).ValidLyricsLanguage(i18n.Lyrics.Msg);
+
+        When(x => x.CustomerId.HasValue, () => RuleFor(x => x.OrderItemId).ValidOrderItemId(i18n.ContentOrder.Msg));
+        When(x => x.OrderItemId.HasValue, () => RuleFor(x => x.CustomerId).ValidCustomerId(i18n.Customer.Msg));
     }
 }
