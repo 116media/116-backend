@@ -14,20 +14,22 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyric
 /// Handles the <see cref="AdminUpdateLyricsCommand" /> to update the content
 /// and metadata of an existing lyrics page.
 /// </summary>
+/// <param name="categoryRepository">Repository for category data access operations.</param>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="mapper">The Mapster mapper used for tags.</param>
 /// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
 /// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminUpdateLyricsHandler(
+    ICategoryRepository categoryRepository,
     ILyricsRepository lyricsRepository,
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
+    IMapper mapper,
     IUserLookupService userLookup,
     IFileRepository fileRepository,
-    IMapper mapper,
     ContentI18n i18n
 ) : ICommandHandler<AdminUpdateLyricsCommand, AdminUpdateLyricsResult>
 {
@@ -41,14 +43,33 @@ public class AdminUpdateLyricsHandler(
 
         LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(id: id, cancellationToken: cancellationToken);
 
+        await categoryRepository.GetByIdOrThrowAsync(id: command.CategoryId, cancellationToken: cancellationToken);
+
+        if (command.Slug != lyrics.Slug)
+        {
+            LyricsEntity? slugConflict = await lyricsRepository.GetBySlugAsync(
+                slug: command.Slug,
+                cancellationToken: cancellationToken
+            );
+
+            if (slugConflict is not null && slugConflict.Id != lyrics.Id)
+            {
+                throw i18n.Lyrics.SlugAlreadyExists(slug: command.Slug);
+            }
+        }
+
         Guid? previousVideoId = lyrics.VideoId;
 
         lyrics.Update(
+            categoryId: command.CategoryId,
             songTitle: command.SongTitle,
             artistName: command.ArtistName,
+            slug: command.Slug,
             lyricsText: command.LyricsText,
             language: command.Language,
             videoId: command.VideoId,
+            customerId: command.CustomerId,
+            orderItemId: command.OrderItemId,
             errors: i18n.Lyrics
         );
 
@@ -80,7 +101,7 @@ public class AdminUpdateLyricsHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await updated.ToLyricsDtoAsync(mapper, userLookup, fileRepository, cancellationToken);
+        var dto = await updated.ToLyricsDetailDtoAsync(mapper, userLookup, fileRepository, cancellationToken);
         return new AdminUpdateLyricsResult(Lyrics: dto);
     }
 }
