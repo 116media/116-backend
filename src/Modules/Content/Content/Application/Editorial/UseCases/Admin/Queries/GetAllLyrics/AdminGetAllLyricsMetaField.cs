@@ -12,7 +12,10 @@ public static class AdminGetAllLyricsMetaField
         "List all lyrics pages",
         """
             Retrieves a paginated list of all lyrics pages for admin management.
-            Results are returned as a paginated list suitable for list and management views.
+            \n
+            Supports optional filtering by content status (e.g., Draft, PendingReview, Published)
+            and by category. Results are returned as a paginated list with summary information
+            suitable for list and management views.
             \n
             **Authentication Requirements:**\n
             - User must be authenticated with a valid access token\n
