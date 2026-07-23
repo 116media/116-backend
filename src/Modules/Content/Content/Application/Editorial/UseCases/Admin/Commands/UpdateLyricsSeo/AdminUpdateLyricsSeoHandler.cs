@@ -14,15 +14,15 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyric
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
+/// <param name="mapper">The Mapster mapper used for tags.</param>
 /// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
 /// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 public class AdminUpdateLyricsSeoHandler(
     ILyricsRepository lyricsRepository,
     IContentUnitOfWork unitOfWork,
+    IMapper mapper,
     IUserLookupService userLookup,
-    IFileRepository fileRepository,
-    IMapper mapper
+    IFileRepository fileRepository
 ) : ICommandHandler<AdminUpdateLyricsSeoCommand, AdminUpdateLyricsSeoResult>
 {
     /// <inheritdoc />
@@ -49,7 +49,7 @@ public class AdminUpdateLyricsSeoHandler(
             cancellationToken: cancellationToken
         );
 
-        var dto = await updated.ToLyricsDtoAsync(mapper, userLookup, fileRepository, cancellationToken);
+        var dto = await updated.ToLyricsDetailDtoAsync(mapper, userLookup, fileRepository, cancellationToken);
         return new AdminUpdateLyricsSeoResult(Lyrics: dto);
     }
 }
