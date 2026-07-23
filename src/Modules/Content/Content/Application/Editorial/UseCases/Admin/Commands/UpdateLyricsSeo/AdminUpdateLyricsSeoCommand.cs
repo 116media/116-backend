@@ -17,4 +17,4 @@ public record AdminUpdateLyricsSeoCommand(string Id, string? MetaTitle, string? 
 /// Result of the <see cref="AdminUpdateLyricsSeoCommand" /> containing the updated lyrics details.
 /// </summary>
 /// <param name="Lyrics">The updated lyrics information.</param>
-public record AdminUpdateLyricsSeoResult(LyricsDto Lyrics);
+public record AdminUpdateLyricsSeoResult(LyricsDetailDto Lyrics);
