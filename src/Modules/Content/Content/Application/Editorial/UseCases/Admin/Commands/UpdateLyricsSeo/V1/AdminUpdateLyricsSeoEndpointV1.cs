@@ -24,7 +24,7 @@ public record AdminUpdateLyricsSeoRequest(string? MetaTitle, string? MetaDescrip
 /// Response model for successful lyrics SEO update.
 /// </summary>
 /// <param name="Lyrics">The updated lyrics information.</param>
-public record AdminUpdateLyricsSeoResponse(LyricsDto Lyrics);
+public record AdminUpdateLyricsSeoResponse(LyricsDetailDto Lyrics);
 
 /// <summary>
 /// Defines the admin update lyrics SEO endpoint.
