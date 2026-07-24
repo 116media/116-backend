@@ -75,4 +75,7 @@
   <data name="NotEnoughVideosToPinToFeed" xml:space="preserve">
     <value>Cette catégorie doit avoir au moins {0} vidéos publiées pour être épinglée au fil.</value>
   </data>
+  <data name="DefaultLyricsCategoryNotConfigured" xml:space="preserve">
+    <value>Aucune catégorie de paroles par défaut n'a encore été configurée.</value>
+  </data>
 </root>
