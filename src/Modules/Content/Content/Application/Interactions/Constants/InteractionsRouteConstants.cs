@@ -23,6 +23,11 @@ public static class InteractionsRouteConstants
     public const string Shorts = "shorts";
 
     /// <summary>
+    /// The base endpoint path for lyrics interaction routes.
+    /// </summary>
+    public const string Lyrics = "lyrics";
+
+    /// <summary>
     /// The base endpoint path for playlist routes.
     /// </summary>
     public const string Playlists = "playlists";
