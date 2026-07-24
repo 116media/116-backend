@@ -248,4 +248,20 @@ public interface IVideoRepository : IRepository<VideoEntity>
     /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
     /// <returns>The number of published videos in the category.</returns>
     Task<int> CountPublishedByCategoryAsync(Guid categoryId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a paginated list of published videos linked to a specific artist profile.
+    /// Used to populate the public artist page's videos section.
+    /// </summary>
+    /// <param name="artistId">The artist profile to fetch videos for.</param>
+    /// <param name="page">The 1-based page number.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>A tuple containing the list of published videos and the total count.</returns>
+    Task<(List<VideoEntity> Videos, int TotalCount)> GetPublishedByArtistAsync(
+        Guid artistId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    );
 }
