@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.RegularExpressions;
 using _116.BuildingBlocks.Constants;
 using _116.Content.Application.Editorial.Constants;
@@ -267,6 +268,26 @@ public static partial class EditorialValidation
     }
 
     /// <summary>
+    /// Validates a rejection reason with length constraints.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the rejection reason property.</param>
+    /// <param name="i18n">The lyrics error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidRejectionReason<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        LyricsErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(i18n.RejectionReasonRequired())
+            .MaximumLength(maximumLength: ContentConstants.MaxRejectionReasonLength)
+            .WithMessage(i18n.RejectionReasonTooLong(ContentConstants.MaxRejectionReasonLength));
+    }
+
+    /// <summary>
     /// Validates a YouTube video URL.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
@@ -514,6 +535,163 @@ public static partial class EditorialValidation
     }
 
     /// <summary>
+    /// Validates that a lyrics category ID is not empty.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the category ID property.</param>
+    /// <param name="categoryIdRequired">Error message used when the category ID is empty.</param>
+    public static void ValidLyricsCategoryId<T>(this IRuleBuilder<T, Guid> ruleBuilder, string categoryIdRequired)
+    {
+        ruleBuilder.NotEmpty().WithMessage(categoryIdRequired);
+    }
+
+    /// <summary>
+    /// Validates lyrics slug with length and format constraints (lowercase, letters, numbers, hyphens).
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the slug property.</param>
+    /// <param name="i18n">The lyrics error message provider.</param>
+    /// <param name="isRequired">Whether the slug is required (default: true).</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidLyricsSlug<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        LyricsErrorMessage i18n,
+        bool isRequired = true
+    )
+    {
+        if (isRequired)
+        {
+            return ruleBuilder
+                .Cascade(cascadeMode: CascadeMode.Stop)
+                .NotEmpty()
+                .WithMessage(i18n.SlugRequired())
+                .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
+                .WithMessage(i18n.SlugTooLong(ContentConstants.MaxSlugLength))
+                .Matches(SlugRegex())
+                .WithMessage(i18n.SlugInvalidFormat());
+        }
+
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
+            .WithMessage(i18n.SlugTooLong(ContentConstants.MaxSlugLength))
+            .Matches(SlugRegex())
+            .WithMessage(i18n.SlugInvalidFormat())
+            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Slug")));
+    }
+
+    /// <summary>
+    /// Validates a lyrics release year: must fall between 1900 and one year past the current
+    /// year (inclusive). Only applied when a value is present — release year is an optional
+    /// song-credit field.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the release year property.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, short?> ValidReleaseYear<T>(this IRuleBuilder<T, short?> ruleBuilder)
+    {
+        return ruleBuilder
+            .InclusiveBetween((short)1900, (short)(DateTimeOffset.UtcNow.Year + 1))
+            .When(x => GetNullableShortPropertyValue(instance: x, propertyName: "ReleaseYear") is not null);
+    }
+
+    /// <summary>
+    /// Gets a nullable <see cref="short" /> property value from an instance using reflection.
+    /// <see cref="ValidationUtils.GetPropertyValue{T}" /> only supports <see cref="string" />
+    /// properties (it always returns null for value types like <c>short?</c>), so release-year
+    /// gating needs its own typed accessor.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="instance">The instance to read the property from.</param>
+    /// <param name="propertyName">The name of the property to retrieve.</param>
+    /// <returns>The property value, or null if the property is not found or is null.</returns>
+    private static short? GetNullableShortPropertyValue<T>(T instance, string propertyName)
+    {
+        PropertyInfo? property = typeof(T).GetProperty(name: propertyName);
+        return property?.GetValue(obj: instance) as short?;
+    }
+
+    /// <summary>
+    /// Validates an optional lyrics album name with a maximum length constraint. Only applied
+    /// when a non-blank value is present — album is an optional song-credit field.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the album property.</param>
+    /// <param name="i18n">The lyrics error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidAlbum<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        LyricsErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .MaximumLength(maximumLength: ContentConstants.MaxAlbumNameLength)
+            .WithMessage(i18n.AlbumTooLong(ContentConstants.MaxAlbumNameLength))
+            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Album")));
+    }
+
+    /// <summary>
+    /// Validates an optional lyrics record label name with a maximum length constraint. Only
+    /// applied when a non-blank value is present — label is an optional song-credit field.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the label property.</param>
+    /// <param name="i18n">The lyrics error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidLabel<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        LyricsErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .MaximumLength(maximumLength: ContentConstants.MaxLabelNameLength)
+            .WithMessage(i18n.LabelTooLong(ContentConstants.MaxLabelNameLength))
+            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Label")));
+    }
+
+    /// <summary>
+    /// Validates an optional lyrics songwriter credit with a maximum length constraint. Only
+    /// applied when a non-blank value is present — songwriter is an optional song-credit field.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the songwriter property.</param>
+    /// <param name="i18n">The lyrics error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidSongwriter<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        LyricsErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .MaximumLength(maximumLength: ContentConstants.MaxCreditNameLength)
+            .WithMessage(i18n.SongwriterTooLong(ContentConstants.MaxCreditNameLength))
+            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Songwriter")));
+    }
+
+    /// <summary>
+    /// Validates an optional lyrics producer credit with a maximum length constraint. Only
+    /// applied when a non-blank value is present — producer is an optional song-credit field.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the producer property.</param>
+    /// <param name="i18n">The lyrics error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidProducer<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        LyricsErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .MaximumLength(maximumLength: ContentConstants.MaxCreditNameLength)
+            .WithMessage(i18n.ProducerTooLong(ContentConstants.MaxCreditNameLength))
+            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Producer")));
+    }
+
+    /// <summary>
     /// Validates that the shooting scheduled date is in the future.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
@@ -577,6 +755,65 @@ public static partial class EditorialValidation
         return ruleBuilder
             .InclusiveBetween(from: PopularVideosLimits.MinLimit, to: PopularVideosLimits.MaxLimit)
             .WithMessage(i18n.PopularLimitOutOfRange(PopularVideosLimits.MinLimit, PopularVideosLimits.MaxLimit));
+    }
+
+    /// <summary>
+    /// Validates an artist profile's display name with length constraints.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the name property.</param>
+    /// <param name="i18n">The artist error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidArtistName<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        ArtistErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(i18n.NameRequired())
+            .MaximumLength(maximumLength: ContentConstants.MaxArtistNameLength);
+    }
+
+    /// <summary>
+    /// Validates an artist profile's URL-safe slug with length and format constraints
+    /// (lowercase letters, numbers, and hyphens only).
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the slug property.</param>
+    /// <param name="i18n">The artist error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidArtistSlug<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        ArtistErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(i18n.SlugRequired())
+            .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
+            .Matches(SlugRegex());
+    }
+
+    /// <summary>
+    /// Validates an album's display name with length constraints.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the name property.</param>
+    /// <param name="i18n">The album error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidAlbumName<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder,
+        AlbumErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(i18n.NameRequired())
+            .MaximumLength(maximumLength: ContentConstants.MaxAlbumNameLength);
     }
 
     /// <summary>
