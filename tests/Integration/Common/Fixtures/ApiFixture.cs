@@ -2,7 +2,10 @@ using System.Text;
 using System.Threading.RateLimiting;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Editorial.Services;
+using _116.Content.Infrastructure.Persistence;
 using _116.Core.Application.Shared.Services;
+using _116.Core.Infrastructure.Persistence;
+using _116.Identity.Infrastructure.Persistence;
 using _116.Integration.Tests.Common.Stubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
@@ -72,9 +75,9 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     /// </summary>
     private void ReplaceDbContexts(IServiceCollection services)
     {
-        ReplaceDbContext<_116.Identity.Infrastructure.Persistence.IdentityDbContext>(services);
-        ReplaceDbContext<_116.Core.Infrastructure.Persistence.CoreDbContext>(services);
-        ReplaceDbContext<_116.Content.Infrastructure.Persistence.ContentDbContext>(services);
+        ReplaceDbContext<IdentityDbContext>(services);
+        ReplaceDbContext<CoreDbContext>(services);
+        ReplaceDbContext<ContentDbContext>(services);
     }
 
     /// <summary>
@@ -167,6 +170,7 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
                 RateLimitPolicies.UserProfile,
                 RateLimitPolicies.SessionManagement,
                 RateLimitPolicies.AdminMetrics,
+                RateLimitPolicies.ContentContribution,
             ];
 
             foreach (var policy in policies)
