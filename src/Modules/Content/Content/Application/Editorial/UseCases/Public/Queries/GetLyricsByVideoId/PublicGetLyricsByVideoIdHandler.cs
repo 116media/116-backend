@@ -2,6 +2,9 @@ using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Core.Application.Shared.Repositories;
+using _116.Identity.Contracts.Application;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -12,10 +15,17 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBy
 /// the lyrics page linked to a given video.
 /// </summary>
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
-/// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
+/// <param name="mapper">The Mapster mapper used for tags.</param>
+/// <param name="userLookup">Service for resolving author profiles from the Identity module.</param>
+/// <param name="fileRepository">Repository for resolving avatar file URLs.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
-public class PublicGetLyricsByVideoIdHandler(ILyricsRepository lyricsRepository, IMapper mapper, ContentI18n i18n)
-    : IQueryHandler<PublicGetLyricsByVideoIdQuery, PublicGetLyricsByVideoIdResult>
+public class PublicGetLyricsByVideoIdHandler(
+    ILyricsRepository lyricsRepository,
+    IMapper mapper,
+    IUserLookupService userLookup,
+    IFileRepository fileRepository,
+    ContentI18n i18n
+) : IQueryHandler<PublicGetLyricsByVideoIdQuery, PublicGetLyricsByVideoIdResult>
 {
     /// <inheritdoc />
     public async Task<PublicGetLyricsByVideoIdResult> Handle(
@@ -30,9 +40,23 @@ public class PublicGetLyricsByVideoIdHandler(ILyricsRepository lyricsRepository,
             cancellationToken: cancellationToken
         );
 
-        if (lyrics is not null)
+        if (lyrics is not null && lyrics.Status == EnumContentStatus.Published)
         {
-            var dto = lyrics.ToLyricsDto(mapper);
+            bool isLiked =
+                query.CurrentUserId is Guid currentUserId
+                && await lyricsRepository.HasLikedAsync(
+                    userId: currentUserId,
+                    lyricsId: lyrics.Id,
+                    cancellationToken: cancellationToken
+                );
+
+            var dto = await lyrics.ToLyricsDetailDtoAsync(
+                mapper,
+                userLookup,
+                fileRepository,
+                cancellationToken,
+                isLiked
+            );
             return new PublicGetLyricsByVideoIdResult(Lyrics: dto);
         }
 
