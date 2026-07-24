@@ -120,6 +120,16 @@ public interface ICategoryRepository : IRepository<CategoryEntity>
     Task<CategoryEntity?> GetExclusiveCategoryAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves the single active category designated as the default category for lyrics
+    /// pages. Returns null if no such category is configured.
+    /// </summary>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>
+    /// The default lyrics category entity if one exists, otherwise null.
+    /// </returns>
+    Task<CategoryEntity?> GetDefaultLyricsCategoryAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves all active categories currently pinned to the content feed, optionally
     /// filtered to a single content type, ordered by PinnedToFeedAt descending (most recently
     /// pinned first). Used by the public feed query and by the admin pin handler to enforce
