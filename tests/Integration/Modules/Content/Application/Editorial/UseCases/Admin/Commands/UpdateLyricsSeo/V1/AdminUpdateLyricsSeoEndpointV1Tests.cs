@@ -61,7 +61,11 @@ public class AdminUpdateLyricsSeoEndpointV1Tests(PostgresFixture db) : BaseApiTe
     {
         LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
-            LyricsEntity l = LyricsFactory.Create();
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            LyricsEntity l = LyricsFactory.Create(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
             ctx.Lyrics.Add(l);
             return l;
         });
