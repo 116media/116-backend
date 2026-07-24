@@ -134,4 +134,9 @@ public class CategoryErrorMessage(IStringLocalizer<CategoryErrorMessage> localiz
     /// <param name="minimum">The minimum number of published videos required.</param>
     public string NotEnoughVideosToPinToFeed(int minimum) =>
         string.Format(localizer["NotEnoughVideosToPinToFeed"], minimum);
+
+    /// <summary>
+    /// Gets an error message for when no default lyrics category has been configured yet.
+    /// </summary>
+    public string DefaultLyricsCategoryNotConfigured() => localizer["DefaultLyricsCategoryNotConfigured"];
 }
