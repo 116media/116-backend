@@ -53,4 +53,86 @@ public class LyricsErrors(LyricsErrorMessage i18n)
     {
         return new BadRequestException(i18n.LyricsTextRequired());
     }
+
+    /// <summary>
+    /// Throws when a lyrics slug is required but not provided.
+    /// </summary>
+    public BadRequestException SlugRequired()
+    {
+        return new BadRequestException(i18n.SlugRequired());
+    }
+
+    /// <summary>
+    /// Throws when a lyrics page with the given slug already exists.
+    /// </summary>
+    public ConflictException SlugAlreadyExists(string slug)
+    {
+        return new ConflictException(i18n.SlugAlreadyExists(slug: slug));
+    }
+
+    /// <summary>
+    /// Throws when a lyrics page is already pending payment.
+    /// </summary>
+    public ConflictException AlreadySubmitted()
+    {
+        return new ConflictException(i18n.AlreadySubmitted());
+    }
+
+    /// <summary>
+    /// Throws when a lyrics page is already pending review.
+    /// </summary>
+    public ConflictException AlreadyPendingReview()
+    {
+        return new ConflictException(i18n.AlreadyPendingReview());
+    }
+
+    /// <summary>
+    /// Throws when a lyrics page is already approved.
+    /// </summary>
+    public ConflictException AlreadyApproved()
+    {
+        return new ConflictException(i18n.AlreadyApproved());
+    }
+
+    /// <summary>
+    /// Throws when a lyrics page is already published.
+    /// </summary>
+    public ConflictException AlreadyPublished()
+    {
+        return new ConflictException(i18n.AlreadyPublished());
+    }
+
+    /// <summary>
+    /// Throws when a lyrics page is already rejected.
+    /// </summary>
+    public ConflictException AlreadyRejected()
+    {
+        return new ConflictException(i18n.AlreadyRejected());
+    }
+
+    /// <summary>
+    /// Throws when a lyrics page is already archived.
+    /// </summary>
+    public ConflictException AlreadyArchived()
+    {
+        return new ConflictException(i18n.AlreadyArchived());
+    }
+
+    /// <summary>
+    /// Throws when an invalid status transition is attempted.
+    /// </summary>
+    public BadRequestException InvalidStatusTransition(string from, string to)
+    {
+        return new BadRequestException(i18n.InvalidStatusTransition(from: from, to: to));
+    }
+
+    /// <summary>
+    /// Throws when a streaming link operation is attempted directly on a lyrics page that
+    /// belongs to an album. A track that belongs to an album gets its streaming links through
+    /// the album, not per-track.
+    /// </summary>
+    public ConflictException BelongsToAlbum()
+    {
+        return new ConflictException(i18n.BelongsToAlbum());
+    }
 }
