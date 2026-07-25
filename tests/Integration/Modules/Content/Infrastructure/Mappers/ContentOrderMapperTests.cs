@@ -108,7 +108,7 @@ public class ContentOrderMapperTests(PostgresFixture postgres) : BaseRepositoryT
 
         dto.Id.Should().Be(loaded.Id);
         dto.CustomerName.Should().Be(customer.FullName);
-        dto.Items.Should().HaveCount(1);
+        dto.Items.Should().ContainSingle();
         dto.Items[0].CategoryName.Should().Be("Music");
     }
 }
