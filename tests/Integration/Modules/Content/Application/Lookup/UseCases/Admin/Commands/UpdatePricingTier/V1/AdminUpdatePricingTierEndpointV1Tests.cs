@@ -2,6 +2,7 @@ using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePricingTier.
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Builders.Requests.Content;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePricingTier.V1;
@@ -73,9 +74,7 @@ public class AdminUpdatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApi
         Client.AuthenticateAsSuperAdmin();
         Guid id = Guid.NewGuid();
         var request = new AdminUpdatePricingTierRequestBuilder()
-            .WithName(
-                new string('P', _116.Tests.Fixtures.Constants.TestConstants.Content.PricingTier.NameMaxLength + 1)
-            )
+            .WithName(new string('P', TestConstants.Content.PricingTier.NameMaxLength + 1))
             .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PricingTiers}/{id}", request);
@@ -93,12 +92,7 @@ public class AdminUpdatePricingTierEndpointV1Tests(PostgresFixture db) : BaseApi
         Client.AuthenticateAsSuperAdmin();
         Guid id = Guid.NewGuid();
         var request = new AdminUpdatePricingTierRequestBuilder()
-            .WithDescription(
-                new string(
-                    'D',
-                    _116.Tests.Fixtures.Constants.TestConstants.Content.PricingTier.DescriptionMaxLength + 1
-                )
-            )
+            .WithDescription(new string('D', TestConstants.Content.PricingTier.DescriptionMaxLength + 1))
             .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PricingTiers}/{id}", request);
