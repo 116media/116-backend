@@ -1,3 +1,4 @@
+using System.Reflection;
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Builders.Entities.Content;
 using _116.Tests.Fixtures.Constants;
@@ -96,6 +97,24 @@ public static class LyricsFactory
     /// </summary>
     public static LyricsEntity CreatePublishedForArtist(Guid categoryId, Guid artistId) =>
         new LyricsBuilder(categoryId).WithArtistId(artistId).AsPublished().Build();
+
+    /// <summary>
+    /// Creates a published lyrics page linked to a real, addressable album, used to exercise
+    /// the "more from this album" sibling-track lookup.
+    /// </summary>
+    public static LyricsEntity CreatePublishedForAlbum(Guid categoryId, Guid albumId) =>
+        new LyricsBuilder(categoryId).WithAlbumId(albumId).AsPublished().Build();
+
+    /// <summary>
+    /// Creates a published lyrics page with the Video navigation property loaded via reflection.
+    /// Use this when the test exercises a specification that reads <c>entity.Video.CategoryId</c>.
+    /// </summary>
+    public static LyricsEntity CreatePublishedWithVideoNavigation(Guid categoryId, VideoEntity video)
+    {
+        LyricsEntity entity = new LyricsBuilder(categoryId).WithVideoId(video.Id).AsPublished().Build();
+        typeof(LyricsEntity).GetProperty("Video", BindingFlags.Public | BindingFlags.Instance)!.SetValue(entity, video);
+        return entity;
+    }
 
     /// <summary>
     /// Creates a list of free lyrics pages in Draft status.
