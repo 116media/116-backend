@@ -103,7 +103,7 @@ public class CategoryMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
         var fileRepository = Resolve<IFileRepository>();
         CategoryDto dto = await loaded.ToCategoryDtoAsync(_mapper, fileRepository);
 
-        dto.Pricing.Should().HaveCount(1);
+        dto.Pricing.Should().ContainSingle();
         dto.Pricing[0].TierName.Should().Be("base_upload");
         dto.Pricing[0].PriceUsd.Should().Be(25.00m);
     }
