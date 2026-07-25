@@ -1,0 +1,76 @@
+using _116.Content.Application.Editorial.UseCases.Public.Commands.RequestArtistClaim.V1;
+using _116.Content.Domain.Entities;
+using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Factories.Content;
+
+namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Commands.RequestArtistClaim.V1;
+
+/// <summary>
+/// Integration tests for the PublicRequestArtistClaim endpoint.
+/// </summary>
+[Collection("Database")]
+public class PublicRequestArtistClaimEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
+{
+    private async Task<ArtistEntity> SeedArtistAsync()
+    {
+        return await SeedAsync<ContentDbContext, ArtistEntity>(ctx =>
+        {
+            ArtistEntity artist = ArtistFactory.Create();
+            ctx.Artists.Add(artist);
+            return artist;
+        });
+    }
+
+    [Fact]
+    public async Task RequestArtistClaim_WithNoAuth_ReturnsUnauthorized()
+    {
+        Client.ClearAuthentication();
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Artists.Claim(Guid.NewGuid()), new { });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task RequestArtistClaim_AsAuthenticatedVisitor_WithNonExistentArtist_ReturnsNotFound()
+    {
+        Client.AuthenticateAsVisitor();
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Artists.Claim(Guid.NewGuid()), new { });
+
+        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task RequestArtistClaim_AsAuthenticatedVisitor_WithExistingArtist_ReturnsSuccess()
+    {
+        ArtistEntity artist = await SeedArtistAsync();
+        Client.AuthenticateAsVisitor();
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Artists.Claim(artist.Id), new { });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        PublicRequestArtistClaimResponse body = await response.ReadAsAsync<PublicRequestArtistClaimResponse>();
+        body.IsSuccess.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Requesting a claim is purely a logged audit signal for this phase — it must never mutate
+    /// <see cref="ArtistEntity.UserId"/> or <see cref="ArtistEntity.VerifiedAt"/>. Only the
+    /// separate admin verify-owner action does that.
+    /// </summary>
+    [Fact]
+    public async Task RequestArtistClaim_ShouldNotMutateArtistUserId()
+    {
+        ArtistEntity artist = await SeedArtistAsync();
+        Client.AuthenticateAsVisitor();
+
+        await Client.PostAsJsonAsync(Routes.Public.Artists.Claim(artist.Id), new { });
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        ArtistEntity? persisted = await ctx.Artists.FindAsync(artist.Id);
+        persisted!.UserId.Should().BeNull();
+        persisted.VerifiedAt.Should().BeNull();
+    }
+}
