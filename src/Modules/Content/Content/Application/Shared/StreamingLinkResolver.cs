@@ -44,8 +44,10 @@ public static class StreamingLinkResolver
 
     /// <summary>
     /// Builds a generated search-query URL for a platform when no curated link exists.
+    /// Internal rather than private so the unsupported-platform guard below stays directly
+    /// testable — <see cref="ResolveStreamingLinks" /> only ever feeds it declared enum members.
     /// </summary>
-    private static string GenerateSearchUrl(EnumStreamingPlatform platform, string artistName, string releaseName)
+    internal static string GenerateSearchUrl(EnumStreamingPlatform platform, string artistName, string releaseName)
     {
         string query = WebUtility.UrlEncode($"{artistName} {releaseName}");
 
