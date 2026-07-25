@@ -286,4 +286,103 @@ public class VideoSpecificationsTests
     }
 
     #endregion
+
+    #region VideoByArtistSpecification
+
+    [Fact]
+    public void VideoByArtistSpecification_WithMatchingArtistId_ShouldReturnTrue()
+    {
+        // Arrange
+        Guid artistId = Guid.NewGuid();
+        VideoEntity video = VideoFactory.CreateForArtist(CategoryId, artistId);
+        var spec = new VideoByArtistSpecification(artistId);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(video);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void VideoByArtistSpecification_WithDifferentArtistId_ShouldReturnFalse()
+    {
+        // Arrange
+        VideoEntity video = VideoFactory.CreateForArtist(CategoryId, Guid.NewGuid());
+        var spec = new VideoByArtistSpecification(Guid.NewGuid());
+
+        // Act
+        bool result = spec.IsSatisfiedBy(video);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region VideoRatingByUserIdSpecification
+
+    [Fact]
+    public void VideoRatingByUserIdSpecification_WithMatchingUserId_ShouldReturnTrue()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        VideoRatingEntity rating = VideoRatingFactory.Create(Guid.NewGuid(), userId);
+        var spec = new VideoRatingByUserIdSpecification(userId);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(rating);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void VideoRatingByUserIdSpecification_WithDifferentUserId_ShouldReturnFalse()
+    {
+        // Arrange
+        VideoRatingEntity rating = VideoRatingFactory.Create(Guid.NewGuid(), Guid.NewGuid());
+        var spec = new VideoRatingByUserIdSpecification(Guid.NewGuid());
+
+        // Act
+        bool result = spec.IsSatisfiedBy(rating);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region VideoShareByUserIdSpecification
+
+    [Fact]
+    public void VideoShareByUserIdSpecification_WithMatchingUserId_ShouldReturnTrue()
+    {
+        // Arrange
+        Guid userId = Guid.NewGuid();
+        VideoShareEntity share = VideoShareEntity.Create(Guid.NewGuid(), userId, Guid.NewGuid());
+        var spec = new VideoShareByUserIdSpecification(userId);
+
+        // Act
+        bool result = spec.IsSatisfiedBy(share);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void VideoShareByUserIdSpecification_WithAnonymousShare_ShouldReturnFalse()
+    {
+        // Arrange
+        VideoShareEntity share = VideoShareEntity.Create(Guid.NewGuid(), userId: null, videoId: Guid.NewGuid());
+        var spec = new VideoShareByUserIdSpecification(Guid.NewGuid());
+
+        // Act
+        bool result = spec.IsSatisfiedBy(share);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
 }
