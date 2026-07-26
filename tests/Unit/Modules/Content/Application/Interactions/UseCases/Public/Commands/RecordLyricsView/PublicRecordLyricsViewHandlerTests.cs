@@ -361,6 +361,66 @@ public class PublicRecordLyricsViewHandlerTests
         _lyricsRepositoryMock.VerifyHasCountedViewSinceNotCalled();
     }
 
+    [Fact]
+    public async Task Handle_WhenOnlyIpAddressIsAvailable_ShouldDeduplicateOnTheIpKey()
+    {
+        // Arrange — no user id and no device id, so the IP address is the strongest signal left.
+        LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
+        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
+
+        LyricsViewEventEntity? recorded = null;
+        _lyricsRepositoryMock.SetupCaptureViewEvent(viewEvent => recorded = viewEvent);
+
+        const string ipAddress = "196.4.10.22";
+        var command = new PublicRecordLyricsViewCommand(
+            LyricsId: lyrics.Id,
+            UserId: null,
+            DeviceId: null,
+            IpAddress: ipAddress,
+            UserAgent: null,
+            DwellMs: (int)LyricsViewCountingConstants.MaxRequiredDwell.TotalMilliseconds,
+            ScrollDepthRatio: 1.0
+        );
+
+        // Act
+        PublicRecordLyricsViewResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        recorded.Should().NotBeNull();
+        recorded!.DedupKey.Should().Be($"ip:{ipAddress}");
+        result.IsCounted.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Handle_WhenUserIsAuthenticated_ShouldPreferTheUserDedupKeyOverDeviceAndIp()
+    {
+        // Arrange — all three signals present; the user id must win.
+        LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
+        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
+
+        LyricsViewEventEntity? recorded = null;
+        _lyricsRepositoryMock.SetupCaptureViewEvent(viewEvent => recorded = viewEvent);
+
+        var userId = Guid.NewGuid();
+        var command = new PublicRecordLyricsViewCommand(
+            LyricsId: lyrics.Id,
+            UserId: userId,
+            DeviceId: "device-abc",
+            IpAddress: "196.4.10.22",
+            UserAgent: null,
+            DwellMs: (int)LyricsViewCountingConstants.MaxRequiredDwell.TotalMilliseconds,
+            ScrollDepthRatio: 1.0
+        );
+
+        // Act
+        PublicRecordLyricsViewResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        recorded.Should().NotBeNull();
+        recorded!.DedupKey.Should().Be($"user:{userId}");
+        result.IsCounted.Should().BeTrue();
+    }
+
     #endregion
 
     #region Failure Cases
