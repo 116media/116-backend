@@ -176,21 +176,20 @@ public class CategoryEntity : Aggregate<Guid>
     /// <param name="description">The new description.</param>
     /// <param name="isGossip">Whether this is the gossip category used for homepage feed fallbacks.</param>
     /// <param name="isExclusive">Whether this category is the exclusive show featured on the homepage.</param>
-    /// <param name="errors">The errors factory instance.</param>
     /// <param name="isDefaultForLyrics">
-    /// Whether this is the default category assigned to lyrics pages. Defaults to <c>false</c> and
-    /// is trailing/optional so existing call sites that do not yet thread this value through keep
-    /// compiling; once an admin update use case is wired to it, callers must pass the current value
-    /// explicitly or this call will silently clear the flag.
+    /// Whether this is the default category assigned to lyrics pages. Required — deliberately not
+    /// optional, because a defaulted value here silently clears a persisted flag at every call site
+    /// that omits it. Callers must pass the intended value explicitly.
     /// </param>
+    /// <param name="errors">The errors factory instance.</param>
     public void Update(
         string name,
         string slug,
         string description,
         bool isGossip,
         bool isExclusive,
-        CategoryErrors errors,
-        bool isDefaultForLyrics = false
+        bool isDefaultForLyrics,
+        CategoryErrors errors
     )
     {
         if (string.IsNullOrWhiteSpace(value: name))
