@@ -114,6 +114,16 @@ public class CategoryErrorMessage(IStringLocalizer<CategoryErrorMessage> localiz
     public string OnlyVideoCategoryCanBeExclusive() => localizer["OnlyVideoCategoryCanBeExclusive"];
 
     /// <summary>
+    /// Gets an error message for when an inactive category is set as the lyrics default.
+    /// </summary>
+    public string CannotMakeInactiveDefaultForLyrics() => localizer["CannotMakeInactiveDefaultForLyrics"];
+
+    /// <summary>
+    /// Gets an error message for when a non-lyrics category is set as the lyrics default.
+    /// </summary>
+    public string OnlyLyricsCategoryCanBeDefault() => localizer["OnlyLyricsCategoryCanBeDefault"];
+
+    /// <summary>
     /// Gets an error message for when no exclusive category is currently set.
     /// </summary>
     public string NoExclusiveCategoryFound() => localizer["NoExclusiveCategoryFound"];
