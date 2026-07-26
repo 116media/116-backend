@@ -114,6 +114,22 @@ public class CategoryErrors(CategoryErrorMessage i18n)
     }
 
     /// <summary>
+    /// Throws when attempting to mark an inactive category as the default for lyrics pages.
+    /// </summary>
+    public BadRequestException CannotMakeInactiveDefaultForLyrics()
+    {
+        return new BadRequestException(i18n.CannotMakeInactiveDefaultForLyrics());
+    }
+
+    /// <summary>
+    /// Throws when a category outside the Lyrics content type is set as the lyrics default.
+    /// </summary>
+    public BadRequestException OnlyLyricsCategoryCanBeDefault()
+    {
+        return new BadRequestException(i18n.OnlyLyricsCategoryCanBeDefault());
+    }
+
+    /// <summary>
     /// Throws when no exclusive category is currently set.
     /// </summary>
     public NotFoundException NoExclusiveCategoryFound()
