@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyricsMetadata.V1;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
@@ -152,5 +153,40 @@ public class AdminUpdateLyricsMetadataEndpointV1Tests(PostgresFixture db) : Base
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    /// <summary>
+    /// Over-length values for the four optional free-text song credits are rejected end-to-end,
+    /// driving the maximum-length branch of the <c>ValidAlbum</c>, <c>ValidLabel</c>,
+    /// <c>ValidSongwriter</c>, and <c>ValidProducer</c> rules in <c>EditorialValidation</c>, and
+    /// leaving the persisted credits untouched.
+    /// </summary>
+    [Fact]
+    public async Task UpdateLyricsMetadata_WithOverLongCredits_ReturnsValidationProblem()
+    {
+        LyricsEntity lyrics = await SeedLyricsAsync();
+        Client.AuthenticateAsSuperAdmin();
+
+        var request = new AdminUpdateLyricsMetadataRequest(
+            Album: new string('a', ContentConstants.MaxAlbumNameLength + 1),
+            ReleaseYear: null,
+            Label: new string('l', ContentConstants.MaxLabelNameLength + 1),
+            Songwriter: new string('s', ContentConstants.MaxCreditNameLength + 1),
+            Producer: new string('p', ContentConstants.MaxCreditNameLength + 1)
+        );
+
+        var response = await Client.PutAsJsonAsync(
+            Routes.Admin.Editorial.Metadata(EditorialRouteConstants.Lyrics, lyrics.Id),
+            request
+        );
+
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        LyricsEntity? persisted = await ctx.Lyrics.FindAsync(lyrics.Id);
+        persisted!.Album.Should().BeNull();
+        persisted.Label.Should().BeNull();
+        persisted.Songwriter.Should().BeNull();
+        persisted.Producer.Should().BeNull();
     }
 }
