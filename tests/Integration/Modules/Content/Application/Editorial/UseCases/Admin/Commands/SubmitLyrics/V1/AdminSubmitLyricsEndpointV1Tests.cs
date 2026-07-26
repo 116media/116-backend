@@ -125,4 +125,39 @@ public class AdminSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         body.IsSuccess.Should().BeTrue();
         (await GetLyricsStatusAsync(lyrics.Id)).Should().Be(EnumContentStatus.PendingReview);
     }
+
+    /// <summary>
+    /// Submitting a paid lyrics page whose order has not been paid moves it to
+    /// <c>PendingPayment</c>; submitting it a second time takes the already-pending-payment
+    /// early return in <c>LyricsEntity.Submit</c>, which the handler surfaces as
+    /// <c>LyricsErrors.AlreadySubmitted</c> — a 409 Conflict that leaves the status untouched.
+    /// </summary>
+    [Fact]
+    public async Task SubmitLyrics_AsSuperAdmin_PaidLyricsAlreadySubmitted_ReturnsConflict()
+    {
+        LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            CustomerEntity customer = CustomerFactory.Create();
+            LyricsEntity paidLyrics = LyricsFactory.CreatePaid(category.Id, customer.Id, Guid.NewGuid());
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Customers.Add(customer);
+            ctx.Lyrics.Add(paidLyrics);
+            return paidLyrics;
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        string url = Routes.Admin.Editorial.Submit(EditorialRouteConstants.Lyrics, lyrics.Id);
+
+        var firstResponse = await Client.PatchAsync(url, null);
+        firstResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await GetLyricsStatusAsync(lyrics.Id)).Should().Be(EnumContentStatus.PendingPayment);
+
+        var secondResponse = await Client.PatchAsync(url, null);
+
+        await secondResponse.ShouldBeProblem(HttpStatusCode.Conflict);
+        (await GetLyricsStatusAsync(lyrics.Id)).Should().Be(EnumContentStatus.PendingPayment);
+    }
 }
