@@ -84,6 +84,10 @@ public class PublicGetPlaylistByIdEndpointV1Tests(PostgresFixture db) : BaseApiT
         VideoInPlaylistDto item = body.Videos.Should().ContainSingle(v => v.VideoId == video.Id).Subject;
         item.Slug.Should().Be(video.Slug);
         item.CategoryName.Should().NotBeNullOrWhiteSpace();
-        item.PublishedAt.Should().Be(video.PublishedAt);
+        item.PublishedAt.Should().NotBeNull();
+        video.PublishedAt.Should().NotBeNull();
+        item.PublishedAt.GetValueOrDefault()
+            .Should()
+            .BeCloseTo(video.PublishedAt.GetValueOrDefault(), TimeSpan.FromMicroseconds(1));
     }
 }

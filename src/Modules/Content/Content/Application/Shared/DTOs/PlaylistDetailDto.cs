@@ -9,6 +9,7 @@ namespace _116.Content.Application.Shared.DTOs;
 /// <param name="CategoryName">The display name of the video's category.</param>
 /// <param name="ThumbnailUrl">The URL of the video thumbnail, or null if not set.</param>
 /// <param name="PublishedAt">When the video was published.</param>
+/// <param name="ShareCount">The cached number of times the video was shared.</param>
 /// <param name="RatingAverage">The cached average star rating of the video.</param>
 /// <param name="RatingCount">The total number of ratings received by the video.</param>
 /// <param name="SortOrder">The display order of this video within the playlist.</param>
@@ -19,6 +20,7 @@ public record VideoInPlaylistDto(
     string CategoryName,
     string? ThumbnailUrl,
     DateTimeOffset? PublishedAt,
+    int ShareCount,
     decimal RatingAverage,
     int RatingCount,
     int SortOrder

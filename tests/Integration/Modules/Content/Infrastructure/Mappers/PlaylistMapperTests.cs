@@ -52,6 +52,7 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
         await seedContext.SaveChangesAsync();
 
         var video = VideoFactory.Create(category.Id);
+        video.IncrementShareCount();
         seedContext.Videos.Add(video);
         await seedContext.SaveChangesAsync();
 
@@ -74,6 +75,7 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
         dto.Id.Should().Be(playlist.Id);
         dto.Videos.Should().HaveCount(1);
         dto.Videos[0].Title.Should().Be(video.Title);
+        dto.Videos[0].ShareCount.Should().Be(1);
     }
 
     [Fact]
