@@ -1,6 +1,8 @@
+using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics.V1;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteLyrics.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.DeleteLyrics.V1;
@@ -84,5 +86,54 @@ public class AdminDeleteLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         LyricsEntity? persisted = await ctx.Lyrics.FindAsync(lyrics.Id);
         persisted.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Verifies that deleting a lyrics page linked to a video clears the parent video's
+    /// <c>HasLyrics</c> flag through <c>VideoEntity.UnmarkHasLyrics</c>, so the video page stops
+    /// advertising a lyrics companion that no longer exists.
+    /// </summary>
+    [Fact]
+    public async Task DeleteLyrics_AsSuperAdmin_LinkedToVideo_ClearsVideoHasLyricsFlag()
+    {
+        Guid categoryId = Guid.Empty;
+        VideoEntity video = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            VideoEntity parentVideo = VideoFactory.Create(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Videos.Add(parentVideo);
+            categoryId = category.Id;
+            return parentVideo;
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        AdminCreateLyricsRequest createRequest = new AdminCreateLyricsRequestBuilder()
+            .WithCategoryId(categoryId)
+            .WithSlug($"delete-video-linked-{Guid.NewGuid().ToString("N")[..8]}")
+            .WithVideoId(video.Id)
+            .Build();
+
+        var createResponse = await Client.PostAsJsonAsync(ApiRoutes.Admin.Lyrics, createRequest);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var created = await createResponse.ReadAsAsync<AdminCreateLyricsResponse>();
+
+        await using (ContentDbContext linkedCtx = CreateDbContext<ContentDbContext>())
+        {
+            VideoEntity? linkedVideo = await linkedCtx.Videos.FindAsync(video.Id);
+            linkedVideo!.HasLyrics.Should().BeTrue();
+        }
+
+        var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Lyrics}/{created.Lyrics.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        VideoEntity? persistedVideo = await ctx.Videos.FindAsync(video.Id);
+        persistedVideo.Should().NotBeNull();
+        persistedVideo!.HasLyrics.Should().BeFalse();
+        (await ctx.Lyrics.FindAsync(created.Lyrics.Id)).Should().BeNull();
     }
 }
