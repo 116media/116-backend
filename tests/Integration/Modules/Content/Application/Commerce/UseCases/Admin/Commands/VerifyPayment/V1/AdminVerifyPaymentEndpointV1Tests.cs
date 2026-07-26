@@ -318,4 +318,93 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         persistedLyrics!.IsPromoted.Should().BeFalse();
         persistedLyrics.Status.Should().Be(EnumContentStatus.Published);
     }
+
+    /// <summary>
+    /// Verifying payment for an order item bought with the social-boost add-on stamps
+    /// <c>SocialBoost</c> on the video fulfilling that item, exercising
+    /// <c>VideoEntity.StampSocialBoost</c> — the only path that sets the flag from Commerce.
+    /// </summary>
+    [Fact]
+    public async Task VerifyPayment_WithSocialBoostVideoOrderItem_StampsSocialBoostOnVideo()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        CustomerEntity customer = CustomerFactory.CreateWithId(order.CustomerId);
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        ContentOrderItemEntity orderItem = ContentOrderItemFactory.CreateSocialBoost(order.Id, category.Id);
+        VideoEntity video = VideoFactory.CreatePaid(category.Id, customer.Id, orderItem.Id);
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentOrderItems.Add(orderItem);
+            ctx.Videos.Add(video);
+            ctx.ContentPayments.Add(payment);
+        });
+
+        video.SocialBoost.Should().BeFalse();
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl };
+        var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
+        {
+            Content = JsonContent.Create(request),
+        };
+
+        var response = await Client.SendAsync(msg);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using ContentDbContext db = CreateDbContext<ContentDbContext>();
+        VideoEntity? persistedVideo = await db.Videos.FindAsync(video.Id);
+        persistedVideo!.SocialBoost.Should().BeTrue();
+        persistedVideo.Status.Should().Be(EnumContentStatus.PendingReview);
+    }
+
+    /// <summary>
+    /// The article counterpart of the social-boost stamp: verifying payment for a social-boost
+    /// order item fulfilled by an article exercises <c>ArticleEntity.StampSocialBoost</c>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyPayment_WithSocialBoostArticleOrderItem_StampsSocialBoostOnArticle()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        CustomerEntity customer = CustomerFactory.CreateWithId(order.CustomerId);
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        ContentOrderItemEntity orderItem = ContentOrderItemFactory.CreateSocialBoost(order.Id, category.Id);
+        ArticleEntity article = ArticleFactory.CreatePaid(category.Id, customer.Id, orderItem.Id);
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentOrderItems.Add(orderItem);
+            ctx.Articles.Add(article);
+            ctx.ContentPayments.Add(payment);
+        });
+
+        article.SocialBoost.Should().BeFalse();
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl };
+        var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
+        {
+            Content = JsonContent.Create(request),
+        };
+
+        var response = await Client.SendAsync(msg);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using ContentDbContext db = CreateDbContext<ContentDbContext>();
+        ArticleEntity? persistedArticle = await db.Articles.FindAsync(article.Id);
+        persistedArticle!.SocialBoost.Should().BeTrue();
+        persistedArticle.Status.Should().Be(EnumContentStatus.PendingReview);
+    }
 }
