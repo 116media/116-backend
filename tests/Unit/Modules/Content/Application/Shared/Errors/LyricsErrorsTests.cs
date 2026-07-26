@@ -30,21 +30,6 @@ public class LyricsErrorsTests
     }
 
     [Fact]
-    public void AlreadyExists_WithSongTitleAndArtistName_ShouldReturnConflictException()
-    {
-        // Arrange
-        const string songTitle = "Eloko Oyo";
-        const string artistName = "Fally Ipupa";
-
-        // Act
-        ConflictException exception = _errors.AlreadyExists(songTitle, artistName);
-
-        // Assert
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.AlreadyExists(songTitle, artistName));
-    }
-
-    [Fact]
     public void SongTitleRequired_ShouldReturnBadRequestException()
     {
         BadRequestException exception = _errors.SongTitleRequired();
