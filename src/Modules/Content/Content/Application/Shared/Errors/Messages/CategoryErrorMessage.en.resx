@@ -78,4 +78,10 @@
   <data name="DefaultLyricsCategoryNotConfigured" xml:space="preserve">
     <value>No default lyrics category has been configured yet.</value>
   </data>
+  <data name="CannotMakeInactiveDefaultForLyrics" xml:space="preserve">
+    <value>Cannot mark an inactive category as the lyrics default.</value>
+  </data>
+  <data name="OnlyLyricsCategoryCanBeDefault" xml:space="preserve">
+    <value>Only lyrics categories can be marked as the lyrics default.</value>
+  </data>
 </root>
