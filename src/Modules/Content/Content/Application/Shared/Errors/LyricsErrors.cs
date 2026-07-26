@@ -5,7 +5,7 @@ namespace _116.Content.Application.Shared.Errors;
 
 /// <summary>
 /// Lyrics domain error factory providing simple, readable exception creation.
-/// Usage: LyricsErrors.NotFound(id) or LyricsErrors.AlreadyExists(songTitle, artistName)
+/// Usage: LyricsErrors.NotFound(id) or LyricsErrors.SlugAlreadyExists(slug)
 /// </summary>
 public class LyricsErrors(LyricsErrorMessage i18n)
 {
@@ -20,14 +20,6 @@ public class LyricsErrors(LyricsErrorMessage i18n)
     public NotFoundException NotFound(Guid id)
     {
         return new NotFoundException("Lyrics", "id", keyValue: id);
-    }
-
-    /// <summary>
-    /// Throws when lyrics for the given song and artist already exist.
-    /// </summary>
-    public ConflictException AlreadyExists(string songTitle, string artistName)
-    {
-        return new ConflictException(i18n.AlreadyExists(songTitle: songTitle, artistName: artistName));
     }
 
     /// <summary>
