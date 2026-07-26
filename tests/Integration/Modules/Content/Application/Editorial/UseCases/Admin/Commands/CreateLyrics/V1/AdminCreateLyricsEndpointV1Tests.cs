@@ -213,4 +213,46 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         persisted!.CustomerId.Should().Be(customer.Id);
         persisted.OrderItemId.Should().Be(orderItemId);
     }
+
+    /// <summary>
+    /// Verifies that creating a lyrics page linked to a video flips the parent video's
+    /// <c>HasLyrics</c> flag through <c>VideoEntity.MarkHasLyrics</c>, so the video page knows
+    /// it now has a lyrics companion.
+    /// </summary>
+    [Fact]
+    public async Task CreateLyrics_AsSuperAdmin_LinkedToVideo_MarksVideoAsHavingLyrics()
+    {
+        Guid categoryId = Guid.Empty;
+        VideoEntity video = await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            VideoEntity parentVideo = VideoFactory.Create(category.Id);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Videos.Add(parentVideo);
+            categoryId = category.Id;
+            return parentVideo;
+        });
+
+        video.HasLyrics.Should().BeFalse();
+
+        Client.AuthenticateAsSuperAdmin();
+        AdminCreateLyricsRequest request = new AdminCreateLyricsRequestBuilder()
+            .WithCategoryId(categoryId)
+            .WithSlug($"video-linked-lyrics-{Guid.NewGuid().ToString("N")[..8]}")
+            .WithVideoId(video.Id)
+            .Build();
+
+        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Lyrics, request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var body = await response.ReadAsAsync<AdminCreateLyricsResponse>();
+        body.Lyrics.VideoId.Should().Be(video.Id);
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        VideoEntity? persistedVideo = await ctx.Videos.FindAsync(video.Id);
+        persistedVideo.Should().NotBeNull();
+        persistedVideo!.HasLyrics.Should().BeTrue();
+    }
 }
