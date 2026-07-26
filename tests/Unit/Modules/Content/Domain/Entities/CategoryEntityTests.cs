@@ -89,7 +89,7 @@ public class CategoryEntityTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        category.Update("New Name", "new-slug", "New description", false, false, errors);
+        category.Update("New Name", "new-slug", "New description", false, false, false, errors);
 
         category.Name.Should().Be("New Name");
         category.Slug.Should().Be("new-slug");
@@ -103,7 +103,7 @@ public class CategoryEntityTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        Action act = () => category.Update("", "valid-slug", "desc", false, false, errors);
+        Action act = () => category.Update("", "valid-slug", "desc", false, false, false, errors);
 
         act.Should().Throw<BadRequestException>();
     }
@@ -115,7 +115,7 @@ public class CategoryEntityTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        Action act = () => category.Update("Valid Name", "  ", "desc", false, false, errors);
+        Action act = () => category.Update("Valid Name", "  ", "desc", false, false, false, errors);
 
         act.Should().Throw<BadRequestException>();
     }
@@ -222,7 +222,7 @@ public class CategoryEntityTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        category.Update("Name", "slug", "desc", false, true, errors);
+        category.Update("Name", "slug", "desc", false, true, false, errors);
 
         category.IsExclusive.Should().BeTrue();
     }
@@ -407,7 +407,7 @@ public class CategoryEntityTests
         CategoryEntity category = CategoryFactory.Create(contentTypeId);
         var errors = TestErrorsFactory.CreateCategoryErrors();
 
-        category.Update("Name", "slug", "desc", false, false, errors, isDefaultForLyrics: true);
+        category.Update("Name", "slug", "desc", false, false, isDefaultForLyrics: true, errors: errors);
 
         category.IsDefaultForLyrics.Should().BeTrue();
     }
