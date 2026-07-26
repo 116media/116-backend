@@ -10,6 +10,7 @@ using _116.Integration.Tests.Common.Stubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.IdentityModel.Tokens;
 
@@ -26,6 +27,15 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
 {
     private readonly PostgresFixture _db = db;
 
+    /// <summary>
+    /// Controls whether the production rate limit policies are replaced with no-op limiters.
+    /// Defaults to <c>true</c> so that the shared test host never returns 429 responses and
+    /// tests may issue as many requests as they need.
+    /// Derived fixtures that assert real rate limiting behaviour override this to <c>false</c>,
+    /// which leaves the production <c>AddRateLimiting</c> configuration untouched.
+    /// </summary>
+    protected virtual bool DisableRateLimits => true;
+
     /// <inheritdoc />
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -38,7 +48,11 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
             ReplaceDbContexts(services);
             StubExternalServices(services);
             OverrideJwtAuthentication(services);
-            DisableRateLimiting(services);
+
+            if (DisableRateLimits)
+            {
+                DisableRateLimiting(services);
+            }
         });
     }
 
@@ -139,7 +153,7 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     /// </summary>
     private static void DisableRateLimiting(IServiceCollection services)
     {
-        var optionsType = typeof(Microsoft.AspNetCore.RateLimiting.RateLimiterOptions);
+        var optionsType = typeof(RateLimiterOptions);
 
         var configureDescriptors = services
             .Where(d =>
@@ -155,7 +169,7 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
             services.Remove(d);
         }
 
-        services.Configure<Microsoft.AspNetCore.RateLimiting.RateLimiterOptions>(options =>
+        services.Configure<RateLimiterOptions>(options =>
         {
             options.RejectionStatusCode = 429;
 
