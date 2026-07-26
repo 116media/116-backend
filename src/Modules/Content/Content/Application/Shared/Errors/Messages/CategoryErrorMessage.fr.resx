@@ -78,4 +78,10 @@
   <data name="DefaultLyricsCategoryNotConfigured" xml:space="preserve">
     <value>Aucune catégorie de paroles par défaut n'a encore été configurée.</value>
   </data>
+  <data name="CannotMakeInactiveDefaultForLyrics" xml:space="preserve">
+    <value>Impossible de définir une catégorie inactive comme catégorie de paroles par défaut.</value>
+  </data>
+  <data name="OnlyLyricsCategoryCanBeDefault" xml:space="preserve">
+    <value>Seules les catégories de paroles peuvent être définies comme catégorie par défaut.</value>
+  </data>
 </root>
