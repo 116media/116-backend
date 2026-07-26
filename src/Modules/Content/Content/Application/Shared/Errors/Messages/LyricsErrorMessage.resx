@@ -12,9 +12,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AlreadyExists" xml:space="preserve">
-    <value>Lyrics for '{0}' by '{1}' already exist.</value>
-  </data>
   <data name="SongTitleRequired" xml:space="preserve">
     <value>Song title is required.</value>
   </data>
