@@ -40,67 +40,117 @@ public class AdminVerifyPaymentFactory(
 
         foreach (ContentOrderItemEntity item in order.Items)
         {
-            ArticleEntity? article = await articleRepository.GetByOrderItemIdAsync(
-                orderItemId: item.Id,
-                cancellationToken: cancellationToken
-            );
-
-            VideoEntity? video = article is null
-                ? await videoRepository.GetByOrderItemIdAsync(
-                    orderItemId: item.Id,
-                    cancellationToken: cancellationToken
-                )
-                : null;
-
-            LyricsEntity? lyrics =
-                article is null && video is null
-                    ? await lyricsRepository.GetByOrderItemIdAsync(
-                        orderItemId: item.Id,
-                        cancellationToken: cancellationToken
-                    )
-                    : null;
-
-            if (item.SocialBoost)
-            {
-                article?.StampSocialBoost();
-                video?.StampSocialBoost();
-            }
-
-            if (item.PromotionLevelId.HasValue)
-            {
-                PromotionLevelEntity promoLevel = await lookupRepository.GetPromotionLevelByIdOrThrowAsync(
-                    id: item.PromotionLevelId.Value,
-                    cancellationToken: cancellationToken
-                );
-
-                DateTimeOffset promotedUntil = DateTimeOffset.UtcNow.AddDays(promoLevel.DurationDays);
-                article?.StampPromotion(promotionLevelId: promoLevel.Id, until: promotedUntil);
-                video?.StampPromotion(promotionLevelId: promoLevel.Id, until: promotedUntil);
-                lyrics?.StampPromotion(promotionLevelId: promoLevel.Id, until: promotedUntil);
-            }
-
-            article?.MarkPendingReview();
-            video?.MarkPendingReview();
-            lyrics?.MarkPendingReview();
-
-            if (article is not null)
-            {
-                articleRepository.Update(article: article);
-            }
-
-            if (video is not null)
-            {
-                videoRepository.Update(video: video);
-            }
-
-            if (lyrics is not null)
-            {
-                lyricsRepository.Update(lyrics: lyrics);
-            }
+            await ApplyPaidEffectsAsync(item: item, cancellationToken: cancellationToken);
         }
 
         await contentOrderRepository.UpdatePaymentAsync(payment: payment, ct: cancellationToken);
         await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
     }
+
+    /// <summary>
+    /// Applies the post-payment effects to whichever content record fulfils this order item.
+    /// An order item is fulfilled by exactly one content type, so the first match wins and the
+    /// remaining lookups are skipped.
+    /// </summary>
+    /// <param name="item">The paid order item to apply effects for.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    private async Task ApplyPaidEffectsAsync(ContentOrderItemEntity item, CancellationToken cancellationToken)
+    {
+        Promotion? promotion = await ResolvePromotionAsync(item: item, cancellationToken: cancellationToken);
+
+        ArticleEntity? article = await articleRepository.GetByOrderItemIdAsync(
+            orderItemId: item.Id,
+            cancellationToken: cancellationToken
+        );
+
+        if (article is not null)
+        {
+            if (item.SocialBoost)
+            {
+                article.StampSocialBoost();
+            }
+
+            if (promotion is not null)
+            {
+                article.StampPromotion(promotionLevelId: promotion.LevelId, until: promotion.Until);
+            }
+
+            article.MarkPendingReview();
+            articleRepository.Update(article: article);
+            return;
+        }
+
+        VideoEntity? video = await videoRepository.GetByOrderItemIdAsync(
+            orderItemId: item.Id,
+            cancellationToken: cancellationToken
+        );
+
+        if (video is not null)
+        {
+            if (item.SocialBoost)
+            {
+                video.StampSocialBoost();
+            }
+
+            if (promotion is not null)
+            {
+                video.StampPromotion(promotionLevelId: promotion.LevelId, until: promotion.Until);
+            }
+
+            video.MarkPendingReview();
+            videoRepository.Update(video: video);
+            return;
+        }
+
+        LyricsEntity? lyrics = await lyricsRepository.GetByOrderItemIdAsync(
+            orderItemId: item.Id,
+            cancellationToken: cancellationToken
+        );
+
+        if (lyrics is not null)
+        {
+            // No social boost here: a lyrics page has no social boost concept, unlike articles
+            // and videos. This omission is intentional, not a missing case.
+            if (promotion is not null)
+            {
+                lyrics.StampPromotion(promotionLevelId: promotion.LevelId, until: promotion.Until);
+            }
+
+            lyrics.MarkPendingReview();
+            lyricsRepository.Update(lyrics: lyrics);
+        }
+    }
+
+    /// <summary>
+    /// Resolves the promotion level an order item was bought with and the moment that promotion
+    /// expires, or <c>null</c> when the item carries no promotion.
+    /// </summary>
+    /// <param name="item">The order item to resolve the promotion for.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The resolved promotion, or <c>null</c> when the item is not promoted.</returns>
+    private async Task<Promotion?> ResolvePromotionAsync(
+        ContentOrderItemEntity item,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!item.PromotionLevelId.HasValue)
+        {
+            return null;
+        }
+
+        PromotionLevelEntity promoLevel = await lookupRepository.GetPromotionLevelByIdOrThrowAsync(
+            id: item.PromotionLevelId.Value,
+            cancellationToken: cancellationToken
+        );
+
+        return new Promotion(LevelId: promoLevel.Id, Until: DateTimeOffset.UtcNow.AddDays(promoLevel.DurationDays));
+    }
+
+    /// <summary>
+    /// A resolved promotion purchase, applied identically to every content type that supports it.
+    /// </summary>
+    /// <param name="LevelId">The purchased promotion level.</param>
+    /// <param name="Until">The moment the promotion expires.</param>
+    private sealed record Promotion(Guid LevelId, DateTimeOffset Until);
 }
