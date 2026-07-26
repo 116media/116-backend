@@ -184,4 +184,34 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
+
+    /// <summary>
+    /// The slug is optional on a community submission, but when one is supplied it still has to
+    /// be a well-formed slug. A present-but-malformed value drives the optional (non-required)
+    /// branch of <c>ValidLyricsSlug</c> in <c>EditorialValidation</c> — the branch whose
+    /// <c>When</c> predicate only lets the format rules run for a non-blank value — and nothing
+    /// is queued.
+    /// </summary>
+    [Fact]
+    public async Task SubmitLyrics_WithMalformedOptionalSlug_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsVisitor();
+
+        var response = await Client.PostAsJsonAsync(
+            Routes.Public.LyricsSubmissionsAndRevisions.Submissions(),
+            new PublicSubmitLyricsRequest(
+                "Eloko Oyo",
+                "Fally Ipupa",
+                "Some submitted lyrics text.",
+                "fr",
+                "INVALID SLUG!!!"
+            )
+        );
+
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        bool anySubmissionCreated = await ctx.LyricsSubmissions.AnyAsync();
+        anySubmissionCreated.Should().BeFalse();
+    }
 }
