@@ -303,5 +303,67 @@ public class AdminVerifyPaymentFactoryTests
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
+    /// <summary>
+    /// An order item is fulfilled by exactly one content type, so resolving an article must stop
+    /// the search: the video and lyrics repositories are never queried for that item.
+    /// </summary>
+    [Fact]
+    public async Task VerifyAsync_WhenArticleFound_ShouldNotQueryVideoOrLyrics()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        Guid categoryId = Guid.NewGuid();
+        ContentOrderItemEntity item = ContentOrderItemFactory.Create(order.Id, categoryId);
+        order.Items.Add(item);
+        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
+
+        ArticleEntity article = ArticleFactory.Create(categoryId);
+        _articleRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, article);
+
+        // Act
+        await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
+
+        // Assert
+        _videoRepositoryMock.Verify(
+            x => x.GetByOrderItemIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        _lyricsRepositoryMock.Verify(
+            x => x.GetByOrderItemIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        _articleRepositoryMock.VerifyUpdateCalled();
+    }
+
+    /// <summary>
+    /// A lyrics page has no social boost concept, so a social-boost item that resolves to lyrics
+    /// still transitions to PendingReview but stamps nothing extra.
+    /// </summary>
+    [Fact]
+    public async Task VerifyAsync_WithSocialBoostItem_WhenLyricsFound_ShouldNotStampSocialBoost()
+    {
+        // Arrange
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        Guid categoryId = Guid.NewGuid();
+        Guid customerId = Guid.NewGuid();
+        ContentOrderItemEntity item = ContentOrderItemFactory.CreateSocialBoost(order.Id, categoryId);
+        order.Items.Add(item);
+        ContentPaymentEntity payment = ContentPaymentFactory.Create(order.Id);
+
+        LyricsEntity lyrics = LyricsFactory.CreatePendingPayment(categoryId, customerId, item.Id);
+        _articleRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, null);
+        _videoRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, null);
+        _lyricsRepositoryMock.SetupGetByOrderItemIdAsync(item.Id, lyrics);
+
+        // Act
+        await _factory.VerifyAsync(order, payment, AdminUserId, ReceiptUrl, CancellationToken.None);
+
+        // Assert
+        lyrics.Status.Should().Be(EnumContentStatus.PendingReview);
+        lyrics.IsPromoted.Should().BeFalse();
+        _lyricsRepositoryMock.VerifyUpdateCalled();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
     #endregion
 }
