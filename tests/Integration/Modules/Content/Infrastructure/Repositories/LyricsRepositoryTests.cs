@@ -850,4 +850,75 @@ public class LyricsRepositoryTests(PostgresFixture postgres) : BaseRepositoryTes
     }
 
     #endregion
+
+    #region GetPublishedByAlbumAsync
+
+    /// <summary>
+    /// Verifies that <see cref="ILyricsRepository.GetPublishedByAlbumAsync" /> returns the
+    /// album's other published tracks while excluding the source track, exercising the album
+    /// filter in <c>LyricsRepository</c> via <c>LyricsByAlbumSpecification</c>.
+    /// </summary>
+    [Fact]
+    public async Task GetPublishedByAlbumAsync_WithSiblingTracks_ReturnsThemExcludingTheSource()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        context.ContentTypes.Add(contentType);
+        await context.SaveChangesAsync();
+
+        var category = CategoryFactory.Create(contentType.Id);
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var album = AlbumFactory.Create();
+        context.Albums.Add(album);
+        await context.SaveChangesAsync();
+
+        var source = LyricsFactory.CreatePublishedForAlbum(category.Id, album.Id);
+        var sibling = LyricsFactory.CreatePublishedForAlbum(category.Id, album.Id);
+        context.Lyrics.AddRange(source, sibling);
+        await context.SaveChangesAsync();
+
+        var repo = Resolve<ILyricsRepository>();
+
+        List<LyricsEntity> tracks = await repo.GetPublishedByAlbumAsync(album.Id, source.Id);
+
+        tracks.Should().ContainSingle(l => l.Id == sibling.Id);
+        tracks.Should().NotContain(l => l.Id == source.Id);
+    }
+
+    /// <summary>
+    /// Verifies that <c>LyricsByAlbumSpecification</c> scopes the lookup to the requested album,
+    /// so a published track belonging to a different album is never returned.
+    /// </summary>
+    [Fact]
+    public async Task GetPublishedByAlbumAsync_TrackOnAnotherAlbum_IsNotReturned()
+    {
+        await using var context = CreateDbContext<ContentDbContext>();
+        var contentType = ContentTypeFactory.Create();
+        context.ContentTypes.Add(contentType);
+        await context.SaveChangesAsync();
+
+        var category = CategoryFactory.Create(contentType.Id);
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var album = AlbumFactory.Create();
+        var otherAlbum = AlbumFactory.Create();
+        context.Albums.AddRange(album, otherAlbum);
+        await context.SaveChangesAsync();
+
+        var source = LyricsFactory.CreatePublishedForAlbum(category.Id, album.Id);
+        var foreignTrack = LyricsFactory.CreatePublishedForAlbum(category.Id, otherAlbum.Id);
+        context.Lyrics.AddRange(source, foreignTrack);
+        await context.SaveChangesAsync();
+
+        var repo = Resolve<ILyricsRepository>();
+
+        List<LyricsEntity> tracks = await repo.GetPublishedByAlbumAsync(album.Id, source.Id);
+
+        tracks.Should().BeEmpty();
+    }
+
+    #endregion
 }
