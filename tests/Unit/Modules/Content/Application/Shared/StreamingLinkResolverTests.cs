@@ -1,3 +1,4 @@
+using System.Net;
 using _116.Content.Application.Shared;
 using _116.Content.Domain.Enums;
 using AwesomeAssertions;
@@ -134,6 +135,61 @@ public class StreamingLinkResolverTests
         {
             url.Should().Be(curated[platform]);
         }
+    }
+
+    [Fact]
+    public void ResolveStreamingLinks_ShouldUrlEncodeTheArtistAndReleaseInTheGeneratedSearchQuery()
+    {
+        // Arrange — names containing characters that must be escaped in a query string.
+        const string artistName = "Koffi & Quartier";
+        const string releaseName = "Effrakata / Mopao";
+        var curated = new Dictionary<EnumStreamingPlatform, string>();
+
+        // Act
+        IReadOnlyList<(EnumStreamingPlatform Platform, string Url)> result =
+            StreamingLinkResolver.ResolveStreamingLinks(artistName, releaseName, curated);
+
+        // Assert
+        string encoded = WebUtility.UrlEncode($"{artistName} {releaseName}");
+        result.Should().OnlyContain(r => r.Url.EndsWith(encoded, StringComparison.Ordinal));
+        result.Should().OnlyContain(r => !r.Url.Contains(' '));
+    }
+
+    #endregion
+
+    #region GenerateSearchUrl guard
+
+    /// <summary>
+    /// The unsupported-platform guard is unreachable through <c>ResolveStreamingLinks</c>, which
+    /// only iterates declared enum members. It exists so that adding a fifth platform without a
+    /// matching switch arm fails loudly instead of silently returning a wrong URL, so it is
+    /// asserted directly against an undeclared enum value.
+    /// </summary>
+    [Fact]
+    public void GenerateSearchUrl_WithUndeclaredPlatform_ShouldThrowArgumentOutOfRange()
+    {
+        // Arrange
+        const EnumStreamingPlatform undeclared = (EnumStreamingPlatform)9999;
+
+        // Act
+        Action act = () => StreamingLinkResolver.GenerateSearchUrl(undeclared, "Fally Ipupa", "Eloko Oyo");
+
+        // Assert
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("platform");
+    }
+
+    /// <summary>
+    /// Every declared platform has an explicit switch arm, so none of them hits the guard.
+    /// </summary>
+    [Fact]
+    public void GenerateSearchUrl_WithEveryDeclaredPlatform_ShouldReturnAUrl()
+    {
+        // Act
+        IEnumerable<string> urls = Enum.GetValues<EnumStreamingPlatform>()
+            .Select(p => StreamingLinkResolver.GenerateSearchUrl(p, "Fally Ipupa", "Eloko Oyo"));
+
+        // Assert
+        urls.Should().OnlyContain(url => url.StartsWith("https://", StringComparison.Ordinal));
     }
 
     #endregion
