@@ -34,7 +34,8 @@ public class AdminUpdateCategoryValidatorTests
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: false
+            IsExclusive: false,
+            IsDefaultForLyrics: false
         );
 
         // Act
@@ -59,7 +60,8 @@ public class AdminUpdateCategoryValidatorTests
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: false
+            IsExclusive: false,
+            IsDefaultForLyrics: false
         );
 
         // Act
@@ -89,7 +91,8 @@ public class AdminUpdateCategoryValidatorTests
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: false
+            IsExclusive: false,
+            IsDefaultForLyrics: false
         );
 
         // Act
@@ -115,7 +118,8 @@ public class AdminUpdateCategoryValidatorTests
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: false
+            IsExclusive: false,
+            IsDefaultForLyrics: false
         );
 
         // Act
@@ -145,7 +149,8 @@ public class AdminUpdateCategoryValidatorTests
             Slug: "Invalid Slug",
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: false
+            IsExclusive: false,
+            IsDefaultForLyrics: false
         );
 
         // Act
@@ -180,7 +185,8 @@ public class AdminUpdateCategoryValidatorTests
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: false
+            IsExclusive: false,
+            IsDefaultForLyrics: false
         );
 
         // Act
