@@ -1,3 +1,4 @@
+using _116.Content.Domain.Constants;
 using Microsoft.Extensions.Localization;
 
 namespace _116.Content.Application.Shared.Errors.Messages;
@@ -57,5 +58,50 @@ public class ArtistErrorMessage(IStringLocalizer<ArtistErrorMessage> localizer)
     public string AlreadyClaimed()
     {
         return localizer["AlreadyClaimed"];
+    }
+
+    /// <summary>
+    /// Gets an error message for when an artist profile carries too many alternate names.
+    /// </summary>
+    /// <returns>
+    /// A formatted error message stating the maximum number of aliases allowed.
+    /// </returns>
+    public string TooManyAliases()
+    {
+        return string.Format(localizer["TooManyAliases"], ContentConstants.MaxArtistAliasCount);
+    }
+
+    /// <summary>
+    /// Gets an error message for when a single alternate name is too long.
+    /// </summary>
+    /// <returns>
+    /// A formatted error message stating the maximum alias length allowed.
+    /// </returns>
+    public string AliasTooLong()
+    {
+        return string.Format(localizer["AliasTooLong"], ContentConstants.MaxArtistNameLength);
+    }
+
+    /// <summary>
+    /// Gets an error message for when an artist birthdate is not in the past.
+    /// </summary>
+    /// <returns>
+    /// An error message indicating that the birthdate must be in the past.
+    /// </returns>
+    public string BirthdateInFuture()
+    {
+        return localizer["BirthdateInFuture"];
+    }
+
+    /// <summary>
+    /// Gets an error message for when a directory request combines a letter filter with a
+    /// search term.
+    /// </summary>
+    /// <returns>
+    /// An error message indicating that the two filters are mutually exclusive.
+    /// </returns>
+    public string LetterAndSearchExclusive()
+    {
+        return localizer["LetterAndSearchExclusive"];
     }
 }
