@@ -249,4 +249,22 @@ public static class EditorialRouteConstants
     /// Example: /api/v1/admin/lyrics/submissions/{id}/request-revision.
     /// </summary>
     public const string RequestRevision = "request-revision";
+
+    /// <summary>
+    /// Route segment for an artist's social platform links.
+    /// Example: /api/v1/admin/artists/{artistId}/social-links.
+    /// </summary>
+    public const string SocialLinks = "social-links";
+
+    /// <summary>
+    /// Route segment for an artist's releases (albums and mixtapes).
+    /// Example: /api/v1/public/artists/{slug}/releases.
+    /// </summary>
+    public const string Releases = "releases";
+
+    /// <summary>
+    /// Route segment for resolving a release's streaming links from one platform URL.
+    /// Example: /api/v1/admin/albums/{id}/streaming-links/resolve.
+    /// </summary>
+    public const string Resolve = "resolve";
 }
