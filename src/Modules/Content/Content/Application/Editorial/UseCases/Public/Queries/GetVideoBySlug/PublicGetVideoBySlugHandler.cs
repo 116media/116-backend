@@ -13,11 +13,13 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoByS
 /// Handles the <see cref="PublicGetVideoBySlugQuery" /> to retrieve a single published video by its slug.
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
+/// <param name="artistRepository">Repository used to resolve the linked artist's slug.</param>
 /// <param name="fileRepository">Repository for resolving file URLs.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class PublicGetVideoBySlugHandler(
     IVideoRepository videoRepository,
+    IArtistRepository artistRepository,
     IFileRepository fileRepository,
     IMapper mapper,
     ContentI18n i18n
@@ -51,7 +53,17 @@ public class PublicGetVideoBySlugHandler(
             ratedStars = rating?.Stars;
         }
 
+        string? artistSlug = null;
+        if (video.ArtistId is Guid artistId)
+        {
+            ArtistEntity? artist = await artistRepository.GetByIdAsync(
+                id: artistId,
+                cancellationToken: cancellationToken
+            );
+            artistSlug = artist?.Slug;
+        }
+
         var dto = await video.ToVideoDetailDtoAsync(mapper, fileRepository, cancellationToken, ratedStars: ratedStars);
-        return new PublicGetVideoBySlugResult(Video: dto);
+        return new PublicGetVideoBySlugResult(Video: dto, ArtistSlug: artistSlug);
     }
 }
