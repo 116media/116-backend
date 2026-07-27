@@ -24,4 +24,16 @@
   <data name="AlreadyClaimed" xml:space="preserve">
     <value>This artist profile has already been claimed.</value>
   </data>
+  <data name="TooManyAliases" xml:space="preserve">
+    <value>An artist can have at most {0} aliases.</value>
+  </data>
+  <data name="AliasTooLong" xml:space="preserve">
+    <value>An alias cannot exceed {0} characters.</value>
+  </data>
+  <data name="BirthdateInFuture" xml:space="preserve">
+    <value>The birthdate must be in the past.</value>
+  </data>
+  <data name="LetterAndSearchExclusive" xml:space="preserve">
+    <value>A letter filter and a search term cannot be combined.</value>
+  </data>
 </root>
