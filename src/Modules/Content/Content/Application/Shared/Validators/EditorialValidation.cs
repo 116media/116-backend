@@ -798,6 +798,73 @@ public static partial class EditorialValidation
     }
 
     /// <summary>
+    /// Validates an artist's optional legal or birth name with length constraints.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the real name property.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidArtistRealName<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder
+    )
+    {
+        return ruleBuilder.MaximumLength(maximumLength: ContentConstants.MaxArtistRealNameLength);
+    }
+
+    /// <summary>
+    /// Validates an artist's optional alias list: bounded count and per-entry length. The
+    /// domain re-enforces both after normalisation; this rule exists so the client gets a
+    /// clean 400 with a field path instead of a domain exception.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the aliases property.</param>
+    /// <param name="i18n">The artist error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, IReadOnlyList<string>?> ValidArtistAliases<T>(
+        this IRuleBuilderInitial<T, IReadOnlyList<string>?> ruleBuilder,
+        ArtistErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Cascade(cascadeMode: CascadeMode.Stop)
+            .Must(aliases => aliases is null || aliases.Count <= ContentConstants.MaxArtistAliasCount)
+            .WithMessage(i18n.TooManyAliases())
+            .Must(aliases =>
+                aliases is null || aliases.All(alias => alias.Trim().Length <= ContentConstants.MaxArtistNameLength)
+            )
+            .WithMessage(i18n.AliasTooLong());
+    }
+
+    /// <summary>
+    /// Validates an artist's optional birthdate as strictly in the past.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the birthdate property.</param>
+    /// <param name="i18n">The artist error message provider.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, DateOnly?> ValidArtistBirthdate<T>(
+        this IRuleBuilderInitial<T, DateOnly?> ruleBuilder,
+        ArtistErrorMessage i18n
+    )
+    {
+        return ruleBuilder
+            .Must(birthdate => birthdate is null || birthdate.Value < DateOnly.FromDateTime(DateTime.UtcNow))
+            .WithMessage(i18n.BirthdateInFuture());
+    }
+
+    /// <summary>
+    /// Validates an artist's optional hometown with length constraints.
+    /// </summary>
+    /// <typeparam name="T">The type being validated.</typeparam>
+    /// <param name="ruleBuilder">The rule builder for the hometown property.</param>
+    /// <returns>The configured rule builder.</returns>
+    public static IRuleBuilderOptions<T, string?> ValidArtistHometown<T>(
+        this IRuleBuilderInitial<T, string?> ruleBuilder
+    )
+    {
+        return ruleBuilder.MaximumLength(maximumLength: ContentConstants.MaxArtistHometownLength);
+    }
+
+    /// <summary>
     /// Validates an album's display name with length constraints.
     /// </summary>
     /// <typeparam name="T">The type being validated.</typeparam>
