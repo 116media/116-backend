@@ -15,7 +15,14 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetVideoByS
 public record PublicGetVideoBySlugQuery(string Slug, Guid? CurrentUserId = null) : IQuery<PublicGetVideoBySlugResult>;
 
 /// <summary>
-/// Result of the <see cref="PublicGetVideoBySlugQuery" /> containing the full video details.
+/// Result of the <see cref="PublicGetVideoBySlugQuery" /> containing the full video details
+/// and the linked artist's slug when a profile exists.
 /// </summary>
 /// <param name="Video">The detailed video information.</param>
-public record PublicGetVideoBySlugResult(VideoDetailDto Video);
+/// <param name="ArtistSlug">
+/// The linked artist profile's slug, or null when the video has no linked profile — the
+/// common case at launch. Mirrors the lyrics detail response: the client renders a link to
+/// the artist page when present and plain text otherwise, and never slugifies a name
+/// client-side.
+/// </param>
+public record PublicGetVideoBySlugResult(VideoDetailDto Video, string? ArtistSlug);
