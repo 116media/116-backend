@@ -45,6 +45,19 @@ public class PublicGetArtistBySlugHandler(
             throw i18n.Artist.NotFound(id: Guid.Empty);
         }
 
+        ArtistTotals totals = await artistRepository.GetTotalsAsync(
+            artistId: artist.Id,
+            cancellationToken: cancellationToken
+        );
+
+        // A profile with zero items on every surface is not served: unclaimed staff-curated
+        // stubs must not become crawlable dead pages carrying a real person's name. The check
+        // runs before any mapping so nothing is resolved for a response about to be discarded.
+        if (totals.Songs + totals.Videos + totals.Albums + totals.Mixtapes + totals.News == 0)
+        {
+            throw i18n.Artist.NotFound(id: artist.Id);
+        }
+
         int lyricsPageSize = query.LyricsPage.PageSize;
         int lyricsPageIndex = query.LyricsPage.PageIndex;
 
@@ -65,7 +78,12 @@ public class PublicGetArtistBySlugHandler(
             cancellationToken: cancellationToken
         );
 
-        ArtistDto artistDto = await artist.ToArtistDtoAsync(fileRepository, cancellationToken);
+        IReadOnlyList<ArtistSocialLinkEntity> socialLinks = await artistRepository.GetSocialLinksAsync(
+            artistId: artist.Id,
+            cancellationToken: cancellationToken
+        );
+
+        ArtistDto artistDto = await artist.ToArtistDtoAsync(fileRepository, cancellationToken, socialLinks);
 
         IReadOnlyList<LyricsSummaryDto> lyricsDtos = await lyricsList
             .AsReadOnly()
@@ -89,6 +107,19 @@ public class PublicGetArtistBySlugHandler(
             items: videoDtos
         );
 
-        return new PublicGetArtistBySlugResult(Artist: artistDto, Lyrics: lyricsResult, Videos: videosResult);
+        var totalsDto = new ArtistTotalsDto(
+            Songs: totals.Songs,
+            Videos: totals.Videos,
+            Albums: totals.Albums,
+            Mixtapes: totals.Mixtapes,
+            News: totals.News
+        );
+
+        return new PublicGetArtistBySlugResult(
+            Artist: artistDto,
+            Totals: totalsDto,
+            Lyrics: lyricsResult,
+            Videos: videosResult
+        );
     }
 }
