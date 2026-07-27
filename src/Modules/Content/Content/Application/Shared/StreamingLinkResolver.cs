@@ -59,6 +59,7 @@ public static class StreamingLinkResolver
             EnumStreamingPlatform.AppleMusic => $"https://music.apple.com/search?term={query}",
             EnumStreamingPlatform.YoutubeMusic => $"https://music.youtube.com/search?q={query}",
             EnumStreamingPlatform.Tidal => $"https://listen.tidal.com/search?q={query}",
+            EnumStreamingPlatform.Deezer => $"https://www.deezer.com/search/{query}",
             _ => throw new ArgumentOutOfRangeException(nameof(platform), platform, "Unsupported streaming platform."),
         };
     }
