@@ -18,5 +18,7 @@ public class AdminCreateAlbumValidator : AbstractValidator<AdminCreateAlbumComma
         RuleFor(x => x.Name).ValidAlbumName(i18n.Album.Msg);
 
         RuleFor(x => x.ReleaseYear).ValidReleaseYear();
+
+        RuleFor(x => x.ReleaseType).IsInEnum();
     }
 }
