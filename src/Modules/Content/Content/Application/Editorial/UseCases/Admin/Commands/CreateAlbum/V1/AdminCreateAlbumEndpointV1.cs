@@ -4,6 +4,7 @@ using _116.BuildingBlocks.Utils;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
 using Carter;
@@ -20,7 +21,14 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateAlbum
 /// <param name="ArtistId">Optional link to the claimed artist profile this album belongs to.</param>
 /// <param name="ReleaseYear">The release year, if known.</param>
 /// <param name="Label">The record label, if known.</param>
-public record AdminCreateAlbumRequest(string Name, Guid? ArtistId, short? ReleaseYear, string? Label);
+/// <param name="ReleaseType">What kind of release this is.</param>
+public record AdminCreateAlbumRequest(
+    string Name,
+    Guid? ArtistId,
+    short? ReleaseYear,
+    string? Label,
+    EnumReleaseType ReleaseType
+);
 
 /// <summary>
 /// Response model for a successful album creation.
@@ -54,7 +62,8 @@ public class AdminCreateAlbumEndpointV1 : ICarterModule
                         Name: request.Name,
                         ArtistId: request.ArtistId,
                         ReleaseYear: request.ReleaseYear,
-                        Label: request.Label
+                        Label: request.Label,
+                        ReleaseType: request.ReleaseType
                     );
 
                     AdminCreateAlbumResult result = await dispatcher.Send(request: command);
