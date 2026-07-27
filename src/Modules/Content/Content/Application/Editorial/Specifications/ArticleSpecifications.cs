@@ -93,6 +93,22 @@ public class PromotedArticleSpecification : Specification<ArticleEntity>
 }
 
 /// <summary>
+/// Specification that matches published articles tagged to a specific artist, via the
+/// article-artist junction. Drives the artist profile's news tab.
+/// </summary>
+public class ArticleByArtistSpecification(Guid artistId, IQueryable<ArticleArtistEntity> articleArtists)
+    : Specification<ArticleEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<ArticleEntity, bool>> ToExpression()
+    {
+        return article =>
+            article.Status == EnumContentStatus.Published
+            && articleArtists.Any(aa => aa.ArticleId == article.Id && aa.ArtistId == artistId);
+    }
+}
+
+/// <summary>
 /// Specification that matches draft articles with no content created before a given cutoff date.
 /// Used by the background abandoned-draft cleanup job.
 /// </summary>
