@@ -26,4 +26,10 @@ public enum EnumStreamingPlatform
     /// Tidal — track or album page, or a search-query fallback URL.
     /// </summary>
     Tidal,
+
+    /// <summary>
+    /// Deezer — track or album page, or a search-query fallback URL. Appended last because
+    /// the stored value is the member's integer; members are never reordered.
+    /// </summary>
+    Deezer,
 }
