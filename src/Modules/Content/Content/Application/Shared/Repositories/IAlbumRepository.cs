@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Domain;
 
 namespace _116.Content.Application.Shared.Repositories;
@@ -37,6 +38,24 @@ public interface IAlbumRepository : IRepository<AlbumEntity>
         int page,
         int pageSize,
         string? search,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Retrieves a paginated page of an artist's releases of a given type, newest first
+    /// with a deterministic name tie-break and unknown years last.
+    /// </summary>
+    /// <param name="artistId">The artist profile the releases belong to.</param>
+    /// <param name="releaseType">The release type to filter to.</param>
+    /// <param name="page">The 1-based page number.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>A tuple containing the page of albums and the total count.</returns>
+    Task<(List<AlbumEntity> Albums, int TotalCount)> GetByArtistAsync(
+        Guid artistId,
+        EnumReleaseType releaseType,
+        int page,
+        int pageSize,
         CancellationToken cancellationToken = default
     );
 
