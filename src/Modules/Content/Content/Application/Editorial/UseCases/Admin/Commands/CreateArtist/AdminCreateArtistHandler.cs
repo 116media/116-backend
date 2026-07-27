@@ -43,6 +43,10 @@ public class AdminCreateArtistHandler(
             name: command.Name,
             slug: command.Slug,
             bio: command.Bio,
+            realName: command.RealName,
+            aliases: command.Aliases,
+            birthdate: command.Birthdate,
+            hometown: command.Hometown,
             errors: i18n.Artist
         );
 
