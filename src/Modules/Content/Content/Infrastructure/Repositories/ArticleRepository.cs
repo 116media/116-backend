@@ -214,6 +214,70 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<ArticleArtistEntity>> GetArtistsByArticleIdAsync(
+        Guid articleId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await context
+            .ArticleArtists.Where(aa => aa.ArticleId == articleId)
+            .ToListAsync(cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task ReplaceArticleArtistsAsync(
+        Guid articleId,
+        IReadOnlyList<Guid> artistIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        List<ArticleArtistEntity> current = await context
+            .ArticleArtists.Where(aa => aa.ArticleId == articleId)
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        var desired = artistIds.ToHashSet();
+
+        context.ArticleArtists.RemoveRange(current.Where(aa => !desired.Contains(aa.ArtistId)));
+
+        var existing = current.Select(aa => aa.ArtistId).ToHashSet();
+
+        foreach (Guid artistId in desired.Where(id => !existing.Contains(id)))
+        {
+            await context.ArticleArtists.AddAsync(
+                ArticleArtistEntity.Create(id: Guid.NewGuid(), articleId: articleId, artistId: artistId),
+                cancellationToken
+            );
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<(List<ArticleEntity> Articles, int TotalCount)> GetPublishedByArtistAsync(
+        Guid artistId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ArticleByArtistSpecification(
+            artistId: artistId,
+            articleArtists: context.ArticleArtists
+        );
+
+        IQueryable<ArticleEntity> query = context.Articles.ApplySpecification(specification: specification);
+
+        int totalCount = await query.CountAsync(cancellationToken: cancellationToken);
+
+        List<ArticleEntity> articles = await query
+            .OrderByDescending(a => a.PublishedAt)
+            .ThenBy(a => a.Id)
+            .Skip(count: (page - 1) * pageSize)
+            .Take(count: pageSize)
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        return (articles, totalCount);
+    }
+
+    /// <inheritdoc />
     public async Task<bool> HasLikedAsync(Guid userId, Guid articleId, CancellationToken cancellationToken = default)
     {
         var specification = new ArticleLikeByUserAndArticleSpecification(userId: userId, articleId: articleId);
