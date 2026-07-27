@@ -235,4 +235,38 @@ public static class ContentConstants
     /// Maximum allowed length for a streaming platform deep link URL.
     /// </summary>
     public const int MaxStreamingLinkUrlLength = 500;
+
+    /// <summary>
+    /// Maximum allowed length for an artist's legal or birth name on their profile.
+    /// Longer than the stage name because full legal names carry middle names.
+    /// </summary>
+    public const int MaxArtistRealNameLength = 150;
+
+    /// <summary>
+    /// Maximum allowed length for an artist's hometown on their profile. Free text as
+    /// entered (e.g., "Kinshasa, RDC"), not a structured place reference.
+    /// </summary>
+    public const int MaxArtistHometownLength = 120;
+
+    /// <summary>
+    /// Maximum number of alternate names an artist profile can carry. The identity block
+    /// renders them on one wrapping line; beyond this it stops being a subtitle.
+    /// </summary>
+    public const int MaxArtistAliasCount = 10;
+
+    /// <summary>
+    /// Maximum number of artists a single article can be tagged with.
+    /// </summary>
+    public const int MaxArticleArtistCount = 20;
+
+    /// <summary>
+    /// Minimum length of a public artist directory search term. A single character
+    /// scans the whole table and returns a page nobody can use.
+    /// </summary>
+    public const int MinArtistSearchLength = 2;
+
+    /// <summary>
+    /// Bucket assigned to artists whose folded name does not start with A-Z.
+    /// </summary>
+    public const string NonAlphabeticLetterBucket = "#";
 }
