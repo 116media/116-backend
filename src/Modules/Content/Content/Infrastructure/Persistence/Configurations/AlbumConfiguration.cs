@@ -1,5 +1,6 @@
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -23,6 +24,15 @@ public class AlbumConfiguration : IEntityTypeConfiguration<AlbumEntity>
         builder.Property(x => x.ReleaseYear).IsRequired(false);
 
         builder.Property(x => x.Label).HasMaxLength(ContentConstants.MaxLabelNameLength).IsRequired(false);
+
+        // Rows that predate the discriminator backfill to Album via the column default;
+        // editors correct mis-filed mixtapes from there rather than blocking the migration
+        // on a full catalog audit.
+        builder.Property(x => x.ReleaseType).HasDefaultValue(EnumReleaseType.Album).IsRequired();
+
+        // Serves the artist-scoped release query and the album term of the artist content
+        // count — one index, both readers.
+        builder.HasIndex(x => new { x.ArtistId, x.ReleaseType });
 
         builder
             .HasOne<ArtistEntity>()
