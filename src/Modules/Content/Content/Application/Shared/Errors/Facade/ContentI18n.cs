@@ -26,7 +26,8 @@ public class ContentI18n(
     AlbumErrors album,
     TranslationErrors translation,
     SubmissionErrors submission,
-    LyricsRevisionErrors lyricsRevision
+    LyricsRevisionErrors lyricsRevision,
+    StreamingLinkErrors streamingLink
 )
 {
     /// <summary>
@@ -133,4 +134,9 @@ public class ContentI18n(
     /// Lyrics-text community correction domain errors and messages.
     /// </summary>
     public LyricsRevisionErrors LyricsRevision => lyricsRevision;
+
+    /// <summary>
+    /// Streaming link resolution domain errors and messages.
+    /// </summary>
+    public StreamingLinkErrors StreamingLink => streamingLink;
 }
