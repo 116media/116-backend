@@ -17,7 +17,18 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArtis
 /// </summary>
 /// <param name="Name">The artist's display name.</param>
 /// <param name="Bio">Optional free-text biography, or null to clear it.</param>
-public record AdminUpdateArtistRequest(string Name, string? Bio);
+/// <param name="RealName">The artist's legal or birth name, or null to clear it.</param>
+/// <param name="Aliases">Alternate names the artist is known by, or null to clear them.</param>
+/// <param name="Birthdate">The artist's date of birth, or null to clear it.</param>
+/// <param name="Hometown">Where the artist is from, or null to clear it.</param>
+public record AdminUpdateArtistRequest(
+    string Name,
+    string? Bio,
+    string? RealName,
+    IReadOnlyList<string>? Aliases,
+    DateOnly? Birthdate,
+    string? Hometown
+);
 
 /// <summary>
 /// Response model for a successful artist profile update.
@@ -47,7 +58,15 @@ public class AdminUpdateArtistEndpointV1 : ICarterModule
                 "/{id}",
                 async (Guid id, AdminUpdateArtistRequest request, IDispatcher dispatcher) =>
                 {
-                    var command = new AdminUpdateArtistCommand(Id: id, Name: request.Name, Bio: request.Bio);
+                    var command = new AdminUpdateArtistCommand(
+                        Id: id,
+                        Name: request.Name,
+                        Bio: request.Bio,
+                        RealName: request.RealName,
+                        Aliases: request.Aliases,
+                        Birthdate: request.Birthdate,
+                        Hometown: request.Hometown
+                    );
 
                     AdminUpdateArtistResult result = await dispatcher.Send(request: command);
 
