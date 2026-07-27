@@ -16,5 +16,13 @@ public class AdminUpdateArtistValidator : AbstractValidator<AdminUpdateArtistCom
     public AdminUpdateArtistValidator(ContentI18n i18n)
     {
         RuleFor(x => x.Name).ValidArtistName(i18n.Artist.Msg);
+
+        RuleFor(x => x.RealName).ValidArtistRealName();
+
+        RuleFor(x => x.Aliases).ValidArtistAliases(i18n.Artist.Msg);
+
+        RuleFor(x => x.Birthdate).ValidArtistBirthdate(i18n.Artist.Msg);
+
+        RuleFor(x => x.Hometown).ValidArtistHometown();
     }
 }
