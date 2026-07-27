@@ -49,6 +49,7 @@ public class AdminUploadAlbumCoverHandler(
             coverImageFileId: fileEntity.Id,
             releaseYear: album.ReleaseYear,
             label: album.Label,
+            releaseType: album.ReleaseType,
             errors: i18n.Album
         );
 
