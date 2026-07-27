@@ -203,6 +203,16 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options) : DbCo
     public DbSet<ArtistEntity> Artists => Set<ArtistEntity>();
 
     /// <summary>
+    /// Gets the DbSet for artist social link entities.
+    /// </summary>
+    public DbSet<ArtistSocialLinkEntity> ArtistSocialLinks => Set<ArtistSocialLinkEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for article-artist junction entities.
+    /// </summary>
+    public DbSet<ArticleArtistEntity> ArticleArtists => Set<ArticleArtistEntity>();
+
+    /// <summary>
     /// Gets the DbSet for album entities.
     /// </summary>
     public DbSet<AlbumEntity> Albums => Set<AlbumEntity>();
