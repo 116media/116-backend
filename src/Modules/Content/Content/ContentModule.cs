@@ -88,6 +88,7 @@ public static class ContentModule
         services.AddScoped<TranslationErrorMessage>();
         services.AddScoped<SubmissionErrorMessage>();
         services.AddScoped<LyricsRevisionErrorMessage>();
+        services.AddScoped<StreamingLinkErrorMessage>();
 
         // Register error factory classes
         services.AddScoped<ArticleErrors>();
@@ -111,6 +112,7 @@ public static class ContentModule
         services.AddScoped<TranslationErrors>();
         services.AddScoped<SubmissionErrors>();
         services.AddScoped<LyricsRevisionErrors>();
+        services.AddScoped<StreamingLinkErrors>();
         services.AddScoped<ContentI18n>();
 
         // Register Mapster configuration and IMapper (thread-safe, no global state)
@@ -153,6 +155,9 @@ public static class ContentModule
 
         services.AddHttpClient<IYoutubeThumbnailService, YoutubeThumbnailService>();
         services.AddScoped<ITranslationService, PlaceholderTranslationService>();
+        services
+            .AddHttpClient<IStreamingLinkResolutionService, OdesliStreamingLinkResolutionService>()
+            .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(10));
         services.AddScheduledJob<AbandonedDraftCleanupJob>(cronExpression: "0 0 * * * ?");
         services.AddScheduledJob<ShortVideoViewEventCleanupJob>(cronExpression: "0 0 3 * * ?");
         services.AddScoped<ContentTypeSeeder>();
