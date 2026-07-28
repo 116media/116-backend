@@ -24,7 +24,7 @@ public class AdminUpdateArtistValidatorTests
     public async Task Validate_WithValidData_ShouldNotHaveErrors()
     {
         // Arrange
-        var command = new AdminUpdateArtistCommand(Guid.NewGuid(), "Valid Name", "Valid Bio");
+        var command = new AdminUpdateArtistCommand(Guid.NewGuid(), "Valid Name", "Valid Bio", null, null, null, null);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -37,7 +37,7 @@ public class AdminUpdateArtistValidatorTests
     public async Task Validate_WithEmptyName_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminUpdateArtistCommand(Guid.NewGuid(), string.Empty, null);
+        var command = new AdminUpdateArtistCommand(Guid.NewGuid(), string.Empty, null, null, null, null, null);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -56,7 +56,7 @@ public class AdminUpdateArtistValidatorTests
     public async Task Validate_WithNullBio_ShouldNotHaveErrors()
     {
         // Arrange
-        var command = new AdminUpdateArtistCommand(Guid.NewGuid(), "Valid Name", null);
+        var command = new AdminUpdateArtistCommand(Guid.NewGuid(), "Valid Name", null, null, null, null, null);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
