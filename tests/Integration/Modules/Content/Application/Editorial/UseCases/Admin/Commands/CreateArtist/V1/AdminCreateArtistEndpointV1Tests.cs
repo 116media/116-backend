@@ -97,6 +97,36 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+    /// <summary>
+    /// Aliases pass the validator on count and length alone; the entity is what folds out
+    /// case-insensitive duplicates and blank entries. Asserted on the persisted row.
+    /// </summary>
+    [Fact]
+    public async Task CreateArtist_WithDuplicateAndBlankAliases_PersistsDedupedList()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PostAsJsonAsync(
+            ApiRoutes.Admin.Artists,
+            new AdminCreateArtistRequest(
+                "Drake",
+                $"slug-{Guid.NewGuid():N}",
+                null,
+                null,
+                ["Drizzy", "drizzy", "  ", "Champagne Papi"],
+                null,
+                null
+            )
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        AdminCreateArtistResponse body = await response.ReadAsAsync<AdminCreateArtistResponse>();
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        ArtistEntity? persisted = await ctx.Artists.FindAsync(body.Artist.Id);
+        persisted!.Aliases.Should().Equal("Drizzy", "Champagne Papi");
+    }
+
     #region Identity Field Validation
 
     /// <summary>
