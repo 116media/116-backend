@@ -36,15 +36,6 @@ public class StreamingLinkErrorsTests
     }
 
     [Fact]
-    public void UnresolvableSourceUrl_ShouldReturnBadRequestException()
-    {
-        BadRequestException exception = _errors.UnresolvableSourceUrl();
-
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.UnresolvableSourceUrl());
-    }
-
-    [Fact]
     public void NothingResolved_ShouldReturnNotFoundException()
     {
         NotFoundException exception = _errors.NothingResolved();
@@ -58,5 +49,23 @@ public class StreamingLinkErrorsTests
     {
         _message.ResolutionFailed().Should().NotBeNullOrWhiteSpace().And.NotBe("ResolutionFailed");
         _message.NothingResolved().Should().NotBeNullOrWhiteSpace().And.NotBe("NothingResolved");
+        _message.ResolutionRateLimited().Should().NotBeNullOrWhiteSpace().And.NotBe("ResolutionRateLimited");
+    }
+
+    /// <summary>
+    /// Message-only member: no exception factory exists for it — the resolve validators word
+    /// it directly onto their 400 via WithMessage.
+    /// </summary>
+    [Fact]
+    public void UnresolvableSourceUrl_ShouldResolveToLocalizedText()
+    {
+        _message.UnresolvableSourceUrl().Should().NotBeNullOrWhiteSpace().And.NotBe("UnresolvableSourceUrl");
+    }
+
+    [Fact]
+    public void Localizer_ShouldBeExposedForValidationExtensions()
+    {
+        _errors.Msg.Should().NotBeNull();
+        _message.Localizer.Should().NotBeNull();
     }
 }
