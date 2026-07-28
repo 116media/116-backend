@@ -150,6 +150,41 @@ public class OdesliStreamingLinkResolutionServiceTests
     }
 
     [Fact]
+    public async Task ResolveAsync_WhenBodyCarriesNoLinksByPlatform_Throws()
+    {
+        // Valid JSON, wrong shape — a provider fault, not an empty result.
+        using var server = new LoopbackServer(HttpStatusCode.OK, """{ "entityUniqueId": "x" }""");
+
+        Func<Task> act = () => CreateService(server.BaseUrl).ResolveAsync(SourceUrl);
+
+        (await act.Should().ThrowAsync<StreamingLinkResolutionException>()).Which.IsRateLimited.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ResolveAsync_SkipsEntriesWithoutAValidHttpsUrl()
+    {
+        // Missing url, null url and a non-https scheme are all dropped; the one sound
+        // entry still resolves.
+        const string body = """
+            {
+              "linksByPlatform": {
+                "spotify":      { "nativeAppUriDesktop": "spotify:album:1" },
+                "appleMusic":   { "url": null },
+                "youtubeMusic": { "url": "http://music.youtube.com/playlist/3" },
+                "tidal":        { "url": "https://listen.tidal.com/album/4" }
+              }
+            }
+            """;
+        using var server = new LoopbackServer(HttpStatusCode.OK, body);
+
+        IReadOnlyDictionary<EnumStreamingPlatform, string> result = await CreateService(server.BaseUrl)
+            .ResolveAsync(SourceUrl);
+
+        result.Should().HaveCount(1);
+        result[EnumStreamingPlatform.Tidal].Should().Be("https://listen.tidal.com/album/4");
+    }
+
+    [Fact]
     public async Task ResolveAsync_WhenServerReturnsMalformedJson_Throws()
     {
         using var server = new LoopbackServer(HttpStatusCode.OK, "not json");
