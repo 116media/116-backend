@@ -1,3 +1,4 @@
+aaaaaaceeeeiiiinooooouuuuyy
 accéder
 administrateur
 aimé
@@ -21,9 +22,11 @@ Behaviour
 behaviours
 binlog
 carryforward
+catchable
 Cheatsheet
 checkmarks
 cleanarchitecture
+codegen
 collab
 colonne
 colonnes
@@ -63,6 +66,7 @@ dépassée
 ebug
 elease
 eleases
+emptively
 espaces
 esult
 evictable
@@ -73,6 +77,7 @@ Expando
 extractability
 favori
 fichiers
+footgun
 fourni
 fournir
 fournisseur
@@ -110,6 +115,7 @@ marocchino
 marquer
 marquées
 Mediat
+mislinking
 msbuild
 méta
 nameof
@@ -117,6 +123,8 @@ navigations
 newusername
 Noisey
 NOLOGO
+normalise
+normaliser
 notnull
 Npgsql
 nunit
@@ -145,6 +153,8 @@ publiées
 publiés
 puisse
 rebranded
+recategorize
+recognise
 reportgenerator
 reporttypes
 Resamplers
@@ -154,7 +164,9 @@ Respawn
 Respawner
 resx
 retunable
+revis
 RRGGBB
+rulebook
 runsettings
 répond
 révision
@@ -162,12 +174,16 @@ saisi
 Scrutor
 semaine
 semble
+serialise
+serialises
 Serilog
 SERP
 Seules
 Seuls
 sigmacool
 signups
+slugifies
+slugifying
 smallint
 snupkg
 socialuser
@@ -189,6 +205,7 @@ targetdir
 tentatives
 Testcontainer
 testuser
+translatio
 trouver
 trouvé
 TRUNC
@@ -197,15 +214,25 @@ téléchargement
 téléversement
 tête
 uild
+unaccent
+unbypassable
 uncacheable
+uncommissioned
 uncoverable
+unflushed
+ungated
 unlikes
 unliking
 unpromote
 unpromoted
 unpromoting
 unrecognised
+unreviewed
 unsets
+unslugified
+unsourced
+untaggable
+untags
 upsell
 USAA
 usecase
@@ -216,6 +243,7 @@ VARCHAR
 webapplicationfactory
 Xunit
 zéro
+àáâãäåçèéêëìíîïñòóôõöùúûüýÿ
 Échec
 échoué
 égale
