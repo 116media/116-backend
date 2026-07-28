@@ -1,4 +1,6 @@
+using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Repositories;
 using _116.Shared.Application.Exceptions;
@@ -285,6 +287,194 @@ public class ArtistRepositoryTests : IDisposable
         // Assert
         _context.Entry(artist).State.Should().Be(EntityState.Modified);
     }
+
+    #endregion
+
+    #region Social Link Tests
+
+    [Fact]
+    public async Task GetSocialLinksAsync_ShouldReturnLinksOrderedByPlatform()
+    {
+        // Arrange — inserted out of order; the row must come back platform-ordered.
+        ArtistEntity artist = ArtistFactory.Create();
+        _context.Artists.Add(artist);
+        _context.ArtistSocialLinks.AddRange(
+            ArtistSocialLinkEntity.Create(Guid.NewGuid(), artist.Id, EnumSocialPlatform.Website, "https://a.example"),
+            ArtistSocialLinkEntity.Create(Guid.NewGuid(), artist.Id, EnumSocialPlatform.Instagram, "https://b.example")
+        );
+        await _context.SaveChangesAsync();
+
+        // Act
+        IReadOnlyList<ArtistSocialLinkEntity> result = await _repository.GetSocialLinksAsync(artist.Id);
+
+        // Assert
+        result.Select(l => l.Platform).Should().Equal(EnumSocialPlatform.Instagram, EnumSocialPlatform.Website);
+    }
+
+    [Fact]
+    public async Task GetSocialLinkAsync_ShouldReturnTheMatchingSlotOrNull()
+    {
+        // Arrange
+        ArtistEntity artist = ArtistFactory.Create();
+        ArtistSocialLinkEntity link = ArtistSocialLinkEntity.Create(
+            Guid.NewGuid(),
+            artist.Id,
+            EnumSocialPlatform.TikTok,
+            "https://tiktok.com/@x"
+        );
+        _context.Artists.Add(artist);
+        _context.ArtistSocialLinks.Add(link);
+        await _context.SaveChangesAsync();
+
+        // Act & Assert
+        (await _repository.GetSocialLinkAsync(artist.Id, EnumSocialPlatform.TikTok))!
+            .Id.Should()
+            .Be(link.Id);
+        (await _repository.GetSocialLinkAsync(artist.Id, EnumSocialPlatform.Facebook)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task AddUpdateRemoveSocialLink_ShouldTrackTheEntityStates()
+    {
+        // Arrange
+        ArtistEntity artist = ArtistFactory.Create();
+        _context.Artists.Add(artist);
+        await _context.SaveChangesAsync();
+        ArtistSocialLinkEntity link = ArtistSocialLinkEntity.Create(
+            Guid.NewGuid(),
+            artist.Id,
+            EnumSocialPlatform.X,
+            "https://x.com/someone"
+        );
+
+        // Act & Assert — add
+        await _repository.AddSocialLinkAsync(link);
+        await _context.SaveChangesAsync();
+        (await _context.ArtistSocialLinks.FindAsync(link.Id)).Should().NotBeNull();
+
+        // update
+        link.UpdateUrl("https://x.com/renamed");
+        _repository.UpdateSocialLink(link);
+        _context.Entry(link).State.Should().Be(EntityState.Modified);
+        await _context.SaveChangesAsync();
+
+        // remove
+        _repository.RemoveSocialLink(link);
+        await _context.SaveChangesAsync();
+        (await _context.ArtistSocialLinks.FindAsync(link.Id)).Should().BeNull();
+    }
+
+    #endregion
+
+    #region Totals, Letters and Directory Tests
+
+    [Fact]
+    public async Task GetTotalsAsync_ShouldCountEachSurfaceSeparately()
+    {
+        // Arrange — one item per surface, plus non-counting rows (draft song, EP).
+        ArtistEntity artist = ArtistFactory.Create();
+        var categoryId = Guid.NewGuid();
+        _context.Artists.Add(artist);
+        _context.Lyrics.Add(LyricsFactory.CreatePublishedForArtist(categoryId, artist.Id));
+        _context.Lyrics.Add(LyricsFactory.CreateForArtist(categoryId, artist.Id));
+        _context.Albums.Add(AlbumFactory.CreateForArtist(artist.Id, EnumReleaseType.Album));
+        _context.Albums.Add(AlbumFactory.CreateForArtist(artist.Id, EnumReleaseType.Mixtape));
+        _context.Albums.Add(AlbumFactory.CreateForArtist(artist.Id, EnumReleaseType.EP));
+        ArticleEntity article = ArticleFactory.CreatePublished(categoryId);
+        _context.Articles.Add(article);
+        _context.ArticleArtists.Add(ArticleArtistEntity.Create(Guid.NewGuid(), article.Id, artist.Id));
+        await _context.SaveChangesAsync();
+
+        // Act
+        ArtistTotals totals = await _repository.GetTotalsAsync(artist.Id);
+
+        // Assert — the draft song and the EP count nowhere.
+        totals.Should().Be(new ArtistTotals(Songs: 1, Videos: 0, Albums: 1, Mixtapes: 1, News: 1));
+    }
+
+    [Fact]
+    public async Task GetTotalsAsync_WithUnknownArtist_ShouldReturnAllZeros()
+    {
+        ArtistTotals totals = await _repository.GetTotalsAsync(Guid.NewGuid());
+
+        totals.Should().Be(new ArtistTotals(Songs: 0, Videos: 0, Albums: 0, Mixtapes: 0, News: 0));
+    }
+
+    [Fact]
+    public async Task GetAvailableLettersAsync_ShouldReturnDistinctLettersOfListedArtistsOnly()
+    {
+        // Arrange — one artist with content, one stub without.
+        var categoryId = Guid.NewGuid();
+        ArtistEntity listed = ArtistFactory.Create("Fally Ipupa", $"listed-{Guid.NewGuid():N}");
+        ArtistEntity stub = ArtistFactory.Create("Zed Stub", $"stub-{Guid.NewGuid():N}");
+        _context.Artists.AddRange(listed, stub);
+        _context.Lyrics.Add(LyricsFactory.CreatePublishedForArtist(categoryId, listed.Id));
+        await _context.SaveChangesAsync();
+
+        // Act
+        IReadOnlyList<string> letters = await _repository.GetAvailableLettersAsync();
+
+        // Assert — the stub's Z contributes nothing.
+        letters.Should().Contain("F");
+        letters.Should().NotContain("Z");
+    }
+
+    [Fact]
+    public async Task GetPublicDirectoryAsync_ShouldFilterToContentAndCountPerCard()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+        ArtistEntity listed = ArtistFactory.Create("Directory Artist", $"dir-{Guid.NewGuid():N}");
+        ArtistEntity stub = ArtistFactory.Create("Directory Stub", $"stub-{Guid.NewGuid():N}");
+        _context.Artists.AddRange(listed, stub);
+        _context.Lyrics.Add(LyricsFactory.CreatePublishedForArtist(categoryId, listed.Id));
+        _context.Albums.Add(AlbumFactory.CreateForArtist(listed.Id, EnumReleaseType.Album));
+        await _context.SaveChangesAsync();
+
+        // Act
+        (List<ArtistDirectoryRow> rows, int totalCount) = await _repository.GetPublicDirectoryAsync(
+            page: 1,
+            pageSize: 30,
+            letter: null,
+            search: null
+        );
+
+        // Assert
+        totalCount.Should().Be(1);
+        rows.Should().ContainSingle();
+        rows[0].Artist.Id.Should().Be(listed.Id);
+        rows[0].ContentCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task GetPublicDirectoryAsync_WithLetter_ShouldFilterOnTheStoredBucket()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+        ArtistEntity elodie = ArtistFactory.Create("Élodie Unit", $"el-{Guid.NewGuid():N}");
+        ArtistEntity fally = ArtistFactory.Create("Fally Unit", $"fa-{Guid.NewGuid():N}");
+        _context.Artists.AddRange(elodie, fally);
+        _context.Lyrics.Add(LyricsFactory.CreatePublishedForArtist(categoryId, elodie.Id));
+        _context.Lyrics.Add(LyricsFactory.CreatePublishedForArtist(categoryId, fally.Id));
+        await _context.SaveChangesAsync();
+
+        // Act — the accented name buckets under its folded initial.
+        (List<ArtistDirectoryRow> rows, int totalCount) = await _repository.GetPublicDirectoryAsync(
+            page: 1,
+            pageSize: 30,
+            letter: "E",
+            search: null
+        );
+
+        // Assert
+        totalCount.Should().Be(1);
+        rows.Should().ContainSingle(r => r.Artist.Id == elodie.Id);
+    }
+
+    [Fact(
+        Skip = "The folded search uses EF.Functions.Like which is not supported by InMemoryDatabase — tested in integration tests"
+    )]
+    public Task GetPublicDirectoryAsync_WithSearch_ShouldMatchFoldedNames() => Task.CompletedTask;
 
     #endregion
 }
