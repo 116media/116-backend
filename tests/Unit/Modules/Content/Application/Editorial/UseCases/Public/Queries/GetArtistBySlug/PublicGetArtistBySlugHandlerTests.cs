@@ -149,4 +149,82 @@ public class PublicGetArtistBySlugHandlerTests : BaseContentHandlerTest
         result.Videos.Items.Should().HaveCount(3);
         result.Videos.Count.Should().Be(3);
     }
+
+    #region Zero-Content 404 Rule
+
+    [Fact]
+    public async Task Handle_WhenEveryTotalIsZero_ShouldThrowNotFound()
+    {
+        // Arrange — a bio and an avatar are not content; a stub must not become a page.
+        ArtistEntity artist = ArtistFactory.CreateWithSlug("empty-artist");
+        _artistRepositoryMock.SetupGetBySlug("empty-artist", artist);
+        _artistRepositoryMock.SetupGetTotals(new ArtistTotals(0, 0, 0, 0, 0));
+
+        var query = new PublicGetArtistBySlugQuery(
+            "empty-artist",
+            new PaginatedRequest(0, 10),
+            new PaginatedRequest(0, 10)
+        );
+
+        // Act
+        Func<Task> act = () => _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Theory]
+    [InlineData(1, 0, 0, 0, 0)]
+    [InlineData(0, 1, 0, 0, 0)]
+    [InlineData(0, 0, 1, 0, 0)]
+    [InlineData(0, 0, 0, 1, 0)]
+    [InlineData(0, 0, 0, 0, 1)]
+    public async Task Handle_WhenAnySingleSurfaceHasContent_ShouldReturnProfile(
+        int songs,
+        int videos,
+        int albums,
+        int mixtapes,
+        int news
+    )
+    {
+        // Arrange — each of the five surfaces alone keeps the profile alive.
+        ArtistEntity artist = ArtistFactory.CreateWithSlug("one-surface");
+        _artistRepositoryMock.SetupGetBySlug("one-surface", artist);
+        _artistRepositoryMock.SetupGetTotals(new ArtistTotals(songs, videos, albums, mixtapes, news));
+
+        var query = new PublicGetArtistBySlugQuery(
+            "one-surface",
+            new PaginatedRequest(0, 10),
+            new PaginatedRequest(0, 10)
+        );
+
+        // Act
+        PublicGetArtistBySlugResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.Totals.Should().Be(new ArtistTotalsDto(songs, videos, albums, mixtapes, news));
+    }
+
+    [Fact]
+    public async Task Handle_ShouldExposeVerificationWithoutTheClaimingUser()
+    {
+        // Arrange
+        ArtistEntity artist = ArtistFactory.CreateClaimed(Guid.NewGuid());
+        _artistRepositoryMock.SetupGetBySlug(artist.Slug, artist);
+
+        var query = new PublicGetArtistBySlugQuery(
+            artist.Slug,
+            new PaginatedRequest(0, 10),
+            new PaginatedRequest(0, 10)
+        );
+
+        // Act
+        PublicGetArtistBySlugResult result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert — the derived flag ships; the claiming user's identity never does.
+        result.Artist.IsVerified.Should().BeTrue();
+        result.Artist.GetType().GetProperty("UserId").Should().BeNull();
+    }
+
+    #endregion
 }
