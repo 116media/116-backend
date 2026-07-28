@@ -29,7 +29,11 @@ public class AdminCreateArtistValidatorTests
         new(
             name ?? TestConstants.Content.Editorial.Artist.ValidName,
             slug ?? TestConstants.Content.Editorial.Artist.ValidSlug,
-            bio
+            bio,
+            null,
+            null,
+            null,
+            null
         );
 
     [Fact]
