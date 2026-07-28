@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using _116.Content.Application.Shared.Exceptions;
 using _116.Content.Application.Shared.Services;
 using _116.Content.Domain.Enums;
 using Microsoft.Extensions.Configuration;
