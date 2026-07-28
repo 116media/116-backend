@@ -1,30 +1,33 @@
 using System.Net;
-using _116.Content.Application.Shared;
+using _116.Content.Application.Editorial.Factories;
 using _116.Content.Domain.Enums;
 using AwesomeAssertions;
 using Xunit;
 
-namespace _116.Unit.Tests.Modules.Content.Application.Shared;
+namespace _116.Unit.Tests.Modules.Content.Application.Editorial.Factories;
 
 /// <summary>
-/// Unit tests for <see cref="StreamingLinkResolver"/>.
+/// Unit tests for <see cref="StreamingLinkFactory"/>.
 /// </summary>
-public class StreamingLinkResolverTests
+public class StreamingLinkFactoryTests
 {
     private const string ArtistName = "Fally Ipupa";
     private const string ReleaseName = "Eloko Oyo";
 
-    #region ResolveStreamingLinks Tests
+    #region CreateStreamingLinks Tests
 
     [Fact]
-    public void ResolveStreamingLinks_ShouldAlwaysReturnExactlyFivePlatforms()
+    public void CreateStreamingLinks_ShouldAlwaysReturnExactlyFivePlatforms()
     {
         // Arrange
         var curated = new Dictionary<EnumStreamingPlatform, string>();
 
         // Act
-        IReadOnlyList<(EnumStreamingPlatform Platform, string Url)> result =
-            StreamingLinkResolver.ResolveStreamingLinks(ArtistName, ReleaseName, curated);
+        IReadOnlyList<(EnumStreamingPlatform Platform, string Url)> result = StreamingLinkFactory.CreateStreamingLinks(
+            ArtistName,
+            ReleaseName,
+            curated
+        );
 
         // Assert
         result.Should().HaveCount(5);
@@ -44,14 +47,17 @@ public class StreamingLinkResolverTests
     }
 
     [Fact]
-    public void ResolveStreamingLinks_WithNoCuratedLinks_ShouldReturnValidGeneratedFallbackForEveryPlatform()
+    public void CreateStreamingLinks_WithNoCuratedLinks_ShouldReturnValidGeneratedFallbackForEveryPlatform()
     {
         // Arrange
         var curated = new Dictionary<EnumStreamingPlatform, string>();
 
         // Act
-        IReadOnlyList<(EnumStreamingPlatform Platform, string Url)> result =
-            StreamingLinkResolver.ResolveStreamingLinks(ArtistName, ReleaseName, curated);
+        IReadOnlyList<(EnumStreamingPlatform Platform, string Url)> result = StreamingLinkFactory.CreateStreamingLinks(
+            ArtistName,
+            ReleaseName,
+            curated
+        );
 
         // Assert
         result.Should().OnlyContain(r => !string.IsNullOrWhiteSpace(r.Url));
@@ -78,30 +84,36 @@ public class StreamingLinkResolverTests
     }
 
     [Fact]
-    public void ResolveStreamingLinks_WhenCuratedLinkExistsForPlatform_ShouldPreferCuratedOverGenerated()
+    public void CreateStreamingLinks_WhenCuratedLinkExistsForPlatform_ShouldPreferCuratedOverGenerated()
     {
         // Arrange
         const string curatedUrl = "https://open.spotify.com/album/curated-abc123";
         var curated = new Dictionary<EnumStreamingPlatform, string> { [EnumStreamingPlatform.Spotify] = curatedUrl };
 
         // Act
-        IReadOnlyList<(EnumStreamingPlatform Platform, string Url)> result =
-            StreamingLinkResolver.ResolveStreamingLinks(ArtistName, ReleaseName, curated);
+        IReadOnlyList<(EnumStreamingPlatform Platform, string Url)> result = StreamingLinkFactory.CreateStreamingLinks(
+            ArtistName,
+            ReleaseName,
+            curated
+        );
 
         // Assert
         result.Single(r => r.Platform == EnumStreamingPlatform.Spotify).Url.Should().Be(curatedUrl);
     }
 
     [Fact]
-    public void ResolveStreamingLinks_WhenCuratedLinkMissingForPlatform_ShouldFallBackToGeneratedUrlForThatPlatformOnly()
+    public void CreateStreamingLinks_WhenCuratedLinkMissingForPlatform_ShouldFallBackToGeneratedUrlForThatPlatformOnly()
     {
         // Arrange — only Spotify has a curated link; every other platform must fall back.
         const string curatedUrl = "https://open.spotify.com/album/curated-abc123";
         var curated = new Dictionary<EnumStreamingPlatform, string> { [EnumStreamingPlatform.Spotify] = curatedUrl };
 
         // Act
-        IReadOnlyList<(EnumStreamingPlatform Platform, string Url)> result =
-            StreamingLinkResolver.ResolveStreamingLinks(ArtistName, ReleaseName, curated);
+        IReadOnlyList<(EnumStreamingPlatform Platform, string Url)> result = StreamingLinkFactory.CreateStreamingLinks(
+            ArtistName,
+            ReleaseName,
+            curated
+        );
 
         // Assert
         result.Single(r => r.Platform == EnumStreamingPlatform.Spotify).Url.Should().Be(curatedUrl);
@@ -124,7 +136,7 @@ public class StreamingLinkResolverTests
     }
 
     [Fact]
-    public void ResolveStreamingLinks_WhenAllPlatformsCurated_ShouldReturnAllCuratedUrlsVerbatim()
+    public void CreateStreamingLinks_WhenAllPlatformsCurated_ShouldReturnAllCuratedUrlsVerbatim()
     {
         // Arrange
         var curated = new Dictionary<EnumStreamingPlatform, string>
@@ -137,8 +149,11 @@ public class StreamingLinkResolverTests
         };
 
         // Act
-        IReadOnlyList<(EnumStreamingPlatform Platform, string Url)> result =
-            StreamingLinkResolver.ResolveStreamingLinks(ArtistName, ReleaseName, curated);
+        IReadOnlyList<(EnumStreamingPlatform Platform, string Url)> result = StreamingLinkFactory.CreateStreamingLinks(
+            ArtistName,
+            ReleaseName,
+            curated
+        );
 
         // Assert
         foreach ((EnumStreamingPlatform platform, string url) in result)
@@ -148,7 +163,7 @@ public class StreamingLinkResolverTests
     }
 
     [Fact]
-    public void ResolveStreamingLinks_ShouldUrlEncodeTheArtistAndReleaseInTheGeneratedSearchQuery()
+    public void CreateStreamingLinks_ShouldUrlEncodeTheArtistAndReleaseInTheGeneratedSearchQuery()
     {
         // Arrange — names containing characters that must be escaped in a query string.
         const string artistName = "Koffi & Quartier";
@@ -156,8 +171,11 @@ public class StreamingLinkResolverTests
         var curated = new Dictionary<EnumStreamingPlatform, string>();
 
         // Act
-        IReadOnlyList<(EnumStreamingPlatform Platform, string Url)> result =
-            StreamingLinkResolver.ResolveStreamingLinks(artistName, releaseName, curated);
+        IReadOnlyList<(EnumStreamingPlatform Platform, string Url)> result = StreamingLinkFactory.CreateStreamingLinks(
+            artistName,
+            releaseName,
+            curated
+        );
 
         // Assert
         string encoded = WebUtility.UrlEncode($"{artistName} {releaseName}");
@@ -170,7 +188,7 @@ public class StreamingLinkResolverTests
     #region GenerateSearchUrl guard
 
     /// <summary>
-    /// The unsupported-platform guard is unreachable through <c>ResolveStreamingLinks</c>, which
+    /// The unsupported-platform guard is unreachable through <c>CreateStreamingLinks</c>, which
     /// only iterates declared enum members. It exists so that adding a fifth platform without a
     /// matching switch arm fails loudly instead of silently returning a wrong URL, so it is
     /// asserted directly against an undeclared enum value.
@@ -182,7 +200,7 @@ public class StreamingLinkResolverTests
         const EnumStreamingPlatform undeclared = (EnumStreamingPlatform)9999;
 
         // Act
-        Action act = () => StreamingLinkResolver.GenerateSearchUrl(undeclared, "Fally Ipupa", "Eloko Oyo");
+        Action act = () => StreamingLinkFactory.GenerateSearchUrl(undeclared, "Fally Ipupa", "Eloko Oyo");
 
         // Assert
         act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("platform");
@@ -196,7 +214,7 @@ public class StreamingLinkResolverTests
     {
         // Act
         IEnumerable<string> urls = Enum.GetValues<EnumStreamingPlatform>()
-            .Select(p => StreamingLinkResolver.GenerateSearchUrl(p, "Fally Ipupa", "Eloko Oyo"));
+            .Select(p => StreamingLinkFactory.GenerateSearchUrl(p, "Fally Ipupa", "Eloko Oyo"));
 
         // Assert
         urls.Should().OnlyContain(url => url.StartsWith("https://", StringComparison.Ordinal));
