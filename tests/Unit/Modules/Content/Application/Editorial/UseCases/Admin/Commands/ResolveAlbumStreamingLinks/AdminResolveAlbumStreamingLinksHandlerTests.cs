@@ -1,4 +1,5 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ResolveAlbumStreamingLinks;
+using _116.Content.Application.Shared.Exceptions;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Application.Shared.Services;
