@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Factories.Content;
 using AwesomeAssertions;
 using Xunit;
@@ -59,6 +60,70 @@ public class AlbumSpecificationsTests
 
         // Assert
         predicate.Should().NotBeNull();
+    }
+
+    #endregion
+
+    #region AlbumByArtistSpecification
+
+    [Fact]
+    public void AlbumByArtistSpecification_WithMatchingArtist_ShouldReturnTrue()
+    {
+        // Arrange
+        var artistId = Guid.NewGuid();
+        AlbumEntity album = AlbumFactory.CreateForArtist(artistId);
+        var spec = new AlbumByArtistSpecification(artistId);
+
+        // Act & Assert
+        spec.IsSatisfiedBy(album).Should().BeTrue();
+    }
+
+    [Fact]
+    public void AlbumByArtistSpecification_WithDifferentArtist_ShouldReturnFalse()
+    {
+        // Arrange
+        AlbumEntity album = AlbumFactory.CreateForArtist(Guid.NewGuid());
+        var spec = new AlbumByArtistSpecification(Guid.NewGuid());
+
+        // Act & Assert
+        spec.IsSatisfiedBy(album).Should().BeFalse();
+    }
+
+    [Fact]
+    public void AlbumByArtistSpecification_WithUnlinkedAlbum_ShouldReturnFalse()
+    {
+        // Arrange — ArtistId is nullable; an unlinked album matches no artist scope.
+        AlbumEntity album = AlbumFactory.Create();
+        var spec = new AlbumByArtistSpecification(Guid.NewGuid());
+
+        // Act & Assert
+        spec.IsSatisfiedBy(album).Should().BeFalse();
+    }
+
+    #endregion
+
+    #region AlbumByReleaseTypeSpecification
+
+    [Fact]
+    public void AlbumByReleaseTypeSpecification_WithMatchingType_ShouldReturnTrue()
+    {
+        // Arrange
+        AlbumEntity mixtape = AlbumFactory.CreateForArtist(Guid.NewGuid(), EnumReleaseType.Mixtape);
+        var spec = new AlbumByReleaseTypeSpecification(EnumReleaseType.Mixtape);
+
+        // Act & Assert
+        spec.IsSatisfiedBy(mixtape).Should().BeTrue();
+    }
+
+    [Fact]
+    public void AlbumByReleaseTypeSpecification_WithDifferentType_ShouldReturnFalse()
+    {
+        // Arrange
+        AlbumEntity album = AlbumFactory.CreateForArtist(Guid.NewGuid(), EnumReleaseType.Album);
+        var spec = new AlbumByReleaseTypeSpecification(EnumReleaseType.Mixtape);
+
+        // Act & Assert
+        spec.IsSatisfiedBy(album).Should().BeFalse();
     }
 
     #endregion
