@@ -17,7 +17,7 @@ public class StreamingLinkResolverTests
     #region ResolveStreamingLinks Tests
 
     [Fact]
-    public void ResolveStreamingLinks_ShouldAlwaysReturnExactlyFourPlatforms()
+    public void ResolveStreamingLinks_ShouldAlwaysReturnExactlyFivePlatforms()
     {
         // Arrange
         var curated = new Dictionary<EnumStreamingPlatform, string>();
@@ -27,7 +27,7 @@ public class StreamingLinkResolverTests
             StreamingLinkResolver.ResolveStreamingLinks(ArtistName, ReleaseName, curated);
 
         // Assert
-        result.Should().HaveCount(4);
+        result.Should().HaveCount(5);
         result
             .Select(r => r.Platform)
             .Should()
@@ -38,6 +38,7 @@ public class StreamingLinkResolverTests
                     EnumStreamingPlatform.AppleMusic,
                     EnumStreamingPlatform.YoutubeMusic,
                     EnumStreamingPlatform.Tidal,
+                    EnumStreamingPlatform.Deezer,
                 }
             );
     }
@@ -70,6 +71,10 @@ public class StreamingLinkResolverTests
             .Single(r => r.Platform == EnumStreamingPlatform.Tidal)
             .Url.Should()
             .StartWith("https://listen.tidal.com/search?q=");
+        result
+            .Single(r => r.Platform == EnumStreamingPlatform.Deezer)
+            .Url.Should()
+            .StartWith("https://www.deezer.com/search/");
     }
 
     [Fact]
@@ -112,6 +117,10 @@ public class StreamingLinkResolverTests
             .Single(r => r.Platform == EnumStreamingPlatform.Tidal)
             .Url.Should()
             .StartWith("https://listen.tidal.com/search?q=");
+        result
+            .Single(r => r.Platform == EnumStreamingPlatform.Deezer)
+            .Url.Should()
+            .StartWith("https://www.deezer.com/search/");
     }
 
     [Fact]
@@ -124,6 +133,7 @@ public class StreamingLinkResolverTests
             [EnumStreamingPlatform.AppleMusic] = "https://music.apple.com/album/2",
             [EnumStreamingPlatform.YoutubeMusic] = "https://music.youtube.com/playlist/3",
             [EnumStreamingPlatform.Tidal] = "https://listen.tidal.com/album/4",
+            [EnumStreamingPlatform.Deezer] = "https://www.deezer.com/album/5",
         };
 
         // Act
