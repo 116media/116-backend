@@ -251,8 +251,17 @@ public static class TestErrorsFactory
             CreateAlbumErrors(),
             CreateTranslationErrors(),
             CreateSubmissionErrors(),
-            CreateLyricsRevisionErrors()
+            CreateLyricsRevisionErrors(),
+            CreateStreamingLinkErrors()
         );
+    }
+
+    /// <summary>
+    /// Creates a real <see cref="StreamingLinkErrors"/> instance backed by the English catalog.
+    /// </summary>
+    public static StreamingLinkErrors CreateStreamingLinkErrors()
+    {
+        return new StreamingLinkErrors(LocalizerFactory.CreateMessage<StreamingLinkErrorMessage>("en"));
     }
 
     /// <summary>
