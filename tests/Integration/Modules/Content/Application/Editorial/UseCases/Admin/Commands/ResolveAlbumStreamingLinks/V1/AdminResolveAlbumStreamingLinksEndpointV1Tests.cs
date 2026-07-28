@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ResolveAlbumStreamingLinks.V1;
+using _116.Content.Application.Shared.Exceptions;
 using _116.Content.Application.Shared.Services;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
@@ -177,6 +178,29 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
         );
 
         await response.ShouldBeProblem(HttpStatusCode.NotFound);
+    }
+
+    /// <summary>
+    /// A provider rate-limit maps to 429, not 502 — the admin is told to wait, not that the
+    /// provider is down.
+    /// </summary>
+    [Fact]
+    public async Task ResolveAlbumStreamingLinks_WhenProviderRateLimits_ReturnsTooManyRequests()
+    {
+        StubStreamingLinkResolutionService.Reset();
+        StubStreamingLinkResolutionService.NextException = new StreamingLinkResolutionException(
+            "slow down",
+            isRateLimited: true
+        );
+        AlbumEntity album = await SeedAlbumAsync();
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PostAsJsonAsync(
+            Url(album.Id),
+            new AdminResolveAlbumStreamingLinksRequest(SourceUrl)
+        );
+
+        await response.ShouldBeProblem(HttpStatusCode.TooManyRequests);
     }
 
     [Fact]
