@@ -96,4 +96,95 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
+
+    #region Identity Field Validation
+
+    /// <summary>
+    /// Each invalid identity payload is rejected at the validator with a 400 — through real
+    /// HTTP, so the validation extensions and their localized messages actually execute.
+    /// </summary>
+    [Fact]
+    public async Task CreateArtist_WithMoreThanTenAliases_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+        List<string> aliases = Enumerable.Range(0, 11).Select(i => $"Alias {i}").ToList();
+
+        var response = await Client.PostAsJsonAsync(
+            ApiRoutes.Admin.Artists,
+            new AdminCreateArtistRequest("Name", $"slug-{Guid.NewGuid():N}", null, null, aliases, null, null)
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateArtist_WithOverlongAlias_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.PostAsJsonAsync(
+            ApiRoutes.Admin.Artists,
+            new AdminCreateArtistRequest(
+                "Name",
+                $"slug-{Guid.NewGuid():N}",
+                null,
+                null,
+                [new string('a', 101)],
+                null,
+                null
+            )
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateArtist_WithFutureBirthdate_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+        DateOnly future = DateOnly.FromDateTime(DateTime.UtcNow).AddYears(1);
+
+        var response = await Client.PostAsJsonAsync(
+            ApiRoutes.Admin.Artists,
+            new AdminCreateArtistRequest("Name", $"slug-{Guid.NewGuid():N}", null, null, null, future, null)
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateArtist_WithOverlongRealNameOrHometown_ReturnsBadRequest()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        var longRealName = await Client.PostAsJsonAsync(
+            ApiRoutes.Admin.Artists,
+            new AdminCreateArtistRequest(
+                "Name",
+                $"slug-{Guid.NewGuid():N}",
+                null,
+                new string('r', 151),
+                null,
+                null,
+                null
+            )
+        );
+        var longHometown = await Client.PostAsJsonAsync(
+            ApiRoutes.Admin.Artists,
+            new AdminCreateArtistRequest(
+                "Name",
+                $"slug-{Guid.NewGuid():N}",
+                null,
+                null,
+                null,
+                null,
+                new string('h', 121)
+            )
+        );
+
+        longRealName.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        longHometown.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    #endregion
 }
