@@ -1,17 +1,17 @@
 using System.Net;
 using _116.Content.Domain.Enums;
 
-namespace _116.Content.Application.Shared;
+namespace _116.Content.Application.Editorial.Factories;
 
 /// <summary>
-/// Resolves the streaming platform deep links shown on an album or standalone single's public
-/// detail page. Every platform always resolves to a link — a curated URL when one has been set
+/// Builds the streaming platform deep links shown on an album or standalone single's public
+/// detail page. Every platform always yields a link — a curated URL when one has been set
 /// by an admin, otherwise a generated search-query fallback.
 /// </summary>
-public static class StreamingLinkResolver
+public static class StreamingLinkFactory
 {
     /// <summary>
-    /// Resolves the streaming platform links for a release. Always returns exactly one entry
+    /// Creates the streaming platform links for a release. Always returns exactly one entry
     /// per <see cref="EnumStreamingPlatform" /> value — a curated link takes precedence over
     /// the generated fallback for that platform.
     /// </summary>
@@ -24,7 +24,7 @@ public static class StreamingLinkResolver
     /// <returns>
     /// A read-only list with exactly one <c>(Platform, Url)</c> tuple per streaming platform.
     /// </returns>
-    public static IReadOnlyList<(EnumStreamingPlatform Platform, string Url)> ResolveStreamingLinks(
+    public static IReadOnlyList<(EnumStreamingPlatform Platform, string Url)> CreateStreamingLinks(
         string artistName,
         string releaseName,
         IReadOnlyDictionary<EnumStreamingPlatform, string> curated
@@ -45,7 +45,7 @@ public static class StreamingLinkResolver
     /// <summary>
     /// Builds a generated search-query URL for a platform when no curated link exists.
     /// Internal rather than private so the unsupported-platform guard below stays directly
-    /// testable — <see cref="ResolveStreamingLinks" /> only ever feeds it declared enum members.
+    /// testable — <see cref="CreateStreamingLinks" /> only ever feeds it declared enum members.
     /// </summary>
     internal static string GenerateSearchUrl(EnumStreamingPlatform platform, string artistName, string releaseName)
     {
