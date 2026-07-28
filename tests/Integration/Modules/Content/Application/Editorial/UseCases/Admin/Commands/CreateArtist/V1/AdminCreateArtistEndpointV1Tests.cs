@@ -18,7 +18,7 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequest("Fally Ipupa", "fally-ipupa", null)
+            new AdminCreateArtistRequest("Fally Ipupa", "fally-ipupa", null, null, null, null, null)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -31,7 +31,7 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequest("Fally Ipupa", "fally-ipupa", null)
+            new AdminCreateArtistRequest("Fally Ipupa", "fally-ipupa", null, null, null, null, null)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -44,7 +44,7 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequest("Fally Ipupa", "fally-ipupa", "Congolese singer.")
+            new AdminCreateArtistRequest("Fally Ipupa", "fally-ipupa", "Congolese singer.", null, null, null, null)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -78,7 +78,7 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequest("Fally Ipupa Copy", "fally-ipupa", null)
+            new AdminCreateArtistRequest("Fally Ipupa Copy", "fally-ipupa", null, null, null, null, null)
         );
 
         await response.ShouldBeProblem(HttpStatusCode.Conflict);
@@ -91,7 +91,7 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(
             ApiRoutes.Admin.Artists,
-            new AdminCreateArtistRequest(string.Empty, "some-slug", null)
+            new AdminCreateArtistRequest(string.Empty, "some-slug", null, null, null, null, null)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
