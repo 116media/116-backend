@@ -31,29 +31,18 @@ public static partial class EditorialValidation
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the title property.</param>
     /// <param name="i18n">The article error message provider.</param>
-    /// <param name="isRequired">Whether the title is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidArticleTitle<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        ArticleErrorMessage i18n,
-        bool isRequired = true
+        ArticleErrorMessage i18n
     )
     {
-        if (isRequired)
-        {
-            return ruleBuilder
-                .Cascade(cascadeMode: CascadeMode.Stop)
-                .NotEmpty()
-                .WithMessage(i18n.TitleRequired())
-                .MaximumLength(maximumLength: ContentConstants.MaxTitleLength)
-                .WithMessage(i18n.TitleTooLong(ContentConstants.MaxTitleLength));
-        }
-
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(i18n.TitleRequired())
             .MaximumLength(maximumLength: ContentConstants.MaxTitleLength)
-            .WithMessage(i18n.TitleTooLong(ContentConstants.MaxTitleLength))
-            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Title")));
+            .WithMessage(i18n.TitleTooLong(ContentConstants.MaxTitleLength));
     }
 
     /// <summary>
@@ -62,33 +51,20 @@ public static partial class EditorialValidation
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the slug property.</param>
     /// <param name="i18n">The article error message provider.</param>
-    /// <param name="isRequired">Whether the slug is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidArticleSlug<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        ArticleErrorMessage i18n,
-        bool isRequired = true
+        ArticleErrorMessage i18n
     )
     {
-        if (isRequired)
-        {
-            return ruleBuilder
-                .Cascade(cascadeMode: CascadeMode.Stop)
-                .NotEmpty()
-                .WithMessage(i18n.SlugRequired())
-                .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
-                .WithMessage(i18n.SlugTooLong(ContentConstants.MaxSlugLength))
-                .Matches(SlugRegex())
-                .WithMessage(i18n.SlugInvalidFormat());
-        }
-
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(i18n.SlugRequired())
             .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
             .WithMessage(i18n.SlugTooLong(ContentConstants.MaxSlugLength))
             .Matches(SlugRegex())
-            .WithMessage(i18n.SlugInvalidFormat())
-            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Slug")));
+            .WithMessage(i18n.SlugInvalidFormat());
     }
 
     /// <summary>
@@ -323,29 +299,18 @@ public static partial class EditorialValidation
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the title property.</param>
     /// <param name="i18n">The video error message provider.</param>
-    /// <param name="isRequired">Whether the title is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidVideoTitle<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        VideoErrorMessage i18n,
-        bool isRequired = true
+        VideoErrorMessage i18n
     )
     {
-        if (isRequired)
-        {
-            return ruleBuilder
-                .Cascade(cascadeMode: CascadeMode.Stop)
-                .NotEmpty()
-                .WithMessage(i18n.TitleRequired())
-                .MaximumLength(maximumLength: ContentConstants.MaxTitleLength)
-                .WithMessage(i18n.TitleTooLong(ContentConstants.MaxTitleLength));
-        }
-
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(i18n.TitleRequired())
             .MaximumLength(maximumLength: ContentConstants.MaxTitleLength)
-            .WithMessage(i18n.TitleTooLong(ContentConstants.MaxTitleLength))
-            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Title")));
+            .WithMessage(i18n.TitleTooLong(ContentConstants.MaxTitleLength));
     }
 
     /// <summary>
@@ -354,33 +319,20 @@ public static partial class EditorialValidation
     /// <typeparam name="T">The type being validated.</typeparam>
     /// <param name="ruleBuilder">The rule builder for the slug property.</param>
     /// <param name="i18n">The video error message provider.</param>
-    /// <param name="isRequired">Whether the slug is required (default: true).</param>
     /// <returns>The configured rule builder.</returns>
     public static IRuleBuilderOptions<T, string?> ValidVideoSlug<T>(
         this IRuleBuilderInitial<T, string?> ruleBuilder,
-        VideoErrorMessage i18n,
-        bool isRequired = true
+        VideoErrorMessage i18n
     )
     {
-        if (isRequired)
-        {
-            return ruleBuilder
-                .Cascade(cascadeMode: CascadeMode.Stop)
-                .NotEmpty()
-                .WithMessage(i18n.SlugRequired())
-                .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
-                .WithMessage(i18n.SlugTooLong(ContentConstants.MaxSlugLength))
-                .Matches(SlugRegex())
-                .WithMessage(i18n.SlugInvalidFormat());
-        }
-
         return ruleBuilder
             .Cascade(cascadeMode: CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(i18n.SlugRequired())
             .MaximumLength(maximumLength: ContentConstants.MaxSlugLength)
             .WithMessage(i18n.SlugTooLong(ContentConstants.MaxSlugLength))
             .Matches(SlugRegex())
-            .WithMessage(i18n.SlugInvalidFormat())
-            .When(x => !string.IsNullOrWhiteSpace(ValidationUtils.GetPropertyValue(instance: x, "Slug")));
+            .WithMessage(i18n.SlugInvalidFormat());
     }
 
     /// <summary>
