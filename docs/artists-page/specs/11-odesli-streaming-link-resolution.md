@@ -79,7 +79,7 @@ because resolution makes a fifth platform free instead of a fifth manual field.
 
 Two knock-on updates ship with the member:
 
-- **`StreamingLinkResolver`** gains a Deezer arm in the generated-search fallback
+- **`StreamingLinkFactory`** gains a Deezer arm in the generated-search fallback
   (`https://www.deezer.com/search/<encoded artist + title>`), so uncurated releases get a Deezer
   search link like every other platform. Its "always exactly N platforms" tests move from 4 to 5.
 - The frontend already skips platforms it does not recognise, so backend-first is safe — same
@@ -149,14 +149,16 @@ files, wired into `ContentI18n` like every other domain:
 | --- | --- | --- |
 | `ResolutionFailed()` | `BadGatewayException` | *The streaming-link provider could not be reached. Try again shortly.* |
 | `ResolutionRateLimited()` | `RateLimitExceededException` | *The streaming-link provider is rate-limiting us. Wait a minute and retry.* |
-| `UnresolvableSourceUrl()` | `BadRequestException` | *The provider does not recognise this URL. Paste a track or album link from a supported platform.* |
+| `UnresolvableSourceUrl` | *message only* — worded onto the validators' 400, no exception factory | *The provider does not recognise this URL. Paste a track or album link from a supported platform.* |
 | `NothingResolved()` | `NotFoundException` | *The provider found no other platforms for this release.* |
 
 `BadGatewayException` and `RateLimitExceededException` both already exist in
 `Shared/Application/Exceptions` — verified, nothing new to invent.
 
-`StreamingLinkResolutionException` is the **infrastructure**-level exception the service throws;
-the handler translates it into the localized errors above. Infrastructure never touches i18n.
+`StreamingLinkResolutionException` lives in `Application/Shared/Exceptions` — the module's
+exception folder, following the Identity module's `Application/Shared/Exceptions` precedent. It is
+part of the port contract: implementations throw it, handlers translate it into the localized
+errors above, and infrastructure never touches i18n.
 
 ## Admin surface
 
@@ -221,7 +223,7 @@ Cloudinary is — the one kind of mock allowed inside `tests/Integration/`.
   `HttpMessageHandler`; both handlers with a mocked port (upserts existing rows instead of
   duplicating, empty result throws `NothingResolved`, provider exception becomes the localized
   error, absent platforms leave existing rows alone); validator rejects non-https and relative
-  source URLs; `StreamingLinkResolver` emits five platforms including the Deezer search fallback.
+  source URLs; `StreamingLinkFactory` emits five platforms including the Deezer search fallback.
 - **Integration** — real HTTP against both resolve endpoints with the stubbed resolution service:
   resolved platforms persist as curated rows readable back through the public lyrics detail
   endpoint; a second resolve replaces URLs without duplicating rows; a pre-existing manual row for
@@ -231,9 +233,9 @@ Cloudinary is — the one kind of mock allowed inside `tests/Integration/`.
 ## Checklist
 
 - [x] `EnumStreamingPlatform.Deezer` appended
-- [x] `StreamingLinkResolver` Deezer search-fallback arm; platform-count tests updated to 5
+- [x] `StreamingLinkFactory` Deezer search-fallback arm; platform-count tests updated to 5
 - [x] `IStreamingLinkResolutionService` port in `Application/Shared/Services`
-- [x] `StreamingLinkResolutionException` (infrastructure-level)
+- [x] `StreamingLinkResolutionException` in `Application/Shared/Exceptions`
 - [x] `OdesliStreamingLinkResolutionService` via typed `HttpClient`, config-driven base URL and optional key, `userCountry=CD`, 10s timeout
 - [x] Response mapping: known keys → enum, unknown keys skipped, non-https skipped
 - [x] `StreamingLinkErrors` + `StreamingLinkErrorMessage` + three `.resx` files, wired into `ContentI18n`
