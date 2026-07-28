@@ -1,4 +1,6 @@
-namespace _116.Content.Application.Shared.Services;
+using _116.Content.Application.Shared.Services;
+
+namespace _116.Content.Application.Shared.Exceptions;
 
 /// <summary>
 /// Raised by <see cref="IStreamingLinkResolutionService" /> implementations when the external
