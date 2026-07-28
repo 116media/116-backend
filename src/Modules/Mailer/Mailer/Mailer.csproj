@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <RootNamespace>_116.Mailer</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="_116.Unit.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MailKit" Version="4.17.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../../../BuildingBlocks/BuildingBlocks.csproj" />
+        <ProjectReference Include="../../../Shared/Shared/Shared.csproj" />
+        <ProjectReference Include="../../../Shared/Shared.Contracts/Shared.Contracts.csproj" />
+        <ProjectReference Include="../Mailer.Contracts/Mailer.Contracts.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Infrastructure\Persistence\Migrations\" />
+    </ItemGroup>
+</Project>
