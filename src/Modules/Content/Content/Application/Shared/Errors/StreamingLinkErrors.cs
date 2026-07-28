@@ -33,15 +33,6 @@ public class StreamingLinkErrors(StreamingLinkErrorMessage i18n)
     }
 
     /// <summary>
-    /// Throws when the pasted source URL is not a track or album link the provider
-    /// recognises.
-    /// </summary>
-    public BadRequestException UnresolvableSourceUrl()
-    {
-        return new BadRequestException(i18n.UnresolvableSourceUrl());
-    }
-
-    /// <summary>
     /// Throws when the provider resolved no platforms at all for the source URL, so nothing
     /// was stored — surfaced instead of a silent success.
     /// </summary>
