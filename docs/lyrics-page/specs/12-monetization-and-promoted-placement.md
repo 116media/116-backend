@@ -271,8 +271,8 @@ dotnet ef migrations add AddLyricsPromotedPlacement \
   intentionally left unchecked pending that confirmation. Remaining work once confirmed: an
   `AffiliateConfig`-style constants class holding each platform's real partner/affiliate id (none
   exist yet, since there's nothing to configure until this is confirmed), and one query-param
-  line per platform branch in `StreamingLinkResolver.GenerateSearchUrl`
-  (`src/Modules/Content/Content/Application/Shared/StreamingLinkResolver.cs`) appending it — a
+  line per platform branch in `StreamingLinkFactory.GenerateSearchUrl`
+  (`src/Modules/Content/Content/Application/Editorial/Factories/StreamingLinkFactory.cs`) appending it — a
   few lines of code, not a redesign.
 
 **Bug caught and fixed during verification (affected Article/Video too, not just Lyrics)**:
