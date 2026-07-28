@@ -1,14 +1,19 @@
 using _116.Content;
+using _116.Content.Application.Shared.Errors;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
+using _116.Content.Application.Shared.Services;
 using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 using _116.Content.Infrastructure.Repositories;
+using _116.Content.Infrastructure.Services;
 using AwesomeAssertions;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -213,5 +218,34 @@ public class ContentModuleTests : IDisposable
         {
             Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", previousEnv);
         }
+    }
+
+    [Fact]
+    public void AddContentModule_ShouldRegisterStreamingLinkErrors()
+    {
+        // Act
+        _services.AddContentModule();
+        ServiceProvider serviceProvider = _services.BuildServiceProvider();
+
+        // Assert
+        serviceProvider.GetService<StreamingLinkErrors>().Should().NotBeNull();
+        serviceProvider.GetService<StreamingLinkErrorMessage>().Should().NotBeNull();
+    }
+
+    [Fact]
+    public void AddContentModule_ShouldRegisterOdesliResolutionServiceWithItsTypedClient()
+    {
+        // Arrange — the odesli adapter reads configuration, which the module does not register.
+        _services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+
+        // Act — resolving the port builds the typed HttpClient, which runs the timeout
+        // configuration the registration declares.
+        _services.AddContentModule();
+        ServiceProvider serviceProvider = _services.BuildServiceProvider();
+        var service = serviceProvider.GetService<IStreamingLinkResolutionService>();
+
+        // Assert
+        service.Should().NotBeNull();
+        service.Should().BeOfType<OdesliStreamingLinkResolutionService>();
     }
 }
