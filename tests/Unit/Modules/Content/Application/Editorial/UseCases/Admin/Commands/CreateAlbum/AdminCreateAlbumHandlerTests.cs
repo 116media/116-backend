@@ -2,6 +2,7 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateAlbum;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Core.Application.Shared.Repositories;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
@@ -50,7 +51,8 @@ public class AdminCreateAlbumHandlerTests
             TestConstants.Content.Editorial.Album.ValidName,
             null,
             TestConstants.Content.Editorial.Album.ValidReleaseYear,
-            TestConstants.Content.Editorial.Album.ValidLabel
+            TestConstants.Content.Editorial.Album.ValidLabel,
+            EnumReleaseType.Album
         );
 
         // Act
@@ -73,7 +75,8 @@ public class AdminCreateAlbumHandlerTests
             TestConstants.Content.Editorial.Album.ValidName,
             artist.Id,
             null,
-            null
+            null,
+            EnumReleaseType.Album
         );
 
         // Act
@@ -99,7 +102,8 @@ public class AdminCreateAlbumHandlerTests
             TestConstants.Content.Editorial.Album.ValidName,
             nonExistentArtistId,
             null,
-            null
+            null,
+            EnumReleaseType.Album
         );
 
         // Act
@@ -119,7 +123,8 @@ public class AdminCreateAlbumHandlerTests
             TestConstants.Content.Editorial.Album.ValidName,
             nonExistentArtistId,
             null,
-            null
+            null,
+            EnumReleaseType.Album
         );
 
         // Act
