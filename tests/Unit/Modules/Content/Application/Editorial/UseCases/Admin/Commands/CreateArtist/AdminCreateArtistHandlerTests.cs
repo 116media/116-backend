@@ -46,7 +46,11 @@ public class AdminCreateArtistHandlerTests
         var command = new AdminCreateArtistCommand(
             TestConstants.Content.Editorial.Artist.ValidName,
             TestConstants.Content.Editorial.Artist.ValidSlug,
-            TestConstants.Content.Editorial.Artist.ValidBio
+            TestConstants.Content.Editorial.Artist.ValidBio,
+            null,
+            null,
+            null,
+            null
         );
         _artistRepositoryMock.SetupGetBySlug(command.Slug, null);
 
@@ -74,6 +78,10 @@ public class AdminCreateArtistHandlerTests
         var command = new AdminCreateArtistCommand(
             TestConstants.Content.Editorial.Artist.ValidName,
             TestConstants.Content.Editorial.Artist.ValidSlug,
+            null,
+            null,
+            null,
+            null,
             null
         );
         ArtistEntity existing = ArtistFactory.CreateWithSlug(command.Slug);
@@ -93,6 +101,10 @@ public class AdminCreateArtistHandlerTests
         var command = new AdminCreateArtistCommand(
             TestConstants.Content.Editorial.Artist.ValidName,
             TestConstants.Content.Editorial.Artist.ValidSlug,
+            null,
+            null,
+            null,
+            null,
             null
         );
         ArtistEntity existing = ArtistFactory.CreateWithSlug(command.Slug);
