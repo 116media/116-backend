@@ -142,6 +142,29 @@ public class PublicGetArtistsEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         body.Artists.Items.Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData("AB")]
+    [InlineData("a")]
+    [InlineData("1")]
+    public async Task GetArtists_WithInvalidLetter_ReturnsBadRequest(string letter)
+    {
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync(Routes.Public.Artists.Directory($"?letter={letter}"));
+
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetArtists_WithSingleCharacterSearch_ReturnsBadRequest()
+    {
+        Client.ClearAuthentication();
+
+        var response = await Client.GetAsync(Routes.Public.Artists.Directory("?search=f"));
+
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+    }
+
     [Fact]
     public async Task GetArtists_WithLetterAndSearchTogether_ReturnsBadRequest()
     {
