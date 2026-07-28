@@ -397,4 +397,45 @@ public class ArticleSpecificationsTests
     }
 
     #endregion
+
+    #region ArticleByArtistSpecification
+
+    [Fact]
+    public void ArticleByArtistSpecification_WithPublishedTaggedArticle_ShouldReturnTrue()
+    {
+        // Arrange
+        var artistId = Guid.NewGuid();
+        ArticleEntity article = ArticleFactory.CreatePublished(Guid.NewGuid());
+        ArticleArtistEntity join = ArticleArtistEntity.Create(Guid.NewGuid(), article.Id, artistId);
+        var spec = new ArticleByArtistSpecification(artistId, new[] { join }.AsQueryable());
+
+        // Act & Assert
+        spec.ToExpression().Compile()(article).Should().BeTrue();
+    }
+
+    [Fact]
+    public void ArticleByArtistSpecification_WithDraftTaggedArticle_ShouldReturnFalse()
+    {
+        // Arrange — the tag exists, but a draft never surfaces publicly.
+        var artistId = Guid.NewGuid();
+        ArticleEntity draft = ArticleFactory.Create(Guid.NewGuid());
+        ArticleArtistEntity join = ArticleArtistEntity.Create(Guid.NewGuid(), draft.Id, artistId);
+        var spec = new ArticleByArtistSpecification(artistId, new[] { join }.AsQueryable());
+
+        // Act & Assert
+        spec.ToExpression().Compile()(draft).Should().BeFalse();
+    }
+
+    [Fact]
+    public void ArticleByArtistSpecification_WithUntaggedPublishedArticle_ShouldReturnFalse()
+    {
+        // Arrange — published, but tagged to nobody.
+        ArticleEntity article = ArticleFactory.CreatePublished(Guid.NewGuid());
+        var spec = new ArticleByArtistSpecification(Guid.NewGuid(), Array.Empty<ArticleArtistEntity>().AsQueryable());
+
+        // Act & Assert
+        spec.ToExpression().Compile()(article).Should().BeFalse();
+    }
+
+    #endregion
 }
