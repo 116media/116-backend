@@ -1,3 +1,4 @@
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -45,7 +46,8 @@ public class AdminVerifyPaymentFactoryTests
             _lookupRepositoryMock.Object,
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentOrderErrors()
+            TestErrorsFactory.CreateContentOrderErrors(),
+            new Mock<ICommerceCustomerNotifier>().Object
         );
     }
 
