@@ -3,6 +3,7 @@ using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
+using _116.Mailer.Contracts.Application;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -16,11 +17,13 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword;
 /// <param name="passwordService">Service for password hashing and verification operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Identity module.</param>
+/// <param name="mailer">Outbox mailer sending the security confirmation.</param>
 public class AdminChangePasswordHandler(
     IAuthRepository authRepository,
     IPasswordService passwordService,
     IIdentityUnitOfWork unitOfWork,
-    IdentityI18n i18n
+    IdentityI18n i18n,
+    IMailer mailer
 ) : ICommandHandler<AdminChangePasswordCommand, AdminChangePasswordResult>
 {
     /// <summary>
@@ -62,6 +65,21 @@ public class AdminChangePasswordHandler(
         string hashedNewPassword = passwordService.Hash(password: command.NewPassword);
         user.UpdatePassword(newPasswordHash: hashedNewPassword, errors: i18n.User);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        if (user.Email is not null)
+        {
+            await mailer.EnqueueAsync(
+                template: EnumEmailTemplate.PasswordChanged,
+                to: new EmailRecipient(Address: user.Email, DisplayName: user.UserName),
+                tokens: new Dictionary<string, string>
+                {
+                    ["userName"] = user.UserName,
+                    ["changeTime"] = DateTime.UtcNow.ToString("u"),
+                },
+                culture: EmailCulture.Current(),
+                cancellationToken: cancellationToken
+            );
+        }
 
         return new AdminChangePasswordResult(IsSuccess: true);
     }
