@@ -1,4 +1,5 @@
 using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier.Contracts;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem;
@@ -144,6 +145,8 @@ public static class ContentModule
         services.AddScoped<ILyricsSubmissionRepository, LyricsSubmissionRepository>();
         services.AddScoped<ILyricsRevisionRepository, LyricsRevisionRepository>();
         services.AddScoped<ILyricsRevisionVoteRepository, LyricsRevisionVoteRepository>();
+
+        services.AddScoped<ICommerceCustomerNotifier, CommerceCustomerNotifier>();
 
         // Commerce factories
         services.AddScoped<IOrderPaymentFactory, OrderPaymentFactory>();
