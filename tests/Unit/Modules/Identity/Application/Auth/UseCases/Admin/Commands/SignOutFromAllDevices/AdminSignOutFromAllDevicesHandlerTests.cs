@@ -3,6 +3,7 @@ using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
+using _116.Mailer.Contracts.Application;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -32,7 +33,8 @@ public class AdminSignOutFromAllDevicesHandlerTests
         _handler = new AdminSignOutFromAllDevicesHandler(
             _authRepositoryMock.Object,
             _sessionRepositoryMock.Object,
-            _unitOfWorkMock.Object
+            _unitOfWorkMock.Object,
+            new Mock<IMailer>().Object
         );
     }
 
