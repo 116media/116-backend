@@ -3,6 +3,7 @@ using _116.Identity.Application.Auth.UseCases.Admin.Commands.ChangePassword;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
+using _116.Mailer.Contracts.Application;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
@@ -35,7 +36,8 @@ public class AdminChangePasswordHandlerTests
             _authRepositoryMock.Object,
             _passwordServiceMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateIdentityI18n()
+            TestErrorsFactory.CreateIdentityI18n(),
+            new Mock<IMailer>().Object
         );
     }
 
