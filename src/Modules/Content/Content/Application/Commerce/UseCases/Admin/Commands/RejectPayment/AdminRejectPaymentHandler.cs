@@ -1,4 +1,5 @@
 using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -18,7 +19,8 @@ public class AdminRejectPaymentHandler(
     IOrderPaymentFactory orderPaymentFactory,
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
-    ContentI18n i18n
+    ContentI18n i18n,
+    ICommerceCustomerNotifier customerNotifier
 ) : ICommandHandler<AdminRejectPaymentCommand, AdminRejectPaymentResult>
 {
     /// <inheritdoc />
@@ -38,6 +40,20 @@ public class AdminRejectPaymentHandler(
 
         await contentOrderRepository.UpdatePaymentAsync(payment: payment, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        ContentOrderEntity? order = await contentOrderRepository.GetByIdWithItemsAsync(
+            id: orderId,
+            ct: cancellationToken
+        );
+
+        if (order is not null)
+        {
+            await customerNotifier.NotifyPaymentRejectedAsync(
+                order: order,
+                notes: command.Notes,
+                cancellationToken: cancellationToken
+            );
+        }
 
         return new AdminRejectPaymentResult(IsSuccess: true);
     }
