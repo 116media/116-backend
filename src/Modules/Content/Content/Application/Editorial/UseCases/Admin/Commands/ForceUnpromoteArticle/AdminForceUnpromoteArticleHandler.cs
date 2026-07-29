@@ -1,3 +1,4 @@
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -20,7 +21,8 @@ public class AdminForceUnpromoteArticleHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
     ICurrentActor currentActor,
-    ContentI18n i18n
+    ContentI18n i18n,
+    ICommerceCustomerNotifier customerNotifier
 ) : ICommandHandler<AdminForceUnpromoteArticleCommand, AdminForceUnpromoteArticleResult>
 {
     /// <inheritdoc />
@@ -43,6 +45,13 @@ public class AdminForceUnpromoteArticleHandler(
 
         articleRepository.Update(article: article);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        await customerNotifier.NotifyPromotionRemovedAsync(
+            customerId: article.CustomerId,
+            contentTitle: article.Title,
+            reason: command.Reason,
+            cancellationToken: cancellationToken
+        );
 
         return new AdminForceUnpromoteArticleResult(ArticleId: article.Id, UnpromotedAt: article.UnpromotedAt!.Value);
     }
