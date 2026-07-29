@@ -1,7 +1,9 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword.Contracts;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
+using _116.Mailer.Contracts.Application;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
@@ -11,8 +13,12 @@ namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
 /// </summary>
 /// <param name="otpFactory">Factory for handling admin forgot password OTP creation.</param>
 /// <param name="authRepository">Repository for user data access operations.</param>
-public class AdminForgotPasswordHandler(IAdminForgotPasswordOtpFactory otpFactory, IAuthRepository authRepository)
-    : ICommandHandler<AdminForgotPasswordCommand, AdminForgotPasswordResult>
+/// <param name="mailer">Outbox mailer delivering the reset code.</param>
+public class AdminForgotPasswordHandler(
+    IAdminForgotPasswordOtpFactory otpFactory,
+    IAuthRepository authRepository,
+    IMailer mailer
+) : ICommandHandler<AdminForgotPasswordCommand, AdminForgotPasswordResult>
 {
     /// <summary>
     /// Handles the forgot password command by generating an OTP for password reset.
@@ -37,7 +43,26 @@ public class AdminForgotPasswordHandler(IAdminForgotPasswordOtpFactory otpFactor
         authRepository.IsUserAdmin(user!);
         authRepository.IsUserAccountActive(user!);
 
-        await otpFactory.CreatePasswordResetOtpAsync(userId: user!.Id, cancellationToken: cancellationToken);
+        OtpEntity passwordResetOtp = await otpFactory.CreatePasswordResetOtpAsync(
+            userId: user!.Id,
+            cancellationToken: cancellationToken
+        );
+
+        if (user.Email is not null)
+        {
+            await mailer.EnqueueAsync(
+                template: EnumEmailTemplate.PasswordResetOtp,
+                to: new EmailRecipient(Address: user.Email, DisplayName: user.UserName),
+                tokens: new Dictionary<string, string>
+                {
+                    ["userName"] = user.UserName,
+                    ["otpCode"] = passwordResetOtp.Code,
+                    ["expiryMinutes"] = UserConstants.OtpExpirationMinutes.ToString(),
+                },
+                culture: EmailCulture.Current(),
+                cancellationToken: cancellationToken
+            );
+        }
 
         return new AdminForgotPasswordResult(IsSuccess: true, Email: command.Email);
     }
