@@ -1,3 +1,4 @@
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishVideo;
 using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
@@ -35,7 +36,8 @@ public class AdminPublishVideoHandlerTests
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
             TestErrorsFactory.CreateContentI18n(),
-            _cacheInvalidatorMock.Object
+            _cacheInvalidatorMock.Object,
+            new Mock<ICommerceCustomerNotifier>().Object
         );
     }
 
