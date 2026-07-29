@@ -5,6 +5,7 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
+using _116.Mailer.Contracts.Application;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -17,11 +18,13 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.VerifyOtp;
 /// <param name="otpRepository">Repository for OTP data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="i18n">Single i18n entry point for the Identity module.</param>
+/// <param name="mailer">Outbox mailer sending the welcome email.</param>
 public class PublicVerifyOtpHandler(
     IAuthRepository authRepository,
     IOtpRepository otpRepository,
     IIdentityUnitOfWork unitOfWork,
-    IdentityI18n i18n
+    IdentityI18n i18n,
+    IMailer mailer
 ) : ICommandHandler<PublicVerifyOtpCommand, PublicVerifyOtpResult>
 {
     /// <summary>
@@ -70,6 +73,17 @@ public class PublicVerifyOtpHandler(
             cancellationToken: cancellationToken
         );
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        if (purpose.Value == EnumOtpPurpose.EmailVerification && user.Email is not null)
+        {
+            await mailer.EnqueueAsync(
+                template: EnumEmailTemplate.Welcome,
+                to: new EmailRecipient(Address: user.Email, DisplayName: user.UserName),
+                tokens: new Dictionary<string, string> { ["userName"] = user.UserName },
+                culture: EmailCulture.Current(),
+                cancellationToken: cancellationToken
+            );
+        }
 
         return new PublicVerifyOtpResult(IsSuccess: true);
     }
