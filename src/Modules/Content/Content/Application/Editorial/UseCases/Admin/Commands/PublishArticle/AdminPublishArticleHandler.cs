@@ -1,3 +1,5 @@
+using _116.Content.Application.Commerce.Services;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
@@ -19,7 +21,8 @@ public class AdminPublishArticleHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
     IPopularArticlesCacheInvalidator cacheInvalidator,
-    ContentI18n i18n
+    ContentI18n i18n,
+    ICommerceCustomerNotifier customerNotifier
 ) : ICommandHandler<AdminPublishArticleCommand, AdminPublishArticleResult>
 {
     /// <inheritdoc />
@@ -51,6 +54,13 @@ public class AdminPublishArticleHandler(
         article.Publish();
         articleRepository.Update(article: article);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        await customerNotifier.NotifyContentPublishedAsync(
+            customerId: article.CustomerId,
+            contentTitle: article.Title,
+            publicUrl: ContentPublicLinks.Article(article.Slug),
+            cancellationToken: cancellationToken
+        );
 
         cacheInvalidator.Invalidate();
 
