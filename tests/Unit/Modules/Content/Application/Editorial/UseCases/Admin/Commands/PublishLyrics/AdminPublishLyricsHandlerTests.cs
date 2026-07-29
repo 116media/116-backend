@@ -1,3 +1,4 @@
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishLyrics;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -31,7 +32,8 @@ public class AdminPublishLyricsHandlerTests
         _handler = new AdminPublishLyricsHandler(
             _lyricsRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            new Mock<ICommerceCustomerNotifier>().Object
         );
     }
 
