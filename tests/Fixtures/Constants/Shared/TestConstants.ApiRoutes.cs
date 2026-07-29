@@ -71,6 +71,11 @@ public static partial class TestConstants
             public const string PromotionLevels = $"{Base}/{LookupRouteConstants.PromotionLevels}";
             public const string Tags = $"{Base}/{LookupRouteConstants.Tags}";
             public const string Artists = $"{Base}/{EditorialRouteConstants.Artists}";
+
+            /// <summary>
+            /// Admin newsletter subscribers listing route.
+            /// </summary>
+            public const string NewsletterSubscribers = $"{Base}/newsletter/subscribers";
             public const string Albums = $"{Base}/{EditorialRouteConstants.Albums}";
 
             /// <summary>
@@ -97,6 +102,11 @@ public static partial class TestConstants
             public const string PromotionLevels = $"{Base}/{LookupRouteConstants.PromotionLevels}";
             public const string Tags = $"{Base}/{LookupRouteConstants.Tags}";
             public const string Artists = $"{Base}/{EditorialRouteConstants.Artists}";
+
+            /// <summary>
+            /// Public newsletter routes (subscriptions, confirm, unsubscribe).
+            /// </summary>
+            public const string Newsletter = $"{Base}/newsletter";
         }
     }
 }
