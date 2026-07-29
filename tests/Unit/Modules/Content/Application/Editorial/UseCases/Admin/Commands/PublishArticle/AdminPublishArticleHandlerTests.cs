@@ -1,3 +1,4 @@
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishArticle;
 using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
@@ -35,7 +36,8 @@ public class AdminPublishArticleHandlerTests
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _cacheInvalidatorMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            new Mock<ICommerceCustomerNotifier>().Object
         );
     }
 
