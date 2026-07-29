@@ -4,6 +4,7 @@ using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
+using _116.Mailer.Contracts.Application;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -22,7 +23,9 @@ public class AdminAssignRoleToUserHandler(
     IUserRoleRepository userRoleRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper,
-    IdentityI18n i18n
+    IdentityI18n i18n,
+    IAuthRepository authRepository,
+    IMailer mailer
 ) : ICommandHandler<AdminAssignRoleToUserCommand, AdminAssignRoleToUserResult>
 {
     /// <summary>
@@ -73,6 +76,27 @@ public class AdminAssignRoleToUserHandler(
 
         await userRoleRepository.AddAsync(entity: userRole, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        UserEntity? notifiedUser = await authRepository.FindUserByIdOrThrow(
+            userId: userId,
+            cancellationToken: cancellationToken
+        );
+
+        if (notifiedUser?.Email is not null)
+        {
+            await mailer.EnqueueAsync(
+                template: EnumEmailTemplate.RoleChanged,
+                to: new EmailRecipient(Address: notifiedUser.Email, DisplayName: notifiedUser.UserName),
+                tokens: new Dictionary<string, string>
+                {
+                    ["userName"] = notifiedUser.UserName,
+                    ["roleName"] = role.Name,
+                    ["action"] = "granted",
+                },
+                culture: EmailCulture.Current(),
+                cancellationToken: cancellationToken
+            );
+        }
 
         // Get updated user roles
         List<UserRoleEntity> userRoles = await userRoleRepository.GetUserRolesWithRoleAsync(
