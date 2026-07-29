@@ -7,6 +7,7 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
+using _116.Mailer.Contracts.Application;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
@@ -45,7 +46,8 @@ public class PublicSignUpAuthFactoryTests
             _passwordServiceMock.Object,
             _otpServiceMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateUserErrors()
+            TestErrorsFactory.CreateUserErrors(),
+            new Mock<IMailer>().Object
         );
     }
 
