@@ -1,3 +1,4 @@
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
@@ -8,6 +9,7 @@ using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Contracts.Application;
+using _116.Mailer.Contracts.Application;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -33,7 +35,8 @@ public class PublicAddCommentReplyHandler(
     IUserLookupService userLookup,
     IFileRepository fileRepository,
     IMapper mapper,
-    ContentI18n i18n
+    ContentI18n i18n,
+    IMailer mailer
 ) : ICommandHandler<PublicAddCommentReplyCommand, PublicAddCommentReplyResult>
 {
     /// <inheritdoc />
@@ -82,6 +85,15 @@ public class PublicAddCommentReplyHandler(
         AuthorDto? author = await ResolveAuthorAsync(command.UserId, cancellationToken);
         ArticleCommentDto dto = reply.ToArticleCommentDto(mapper) with { Author = author };
 
+        await NotifyParentAuthorAsync(
+            parent: parent,
+            article: article,
+            replierUserId: command.UserId,
+            replierName: author?.UserName,
+            replyBody: command.Body,
+            cancellationToken: cancellationToken
+        );
+
         return new PublicAddCommentReplyResult(Reply: dto);
     }
 
@@ -92,6 +104,67 @@ public class PublicAddCommentReplyHandler(
     /// <param name="userId">The replier's identity user id.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The resolved author DTO, or null.</returns>
+    /// <summary>
+    /// Emails the parent comment's author that someone replied. Skipped for
+    /// self-replies and when the author has no resolvable email (OAuth users);
+    /// the notification must never fail the reply itself.
+    /// </summary>
+    private async Task NotifyParentAuthorAsync(
+        ArticleCommentEntity parent,
+        ArticleEntity article,
+        Guid replierUserId,
+        string? replierName,
+        string replyBody,
+        CancellationToken cancellationToken
+    )
+    {
+        if (parent.UserId == replierUserId)
+        {
+            return;
+        }
+
+        AuthorInfo? parentAuthor = await userLookup.GetAuthorInfoByIdAsync(
+            userId: parent.UserId,
+            ct: cancellationToken
+        );
+
+        if (parentAuthor?.Email is null)
+        {
+            return;
+        }
+
+        await mailer.EnqueueAsync(
+            template: EnumEmailTemplate.CommentReply,
+            to: new EmailRecipient(Address: parentAuthor.Email, DisplayName: parentAuthor.UserName),
+            tokens: new Dictionary<string, string>
+            {
+                ["userName"] = parentAuthor.UserName,
+                ["replierName"] = replierName ?? "Someone",
+                ["articleTitle"] = article.Title,
+                ["replyExcerpt"] = Excerpt(replyBody),
+                ["articleUrl"] = ContentPublicLinks.Article(article.Slug),
+            },
+            culture: EmailCulture.Current(),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    /// <summary>
+    /// Truncates a reply body to 140 characters at a word boundary.
+    /// </summary>
+    internal static string Excerpt(string body)
+    {
+        const int maxLength = 140;
+
+        if (body.Length <= maxLength)
+        {
+            return body;
+        }
+
+        int cut = body.LastIndexOf(' ', maxLength);
+        return $"{body[..(cut > 0 ? cut : maxLength)]}…";
+    }
+
     private async Task<AuthorDto?> ResolveAuthorAsync(Guid userId, CancellationToken cancellationToken)
     {
         AuthorInfo? info = await userLookup.GetAuthorInfoByIdAsync(userId: userId, ct: cancellationToken);
