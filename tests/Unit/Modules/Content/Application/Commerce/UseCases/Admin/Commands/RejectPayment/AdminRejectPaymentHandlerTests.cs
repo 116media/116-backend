@@ -1,4 +1,5 @@
 using _116.Content.Application.Commerce.Factories;
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.RejectPayment;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -35,7 +36,8 @@ public class AdminRejectPaymentHandlerTests
             _orderPaymentFactoryMock.Object,
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            new Mock<ICommerceCustomerNotifier>().Object
         );
     }
 
