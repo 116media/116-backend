@@ -1,3 +1,4 @@
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.CancelOrder;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -29,7 +30,8 @@ public class AdminCancelOrderHandlerTests
         _handler = new AdminCancelOrderHandler(
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            new Mock<ICommerceCustomerNotifier>().Object
         );
     }
 
