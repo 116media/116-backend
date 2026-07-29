@@ -5,6 +5,7 @@ using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Identity.Contracts.Application;
+using _116.Mailer.Contracts.Application;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -45,7 +46,8 @@ public class PublicAddCommentReplyHandlerTests : BaseContentHandlerTest
             _userLookupMock.Object,
             _fileRepositoryMock.Object,
             Mapper,
-            TestErrorsFactory.CreateContentI18n()
+            TestErrorsFactory.CreateContentI18n(),
+            new Mock<IMailer>().Object
         );
     }
 
