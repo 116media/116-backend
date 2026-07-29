@@ -16,6 +16,13 @@ services:
             timeout: 5s
             retries: 5
             start_period: 10s
+    116_mailpit:
+        image: axllent/mailpit:latest
+        container_name: 116_mailpit
+        restart: always
+        ports:
+            - "1025:1025"
+            - "8025:8025"
     116_seq:
         container_name: 116_seq
         environment:
@@ -44,6 +51,12 @@ services:
             - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
             - DASHBOARD_ORIGIN=${DASHBOARD_ORIGIN}
             - WEBAPP_ORIGIN=${WEBAPP_ORIGIN}
+            - EMAIL_PROVIDER=${EMAIL_PROVIDER}
+            - EMAIL_FROM_ADDRESS=${EMAIL_FROM_ADDRESS}
+            - EMAIL_FROM_NAME=${EMAIL_FROM_NAME}
+            - SMTP_HOST=116_mailpit
+            - SMTP_PORT=1025
+            - FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
         restart: always
         ports:
             - "5025:8080"
