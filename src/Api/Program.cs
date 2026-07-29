@@ -21,9 +21,10 @@ builder.Services.AddCloudinaryConfiguration();
 Assembly coreAssembly = typeof(CoreModule).Assembly;
 Assembly identityAssembly = typeof(IdentityModule).Assembly;
 Assembly contentAssembly = typeof(ContentModule).Assembly;
+Assembly mailerAssembly = typeof(MailerModule).Assembly;
 
-builder.Services.AddCarterWithAssemblies(identityAssembly, coreAssembly, contentAssembly);
-builder.Services.AddCqrsWithAssemblies(identityAssembly, coreAssembly, contentAssembly);
+builder.Services.AddCarterWithAssemblies(identityAssembly, coreAssembly, contentAssembly, mailerAssembly);
+builder.Services.AddCqrsWithAssemblies(identityAssembly, coreAssembly, contentAssembly, mailerAssembly);
 
 builder
     .Services.AddApiVersioning(options =>
@@ -74,6 +75,7 @@ builder
     .Services.AddIdentityModule()
     .AddCoreModule()
     .AddContentModule()
+    .AddMailerModule()
     .AddEndpointsApiExplorer()
     .AddSwaggerGen(c => c.AddSwaggerOptions());
 
@@ -106,7 +108,7 @@ app.UseApiVersioning();
 app.MapCarter();
 app.UseResourceNotFoundHandler();
 
-app.UseIdentityModule().UseCoreModule().UseContentModule();
+app.UseIdentityModule().UseCoreModule().UseContentModule().UseMailerModule();
 
 app.Run();
 
