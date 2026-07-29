@@ -1,3 +1,4 @@
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.Contracts;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Persistence;
@@ -23,7 +24,8 @@ public class AdminVerifyPaymentFactory(
     ILookupRepository lookupRepository,
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
-    ContentOrderErrors contentOrderErrors
+    ContentOrderErrors contentOrderErrors,
+    ICommerceCustomerNotifier customerNotifier
 ) : IVerifyPaymentFactory
 {
     /// <inheritdoc />
@@ -46,6 +48,12 @@ public class AdminVerifyPaymentFactory(
         await contentOrderRepository.UpdatePaymentAsync(payment: payment, ct: cancellationToken);
         await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        await customerNotifier.NotifyPaymentReceiptAsync(
+            order: order,
+            payment: payment,
+            cancellationToken: cancellationToken
+        );
     }
 
     /// <summary>
