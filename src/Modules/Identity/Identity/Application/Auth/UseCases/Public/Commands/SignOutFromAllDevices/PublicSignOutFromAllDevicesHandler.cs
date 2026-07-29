@@ -2,6 +2,7 @@ using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
+using _116.Mailer.Contracts.Application;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignOutFromAllDevices;
@@ -12,7 +13,8 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SignOutFromAll
 public class PublicSignOutFromAllDevicesHandler(
     IAuthRepository authRepository,
     ISessionRepository sessionRepository,
-    IIdentityUnitOfWork unitOfWork
+    IIdentityUnitOfWork unitOfWork,
+    IMailer mailer
 ) : ICommandHandler<PublicSignOutFromAllDevicesCommand, PublicSignOutFromAllDevicesResult>
 {
     /// <summary>
@@ -33,6 +35,21 @@ public class PublicSignOutFromAllDevicesHandler(
 
         await sessionRepository.DeleteAllByUserIdAsync(userId: user!.Id, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        if (user.Email is not null)
+        {
+            await mailer.EnqueueAsync(
+                template: EnumEmailTemplate.SignedOutAllDevices,
+                to: new EmailRecipient(Address: user.Email, DisplayName: user.UserName),
+                tokens: new Dictionary<string, string>
+                {
+                    ["userName"] = user.UserName,
+                    ["time"] = DateTime.UtcNow.ToString("u"),
+                },
+                culture: EmailCulture.Current(),
+                cancellationToken: cancellationToken
+            );
+        }
 
         return new PublicSignOutFromAllDevicesResult(IsSuccess: true);
     }
