@@ -1,3 +1,5 @@
+using _116.Content.Application.Commerce.Services;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -16,7 +18,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectLyric
 public class AdminRejectLyricsHandler(
     ILyricsRepository lyricsRepository,
     IContentUnitOfWork unitOfWork,
-    ContentI18n i18n
+    ContentI18n i18n,
+    ICommerceCustomerNotifier customerNotifier
 ) : ICommandHandler<AdminRejectLyricsCommand, AdminRejectLyricsResult>
 {
     /// <inheritdoc />
@@ -45,6 +48,13 @@ public class AdminRejectLyricsHandler(
         lyrics.Reject(reason: command.Reason);
         lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        await customerNotifier.NotifyContentRejectedAsync(
+            customerId: lyrics.CustomerId,
+            contentTitle: lyrics.SongTitle,
+            reason: command.Reason,
+            cancellationToken: cancellationToken
+        );
 
         return new AdminRejectLyricsResult(IsSuccess: true);
     }
