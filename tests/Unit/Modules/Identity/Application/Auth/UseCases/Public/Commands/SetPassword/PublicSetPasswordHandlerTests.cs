@@ -3,6 +3,7 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.SetPassword;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
+using _116.Mailer.Contracts.Application;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -33,7 +34,8 @@ public class PublicSetPasswordHandlerTests
         _handler = new PublicSetPasswordHandler(
             _authRepositoryMock.Object,
             _passwordServiceMock.Object,
-            _unitOfWorkMock.Object
+            _unitOfWorkMock.Object,
+            new Mock<IMailer>().Object
         );
     }
 
