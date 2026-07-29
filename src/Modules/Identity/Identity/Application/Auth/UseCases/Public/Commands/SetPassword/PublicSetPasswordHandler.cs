@@ -2,6 +2,7 @@ using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
+using _116.Mailer.Contracts.Application;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -16,7 +17,8 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.SetPassword;
 public class PublicSetPasswordHandler(
     IAuthRepository authRepository,
     IPasswordService passwordService,
-    IIdentityUnitOfWork unitOfWork
+    IIdentityUnitOfWork unitOfWork,
+    IMailer mailer
 ) : ICommandHandler<PublicSetPasswordCommand, PublicSetPasswordResult>
 {
     /// <summary>
@@ -44,6 +46,17 @@ public class PublicSetPasswordHandler(
         string hashedPassword = passwordService.Hash(password: command.Password);
         authRepository.SetPasswordForExternalUser(user!, hashedPassword: hashedPassword);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        if (user.Email is not null)
+        {
+            await mailer.EnqueueAsync(
+                template: EnumEmailTemplate.LocalPasswordAdded,
+                to: new EmailRecipient(Address: user.Email, DisplayName: user.UserName),
+                tokens: new Dictionary<string, string> { ["userName"] = user.UserName },
+                culture: EmailCulture.Current(),
+                cancellationToken: cancellationToken
+            );
+        }
 
         return new PublicSetPasswordResult(IsSuccess: true);
     }
