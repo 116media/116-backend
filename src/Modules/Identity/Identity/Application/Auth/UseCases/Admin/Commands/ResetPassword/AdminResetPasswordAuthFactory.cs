@@ -5,6 +5,7 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
+using _116.Mailer.Contracts.Application;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResetPassword;
 
@@ -19,7 +20,8 @@ public class AdminResetPasswordAuthFactory(
     IAuthRepository authRepository,
     IPasswordService passwordService,
     IIdentityUnitOfWork unitOfWork,
-    UserErrors userErrors
+    UserErrors userErrors,
+    IMailer mailer
 ) : IAdminResetPasswordAuthFactory
 {
     /// <summary>
@@ -60,6 +62,21 @@ public class AdminResetPasswordAuthFactory(
         user.UpdatePassword(newPasswordHash: hashedPassword, errors: userErrors);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        if (user.Email is not null)
+        {
+            await mailer.EnqueueAsync(
+                template: EnumEmailTemplate.PasswordResetCompleted,
+                to: new EmailRecipient(Address: user.Email, DisplayName: user.UserName),
+                tokens: new Dictionary<string, string>
+                {
+                    ["userName"] = user.UserName,
+                    ["resetTime"] = DateTime.UtcNow.ToString("u"),
+                },
+                culture: EmailCulture.Current(),
+                cancellationToken: cancellationToken
+            );
+        }
 
         return user;
     }
