@@ -1,3 +1,5 @@
+using _116.Content.Application.Commerce.Services;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
@@ -19,7 +21,8 @@ public class AdminPublishVideoHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
     ContentI18n i18n,
-    IPopularVideosCacheInvalidator cacheInvalidator
+    IPopularVideosCacheInvalidator cacheInvalidator,
+    ICommerceCustomerNotifier customerNotifier
 ) : ICommandHandler<AdminPublishVideoCommand, AdminPublishVideoResult>
 {
     /// <inheritdoc />
@@ -48,6 +51,13 @@ public class AdminPublishVideoHandler(
         video.Publish(i18n.Video);
         videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        await customerNotifier.NotifyContentPublishedAsync(
+            customerId: video.CustomerId,
+            contentTitle: video.Title,
+            publicUrl: ContentPublicLinks.Video(video.Slug),
+            cancellationToken: cancellationToken
+        );
 
         cacheInvalidator.Invalidate();
 
