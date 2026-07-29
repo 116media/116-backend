@@ -1,7 +1,10 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp.Contracts;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
+using _116.Mailer.Contracts.Application;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -12,7 +15,8 @@ namespace _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp;
 /// </summary>
 /// <param name="otpFactory">Factory for handling OTP resend logic.</param>
 /// <param name="authRepository">Repository for user data access operations.</param>
-public class PublicResendOtpHandler(IPublicResendOtpFactory otpFactory, IAuthRepository authRepository)
+/// <param name="mailer">Outbox mailer re-delivering the code.</param>
+public class PublicResendOtpHandler(IPublicResendOtpFactory otpFactory, IAuthRepository authRepository, IMailer mailer)
     : ICommandHandler<PublicResendOtpCommand, PublicResendOtpResult>
 {
     /// <summary>
@@ -38,7 +42,36 @@ public class PublicResendOtpHandler(IPublicResendOtpFactory otpFactory, IAuthRep
         );
         authRepository.IsUserAccountActive(user!);
 
-        await otpFactory.ResendOtpAsync(userId: user!.Id, purpose: purpose, cancellationToken: cancellationToken);
+        OtpEntity resentOtp = await otpFactory.ResendOtpAsync(
+            userId: user!.Id,
+            purpose: purpose,
+            cancellationToken: cancellationToken
+        );
+
+        EnumEmailTemplate? template = purpose.Value switch
+        {
+            EnumOtpPurpose.EmailVerification => EnumEmailTemplate.EmailVerificationOtp,
+            EnumOtpPurpose.PasswordReset => EnumEmailTemplate.PasswordResetOtp,
+            // TwoFactorAuthentication and AccountRecovery have no live flow and
+            // therefore no template; the OTP row still rotates.
+            _ => null,
+        };
+
+        if (template is not null && user.Email is not null)
+        {
+            await mailer.EnqueueAsync(
+                template: template.Value,
+                to: new EmailRecipient(Address: user.Email, DisplayName: user.UserName),
+                tokens: new Dictionary<string, string>
+                {
+                    ["userName"] = user.UserName,
+                    ["otpCode"] = resentOtp.Code,
+                    ["expiryMinutes"] = UserConstants.OtpExpirationMinutes.ToString(),
+                },
+                culture: EmailCulture.Current(),
+                cancellationToken: cancellationToken
+            );
+        }
 
         return new PublicResendOtpResult(IsSuccess: true);
     }
