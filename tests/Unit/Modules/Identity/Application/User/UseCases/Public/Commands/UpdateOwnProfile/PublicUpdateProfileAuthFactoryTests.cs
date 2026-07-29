@@ -5,6 +5,7 @@ using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateOwnProfile.Contracts;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
+using _116.Mailer.Contracts.Application;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
 using AwesomeAssertions;
@@ -28,7 +29,12 @@ public class PublicUpdateProfileAuthFactoryTests
         _authRepositoryMock = new Mock<IAuthRepository>();
         _unitOfWorkMock = new Mock<IIdentityUnitOfWork>();
         _userErrors = TestErrorsFactory.CreateUserErrors();
-        _factory = new PublicUpdateProfileAuthFactory(_authRepositoryMock.Object, _unitOfWorkMock.Object, _userErrors);
+        _factory = new PublicUpdateProfileAuthFactory(
+            _authRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            _userErrors,
+            new Mock<IMailer>().Object
+        );
     }
 
     #region UpdateProfileAsync Tests
