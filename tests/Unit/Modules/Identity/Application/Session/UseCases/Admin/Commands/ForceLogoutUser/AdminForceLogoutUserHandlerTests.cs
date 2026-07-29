@@ -1,6 +1,7 @@
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.UseCases.Admin.Commands.ForceLogoutUser;
 using _116.Identity.Application.Shared.Persistence;
+using _116.Mailer.Contracts.Application;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -22,7 +23,12 @@ public class AdminForceLogoutUserHandlerTests
     {
         _sessionRepositoryMock = MockSessionRepository.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
-        _handler = new AdminForceLogoutUserHandler(_sessionRepositoryMock.Object, _unitOfWorkMock.Object);
+        _handler = new AdminForceLogoutUserHandler(
+            _sessionRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            MockAuthRepository.Create().Object,
+            new Mock<IMailer>().Object
+        );
     }
 
     #region Success Cases
