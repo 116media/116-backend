@@ -1,3 +1,4 @@
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -20,7 +21,8 @@ public class AdminForceUnpromoteVideoHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
     ICurrentActor currentActor,
-    ContentI18n i18n
+    ContentI18n i18n,
+    ICommerceCustomerNotifier customerNotifier
 ) : ICommandHandler<AdminForceUnpromoteVideoCommand, AdminForceUnpromoteVideoResult>
 {
     /// <inheritdoc />
@@ -43,6 +45,13 @@ public class AdminForceUnpromoteVideoHandler(
 
         videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        await customerNotifier.NotifyPromotionRemovedAsync(
+            customerId: video.CustomerId,
+            contentTitle: video.Title,
+            reason: command.Reason,
+            cancellationToken: cancellationToken
+        );
 
         return new AdminForceUnpromoteVideoResult(VideoId: video.Id, UnpromotedAt: video.UnpromotedAt!.Value);
     }
