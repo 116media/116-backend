@@ -1,3 +1,5 @@
+using _116.Content.Application.Commerce.Services;
+using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -16,7 +18,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectArtic
 public class AdminRejectArticleHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
-    ContentI18n i18n
+    ContentI18n i18n,
+    ICommerceCustomerNotifier customerNotifier
 ) : ICommandHandler<AdminRejectArticleCommand, AdminRejectArticleResult>
 {
     /// <inheritdoc />
@@ -48,6 +51,13 @@ public class AdminRejectArticleHandler(
         article.Reject(reason: command.Reason);
         articleRepository.Update(article: article);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        await customerNotifier.NotifyContentRejectedAsync(
+            customerId: article.CustomerId,
+            contentTitle: article.Title,
+            reason: command.Reason,
+            cancellationToken: cancellationToken
+        );
 
         return new AdminRejectArticleResult(IsSuccess: true);
     }
