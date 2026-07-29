@@ -1,3 +1,4 @@
+using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteLyrics;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -37,7 +38,8 @@ public class AdminForceUnpromoteLyricsHandlerTests
         _handler = new AdminForceUnpromoteLyricsHandler(
             _lyricsRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            currentActor
+            currentActor,
+            new Mock<ICommerceCustomerNotifier>().Object
         );
     }
 
