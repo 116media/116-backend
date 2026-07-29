@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="LayoutHtml" xml:space="preserve">
+    <value>&lt;div style=&quot;margin:0;padding:24px;background-color:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;&quot;&gt;&lt;div style=&quot;max-width:560px;margin:0 auto;background-color:#ffffff;border-radius:8px;padding:32px;&quot;&gt;&lt;p style=&quot;margin:0 0 24px;font-size:18px;font-weight:bold;&quot;&gt;116&lt;/p&gt;{{content}}&lt;p style=&quot;margin:24px 0 0;font-size:12px;color:#71717a;&quot;&gt;Cet e-mail a été envoyé par 116. S&#x27;il ne vous est pas destiné, ignorez-le.&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;</value>
+  </data>
+  <data name="EmailVerificationOtpSubject" xml:space="preserve">
+    <value>Votre code de vérification 116</value>
+  </data>
+  <data name="EmailVerificationOtpHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Utilisez ce code pour vérifier votre adresse e-mail :&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:28px;letter-spacing:6px;font-weight:bold;&quot;&gt;{{otpCode}}&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Il expire dans {{expiryMinutes}} minutes.&lt;/p&gt;</value>
+  </data>
+  <data name="EmailVerificationOtpText" xml:space="preserve">
+    <value>Bonjour {{userName}},
+
+Utilisez ce code pour vérifier votre adresse e-mail : {{otpCode}}
+
+Il expire dans {{expiryMinutes}} minutes.</value>
+  </data>
+  <data name="PasswordResetOtpSubject" xml:space="preserve">
+    <value>Votre code de réinitialisation 116</value>
+  </data>
+  <data name="PasswordResetOtpHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Utilisez ce code pour réinitialiser votre mot de passe :&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:28px;letter-spacing:6px;font-weight:bold;&quot;&gt;{{otpCode}}&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Il expire dans {{expiryMinutes}} minutes. Si vous n&#x27;avez pas demandé de réinitialisation, ignorez cet e-mail.&lt;/p&gt;</value>
+  </data>
+  <data name="PasswordResetOtpText" xml:space="preserve">
+    <value>Bonjour {{userName}},
+
+Utilisez ce code pour réinitialiser votre mot de passe : {{otpCode}}
+
+Il expire dans {{expiryMinutes}} minutes. Si vous n&#x27;avez pas demandé de réinitialisation, ignorez cet e-mail.</value>
+  </data>
+  <data name="WelcomeSubject" xml:space="preserve">
+    <value>Bienvenue sur 116</value>
+  </data>
+  <data name="WelcomeHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Votre e-mail est vérifié et votre compte est prêt. Bienvenue.&lt;/p&gt;</value>
+  </data>
+  <data name="WelcomeText" xml:space="preserve">
+    <value>Bonjour {{userName}},
+
+Votre e-mail est vérifié et votre compte est prêt. Bienvenue.</value>
+  </data>
+  <data name="LoginAlertSubject" xml:space="preserve">
+    <value>Nouvelle connexion à votre compte 116</value>
+  </data>
+  <data name="LoginAlertHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Une nouvelle connexion a eu lieu le {{loginTime}} depuis {{ipAddress}} ({{deviceSummary}}).&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Si c&#x27;était vous, aucune action n&#x27;est requise. Sinon, changez votre mot de passe immédiatement.&lt;/p&gt;</value>
+  </data>
+  <data name="LoginAlertText" xml:space="preserve">
+    <value>Bonjour {{userName}},
+
+Une nouvelle connexion a eu lieu le {{loginTime}} depuis {{ipAddress}} ({{deviceSummary}}).
+
+Si c&#x27;était vous, aucune action n&#x27;est requise. Sinon, changez votre mot de passe immédiatement.</value>
+  </data>
+  <data name="NewsletterConfirmSubject" xml:space="preserve">
+    <value>Confirmez votre abonnement à la newsletter 116</value>
+  </data>
+  <data name="NewsletterConfirmHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Encore une étape : confirmez votre abonnement à la newsletter 116.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;&quot;&gt;&lt;a href=&quot;{{confirmUrl}}&quot; style=&quot;display:inline-block;padding:12px 20px;background-color:#18181b;color:#ffffff;text-decoration:none;border-radius:6px;font-size:14px;&quot;&gt;Confirmer mon abonnement&lt;/a&gt;&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Si vous ne vous êtes pas inscrit, ignorez cet e-mail et rien ne sera envoyé.&lt;/p&gt;</value>
+  </data>
+  <data name="NewsletterConfirmText" xml:space="preserve">
+    <value>Encore une étape : confirmez votre abonnement à la newsletter 116.
+
+{{confirmUrl}}
+
+Si vous ne vous êtes pas inscrit, ignorez cet e-mail et rien ne sera envoyé.</value>
+  </data>
+  <data name="NewsletterWelcomeSubject" xml:space="preserve">
+    <value>Vous êtes abonné à la newsletter 116</value>
+  </data>
+  <data name="NewsletterWelcomeHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Votre abonnement est confirmé. Vous aurez bientôt de nos nouvelles.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Vous pouvez partir à tout moment : &lt;a href=&quot;{{unsubscribeUrl}}&quot;&gt;se désabonner&lt;/a&gt;.&lt;/p&gt;</value>
+  </data>
+  <data name="NewsletterWelcomeText" xml:space="preserve">
+    <value>Votre abonnement est confirmé. Vous aurez bientôt de nos nouvelles.
+
+Se désabonner à tout moment : {{unsubscribeUrl}}</value>
+  </data>
+  <data name="PasswordChangedSubject" xml:space="preserve">
+    <value>Votre mot de passe 116 a été modifié</value>
+  </data>
+  <data name="PasswordChangedHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Votre mot de passe a été modifié le {{changeTime}}.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Si ce n&#x27;était pas vous, réinitialisez votre mot de passe immédiatement.&lt;/p&gt;</value>
+  </data>
+  <data name="PasswordChangedText" xml:space="preserve">
+    <value>Bonjour {{userName}},
+
+Votre mot de passe a été modifié le {{changeTime}}.
+
+Si ce n&#x27;était pas vous, réinitialisez votre mot de passe immédiatement.</value>
+  </data>
+  <data name="PasswordResetCompletedSubject" xml:space="preserve">
+    <value>Votre mot de passe 116 a été réinitialisé</value>
+  </data>
+  <data name="PasswordResetCompletedHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Votre mot de passe a été réinitialisé le {{resetTime}}.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Si ce n&#x27;était pas vous, votre compte est peut-être compromis — réinitialisez votre mot de passe et contactez le support.&lt;/p&gt;</value>
+  </data>
+  <data name="PasswordResetCompletedText" xml:space="preserve">
+    <value>Bonjour {{userName}},
+
+Votre mot de passe a été réinitialisé le {{resetTime}}.
+
+Si ce n&#x27;était pas vous, votre compte est peut-être compromis - réinitialisez votre mot de passe et contactez le support.</value>
+  </data>
+  <data name="LocalPasswordAddedSubject" xml:space="preserve">
+    <value>Un mot de passe a été ajouté à votre compte 116</value>
+  </data>
+  <data name="LocalPasswordAddedHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Votre compte, qui utilisait uniquement la connexion sociale, possède désormais aussi un mot de passe. Les deux méthodes de connexion fonctionnent.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Si ce n&#x27;était pas vous, réinitialisez votre mot de passe immédiatement.&lt;/p&gt;</value>
+  </data>
+  <data name="LocalPasswordAddedText" xml:space="preserve">
+    <value>Bonjour {{userName}},
+
+Votre compte, qui utilisait uniquement la connexion sociale, possède désormais aussi un mot de passe. Les deux méthodes de connexion fonctionnent.
+
+Si ce n&#x27;était pas vous, réinitialisez votre mot de passe immédiatement.</value>
+  </data>
+  <data name="EmailChangedAlertOldSubject" xml:space="preserve">
+    <value>L&#x27;adresse e-mail de votre compte 116 a été modifiée</value>
+  </data>
+  <data name="EmailChangedAlertOldHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;L&#x27;adresse e-mail de votre compte a été remplacée par {{newEmailMasked}} le {{changeTime}}. Cette adresse ne recevra plus les e-mails du compte.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Si ce n&#x27;était pas vous, contactez le support immédiatement.&lt;/p&gt;</value>
+  </data>
+  <data name="EmailChangedAlertOldText" xml:space="preserve">
+    <value>Bonjour {{userName}},
+
+L&#x27;adresse e-mail de votre compte a été remplacée par {{newEmailMasked}} le {{changeTime}}. Cette adresse ne recevra plus les e-mails du compte.
+
+Si ce n&#x27;était pas vous, contactez le support immédiatement.</value>
+  </data>
+  <data name="EmailChangedConfirmNewSubject" xml:space="preserve">
+    <value>Cette adresse est désormais celle de votre compte 116</value>
+  </data>
+  <data name="EmailChangedConfirmNewHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Cette adresse est devenue l&#x27;e-mail de votre compte 116 le {{changeTime}}. Les e-mails du compte arrivent désormais ici.&lt;/p&gt;</value>
+  </data>
+  <data name="EmailChangedConfirmNewText" xml:space="preserve">
+    <value>Bonjour {{userName}},
+
+Cette adresse est devenue l&#x27;e-mail de votre compte 116 le {{changeTime}}. Les e-mails du compte arrivent désormais ici.</value>
+  </data>
+  <data name="SignedOutAllDevicesSubject" xml:space="preserve">
+    <value>Toutes les sessions de votre compte 116 ont été fermées</value>
+  </data>
+  <data name="SignedOutAllDevicesHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Toutes les sessions de votre compte ont été fermées le {{time}}.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Si ce n&#x27;était pas vous, réinitialisez votre mot de passe immédiatement.&lt;/p&gt;</value>
+  </data>
+  <data name="SignedOutAllDevicesText" xml:space="preserve">
+    <value>Bonjour {{userName}},
+
+Toutes les sessions de votre compte ont été fermées le {{time}}.
+
+Si ce n&#x27;était pas vous, réinitialisez votre mot de passe immédiatement.</value>
+  </data>
+  <data name="AccountForceLoggedOutSubject" xml:space="preserve">
+    <value>Un administrateur vous a déconnecté de 116</value>
+  </data>
+  <data name="AccountForceLoggedOutHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Un administrateur a fermé toutes les sessions de votre compte le {{time}}. Reconnectez-vous pour continuer.&lt;/p&gt;</value>
+  </data>
+  <data name="AccountForceLoggedOutText" xml:space="preserve">
+    <value>Bonjour {{userName}},
+
+Un administrateur a fermé toutes les sessions de votre compte le {{time}}. Reconnectez-vous pour continuer.</value>
+  </data>
+  <data name="RoleChangedSubject" xml:space="preserve">
+    <value>Le rôle de votre compte 116 a été mis à jour</value>
+  </data>
+  <data name="RoleChangedHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Le rôle {{roleName}} a été {{action}} sur votre compte.&lt;/p&gt;</value>
+  </data>
+  <data name="RoleChangedText" xml:space="preserve">
+    <value>Bonjour {{userName}},
+
+Le rôle {{roleName}} a été {{action}} sur votre compte.</value>
+  </data>
+  <data name="OrderInvoiceSubject" xml:space="preserve">
+    <value>Votre commande 116 {{orderReference}} attend son paiement</value>
+  </data>
+  <data name="OrderInvoiceHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{customerName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Votre commande {{orderReference}} est prête pour le paiement.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Articles : {{itemSummary}}&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Montant dû : {{amountUsd}} USD.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Moyens de paiement acceptés : {{paymentMethods}}. Notre équipe confirmera votre paiement dès réception.&lt;/p&gt;</value>
+  </data>
+  <data name="OrderInvoiceText" xml:space="preserve">
+    <value>Bonjour {{customerName}},
+
+Votre commande {{orderReference}} est prête pour le paiement.
+
+Articles : {{itemSummary}}
+Montant dû : {{amountUsd}} USD.
+
+Moyens de paiement acceptés : {{paymentMethods}}. Notre équipe confirmera votre paiement dès réception.</value>
+  </data>
+  <data name="PaymentReceiptSubject" xml:space="preserve">
+    <value>Paiement reçu pour la commande {{orderReference}}</value>
+  </data>
+  <data name="PaymentReceiptHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{customerName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Nous avons confirmé votre paiement de {{amountUsd}} USD pour la commande {{orderReference}} le {{paidAt}}.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Reçu : {{receiptUrl}}&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Merci de travailler avec 116.&lt;/p&gt;</value>
+  </data>
+  <data name="PaymentReceiptText" xml:space="preserve">
+    <value>Bonjour {{customerName}},
+
+Nous avons confirmé votre paiement de {{amountUsd}} USD pour la commande {{orderReference}} le {{paidAt}}.
+
+Reçu : {{receiptUrl}}
+
+Merci de travailler avec 116.</value>
+  </data>
+  <data name="PaymentRejectedSubject" xml:space="preserve">
+    <value>Problème de paiement sur la commande {{orderReference}}</value>
+  </data>
+  <data name="PaymentRejectedHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{customerName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Nous n&#x27;avons pas pu accepter le paiement soumis pour la commande {{orderReference}}.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Notes du réviseur : {{notes}}&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Veuillez soumettre un paiement corrigé ou contacter notre équipe.&lt;/p&gt;</value>
+  </data>
+  <data name="PaymentRejectedText" xml:space="preserve">
+    <value>Bonjour {{customerName}},
+
+Nous n&#x27;avons pas pu accepter le paiement soumis pour la commande {{orderReference}}.
+
+Notes du réviseur : {{notes}}
+
+Veuillez soumettre un paiement corrigé ou contacter notre équipe.</value>
+  </data>
+  <data name="OrderCancelledSubject" xml:space="preserve">
+    <value>Votre commande 116 {{orderReference}} a été annulée</value>
+  </data>
+  <data name="OrderCancelledHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{customerName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;La commande {{orderReference}} a été annulée. Si vous avez déjà envoyé un paiement, notre équipe vous recontactera.&lt;/p&gt;</value>
+  </data>
+  <data name="OrderCancelledText" xml:space="preserve">
+    <value>Bonjour {{customerName}},
+
+La commande {{orderReference}} a été annulée. Si vous avez déjà envoyé un paiement, notre équipe vous recontactera.</value>
+  </data>
+  <data name="PromotionForceRemovedSubject" xml:space="preserve">
+    <value>Votre promotion pour {{contentTitle}} a été retirée</value>
+  </data>
+  <data name="PromotionForceRemovedHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{customerName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Le placement promu pour {{contentTitle}} a été retiré le {{removedAt}}.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Motif : {{reason}}&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Notre équipe vous recontactera pour la suite.&lt;/p&gt;</value>
+  </data>
+  <data name="PromotionForceRemovedText" xml:space="preserve">
+    <value>Bonjour {{customerName}},
+
+Le placement promu pour {{contentTitle}} a été retiré le {{removedAt}}.
+
+Motif : {{reason}}
+
+Notre équipe vous recontactera pour la suite.</value>
+  </data>
+  <data name="CommissionedContentPublishedSubject" xml:space="preserve">
+    <value>{{contentTitle}} est maintenant en ligne sur 116</value>
+  </data>
+  <data name="CommissionedContentPublishedHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{customerName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Votre contenu commandé {{contentTitle}} est maintenant publié.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Voir en ligne : &lt;a href=&quot;{{publicUrl}}&quot;&gt;{{publicUrl}}&lt;/a&gt;&lt;/p&gt;</value>
+  </data>
+  <data name="CommissionedContentPublishedText" xml:space="preserve">
+    <value>Bonjour {{customerName}},
+
+Votre contenu commandé {{contentTitle}} est maintenant publié.
+
+Voir en ligne : {{publicUrl}}</value>
+  </data>
+  <data name="CommissionedContentRejectedSubject" xml:space="preserve">
+    <value>Mise à jour sur votre contenu commandé {{contentTitle}}</value>
+  </data>
+  <data name="CommissionedContentRejectedHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{customerName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Votre contenu commandé {{contentTitle}} n&#x27;a pas passé la revue éditoriale.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Motif : {{reason}}&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Notre équipe vous recontactera pour la suite.&lt;/p&gt;</value>
+  </data>
+  <data name="CommissionedContentRejectedText" xml:space="preserve">
+    <value>Bonjour {{customerName}},
+
+Votre contenu commandé {{contentTitle}} n&#x27;a pas passé la revue éditoriale.
+
+Motif : {{reason}}
+
+Notre équipe vous recontactera pour la suite.</value>
+  </data>
+  <data name="ShootScheduledSubject" xml:space="preserve">
+    <value>Tournage planifié pour {{contentTitle}}</value>
+  </data>
+  <data name="ShootScheduledHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{customerName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Le tournage vidéo pour {{contentTitle}} est planifié le {{shootDate}}.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Notre équipe vous contactera pour les détails pratiques.&lt;/p&gt;</value>
+  </data>
+  <data name="ShootScheduledText" xml:space="preserve">
+    <value>Bonjour {{customerName}},
+
+Le tournage vidéo pour {{contentTitle}} est planifié le {{shootDate}}.
+
+Notre équipe vous contactera pour les détails pratiques.</value>
+  </data>
+  <data name="CommentReplySubject" xml:space="preserve">
+    <value>{{replierName}} a répondu à votre commentaire</value>
+  </data>
+  <data name="CommentReplyHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Bonjour {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;{{replierName}} a répondu à votre commentaire sur {{articleTitle}} :&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;&lt;em&gt;{{replyExcerpt}}&lt;/em&gt;&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;&lt;a href=&quot;{{articleUrl}}&quot;&gt;Lire la conversation&lt;/a&gt;&lt;/p&gt;</value>
+  </data>
+  <data name="CommentReplyText" xml:space="preserve">
+    <value>Bonjour {{userName}},
+
+{{replierName}} a répondu à votre commentaire sur {{articleTitle}} :
+
+{{replyExcerpt}}
+
+Lire la conversation : {{articleUrl}}</value>
+  </data>
+</root>
