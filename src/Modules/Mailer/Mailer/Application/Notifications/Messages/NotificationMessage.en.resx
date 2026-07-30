@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PasswordChangedTitle" xml:space="preserve">
+    <value>Password changed</value>
+  </data>
+  <data name="PasswordChangedBody" xml:space="preserve">
+    <value>Your password was changed. If this was not you, secure your account now.</value>
+  </data>
+  <data name="PasswordResetCompletedTitle" xml:space="preserve">
+    <value>Password reset complete</value>
+  </data>
+  <data name="PasswordResetCompletedBody" xml:space="preserve">
+    <value>Your password was reset. If this was not you, contact support immediately.</value>
+  </data>
+  <data name="LocalPasswordAddedTitle" xml:space="preserve">
+    <value>Password added to your account</value>
+  </data>
+  <data name="LocalPasswordAddedBody" xml:space="preserve">
+    <value>A password was added to your account. You can now sign in with your email and password.</value>
+  </data>
+  <data name="EmailChangedTitle" xml:space="preserve">
+    <value>Email address changed</value>
+  </data>
+  <data name="EmailChangedBody" xml:space="preserve">
+    <value>Your account email was changed to {{newEmailMasked}}. If this was not you, contact support immediately.</value>
+  </data>
+  <data name="SignedOutAllDevicesTitle" xml:space="preserve">
+    <value>Signed out everywhere</value>
+  </data>
+  <data name="SignedOutAllDevicesBody" xml:space="preserve">
+    <value>All your sessions were signed out. Devices still signed in will be disconnected shortly.</value>
+  </data>
+  <data name="AccountForceLoggedOutTitle" xml:space="preserve">
+    <value>Sessions ended by an administrator</value>
+  </data>
+  <data name="AccountForceLoggedOutBody" xml:space="preserve">
+    <value>An administrator signed you out of all devices. Sign in again to continue.</value>
+  </data>
+  <data name="RoleChangedTitle" xml:space="preserve">
+    <value>Account role updated</value>
+  </data>
+  <data name="RoleChangedBody" xml:space="preserve">
+    <value>The role {{roleName}} was {{action}} on your account.</value>
+  </data>
+  <data name="CommentReplyTitle" xml:space="preserve">
+    <value>New reply to your comment</value>
+  </data>
+  <data name="CommentReplyBody" xml:space="preserve">
+    <value>{{replierName}} replied to your comment on {{articleTitle}}.</value>
+  </data>
+  <data name="SubmissionDecidedTitle" xml:space="preserve">
+    <value>Your song submission was reviewed</value>
+  </data>
+  <data name="SubmissionDecidedBody" xml:space="preserve">
+    <value>Your song submission {{songTitle}} was {{outcome}}.</value>
+  </data>
+  <data name="RevisionDecidedTitle" xml:space="preserve">
+    <value>Your correction was reviewed</value>
+  </data>
+  <data name="RevisionDecidedBody" xml:space="preserve">
+    <value>Your suggested correction to {{songTitle}} was {{decision}}.</value>
+  </data>
+  <data name="ArtistVerifiedTitle" xml:space="preserve">
+    <value>Artist profile verified</value>
+  </data>
+  <data name="ArtistVerifiedBody" xml:space="preserve">
+    <value>You are now the verified owner of {{artistName}}.</value>
+  </data>
+</root>
