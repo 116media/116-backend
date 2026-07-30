@@ -24,10 +24,7 @@ public class PublicLikeLyricsHandler(
         CancellationToken cancellationToken
     )
     {
-        LyricsEntity lyrics = await lyricsRepository.GetByIdOrThrowAsync(
-            id: command.LyricsId,
-            cancellationToken: cancellationToken
-        );
+        await lyricsRepository.GetByIdOrThrowAsync(id: command.LyricsId, cancellationToken: cancellationToken);
 
         bool alreadyLiked = await lyricsRepository.HasLikedAsync(
             userId: command.UserId,
@@ -43,9 +40,6 @@ public class PublicLikeLyricsHandler(
         var like = LyricsLikeEntity.Create(id: Guid.NewGuid(), userId: command.UserId, lyricsId: command.LyricsId);
 
         await lyricsRepository.AddLikeAsync(like: like, cancellationToken: cancellationToken);
-
-        lyrics.IncrementLikeCount();
-        lyricsRepository.Update(lyrics: lyrics);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
