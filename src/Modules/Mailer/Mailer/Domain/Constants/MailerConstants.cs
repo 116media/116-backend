@@ -32,6 +32,11 @@ public static class MailerConstants
     public const string NewsletterRoute = "newsletter";
 
     /// <summary>
+    /// Route resource segment for in-app notification endpoints.
+    /// </summary>
+    public const string NotificationsRoute = "notifications";
+
+    /// <summary>
     /// The accepted values of the <c>EMAIL_PROVIDER</c> environment variable.
     /// Adding a provider means adding a constant here and a registration branch
     /// in <c>MailerModule</c> — nothing else.
