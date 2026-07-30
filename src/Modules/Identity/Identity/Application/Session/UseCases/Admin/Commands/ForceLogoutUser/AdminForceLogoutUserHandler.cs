@@ -2,7 +2,7 @@ using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
-using _116.Mailer.Contracts.Application;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -10,16 +10,16 @@ namespace _116.Identity.Application.Session.UseCases.Admin.Commands.ForceLogoutU
 
 /// <summary>
 /// Handles the <see cref="AdminForceLogoutUserCommand" /> to force-logout a user from all sessions.
+/// The security email and in-app notification react to the domain event the user aggregate raises
+/// for the admin-driven mass sign-out.
 /// </summary>
 /// <param name="sessionRepository">Repository for session data access operations.</param>
 /// <param name="unitOfWork">Unit of work for transaction management.</param>
-/// <param name="authRepository">Repository resolving the notified user.</param>
-/// <param name="mailer">Outbox mailer notifying the ejected user.</param>
+/// <param name="authRepository">Repository resolving the target user.</param>
 public class AdminForceLogoutUserHandler(
     ISessionRepository sessionRepository,
     IIdentityUnitOfWork unitOfWork,
-    IAuthRepository authRepository,
-    IMailer mailer
+    IAuthRepository authRepository
 ) : ICommandHandler<AdminForceLogoutUserCommand, AdminForceLogoutUserResult>
 {
     /// <summary>
@@ -35,12 +35,9 @@ public class AdminForceLogoutUserHandler(
     {
         Guid targetUserId = Guid.Parse(input: command.UserId);
 
-        await sessionRepository.DeleteAllByUserIdAsync(userId: targetUserId, cancellationToken: cancellationToken);
-        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
         // Force-logout is an idempotent no-op for unknown user ids (the
         // endpoint contract answers 200 either way), so a missing user only
-        // skips the notification instead of failing the command.
+        // skips the mass sign-out fact instead of failing the command.
         UserEntity? user;
 
         try
@@ -49,23 +46,16 @@ public class AdminForceLogoutUserHandler(
         }
         catch (NotFoundException)
         {
-            return new AdminForceLogoutUserResult(IsSuccess: true);
+            user = null;
         }
 
-        if (user?.Email is not null)
-        {
-            await mailer.EnqueueAsync(
-                template: EnumEmailTemplate.AccountForceLoggedOut,
-                to: new EmailRecipient(Address: user!.Email, DisplayName: user.UserName),
-                tokens: new Dictionary<string, string>
-                {
-                    ["userName"] = user.UserName,
-                    ["time"] = DateTime.UtcNow.ToString("u"),
-                },
-                culture: EmailCulture.Current(),
-                cancellationToken: cancellationToken
-            );
-        }
+        user?.RecordMassSignOut(byAdmin: true);
+        await sessionRepository.DeleteAllByUserIdAsync(
+            userId: targetUserId,
+            reason: EnumSessionRevokeReason.AdminRevoke,
+            cancellationToken: cancellationToken
+        );
+        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminForceLogoutUserResult(IsSuccess: true);
     }
