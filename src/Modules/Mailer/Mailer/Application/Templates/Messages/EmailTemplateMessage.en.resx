@@ -315,4 +315,56 @@ Our team will contact you with the practical details.</value>
 
 Read the conversation: {{articleUrl}}</value>
   </data>
+  <data name="RefreshTokenReplayAlertSubject" xml:space="preserve">
+    <value>Suspicious activity on your 116 account</value>
+  </data>
+  <data name="RefreshTokenReplayAlertHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Hi {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;A sign-in token that had already been invalidated was used on your account on {{time}}. As a precaution, every session was signed out.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;If this was not you, reset your password immediately.&lt;/p&gt;</value>
+  </data>
+  <data name="RefreshTokenReplayAlertText" xml:space="preserve">
+    <value>Hi {{userName}},
+
+A sign-in token that had already been invalidated was used on your account on {{time}}. As a precaution, every session was signed out.
+
+If this was not you, reset your password immediately.</value>
+  </data>
+  <data name="RevisionDecidedSubject" xml:space="preserve">
+    <value>Your correction to {{songTitle}} was {{decision}}</value>
+  </data>
+  <data name="RevisionDecidedHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Hi {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Your suggested correction to {{songTitle}} was {{decision}}.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;&lt;a href=&quot;{{lyricsUrl}}&quot;&gt;View the lyrics&lt;/a&gt;&lt;/p&gt;</value>
+  </data>
+  <data name="RevisionDecidedText" xml:space="preserve">
+    <value>Hi {{userName}},
+
+Your suggested correction to {{songTitle}} was {{decision}}.
+
+View the lyrics: {{lyricsUrl}}</value>
+  </data>
+  <data name="SubmissionDecidedSubject" xml:space="preserve">
+    <value>Your song submission {{songTitle}} was {{outcome}}</value>
+  </data>
+  <data name="SubmissionDecidedHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Hi {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Your song submission {{songTitle}} was {{outcome}}.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;&lt;em&gt;{{reviewNote}}&lt;/em&gt;&lt;/p&gt;</value>
+  </data>
+  <data name="SubmissionDecidedText" xml:space="preserve">
+    <value>Hi {{userName}},
+
+Your song submission {{songTitle}} was {{outcome}}.
+
+{{reviewNote}}</value>
+  </data>
+  <data name="ArtistVerifiedSubject" xml:space="preserve">
+    <value>You are now the verified owner of {{artistName}}</value>
+  </data>
+  <data name="ArtistVerifiedHtml" xml:space="preserve">
+    <value>&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Hi {{userName}},&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;Your ownership claim was verified — you are now the verified owner of the artist profile {{artistName}}.&lt;/p&gt;&lt;p style=&quot;margin:0 0 16px;font-size:14px;line-height:1.6;&quot;&gt;&lt;a href=&quot;{{artistUrl}}&quot;&gt;View your artist profile&lt;/a&gt;&lt;/p&gt;</value>
+  </data>
+  <data name="ArtistVerifiedText" xml:space="preserve">
+    <value>Hi {{userName}},
+
+Your ownership claim was verified — you are now the verified owner of the artist profile {{artistName}}.
+
+View your artist profile: {{artistUrl}}</value>
+  </data>
 </root>
