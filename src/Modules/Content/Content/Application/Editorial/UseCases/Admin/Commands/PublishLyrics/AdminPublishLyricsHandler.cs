@@ -1,5 +1,3 @@
-using _116.Content.Application.Commerce.Services;
-using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -18,8 +16,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishLyri
 public class AdminPublishLyricsHandler(
     ILyricsRepository lyricsRepository,
     IContentUnitOfWork unitOfWork,
-    ContentI18n i18n,
-    ICommerceCustomerNotifier customerNotifier
+    ContentI18n i18n
 ) : ICommandHandler<AdminPublishLyricsCommand, AdminPublishLyricsResult>
 {
     /// <inheritdoc />
@@ -48,13 +45,6 @@ public class AdminPublishLyricsHandler(
         lyrics.Publish();
         lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        await customerNotifier.NotifyContentPublishedAsync(
-            customerId: lyrics.CustomerId,
-            contentTitle: lyrics.SongTitle,
-            publicUrl: ContentPublicLinks.Lyrics(lyrics.Slug),
-            cancellationToken: cancellationToken
-        );
 
         return new AdminPublishLyricsResult(IsSuccess: true);
     }
