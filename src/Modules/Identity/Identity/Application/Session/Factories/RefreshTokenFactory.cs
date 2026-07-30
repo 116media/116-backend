@@ -5,6 +5,7 @@ using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Shared.Application.Configurations;
+using Microsoft.Extensions.Logging;
 
 namespace _116.Identity.Application.Session.Factories;
 
@@ -16,11 +17,13 @@ namespace _116.Identity.Application.Session.Factories;
 /// <param name="refreshTokenService">Service for refresh token generation and hashing.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="sessionErrors">Session domain error factory for generating domain exceptions.</param>
+/// <param name="logger">Logger recording replay detections that could not be completed.</param>
 public class RefreshTokenFactory(
     ISessionRepository sessionRepository,
     IRefreshTokenService refreshTokenService,
     IIdentityUnitOfWork unitOfWork,
-    SessionErrors sessionErrors
+    SessionErrors sessionErrors,
+    ILogger<RefreshTokenFactory> logger
 ) : IRefreshTokenFactory
 {
     /// <inheritdoc />
@@ -54,7 +57,42 @@ public class RefreshTokenFactory(
             return new RefreshTokenData(User: session.User, Session: session, NewRefreshToken: newRefreshToken);
         }
 
+        // Replay detection is a reaction to the rejection, not part of deciding it: a failure to
+        // record the replay must not turn the invalid-token rejection into a server error.
+        try
+        {
+            await DetectReplayAsync(refreshTokenHash: refreshTokenHash, cancellationToken: cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Refresh token replay detection failed; the token is still rejected.");
+        }
+
         throw sessionErrors.InvalidRefreshToken();
+    }
+
+    /// <summary>
+    /// Checks whether the rejected refresh token belongs to an already-revoked session. A match
+    /// means a deliberately invalidated credential is being presented again; the session records
+    /// the replay and the commit publishes the fact so consumers can revoke the account's
+    /// remaining sessions and alert the owner. The refresh attempt is rejected either way.
+    /// </summary>
+    /// <param name="refreshTokenHash">The hash of the rejected refresh token.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    private async Task DetectReplayAsync(string refreshTokenHash, CancellationToken cancellationToken)
+    {
+        SessionEntity? replayedSession = await sessionRepository.GetRevokedSessionByRefreshTokenHashAsync(
+            refreshTokenHash: refreshTokenHash,
+            cancellationToken: cancellationToken
+        );
+
+        if (replayedSession is null)
+        {
+            return;
+        }
+
+        replayedSession.RecordRefreshTokenReplay();
+        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
     }
 
     /// <summary>
