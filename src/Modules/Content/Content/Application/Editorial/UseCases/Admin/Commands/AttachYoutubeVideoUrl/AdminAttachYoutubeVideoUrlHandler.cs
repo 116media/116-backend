@@ -1,21 +1,19 @@
-using System.Text.RegularExpressions;
-using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
-using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
-using Microsoft.AspNetCore.Http;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutubeVideoUrl;
 
 /// <summary>
-/// Handles the <see cref="AdminAttachYoutubeVideoUrlCommand" /> to attach a YouTube video URL and
-/// automatically download and re-upload the YouTube thumbnail via <see cref="FileEntity" />.
+/// Handles the <see cref="AdminAttachYoutubeVideoUrlCommand" /> to attach a YouTube video URL.
+/// The aggregate raises the attachment fact on commit and the post-commit thumbnail handler
+/// downloads and attaches the YouTube thumbnail in its own scope, so a thumbnail outage no
+/// longer fails the attach command.
 /// </summary>
 /// <param name="videoRepository">
 /// Repository for video data access operations.
@@ -24,10 +22,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.AttachYoutu
 /// Unit of Work for managing database transactions.
 /// </param>
 /// <param name="fileRepository">
-/// Repository for centralized file entity management.
-/// </param>
-/// <param name="youtubeThumbnailService">
-/// Service for downloading YouTube video thumbnails.
+/// Repository for resolving file URLs during DTO mapping.
 /// </param>
 /// <param name="mapper">
 /// Mapster mapper for entity-to-DTO transformations.
@@ -39,16 +34,10 @@ public class AdminAttachYoutubeVideoUrlHandler(
     IVideoRepository videoRepository,
     IContentUnitOfWork unitOfWork,
     IFileRepository fileRepository,
-    IYoutubeThumbnailService youtubeThumbnailService,
     IMapper mapper,
     ContentI18n i18n
 ) : ICommandHandler<AdminAttachYoutubeVideoUrlCommand, AdminAttachYoutubeVideoUrlResult>
 {
-    private static readonly Regex YoutubeIdRegex = new(
-        @"(?:youtube\.com/(?:watch\?v=|embed/|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})",
-        RegexOptions.Compiled
-    );
-
     /// <inheritdoc />
     public async Task<AdminAttachYoutubeVideoUrlResult> Handle(
         AdminAttachYoutubeVideoUrlCommand command,
@@ -62,26 +51,7 @@ public class AdminAttachYoutubeVideoUrlHandler(
             cancellationToken: cancellationToken
         );
 
-        string extractedId = ExtractVideoId(command.YoutubeVideoUrl);
-
         video.AttachYoutubeVideoUrl(youtubeVideoUrl: command.YoutubeVideoUrl, errors: i18n.Video);
-
-        IFormFile thumbnail = await youtubeThumbnailService.DownloadThumbnailAsync(
-            youtubeVideoId: extractedId,
-            cancellationToken: cancellationToken
-        );
-
-        FileEntity fileEntity = await fileRepository.ReplaceImageFileAsync(
-            currentFileId: video.ThumbnailFileId,
-            file: thumbnail,
-            publicId: videoId.ToString(),
-            folder: "content/video-thumbnails",
-            originalFileName: $"{extractedId}-thumbnail.jpg",
-            mimeType: "image/jpeg",
-            cancellationToken: cancellationToken
-        );
-
-        video.SetThumbnailFileId(thumbnailFileId: fileEntity.Id);
 
         videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
@@ -93,27 +63,5 @@ public class AdminAttachYoutubeVideoUrlHandler(
 
         var dto = await updated.ToVideoDetailDtoAsync(mapper, fileRepository, cancellationToken);
         return new AdminAttachYoutubeVideoUrlResult(Video: dto);
-    }
-
-    /// <summary>
-    /// Extracts the 11-character YouTube video ID from a full YouTube URL.
-    /// </summary>
-    /// <param name="youtubeUrl">
-    /// A YouTube video URL in any supported format.
-    /// </param>
-    /// <returns>
-    /// The extracted video ID.
-    /// </returns>
-    /// <exception cref="ArgumentException">
-    /// Thrown when no valid YouTube video ID can be extracted from the URL.
-    /// </exception>
-    private static string ExtractVideoId(string youtubeUrl)
-    {
-        Match match = YoutubeIdRegex.Match(youtubeUrl);
-        if (!match.Success)
-        {
-            throw new ArgumentException($"Could not extract a YouTube video ID from: {youtubeUrl}");
-        }
-        return match.Groups[1].Value;
     }
 }
