@@ -8,8 +8,10 @@ namespace _116.Identity.Application.Shared.Authorizations.Handlers;
 /// Authorization handler that validates user roles against policy requirements.
 /// </summary>
 /// <remarks>
-/// Checks if the user's role claim matches any of the allowed roles in the requirement
-/// using case-insensitive comparison. Used automatically by ASP.NET Core authorization system.
+/// Checks if any of the user's role claims matches any of the allowed roles in the
+/// requirement using case-insensitive comparison, so authorization does not depend on
+/// the order role claims were written into the token. Used automatically by the
+/// ASP.NET Core authorization system.
 /// </remarks>
 public class UserRoleRequirementHandler : AuthorizationHandler<UserRoleRequirement>
 {
@@ -21,15 +23,15 @@ public class UserRoleRequirementHandler : AuthorizationHandler<UserRoleRequireme
     /// <returns>A completed task representing the authorization evaluation</returns>
     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, UserRoleRequirement requirement)
     {
-        // Extract user's role from JWT token claims
-        string? userRole = context.User.FindFirst(type: ClaimTypes.Role)?.Value;
+        IEnumerable<string> userRoles = context
+            .User.FindAll(type: ClaimTypes.Role)
+            .Select(claim => claim.Value)
+            .Where(role => !string.IsNullOrEmpty(value: role));
 
-        // Authorize if the user role matches any allowed role (case-insensitive)
-        bool isUserRoleMatching = requirement.AllowedRoles.Contains(
-            value: userRole,
-            comparer: StringComparer.OrdinalIgnoreCase
+        bool isUserRoleMatching = userRoles.Any(role =>
+            requirement.AllowedRoles.Contains(value: role, comparer: StringComparer.OrdinalIgnoreCase)
         );
-        if (!string.IsNullOrEmpty(value: userRole) && isUserRoleMatching)
+        if (isUserRoleMatching)
         {
             context.Succeed(requirement: requirement);
         }
