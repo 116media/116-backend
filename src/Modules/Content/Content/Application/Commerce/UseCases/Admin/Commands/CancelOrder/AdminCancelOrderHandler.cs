@@ -1,4 +1,3 @@
-using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -16,8 +15,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.CancelOrder;
 public class AdminCancelOrderHandler(
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
-    ContentI18n i18n,
-    ICommerceCustomerNotifier customerNotifier
+    ContentI18n i18n
 ) : ICommandHandler<AdminCancelOrderCommand, AdminCancelOrderResult>
 {
     /// <inheritdoc />
@@ -34,8 +32,6 @@ public class AdminCancelOrderHandler(
 
         await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        await customerNotifier.NotifyOrderCancelledAsync(order: order, cancellationToken: cancellationToken);
 
         return new AdminCancelOrderResult(IsSuccess: true);
     }
