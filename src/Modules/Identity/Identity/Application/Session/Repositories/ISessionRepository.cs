@@ -31,15 +31,43 @@ public interface ISessionRepository
     /// Revokes a specific session (for logout).
     /// </summary>
     /// <param name="sessionId">The ID of the session to delete.</param>
+    /// <param name="reason">Why the session is being revoked.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    Task RevokeAsync(Guid sessionId, CancellationToken cancellationToken = default);
+    Task RevokeAsync(
+        Guid sessionId,
+        EnumSessionRevokeReason reason = EnumSessionRevokeReason.SelfSignOut,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Deletes all sessions for a user (for logout from all devices).
     /// </summary>
     /// <param name="userId">The user's ID.</param>
+    /// <param name="reason">Why the sessions are being revoked.</param>
+    /// <param name="exemptSessionId">
+    /// A session to preserve, when the revocation reacts to a self-service change and the acting
+    /// session must survive. Null revokes every active session.
+    /// </param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    Task DeleteAllByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task DeleteAllByUserIdAsync(
+        Guid userId,
+        EnumSessionRevokeReason reason = EnumSessionRevokeReason.SelfSignOut,
+        Guid? exemptSessionId = null,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Finds a revoked session that still holds the given refresh token hash.
+    /// Used by replay detection: a token matching a revoked session is a credential that was
+    /// deliberately invalidated and is being presented again.
+    /// </summary>
+    /// <param name="refreshTokenHash">The hashed refresh token.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <returns>The revoked session entity if one matches, null otherwise.</returns>
+    Task<SessionEntity?> GetRevokedSessionByRefreshTokenHashAsync(
+        string refreshTokenHash,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Gets a session by its ID.
