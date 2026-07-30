@@ -1,4 +1,3 @@
-using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder.Contracts;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Persistence;
@@ -16,8 +15,7 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 public class AdminSubmitOrderFactory(
     IContentOrderRepository contentOrderRepository,
     IContentUnitOfWork unitOfWork,
-    ContentOrderErrors contentOrderErrors,
-    ICommerceCustomerNotifier customerNotifier
+    ContentOrderErrors contentOrderErrors
 ) : ISubmitOrderFactory
 {
     /// <inheritdoc />
@@ -40,7 +38,5 @@ public class AdminSubmitOrderFactory(
         await contentOrderRepository.UpdateAsync(order: order, ct: cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        await customerNotifier.NotifyOrderInvoiceAsync(order: order, cancellationToken: cancellationToken);
     }
 }
