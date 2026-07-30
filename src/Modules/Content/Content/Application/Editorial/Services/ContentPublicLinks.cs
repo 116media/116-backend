@@ -36,6 +36,13 @@ public static class ContentPublicLinks
     public static string Lyrics(string slug) => $"{BaseUrl()}/lyrics/{slug}";
 
     /// <summary>
+    /// Builds the public URL of an artist profile page.
+    /// </summary>
+    /// <param name="slug">The artist slug.</param>
+    /// <returns>The absolute frontend URL.</returns>
+    public static string Artist(string slug) => $"{BaseUrl()}/artists/{slug}";
+
+    /// <summary>
     /// Resolves the configured frontend base URL, without a trailing slash.
     /// </summary>
     private static string BaseUrl()
