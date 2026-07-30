@@ -119,6 +119,10 @@ public static class BaseModule
         services.AddHttpContextAccessor();
         services.TryAddSingleton<ICurrentActor, HttpCurrentActor>();
 
+        // The dispatch interceptor logs the post-commit failures it swallows, so the logging
+        // services must be present wherever a module database is registered.
+        services.AddLogging();
+
         // Check if interceptors are already registered to avoid duplicates
         bool auditInterceptorExists = services.Any(s =>
             s.ServiceType == typeof(ISaveChangesInterceptor)
