@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Identity.Domain.Entities;
@@ -156,7 +157,10 @@ public class UserEntity : Aggregate<Guid>
     // Authentication Methods
     /// <summary>
     /// Updates the user's email. Resets verification status since they need to verify the new email.
+    /// Raises <see cref="UserEmailChangedEvent" /> carrying both addresses.
     /// </summary>
+    /// <param name="newEmail">The new email address.</param>
+    /// <param name="errors">User domain error factory for generating domain exceptions.</param>
     public void UpdateEmail(string newEmail, UserErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: newEmail))
@@ -164,14 +168,22 @@ public class UserEntity : Aggregate<Guid>
             throw errors.InvalidEmailFormat(email: newEmail);
         }
 
+        string? oldEmail = Email;
         Email = newEmail.ToLowerInvariant();
         IsVerified = UserConstants.EmailUpdatedVerificationStatus;
+
+        AddDomainEvent(new UserEmailChangedEvent(UserId: Id, OldEmail: oldEmail, NewEmail: Email));
     }
 
     /// <summary>
-    /// Updates the password hash for existing local auth users.
+    /// Installs a password hash without declaring a password-change fact. This is the
+    /// initialization path used to give an account a known credential outside a user-facing flow,
+    /// such as seeding; user-facing flows call <see cref="UpdatePassword" /> so the change fans
+    /// out to its notification reactions.
     /// </summary>
-    public void UpdatePassword(string newPasswordHash, UserErrors errors)
+    /// <param name="newPasswordHash">The new hashed password.</param>
+    /// <param name="errors">User domain error factory for generating domain exceptions.</param>
+    public void InitializePasswordHash(string newPasswordHash, UserErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: newPasswordHash))
         {
@@ -180,16 +192,33 @@ public class UserEntity : Aggregate<Guid>
 
         if (AuthProvider != EnumAuthProvider.Local && string.IsNullOrEmpty(value: Email))
         {
-            throw errors.BadRequest("Cannot update password for a user without email.");
+            throw errors.PasswordUpdateRequiresEmail();
         }
 
         PasswordHash = newPasswordHash;
     }
 
     /// <summary>
+    /// Updates the password hash for existing local auth users.
+    /// Raises <see cref="UserPasswordChangedEvent" /> with the flow that replaced the password.
+    /// </summary>
+    /// <param name="newPasswordHash">The new hashed password.</param>
+    /// <param name="errors">User domain error factory for generating domain exceptions.</param>
+    /// <param name="origin">The flow that replaced the password.</param>
+    public void UpdatePassword(string newPasswordHash, UserErrors errors, EnumPasswordChangeOrigin origin)
+    {
+        InitializePasswordHash(newPasswordHash: newPasswordHash, errors: errors);
+
+        AddDomainEvent(new UserPasswordChangedEvent(UserId: Id, Origin: origin));
+    }
+
+    /// <summary>
     /// Sets a password for social login users, converting them to local auth.
     /// Useful when a Google/Facebook user wants to also login with password.
+    /// Raises <see cref="UserPasswordChangedEvent" /> with the set-local origin.
     /// </summary>
+    /// <param name="passwordHash">The hashed password to set.</param>
+    /// <param name="errors">User domain error factory for generating domain exceptions.</param>
     public void SetPasswordAndChangeToLocal(string passwordHash, UserErrors errors)
     {
         if (string.IsNullOrWhiteSpace(value: passwordHash))
@@ -204,6 +233,8 @@ public class UserEntity : Aggregate<Guid>
 
         PasswordHash = passwordHash;
         AuthProvider = EnumAuthProvider.Local;
+
+        AddDomainEvent(new UserPasswordChangedEvent(UserId: Id, Origin: EnumPasswordChangeOrigin.SetLocal));
     }
 
     /// <summary>
@@ -221,10 +252,30 @@ public class UserEntity : Aggregate<Guid>
 
     /// <summary>
     /// Marks the email as verified. Call this after successful email verification.
+    /// Raises <see cref="UserVerifiedEvent" /> only on the actual transition, so verifying an
+    /// already-verified account stays a silent no-op.
     /// </summary>
     public void MarkAsVerified()
     {
+        if (IsVerified)
+        {
+            return;
+        }
+
         IsVerified = UserConstants.ExternalAuthIsVerified;
+
+        AddDomainEvent(new UserVerifiedEvent(UserId: Id));
+    }
+
+    /// <summary>
+    /// Records that every session on this account was terminated at once. The session rows are
+    /// revoked by the caller in the same transaction; this method only declares the account-level
+    /// fact by raising <see cref="UserSignedOutAllDevicesEvent" />.
+    /// </summary>
+    /// <param name="byAdmin">Whether an administrator drove the termination.</param>
+    public void RecordMassSignOut(bool byAdmin)
+    {
+        AddDomainEvent(new UserSignedOutAllDevicesEvent(UserId: Id, ByAdmin: byAdmin));
     }
 
     /// <summary>
