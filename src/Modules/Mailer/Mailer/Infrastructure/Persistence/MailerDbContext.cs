@@ -22,6 +22,11 @@ public class MailerDbContext(DbContextOptions<MailerDbContext> options) : DbCont
     /// </summary>
     public DbSet<NewsletterSubscriberEntity> NewsletterSubscribers => Set<NewsletterSubscriberEntity>();
 
+    /// <summary>
+    /// Gets the DbSet for in-app notification entities.
+    /// </summary>
+    public DbSet<NotificationEntity> Notifications => Set<NotificationEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
