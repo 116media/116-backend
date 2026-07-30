@@ -123,4 +123,27 @@ public enum EnumEmailTemplate
     /// Engagement notification that someone replied to the user's comment.
     /// </summary>
     CommentReply,
+
+    /// <summary>
+    /// Security alert after a revoked refresh token was presented again; every session on the
+    /// account was terminated as a precaution.
+    /// </summary>
+    RefreshTokenReplayAlert,
+
+    /// <summary>
+    /// Notice to the proposer that a lyrics or translation correction revision was decided,
+    /// with the decision and a link to the corrected page.
+    /// </summary>
+    RevisionDecided,
+
+    /// <summary>
+    /// Notice to the submitter that a community lyrics submission was decided, carrying the
+    /// moderator's review note.
+    /// </summary>
+    SubmissionDecided,
+
+    /// <summary>
+    /// Confirmation to the new owner that an artist profile ownership claim was verified.
+    /// </summary>
+    ArtistVerified,
 }
