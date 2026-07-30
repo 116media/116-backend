@@ -37,9 +37,9 @@ public interface ICommerceCustomerNotifier
     /// notes, so a corrected payment can be sent.
     /// </summary>
     /// <param name="order">The order whose payment was rejected; must carry <c>Customer</c>.</param>
-    /// <param name="notes">The reviewer notes explaining the rejection.</param>
+    /// <param name="notes">The reviewer notes explaining the rejection, or <c>null</c> when none were provided.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    Task NotifyPaymentRejectedAsync(ContentOrderEntity order, string notes, CancellationToken cancellationToken);
+    Task NotifyPaymentRejectedAsync(ContentOrderEntity order, string? notes, CancellationToken cancellationToken);
 
     /// <summary>
     /// Tells the customer their order was cancelled. Resolves the customer by
