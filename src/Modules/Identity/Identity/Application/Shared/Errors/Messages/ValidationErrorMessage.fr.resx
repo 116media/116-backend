@@ -168,6 +168,9 @@
   <data name="InvalidPasswordFormat" xml:space="preserve">
     <value>Le mot de passe ne répond pas aux exigences de sécurité.</value>
   </data>
+  <data name="PasswordUpdateRequiresEmail" xml:space="preserve">
+    <value>Impossible de mettre à jour le mot de passe d'un utilisateur sans adresse e-mail.</value>
+  </data>
   <data name="InvalidUsernameFormat" xml:space="preserve">
     <value>Le nom d'utilisateur « {0} » ne répond pas aux exigences.</value>
   </data>
