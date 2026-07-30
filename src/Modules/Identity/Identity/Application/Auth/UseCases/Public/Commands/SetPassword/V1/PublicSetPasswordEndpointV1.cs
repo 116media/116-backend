@@ -53,8 +53,13 @@ public class PublicSetPasswordEndpointV1 : ICarterModule
                 ) =>
                 {
                     Guid userId = authProvider.GetUserIdFromClaims(user: user);
+                    Guid sessionId = authProvider.GetSessionIdFromClaims(user: user);
 
-                    var command = new PublicSetPasswordCommand(UserId: userId, Password: request.Password);
+                    var command = new PublicSetPasswordCommand(
+                        UserId: userId,
+                        SessionId: sessionId,
+                        Password: request.Password
+                    );
                     PublicSetPasswordResult result = await dispatcher.Send(request: command);
 
                     var response = new PublicSetPasswordResponse(IsSuccess: result.IsSuccess);
