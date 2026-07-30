@@ -8,6 +8,9 @@ namespace _116.Content.Application.Interactions.UseCases.Admin.Commands.DeleteAr
 
 /// <summary>
 /// Handles the <see cref="AdminDeleteArticleCommentCommand" /> to soft-delete any article comment.
+/// Deleting an already soft-deleted comment reports success without a write,
+/// so moderating a comment the owner already removed never decrements the
+/// article's cached comment count twice.
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
@@ -31,18 +34,13 @@ public class AdminDeleteArticleCommentHandler(
 
         if (comment is not null)
         {
-            comment.SoftDelete();
+            await articleRepository.GetByIdOrThrowAsync(id: command.ArticleId, cancellationToken: cancellationToken);
 
-            ArticleEntity article = await articleRepository.GetByIdOrThrowAsync(
-                id: command.ArticleId,
-                cancellationToken: cancellationToken
-            );
-
-            article.DecrementCommentCount();
-            articleRepository.Update(article: article);
-            articleRepository.UpdateComment(comment: comment);
-
-            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+            if (comment.SoftDelete())
+            {
+                articleRepository.UpdateComment(comment: comment);
+                await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+            }
 
             return new AdminDeleteArticleCommentResult(IsSuccess: true);
         }
