@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using _116.BuildingBlocks.Constants;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Identity.Domain.Entities;
@@ -91,6 +92,9 @@ public class SessionEntity : Aggregate<Guid>
 
     /// <summary>
     /// Creates a new session when a user successfully logs in.
+    /// Raises <see cref="SessionCreatedEvent" /> carrying the new-device flag computed where the
+    /// reuse-or-create decision is made; a session row is only ever created when no row exists for
+    /// the device, so the flag defaults to true.
     /// </summary>
     public static SessionEntity Create(
         Guid id,
@@ -103,10 +107,11 @@ public class SessionEntity : Aggregate<Guid>
         EnumPlatform platform,
         EnumClient client,
         string? ipAddress = null,
-        string? userAgent = null
+        string? userAgent = null,
+        bool isNewDevice = true
     )
     {
-        return new SessionEntity
+        var session = new SessionEntity
         {
             Id = id,
             UserId = userId,
@@ -120,6 +125,10 @@ public class SessionEntity : Aggregate<Guid>
             IpAddress = ipAddress,
             UserAgent = userAgent,
         };
+
+        session.AddDomainEvent(new SessionCreatedEvent(SessionId: id, UserId: userId, IsNewDevice: isNewDevice));
+
+        return session;
     }
 
     /// <summary>
@@ -145,17 +154,22 @@ public class SessionEntity : Aggregate<Guid>
     /// Revokes this session.
     /// Used when a user logs out, a device is invalidated,
     /// or a security event requires terminating the session.
+    /// Raises <see cref="SessionRevokedEvent" /> carrying the revocation cause.
     /// </summary>
-    public void Revoke()
+    /// <param name="reason">Why the session is being revoked.</param>
+    public void Revoke(EnumSessionRevokeReason reason = EnumSessionRevokeReason.SelfSignOut)
     {
         IsRevoked = true;
         RevokedAt = DateTime.UtcNow;
+
+        AddDomainEvent(new SessionRevokedEvent(UserId: UserId, SessionId: Id, Reason: reason));
     }
 
     /// <summary>
     /// Reactivates a previously expired or revoked session with a new refresh token and expiry.
     /// Used when a user logs in again on the same device after their previous session has expired or been revoked.
     /// Reusing the existing row avoids unique constraint violations on (user_id, device_id).
+    /// Raises <see cref="SessionReactivatedEvent" />.
     /// </summary>
     public void Reactivate(string newRefreshTokenHash, DateTime newExpiresAt)
     {
@@ -163,5 +177,17 @@ public class SessionEntity : Aggregate<Guid>
         ExpiresAt = newExpiresAt;
         IsRevoked = false;
         RevokedAt = null;
+
+        AddDomainEvent(new SessionReactivatedEvent(SessionId: Id, UserId: UserId));
+    }
+
+    /// <summary>
+    /// Records that a refresh token belonging to this already-revoked session was presented again
+    /// by raising <see cref="RefreshTokenReplayDetectedEvent" />. Consumers revoke the account's
+    /// remaining sessions and alert the owner; the caller still rejects the refresh attempt.
+    /// </summary>
+    public void RecordRefreshTokenReplay()
+    {
+        AddDomainEvent(new RefreshTokenReplayDetectedEvent(UserId: UserId, SessionId: Id));
     }
 }
