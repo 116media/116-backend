@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using _116.BuildingBlocks.Constants;
 using _116.Core.Application.Shared.Errors.Facade;
+using _116.Core.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Domain;
 
@@ -149,7 +150,9 @@ public class FileEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Marks the file as deleted (soft delete).
+    /// Marks the file as deleted (soft delete) and raises
+    /// <see cref="FileSoftDeletedEvent" /> with the storage key captured at
+    /// raise time so the remote asset can be cleaned post-commit.
     /// </summary>
     /// <returns>True if the file was successfully marked as deleted, false if already deleted.</returns>
     /// <remarks>
@@ -164,6 +167,31 @@ public class FileEntity : Aggregate<Guid>
 
         IsDeleted = true;
         DeletedAt = DateTime.UtcNow;
+
+        AddDomainEvent(new FileSoftDeletedEvent(FileId: Id, StorageKey: StorageKey));
+
+        return true;
+    }
+
+    /// <summary>
+    /// Marks the file as superseded by a newer upload: applies the same
+    /// soft-delete state as <see cref="Delete" /> but raises
+    /// <see cref="FileReplacedEvent" /> instead, so replacement flows and
+    /// plain deletions stay distinguishable to post-commit consumers.
+    /// </summary>
+    /// <returns>True if the file was marked as replaced, false if already deleted.</returns>
+    public bool MarkReplaced()
+    {
+        if (IsDeleted)
+        {
+            return false;
+        }
+
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
+
+        AddDomainEvent(new FileReplacedEvent(FileId: Id, OldStorageKey: StorageKey));
+
         return true;
     }
 }
