@@ -67,7 +67,7 @@ public class CommerceCustomerNotifier(IMailer mailer, ICustomerRepository custom
     /// <inheritdoc />
     public async Task NotifyPaymentRejectedAsync(
         ContentOrderEntity order,
-        string notes,
+        string? notes,
         CancellationToken cancellationToken
     )
     {
@@ -78,7 +78,7 @@ public class CommerceCustomerNotifier(IMailer mailer, ICustomerRepository custom
             {
                 ["customerName"] = order.Customer.FullName,
                 ["orderReference"] = OrderReference(order.Id),
-                ["notes"] = notes,
+                ["notes"] = notes ?? string.Empty,
             },
             culture: CustomerCulture,
             cancellationToken: cancellationToken
