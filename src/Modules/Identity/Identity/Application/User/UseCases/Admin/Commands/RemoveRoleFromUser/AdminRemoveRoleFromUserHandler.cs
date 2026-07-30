@@ -1,10 +1,11 @@
+using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Mappers;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
-using _116.Mailer.Contracts.Application;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -12,19 +13,24 @@ namespace _116.Identity.Application.User.UseCases.Admin.Commands.RemoveRoleFromU
 
 /// <summary>
 /// Handles the <see cref="AdminRemoveRoleFromUserCommand" /> to remove a role from a user.
+/// Roles are baked into the access token and never re-checked, so the revocation of the role and
+/// of the target user's sessions commit together and the removed authorization cannot keep riding
+/// a live token. The security email and in-app notification react to the domain event the
+/// association raises for the revocation.
 /// </summary>
 /// <param name="userRoleRepository">Repository for user-role data access operations.</param>
+/// <param name="sessionRepository">Repository revoking the target user's sessions.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Identity module.</param>
+/// <param name="roleRepository">Repository resolving the revoked role.</param>
 public class AdminRemoveRoleFromUserHandler(
     IUserRoleRepository userRoleRepository,
+    ISessionRepository sessionRepository,
     IIdentityUnitOfWork unitOfWork,
     IMapper mapper,
     IdentityI18n i18n,
-    IAuthRepository authRepository,
-    IRoleRepository roleRepository,
-    IMailer mailer
+    IRoleRepository roleRepository
 ) : ICommandHandler<AdminRemoveRoleFromUserCommand, AdminRemoveRoleFromUserResult>
 {
     /// <summary>
@@ -50,35 +56,25 @@ public class AdminRemoveRoleFromUserHandler(
 
         if (userRole is not null)
         {
-            // Remove the association
+            // Remove the association; the role name rides the revocation event
             RoleEntity? removedRole = await roleRepository.GetRoleByIdOrThrowAsync(
                 roleId: roleId,
                 cancellationToken: cancellationToken
             );
 
+            userRole.RecordRevocation(roleName: removedRole!.Name);
             userRoleRepository.Delete(entity: userRole);
-            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
-            UserEntity? notifiedUser = await authRepository.FindUserByIdOrThrow(
+            // An authorization change is administrative: every session of the target user is
+            // revoked, closing the window in which a stale token still carries the removed role.
+            await sessionRepository.DeleteAllByUserIdAsync(
                 userId: userId,
+                reason: EnumSessionRevokeReason.SecurityInvalidation,
+                exemptSessionId: null,
                 cancellationToken: cancellationToken
             );
 
-            if (removedRole is not null && notifiedUser?.Email is not null)
-            {
-                await mailer.EnqueueAsync(
-                    template: EnumEmailTemplate.RoleChanged,
-                    to: new EmailRecipient(Address: notifiedUser.Email, DisplayName: notifiedUser.UserName),
-                    tokens: new Dictionary<string, string>
-                    {
-                        ["userName"] = notifiedUser.UserName,
-                        ["roleName"] = removedRole.Name,
-                        ["action"] = "revoked",
-                    },
-                    culture: EmailCulture.Current(),
-                    cancellationToken: cancellationToken
-                );
-            }
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
             // Get updated user roles
             List<UserRoleEntity> userRoles = await userRoleRepository.GetUserRolesWithRoleAsync(
