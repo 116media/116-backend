@@ -271,7 +271,7 @@ public class AuthRepository(IdentityDbContext context, UserErrors userErrors, Se
         }
 
         // Create user-role association using the static factory method
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), userId: userId, roleId: visitorRole.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), userId: userId, roleId: visitorRole.Id);
         // Use the domain method to assign the role
         user?.AssignRole(userRole: userRole, errors: userErrors);
     }
