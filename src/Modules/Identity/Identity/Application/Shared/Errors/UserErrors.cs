@@ -318,11 +318,11 @@ public class UserErrors(
     }
 
     /// <summary>
-    /// Throws a generic bad request exception with a custom message.
+    /// Throws when a password update is attempted for a user without an email.
     /// </summary>
-    public BadRequestException BadRequest(string message)
+    public BadRequestException PasswordUpdateRequiresEmail()
     {
-        return new BadRequestException(message: message);
+        return new BadRequestException(validation.PasswordUpdateRequiresEmail());
     }
 
     /// <summary>
