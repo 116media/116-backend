@@ -110,11 +110,6 @@ public class FileErrors(
     public BadRequestException FileUrlRequired() => new(validation.FileUrlRequired());
 
     /// <summary>
-    /// Throws a generic bad request exception with the custom message.
-    /// </summary>
-    public BadRequestException BadRequest(string message) => new(message);
-
-    /// <summary>
     /// Throws when no file is provided in the upload request.
     /// </summary>
     public BadRequestException FileRequired() => new(validation.FileRequired());
