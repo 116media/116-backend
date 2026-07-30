@@ -1,4 +1,3 @@
-using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -18,8 +17,7 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnprom
 public class AdminForceUnpromoteLyricsHandler(
     ILyricsRepository lyricsRepository,
     IContentUnitOfWork unitOfWork,
-    ICurrentActor currentActor,
-    ICommerceCustomerNotifier customerNotifier
+    ICurrentActor currentActor
 ) : ICommandHandler<AdminForceUnpromoteLyricsCommand, AdminForceUnpromoteLyricsResult>
 {
     /// <inheritdoc />
@@ -37,13 +35,6 @@ public class AdminForceUnpromoteLyricsHandler(
 
         lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        await customerNotifier.NotifyPromotionRemovedAsync(
-            customerId: lyrics.CustomerId,
-            contentTitle: lyrics.SongTitle,
-            reason: command.Reason,
-            cancellationToken: cancellationToken
-        );
 
         return new AdminForceUnpromoteLyricsResult(LyricsId: lyrics.Id, UnpromotedAt: lyrics.UnpromotedAt!.Value);
     }
