@@ -1,5 +1,3 @@
-using _116.Content.Application.Editorial.Services;
-using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
@@ -9,7 +7,6 @@ using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Identity.Contracts.Application;
-using _116.Mailer.Contracts.Application;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
 
@@ -20,10 +17,10 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddComm
 /// top-level article comment. Enforces that the parent exists, belongs to the given article,
 /// and is itself a top-level comment (replies to replies are rejected). The created reply is
 /// returned with its author resolved through the same cross-module mechanism used elsewhere.
+/// Notifying the parent comment's author happens post-commit, behind the reply's domain event.
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="cacheInvalidator">Invalidates the popular-articles cache after the comment count changes.</param>
 /// <param name="userLookup">Cross-module service for resolving the replier's profile.</param>
 /// <param name="fileRepository">Repository for resolving the replier's avatar URL.</param>
 /// <param name="mapper">The mapper used to project entities to DTOs.</param>
@@ -31,12 +28,10 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.AddComm
 public class PublicAddCommentReplyHandler(
     IArticleRepository articleRepository,
     IContentUnitOfWork unitOfWork,
-    IPopularArticlesCacheInvalidator cacheInvalidator,
     IUserLookupService userLookup,
     IFileRepository fileRepository,
     IMapper mapper,
-    ContentI18n i18n,
-    IMailer mailer
+    ContentI18n i18n
 ) : ICommandHandler<PublicAddCommentReplyCommand, PublicAddCommentReplyResult>
 {
     /// <inheritdoc />
@@ -45,10 +40,7 @@ public class PublicAddCommentReplyHandler(
         CancellationToken cancellationToken
     )
     {
-        ArticleEntity article = await articleRepository.GetByIdOrThrowAsync(
-            id: command.ArticleId,
-            cancellationToken: cancellationToken
-        );
+        await articleRepository.GetByIdOrThrowAsync(id: command.ArticleId, cancellationToken: cancellationToken);
 
         ArticleCommentEntity? parent = await articleRepository.GetCommentByIdAsync(
             commentId: command.ParentCommentId,
@@ -75,24 +67,10 @@ public class PublicAddCommentReplyHandler(
 
         await articleRepository.AddCommentAsync(comment: reply, cancellationToken: cancellationToken);
 
-        article.IncrementCommentCount();
-        articleRepository.Update(article: article);
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        cacheInvalidator.Invalidate();
 
         AuthorDto? author = await ResolveAuthorAsync(command.UserId, cancellationToken);
         ArticleCommentDto dto = reply.ToArticleCommentDto(mapper) with { Author = author };
-
-        await NotifyParentAuthorAsync(
-            parent: parent,
-            article: article,
-            replierUserId: command.UserId,
-            replierName: author?.UserName,
-            replyBody: command.Body,
-            cancellationToken: cancellationToken
-        );
 
         return new PublicAddCommentReplyResult(Reply: dto);
     }
@@ -104,67 +82,6 @@ public class PublicAddCommentReplyHandler(
     /// <param name="userId">The replier's identity user id.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The resolved author DTO, or null.</returns>
-    /// <summary>
-    /// Emails the parent comment's author that someone replied. Skipped for
-    /// self-replies and when the author has no resolvable email (OAuth users);
-    /// the notification must never fail the reply itself.
-    /// </summary>
-    private async Task NotifyParentAuthorAsync(
-        ArticleCommentEntity parent,
-        ArticleEntity article,
-        Guid replierUserId,
-        string? replierName,
-        string replyBody,
-        CancellationToken cancellationToken
-    )
-    {
-        if (parent.UserId == replierUserId)
-        {
-            return;
-        }
-
-        AuthorInfo? parentAuthor = await userLookup.GetAuthorInfoByIdAsync(
-            userId: parent.UserId,
-            ct: cancellationToken
-        );
-
-        if (parentAuthor?.Email is null)
-        {
-            return;
-        }
-
-        await mailer.EnqueueAsync(
-            template: EnumEmailTemplate.CommentReply,
-            to: new EmailRecipient(Address: parentAuthor.Email, DisplayName: parentAuthor.UserName),
-            tokens: new Dictionary<string, string>
-            {
-                ["userName"] = parentAuthor.UserName,
-                ["replierName"] = replierName ?? "Someone",
-                ["articleTitle"] = article.Title,
-                ["replyExcerpt"] = Excerpt(replyBody),
-                ["articleUrl"] = ContentPublicLinks.Article(article.Slug),
-            },
-            culture: EmailCulture.Current(),
-            cancellationToken: cancellationToken
-        );
-    }
-
-    /// <summary>
-    /// Truncates a reply body to 140 characters at a word boundary.
-    /// </summary>
-    internal static string Excerpt(string body)
-    {
-        const int maxLength = 140;
-
-        if (body.Length <= maxLength)
-        {
-            return body;
-        }
-
-        int cut = body.LastIndexOf(' ', maxLength);
-        return $"{body[..(cut > 0 ? cut : maxLength)]}…";
-    }
-
     private async Task<AuthorDto?> ResolveAuthorAsync(Guid userId, CancellationToken cancellationToken)
     {
         AuthorInfo? info = await userLookup.GetAuthorInfoByIdAsync(userId: userId, ct: cancellationToken);
