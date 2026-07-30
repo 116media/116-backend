@@ -1,4 +1,3 @@
-using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -16,13 +15,11 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="lookupRepository">Repository for lookup entities including tags.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="cacheInvalidator">Invalidates the popular-tags cache after the tag graph changes.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminUpdateVideoTagsHandler(
     IVideoRepository videoRepository,
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
-    IPopularTagsCacheInvalidator cacheInvalidator,
     ContentI18n i18n
 ) : ICommandHandler<AdminUpdateVideoTagsCommand, AdminUpdateVideoTagsResult>
 {
@@ -72,8 +69,6 @@ public class AdminUpdateVideoTagsHandler(
         }
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        cacheInvalidator.Invalidate();
 
         return new AdminUpdateVideoTagsResult(IsSuccess: true);
     }
