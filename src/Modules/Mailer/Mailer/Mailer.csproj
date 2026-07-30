@@ -22,6 +22,7 @@
         <ProjectReference Include="../../../Shared/Shared/Shared.csproj" />
         <ProjectReference Include="../../../Shared/Shared.Contracts/Shared.Contracts.csproj" />
         <ProjectReference Include="../Mailer.Contracts/Mailer.Contracts.csproj" />
+        <ProjectReference Include="../../Identity/Identity.Contracts/Identity.Contracts.csproj" />
     </ItemGroup>
 
     <ItemGroup>
