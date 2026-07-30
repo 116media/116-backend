@@ -108,8 +108,8 @@ public class AppEnvironment
     /// </returns>
     public static (string? cloudName, string? apiKey, string? apiSecret) Cloudinary()
     {
-        string? cloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME");
         string? apiKey = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY");
+        string? cloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME");
         string? apiSecret = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET");
 
         return (cloudName, apiKey, apiSecret);
