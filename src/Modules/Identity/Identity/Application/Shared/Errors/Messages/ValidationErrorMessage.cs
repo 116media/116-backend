@@ -244,6 +244,14 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     }
 
     /// <summary>
+    /// Error message indicating that a password cannot be updated for a user without an email.
+    /// </summary>
+    public string PasswordUpdateRequiresEmail()
+    {
+        return localizer["PasswordUpdateRequiresEmail"];
+    }
+
+    /// <summary>
     /// Gets an error message for when a username does not meet required rules or format.
     /// </summary>
     /// <param name="userName">The invalid username.</param>
