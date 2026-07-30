@@ -2,6 +2,7 @@ using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Shared.Contracts.Application.CQRS;
 
@@ -45,7 +46,11 @@ public class AdminRevokeSessionHandler(
             throw i18n.Session.SessionNotFound(sessionId: sessionId);
         }
 
-        await sessionRepository.RevokeAsync(sessionId: sessionId, cancellationToken: cancellationToken);
+        await sessionRepository.RevokeAsync(
+            sessionId: sessionId,
+            reason: EnumSessionRevokeReason.SelfSignOut,
+            cancellationToken: cancellationToken
+        );
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new AdminRevokeSessionResult(IsSuccess: true);
