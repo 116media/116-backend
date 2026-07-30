@@ -2,19 +2,20 @@ using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
-using _116.Mailer.Contracts.Application;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Contracts.Application.CQRS;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.SignOutFromAllDevices;
 
 /// <summary>
 /// Handles the <see cref="AdminSignOutFromAllDevicesCommand" /> to sign out an admin user from all devices.
+/// The security email and in-app notification react to the domain event the user aggregate raises
+/// for the mass sign-out.
 /// </summary>
 public class AdminSignOutFromAllDevicesHandler(
     IAuthRepository authRepository,
     ISessionRepository sessionRepository,
-    IIdentityUnitOfWork unitOfWork,
-    IMailer mailer
+    IIdentityUnitOfWork unitOfWork
 ) : ICommandHandler<AdminSignOutFromAllDevicesCommand, AdminSignOutFromAllDevicesResult>
 {
     /// <summary>
@@ -32,24 +33,14 @@ public class AdminSignOutFromAllDevicesHandler(
         // Validate user account status
         authRepository.IsUserAccountActive(user!);
 
-        // Delete all active sessions for the user (soft delete)
-        await sessionRepository.DeleteAllByUserIdAsync(userId: user!.Id, cancellationToken: cancellationToken);
+        // Revoke all active sessions for the user (soft delete)
+        user!.RecordMassSignOut(byAdmin: false);
+        await sessionRepository.DeleteAllByUserIdAsync(
+            userId: user.Id,
+            reason: EnumSessionRevokeReason.SelfSignOut,
+            cancellationToken: cancellationToken
+        );
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        if (user.Email is not null)
-        {
-            await mailer.EnqueueAsync(
-                template: EnumEmailTemplate.SignedOutAllDevices,
-                to: new EmailRecipient(Address: user.Email, DisplayName: user.UserName),
-                tokens: new Dictionary<string, string>
-                {
-                    ["userName"] = user.UserName,
-                    ["time"] = DateTime.UtcNow.ToString("u"),
-                },
-                culture: EmailCulture.Current(),
-                cancellationToken: cancellationToken
-            );
-        }
 
         return new AdminSignOutFromAllDevicesResult(IsSuccess: true);
     }
