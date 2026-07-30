@@ -69,7 +69,7 @@ public class SuperAdminEntityFactory(IPasswordService passwordService, UserError
     /// <returns>A <see cref="UserRoleEntity" /> linking the user and role.</returns>
     public static UserRoleEntity CreateUserRoleAssociation(Guid userId, Guid roleId)
     {
-        return UserRoleEntity.Create(Guid.NewGuid(), userId: userId, roleId: roleId);
+        return UserRoleEntity.CreateBootstrap(Guid.NewGuid(), userId: userId, roleId: roleId);
     }
 
     /// <summary>
