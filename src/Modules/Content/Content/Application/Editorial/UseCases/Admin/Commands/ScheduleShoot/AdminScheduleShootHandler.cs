@@ -1,5 +1,3 @@
-using _116.Content.Application.Commerce.Services;
-using _116.Content.Application.Editorial.Services;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -12,11 +10,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ScheduleSho
 /// </summary>
 /// <param name="videoRepository">Repository for video data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-public class AdminScheduleShootHandler(
-    IVideoRepository videoRepository,
-    IContentUnitOfWork unitOfWork,
-    ICommerceCustomerNotifier customerNotifier
-) : ICommandHandler<AdminScheduleShootCommand, AdminScheduleShootResult>
+public class AdminScheduleShootHandler(IVideoRepository videoRepository, IContentUnitOfWork unitOfWork)
+    : ICommandHandler<AdminScheduleShootCommand, AdminScheduleShootResult>
 {
     /// <inheritdoc />
     public async Task<AdminScheduleShootResult> Handle(
@@ -34,13 +29,6 @@ public class AdminScheduleShootHandler(
         video.ScheduleShoot(scheduledAt: command.ShootingScheduledAt);
         videoRepository.Update(video: video);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        await customerNotifier.NotifyShootScheduledAsync(
-            customerId: video.CustomerId,
-            contentTitle: video.Title,
-            shootDate: command.ShootingScheduledAt.UtcDateTime,
-            cancellationToken: cancellationToken
-        );
 
         return new AdminScheduleShootResult(IsSuccess: true);
     }
