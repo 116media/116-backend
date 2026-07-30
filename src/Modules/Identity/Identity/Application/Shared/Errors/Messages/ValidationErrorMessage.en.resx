@@ -168,6 +168,9 @@
   <data name="InvalidPasswordFormat" xml:space="preserve">
     <value>Password does not meet security requirements.</value>
   </data>
+  <data name="PasswordUpdateRequiresEmail" xml:space="preserve">
+    <value>Cannot update password for a user without email.</value>
+  </data>
   <data name="InvalidUsernameFormat" xml:space="preserve">
     <value>Username '{0}' does not meet requirements.</value>
   </data>
