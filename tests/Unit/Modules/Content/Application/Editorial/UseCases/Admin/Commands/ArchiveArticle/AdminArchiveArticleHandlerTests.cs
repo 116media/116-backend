@@ -1,5 +1,4 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveArticle;
-using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -21,7 +20,6 @@ public class AdminArchiveArticleHandlerTests
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IPopularArticlesCacheInvalidator> _cacheInvalidatorMock;
     private readonly AdminArchiveArticleHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -30,11 +28,9 @@ public class AdminArchiveArticleHandlerTests
     {
         _articleRepositoryMock = MockArticleRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _cacheInvalidatorMock = MockPopularArticlesCacheInvalidator.Create();
         _handler = new AdminArchiveArticleHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _cacheInvalidatorMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -56,7 +52,6 @@ public class AdminArchiveArticleHandlerTests
         result.IsSuccess.Should().BeTrue();
         _articleRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     #endregion
