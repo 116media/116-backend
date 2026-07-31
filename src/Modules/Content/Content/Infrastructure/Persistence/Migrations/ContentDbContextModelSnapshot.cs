@@ -658,6 +658,53 @@ namespace _116.Content.Infrastructure.Persistence.Migrations
                     b.ToTable("article_tags", "content");
                 });
 
+            modelBuilder.Entity("_116.Content.Domain.Entities.ArtistClaimRequestEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ArtistId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("artist_id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_artist_claim_requests");
+
+                    b.HasIndex("ArtistId")
+                        .HasDatabaseName("ix_artist_claim_requests_artist_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_artist_claim_requests_user_id");
+
+                    b.HasIndex("ArtistId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_artist_claim_requests_artist_id_user_id");
+
+                    b.ToTable("artist_claim_requests", "content");
+                });
+
             modelBuilder.Entity("_116.Content.Domain.Entities.ArtistEntity", b =>
                 {
                     b.Property<Guid>("Id")
