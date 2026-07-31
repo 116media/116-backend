@@ -85,6 +85,17 @@ public class ContentOrderErrorMessage(IStringLocalizer<ContentOrderErrorMessage>
     }
 
     /// <summary>
+    /// Gets an error message for when the promotion duration of a purchased level cannot be resolved.
+    /// </summary>
+    /// <returns>
+    /// An error message indicating that the promotion duration is unavailable.
+    /// </returns>
+    public string PromotionDurationUnavailable()
+    {
+        return localizer["PromotionDurationUnavailable"];
+    }
+
+    /// <summary>
     /// Gets an error message for when a pricing tier is already attached to an order item.
     /// </summary>
     /// <returns>
