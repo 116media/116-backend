@@ -1,4 +1,3 @@
-using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ScheduleShoot;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -28,11 +27,7 @@ public class AdminScheduleShootHandlerTests
     {
         _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _handler = new AdminScheduleShootHandler(
-            _videoRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            new Mock<ICommerceCustomerNotifier>().Object
-        );
+        _handler = new AdminScheduleShootHandler(_videoRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     [Fact]
