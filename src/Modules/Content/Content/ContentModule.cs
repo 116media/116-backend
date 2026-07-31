@@ -1,3 +1,4 @@
+using _116.Content.Application.Commerce.EventHandlers;
 using _116.Content.Application.Commerce.Factories;
 using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier;
@@ -10,17 +11,21 @@ using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder.Contracts;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.Contracts;
+using _116.Content.Application.Editorial.EventHandlers;
 using _116.Content.Application.Editorial.Services;
+using _116.Content.Application.Interactions.EventHandlers;
 using _116.Content.Application.Interactions.Persistence;
 using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Application.Shared.EventHandlers;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Application.Shared.Services;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Events;
 using _116.Content.Infrastructure.BackgroundJobs;
 using _116.Content.Infrastructure.Cache;
 using _116.Content.Infrastructure.Persistence;
@@ -28,6 +33,7 @@ using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 using _116.Content.Infrastructure.Repositories;
 using _116.Content.Infrastructure.Services;
 using _116.Shared.Application.Extensions;
+using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure;
 using Mapster;
 using MapsterMapper;
@@ -145,8 +151,75 @@ public static class ContentModule
         services.AddScoped<ILyricsSubmissionRepository, LyricsSubmissionRepository>();
         services.AddScoped<ILyricsRevisionRepository, LyricsRevisionRepository>();
         services.AddScoped<ILyricsRevisionVoteRepository, LyricsRevisionVoteRepository>();
+        services.AddScoped<IArtistClaimRequestRepository, ArtistClaimRequestRepository>();
 
         services.AddScoped<ICommerceCustomerNotifier, CommerceCustomerNotifier>();
+
+        // Commerce domain event handlers
+        services.AddScoped<IDomainEventHandler<OrderSubmittedEvent>, OrderSubmittedInvoiceEmailHandler>();
+        services.AddScoped<IDomainEventHandler<OrderPaidEvent>, OrderPaidEffectsHandler>();
+        services.AddScoped<IDomainEventHandler<OrderPaidEvent>, OrderPaidReceiptEmailHandler>();
+        services.AddScoped<IDomainEventHandler<PaymentRejectedEvent>, PaymentRejectedEmailHandler>();
+        services.AddScoped<IDomainEventHandler<OrderCancelledEvent>, OrderCancelledEmailHandler>();
+        services.AddScoped<IDomainEventHandler<ContentPromotionRemovedEvent>, ContentPromotionRemovedEmailHandler>();
+        services.AddScoped<
+            IDomainEventHandler<CommissionedContentPublishedEvent>,
+            CommissionedContentPublishedEmailHandler
+        >();
+        services.AddScoped<
+            IDomainEventHandler<CommissionedContentRejectedEvent>,
+            CommissionedContentRejectedEmailHandler
+        >();
+        services.AddScoped<IDomainEventHandler<VideoShootScheduledEvent>, VideoShootScheduledEmailHandler>();
+
+        // Cache invalidation domain event handlers
+        services.AddScoped<IDomainEventHandler<ArticlePublishedEvent>, PopularArticlesCacheHandler>();
+        services.AddScoped<IDomainEventHandler<ArticleUnpublishedEvent>, PopularArticlesCacheHandler>();
+        services.AddScoped<IDomainEventHandler<ArticleDeletedEvent>, PopularArticlesCacheHandler>();
+        services.AddScoped<IDomainEventHandler<VideoPublishedEvent>, PopularVideosCacheHandler>();
+        services.AddScoped<IDomainEventHandler<VideoUnpublishedEvent>, PopularVideosCacheHandler>();
+        services.AddScoped<IDomainEventHandler<VideoDeletedEvent>, PopularVideosCacheHandler>();
+        services.AddScoped<IDomainEventHandler<TagGraphChangedEvent>, PopularTagsCacheHandler>();
+
+        // External-asset cleanup domain event handlers
+        services.AddScoped<IDomainEventHandler<ArticleDeletedEvent>, ContentAssetCleanupHandler>();
+        services.AddScoped<IDomainEventHandler<VideoDeletedEvent>, ContentAssetCleanupHandler>();
+        services.AddScoped<IDomainEventHandler<ShortVideoDeletedEvent>, ContentAssetCleanupHandler>();
+        services.AddScoped<IDomainEventHandler<ArticleBodyImagesOrphanedEvent>, ContentAssetCleanupHandler>();
+
+        // Post-commit YouTube thumbnail acquisition
+        services.AddScoped<
+            IDomainEventHandler<VideoYoutubeUrlAttachedEvent>,
+            VideoYoutubeUrlAttachedThumbnailHandler
+        >();
+
+        // Engagement counter domain event handlers
+        services.AddScoped<IDomainEventHandler<ArticleEngagedEvent>, ArticleEngagementHandler>();
+        services.AddScoped<IDomainEventHandler<VideoEngagedEvent>, VideoEngagementHandler>();
+        services.AddScoped<IDomainEventHandler<LyricsEngagedEvent>, LyricsEngagementHandler>();
+        services.AddScoped<IDomainEventHandler<ShortVideoEngagedEvent>, ShortVideoEngagementHandler>();
+        services.AddScoped<IDomainEventHandler<CommentEngagedEvent>, CommentEngagementHandler>();
+
+        // Community decision and reply domain event handlers. ArtistClaimRequestedEvent has no
+        // consumer in v1: the durable claim-request row is the record, and the admin review
+        // queue that would consume the event is future work.
+        services.AddScoped<
+            IDomainEventHandler<LyricsRevisionDecidedEvent>,
+            LyricsRevisionDecidedNotificationsHandler
+        >();
+        services.AddScoped<
+            IDomainEventHandler<TranslationRevisionDecidedEvent>,
+            TranslationRevisionDecidedNotificationsHandler
+        >();
+        services.AddScoped<
+            IDomainEventHandler<LyricsSubmissionDecidedEvent>,
+            LyricsSubmissionDecidedNotificationsHandler
+        >();
+        services.AddScoped<
+            IDomainEventHandler<ArtistOwnershipVerifiedEvent>,
+            ArtistOwnershipVerifiedNotificationsHandler
+        >();
+        services.AddScoped<IDomainEventHandler<CommentReplyAddedEvent>, CommentReplyAddedNotificationsHandler>();
 
         // Commerce factories
         services.AddScoped<IOrderPaymentFactory, OrderPaymentFactory>();
@@ -156,7 +229,9 @@ public static class ContentModule
         services.AddScoped<IAddItemTierFactory, AdminAddItemTierFactory>();
         services.AddScoped<ICreateOrderFactory, AdminCreateOrderFactory>();
 
-        services.AddHttpClient<IYoutubeThumbnailService, YoutubeThumbnailService>();
+        services
+            .AddHttpClient<IYoutubeThumbnailService, YoutubeThumbnailService>()
+            .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(10));
         services.AddScoped<ITranslationService, PlaceholderTranslationService>();
         services
             .AddHttpClient<IStreamingLinkResolutionService, OdesliStreamingLinkResolutionService>()
