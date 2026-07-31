@@ -1,4 +1,4 @@
-using _116.Content.Application.Interactions.UseCases.Public.Commands.AddCommentReply;
+using _116.Content.Application.Interactions.EventHandlers;
 using AwesomeAssertions;
 using Xunit;
 
@@ -13,7 +13,7 @@ public class CommentReplyExcerptTests
     [Fact]
     public void Excerpt_ShortBody_ShouldPassThroughUnchanged()
     {
-        PublicAddCommentReplyHandler.Excerpt("Totally agree!").Should().Be("Totally agree!");
+        CommentReplyAddedNotificationsHandler.Excerpt("Totally agree!").Should().Be("Totally agree!");
     }
 
     [Fact]
@@ -21,7 +21,7 @@ public class CommentReplyExcerptTests
     {
         string body = new('a', 140);
 
-        PublicAddCommentReplyHandler.Excerpt(body).Should().Be(body);
+        CommentReplyAddedNotificationsHandler.Excerpt(body).Should().Be(body);
     }
 
     [Fact]
@@ -29,7 +29,7 @@ public class CommentReplyExcerptTests
     {
         string body = string.Join(' ', Enumerable.Repeat("word", 60));
 
-        string excerpt = PublicAddCommentReplyHandler.Excerpt(body);
+        string excerpt = CommentReplyAddedNotificationsHandler.Excerpt(body);
 
         excerpt.Length.Should().BeLessThanOrEqualTo(141);
         excerpt.Should().EndWith("…");
@@ -37,11 +37,11 @@ public class CommentReplyExcerptTests
     }
 
     [Fact]
-    public void Excerpt_LongBodyWithoutSpaces_ShouldHardCut()
+    public void Excerpt_LongBodyWithoutSpaces_ShouldHardCutAtTheLimitWithEllipsis()
     {
         string body = new('a', 200);
 
-        string excerpt = PublicAddCommentReplyHandler.Excerpt(body);
+        string excerpt = CommentReplyAddedNotificationsHandler.Excerpt(body);
 
         excerpt.Should().Be($"{new string('a', 140)}…");
     }
