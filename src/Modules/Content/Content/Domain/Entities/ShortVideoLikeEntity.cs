@@ -1,3 +1,5 @@
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -34,12 +36,30 @@ public class ShortVideoLikeEntity : Aggregate<Guid>
     /// <returns>A new <see cref="ShortVideoLikeEntity" />.</returns>
     public static ShortVideoLikeEntity Create(Guid id, Guid userId, Guid shortVideoId)
     {
-        return new ShortVideoLikeEntity
+        var like = new ShortVideoLikeEntity
         {
             Id = id,
             UserId = userId,
             ShortVideoId = shortVideoId,
             CreatedAt = DateTime.UtcNow,
         };
+
+        like.AddDomainEvent(
+            new ShortVideoEngagedEvent(ShortVideoId: shortVideoId, Kind: EnumEngagementKind.Like, Delta: 1)
+        );
+
+        return like;
+    }
+
+    /// <summary>
+    /// Declares this like's removal so the post-commit engagement consumer
+    /// can decrement the short video's cached like count.
+    /// Called by the removal path immediately before the row is removed.
+    /// </summary>
+    public void MarkRemoved()
+    {
+        AddDomainEvent(
+            new ShortVideoEngagedEvent(ShortVideoId: ShortVideoId, Kind: EnumEngagementKind.Like, Delta: -1)
+        );
     }
 }
