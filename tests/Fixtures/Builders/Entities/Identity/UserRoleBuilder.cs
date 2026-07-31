@@ -88,7 +88,7 @@ internal class UserRoleBuilder
     /// <returns>A configured UserRoleEntity instance.</returns>
     public UserRoleEntity Build()
     {
-        var userRole = UserRoleEntity.Create(_id, _userId, _roleId);
+        var userRole = UserRoleEntity.CreateBootstrap(_id, _userId, _roleId);
 
         if (_role is not null)
         {
