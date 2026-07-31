@@ -24,6 +24,9 @@
   <data name="AlreadyClaimed" xml:space="preserve">
     <value>Ce profil d'artiste a déjà été revendiqué.</value>
   </data>
+  <data name="ClaimRequestAlreadyExists" xml:space="preserve">
+    <value>Une demande de revendication pour ce profil d'artiste est déjà enregistrée pour votre compte.</value>
+  </data>
   <data name="TooManyAliases" xml:space="preserve">
     <value>Un artiste ne peut pas avoir plus de {0} alias.</value>
   </data>
