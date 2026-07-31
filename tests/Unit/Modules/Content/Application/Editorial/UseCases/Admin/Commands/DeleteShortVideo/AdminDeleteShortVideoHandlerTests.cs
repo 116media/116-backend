@@ -2,15 +2,11 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteShortVide
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Services;
-using _116.Core.Domain.Entities;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
-using _116.Tests.Fixtures.Factories.Core;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
-using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -23,78 +19,61 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 public class AdminDeleteShortVideoHandlerTests
 {
     private readonly Mock<IShortVideoRepository> _shortVideoRepositoryMock;
-    private readonly Mock<IFileService> _fileServiceMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminDeleteShortVideoHandler _handler;
-
-    private readonly FileEntity _videoFileEntity;
-    private readonly FileEntity _thumbnailFileEntity;
 
     public AdminDeleteShortVideoHandlerTests()
     {
         _shortVideoRepositoryMock = MockShortVideoRepository.Create();
-        _fileServiceMock = MockFileService.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
 
-        _videoFileEntity = FileFactory.CreateVideo();
-        _thumbnailFileEntity = FileFactory.CreateImage();
-
-        _fileRepositoryMock.SetupGetById(_videoFileEntity);
-        _fileRepositoryMock.SetupGetById(_thumbnailFileEntity);
-
-        _handler = new AdminDeleteShortVideoHandler(
-            _shortVideoRepositoryMock.Object,
-            _fileServiceMock.Object,
-            _fileRepositoryMock.Object,
-            _unitOfWorkMock.Object
-        );
+        _handler = new AdminDeleteShortVideoHandler(_shortVideoRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     [Fact]
-    public async Task Handle_WhenShortVideoHasThumbnail_ShouldDeleteBothAssetsAndReturnSuccess()
+    public async Task Handle_WhenShortVideoHasThumbnail_ShouldRaiseDeletionEventWithBothFileIds()
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.CreateWithThumbnail();
         var command = new AdminDeleteShortVideoCommand(Id: shortVideo.Id.ToString());
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
 
-        _fileRepositoryMock
-            .Setup(x => x.GetByIdAsync(shortVideo.VideoFileId!.Value, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(_videoFileEntity);
-        _fileRepositoryMock
-            .Setup(x => x.GetByIdAsync(shortVideo.ThumbnailFileId!.Value, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(_thumbnailFileEntity);
-
         // Act
         AdminDeleteShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        _fileServiceMock.VerifyDeleteFileCalled(Times.Exactly(2));
+        ShortVideoDeletedEvent deletedEvent = shortVideo
+            .DomainEvents.OfType<ShortVideoDeletedEvent>()
+            .Should()
+            .ContainSingle()
+            .Subject;
+        deletedEvent.VideoFileId.Should().Be(shortVideo.VideoFileId);
+        deletedEvent.ThumbnailFileId.Should().Be(shortVideo.ThumbnailFileId);
         _shortVideoRepositoryMock.VerifyRemoveCalled(shortVideo);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
     [Fact]
-    public async Task Handle_WhenShortVideoHasNoThumbnail_ShouldDeleteOnlyVideoAssetAndReturnSuccess()
+    public async Task Handle_WhenShortVideoHasNoThumbnail_ShouldRaiseDeletionEventWithVideoFileOnly()
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
         var command = new AdminDeleteShortVideoCommand(Id: shortVideo.Id.ToString());
         _shortVideoRepositoryMock.SetupGetByIdOrThrow(shortVideo);
 
-        _fileRepositoryMock
-            .Setup(x => x.GetByIdAsync(shortVideo.VideoFileId!.Value, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(_videoFileEntity);
-
         // Act
         AdminDeleteShortVideoResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        _fileServiceMock.VerifyDeleteFileCalled(Times.Once());
+        ShortVideoDeletedEvent deletedEvent = shortVideo
+            .DomainEvents.OfType<ShortVideoDeletedEvent>()
+            .Should()
+            .ContainSingle()
+            .Subject;
+        deletedEvent.VideoFileId.Should().Be(shortVideo.VideoFileId);
+        deletedEvent.ThumbnailFileId.Should().BeNull();
         _shortVideoRepositoryMock.VerifyRemoveCalled(shortVideo);
         _unitOfWorkMock.VerifyCommitCalled();
     }
