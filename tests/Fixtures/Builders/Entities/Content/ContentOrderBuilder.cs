@@ -65,7 +65,12 @@ internal class ContentOrderBuilder
 
         if (_paid)
         {
-            order.MarkPaid(errors);
+            order.MarkPaid(
+                paymentId: Guid.NewGuid(),
+                verifiedAt: DateTimeOffset.UtcNow,
+                promotionDurationsByLevelId: new Dictionary<Guid, int>(),
+                errors: errors
+            );
         }
 
         if (_cancelled)
