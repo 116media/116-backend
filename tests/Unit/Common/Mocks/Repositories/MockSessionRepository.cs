@@ -352,7 +352,10 @@ public static class MockSessionRepository
     /// <param name="sessionId">The expected session ID.</param>
     public static void VerifyRevokeCalled(this Mock<ISessionRepository> mock, Guid sessionId)
     {
-        mock.Verify(x => x.RevokeAsync(sessionId, It.IsAny<CancellationToken>()), Times.Once);
+        mock.Verify(
+            x => x.RevokeAsync(sessionId, It.IsAny<EnumSessionRevokeReason>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     /// <summary>
@@ -362,7 +365,16 @@ public static class MockSessionRepository
     /// <param name="userId">The expected user ID.</param>
     public static void VerifyDeleteAllByUserIdCalled(this Mock<ISessionRepository> mock, Guid userId)
     {
-        mock.Verify(x => x.DeleteAllByUserIdAsync(userId, It.IsAny<CancellationToken>()), Times.Once);
+        mock.Verify(
+            x =>
+                x.DeleteAllByUserIdAsync(
+                    userId,
+                    It.IsAny<EnumSessionRevokeReason>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
     }
 
     /// <summary>
@@ -392,9 +404,19 @@ public static class MockSessionRepository
         mock.Setup(x => x.CreateAsync(It.IsAny<SessionEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        mock.Setup(x => x.RevokeAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        mock.Setup(x =>
+                x.RevokeAsync(It.IsAny<Guid>(), It.IsAny<EnumSessionRevokeReason>(), It.IsAny<CancellationToken>())
+            )
+            .Returns(Task.CompletedTask);
 
-        mock.Setup(x => x.DeleteAllByUserIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        mock.Setup(x =>
+                x.DeleteAllByUserIdAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<EnumSessionRevokeReason>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
             .Returns(Task.CompletedTask);
 
         mock.Setup(x =>
