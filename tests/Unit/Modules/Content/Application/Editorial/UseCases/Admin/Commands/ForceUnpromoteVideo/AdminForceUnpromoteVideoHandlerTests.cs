@@ -1,4 +1,3 @@
-using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteVideo;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -41,8 +40,7 @@ public class AdminForceUnpromoteVideoHandlerTests
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
             currentActor,
-            TestErrorsFactory.CreateContentI18n(),
-            new Mock<ICommerceCustomerNotifier>().Object
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
