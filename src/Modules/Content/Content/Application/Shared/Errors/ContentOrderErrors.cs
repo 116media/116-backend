@@ -117,4 +117,13 @@ public class ContentOrderErrors(ContentOrderErrorMessage i18n)
     {
         return new ConflictException(i18n.PaymentAlreadyRejected());
     }
+
+    /// <summary>
+    /// Throws when the promotion duration of a level purchased by an order item
+    /// cannot be resolved, so the item's promotion window cannot be computed.
+    /// </summary>
+    public BadRequestException PromotionDurationUnavailable()
+    {
+        return new BadRequestException(i18n.PromotionDurationUnavailable());
+    }
 }
