@@ -282,6 +282,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
 
         if (like is not null)
         {
+            like.MarkRemoved();
             context.ShortVideoLikes.Remove(like);
         }
     }
@@ -321,6 +322,7 @@ public class ShortVideoRepository(ContentDbContext context) : IShortVideoReposit
 
         if (bookmark is not null)
         {
+            bookmark.MarkRemoved();
             context.ShortVideoBookmarks.Remove(bookmark);
         }
     }
