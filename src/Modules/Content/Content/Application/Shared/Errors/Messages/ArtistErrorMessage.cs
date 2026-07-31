@@ -61,6 +61,18 @@ public class ArtistErrorMessage(IStringLocalizer<ArtistErrorMessage> localizer)
     }
 
     /// <summary>
+    /// Gets an error message for when the requesting account has already filed an ownership
+    /// claim for the same artist profile.
+    /// </summary>
+    /// <returns>
+    /// An error message indicating that a claim request for this profile is already on file.
+    /// </returns>
+    public string ClaimRequestAlreadyExists()
+    {
+        return localizer["ClaimRequestAlreadyExists"];
+    }
+
+    /// <summary>
     /// Gets an error message for when an artist profile carries too many alternate names.
     /// </summary>
     /// <returns>
