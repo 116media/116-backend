@@ -1,4 +1,3 @@
-using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteArticle;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -41,8 +40,7 @@ public class AdminForceUnpromoteArticleHandlerTests
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
             currentActor,
-            TestErrorsFactory.CreateContentI18n(),
-            new Mock<ICommerceCustomerNotifier>().Object
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
