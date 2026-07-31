@@ -1,3 +1,5 @@
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -34,12 +36,28 @@ public class ArticleBookmarkEntity : Aggregate<Guid>
     /// <returns>A new <see cref="ArticleBookmarkEntity" />.</returns>
     public static ArticleBookmarkEntity Create(Guid id, Guid userId, Guid articleId)
     {
-        return new ArticleBookmarkEntity
+        var bookmark = new ArticleBookmarkEntity
         {
             Id = id,
             UserId = userId,
             ArticleId = articleId,
             CreatedAt = DateTime.UtcNow,
         };
+
+        bookmark.AddDomainEvent(
+            new ArticleEngagedEvent(ArticleId: articleId, Kind: EnumEngagementKind.Bookmark, Delta: 1)
+        );
+
+        return bookmark;
+    }
+
+    /// <summary>
+    /// Declares this bookmark's removal so the post-commit engagement consumer
+    /// can decrement the article's cached bookmark count.
+    /// Called by the removal path immediately before the row is removed.
+    /// </summary>
+    public void MarkRemoved()
+    {
+        AddDomainEvent(new ArticleEngagedEvent(ArticleId: ArticleId, Kind: EnumEngagementKind.Bookmark, Delta: -1));
     }
 }
