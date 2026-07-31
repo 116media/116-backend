@@ -1,3 +1,5 @@
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -70,7 +72,7 @@ public class ShortVideoViewEventEntity : Aggregate<Guid>
         bool isCounted
     )
     {
-        return new ShortVideoViewEventEntity
+        var viewEvent = new ShortVideoViewEventEntity
         {
             Id = id,
             ShortVideoId = shortVideoId,
@@ -81,5 +83,14 @@ public class ShortVideoViewEventEntity : Aggregate<Guid>
             IsCounted = isCounted,
             CreatedAt = DateTime.UtcNow,
         };
+
+        if (isCounted)
+        {
+            viewEvent.AddDomainEvent(
+                new ShortVideoEngagedEvent(ShortVideoId: shortVideoId, Kind: EnumEngagementKind.View, Delta: 1)
+            );
+        }
+
+        return viewEvent;
     }
 }
