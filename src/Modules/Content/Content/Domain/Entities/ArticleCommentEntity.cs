@@ -1,3 +1,5 @@
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -65,7 +67,7 @@ public class ArticleCommentEntity : Aggregate<Guid>
     /// <returns>A new <see cref="ArticleCommentEntity" />.</returns>
     public static ArticleCommentEntity Create(Guid id, Guid userId, Guid articleId, string body)
     {
-        return new ArticleCommentEntity
+        var comment = new ArticleCommentEntity
         {
             Id = id,
             UserId = userId,
@@ -73,6 +75,12 @@ public class ArticleCommentEntity : Aggregate<Guid>
             Body = body,
             IsDeleted = false,
         };
+
+        comment.AddDomainEvent(
+            new ArticleEngagedEvent(ArticleId: articleId, Kind: EnumEngagementKind.Comment, Delta: 1)
+        );
+
+        return comment;
     }
 
     /// <summary>
@@ -92,7 +100,7 @@ public class ArticleCommentEntity : Aggregate<Guid>
         string body
     )
     {
-        return new ArticleCommentEntity
+        var reply = new ArticleCommentEntity
         {
             Id = id,
             UserId = userId,
@@ -101,6 +109,18 @@ public class ArticleCommentEntity : Aggregate<Guid>
             Body = body,
             IsDeleted = false,
         };
+
+        reply.AddDomainEvent(new ArticleEngagedEvent(ArticleId: articleId, Kind: EnumEngagementKind.Comment, Delta: 1));
+        reply.AddDomainEvent(
+            new CommentReplyAddedEvent(
+                ReplyId: id,
+                ParentCommentId: parentCommentId,
+                ArticleId: articleId,
+                ReplierUserId: userId
+            )
+        );
+
+        return reply;
     }
 
     /// <summary>
@@ -120,11 +140,27 @@ public class ArticleCommentEntity : Aggregate<Guid>
     public void DecrementLikeCount() => LikeCount = Math.Max(0, LikeCount - 1);
 
     /// <summary>
-    /// Soft-deletes this comment, hiding its body from public view.
+    /// Soft-deletes this comment, hiding its body from public view. Raises
+    /// the engagement event so the post-commit consumer decrements the
+    /// article's cached comment count.
+    /// A no-op when the comment is already soft-deleted: the comment lookups
+    /// return deleted rows, so the same comment can be handed to a second
+    /// delete (owner delete followed by admin moderation), and a second
+    /// <c>-1</c> would drift the article's cached comment count permanently.
     /// </summary>
-    public void SoftDelete()
+    /// <returns><c>true</c> if soft-deleted; <c>false</c> if already soft-deleted.</returns>
+    public bool SoftDelete()
     {
+        if (IsDeleted)
+        {
+            return false;
+        }
+
         IsDeleted = true;
         DeletedAt = DateTimeOffset.UtcNow;
+
+        AddDomainEvent(new ArticleEngagedEvent(ArticleId: ArticleId, Kind: EnumEngagementKind.Comment, Delta: -1));
+
+        return true;
     }
 }
