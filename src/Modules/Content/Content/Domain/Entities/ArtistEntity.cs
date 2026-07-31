@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -327,5 +328,7 @@ public class ArtistEntity : Aggregate<Guid>
 
         UserId = userId;
         VerifiedAt = DateTimeOffset.UtcNow;
+
+        AddDomainEvent(new ArtistOwnershipVerifiedEvent(ArtistId: Id, UserId: userId));
     }
 }
