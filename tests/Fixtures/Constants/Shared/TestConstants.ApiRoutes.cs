@@ -107,6 +107,11 @@ public static partial class TestConstants
             /// Public newsletter routes (subscriptions, confirm, unsubscribe).
             /// </summary>
             public const string Newsletter = $"{Base}/newsletter";
+
+            /// <summary>
+            /// Public in-app notification routes (feed, unread-count, read, read-all).
+            /// </summary>
+            public const string Notifications = $"{Base}/notifications";
         }
     }
 }
