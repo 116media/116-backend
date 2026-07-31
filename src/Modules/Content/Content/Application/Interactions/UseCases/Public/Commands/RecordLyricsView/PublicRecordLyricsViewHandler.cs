@@ -81,12 +81,6 @@ public class PublicRecordLyricsViewHandler(ILyricsRepository lyricsRepository, I
 
         await lyricsRepository.AddViewEventAsync(viewEvent: viewEvent, cancellationToken: cancellationToken);
 
-        if (isCounted)
-        {
-            lyrics.IncrementViewCount();
-            lyricsRepository.Update(lyrics: lyrics);
-        }
-
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return new PublicRecordLyricsViewResult(IsSuccess: true, IsCounted: isCounted);
