@@ -24,10 +24,7 @@ public class PublicUnbookmarkShortVideoHandler(
         CancellationToken cancellationToken
     )
     {
-        ShortVideoEntity shortVideo = await shortVideoRepository.GetByIdOrThrowAsync(
-            id: command.ShortVideoId,
-            cancellationToken: cancellationToken
-        );
+        await shortVideoRepository.GetByIdOrThrowAsync(id: command.ShortVideoId, cancellationToken: cancellationToken);
 
         bool hasBookmarked = await shortVideoRepository.HasBookmarkedAsync(
             userId: command.UserId,
@@ -45,9 +42,6 @@ public class PublicUnbookmarkShortVideoHandler(
             shortVideoId: command.ShortVideoId,
             cancellationToken: cancellationToken
         );
-
-        shortVideo.DecrementBookmarkCount();
-        shortVideoRepository.Update(shortVideo: shortVideo);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
