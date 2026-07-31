@@ -200,7 +200,7 @@ internal class UserBuilder
 
         foreach (RoleEntity role in _roles)
         {
-            var userRole = UserRoleEntity.Create(Guid.NewGuid(), _id, role.Id);
+            var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), _id, role.Id);
 
             typeof(UserRoleEntity).GetProperty(nameof(UserRoleEntity.Role))!.SetValue(userRole, role);
             user.AssignRole(userRole, errors);
