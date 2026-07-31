@@ -1,3 +1,4 @@
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -38,12 +39,26 @@ public class VideoTagEntity : Aggregate<Guid>
     /// <returns>A new <see cref="VideoTagEntity" />.</returns>
     public static VideoTagEntity Create(Guid id, Guid videoId, Guid tagId)
     {
-        return new VideoTagEntity
+        var association = new VideoTagEntity
         {
             Id = id,
             VideoId = videoId,
             TagId = tagId,
             CreatedAt = DateTime.UtcNow,
         };
+
+        association.AddDomainEvent(new TagGraphChangedEvent(TagId: tagId));
+
+        return association;
+    }
+
+    /// <summary>
+    /// Declares this association's removal so the post-commit tags cache
+    /// consumer can evict the cached tag projections.
+    /// Called by the removal path immediately before the row is removed.
+    /// </summary>
+    public void MarkRemoved()
+    {
+        AddDomainEvent(new TagGraphChangedEvent(TagId: TagId));
     }
 }
