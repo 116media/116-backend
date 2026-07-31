@@ -252,6 +252,11 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options) : DbCo
     /// </summary>
     public DbSet<LyricsRevisionVoteEntity> LyricsRevisionVotes => Set<LyricsRevisionVoteEntity>();
 
+    /// <summary>
+    /// Gets the DbSet for artist ownership claim request entities.
+    /// </summary>
+    public DbSet<ArtistClaimRequestEntity> ArtistClaimRequests => Set<ArtistClaimRequestEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
