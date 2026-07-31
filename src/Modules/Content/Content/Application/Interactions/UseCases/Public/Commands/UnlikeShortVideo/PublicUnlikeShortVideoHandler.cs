@@ -24,10 +24,7 @@ public class PublicUnlikeShortVideoHandler(
         CancellationToken cancellationToken
     )
     {
-        ShortVideoEntity shortVideo = await shortVideoRepository.GetByIdOrThrowAsync(
-            id: command.ShortVideoId,
-            cancellationToken: cancellationToken
-        );
+        await shortVideoRepository.GetByIdOrThrowAsync(id: command.ShortVideoId, cancellationToken: cancellationToken);
 
         bool hasLiked = await shortVideoRepository.HasLikedAsync(
             userId: command.UserId,
@@ -45,9 +42,6 @@ public class PublicUnlikeShortVideoHandler(
             shortVideoId: command.ShortVideoId,
             cancellationToken: cancellationToken
         );
-
-        shortVideo.DecrementLikeCount();
-        shortVideoRepository.Update(shortVideo: shortVideo);
 
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
