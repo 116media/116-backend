@@ -1,4 +1,3 @@
-using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -30,8 +29,7 @@ public class AdminSubmitOrderFactoryTests
         _factory = new AdminSubmitOrderFactory(
             _orderRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentOrderErrors(),
-            new Mock<ICommerceCustomerNotifier>().Object
+            TestErrorsFactory.CreateContentOrderErrors()
         );
     }
 
