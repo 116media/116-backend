@@ -1,4 +1,3 @@
-using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectLyrics;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -33,8 +32,7 @@ public class AdminRejectLyricsHandlerTests
         _handler = new AdminRejectLyricsHandler(
             _lyricsRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n(),
-            new Mock<ICommerceCustomerNotifier>().Object
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
