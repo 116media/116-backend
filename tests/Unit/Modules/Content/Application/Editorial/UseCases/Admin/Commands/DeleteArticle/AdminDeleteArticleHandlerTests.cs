@@ -2,14 +2,12 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteArticle;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Services;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
-using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -23,8 +21,6 @@ public class AdminDeleteArticleHandlerTests
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<ICloudinaryService> _cloudinaryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly AdminDeleteArticleHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -33,13 +29,9 @@ public class AdminDeleteArticleHandlerTests
     {
         _articleRepositoryMock = MockArticleRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _cloudinaryMock = MockCloudinaryService.Create();
-        _fileRepositoryMock = MockFileRepository.Create();
         _handler = new AdminDeleteArticleHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _cloudinaryMock.Object,
-            _fileRepositoryMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -63,11 +55,10 @@ public class AdminDeleteArticleHandlerTests
         result.IsSuccess.Should().BeTrue();
         _articleRepositoryMock.VerifyRemoveCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
-        _cloudinaryMock.VerifyDeleteImagesNotCalled();
     }
 
     [Fact]
-    public async Task Handle_WhenDraftArticleWithImages_ShouldDeleteImagesAndArticle()
+    public async Task Handle_WhenDraftArticleWithImages_ShouldRaiseDeletionEventWithCapturedKeys()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.Create(CategoryId);
@@ -82,9 +73,43 @@ public class AdminDeleteArticleHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        _cloudinaryMock.VerifyDeleteImagesCalled();
+        article
+            .DomainEvents.OfType<ArticleDeletedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.BodyImageStorageKeys.Should()
+            .BeEquivalentTo(images.Select(img => img.StorageKey));
         _articleRepositoryMock.VerifyRemoveCalled(article);
         _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    /// <summary>
+    /// A cover-type <c>article_images</c> row shares its storage key with the cover file row,
+    /// whose remote asset the file soft-delete reaction already purges. Carrying that key in the
+    /// deletion event as well would delete the same asset twice, so only body keys are captured.
+    /// </summary>
+    [Fact]
+    public async Task Handle_WhenArticleHasACoverImageRow_ShouldCaptureOnlyTheBodyImageKeys()
+    {
+        // Arrange
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        ArticleImageEntity cover = ArticleImageFactory.CreateCover(article.Id);
+        ArticleImageEntity body = ArticleImageFactory.CreateBody(article.Id);
+        var command = new AdminDeleteArticleCommand(Id: article.Id.ToString());
+
+        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+        _articleRepositoryMock.SetupGetImagesByArticleId(article.Id, [cover, body]);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        article
+            .DomainEvents.OfType<ArticleDeletedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.BodyImageStorageKeys.Should()
+            .BeEquivalentTo([body.StorageKey]);
     }
 
     [Fact]
