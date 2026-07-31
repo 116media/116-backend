@@ -2,8 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticle;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
 using _116.Core.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
@@ -13,7 +13,6 @@ using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
-using _116.Unit.Tests.Common.Mocks.Services;
 using AwesomeAssertions;
 using Moq;
 using Xunit;
@@ -28,7 +27,6 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<ICloudinaryService> _cloudinaryMock;
     private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly AdminUpdateArticleHandler _handler;
 
@@ -39,7 +37,6 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
         _categoryRepositoryMock = MockCategoryRepository.Create();
         _articleRepositoryMock = MockArticleRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _cloudinaryMock = MockCloudinaryService.Create();
         _fileRepositoryMock = MockFileRepository.Create();
         FileEntity coverFile = FileFactory.CreateImage();
         _fileRepositoryMock.SetupGetById(coverFile);
@@ -47,7 +44,6 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
             _categoryRepositoryMock.Object,
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _cloudinaryMock.Object,
             _fileRepositoryMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
@@ -93,7 +89,41 @@ public class AdminUpdateArticleHandlerTests : BaseContentHandlerTest
         // Assert
         result.Should().NotBeNull();
         result.Article.Should().NotBeNull();
+        article.DomainEvents.OfType<ArticleBodyImagesOrphanedEvent>().Should().BeEmpty();
         _articleRepositoryMock.VerifyUpdateCalled();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenBodyImagesDropOut_ShouldRaiseOrphanedEventWithCapturedKeys()
+    {
+        // Arrange
+        CategoryEntity category = CategoryFactory.Create(CategoryId);
+        ArticleEntity article = ArticleFactory.Create(CategoryId);
+        AdminUpdateArticleCommand command = BuildCommand(article, category.Id);
+        // Body-type images whose URLs do not appear in the command body drop out on update.
+        List<ArticleImageEntity> images = ArticleImageFactory.CreateMany(article.Id, 2);
+
+        _articleRepositoryMock.SetupGetByIdOrThrow(article);
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _articleRepositoryMock.SetupGetBySlug(command.Slug, null);
+        _articleRepositoryMock.SetupGetImagesByArticleId(article.Id, images);
+        _articleRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(article.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(article);
+
+        // Act
+        AdminUpdateArticleResult result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert — the handler defers row removal and asset deletion to the post-commit consumer.
+        result.Should().NotBeNull();
+        article
+            .DomainEvents.OfType<ArticleBodyImagesOrphanedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.StorageKeys.Should()
+            .BeEquivalentTo(images.Select(img => img.StorageKey));
+        _articleRepositoryMock.Verify(x => x.RemoveImages(It.IsAny<IEnumerable<ArticleImageEntity>>()), Times.Never);
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
