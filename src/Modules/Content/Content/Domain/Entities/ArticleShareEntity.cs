@@ -1,4 +1,5 @@
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -47,7 +48,7 @@ public class ArticleShareEntity : Aggregate<Guid>
         EnumShareChannel? shareChannel = null
     )
     {
-        return new ArticleShareEntity
+        var share = new ArticleShareEntity
         {
             Id = id,
             UserId = userId,
@@ -55,5 +56,9 @@ public class ArticleShareEntity : Aggregate<Guid>
             ShareChannel = shareChannel,
             CreatedAt = DateTime.UtcNow,
         };
+
+        share.AddDomainEvent(new ArticleEngagedEvent(ArticleId: articleId, Kind: EnumEngagementKind.Share, Delta: 1));
+
+        return share;
     }
 }
