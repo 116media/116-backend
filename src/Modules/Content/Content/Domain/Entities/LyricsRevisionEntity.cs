@@ -1,4 +1,5 @@
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -85,6 +86,16 @@ public class LyricsRevisionEntity : Aggregate<Guid>
     {
         Status = EnumRevisionStatus.Accepted;
         DecidedByUserId = decidedByUserId;
+
+        AddDomainEvent(
+            new LyricsRevisionDecidedEvent(
+                RevisionId: Id,
+                LyricsId: LyricsId,
+                ProposedByUserId: ProposedByUserId,
+                Accepted: true,
+                ByModerator: decidedByUserId.HasValue
+            )
+        );
     }
 
     /// <summary>
@@ -95,5 +106,15 @@ public class LyricsRevisionEntity : Aggregate<Guid>
     {
         Status = EnumRevisionStatus.Rejected;
         DecidedByUserId = decidedByUserId;
+
+        AddDomainEvent(
+            new LyricsRevisionDecidedEvent(
+                RevisionId: Id,
+                LyricsId: LyricsId,
+                ProposedByUserId: ProposedByUserId,
+                Accepted: false,
+                ByModerator: true
+            )
+        );
     }
 }
