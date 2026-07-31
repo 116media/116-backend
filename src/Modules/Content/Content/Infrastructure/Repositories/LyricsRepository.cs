@@ -202,6 +202,11 @@ public class LyricsRepository(ContentDbContext context) : ILyricsRepository
             .LyricsTags.Where(t => t.LyricsId == lyricsId)
             .ToListAsync(cancellationToken);
 
+        foreach (LyricsTagEntity existingTag in existingTags)
+        {
+            existingTag.MarkRemoved();
+        }
+
         context.LyricsTags.RemoveRange(existingTags);
 
         foreach (Guid tagId in tagIds)
@@ -236,6 +241,7 @@ public class LyricsRepository(ContentDbContext context) : ILyricsRepository
 
         if (like is not null)
         {
+            like.MarkRemoved();
             context.LyricsLikes.Remove(like);
         }
     }
