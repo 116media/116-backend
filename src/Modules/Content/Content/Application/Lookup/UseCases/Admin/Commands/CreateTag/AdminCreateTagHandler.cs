@@ -1,4 +1,3 @@
-using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
@@ -14,13 +13,11 @@ namespace _116.Content.Application.Lookup.UseCases.Admin.Commands.CreateTag;
 /// </summary>
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
-/// <param name="cacheInvalidator">Invalidates the popular-tags cache after the tag graph changes.</param>
 /// <param name="mapper">Mapster mapper for entity-to-DTO transformations.</param>
 /// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminCreateTagHandler(
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
-    IPopularTagsCacheInvalidator cacheInvalidator,
     IMapper mapper,
     ContentI18n i18n
 ) : ICommandHandler<AdminCreateTagCommand, AdminCreateTagResult>
@@ -42,8 +39,6 @@ public class AdminCreateTagHandler(
 
         await lookupRepository.AddTagAsync(tag: tag, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-        cacheInvalidator.Invalidate();
 
         var dto = tag.ToTagDto(mapper);
         return new AdminCreateTagResult(Tag: dto);
