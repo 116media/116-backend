@@ -1,4 +1,3 @@
-using _116.Content.Application.Commerce.Services;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectVideo;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
@@ -33,8 +32,7 @@ public class AdminRejectVideoHandlerTests
         _handler = new AdminRejectVideoHandler(
             _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateContentI18n(),
-            new Mock<ICommerceCustomerNotifier>().Object
+            TestErrorsFactory.CreateContentI18n()
         );
     }
 
