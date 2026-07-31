@@ -393,6 +393,27 @@ public static class MockFileRepository
     }
 
     /// <summary>
+    /// Verifies that ReplaceImageFileAsync was not called.
+    /// </summary>
+    /// <param name="mock">The mock instance.</param>
+    public static void VerifyReplaceImageFileNotCalled(this Mock<IFileRepository> mock)
+    {
+        mock.Verify(
+            x =>
+                x.ReplaceImageFileAsync(
+                    It.IsAny<Guid?>(),
+                    It.IsAny<IFormFile>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+    }
+
+    /// <summary>
     /// Verifies that ReplaceVideoFileAsync was called.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
