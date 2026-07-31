@@ -1,11 +1,14 @@
 using _116.Content.Application.Editorial.UseCases.Public.Commands.RequestArtistClaim;
+using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Helpers;
+using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -17,40 +20,88 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Public.
 public class PublicRequestArtistClaimHandlerTests
 {
     private readonly Mock<IArtistRepository> _artistRepositoryMock;
+    private readonly Mock<IArtistClaimRequestRepository> _claimRequestRepositoryMock;
+    private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly PublicRequestArtistClaimHandler _handler;
 
     public PublicRequestArtistClaimHandlerTests()
     {
         _artistRepositoryMock = MockArtistRepository.Create();
-        Mock<ILogger<PublicRequestArtistClaimHandler>> loggerMock = new();
-        _handler = new PublicRequestArtistClaimHandler(_artistRepositoryMock.Object, loggerMock.Object);
+        _claimRequestRepositoryMock = MockArtistClaimRequestRepository.Create();
+        _unitOfWorkMock = MockContentUnitOfWork.Create();
+        _handler = new PublicRequestArtistClaimHandler(
+            _artistRepositoryMock.Object,
+            _claimRequestRepositoryMock.Object,
+            _unitOfWorkMock.Object,
+            TestErrorsFactory.CreateContentI18n()
+        );
     }
 
     [Fact]
-    public async Task Handle_WhenArtistExists_ShouldReturnSuccessWithoutMutatingTheProfile()
+    public async Task Handle_WhenArtistExists_ShouldPersistAClaimRequestRow()
     {
         // Arrange
         ArtistEntity artist = ArtistFactory.Create();
+        var userId = Guid.NewGuid();
         _artistRepositoryMock.SetupGetByIdOrThrow(artist);
-        var command = new PublicRequestArtistClaimCommand(artist.Id, Guid.NewGuid());
+
+        ArtistClaimRequestEntity? added = null;
+        _claimRequestRepositoryMock
+            .Setup(x => x.AddAsync(It.IsAny<ArtistClaimRequestEntity>(), It.IsAny<CancellationToken>()))
+            .Callback<ArtistClaimRequestEntity, CancellationToken>((entity, _) => added = entity)
+            .Returns(Task.CompletedTask);
+
+        var command = new PublicRequestArtistClaimCommand(artist.Id, userId);
 
         // Act
         PublicRequestArtistClaimResult result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        artist.UserId.Should().BeNull();
-        artist.VerifiedAt.Should().BeNull();
+        added.Should().NotBeNull();
+        added!.ArtistId.Should().Be(artist.Id);
+        added.UserId.Should().Be(userId);
+        _claimRequestRepositoryMock.VerifyAddCalled();
+        _unitOfWorkMock.VerifyCommitCalled();
+    }
+
+    [Fact]
+    public async Task Handle_ShouldRaiseTheClaimRequestedEventOnThePersistedRow()
+    {
+        // Arrange
+        ArtistEntity artist = ArtistFactory.Create();
+        var userId = Guid.NewGuid();
+        _artistRepositoryMock.SetupGetByIdOrThrow(artist);
+
+        ArtistClaimRequestEntity? added = null;
+        _claimRequestRepositoryMock
+            .Setup(x => x.AddAsync(It.IsAny<ArtistClaimRequestEntity>(), It.IsAny<CancellationToken>()))
+            .Callback<ArtistClaimRequestEntity, CancellationToken>((entity, _) => added = entity)
+            .Returns(Task.CompletedTask);
+
+        var command = new PublicRequestArtistClaimCommand(artist.Id, userId);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        added!
+            .DomainEvents.Should()
+            .ContainSingle(e =>
+                e is ArtistClaimRequestedEvent
+                && ((ArtistClaimRequestedEvent)e).ArtistId == artist.Id
+                && ((ArtistClaimRequestedEvent)e).UserId == userId
+            );
     }
 
     /// <summary>
-    /// This is the crux of spec 08's request/verify split: requesting a claim must never call
-    /// <see cref="ArtistEntity.ClaimOwnership"/> or persist any mutation — only an admin's
-    /// separate verify-owner action does that. This asserts the repository's <c>Update</c> is
-    /// never invoked as proof no mutation happened.
+    /// The request/verify split: requesting a claim must never call
+    /// <see cref="ArtistEntity.ClaimOwnership"/> or mutate the profile — only an admin's
+    /// separate verify-owner action does that. This asserts the artist repository's
+    /// <c>Update</c> is never invoked as proof no profile mutation happened.
     /// </summary>
     [Fact]
-    public async Task Handle_ShouldNeverCallRepositoryUpdate()
+    public async Task Handle_ShouldNeverCallArtistRepositoryUpdate()
     {
         // Arrange
         ArtistEntity artist = ArtistFactory.Create();
@@ -62,10 +113,62 @@ public class PublicRequestArtistClaimHandlerTests
 
         // Assert
         _artistRepositoryMock.Verify(x => x.Update(It.IsAny<ArtistEntity>()), Times.Never);
+        artist.UserId.Should().BeNull();
+        artist.VerifiedAt.Should().BeNull();
+    }
+
+    /// <summary>
+    /// A profile with a verified owner is settled: no further account may queue a claim for it,
+    /// so the request is rejected as a conflict before any row is written.
+    /// </summary>
+    [Fact]
+    public async Task Handle_WhenArtistIsAlreadyOwned_ShouldThrowConflictExceptionAndPersistNothing()
+    {
+        // Arrange
+        ArtistEntity artist = ArtistFactory.Create();
+        artist.ClaimOwnership(Guid.NewGuid(), TestErrorsFactory.CreateArtistErrors());
+        _artistRepositoryMock.SetupGetByIdOrThrow(artist);
+        var command = new PublicRequestArtistClaimCommand(artist.Id, Guid.NewGuid());
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+        _claimRequestRepositoryMock.Verify(
+            x => x.AddAsync(It.IsAny<ArtistClaimRequestEntity>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    /// <summary>
+    /// The review queue holds requests worth reviewing, not a submit-count: a second request
+    /// from the same account for the same profile is rejected as a conflict.
+    /// </summary>
+    [Fact]
+    public async Task Handle_WhenTheSameUserAlreadyRequestedThisArtist_ShouldThrowConflictExceptionAndPersistNothing()
+    {
+        // Arrange
+        ArtistEntity artist = ArtistFactory.Create();
+        _artistRepositoryMock.SetupGetByIdOrThrow(artist);
+        _claimRequestRepositoryMock.SetupExistsForArtistAndUser(exists: true);
+        var command = new PublicRequestArtistClaimCommand(artist.Id, Guid.NewGuid());
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+        _claimRequestRepositoryMock.Verify(
+            x => x.AddAsync(It.IsAny<ArtistClaimRequestEntity>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task Handle_WhenArtistNotFound_ShouldThrowNotFoundException()
+    public async Task Handle_WhenArtistNotFound_ShouldThrowNotFoundExceptionAndPersistNothing()
     {
         // Arrange
         Guid nonExistentId = Guid.NewGuid();
@@ -77,5 +180,9 @@ public class PublicRequestArtistClaimHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
+        _claimRequestRepositoryMock.Verify(
+            x => x.AddAsync(It.IsAny<ArtistClaimRequestEntity>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
     }
 }
