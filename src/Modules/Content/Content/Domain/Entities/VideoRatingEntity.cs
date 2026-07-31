@@ -1,3 +1,5 @@
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Domain;
 
 namespace _116.Content.Domain.Entities;
@@ -41,18 +43,27 @@ public class VideoRatingEntity : Aggregate<Guid>
     /// <returns>A new <see cref="VideoRatingEntity" />.</returns>
     public static VideoRatingEntity Create(Guid id, Guid userId, Guid videoId, short stars)
     {
-        return new VideoRatingEntity
+        var rating = new VideoRatingEntity
         {
             Id = id,
             UserId = userId,
             VideoId = videoId,
             Stars = stars,
         };
+
+        rating.AddDomainEvent(new VideoEngagedEvent(VideoId: videoId, Kind: EnumEngagementKind.Rating, Delta: 1));
+
+        return rating;
     }
 
     /// <summary>
     /// Updates the star rating value.
     /// </summary>
     /// <param name="stars">The new star rating (1–5).</param>
-    public void UpdateStars(short stars) => Stars = stars;
+    public void UpdateStars(short stars)
+    {
+        Stars = stars;
+
+        AddDomainEvent(new VideoEngagedEvent(VideoId: VideoId, Kind: EnumEngagementKind.Rating, Delta: 0));
+    }
 }
