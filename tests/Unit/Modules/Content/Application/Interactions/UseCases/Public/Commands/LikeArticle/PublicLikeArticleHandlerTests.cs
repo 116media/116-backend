@@ -1,5 +1,4 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.LikeArticle;
-using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -21,7 +20,6 @@ public class PublicLikeArticleHandlerTests
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IPopularArticlesCacheInvalidator> _cacheInvalidatorMock;
     private readonly PublicLikeArticleHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -30,11 +28,9 @@ public class PublicLikeArticleHandlerTests
     {
         _articleRepositoryMock = MockArticleRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _cacheInvalidatorMock = MockPopularArticlesCacheInvalidator.Create();
         _handler = new PublicLikeArticleHandler(
             _articleRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _cacheInvalidatorMock.Object,
             TestErrorsFactory.CreateContentI18n()
         );
     }
@@ -42,7 +38,7 @@ public class PublicLikeArticleHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenArticleExistsAndNotLiked_ShouldAddLikeIncrementAndCommit()
+    public async Task Handle_WhenArticleExistsAndNotLiked_ShouldAddLikeAndCommit()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
@@ -56,9 +52,7 @@ public class PublicLikeArticleHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         _articleRepositoryMock.VerifyAddLikeCalled();
-        _articleRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     #endregion
