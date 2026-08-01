@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace _116.Unit.Tests.Shared.Infrastructure;
@@ -134,7 +135,8 @@ public class BaseModuleTests
         var services = new ServiceCollection();
         services.AddSingleton<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddSingleton<ISaveChangesInterceptor>(sp => new DispatchDomainEventsInterceptor(
-            sp.GetRequiredService<IServiceScopeFactory>()
+            sp.GetRequiredService<IServiceScopeFactory>(),
+            NullLogger<DispatchDomainEventsInterceptor>.Instance
         ));
 
         var options = new ModuleOptions<TestDbContext>
