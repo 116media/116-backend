@@ -93,4 +93,36 @@ public class UserRoleRequirementHandlerTests
         // Assert
         context.HasSucceeded.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task HandleRequirementAsync_WithAllowedRoleNotFirstClaim_ShouldSucceed()
+    {
+        // Arrange
+        var claims = new[] { new Claim(ClaimTypes.Role, "Visitor"), new Claim(ClaimTypes.Role, "Admin") };
+        var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
+        var requirement = new UserRoleRequirement(new[] { "Admin", "SuperAdmin" });
+        var context = new AuthorizationHandlerContext([requirement], user, null);
+
+        // Act
+        await _handler.HandleAsync(context);
+
+        // Assert
+        context.HasSucceeded.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task HandleRequirementAsync_WithMultipleRolesNoneAllowed_ShouldNotSucceed()
+    {
+        // Arrange
+        var claims = new[] { new Claim(ClaimTypes.Role, "Visitor"), new Claim(ClaimTypes.Role, "Moderator") };
+        var user = new ClaimsPrincipal(new ClaimsIdentity(claims));
+        var requirement = new UserRoleRequirement(new[] { "Admin", "SuperAdmin" });
+        var context = new AuthorizationHandlerContext([requirement], user, null);
+
+        // Act
+        await _handler.HandleAsync(context);
+
+        // Assert
+        context.HasSucceeded.Should().BeFalse();
+    }
 }
