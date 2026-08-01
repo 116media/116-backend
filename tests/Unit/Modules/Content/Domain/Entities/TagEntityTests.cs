@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -137,4 +138,54 @@ public class TagEntityTests
     }
 
     #endregion
+
+    [Fact]
+    public void Create_ShouldRaiseTagGraphChangedEvent()
+    {
+        // Act
+        TagEntity tag = TagEntity.Create(Guid.NewGuid(), "Kinshasa", "kinshasa", TestErrorsFactory.CreateTagErrors());
+
+        // Assert
+        tag.DomainEvents.OfType<TagGraphChangedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new TagGraphChangedEvent(tag.Id));
+    }
+
+    [Fact]
+    public void Update_ShouldRaiseTagGraphChangedEvent()
+    {
+        // Arrange
+        TagEntity tag = TagEntity.Create(Guid.NewGuid(), "Kinshasa", "kinshasa", TestErrorsFactory.CreateTagErrors());
+        tag.ClearDomainEvents();
+
+        // Act
+        tag.Update("Gombe", "gombe", TestErrorsFactory.CreateTagErrors());
+
+        // Assert
+        tag.DomainEvents.OfType<TagGraphChangedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new TagGraphChangedEvent(tag.Id));
+    }
+
+    [Fact]
+    public void MarkDeleted_ShouldRaiseTagGraphChangedEvent()
+    {
+        // Arrange
+        TagEntity tag = TagEntity.Create(Guid.NewGuid(), "Kinshasa", "kinshasa", TestErrorsFactory.CreateTagErrors());
+        tag.ClearDomainEvents();
+
+        // Act
+        tag.MarkDeleted();
+
+        // Assert
+        tag.DomainEvents.OfType<TagGraphChangedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new TagGraphChangedEvent(tag.Id));
+    }
 }
