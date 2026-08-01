@@ -22,7 +22,7 @@ public class UserRoleRepositoryTests(PostgresFixture postgres) : BaseRepositoryT
         seedContext.Roles.Add(role);
         await seedContext.SaveChangesAsync();
 
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role.Id);
         seedContext.UserRoles.Add(userRole);
         await seedContext.SaveChangesAsync();
 
@@ -53,7 +53,7 @@ public class UserRoleRepositoryTests(PostgresFixture postgres) : BaseRepositoryT
         seedContext.Roles.Add(role);
         await seedContext.SaveChangesAsync();
 
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role.Id);
         seedContext.UserRoles.Add(userRole);
         await seedContext.SaveChangesAsync();
 
@@ -88,7 +88,7 @@ public class UserRoleRepositoryTests(PostgresFixture postgres) : BaseRepositoryT
 
         var (repo, db) = CreateScopedRepository<IUserRoleRepository, IdentityDbContext>();
 
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role.Id);
         await repo.AddAsync(userRole);
         await db.SaveChangesAsync();
 
@@ -110,7 +110,7 @@ public class UserRoleRepositoryTests(PostgresFixture postgres) : BaseRepositoryT
         seedContext.Roles.Add(role);
         await seedContext.SaveChangesAsync();
 
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role.Id);
         seedContext.UserRoles.Add(userRole);
         await seedContext.SaveChangesAsync();
 
@@ -138,8 +138,8 @@ public class UserRoleRepositoryTests(PostgresFixture postgres) : BaseRepositoryT
         seedContext.Roles.AddRange(roleA, roleB);
         await seedContext.SaveChangesAsync();
 
-        var userRoleA = UserRoleEntity.Create(Guid.NewGuid(), user.Id, roleA.Id);
-        var userRoleB = UserRoleEntity.Create(Guid.NewGuid(), user.Id, roleB.Id);
+        var userRoleA = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, roleA.Id);
+        var userRoleB = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, roleB.Id);
         seedContext.UserRoles.AddRange(userRoleA, userRoleB);
         await seedContext.SaveChangesAsync();
 
