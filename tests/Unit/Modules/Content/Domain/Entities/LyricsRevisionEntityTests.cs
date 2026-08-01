@@ -1,5 +1,6 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using AwesomeAssertions;
 using Xunit;
 
@@ -99,6 +100,42 @@ public class LyricsRevisionEntityTests
         revision.DecidedByUserId.Should().BeNull();
     }
 
+    [Fact]
+    public void Accept_ByModerator_ShouldRaiseDecidedEventWithModeratorFlag()
+    {
+        // Arrange
+        LyricsRevisionEntity revision = CreatePendingRevision();
+
+        // Act
+        revision.Accept(Guid.NewGuid());
+
+        // Assert
+        revision
+            .DomainEvents.OfType<LyricsRevisionDecidedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new LyricsRevisionDecidedEvent(revision.Id, revision.LyricsId, revision.ProposedByUserId, true, true));
+    }
+
+    [Fact]
+    public void Accept_ByVoteThreshold_ShouldRaiseDecidedEventWithoutModeratorFlag()
+    {
+        // Arrange
+        LyricsRevisionEntity revision = CreatePendingRevision();
+
+        // Act
+        revision.Accept(null);
+
+        // Assert
+        revision
+            .DomainEvents.OfType<LyricsRevisionDecidedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new LyricsRevisionDecidedEvent(revision.Id, revision.LyricsId, revision.ProposedByUserId, true, false));
+    }
+
     #endregion
 
     #region Reject Tests
@@ -116,6 +153,24 @@ public class LyricsRevisionEntityTests
         // Assert
         revision.Status.Should().Be(EnumRevisionStatus.Rejected);
         revision.DecidedByUserId.Should().Be(moderatorId);
+    }
+
+    [Fact]
+    public void Reject_ShouldRaiseDecidedEventWithModeratorFlag()
+    {
+        // Arrange
+        LyricsRevisionEntity revision = CreatePendingRevision();
+
+        // Act
+        revision.Reject(Guid.NewGuid());
+
+        // Assert
+        revision
+            .DomainEvents.OfType<LyricsRevisionDecidedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new LyricsRevisionDecidedEvent(revision.Id, revision.LyricsId, revision.ProposedByUserId, false, true));
     }
 
     #endregion
