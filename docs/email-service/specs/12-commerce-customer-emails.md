@@ -43,6 +43,10 @@ Shared rules:
   the team will follow up; no refund automation exists and the template must
   not imply one.
 - Amounts render from the stored `AmountUsd` snapshot, never recomputed.
+- Domain-events refactor note (docs/domain-events, spec 05): all eight hook
+  sites moved behind commerce domain events; the enqueues now run
+  post-commit in `Application/Commerce/EventHandlers/`, still routed
+  through `ICommerceCustomerNotifier`.
 
 ## Culture for customer emails
 
