@@ -12,15 +12,4 @@ public class ConflictErrorMessage(IStringLocalizer<ConflictErrorMessage> localiz
     /// Exposes the underlying localizer for shared validation extensions.
     /// </summary>
     public IStringLocalizer Localizer => localizer;
-
-    /// <summary>
-    /// Gets error message for file upload failure.
-    /// </summary>
-    /// <param name="fileName">The name of the file that failed to upload.</param>
-    /// <param name="reason">The reason for the upload failure.</param>
-    /// <returns>A formatted error message indicating the upload failed.</returns>
-    public string FileUploadFailed(string fileName, string reason)
-    {
-        return string.Format(localizer["FileUploadFailed"], fileName, reason);
-    }
 }
