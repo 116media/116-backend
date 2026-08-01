@@ -3,7 +3,7 @@ using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
-using _116.Mailer.Contracts.Application;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -33,8 +33,7 @@ public class AdminSignOutFromAllDevicesHandlerTests
         _handler = new AdminSignOutFromAllDevicesHandler(
             _authRepositoryMock.Object,
             _sessionRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            new Mock<IMailer>().Object
+            _unitOfWorkMock.Object
         );
     }
 
@@ -140,7 +139,14 @@ public class AdminSignOutFromAllDevicesHandlerTests
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
 
         _sessionRepositoryMock
-            .Setup(x => x.DeleteAllByUserIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Setup(x =>
+                x.DeleteAllByUserIdAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<EnumSessionRevokeReason>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
             .Callback(() => deleteCallOrder = ++callOrder)
             .Returns(Task.CompletedTask);
 
@@ -198,7 +204,13 @@ public class AdminSignOutFromAllDevicesHandlerTests
 
         // Assert
         _sessionRepositoryMock.Verify(
-            x => x.DeleteAllByUserIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            x =>
+                x.DeleteAllByUserIdAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<EnumSessionRevokeReason>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()
+                ),
             Times.Never
         );
     }
@@ -263,7 +275,10 @@ public class AdminSignOutFromAllDevicesHandlerTests
         await _handler.Handle(command, cts.Token);
 
         // Assert
-        _sessionRepositoryMock.Verify(x => x.DeleteAllByUserIdAsync(user.Id, cts.Token), Times.Once);
+        _sessionRepositoryMock.Verify(
+            x => x.DeleteAllByUserIdAsync(user.Id, It.IsAny<EnumSessionRevokeReason>(), It.IsAny<Guid?>(), cts.Token),
+            Times.Once
+        );
     }
 
     [Fact]
