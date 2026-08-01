@@ -4,6 +4,7 @@ using _116.Shared.Infrastructure.interceptors;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -46,7 +47,10 @@ public class DispatchDomainEventsInterceptorTests
         ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
         var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
-        var interceptor = new DispatchDomainEventsInterceptor(serviceScopeFactory);
+        var interceptor = new DispatchDomainEventsInterceptor(
+            serviceScopeFactory,
+            NullLogger<DispatchDomainEventsInterceptor>.Instance
+        );
 
         DbContextOptions<TestDbContext> options = new DbContextOptionsBuilder<TestDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
