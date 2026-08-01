@@ -1,10 +1,10 @@
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
 using _116.Content.Infrastructure.BackgroundJobs;
-using _116.Core.Application.Shared.Repositories;
-using _116.Core.Application.Shared.Services;
 using _116.Tests.Fixtures.Factories.Content;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -24,8 +24,6 @@ public class AbandonedDraftCleanupJobTests
     private readonly Mock<IServiceScope> _scopeMock;
     private readonly Mock<IServiceProvider> _serviceProviderMock;
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
-    private readonly Mock<ICloudinaryService> _cloudinaryMock;
-    private readonly Mock<IFileRepository> _fileRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly Mock<ILogger<AbandonedDraftCleanupJob>> _loggerMock;
     private readonly Mock<IJobExecutionContext> _jobContextMock;
@@ -37,8 +35,6 @@ public class AbandonedDraftCleanupJobTests
         _scopeMock = new Mock<IServiceScope>();
         _serviceProviderMock = new Mock<IServiceProvider>();
         _articleRepositoryMock = new Mock<IArticleRepository>();
-        _cloudinaryMock = new Mock<ICloudinaryService>();
-        _fileRepositoryMock = new Mock<IFileRepository>();
         _unitOfWorkMock = new Mock<IContentUnitOfWork>();
         _loggerMock = new Mock<ILogger<AbandonedDraftCleanupJob>>();
         _jobContextMock = new Mock<IJobExecutionContext>();
@@ -50,17 +46,11 @@ public class AbandonedDraftCleanupJobTests
         _serviceProviderMock
             .Setup(x => x.GetService(typeof(IArticleRepository)))
             .Returns(_articleRepositoryMock.Object);
-        _serviceProviderMock.Setup(x => x.GetService(typeof(ICloudinaryService))).Returns(_cloudinaryMock.Object);
-        _serviceProviderMock.Setup(x => x.GetService(typeof(IFileRepository))).Returns(_fileRepositoryMock.Object);
         _serviceProviderMock.Setup(x => x.GetService(typeof(IContentUnitOfWork))).Returns(_unitOfWorkMock.Object);
 
         _jobContextMock.Setup(x => x.CancellationToken).Returns(CancellationToken.None);
 
         _unitOfWorkMock.Setup(x => x.CommitAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-
-        _cloudinaryMock
-            .Setup(x => x.DeleteImagesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
 
         _job = new AbandonedDraftCleanupJob(_scopeFactoryMock.Object, _loggerMock.Object);
     }
@@ -80,10 +70,6 @@ public class AbandonedDraftCleanupJobTests
 
         // Assert
         _articleRepositoryMock.Verify(x => x.Remove(It.IsAny<ArticleEntity>()), Times.Never);
-        _cloudinaryMock.Verify(
-            x => x.DeleteImagesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
     }
 
     #endregion
@@ -91,7 +77,7 @@ public class AbandonedDraftCleanupJobTests
     #region Draft Without Images
 
     [Fact]
-    public async Task Execute_WithDraftWithoutImages_ShouldRemoveArticleWithoutCallingCloudinary()
+    public async Task Execute_WithDraftWithoutImages_ShouldRemoveArticleAndRaiseDeletionEvent()
     {
         // Arrange
         ArticleEntity draft = ArticleFactory.Create(CategoryId);
@@ -105,10 +91,12 @@ public class AbandonedDraftCleanupJobTests
         await _job.Execute(_jobContextMock.Object);
 
         // Assert
-        _cloudinaryMock.Verify(
-            x => x.DeleteImagesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
+        draft
+            .DomainEvents.OfType<ArticleDeletedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.BodyImageStorageKeys.Should()
+            .BeEmpty();
         _articleRepositoryMock.Verify(x => x.Remove(draft), Times.Once);
         _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -118,12 +106,45 @@ public class AbandonedDraftCleanupJobTests
     #region Draft With Images
 
     [Fact]
-    public async Task Execute_WithDraftWithImages_ShouldDeleteCloudinaryImagesBeforeRemoving()
+    public async Task Execute_WithDraftWithImages_ShouldCaptureStorageKeysOnDeletionEvent()
     {
         // Arrange
         ArticleEntity draft = ArticleFactory.Create(CategoryId);
-        ArticleImageEntity image = ArticleImageFactory.CreateCover(draft.Id);
+        ArticleImageEntity image = ArticleImageFactory.CreateBody(draft.Id);
         draft.Images.Add(image);
+
+        _articleRepositoryMock
+            .Setup(x => x.GetAbandonedDraftsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ArticleEntity> { draft }.AsReadOnly());
+
+        // Act
+        await _job.Execute(_jobContextMock.Object);
+
+        // Assert — the shared post-commit cleanup consumer purges the captured keys.
+        draft
+            .DomainEvents.OfType<ArticleDeletedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.BodyImageStorageKeys.Should()
+            .BeEquivalentTo([image.StorageKey]);
+        _articleRepositoryMock.Verify(x => x.Remove(draft), Times.Once);
+        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    /// <summary>
+    /// A cover-type <c>article_images</c> row shares its storage key with the cover file row,
+    /// whose remote asset the file soft-delete reaction already purges. Carrying that key in the
+    /// deletion event as well would delete the same asset twice, so only body keys are captured.
+    /// </summary>
+    [Fact]
+    public async Task Execute_WithDraftWithACoverImageRow_ShouldCaptureOnlyTheBodyImageKeys()
+    {
+        // Arrange
+        ArticleEntity draft = ArticleFactory.Create(CategoryId);
+        ArticleImageEntity cover = ArticleImageFactory.CreateCover(draft.Id);
+        ArticleImageEntity body = ArticleImageFactory.CreateBody(draft.Id);
+        draft.Images.Add(cover);
+        draft.Images.Add(body);
 
         _articleRepositoryMock
             .Setup(x => x.GetAbandonedDraftsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
@@ -133,40 +154,12 @@ public class AbandonedDraftCleanupJobTests
         await _job.Execute(_jobContextMock.Object);
 
         // Assert
-        _cloudinaryMock.Verify(
-            x =>
-                x.DeleteImagesAsync(
-                    It.Is<IEnumerable<string>>(keys => keys.Contains(image.StorageKey)),
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Once
-        );
-        _articleRepositoryMock.Verify(x => x.Remove(draft), Times.Once);
-        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task Execute_WhenCloudinaryDeleteReturnsFalse_ShouldStillRemoveArticle()
-    {
-        // Arrange
-        ArticleEntity draft = ArticleFactory.Create(CategoryId);
-        ArticleImageEntity image = ArticleImageFactory.CreateCover(draft.Id);
-        draft.Images.Add(image);
-
-        _articleRepositoryMock
-            .Setup(x => x.GetAbandonedDraftsAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<ArticleEntity> { draft }.AsReadOnly());
-
-        _cloudinaryMock
-            .Setup(x => x.DeleteImagesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false); // simulate partial Cloudinary failure
-
-        // Act
-        await _job.Execute(_jobContextMock.Object);
-
-        // Assert — job continues and removes the article despite the Cloudinary warning
-        _articleRepositoryMock.Verify(x => x.Remove(draft), Times.Once);
-        _unitOfWorkMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+        draft
+            .DomainEvents.OfType<ArticleDeletedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.BodyImageStorageKeys.Should()
+            .BeEquivalentTo([body.StorageKey]);
     }
 
     #endregion
