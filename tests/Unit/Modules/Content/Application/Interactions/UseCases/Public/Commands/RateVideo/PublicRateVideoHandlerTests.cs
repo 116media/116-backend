@@ -1,5 +1,4 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.RateVideo;
-using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -22,25 +21,19 @@ public class PublicRateVideoHandlerTests
 
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IPopularVideosCacheInvalidator> _cacheInvalidatorMock;
     private readonly PublicRateVideoHandler _handler;
 
     public PublicRateVideoHandlerTests()
     {
         _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _cacheInvalidatorMock = MockPopularVideosCacheInvalidator.Create();
-        _handler = new PublicRateVideoHandler(
-            _videoRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            _cacheInvalidatorMock.Object
-        );
+        _handler = new PublicRateVideoHandler(_videoRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenNewRating_ShouldAddRatingRecalculateAverageAndCommit()
+    public async Task Handle_WhenNewRating_ShouldAddRatingAndCommit()
     {
         // Arrange
         Guid userId = Guid.NewGuid();
@@ -48,7 +41,6 @@ public class PublicRateVideoHandlerTests
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
         _videoRepositoryMock.SetupGetRatingAsync(null);
-        _videoRepositoryMock.SetupGetAllRatingsForVideoAsync([VideoRatingFactory.Create(video.Id, userId, stars: 5)]);
 
         var command = new PublicRateVideoCommand(VideoId: video.Id, UserId: userId, Stars: 5);
 
@@ -58,15 +50,11 @@ public class PublicRateVideoHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         _videoRepositoryMock.VerifyAddRatingCalled();
-        _videoRepositoryMock.VerifyUpdateCalled();
-
-        // The handler commits twice: once to persist the rating, then again after
-        // recomputing the video's denormalized rating count and average.
-        _unitOfWorkMock.VerifyCommitCalled(2);
+        _unitOfWorkMock.VerifyCommitCalled();
     }
 
     [Fact]
-    public async Task Handle_WhenExistingRating_ShouldUpdateRatingRecalculateAverageAndCommit()
+    public async Task Handle_WhenExistingRating_ShouldUpdateRatingAndCommit()
     {
         // Arrange
         Guid userId = Guid.NewGuid();
@@ -75,7 +63,6 @@ public class PublicRateVideoHandlerTests
 
         _videoRepositoryMock.SetupGetByIdOrThrow(video);
         _videoRepositoryMock.SetupGetRatingAsync(existingRating);
-        _videoRepositoryMock.SetupGetAllRatingsForVideoAsync([existingRating]);
 
         var command = new PublicRateVideoCommand(VideoId: video.Id, UserId: userId, Stars: 5);
 
@@ -85,11 +72,7 @@ public class PublicRateVideoHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         _videoRepositoryMock.VerifyUpdateRatingCalled();
-        _videoRepositoryMock.VerifyUpdateCalled();
-
-        // The handler commits twice: once to persist the rating, then again after
-        // recomputing the video's denormalized rating count and average.
-        _unitOfWorkMock.VerifyCommitCalled(2);
+        _unitOfWorkMock.VerifyCommitCalled();
     }
 
     #endregion
