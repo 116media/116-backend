@@ -36,7 +36,7 @@ public class PublicBookmarkShortVideoHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenShortVideoExistsAndNotBookmarked_ShouldAddBookmarkIncrementAndCommit()
+    public async Task Handle_WhenShortVideoExistsAndNotBookmarked_ShouldAddBookmarkAndCommit()
     {
         // Arrange
         ShortVideoEntity shortVideo = ShortVideoFactory.Create();
@@ -52,7 +52,6 @@ public class PublicBookmarkShortVideoHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         _shortVideoRepositoryMock.VerifyAddBookmarkCalled();
-        _shortVideoRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
