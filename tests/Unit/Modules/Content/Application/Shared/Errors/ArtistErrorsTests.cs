@@ -90,6 +90,17 @@ public class ArtistErrorsTests
         ex.Message.Should().NotBeNullOrWhiteSpace().And.Contain(_message.AlreadyClaimed());
     }
 
+    [Fact]
+    public void ClaimRequestAlreadyExists_ShouldReturnConflictExceptionWithLocalizedMessage()
+    {
+        // Arrange & Act
+        ConflictException ex = _errors.ClaimRequestAlreadyExists();
+
+        // Assert
+        ex.Should().BeOfType<ConflictException>();
+        ex.Message.Should().NotBeNullOrWhiteSpace().And.Contain(_message.ClaimRequestAlreadyExists());
+    }
+
     #endregion
 
     #region ArtistErrorMessage
@@ -144,6 +155,16 @@ public class ArtistErrorsTests
 
         // Assert
         result.Should().NotBeNullOrWhiteSpace().And.NotBe("AlreadyClaimed");
+    }
+
+    [Fact]
+    public void ClaimRequestAlreadyExistsMessage_ShouldResolveToLocalizedTextNotTheResourceKey()
+    {
+        // Arrange & Act
+        string result = _message.ClaimRequestAlreadyExists();
+
+        // Assert
+        result.Should().NotBeNullOrWhiteSpace().And.NotBe("ClaimRequestAlreadyExists");
     }
 
     #endregion
