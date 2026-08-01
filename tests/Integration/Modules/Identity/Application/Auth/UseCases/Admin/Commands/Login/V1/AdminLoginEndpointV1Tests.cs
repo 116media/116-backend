@@ -69,7 +69,7 @@ public class AdminLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         var user = UserFactory.Create(email);
         user.MarkAsVerified();
         user.Activate();
-        user.UpdatePassword(hashedPassword, errors);
+        user.InitializePasswordHash(hashedPassword, errors);
         var userRole = UserRoleFactory.Create(user.Id, adminRole.Id);
 
         await using var seedContext = CreateDbContext<IdentityDbContext>();
