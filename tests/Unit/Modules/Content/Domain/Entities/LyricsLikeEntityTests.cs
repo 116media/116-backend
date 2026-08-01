@@ -1,4 +1,6 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using AwesomeAssertions;
 using Xunit;
 
@@ -38,5 +40,41 @@ public class LyricsLikeEntityTests
         // Assert
         like.CreatedAt.Should().BeOnOrAfter(before);
         like.CreatedAt.Should().BeOnOrBefore(DateTime.UtcNow);
+    }
+
+    [Fact]
+    public void Create_ShouldRaisePositiveLikeEngagementEvent()
+    {
+        // Arrange
+        var lyricsId = Guid.NewGuid();
+
+        // Act
+        LyricsLikeEntity like = LyricsLikeEntity.Create(Guid.NewGuid(), Guid.NewGuid(), lyricsId);
+
+        // Assert
+        like.DomainEvents.OfType<LyricsEngagedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new LyricsEngagedEvent(lyricsId, EnumEngagementKind.Like, 1));
+    }
+
+    [Fact]
+    public void MarkRemoved_ShouldRaiseNegativeLikeEngagementEvent()
+    {
+        // Arrange
+        var lyricsId = Guid.NewGuid();
+        LyricsLikeEntity like = LyricsLikeEntity.Create(Guid.NewGuid(), Guid.NewGuid(), lyricsId);
+        like.ClearDomainEvents();
+
+        // Act
+        like.MarkRemoved();
+
+        // Assert
+        like.DomainEvents.OfType<LyricsEngagedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new LyricsEngagedEvent(lyricsId, EnumEngagementKind.Like, -1));
     }
 }
