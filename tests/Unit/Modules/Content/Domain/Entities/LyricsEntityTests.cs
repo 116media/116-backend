@@ -1,5 +1,6 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -381,6 +382,39 @@ public class LyricsEntityTests
     }
 
     [Fact]
+    public void MarkPendingReview_WhenAlreadyApproved_ShouldReturnFalseAndKeepApprovedStatus()
+    {
+        // Arrange — a replayed paid-effects dispatch must not pull approved
+        // content back into the review queue.
+        LyricsEntity lyrics = CreateFreeLyrics();
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
+
+        // Act
+        bool result = lyrics.MarkPendingReview();
+
+        // Assert
+        result.Should().BeFalse();
+        lyrics.Status.Should().Be(EnumContentStatus.Approved);
+    }
+
+    [Fact]
+    public void MarkPendingReview_WhenRejected_ShouldReturnTrueSoTheContentCanBeResubmitted()
+    {
+        // Arrange
+        LyricsEntity lyrics = CreateFreeLyrics();
+        lyrics.MarkPendingReview();
+        lyrics.Reject("lyrics do not match the recording");
+
+        // Act
+        bool result = lyrics.MarkPendingReview();
+
+        // Assert
+        result.Should().BeTrue();
+        lyrics.Status.Should().Be(EnumContentStatus.PendingReview);
+    }
+
+    [Fact]
     public void Approve_ShouldTransitionToApproved()
     {
         // Arrange
@@ -444,6 +478,35 @@ public class LyricsEntityTests
     }
 
     [Fact]
+    public void Publish_ShouldRaiseCommissionedContentPublishedEvent()
+    {
+        // Arrange
+        LyricsEntity lyrics = CreateFreeLyrics();
+        lyrics.MarkPendingReview();
+        lyrics.Approve();
+        lyrics.ClearDomainEvents();
+
+        // Act
+        lyrics.Publish();
+
+        // Assert
+        lyrics
+            .DomainEvents.OfType<CommissionedContentPublishedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new CommissionedContentPublishedEvent(
+                    lyrics.Id,
+                    EnumCoreContentType.Lyrics,
+                    lyrics.CustomerId,
+                    lyrics.SongTitle,
+                    lyrics.Slug
+                )
+            );
+    }
+
+    [Fact]
     public void Reject_ShouldSetRejectionReason_AndTransitionToRejected()
     {
         // Arrange
@@ -457,6 +520,33 @@ public class LyricsEntityTests
         result.Should().BeTrue();
         lyrics.Status.Should().Be(EnumContentStatus.Rejected);
         lyrics.RejectionReason.Should().Be(reason);
+    }
+
+    [Fact]
+    public void Reject_ShouldRaiseCommissionedContentRejectedEvent()
+    {
+        // Arrange
+        LyricsEntity lyrics = CreateFreeLyrics();
+        const string reason = TestConstants.Content.Editorial.Lyrics.ValidRejectionReason;
+
+        // Act
+        lyrics.Reject(reason);
+
+        // Assert
+        lyrics
+            .DomainEvents.OfType<CommissionedContentRejectedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new CommissionedContentRejectedEvent(
+                    lyrics.Id,
+                    EnumCoreContentType.Lyrics,
+                    lyrics.CustomerId,
+                    lyrics.SongTitle,
+                    reason
+                )
+            );
     }
 
     [Fact]
@@ -936,6 +1026,35 @@ public class LyricsEntityTests
         lyrics.UnpromotedAt.Should().NotBeNull();
         lyrics.UnpromotedBy.Should().Be(unpromotedBy);
         lyrics.UnpromotedReason.Should().Be(reason);
+    }
+
+    [Fact]
+    public void ForceUnpromote_ShouldRaiseContentPromotionRemovedEvent()
+    {
+        // Arrange
+        LyricsEntity lyrics = CreateFreeLyrics();
+        lyrics.StampPromotion(Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(7));
+        lyrics.ClearDomainEvents();
+        const string reason = "Government takedown request.";
+
+        // Act
+        lyrics.ForceUnpromote("super-admin-user-id", reason);
+
+        // Assert
+        lyrics
+            .DomainEvents.OfType<ContentPromotionRemovedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(
+                new ContentPromotionRemovedEvent(
+                    lyrics.Id,
+                    EnumCoreContentType.Lyrics,
+                    lyrics.CustomerId,
+                    lyrics.SongTitle,
+                    reason
+                )
+            );
     }
 
     [Fact]
