@@ -300,7 +300,7 @@ public class PublicRecordLyricsViewHandlerTests
     #region Dedup Counting
 
     [Fact]
-    public async Task Handle_WhenIdentityAlreadyCountedInWindow_ShouldRecordUncountedEventWithoutIncrement()
+    public async Task Handle_WhenIdentityAlreadyCountedInWindow_ShouldRecordUncountedEvent()
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
