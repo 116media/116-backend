@@ -1,5 +1,4 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.ShareArticle;
-using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -20,7 +19,6 @@ public class PublicShareArticleHandlerTests
 {
     private readonly Mock<IArticleRepository> _articleRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IPopularArticlesCacheInvalidator> _cacheInvalidatorMock;
     private readonly PublicShareArticleHandler _handler;
 
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -29,18 +27,13 @@ public class PublicShareArticleHandlerTests
     {
         _articleRepositoryMock = MockArticleRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _cacheInvalidatorMock = MockPopularArticlesCacheInvalidator.Create();
-        _handler = new PublicShareArticleHandler(
-            _articleRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            _cacheInvalidatorMock.Object
-        );
+        _handler = new PublicShareArticleHandler(_articleRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenArticleExistsAndAnonymous_ShouldAddShareIncrementAndCommit()
+    public async Task Handle_WhenArticleExistsAndAnonymous_ShouldAddShareAndCommit()
     {
         // Arrange
         ArticleEntity article = ArticleFactory.CreatePublished(CategoryId);
@@ -53,9 +46,7 @@ public class PublicShareArticleHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         _articleRepositoryMock.VerifyAddShareCalled();
-        _articleRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     [Fact]
