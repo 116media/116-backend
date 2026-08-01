@@ -1,5 +1,4 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.DeleteTag;
-using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -20,19 +19,13 @@ public class AdminDeleteTagHandlerTests
 {
     private readonly Mock<ILookupRepository> _lookupRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IPopularTagsCacheInvalidator> _cacheInvalidatorMock;
     private readonly AdminDeleteTagHandler _handler;
 
     public AdminDeleteTagHandlerTests()
     {
         _lookupRepositoryMock = MockLookupRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _cacheInvalidatorMock = MockPopularTagsCacheInvalidator.Create();
-        _handler = new AdminDeleteTagHandler(
-            _lookupRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            _cacheInvalidatorMock.Object
-        );
+        _handler = new AdminDeleteTagHandler(_lookupRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     #region Success Cases
@@ -53,7 +46,6 @@ public class AdminDeleteTagHandlerTests
         result.IsSuccess.Should().BeTrue();
         _lookupRepositoryMock.VerifyRemoveTagCalled(tag: tag);
         _unitOfWorkMock.VerifyCommitCalled();
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     #endregion
@@ -98,7 +90,6 @@ public class AdminDeleteTagHandlerTests
         // Assert
         _lookupRepositoryMock.VerifyRemoveTagNotCalled();
         _unitOfWorkMock.VerifyCommitNotCalled();
-        _cacheInvalidatorMock.VerifyInvalidateNotCalled();
     }
 
     #endregion
