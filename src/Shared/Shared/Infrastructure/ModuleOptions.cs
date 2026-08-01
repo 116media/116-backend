@@ -32,19 +32,8 @@ public class ModuleOptions<TDbContext>
     public bool EnableSeeding { get; init; } = true;
 
     /// <summary>
-    /// Custom connection string for this module.
-    /// If null, use the default database configuration.
-    /// </summary>
-    public string? ConnectionString { get; init; }
-
-    /// <summary>
     /// Whether to use connection pooling for the DbContext.
     /// Default is true.
     /// </summary>
     public bool UseConnectionPooling { get; init; } = true;
-
-    /// <summary>
-    /// Additional action to configure the DbContext options.
-    /// </summary>
-    public Action<DbContextOptionsBuilder>? ConfigureDbContext { get; init; }
 }
