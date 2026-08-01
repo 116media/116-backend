@@ -41,7 +41,7 @@ public class UserRoleRepositoryTests : IDisposable
         // Arrange
         RoleEntity role = RoleFactory.Create();
         UserEntity user = UserFactory.Create();
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role.Id);
 
         _context.Roles.Add(role);
         _context.Users.Add(user);
@@ -79,7 +79,7 @@ public class UserRoleRepositoryTests : IDisposable
         // Arrange
         RoleEntity role = RoleFactory.Create();
         UserEntity user = UserFactory.Create();
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role.Id);
 
         _context.Roles.Add(role);
         _context.Users.Add(user);
@@ -120,8 +120,8 @@ public class UserRoleRepositoryTests : IDisposable
         UserEntity user = UserFactory.Create();
         RoleEntity role1 = RoleFactory.CreateAdmin();
         RoleEntity role2 = RoleFactory.CreateVisitor();
-        var userRole1 = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role1.Id);
-        var userRole2 = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role2.Id);
+        var userRole1 = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role1.Id);
+        var userRole2 = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role2.Id);
 
         _context.Users.Add(user);
         _context.Roles.AddRange(role1, role2);
@@ -161,7 +161,7 @@ public class UserRoleRepositoryTests : IDisposable
         // Arrange
         RoleEntity role = RoleFactory.Create();
         UserEntity user = UserFactory.Create();
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role.Id);
 
         _context.Roles.Add(role);
         _context.Users.Add(user);
@@ -190,7 +190,7 @@ public class UserRoleRepositoryTests : IDisposable
         // Arrange
         RoleEntity role = RoleFactory.Create();
         UserEntity user = UserFactory.Create();
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role.Id);
 
         _context.Roles.Add(role);
         _context.Users.Add(user);
