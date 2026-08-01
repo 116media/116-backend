@@ -1,6 +1,7 @@
 using _116.Content.Application.Shared.Errors;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -106,13 +107,41 @@ public class ContentPaymentEntityTests
     }
 
     [Fact]
-    public void Reject_WhenAlreadyVerified_ShouldThrowConflictException()
+    public void Reject_WhenPending_ShouldRaisePaymentRejectedEvent()
+    {
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
+        const string notes = "Proof is not legible.";
+
+        payment.Reject(notes, _errors);
+
+        payment
+            .DomainEvents.OfType<PaymentRejectedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new PaymentRejectedEvent(payment.OrderId, payment.Id, notes));
+    }
+
+    [Fact]
+    public void Reject_WithNullNotes_ShouldRaisePaymentRejectedEventWithNullNotes()
+    {
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateDefault();
+
+        payment.Reject(null, _errors);
+
+        payment.DomainEvents.OfType<PaymentRejectedEvent>().Should().ContainSingle().Which.Notes.Should().BeNull();
+    }
+
+    [Fact]
+    public void Reject_WhenAlreadyVerified_ShouldThrowConflictExceptionAndRaiseNothing()
     {
         ContentPaymentEntity payment = ContentPaymentFactory.CreateVerified(Guid.NewGuid());
+        payment.ClearDomainEvents();
 
         Action act = () => payment.Reject("notes", _errors);
 
         act.Should().Throw<ConflictException>();
+        payment.DomainEvents.Should().BeEmpty();
     }
 
     [Fact]
