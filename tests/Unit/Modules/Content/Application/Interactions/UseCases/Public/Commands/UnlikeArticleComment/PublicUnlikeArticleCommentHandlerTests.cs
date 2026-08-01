@@ -35,10 +35,9 @@ public class PublicUnlikeArticleCommentHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public async Task Handle_WhenLiked_ShouldRemoveLikeDecrementCountAndCommit()
+    public async Task Handle_WhenLiked_ShouldRemoveLikeAndCommit()
     {
         ArticleCommentEntity comment = ArticleCommentFactory.Create(Guid.NewGuid(), Guid.NewGuid());
-        comment.IncrementLikeCount();
         _articleRepositoryMock.SetupGetCommentByIdAsync(comment);
         _articleRepositoryMock.SetupHasLikedCommentAsync(true);
 
