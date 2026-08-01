@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -237,6 +238,47 @@ public class ArtistEntityTests
         artist.UserId.Should().Be(userId);
         artist.VerifiedAt.Should().NotBeNull();
         artist.VerifiedAt!.Value.Should().BeCloseTo(before, TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public void ClaimOwnership_WhenUnclaimed_ShouldRaiseOwnershipVerifiedEvent()
+    {
+        // Arrange
+        ArtistEntity artist = CreateArtist();
+        Guid userId = Guid.NewGuid();
+
+        // Act
+        artist.ClaimOwnership(userId, TestErrorsFactory.CreateArtistErrors());
+
+        // Assert
+        artist
+            .DomainEvents.OfType<ArtistOwnershipVerifiedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new ArtistOwnershipVerifiedEvent(artist.Id, userId));
+    }
+
+    [Fact]
+    public void ClaimOwnership_WhenAlreadyClaimed_ShouldNotRaiseASecondOwnershipVerifiedEvent()
+    {
+        // Arrange
+        ArtistEntity artist = CreateArtist();
+        artist.ClaimOwnership(Guid.NewGuid(), TestErrorsFactory.CreateArtistErrors());
+        artist.ClearDomainEvents();
+
+        // Act
+        try
+        {
+            artist.ClaimOwnership(Guid.NewGuid(), TestErrorsFactory.CreateArtistErrors());
+        }
+        catch (ConflictException)
+        {
+            // The guard is the point of this test.
+        }
+
+        // Assert
+        artist.DomainEvents.OfType<ArtistOwnershipVerifiedEvent>().Should().BeEmpty();
     }
 
     [Fact]
