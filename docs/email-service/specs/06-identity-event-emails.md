@@ -26,6 +26,13 @@ creation path in the codebase** — nothing ever writes an OTP with those
 purposes, so there is nothing to deliver. They stay out of this spec until a
 real flow creates them (see the note in spec 04).
 
+Domain-events refactor note (docs/domain-events): the OTP rows above stay
+inline — they are that wave's documented `IMailer` exemption. The `Welcome`
+send moved behind `UserVerifiedEvent` (`UserVerifiedWelcomeEmailHandler`),
+and `LoginAlert` currently has no call site: `SessionCreatedEvent` ships
+with the wave, but its alert handler is deferred pending the email-noise
+product call.
+
 Implementation shape inside a factory:
 
 ```csharp
