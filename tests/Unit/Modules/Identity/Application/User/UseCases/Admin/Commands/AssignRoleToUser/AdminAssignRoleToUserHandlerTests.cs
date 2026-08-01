@@ -1,9 +1,10 @@
+using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Errors.Facade;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Application.User.UseCases.Admin.Commands.AssignRoleToUser;
 using _116.Identity.Domain.Entities;
-using _116.Mailer.Contracts.Application;
+using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
@@ -23,6 +24,7 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
 {
     private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IUserRoleRepository> _userRoleRepositoryMock;
+    private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IIdentityUnitOfWork> _unitOfWorkMock;
     private readonly IdentityI18n _userErrors;
     private readonly AdminAssignRoleToUserHandler _handler;
@@ -31,17 +33,17 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
     {
         _roleRepositoryMock = MockRoleRepository.Create();
         _userRoleRepositoryMock = MockUserRoleRepository.Create();
+        _sessionRepositoryMock = MockSessionRepository.Create();
         _unitOfWorkMock = MockIdentityUnitOfWork.Create();
         _userErrors = TestErrorsFactory.CreateIdentityI18n();
 
         _handler = new AdminAssignRoleToUserHandler(
             _roleRepositoryMock.Object,
             _userRoleRepositoryMock.Object,
+            _sessionRepositoryMock.Object,
             _unitOfWorkMock.Object,
             Mapper,
-            _userErrors,
-            MockAuthRepository.Create().Object,
-            new Mock<IMailer>().Object
+            _userErrors
         );
     }
 
@@ -307,6 +309,49 @@ public class AdminAssignRoleToUserHandlerTests : BaseHandlerTest
 
         // Assert
         _unitOfWorkMock.Verify(x => x.CommitAsync(cts.Token), Times.Once);
+    }
+
+    #endregion
+
+    #region Session Invalidation
+
+    [Fact]
+    public async Task Handle_ShouldRevokeEverySessionOfTheTargetUserBeforeCommitting()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        RoleEntity role = RoleFactory.Create("Admin", "Administrator role");
+        AdminAssignRoleToUserCommand command = new(UserId: userId.ToString(), RoleId: role.Id);
+
+        UserRoleEntity userRole = UserRoleFactory.CreateWithRole(userId, role);
+
+        _roleRepositoryMock.SetupGetByIdOrThrow(role);
+        _userRoleRepositoryMock.SetupExistsByUserAndRole(userId, role.Id, false);
+        _userRoleRepositoryMock.SetupGetUserRolesWithRole(userId, [userRole]);
+
+        var callOrder = new List<string>();
+        _sessionRepositoryMock
+            .Setup(x =>
+                x.DeleteAllByUserIdAsync(
+                    userId,
+                    EnumSessionRevokeReason.SecurityInvalidation,
+                    null,
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .Callback(() => callOrder.Add("revoke"))
+            .Returns(Task.CompletedTask);
+
+        _unitOfWorkMock
+            .Setup(x => x.CommitAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => callOrder.Add("commit"))
+            .ReturnsAsync(1);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        callOrder.Should().Equal("revoke", "commit");
     }
 
     #endregion
