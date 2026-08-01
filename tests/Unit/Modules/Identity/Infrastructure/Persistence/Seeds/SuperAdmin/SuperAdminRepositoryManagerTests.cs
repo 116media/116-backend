@@ -258,7 +258,7 @@ public class SuperAdminRepositoryManagerTests
         var userId = Guid.NewGuid();
         var roleId = Guid.NewGuid();
 
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), userId, roleId);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), userId, roleId);
         await context.UserRoles.AddAsync(userRole);
         await context.SaveChangesAsync();
 
@@ -489,7 +489,7 @@ public class SuperAdminRepositoryManagerTests
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         using var context = new IdentityDbContext(options);
 
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
         var manager = new SuperAdminRepositoryManager(context, _loggerMock.Object);
 
         // Act
@@ -506,7 +506,7 @@ public class SuperAdminRepositoryManagerTests
         DbContextOptions<IdentityDbContext> options = CreateOptions();
         using var context = new IdentityDbContext(options);
 
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
         var manager = new SuperAdminRepositoryManager(context, _loggerMock.Object);
 
         // Act
