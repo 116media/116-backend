@@ -1,4 +1,5 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Events;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -401,6 +402,51 @@ public class ShortVideoEntityTests
 
         // Assert
         act.Should().Throw<BadRequestException>();
+    }
+
+    #endregion
+
+    #region MarkDeleted Tests
+
+    [Fact]
+    public void MarkDeleted_ShouldRaiseShortVideoDeletedEventWithCapturedFileIds()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = CreateStandalone();
+        Guid videoFileId = Guid.NewGuid();
+        Guid thumbnailFileId = Guid.NewGuid();
+        shortVideo.ReplaceVideoFile(videoFileId);
+        shortVideo.SetThumbnailFileId(thumbnailFileId);
+
+        // Act
+        shortVideo.MarkDeleted();
+
+        // Assert
+        shortVideo
+            .DomainEvents.OfType<ShortVideoDeletedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new ShortVideoDeletedEvent(shortVideo.Id, videoFileId, thumbnailFileId));
+    }
+
+    [Fact]
+    public void MarkDeleted_WhenNoFilesUploaded_ShouldRaiseEventWithNullFileIds()
+    {
+        // Arrange
+        ShortVideoEntity shortVideo = CreateStandalone();
+
+        // Act
+        shortVideo.MarkDeleted();
+
+        // Assert
+        ShortVideoDeletedEvent deletedEvent = shortVideo
+            .DomainEvents.OfType<ShortVideoDeletedEvent>()
+            .Should()
+            .ContainSingle()
+            .Subject;
+        deletedEvent.VideoFileId.Should().BeNull();
+        deletedEvent.ThumbnailFileId.Should().BeNull();
     }
 
     #endregion
