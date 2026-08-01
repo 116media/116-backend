@@ -72,7 +72,7 @@ public class SessionRepositoryTests : IDisposable
         UserEntity user = UserFactory.Create();
         RoleEntity role = RoleFactory.CreateAdmin();
         PermissionEntity permission = PermissionFactory.Create("article", "read");
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role.Id);
         var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission.Id);
 
         SessionEntity session = CreateSessionWithCreatedAt(user.Id);
@@ -221,6 +221,80 @@ public class SessionRepositoryTests : IDisposable
 
         // Assert
         await act.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task DeleteAllByUserIdAsync_WithExemptSession_ShouldPreserveTheExemptedSession()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        SessionEntity exemptSession = CreateSessionWithCreatedAt(userId);
+        SessionEntity otherSession = CreateSessionWithCreatedAt(userId);
+
+        _context.Sessions.AddRange(exemptSession, otherSession);
+        await _context.SaveChangesAsync();
+
+        // Act
+        await _repository.DeleteAllByUserIdAsync(
+            userId,
+            reason: EnumSessionRevokeReason.SecurityInvalidation,
+            exemptSessionId: exemptSession.Id
+        );
+        await _context.SaveChangesAsync();
+
+        // Assert
+        SessionEntity? preserved = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == exemptSession.Id);
+        SessionEntity? revoked = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == otherSession.Id);
+        preserved!.IsRevoked.Should().BeFalse();
+        revoked!.IsRevoked.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region GetRevokedSessionByRefreshTokenHashAsync Tests
+
+    [Fact]
+    public async Task GetRevokedSessionByRefreshTokenHashAsync_WhenHashMatchesARevokedSession_ShouldReturnIt()
+    {
+        // Arrange
+        SessionEntity session = CreateSessionWithCreatedAt();
+        session.Revoke();
+
+        _context.Sessions.Add(session);
+        await _context.SaveChangesAsync();
+
+        // Act
+        SessionEntity? found = await _repository.GetRevokedSessionByRefreshTokenHashAsync(session.RefreshTokenHash);
+
+        // Assert
+        found.Should().NotBeNull();
+        found!.Id.Should().Be(session.Id);
+    }
+
+    [Fact]
+    public async Task GetRevokedSessionByRefreshTokenHashAsync_WhenSessionIsNotRevoked_ShouldReturnNull()
+    {
+        // Arrange
+        SessionEntity session = CreateSessionWithCreatedAt();
+
+        _context.Sessions.Add(session);
+        await _context.SaveChangesAsync();
+
+        // Act
+        SessionEntity? found = await _repository.GetRevokedSessionByRefreshTokenHashAsync(session.RefreshTokenHash);
+
+        // Assert
+        found.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetRevokedSessionByRefreshTokenHashAsync_WhenHashIsUnknown_ShouldReturnNull()
+    {
+        // Act
+        SessionEntity? found = await _repository.GetRevokedSessionByRefreshTokenHashAsync("unknown-hash");
+
+        // Assert
+        found.Should().BeNull();
     }
 
     #endregion
