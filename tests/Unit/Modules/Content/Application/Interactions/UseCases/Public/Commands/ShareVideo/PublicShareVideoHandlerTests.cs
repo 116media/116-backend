@@ -1,5 +1,4 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.ShareVideo;
-using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -22,25 +21,19 @@ public class PublicShareVideoHandlerTests
 
     private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IPopularVideosCacheInvalidator> _cacheInvalidatorMock;
     private readonly PublicShareVideoHandler _handler;
 
     public PublicShareVideoHandlerTests()
     {
         _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _cacheInvalidatorMock = MockPopularVideosCacheInvalidator.Create();
-        _handler = new PublicShareVideoHandler(
-            _videoRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            _cacheInvalidatorMock.Object
-        );
+        _handler = new PublicShareVideoHandler(_videoRepositoryMock.Object, _unitOfWorkMock.Object);
     }
 
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenVideoExistsAndAnonymous_ShouldAddShareIncrementAndCommit()
+    public async Task Handle_WhenVideoExistsAndAnonymous_ShouldAddShareAndCommit()
     {
         // Arrange
         VideoEntity video = VideoFactory.CreatePublished(CategoryId);
@@ -55,7 +48,6 @@ public class PublicShareVideoHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         _videoRepositoryMock.VerifyAddShareCalled();
-        _videoRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
