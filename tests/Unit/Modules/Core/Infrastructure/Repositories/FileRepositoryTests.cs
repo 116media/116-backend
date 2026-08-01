@@ -376,7 +376,7 @@ public class FileRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task UpdateAvatarFromUrlAsync_WhenCurrentAvatarHasDifferentUrl_ShouldDeleteOldAndDownloadNew()
+    public async Task UpdateAvatarFromUrlAsync_WhenCurrentAvatarHasDifferentUrl_ShouldSoftDeleteOldAndDownloadNew()
     {
         // Arrange
         string userId = Guid.NewGuid().ToString();
@@ -408,8 +408,9 @@ public class FileRepositoryTests : IDisposable
         result.Id.Should().Be(downloadResult.FileId);
         result.StorageUrl.Should().Be(newAvatarUrl);
 
-        FileEntity? deletedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == oldFile.Id);
-        deletedFile.Should().BeNull();
+        FileEntity? replacedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == oldFile.Id);
+        replacedFile.Should().NotBeNull();
+        replacedFile.IsDeleted.Should().BeTrue();
 
         _mockFileService.Verify(s => s.DownloadFileAsync(newAvatarUrl, It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -493,7 +494,7 @@ public class FileRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task UpdateAvatarFromFileAsync_WhenCurrentAvatarExists_ShouldDeleteOldAndUploadNew()
+    public async Task UpdateAvatarFromFileAsync_WhenCurrentAvatarExists_ShouldSoftDeleteOldAndUploadNew()
     {
         // Arrange
         FileEntity oldFile = FileFactory.Create();
@@ -532,8 +533,9 @@ public class FileRepositoryTests : IDisposable
         result.Should().NotBeNull();
         result.Id.Should().Be(uploadResult.FileId);
 
-        FileEntity? deletedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == oldFile.Id);
-        deletedFile.Should().BeNull();
+        FileEntity? replacedFile = await _context.Files.FirstOrDefaultAsync(f => f.Id == oldFile.Id);
+        replacedFile.Should().NotBeNull();
+        replacedFile.IsDeleted.Should().BeTrue();
 
         _mockFileService.Verify(
             s => s.UploadFileAsync(mockFormFile.Object, userId, "avatars", It.IsAny<CancellationToken>()),
