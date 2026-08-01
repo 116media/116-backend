@@ -1,5 +1,6 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Domain.Events;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
 using AwesomeAssertions;
@@ -255,6 +256,109 @@ public class SessionEntityTests
         // Assert
         session.Device.Should().Be(EnumDevice.Desktop);
         session.Client.Should().Be(EnumClient.WebApp);
+    }
+
+    #endregion
+
+    #region Domain Event Tests
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Create_ShouldRaiseSessionCreatedEventWithNewDeviceFlag(bool isNewDevice)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+
+        // Act
+        var session = SessionEntity.Create(
+            id: id,
+            userId: userId,
+            deviceId: TestConstants.Session.ValidDeviceId,
+            refreshTokenHash: TestConstants.Session.DefaultRefreshTokenHash,
+            expiresAt: DateTime.UtcNow.AddDays(TestConstants.Session.DefaultRefreshTokenExpirationDays),
+            browser: EnumBrowser.Chrome,
+            device: EnumDevice.Desktop,
+            platform: EnumPlatform.Windows,
+            client: EnumClient.WebApp,
+            isNewDevice: isNewDevice
+        );
+
+        // Assert
+        SessionCreatedEvent raised = session.DomainEvents.OfType<SessionCreatedEvent>().Single();
+        raised.SessionId.Should().Be(id);
+        raised.UserId.Should().Be(userId);
+        raised.IsNewDevice.Should().Be(isNewDevice);
+    }
+
+    [Fact]
+    public void Revoke_ShouldRaiseSessionRevokedEventWithReason()
+    {
+        // Arrange
+        SessionEntity session = SessionFactory.Create();
+        session.ClearDomainEvents();
+
+        // Act
+        session.Revoke(EnumSessionRevokeReason.SecurityInvalidation);
+
+        // Assert
+        SessionRevokedEvent raised = session.DomainEvents.OfType<SessionRevokedEvent>().Single();
+        raised.SessionId.Should().Be(session.Id);
+        raised.UserId.Should().Be(session.UserId);
+        raised.Reason.Should().Be(EnumSessionRevokeReason.SecurityInvalidation);
+    }
+
+    [Fact]
+    public void Revoke_WithoutReason_ShouldDefaultToSelfSignOut()
+    {
+        // Arrange
+        SessionEntity session = SessionFactory.Create();
+        session.ClearDomainEvents();
+
+        // Act
+        session.Revoke();
+
+        // Assert
+        session
+            .DomainEvents.OfType<SessionRevokedEvent>()
+            .Single()
+            .Reason.Should()
+            .Be(EnumSessionRevokeReason.SelfSignOut);
+    }
+
+    [Fact]
+    public void Reactivate_ShouldRaiseSessionReactivatedEvent()
+    {
+        // Arrange
+        SessionEntity session = SessionFactory.Create();
+        session.ClearDomainEvents();
+
+        // Act
+        session.Reactivate("new_hash", DateTime.UtcNow.AddDays(30));
+
+        // Assert
+        SessionReactivatedEvent raised = session.DomainEvents.OfType<SessionReactivatedEvent>().Single();
+        raised.SessionId.Should().Be(session.Id);
+        raised.UserId.Should().Be(session.UserId);
+    }
+
+    [Fact]
+    public void RecordRefreshTokenReplay_ShouldRaiseRefreshTokenReplayDetectedEvent()
+    {
+        // Arrange
+        SessionEntity session = SessionFactory.Create();
+        session.ClearDomainEvents();
+
+        // Act
+        session.RecordRefreshTokenReplay();
+
+        // Assert
+        RefreshTokenReplayDetectedEvent raised = session
+            .DomainEvents.OfType<RefreshTokenReplayDetectedEvent>()
+            .Single();
+        raised.SessionId.Should().Be(session.Id);
+        raised.UserId.Should().Be(session.UserId);
     }
 
     #endregion
