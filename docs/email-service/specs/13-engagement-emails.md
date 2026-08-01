@@ -31,6 +31,10 @@ boundary, HTML-encoded by the renderer like every token.
 - `articleUrl` builds from `FRONTEND_BASE_URL` (spec 08) + the article slug the
   handler already has in scope (extend the load if it only has the id —
   record what was needed).
+- Domain-events refactor note (docs/domain-events, spec 09): this hook moved
+  behind `CommentReplyAddedEvent` — `CommentReplyAddedNotificationsHandler`
+  now sends the email, writes the `CommentReply` in-app row, and owns the
+  guards; `PublicAddCommentReplyHandler` no longer injects `IMailer`.
 
 ## Explicitly deferred (recorded so the scope is a decision, not an oversight)
 
