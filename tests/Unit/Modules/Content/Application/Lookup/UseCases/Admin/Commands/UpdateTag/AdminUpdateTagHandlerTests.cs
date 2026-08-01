@@ -1,5 +1,4 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateTag;
-using _116.Content.Application.Shared.Cache;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -23,18 +22,15 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
 {
     private readonly Mock<ILookupRepository> _lookupRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IPopularTagsCacheInvalidator> _cacheInvalidatorMock;
     private readonly AdminUpdateTagHandler _handler;
 
     public AdminUpdateTagHandlerTests()
     {
         _lookupRepositoryMock = MockLookupRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        _cacheInvalidatorMock = MockPopularTagsCacheInvalidator.Create();
         _handler = new AdminUpdateTagHandler(
             _lookupRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _cacheInvalidatorMock.Object,
             Mapper,
             TestErrorsFactory.CreateContentI18n()
         );
@@ -63,7 +59,6 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
         result.Tag.Slug.Should().Be(newSlug);
 
         _unitOfWorkMock.VerifyCommitCalled();
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     [Fact]
@@ -87,7 +82,6 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
         result.Tag.Slug.Should().Be(currentSlug);
 
         _unitOfWorkMock.VerifyCommitCalled();
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     [Fact]
@@ -110,7 +104,6 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
         // Assert
         result.Should().NotBeNull();
         _unitOfWorkMock.VerifyCommitCalled();
-        _cacheInvalidatorMock.VerifyInvalidateCalled();
     }
 
     #endregion
@@ -196,7 +189,6 @@ public class AdminUpdateTagHandlerTests : BaseContentHandlerTest
 
         // Assert
         _unitOfWorkMock.VerifyCommitNotCalled();
-        _cacheInvalidatorMock.VerifyInvalidateNotCalled();
     }
 
     #endregion
