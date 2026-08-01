@@ -45,6 +45,12 @@ Rules that apply to every row:
 - In `newEmailMasked`, mask the local part (`j***@gmail.com`) — the old
   address's mailbox may be compromised; don't hand it the new address in full.
 
+Domain-events refactor note (docs/domain-events, spec 04): every hook site
+in the table moved behind an identity domain event; the enqueues now run
+post-commit in the module's `EventHandlers/` classes, which also write the
+matching in-app notification rows. The business handlers above no longer
+inject `IMailer`.
+
 ## Open product decision — email-change re-verification
 
 Today `UpdateEmail` swaps the address with **no re-verification**: any
