@@ -52,6 +52,13 @@ public class EmailTemplateRendererTests
         ["articleTitle"] = "Eloko Oyo review",
         ["replyExcerpt"] = "Totally agree with you…",
         ["articleUrl"] = "https://app.example/articles/eloko-oyo",
+        ["songTitle"] = "Eloko Oyo",
+        ["decision"] = "accepted",
+        ["lyricsUrl"] = "https://app.example/lyrics/eloko-oyo",
+        ["outcome"] = "approved",
+        ["reviewNote"] = "Great transcription.",
+        ["artistName"] = "Fally Ipupa",
+        ["artistUrl"] = "https://app.example/artists/fally-ipupa",
     };
 
     private static readonly EmailTemplateRenderer Renderer = new(
