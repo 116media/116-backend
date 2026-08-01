@@ -5,9 +5,19 @@ namespace _116.Integration.Tests.Common.Stubs;
 
 /// <summary>
 /// In-memory stub that returns fake Cloudinary URLs without making real HTTP calls.
+/// Setting <see cref="NextDeleteFailure" /> makes the next delete call throw
+/// once, driving the failure-tolerance path of post-commit asset cleanup
+/// without any provider.
 /// </summary>
 public class StubCloudinaryService : ICloudinaryService
 {
+    /// <summary>
+    /// When set, the next <see cref="DeleteImageAsync" /> or
+    /// <see cref="DeleteImagesAsync" /> call throws this exception once and
+    /// clears the field. Uploads are unaffected.
+    /// </summary>
+    public Exception? NextDeleteFailure { get; set; }
+
     /// <inheritdoc />
     public Task<CloudinaryUploadResult> UploadImageAsync(
         IFormFile file,
@@ -44,13 +54,28 @@ public class StubCloudinaryService : ICloudinaryService
     /// <inheritdoc />
     public Task<bool> DeleteImageAsync(string publicId, CancellationToken cancellationToken = default)
     {
+        ThrowNextDeleteFailureIfSet();
         return Task.FromResult(true);
     }
 
     /// <inheritdoc />
     public Task<bool> DeleteImagesAsync(IEnumerable<string> publicIds, CancellationToken cancellationToken = default)
     {
+        ThrowNextDeleteFailureIfSet();
         return Task.FromResult(true);
+    }
+
+    /// <summary>
+    /// Throws the queued delete failure once and clears it.
+    /// </summary>
+    private void ThrowNextDeleteFailureIfSet()
+    {
+        if (NextDeleteFailure is not null)
+        {
+            Exception failure = NextDeleteFailure;
+            NextDeleteFailure = null;
+            throw failure;
+        }
     }
 
     private static CloudinaryUploadResult CreateResult(
