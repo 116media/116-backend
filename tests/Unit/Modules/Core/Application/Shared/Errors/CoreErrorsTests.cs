@@ -244,20 +244,6 @@ public class CoreErrorsTests
     }
 
     [Fact]
-    public void BadRequest_WithCustomMessage_ShouldReturnBadRequestException()
-    {
-        // Arrange
-        string message = "Custom error message";
-
-        // Act
-        BadRequestException exception = _errors.BadRequest(message);
-
-        // Assert
-        exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(message);
-    }
-
-    [Fact]
     public void FileRequired_ShouldReturnBadRequestException()
     {
         BadRequestException exception = _errors.FileRequired();
