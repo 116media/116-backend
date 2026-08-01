@@ -5,7 +5,6 @@ using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
-using _116.Mailer.Contracts.Application;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
@@ -37,8 +36,7 @@ public class PublicVerifyOtpHandlerTests
             _authRepositoryMock.Object,
             _otpRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            TestErrorsFactory.CreateIdentityI18n(),
-            new Mock<IMailer>().Object
+            TestErrorsFactory.CreateIdentityI18n()
         );
     }
 
