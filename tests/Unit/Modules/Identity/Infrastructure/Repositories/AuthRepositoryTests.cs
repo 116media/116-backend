@@ -86,7 +86,7 @@ public class AuthRepositoryTests : IDisposable
         // Arrange
         UserEntity user = UserFactory.Create("test@example.com");
         RoleEntity role = RoleFactory.CreateAdmin();
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role.Id);
 
         _context.Users.Add(user);
         _context.Roles.Add(role);
@@ -126,7 +126,7 @@ public class AuthRepositoryTests : IDisposable
         UserEntity user = UserFactory.Create();
         RoleEntity role = RoleFactory.CreateAdmin();
         PermissionEntity permission = PermissionFactory.Create("article", "read");
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role.Id);
         var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission.Id);
 
         _context.Users.Add(user);
@@ -479,7 +479,7 @@ public class AuthRepositoryTests : IDisposable
         UserEntity user = UserFactory.Create("test@example.com");
         RoleEntity role = RoleFactory.CreateAdmin();
         PermissionEntity permission = PermissionFactory.Create("article", "read");
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role.Id);
         var rolePermission = RolePermissionEntity.Create(Guid.NewGuid(), role.Id, permission.Id);
 
         _context.Users.Add(user);
@@ -523,7 +523,7 @@ public class AuthRepositoryTests : IDisposable
         // Arrange
         UserEntity user = UserFactory.Create("credentials@example.com");
         RoleEntity role = RoleFactory.CreateAdmin();
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role.Id);
 
         _context.Users.Add(user);
         _context.Roles.Add(role);
@@ -546,7 +546,7 @@ public class AuthRepositoryTests : IDisposable
         // Arrange
         UserEntity user = UserFactory.Create("default@example.com", "testusername");
         RoleEntity role = RoleFactory.CreateAdmin();
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, role.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, role.Id);
 
         _context.Users.Add(user);
         _context.Roles.Add(role);
@@ -727,7 +727,7 @@ public class AuthRepositoryTests : IDisposable
         // Arrange
         UserEntity user = UserFactory.Create();
         RoleEntity adminRole = RoleFactory.CreateAdmin();
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, adminRole.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, adminRole.Id);
 
         _context.Users.Add(user);
         _context.Roles.Add(adminRole);
@@ -753,7 +753,7 @@ public class AuthRepositoryTests : IDisposable
         // Arrange
         UserEntity user = UserFactory.Create();
         RoleEntity visitorRole = RoleFactory.CreateVisitor();
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), user.Id, visitorRole.Id);
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), user.Id, visitorRole.Id);
 
         _context.Users.Add(user);
         _context.Roles.Add(visitorRole);
