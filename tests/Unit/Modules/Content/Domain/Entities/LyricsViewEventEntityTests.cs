@@ -1,4 +1,6 @@
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
+using _116.Content.Domain.Events;
 using AwesomeAssertions;
 using Xunit;
 
@@ -107,5 +109,53 @@ public class LyricsViewEventEntityTests
         // Assert
         viewEvent.CreatedAt.Should().BeOnOrAfter(before);
         viewEvent.CreatedAt.Should().BeOnOrBefore(DateTime.UtcNow);
+    }
+
+    [Fact]
+    public void Create_WhenCounted_ShouldRaisePositiveViewEngagementEvent()
+    {
+        // Arrange
+        var lyricsId = Guid.NewGuid();
+
+        // Act
+        LyricsViewEventEntity viewEvent = LyricsViewEventEntity.Create(
+            Guid.NewGuid(),
+            lyricsId,
+            Guid.NewGuid(),
+            "user:abc",
+            null,
+            null,
+            isCounted: true,
+            dwellMs: 30_000,
+            scrollDepthRatio: 0.9
+        );
+
+        // Assert
+        viewEvent
+            .DomainEvents.OfType<LyricsEngagedEvent>()
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .Be(new LyricsEngagedEvent(lyricsId, EnumEngagementKind.View, 1));
+    }
+
+    [Fact]
+    public void Create_WhenNotCounted_ShouldRaiseNothing()
+    {
+        // Act
+        LyricsViewEventEntity viewEvent = LyricsViewEventEntity.Create(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "user:abc",
+            null,
+            null,
+            isCounted: false,
+            dwellMs: 100,
+            scrollDepthRatio: 0.1
+        );
+
+        // Assert
+        viewEvent.DomainEvents.Should().BeEmpty();
     }
 }
