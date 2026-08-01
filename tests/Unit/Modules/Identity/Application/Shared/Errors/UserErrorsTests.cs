@@ -391,17 +391,14 @@ public class UserErrorsTests
     }
 
     [Fact]
-    public void BadRequest_WithCustomMessage_ShouldReturnBadRequestException()
+    public void PasswordUpdateRequiresEmail_ShouldReturnBadRequestException()
     {
-        // Arrange
-        const string message = "custom error";
-
         // Act
-        BadRequestException exception = _errors.BadRequest(message);
+        BadRequestException exception = _errors.PasswordUpdateRequiresEmail();
 
         // Assert
         exception.Should().BeOfType<BadRequestException>();
-        exception.Message.Should().Be(message);
+        exception.Message.Should().Be(_validation.PasswordUpdateRequiresEmail());
     }
 
     [Fact]
