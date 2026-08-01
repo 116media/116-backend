@@ -36,7 +36,7 @@ public class PublicUnbookmarkShortVideoHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenShortVideoExistsAndBookmarked_ShouldRemoveBookmarkDecrementAndCommit()
+    public async Task Handle_WhenShortVideoExistsAndBookmarked_ShouldRemoveBookmarkAndCommit()
     {
         // Arrange
         Guid userId = Guid.NewGuid();
@@ -53,7 +53,6 @@ public class PublicUnbookmarkShortVideoHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         _shortVideoRepositoryMock.VerifyRemoveBookmarkCalled(userId, shortVideo.Id);
-        _shortVideoRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
