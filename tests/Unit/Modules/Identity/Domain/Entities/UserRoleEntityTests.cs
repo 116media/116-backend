@@ -1,4 +1,5 @@
 using _116.Identity.Domain.Entities;
+using _116.Identity.Domain.Events;
 using _116.Tests.Fixtures.Factories.Identity;
 using AwesomeAssertions;
 using Xunit;
@@ -13,7 +14,7 @@ public class UserRoleEntityTests
     #region Create Tests
 
     [Fact]
-    public void Create_WithValidParameters_ShouldCreateUserRole()
+    public void CreateBootstrap_WithValidParameters_ShouldCreateUserRole()
     {
         // Arrange
         var id = Guid.NewGuid();
@@ -21,7 +22,7 @@ public class UserRoleEntityTests
         var roleId = Guid.NewGuid();
 
         // Act
-        var userRole = UserRoleEntity.Create(id, userId, roleId);
+        var userRole = UserRoleEntity.CreateBootstrap(id, userId, roleId);
 
         // Assert
         userRole.Id.Should().Be(id);
@@ -30,7 +31,7 @@ public class UserRoleEntityTests
     }
 
     [Fact]
-    public void Create_ShouldAllowEmptyGuids()
+    public void CreateBootstrap_ShouldAllowEmptyGuids()
     {
         // Arrange
         var id = Guid.Empty;
@@ -38,7 +39,7 @@ public class UserRoleEntityTests
         var roleId = Guid.Empty;
 
         // Act
-        var userRole = UserRoleEntity.Create(id, userId, roleId);
+        var userRole = UserRoleEntity.CreateBootstrap(id, userId, roleId);
 
         // Assert
         userRole.Id.Should().Be(Guid.Empty);
@@ -47,10 +48,10 @@ public class UserRoleEntityTests
     }
 
     [Fact]
-    public void Create_ShouldNotSetNavigationProperties()
+    public void CreateBootstrap_ShouldNotSetNavigationProperties()
     {
         // Arrange & Act
-        var userRole = UserRoleEntity.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
 
         // Assert
         // Navigation properties should be null since they're not set in Create
@@ -131,6 +132,58 @@ public class UserRoleEntityTests
         userRole1.RoleId.Should().Be(roleId);
         userRole2.RoleId.Should().Be(roleId);
         userRole1.UserId.Should().NotBe(userRole2.UserId);
+    }
+
+    #endregion
+
+    #region Domain Event Tests
+
+    [Fact]
+    public void Create_ShouldRaiseUserRoleGrantedEvent()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+
+        // Act
+        var userRole = UserRoleEntity.Create(Guid.NewGuid(), userId, roleId, roleName: "Admin");
+
+        // Assert
+        userRole.UserId.Should().Be(userId);
+        userRole.RoleId.Should().Be(roleId);
+
+        UserRoleGrantedEvent raised = userRole.DomainEvents.OfType<UserRoleGrantedEvent>().Single();
+        raised.UserId.Should().Be(userId);
+        raised.RoleId.Should().Be(roleId);
+        raised.RoleName.Should().Be("Admin");
+    }
+
+    [Fact]
+    public void CreateBootstrap_ShouldNotRaiseEvent()
+    {
+        // Act
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+
+        // Assert
+        userRole.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void RecordRevocation_ShouldRaiseUserRoleRevokedEvent()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        var userRole = UserRoleEntity.CreateBootstrap(Guid.NewGuid(), userId, roleId);
+
+        // Act
+        userRole.RecordRevocation("Admin");
+
+        // Assert
+        UserRoleRevokedEvent raised = userRole.DomainEvents.OfType<UserRoleRevokedEvent>().Single();
+        raised.UserId.Should().Be(userId);
+        raised.RoleId.Should().Be(roleId);
+        raised.RoleName.Should().Be("Admin");
     }
 
     #endregion
