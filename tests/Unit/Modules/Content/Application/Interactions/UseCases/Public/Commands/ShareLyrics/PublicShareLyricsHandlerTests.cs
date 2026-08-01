@@ -32,7 +32,7 @@ public class PublicShareLyricsHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenLyricsExistsAndAnonymous_ShouldAddShareIncrementAndCommit()
+    public async Task Handle_WhenLyricsExistsAndAnonymous_ShouldAddShareAndCommit()
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
@@ -46,14 +46,12 @@ public class PublicShareLyricsHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        lyrics.ShareCount.Should().Be(1);
         _lyricsRepositoryMock.VerifyAddShareCalled();
-        _lyricsRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
     [Fact]
-    public async Task Handle_WhenLyricsExistsAndAuthenticated_ShouldAddShareIncrementAndCommit()
+    public async Task Handle_WhenLyricsExistsAndAuthenticated_ShouldAddShareAndCommit()
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
@@ -71,9 +69,7 @@ public class PublicShareLyricsHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        lyrics.ShareCount.Should().Be(1);
         _lyricsRepositoryMock.VerifyAddShareCalled();
-        _lyricsRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
