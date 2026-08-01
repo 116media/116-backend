@@ -208,10 +208,27 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     /// </summary>
     private static void StubExternalServices(IServiceCollection services)
     {
-        Replace<ICloudinaryService, StubCloudinaryService>(services);
+        ReplaceCloudinaryService(services);
         Replace<IYoutubeThumbnailService, StubYoutubeThumbnailService>(services);
         Replace<IStreamingLinkResolutionService, StubStreamingLinkResolutionService>(services);
         ReplaceEmailSender(services);
+    }
+
+    /// <summary>
+    /// Replaces the Cloudinary adapter with the stub, registered as a
+    /// singleton so failure-injection tests can queue a delete failure on the
+    /// same instance the request pipeline resolves.
+    /// </summary>
+    private static void ReplaceCloudinaryService(IServiceCollection services)
+    {
+        var descriptors = services.Where(d => d.ServiceType == typeof(ICloudinaryService)).ToList();
+        foreach (var d in descriptors)
+        {
+            services.Remove(d);
+        }
+
+        services.AddSingleton<StubCloudinaryService>();
+        services.AddSingleton<ICloudinaryService>(sp => sp.GetRequiredService<StubCloudinaryService>());
     }
 
     /// <summary>
