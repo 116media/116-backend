@@ -36,7 +36,7 @@ public class PublicLikeLyricsHandlerTests
     #region Success Cases
 
     [Fact]
-    public async Task Handle_WhenLyricsExistsAndNotLiked_ShouldAddLikeIncrementAndCommit()
+    public async Task Handle_WhenLyricsExistsAndNotLiked_ShouldAddLikeAndCommit()
     {
         // Arrange
         LyricsEntity lyrics = LyricsFactory.Create(Guid.NewGuid());
@@ -51,9 +51,7 @@ public class PublicLikeLyricsHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        lyrics.LikeCount.Should().Be(1);
         _lyricsRepositoryMock.VerifyAddLikeCalled();
-        _lyricsRepositoryMock.VerifyUpdateCalled();
         _unitOfWorkMock.VerifyCommitCalled();
     }
 
