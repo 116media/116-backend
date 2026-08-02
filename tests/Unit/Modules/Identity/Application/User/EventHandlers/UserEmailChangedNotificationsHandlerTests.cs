@@ -143,6 +143,38 @@ public class UserEmailChangedNotificationsHandlerTests
         );
     }
 
+    /// <summary>
+    /// Verifies that an address whose local part cannot be partially revealed —
+    /// a single character, or none at all — is masked entirely rather than
+    /// disclosing the whole local part.
+    /// </summary>
+    [Theory]
+    [InlineData("a@example.com")]
+    [InlineData("@example.com")]
+    public async Task Handle_WithAnUnmaskableLocalPart_ShouldMaskItEntirely(string newEmail)
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        SetupUserName(userId);
+        var domainEvent = new UserEmailChangedEvent(userId, "old@test.com", newEmail);
+
+        // Act
+        await _handler.Handle(domainEvent, CancellationToken.None);
+
+        // Assert
+        _notifierMock.Verify(
+            x =>
+                x.NotifyAsync(
+                    userId,
+                    EnumNotificationType.EmailChanged,
+                    It.Is<IReadOnlyDictionary<string, string>>(t => t["newEmailMasked"] == "***@example.com"),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
     [Fact]
     public async Task Handle_WhenUserNotFound_ShouldSkipBothChannels()
     {
