@@ -54,7 +54,6 @@ public static class CoreModule
 
         // Register error message classes (IStringLocalizer-backed)
         services.AddScoped<ValidationErrorMessage>();
-        services.AddScoped<ConflictErrorMessage>();
         services.AddScoped<InternalServerErrorMessage>();
 
         // Register error factory classes
