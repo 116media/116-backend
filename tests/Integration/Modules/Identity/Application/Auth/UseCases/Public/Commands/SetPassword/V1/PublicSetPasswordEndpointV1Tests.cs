@@ -1,5 +1,6 @@
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SetPassword.V1;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
@@ -70,6 +71,36 @@ public class PublicSetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SetPassword(), request);
 
         await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+    }
+
+    /// <summary>
+    /// Verifies that an OAuth account whose provider shared no email address is refused a local
+    /// password. A local credential without an address would be unrecoverable — no reset could
+    /// ever reach the owner — so the request is rejected before any hash is written.
+    /// </summary>
+    [Fact]
+    public async Task SetPassword_ForOAuthUserWithoutAnEmailAddress_ReturnsBadRequest()
+    {
+        UserEntity oauthUser = await SeedAsync<IdentityDbContext, UserEntity>(context =>
+        {
+            UserEntity created = UserFactory.CreateExternalWithoutEmail(EnumAuthProvider.Facebook);
+            context.Users.Add(created);
+            return created;
+        });
+
+        Client.AuthenticateAs(oauthUser.Id, "Visitor");
+        Client.DefaultRequestHeaders.Add("Accept-Language", "en");
+
+        var request = new PublicSetPasswordRequestBuilder().WithPassword(TestAuth.ValidPassword).Build();
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SetPassword(), request);
+
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest, "An email address is required to set a password.");
+
+        await using var verifyContext = CreateDbContext<IdentityDbContext>();
+        UserEntity untouched = await verifyContext.Users.FirstAsync(u => u.Id == oauthUser.Id);
+        untouched.PasswordHash.Should().BeNull();
+        untouched.AuthProvider.Should().Be(EnumAuthProvider.Facebook);
     }
 
     /// <summary>
