@@ -387,6 +387,18 @@ public class ContentDbContextTests
         result.Should().NotBeNull();
     }
 
+    /// <summary>
+    /// Verifies that the artist ownership claim requests are reachable as a set
+    /// on the context.
+    /// </summary>
+    [Fact]
+    public void ArtistClaimRequests_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ArtistClaimRequestEntity> result = context.ArtistClaimRequests;
+        result.Should().NotBeNull();
+    }
+
     #endregion
 
     #region Schema and Configuration
