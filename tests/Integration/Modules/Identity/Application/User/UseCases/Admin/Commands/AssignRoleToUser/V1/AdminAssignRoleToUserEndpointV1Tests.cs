@@ -115,7 +115,9 @@ public class AdminAssignRoleToUserEndpointV1Tests(PostgresFixture db) : BaseApiT
     }
 
     /// <summary>
-    /// Verifies that assigning a soft-deleted role to a user returns a 400 Bad Request.
+    /// Verifies that assigning a soft-deleted role to a user returns a 400 Bad Request carrying
+    /// the deleted-role message rather than the inactive-role one, since a soft delete also
+    /// clears <c>IsActive</c> and both states would otherwise be indistinguishable.
     /// </summary>
     [Fact]
     public async Task AssignRole_WhenRoleDeleted_ReturnsBadRequest()
@@ -130,8 +132,14 @@ public class AdminAssignRoleToUserEndpointV1Tests(PostgresFixture db) : BaseApiT
         Client.AuthenticateAsSuperAdmin();
         var request = new AdminAssignRoleToUserRequestBuilder().WithRoleId(role.Id).Build();
 
-        var response = await Client.PostAsJsonAsync(UserRolesUrl(TestUser.AdminId), request);
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, UserRolesUrl(TestUser.AdminId))
+        {
+            Content = JsonContent.Create(request),
+        };
+        httpRequest.Headers.Add("Accept-Language", "en");
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        var response = await Client.SendAsync(httpRequest);
+
+        await response.ShouldBeProblem(HttpStatusCode.BadRequest, "Cannot use a deleted role.");
     }
 }
