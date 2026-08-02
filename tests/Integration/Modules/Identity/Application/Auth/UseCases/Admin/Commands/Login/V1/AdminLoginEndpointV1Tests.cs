@@ -93,4 +93,46 @@ public class AdminLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         body.User.IsActive.Should().BeTrue();
         body.User.IsVerified.Should().BeTrue();
     }
+
+    /// <summary>
+    /// Verifies that a known admin account rejected on its password reaches
+    /// <c>AdminLoginAuthFactory</c>'s <c>InvalidCredentials</c> branch: the email lookup succeeds,
+    /// <c>IPasswordService.Verify</c> fails, and the response is a 401 carrying the neutral
+    /// credential message — distinct from the 404 a nonexistent account produces. The password is
+    /// checked before the admin-role and account-status guards, so neither is reached here.
+    /// </summary>
+    [Fact]
+    public async Task Login_WithKnownEmailAndWrongPassword_ReturnsInvalidCredentialsUnauthorized()
+    {
+        var passwordService = Api.Services.GetRequiredService<IPasswordService>();
+        var errors = TestErrorsFactory.CreateUserErrors();
+
+        var email = $"admin-wrong-password-{Guid.NewGuid():N}@test.com";
+        var adminRole = RoleFactory.CreateAdmin();
+        var user = UserFactory.Create(email);
+        user.MarkAsVerified();
+        user.Activate();
+        user.InitializePasswordHash(passwordService.Hash(TestAuth.ValidPassword), errors);
+        var userRole = UserRoleFactory.Create(user.Id, adminRole.Id);
+
+        await SeedAsync<IdentityDbContext>(context =>
+        {
+            context.Roles.Add(adminRole);
+            context.Users.Add(user);
+            context.UserRoles.Add(userRole);
+        });
+
+        Client.ClearAuthentication();
+        Client.DefaultRequestHeaders.Add("X-Device-Id", Guid.NewGuid().ToString());
+        Client.DefaultRequestHeaders.Add("Accept-Language", "en");
+
+        var request = new AdminLoginRequestBuilder()
+            .WithEmail(email)
+            .WithPassword($"{TestAuth.ValidPassword}-not-it")
+            .Build();
+
+        var response = await Client.PostAsJsonAsync(LoginUrl, request);
+
+        await response.ShouldBeProblem(HttpStatusCode.Unauthorized, "Invalid email or password.");
+    }
 }
