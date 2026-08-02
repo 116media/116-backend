@@ -127,6 +127,21 @@ public class EmailTemplateRendererTests
         neutral.Subject.Should().Be(english.Subject);
     }
 
+    /// <summary>
+    /// Verifies that a malformed culture name — one no culture can be built
+    /// from, unlike an unassigned two-letter code — falls back to the neutral
+    /// resources instead of failing the render.
+    /// </summary>
+    [Fact]
+    public void Render_WithAMalformedCultureName_ShouldFallBackToNeutral()
+    {
+        RenderedEmail neutral = Renderer.Render(EnumEmailTemplate.Welcome, AllTokens, "!! not a culture !!");
+        RenderedEmail english = Renderer.Render(EnumEmailTemplate.Welcome, AllTokens, "en");
+
+        neutral.Subject.Should().Be(english.Subject);
+        neutral.TextBody.Should().Be(english.TextBody);
+    }
+
     [Fact]
     public void Render_French_ShouldDifferFromEnglish()
     {
