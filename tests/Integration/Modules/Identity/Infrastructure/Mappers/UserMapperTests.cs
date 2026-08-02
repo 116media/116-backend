@@ -71,8 +71,8 @@ public class UserMapperTests(PostgresFixture postgres) : BaseRepositoryTest(post
 
         UserResponseDto dto = loaded.ToUserResponseDto(_mapper, roles, permissions);
 
-        dto.Roles.Should().HaveCount(1);
-        dto.Permissions.Should().HaveCount(1);
+        dto.Roles.Should().ContainSingle();
+        dto.Permissions.Should().ContainSingle();
         dto.Roles.First().Name.Should().Be("Admin");
         dto.Permissions.First().Resource.Should().Be("users");
     }

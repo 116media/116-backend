@@ -51,7 +51,7 @@ public class AdminGetAllVideosHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Should().NotBeNull();
-        result.Videos.Items.Count().Should().Be(videos.Count);
+        result.Videos.Items.Should().HaveCount(videos.Count);
         result.Videos.Count.Should().Be((long)videos.Count);
     }
 
@@ -95,7 +95,7 @@ public class AdminGetAllVideosHandlerTests : BaseContentHandlerTest
         AdminGetAllVideosResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Videos.Items.Count().Should().Be(published.Count);
+        result.Videos.Items.Should().HaveCount(published.Count);
         result.Videos.Count.Should().Be((long)published.Count);
     }
 }

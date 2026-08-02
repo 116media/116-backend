@@ -2,6 +2,7 @@ using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePromotionLev
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Builders.Requests.Content;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Commands.UpdatePromotionLevel.V1;
@@ -76,9 +77,7 @@ public class AdminUpdatePromotionLevelEndpointV1Tests(PostgresFixture db) : Base
         Client.AuthenticateAsSuperAdmin();
         Guid id = Guid.NewGuid();
         var request = new AdminUpdatePromotionLevelRequestBuilder()
-            .WithName(
-                new string('L', _116.Tests.Fixtures.Constants.TestConstants.Content.PromotionLevel.NameMaxLength + 1)
-            )
+            .WithName(new string('L', TestConstants.Content.PromotionLevel.NameMaxLength + 1))
             .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.PromotionLevels}/{id}", request);

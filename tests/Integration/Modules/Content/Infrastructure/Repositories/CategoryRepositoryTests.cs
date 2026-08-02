@@ -384,6 +384,7 @@ public class CategoryRepositoryTests : BaseRepositoryTest
             "Gossip description",
             isGossip: true,
             isExclusive: false,
+            isDefaultForLyrics: false,
             TestErrorsFactory.CreateCategoryErrors()
         );
         seedContext.Categories.Add(category);

@@ -23,20 +23,50 @@ public class AdminCreateLyricsValidatorTests
         _validator = new AdminCreateLyricsValidator(_i18n);
     }
 
+    private static AdminCreateLyricsCommand BuildValidCommand(
+        Guid? categoryId = null,
+        string? songTitle = null,
+        string? artistName = null,
+        string? slug = null,
+        string? lyricsText = null,
+        string? language = null,
+        Guid? customerId = null,
+        Guid? orderItemId = null
+    ) =>
+        new(
+            CategoryId: categoryId ?? Guid.NewGuid(),
+            SongTitle: songTitle ?? TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
+            ArtistName: artistName ?? TestConstants.Content.Editorial.Lyrics.ValidArtistName,
+            Slug: slug ?? TestConstants.Content.Editorial.Lyrics.ValidSlug,
+            LyricsText: lyricsText ?? TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
+            Language: language ?? TestConstants.Content.Editorial.Lyrics.ValidLanguage,
+            AuthorId: Guid.NewGuid(),
+            VideoId: null,
+            CustomerId: customerId,
+            OrderItemId: orderItemId
+        );
+
     #region Valid Command Tests
 
     [Fact]
     public async Task Validate_WithValidData_ShouldNotHaveErrors()
     {
         // Arrange
-        var command = new AdminCreateLyricsCommand(
-            SongTitle: TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-            ArtistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-            Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            AuthorId: Guid.NewGuid(),
-            VideoId: null
-        );
+        var command = BuildValidCommand();
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Validate_WithBothCustomerIdAndOrderItemId_ShouldNotHaveErrors()
+    {
+        // Arrange
+        var command = BuildValidCommand(customerId: Guid.NewGuid(), orderItemId: Guid.NewGuid());
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -48,20 +78,36 @@ public class AdminCreateLyricsValidatorTests
 
     #endregion
 
+    #region CategoryId Validation Tests
+
+    [Fact]
+    public async Task Validate_WithEmptyCategoryId_ShouldHaveError()
+    {
+        // Arrange
+        var command = BuildValidCommand(categoryId: Guid.Empty);
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreateLyricsCommand.CategoryId)
+                && e.ErrorMessage == _i18n.Lyrics.Msg.CategoryIdRequired()
+            );
+    }
+
+    #endregion
+
     #region SongTitle Validation Tests
 
     [Fact]
     public async Task Validate_WithEmptySongTitle_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreateLyricsCommand(
-            SongTitle: string.Empty,
-            ArtistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-            Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            AuthorId: Guid.NewGuid(),
-            VideoId: null
-        );
+        var command = BuildValidCommand(songTitle: string.Empty);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -80,13 +126,8 @@ public class AdminCreateLyricsValidatorTests
     public async Task Validate_WithSongTitleExceedingMaxLength_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreateLyricsCommand(
-            SongTitle: new string('a', TestConstants.Content.Editorial.Lyrics.SongTitleMaxLength + 1),
-            ArtistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-            Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            AuthorId: Guid.NewGuid(),
-            VideoId: null
+        var command = BuildValidCommand(
+            songTitle: new string('a', TestConstants.Content.Editorial.Lyrics.SongTitleMaxLength + 1)
         );
 
         // Act
@@ -111,14 +152,7 @@ public class AdminCreateLyricsValidatorTests
     public async Task Validate_WithEmptyArtistName_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreateLyricsCommand(
-            SongTitle: TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-            ArtistName: string.Empty,
-            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-            Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            AuthorId: Guid.NewGuid(),
-            VideoId: null
-        );
+        var command = BuildValidCommand(artistName: string.Empty);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -137,13 +171,8 @@ public class AdminCreateLyricsValidatorTests
     public async Task Validate_WithArtistNameExceedingMaxLength_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreateLyricsCommand(
-            SongTitle: TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-            ArtistName: new string('a', TestConstants.Content.Editorial.Lyrics.ArtistNameMaxLength + 1),
-            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-            Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            AuthorId: Guid.NewGuid(),
-            VideoId: null
+        var command = BuildValidCommand(
+            artistName: new string('a', TestConstants.Content.Editorial.Lyrics.ArtistNameMaxLength + 1)
         );
 
         // Act
@@ -162,20 +191,76 @@ public class AdminCreateLyricsValidatorTests
 
     #endregion
 
+    #region Slug Validation Tests
+
+    [Fact]
+    public async Task Validate_WithEmptySlug_ShouldHaveError()
+    {
+        // Arrange
+        var command = BuildValidCommand(slug: string.Empty);
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreateLyricsCommand.Slug)
+                && e.ErrorMessage == _i18n.Lyrics.Msg.SlugRequired()
+            );
+    }
+
+    [Fact]
+    public async Task Validate_WithSlugExceedingMaxLength_ShouldHaveError()
+    {
+        // Arrange
+        var command = BuildValidCommand(
+            slug: new string('a', TestConstants.Content.Editorial.Lyrics.SlugMaxLength + 1)
+        );
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreateLyricsCommand.Slug)
+                && e.ErrorMessage == _i18n.Lyrics.Msg.SlugTooLong(TestConstants.Content.Editorial.Lyrics.SlugMaxLength)
+            );
+    }
+
+    [Fact]
+    public async Task Validate_WithUppercaseSlug_ShouldHaveError()
+    {
+        // Arrange
+        var command = BuildValidCommand(slug: "Invalid-Slug");
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreateLyricsCommand.Slug)
+                && e.ErrorMessage == _i18n.Lyrics.Msg.SlugInvalidFormat()
+            );
+    }
+
+    #endregion
+
     #region LyricsText Validation Tests
 
     [Fact]
     public async Task Validate_WithEmptyLyricsText_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreateLyricsCommand(
-            SongTitle: TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-            ArtistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-            LyricsText: string.Empty,
-            Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            AuthorId: Guid.NewGuid(),
-            VideoId: null
-        );
+        var command = BuildValidCommand(lyricsText: string.Empty);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -198,14 +283,7 @@ public class AdminCreateLyricsValidatorTests
     public async Task Validate_WithEmptyLanguage_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreateLyricsCommand(
-            SongTitle: TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-            ArtistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-            Language: string.Empty,
-            AuthorId: Guid.NewGuid(),
-            VideoId: null
-        );
+        var command = BuildValidCommand(language: string.Empty);
 
         // Act
         ValidationResult result = await _validator.ValidateAsync(command);
@@ -224,13 +302,8 @@ public class AdminCreateLyricsValidatorTests
     public async Task Validate_WithLanguageExceedingMaxLength_ShouldHaveError()
     {
         // Arrange
-        var command = new AdminCreateLyricsCommand(
-            SongTitle: TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
-            ArtistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-            Language: new string('a', TestConstants.Content.Editorial.Lyrics.LanguageMaxLength + 1),
-            AuthorId: Guid.NewGuid(),
-            VideoId: null
+        var command = BuildValidCommand(
+            language: new string('a', TestConstants.Content.Editorial.Lyrics.LanguageMaxLength + 1)
         );
 
         // Act
@@ -249,6 +322,48 @@ public class AdminCreateLyricsValidatorTests
 
     #endregion
 
+    #region Conditional OrderItemId/CustomerId Validation Tests
+
+    [Fact]
+    public async Task Validate_WithCustomerIdButNoOrderItemId_ShouldHaveError()
+    {
+        // Arrange
+        var command = BuildValidCommand(customerId: Guid.NewGuid());
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreateLyricsCommand.OrderItemId)
+                && e.ErrorMessage == _i18n.ContentOrder.Msg.OrderItemIdRequired()
+            );
+    }
+
+    [Fact]
+    public async Task Validate_WithOrderItemIdButNoCustomerId_ShouldHaveError()
+    {
+        // Arrange
+        var command = BuildValidCommand(orderItemId: Guid.NewGuid());
+
+        // Act
+        ValidationResult result = await _validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result
+            .Errors.Should()
+            .Contain(e =>
+                e.PropertyName == nameof(AdminCreateLyricsCommand.CustomerId)
+                && e.ErrorMessage == _i18n.Customer.Msg.CustomerIdRequired()
+            );
+    }
+
+    #endregion
+
     #region Culture Tests
 
     [Theory]
@@ -260,14 +375,7 @@ public class AdminCreateLyricsValidatorTests
         Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
         Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
         var validator = new AdminCreateLyricsValidator(_i18n);
-        var command = new AdminCreateLyricsCommand(
-            SongTitle: string.Empty,
-            ArtistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
-            LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
-            Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            AuthorId: Guid.NewGuid(),
-            VideoId: null
-        );
+        var command = BuildValidCommand(songTitle: string.Empty);
 
         // Act
         ValidationResult result = await validator.ValidateAsync(command);

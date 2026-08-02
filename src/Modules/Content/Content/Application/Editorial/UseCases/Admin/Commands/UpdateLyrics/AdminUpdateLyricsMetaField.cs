@@ -9,12 +9,12 @@ public static class AdminUpdateLyricsMetaField
 {
     public static readonly RouteMetadata UpdateLyrics = new(
         "UpdateLyrics",
-        "Update the lyrics text",
+        "Update a lyrics page",
         """
-            Replaces the lyrics text of the specified lyrics page.
+            Replaces all editable fields of the specified lyrics page: category, song title,
+            artist name, slug, lyrics text, language, linked video, and commerce fields.
             \n
-            Only the lyrics text body can be updated via this endpoint. To update SEO metadata,
-            use the <c>PATCH /api/v1/admin/lyrics/{id}/seo</c> endpoint.
+            To update SEO metadata, use the <c>PATCH /api/v1/admin/lyrics/{id}/seo</c> endpoint.
             \n
             **Authentication Requirements:**\n
             - User must be authenticated with a valid access token\n
@@ -25,7 +25,8 @@ public static class AdminUpdateLyricsMetaField
             - Returns 400 Bad Request if validation fails\n
             - Returns 401 Unauthorized if access token is invalid or expired\n
             - Returns 403 Forbidden if user lacks Admin role\n
-            - Returns 404 Not Found if the lyrics record does not exist\n
+            - Returns 404 Not Found if the lyrics record or category does not exist\n
+            - Returns 409 Conflict if another lyrics page already uses the given slug\n
             - Returns 429 Too Many Requests if rate limit is exceeded\n
         """
     );

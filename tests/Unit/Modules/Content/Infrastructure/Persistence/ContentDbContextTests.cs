@@ -251,6 +251,142 @@ public class ContentDbContextTests
         result.Should().NotBeNull();
     }
 
+    [Fact]
+    public void LyricsTags_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<LyricsTagEntity> result = context.LyricsTags;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ArticleCommentLikes_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ArticleCommentLikeEntity> result = context.ArticleCommentLikes;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Playlists_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<PlaylistEntity> result = context.Playlists;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void PlaylistVideos_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<PlaylistVideoEntity> result = context.PlaylistVideos;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ShortVideoViewEvents_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ShortVideoViewEventEntity> result = context.ShortVideoViewEvents;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void LyricsLikes_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<LyricsLikeEntity> result = context.LyricsLikes;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void LyricsShares_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<LyricsShareEntity> result = context.LyricsShares;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void LyricsViewEvents_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<LyricsViewEventEntity> result = context.LyricsViewEvents;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Artists_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<ArtistEntity> result = context.Artists;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Albums_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<AlbumEntity> result = context.Albums;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void StreamingLinks_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<StreamingLinkEntity> result = context.StreamingLinks;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void LyricsTranslations_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<LyricsTranslationEntity> result = context.LyricsTranslations;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void LyricsTranslationRevisions_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<LyricsTranslationRevisionEntity> result = context.LyricsTranslationRevisions;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void LyricsTranslationVotes_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<LyricsTranslationVoteEntity> result = context.LyricsTranslationVotes;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void LyricsSubmissions_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<LyricsSubmissionEntity> result = context.LyricsSubmissions;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void LyricsRevisions_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<LyricsRevisionEntity> result = context.LyricsRevisions;
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void LyricsRevisionVotes_ShouldReturnDbSet()
+    {
+        using var context = new ContentDbContext(CreateOptions());
+        DbSet<LyricsRevisionVoteEntity> result = context.LyricsRevisionVotes;
+        result.Should().NotBeNull();
+    }
+
     #endregion
 
     #region Schema and Configuration

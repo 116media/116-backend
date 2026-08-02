@@ -252,6 +252,30 @@ public class ArticleEntityTests
     }
 
     [Fact]
+    public void MarkPendingReview_WhenAlreadyPublished_ShouldReturnFalseAndNotDisturbPublishedStatus()
+    {
+        // Arrange
+        ArticleEntity article = ArticleEntity.CreateFree(
+            Guid.NewGuid(),
+            CategoryId,
+            TestConstants.Content.Editorial.Article.ValidTitle,
+            TestConstants.Content.Editorial.Article.ValidSlug,
+            AuthorId,
+            TestErrorsFactory.CreateArticleErrors()
+        );
+        article.MarkPendingReview();
+        article.Approve();
+        article.Publish();
+
+        // Act
+        bool result = article.MarkPendingReview();
+
+        // Assert
+        result.Should().BeFalse();
+        article.Status.Should().Be(EnumContentStatus.Published);
+    }
+
+    [Fact]
     public void Approve_ShouldTransitionToApproved()
     {
         // Arrange

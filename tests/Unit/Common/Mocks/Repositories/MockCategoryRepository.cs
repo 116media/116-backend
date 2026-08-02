@@ -154,6 +154,20 @@ public static class MockCategoryRepository
         mock.Setup(x => x.GetExclusiveCategoryAsync(It.IsAny<CancellationToken>())).ReturnsAsync((CategoryEntity?)null);
         mock.Setup(x => x.GetPinnedToFeedCategoriesAsync(It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<CategoryEntity>());
+        mock.Setup(x => x.GetDefaultLyricsCategoryAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync((CategoryEntity?)null);
+    }
+
+    /// <summary>
+    /// Sets up GetDefaultLyricsCategoryAsync to return the specified category.
+    /// </summary>
+    public static Mock<ICategoryRepository> SetupGetDefaultLyricsCategory(
+        this Mock<ICategoryRepository> mock,
+        CategoryEntity? category
+    )
+    {
+        mock.Setup(x => x.GetDefaultLyricsCategoryAsync(It.IsAny<CancellationToken>())).ReturnsAsync(category);
+        return mock;
     }
 
     public static Mock<ICategoryRepository> SetupGetGossipCategory(

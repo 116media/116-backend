@@ -198,6 +198,13 @@ public class VideoEntity : Aggregate<Guid>
     public ICollection<ShortVideoEntity> Shorts { get; } = new List<ShortVideoEntity>();
 
     /// <summary>
+    /// Optional link to a claimed <see cref="ArtistEntity" /> profile. Null for the common case
+    /// of an unclaimed artist — the free-text artist name shown on the video page (if any)
+    /// remains the display fallback either way.
+    /// </summary>
+    public Guid? ArtistId { get; private set; }
+
+    /// <summary>
     /// Private parameterless constructor required by Entity Framework Core.
     /// </summary>
     private VideoEntity() { }
@@ -397,11 +404,17 @@ public class VideoEntity : Aggregate<Guid>
     /// <summary>
     /// Transitions a free video from <c>Draft</c> → <c>PendingReview</c>,
     /// or a paid video from <c>PendingPayment</c> → <c>PendingReview</c> after payment is verified.
+    /// A no-op when the video is already <c>PendingReview</c> or already <c>Published</c> — the
+    /// latter is what makes retroactive promotion safe: buying promoted placement on an
+    /// already-live video must stamp <see cref="StampPromotion" /> without silently
+    /// un-publishing it back into the review queue.
     /// </summary>
-    /// <returns><c>true</c> if moved to pending review; <c>false</c> if already pending review.</returns>
+    /// <returns>
+    /// <c>true</c> if moved to pending review; <c>false</c> if already pending review or already published.
+    /// </returns>
     public bool MarkPendingReview()
     {
-        if (Status == EnumContentStatus.PendingReview)
+        if (Status is EnumContentStatus.PendingReview or EnumContentStatus.Published)
         {
             return false;
         }
@@ -542,4 +555,15 @@ public class VideoEntity : Aggregate<Guid>
     /// Increments the cached share count.
     /// </summary>
     public void IncrementShareCount() => ShareCount++;
+
+    /// <summary>
+    /// Links this video to a claimed artist profile.
+    /// </summary>
+    /// <param name="artistId">The <see cref="ArtistEntity" /> ID to link.</param>
+    public void LinkArtist(Guid artistId) => ArtistId = artistId;
+
+    /// <summary>
+    /// Clears the artist profile link from this video.
+    /// </summary>
+    public void UnlinkArtist() => ArtistId = null;
 }

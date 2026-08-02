@@ -71,7 +71,7 @@ public class PublicGetVideoFeedEndpointV1Tests(PostgresFixture db) : BaseApiTest
         var response = await Client.GetAsync(FeedUrl);
 
         var body = await response.ReadAsAsync<PublicGetVideoFeedResponse>();
-        body.Sections.Should().HaveCount(1);
+        body.Sections.Should().ContainSingle();
         body.Sections[0].Videos.Should().HaveCount(EditorialFeedConstants.MaxVideosPerFeedSection);
     }
 

@@ -3,6 +3,7 @@ using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Constants;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Application.Pagination;
 using _116.Shared.Contracts.Application.CQRS;
@@ -16,8 +17,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllLyrics
 /// <summary>
 /// Response model for listing all lyrics pages.
 /// </summary>
-/// <param name="Lyrics">Paginated result containing lyrics DTOs and pagination metadata.</param>
-public record AdminGetAllLyricsResponse(PaginatedResult<LyricsDto> Lyrics);
+/// <param name="Lyrics">Paginated result containing lyrics summary DTOs and pagination metadata.</param>
+public record AdminGetAllLyricsResponse(PaginatedResult<LyricsSummaryDto> Lyrics);
 
 /// <summary>
 /// Defines the admin get all lyrics endpoint.
@@ -39,11 +40,23 @@ public class AdminGetAllLyricsEndpointV1 : ICarterModule
         group
             .MapGet(
                 "/",
-                async (IDispatcher dispatcher, int pageIndex = 0, int pageSize = 10, string? search = null) =>
+                async (
+                    IDispatcher dispatcher,
+                    int pageIndex = 0,
+                    int pageSize = 10,
+                    string? search = null,
+                    EnumContentStatus? status = null,
+                    Guid? categoryId = null
+                ) =>
                 {
                     var paginatedRequest = new PaginatedRequest(pageIndex, pageSize);
 
-                    var query = new AdminGetAllLyricsQuery(PaginatedRequest: paginatedRequest, Search: search);
+                    var query = new AdminGetAllLyricsQuery(
+                        PaginatedRequest: paginatedRequest,
+                        Search: search,
+                        Status: status,
+                        CategoryId: categoryId
+                    );
 
                     AdminGetAllLyricsResult result = await dispatcher.Send(request: query);
 

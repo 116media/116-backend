@@ -1,5 +1,6 @@
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Exceptions;
 using Moq;
 
@@ -43,15 +44,13 @@ public static class MockLyricsRepository
         return mock;
     }
 
-    public static Mock<ILyricsRepository> SetupGetBySongTitleAndArtist(
+    public static Mock<ILyricsRepository> SetupGetBySlug(
         this Mock<ILyricsRepository> mock,
-        string songTitle,
-        string artistName,
+        string slug,
         LyricsEntity? entity
     )
     {
-        mock.Setup(x => x.GetBySongTitleAndArtistAsync(songTitle, artistName, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(entity);
+        mock.Setup(x => x.GetBySlugAsync(slug, It.IsAny<CancellationToken>())).ReturnsAsync(entity);
         return mock;
     }
 
@@ -62,7 +61,16 @@ public static class MockLyricsRepository
     )
     {
         mock.Setup(x =>
-                x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<CancellationToken>())
+                x.GetAllAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<EnumContentStatus?>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<CancellationToken>()
+                )
             )
             .ReturnsAsync((lyrics, totalCount));
         return mock;
@@ -76,6 +84,20 @@ public static class MockLyricsRepository
     public static void VerifyUpdateCalled(this Mock<ILyricsRepository> mock)
     {
         mock.Verify(x => x.Update(It.IsAny<LyricsEntity>()), Times.Once);
+    }
+
+    public static Mock<ILyricsRepository> SetupGetPublishedByArtist(
+        this Mock<ILyricsRepository> mock,
+        Guid artistId,
+        List<LyricsEntity> lyrics,
+        int totalCount
+    )
+    {
+        mock.Setup(x =>
+                x.GetPublishedByArtistAsync(artistId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync((lyrics, totalCount));
+        return mock;
     }
 
     public static Mock<ILyricsRepository> SetupGetByVideoIdAsync(
@@ -93,21 +115,192 @@ public static class MockLyricsRepository
         mock.Verify(x => x.Remove(lyrics), Times.Once);
     }
 
+    public static Mock<ILyricsRepository> SetupGetPublishedByAlbumAsync(
+        this Mock<ILyricsRepository> mock,
+        Guid albumId,
+        Guid excludeLyricsId,
+        List<LyricsEntity> lyrics
+    )
+    {
+        mock.Setup(x => x.GetPublishedByAlbumAsync(albumId, excludeLyricsId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(lyrics);
+        return mock;
+    }
+
+    public static Mock<ILyricsRepository> SetupGetByOrderItemIdAsync(
+        this Mock<ILyricsRepository> mock,
+        Guid orderItemId,
+        LyricsEntity? entity
+    )
+    {
+        mock.Setup(x => x.GetByOrderItemIdAsync(orderItemId, It.IsAny<CancellationToken>())).ReturnsAsync(entity);
+        return mock;
+    }
+
+    public static Mock<ILyricsRepository> SetupHasLikedAsync(this Mock<ILyricsRepository> mock, bool result)
+    {
+        mock.Setup(x => x.HasLikedAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+        return mock;
+    }
+
+    public static void VerifyAddLikeCalled(this Mock<ILyricsRepository> mock)
+    {
+        mock.Verify(x => x.AddLikeAsync(It.IsAny<LyricsLikeEntity>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    public static void VerifyRemoveLikeCalled(this Mock<ILyricsRepository> mock, Guid userId, Guid lyricsId)
+    {
+        mock.Verify(x => x.RemoveLikeAsync(userId, lyricsId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    public static void VerifyAddShareCalled(this Mock<ILyricsRepository> mock)
+    {
+        mock.Verify(x => x.AddShareAsync(It.IsAny<LyricsShareEntity>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    public static Mock<ILyricsRepository> SetupHasCountedViewSinceAsync(this Mock<ILyricsRepository> mock, bool result)
+    {
+        mock.Setup(x =>
+                x.HasCountedViewSinceAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(result);
+        return mock;
+    }
+
+    public static Mock<ILyricsRepository> SetupCaptureViewEvent(
+        this Mock<ILyricsRepository> mock,
+        Action<LyricsViewEventEntity> capture
+    )
+    {
+        mock.Setup(x => x.AddViewEventAsync(It.IsAny<LyricsViewEventEntity>(), It.IsAny<CancellationToken>()))
+            .Callback<LyricsViewEventEntity, CancellationToken>((viewEvent, _) => capture(viewEvent))
+            .Returns(Task.CompletedTask);
+        return mock;
+    }
+
+    public static void VerifyAddViewEventCalled(this Mock<ILyricsRepository> mock)
+    {
+        mock.Verify(
+            x => x.AddViewEventAsync(It.IsAny<LyricsViewEventEntity>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    public static void VerifyUpdateNotCalled(this Mock<ILyricsRepository> mock)
+    {
+        mock.Verify(x => x.Update(It.IsAny<LyricsEntity>()), Times.Never);
+    }
+
+    public static void VerifyHasCountedViewSinceNotCalled(this Mock<ILyricsRepository> mock)
+    {
+        mock.Verify(
+            x =>
+                x.HasCountedViewSinceAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Never
+        );
+    }
+
+    public static Mock<ILyricsRepository> SetupGetSimilarAsync(
+        this Mock<ILyricsRepository> mock,
+        Guid lyricsId,
+        IReadOnlyList<LyricsEntity> similar
+    )
+    {
+        mock.Setup(x => x.GetSimilarAsync(lyricsId, It.IsAny<CancellationToken>())).ReturnsAsync(similar);
+        return mock;
+    }
+
+    public static Mock<ILyricsRepository> SetupGetLikedIdsAsync(
+        this Mock<ILyricsRepository> mock,
+        IReadOnlySet<Guid> likedIds
+    )
+    {
+        mock.Setup(x =>
+                x.GetLikedIdsAsync(
+                    It.IsAny<Guid?>(),
+                    It.IsAny<IReadOnlyCollection<Guid>>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(likedIds);
+        return mock;
+    }
+
     private static void SetupDefaults(Mock<ILyricsRepository> mock)
     {
         mock.Setup(x => x.AddAsync(It.IsAny<LyricsEntity>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        mock.Setup(x =>
-                x.GetBySongTitleAndArtistAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())
-            )
+        mock.Setup(x => x.GetBySlugAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((LyricsEntity?)null);
         mock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((LyricsEntity?)null);
         mock.Setup(x => x.GetByVideoIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((LyricsEntity?)null);
+        mock.Setup(x => x.GetPublishedByAlbumAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<LyricsEntity>());
+        mock.Setup(x => x.GetByOrderItemIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((LyricsEntity?)null);
         mock.Setup(x =>
-                x.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<CancellationToken>())
+                x.GetAllAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<EnumContentStatus?>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<string?>(),
+                    It.IsAny<CancellationToken>()
+                )
             )
             .ReturnsAsync((new List<LyricsEntity>(), 0));
+        mock.Setup(x =>
+                x.GetPublishedByArtistAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((new List<LyricsEntity>(), 0));
+        mock.Setup(x => x.HasLikedAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        mock.Setup(x => x.AddLikeAsync(It.IsAny<LyricsLikeEntity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x => x.RemoveLikeAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x => x.AddShareAsync(It.IsAny<LyricsShareEntity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x => x.AddViewEventAsync(It.IsAny<LyricsViewEventEntity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x =>
+                x.HasCountedViewSinceAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<string>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(false);
+        mock.Setup(x =>
+                x.GetLikedIdsAsync(
+                    It.IsAny<Guid?>(),
+                    It.IsAny<IReadOnlyCollection<Guid>>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync((IReadOnlySet<Guid>)new HashSet<Guid>());
+        mock.Setup(x => x.GetSimilarAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((IReadOnlyList<LyricsEntity>)new List<LyricsEntity>());
     }
 }

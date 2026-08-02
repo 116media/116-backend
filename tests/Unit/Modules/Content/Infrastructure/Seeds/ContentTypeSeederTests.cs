@@ -39,18 +39,18 @@ public class ContentTypeSeederTests : IDisposable
     #region SeedAllAsync — Empty Database
 
     [Fact]
-    public async Task SeedAllAsync_WhenDatabaseIsEmpty_ShouldCreateThreeContentTypes()
+    public async Task SeedAllAsync_WhenDatabaseIsEmpty_ShouldCreateFourContentTypes()
     {
         // Act
         await _seeder.SeedAllAsync();
 
         // Assert
         List<ContentTypeEntity> contentTypes = await _context.ContentTypes.ToListAsync();
-        contentTypes.Should().HaveCount(3);
+        contentTypes.Should().HaveCount(4);
     }
 
     [Fact]
-    public async Task SeedAllAsync_WhenDatabaseIsEmpty_ShouldCreateArticleVideoShort()
+    public async Task SeedAllAsync_WhenDatabaseIsEmpty_ShouldCreateArticleVideoShortLyrics()
     {
         // Act
         await _seeder.SeedAllAsync();
@@ -60,6 +60,7 @@ public class ContentTypeSeederTests : IDisposable
         names.Should().Contain("Article");
         names.Should().Contain("Video");
         names.Should().Contain("Short");
+        names.Should().Contain("Lyrics");
     }
 
     [Fact]
@@ -87,9 +88,9 @@ public class ContentTypeSeederTests : IDisposable
         // Act — seed again
         await _seeder.SeedAllAsync();
 
-        // Assert — still only 3
+        // Assert — still only 4
         int count = await _context.ContentTypes.CountAsync();
-        count.Should().Be(3);
+        count.Should().Be(4);
     }
 
     [Fact]

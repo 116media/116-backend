@@ -213,7 +213,7 @@ public class ContentOrderRepositoryTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result!.Id.Should().Be(order.Id);
-        result.Items.Should().HaveCount(1);
+        result.Items.Should().ContainSingle();
     }
 
     [Fact]

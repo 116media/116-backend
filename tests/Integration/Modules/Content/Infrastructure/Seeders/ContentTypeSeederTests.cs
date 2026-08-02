@@ -27,6 +27,7 @@ public class ContentTypeSeederTests(PostgresFixture postgres) : BaseRepositoryTe
             nameof(EnumCoreContentType.Article),
             nameof(EnumCoreContentType.Video),
             nameof(EnumCoreContentType.Short),
+            nameof(EnumCoreContentType.Lyrics),
         ];
         types.Should().HaveCount(expectedNames.Length);
         types.Select(t => t.Name).Should().BeEquivalentTo(expectedNames);
@@ -43,7 +44,7 @@ public class ContentTypeSeederTests(PostgresFixture postgres) : BaseRepositoryTe
         await using var context = CreateDbContext<ContentDbContext>();
         int count = await context.ContentTypes.CountAsync();
 
-        count.Should().Be(3);
+        count.Should().Be(4);
     }
 
     [Fact]
@@ -69,6 +70,6 @@ public class ContentTypeSeederTests(PostgresFixture postgres) : BaseRepositoryTe
         await using var context = CreateDbContext<ContentDbContext>();
         List<ContentTypeEntity> types = await context.ContentTypes.ToListAsync();
 
-        types.Select(t => t.Id).Should().OnlyHaveUniqueItems();
+        types.Should().OnlyHaveUniqueItems(t => t.Id);
     }
 }

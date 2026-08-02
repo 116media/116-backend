@@ -1,5 +1,6 @@
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Session.UseCases.Admin.Queries.GetOwnSessions;
+using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Domain.Entities;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common;
@@ -128,9 +129,7 @@ public class AdminGetOwnSessionsHandlerTests : BaseHandlerTest
         AdminGetOwnSessionsResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result
-            .Sessions.Should()
-            .BeAssignableTo<IReadOnlyCollection<_116.Identity.Application.Shared.DTOs.SessionDto>>();
+        result.Sessions.Should().BeAssignableTo<IReadOnlyCollection<SessionDto>>();
     }
 
     #endregion

@@ -3,10 +3,12 @@ using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
+using _116.Core.Domain.Entities;
 using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using _116.Tests.Fixtures.Factories.Core;
 using _116.Tests.Fixtures.Helpers;
 using _116.Unit.Tests.Common;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
@@ -23,45 +25,67 @@ namespace _116.Unit.Tests.Modules.Content.Application.Editorial.UseCases.Admin.C
 /// </summary>
 public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
 {
+    private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
     private readonly Mock<ILyricsRepository> _lyricsRepositoryMock;
+    private readonly Mock<IVideoRepository> _videoRepositoryMock;
     private readonly Mock<IContentUnitOfWork> _unitOfWorkMock;
     private readonly AdminUpdateLyricsHandler _handler;
 
+    private static readonly Guid CategoryId = Guid.NewGuid();
+
     public AdminUpdateLyricsHandlerTests()
     {
+        _categoryRepositoryMock = MockCategoryRepository.Create();
         _lyricsRepositoryMock = MockLyricsRepository.Create();
+        _videoRepositoryMock = MockVideoRepository.Create();
         _unitOfWorkMock = MockContentUnitOfWork.Create();
-        Mock<IVideoRepository> videoRepositoryMock = MockVideoRepository.Create();
         Mock<IUserLookupService> userLookupMock = MockUserLookupService.Create();
         Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+        FileEntity coverFile = FileFactory.CreateImage();
+        fileRepositoryMock.SetupGetById(coverFile);
         _handler = new AdminUpdateLyricsHandler(
+            _categoryRepositoryMock.Object,
             _lyricsRepositoryMock.Object,
-            videoRepositoryMock.Object,
+            _videoRepositoryMock.Object,
             _unitOfWorkMock.Object,
+            Mapper,
             userLookupMock.Object,
             fileRepositoryMock.Object,
-            Mapper,
             TestErrorsFactory.CreateContentI18n()
         );
     }
 
-    private static AdminUpdateLyricsCommand ValidCommand(string id) =>
+    private static AdminUpdateLyricsCommand BuildCommand(
+        LyricsEntity lyrics,
+        Guid categoryId,
+        string? slug = null,
+        Guid? videoId = null
+    ) =>
         new(
-            Id: id,
+            Id: lyrics.Id.ToString(),
+            CategoryId: categoryId,
             SongTitle: TestConstants.Content.Editorial.Lyrics.ValidSongTitle,
             ArtistName: TestConstants.Content.Editorial.Lyrics.ValidArtistName,
+            Slug: slug ?? lyrics.Slug,
             LyricsText: TestConstants.Content.Editorial.Lyrics.ValidLyricsText,
             Language: TestConstants.Content.Editorial.Lyrics.ValidLanguage,
-            VideoId: null
+            VideoId: videoId,
+            CustomerId: null,
+            OrderItemId: null
         );
+
+    #region Success Cases
 
     [Fact]
     public async Task Handle_WhenLyricsExists_ShouldUpdateAndReturnLyrics()
     {
         // Arrange
-        LyricsEntity lyrics = LyricsFactory.Create();
-        var command = ValidCommand(lyrics.Id.ToString());
+        CategoryEntity category = CategoryFactory.Create(CategoryId);
+        LyricsEntity lyrics = LyricsFactory.Create(CategoryId);
+        AdminUpdateLyricsCommand command = BuildCommand(lyrics, category.Id);
 
+        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
         _lyricsRepositoryMock
             .Setup(x => x.GetByIdOrThrowAsync(lyrics.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(lyrics);
@@ -77,11 +101,80 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
     }
 
     [Fact]
+    public async Task Handle_WhenVideoLinkAdded_ShouldMarkNewVideoHasLyrics()
+    {
+        // Arrange
+        CategoryEntity category = CategoryFactory.Create(CategoryId);
+        LyricsEntity lyrics = LyricsFactory.Create(CategoryId);
+        Guid videoId = Guid.NewGuid();
+        AdminUpdateLyricsCommand command = BuildCommand(lyrics, category.Id, videoId: videoId);
+
+        VideoEntity video = VideoFactory.Create(category.Id);
+
+        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _videoRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(videoId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(video);
+        _lyricsRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(lyrics.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(lyrics);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        video.HasLyrics.Should().BeTrue();
+        _videoRepositoryMock.VerifyUpdateCalled();
+    }
+
+    [Fact]
+    public async Task Handle_WhenVideoLinkChanged_ShouldUnmarkOldVideoAndMarkNewVideo()
+    {
+        // Arrange
+        CategoryEntity category = CategoryFactory.Create(CategoryId);
+        Guid oldVideoId = Guid.NewGuid();
+        Guid newVideoId = Guid.NewGuid();
+        LyricsEntity lyrics = LyricsFactory.CreateForVideo(CategoryId, oldVideoId);
+        AdminUpdateLyricsCommand command = BuildCommand(lyrics, category.Id, videoId: newVideoId);
+
+        VideoEntity oldVideo = VideoFactory.Create(category.Id);
+        oldVideo.MarkHasLyrics();
+        VideoEntity newVideo = VideoFactory.Create(category.Id);
+
+        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _videoRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(oldVideoId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(oldVideo);
+        _videoRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(newVideoId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(newVideo);
+        _lyricsRepositoryMock
+            .Setup(x => x.GetByIdOrThrowAsync(lyrics.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(lyrics);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        oldVideo.HasLyrics.Should().BeFalse();
+        newVideo.HasLyrics.Should().BeTrue();
+        _videoRepositoryMock.Verify(x => x.Update(oldVideo), Times.Once);
+        _videoRepositoryMock.Verify(x => x.Update(newVideo), Times.Once);
+    }
+
+    #endregion
+
+    #region Failure Cases
+
+    [Fact]
     public async Task Handle_WhenLyricsNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
         Guid nonExistentId = Guid.NewGuid();
-        var command = ValidCommand(nonExistentId.ToString());
+        LyricsEntity dummy = LyricsFactory.Create(CategoryId);
+        AdminUpdateLyricsCommand command = BuildCommand(dummy, CategoryId) with { Id = nonExistentId.ToString() };
         _lyricsRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
 
         // Act
@@ -90,4 +183,50 @@ public class AdminUpdateLyricsHandlerTests : BaseContentHandlerTest
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
     }
+
+    [Fact]
+    public async Task Handle_WhenCategoryNotFound_ShouldThrowNotFoundException()
+    {
+        // Arrange
+        LyricsEntity lyrics = LyricsFactory.Create(CategoryId);
+        Guid nonExistentCategoryId = Guid.NewGuid();
+        AdminUpdateLyricsCommand command = BuildCommand(lyrics, nonExistentCategoryId);
+
+        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
+        _categoryRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentCategoryId);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_WhenSlugConflictsWithAnotherLyrics_ShouldThrowConflictException()
+    {
+        // Arrange
+        CategoryEntity category = CategoryFactory.Create(CategoryId);
+        // Lyrics has a different slug so the handler's slug-change check is triggered.
+        LyricsEntity lyrics = LyricsFactory.CreateWithSlug(CategoryId, "original-lyrics-slug");
+        // Command uses ValidSlug — a different slug that already belongs to another lyrics page.
+        AdminUpdateLyricsCommand command = BuildCommand(
+            lyrics,
+            category.Id,
+            slug: TestConstants.Content.Editorial.Lyrics.ValidSlug
+        );
+        LyricsEntity conflicting = LyricsFactory.CreateWithSlug(CategoryId, command.Slug);
+
+        _lyricsRepositoryMock.SetupGetByIdOrThrow(lyrics);
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _lyricsRepositoryMock.SetupGetBySlug(command.Slug, conflicting);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>();
+    }
+
+    #endregion
 }

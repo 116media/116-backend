@@ -30,21 +30,6 @@ public class LyricsErrorsTests
     }
 
     [Fact]
-    public void AlreadyExists_WithSongTitleAndArtistName_ShouldReturnConflictException()
-    {
-        // Arrange
-        const string songTitle = "Eloko Oyo";
-        const string artistName = "Fally Ipupa";
-
-        // Act
-        ConflictException exception = _errors.AlreadyExists(songTitle, artistName);
-
-        // Assert
-        exception.Should().NotBeNull();
-        exception.Message.Should().Contain(_message.AlreadyExists(songTitle, artistName));
-    }
-
-    [Fact]
     public void SongTitleRequired_ShouldReturnBadRequestException()
     {
         BadRequestException exception = _errors.SongTitleRequired();
@@ -69,5 +54,91 @@ public class LyricsErrorsTests
 
         exception.Should().NotBeNull();
         exception.Message.Should().Contain(_message.LyricsTextRequired());
+    }
+
+    [Fact]
+    public void SlugRequired_ShouldReturnBadRequestException()
+    {
+        BadRequestException exception = _errors.SlugRequired();
+
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.SlugRequired());
+    }
+
+    [Fact]
+    public void SlugAlreadyExists_WithSlug_ShouldReturnConflictException()
+    {
+        // Arrange
+        const string slug = "fally-ipupa-eloko-oyo-lyrics";
+
+        // Act
+        ConflictException exception = _errors.SlugAlreadyExists(slug);
+
+        // Assert
+        exception.Should().BeOfType<ConflictException>();
+        exception.Message.Should().Contain(slug);
+    }
+
+    [Fact]
+    public void AlreadySubmitted_ShouldReturnConflictException()
+    {
+        ConflictException exception = _errors.AlreadySubmitted();
+
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadySubmitted());
+    }
+
+    [Fact]
+    public void AlreadyPendingReview_ShouldReturnConflictException()
+    {
+        ConflictException exception = _errors.AlreadyPendingReview();
+
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadyPendingReview());
+    }
+
+    [Fact]
+    public void AlreadyApproved_ShouldReturnConflictException()
+    {
+        ConflictException exception = _errors.AlreadyApproved();
+
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadyApproved());
+    }
+
+    [Fact]
+    public void AlreadyPublished_ShouldReturnConflictException()
+    {
+        ConflictException exception = _errors.AlreadyPublished();
+
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadyPublished());
+    }
+
+    [Fact]
+    public void AlreadyRejected_ShouldReturnConflictException()
+    {
+        ConflictException exception = _errors.AlreadyRejected();
+
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadyRejected());
+    }
+
+    [Fact]
+    public void AlreadyArchived_ShouldReturnConflictException()
+    {
+        ConflictException exception = _errors.AlreadyArchived();
+
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.AlreadyArchived());
+    }
+
+    [Fact]
+    public void InvalidStatusTransition_ShouldReturnBadRequestException()
+    {
+        BadRequestException exception = _errors.InvalidStatusTransition("Draft", "Published");
+
+        exception.Should().NotBeNull();
+        exception.Message.Should().Contain(_message.InvalidStatusTransition("Draft", "Published"));
     }
 }

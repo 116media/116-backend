@@ -21,7 +21,18 @@ namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategor
 /// <param name="Description">The new description.</param>
 /// <param name="IsGossip">Whether this is the gossip category used for homepage feed fallbacks and the gossip strip.</param>
 /// <param name="IsExclusive">Whether this category is the exclusive show featured on the homepage.</param>
-public record AdminUpdateCategoryRequest(string Name, string Slug, string Description, bool IsGossip, bool IsExclusive);
+/// <param name="IsDefaultForLyrics">
+/// Whether this is the default category community-originated lyrics pages are filed under.
+/// At most one category holds this flag; setting it clears the previous holder.
+/// </param>
+public record AdminUpdateCategoryRequest(
+    string Name,
+    string Slug,
+    string Description,
+    bool IsGossip,
+    bool IsExclusive,
+    bool IsDefaultForLyrics
+);
 
 /// <summary>
 /// Response model for a successful category update.
@@ -57,7 +68,8 @@ public class AdminUpdateCategoryEndpointV1 : ICarterModule
                         Slug: request.Slug,
                         Description: request.Description,
                         IsGossip: request.IsGossip,
-                        IsExclusive: request.IsExclusive
+                        IsExclusive: request.IsExclusive,
+                        IsDefaultForLyrics: request.IsDefaultForLyrics
                     );
 
                     AdminUpdateCategoryResult result = await dispatcher.Send(request: command);

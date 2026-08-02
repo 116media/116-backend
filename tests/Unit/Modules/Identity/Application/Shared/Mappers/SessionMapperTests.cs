@@ -1,5 +1,6 @@
 using _116.Identity.Application.Shared.DTOs;
 using _116.Identity.Application.Shared.Mappers;
+using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Shared.Application.DTOs;
 using _116.Tests.Fixtures.Factories.Identity;
@@ -229,7 +230,7 @@ public class SessionMapperTests
         session.CreatedAt = createdAt;
 
         // Act
-        var dtos = new List<_116.Identity.Domain.Entities.SessionEntity> { session }.ToSessionExportDtos(_mapper);
+        var dtos = new List<SessionEntity> { session }.ToSessionExportDtos(_mapper);
 
         // Assert
         dtos[0].CreatedAt.Should().Be(createdAt);
@@ -244,7 +245,7 @@ public class SessionMapperTests
         session.UpdatedAt = updatedAt;
 
         // Act
-        var dtos = new List<_116.Identity.Domain.Entities.SessionEntity> { session }.ToSessionExportDtos(_mapper);
+        var dtos = new List<SessionEntity> { session }.ToSessionExportDtos(_mapper);
 
         // Assert
         dtos[0].UpdatedAt.Should().Be(updatedAt);
@@ -258,7 +259,7 @@ public class SessionMapperTests
         session.CreatedBy = "system";
 
         // Act
-        var dtos = new List<_116.Identity.Domain.Entities.SessionEntity> { session }.ToSessionExportDtos(_mapper);
+        var dtos = new List<SessionEntity> { session }.ToSessionExportDtos(_mapper);
 
         // Assert
         dtos[0].CreatedBy.Should().Be("system");
@@ -271,7 +272,7 @@ public class SessionMapperTests
         var session = SessionFactory.Create();
 
         // Act
-        var dtos = new List<_116.Identity.Domain.Entities.SessionEntity> { session }.ToSessionExportDtos(_mapper);
+        var dtos = new List<SessionEntity> { session }.ToSessionExportDtos(_mapper);
 
         // Assert
         var dto = dtos[0];

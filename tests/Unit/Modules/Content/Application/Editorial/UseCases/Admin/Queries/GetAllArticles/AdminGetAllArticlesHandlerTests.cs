@@ -54,7 +54,7 @@ public class AdminGetAllArticlesHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Should().NotBeNull();
-        result.Articles.Items.Count().Should().Be(articles.Count);
+        result.Articles.Items.Should().HaveCount(articles.Count);
         result.Articles.Count.Should().Be((long)articles.Count);
     }
 
@@ -97,7 +97,7 @@ public class AdminGetAllArticlesHandlerTests : BaseContentHandlerTest
         AdminGetAllArticlesResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Articles.Items.Count().Should().Be(published.Count);
+        result.Articles.Items.Should().HaveCount(published.Count);
         result.Articles.Count.Should().Be((long)published.Count);
     }
 }

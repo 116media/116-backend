@@ -12,9 +12,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AlreadyExists" xml:space="preserve">
-    <value>Lyrics for '{0}' by '{1}' already exist.</value>
-  </data>
   <data name="SongTitleRequired" xml:space="preserve">
     <value>Song title is required.</value>
   </data>
@@ -30,6 +27,21 @@
   <data name="ArtistNameTooLong" xml:space="preserve">
     <value>Artist name must not exceed {0} characters.</value>
   </data>
+  <data name="AlbumTooLong" xml:space="preserve">
+    <value>Album name must not exceed {0} characters.</value>
+  </data>
+  <data name="LabelTooLong" xml:space="preserve">
+    <value>Record label must not exceed {0} characters.</value>
+  </data>
+  <data name="SongwriterTooLong" xml:space="preserve">
+    <value>Songwriter name must not exceed {0} characters.</value>
+  </data>
+  <data name="ProducerTooLong" xml:space="preserve">
+    <value>Producer name must not exceed {0} characters.</value>
+  </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>Cover image file is required.</value>
+  </data>
   <data name="LanguageRequired" xml:space="preserve">
     <value>Lyrics language is required.</value>
   </data>
@@ -44,5 +56,50 @@
   </data>
   <data name="IdInvalid" xml:space="preserve">
     <value>Lyrics ID is invalid.</value>
+  </data>
+  <data name="SlugRequired" xml:space="preserve">
+    <value>Lyrics slug is required.</value>
+  </data>
+  <data name="SlugAlreadyExists" xml:space="preserve">
+    <value>Lyrics with slug '{0}' already exist.</value>
+  </data>
+  <data name="SlugTooLong" xml:space="preserve">
+    <value>Lyrics slug must not exceed {0} characters.</value>
+  </data>
+  <data name="SlugInvalidFormat" xml:space="preserve">
+    <value>Lyrics slug must be lowercase and contain only letters, numbers, and hyphens.</value>
+  </data>
+  <data name="AlreadySubmitted" xml:space="preserve">
+    <value>Lyrics are already pending payment.</value>
+  </data>
+  <data name="AlreadyPendingReview" xml:space="preserve">
+    <value>Lyrics are already pending review.</value>
+  </data>
+  <data name="AlreadyApproved" xml:space="preserve">
+    <value>Lyrics are already approved.</value>
+  </data>
+  <data name="AlreadyPublished" xml:space="preserve">
+    <value>Lyrics are already published.</value>
+  </data>
+  <data name="AlreadyRejected" xml:space="preserve">
+    <value>Lyrics are already rejected.</value>
+  </data>
+  <data name="AlreadyArchived" xml:space="preserve">
+    <value>Lyrics are already archived.</value>
+  </data>
+  <data name="InvalidStatusTransition" xml:space="preserve">
+    <value>Cannot transition lyrics from '{0}' to '{1}'.</value>
+  </data>
+  <data name="CategoryIdRequired" xml:space="preserve">
+    <value>Lyrics category ID is required.</value>
+  </data>
+  <data name="RejectionReasonRequired" xml:space="preserve">
+    <value>Rejection reason is required.</value>
+  </data>
+  <data name="RejectionReasonTooLong" xml:space="preserve">
+    <value>Rejection reason must not exceed {0} characters.</value>
+  </data>
+  <data name="BelongsToAlbum" xml:space="preserve">
+    <value>This lyrics page belongs to an album; update the album's streaming links instead.</value>
   </data>
 </root>

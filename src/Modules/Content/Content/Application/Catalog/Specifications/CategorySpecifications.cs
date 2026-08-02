@@ -106,6 +106,19 @@ public class ExclusiveCategorySpecification : Specification<CategoryEntity>
 }
 
 /// <summary>
+/// Specification that matches the single active category designated as the default for lyrics
+/// pages.
+/// </summary>
+public class DefaultLyricsCategorySpecification : Specification<CategoryEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<CategoryEntity, bool>> ToExpression()
+    {
+        return category => category.IsDefaultForLyrics && category.IsActive;
+    }
+}
+
+/// <summary>
 /// Specification that matches active categories currently pinned to the content feed,
 /// optionally narrowed to a single content type.
 /// Filters on <c>PinnedToFeedAt</c> (the mapped column), not the

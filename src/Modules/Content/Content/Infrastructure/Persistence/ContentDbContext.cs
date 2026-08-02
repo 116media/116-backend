@@ -93,6 +93,11 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options) : DbCo
     public DbSet<LyricsEntity> Lyrics => Set<LyricsEntity>();
 
     /// <summary>
+    /// Gets the DbSet for lyrics tag junction entities.
+    /// </summary>
+    public DbSet<LyricsTagEntity> LyricsTags => Set<LyricsTagEntity>();
+
+    /// <summary>
     /// Gets the DbSet for content order entities.
     /// </summary>
     public DbSet<ContentOrderEntity> ContentOrders => Set<ContentOrderEntity>();
@@ -176,6 +181,66 @@ public class ContentDbContext(DbContextOptions<ContentDbContext> options) : DbCo
     /// Gets the DbSet for raw short video view event entities.
     /// </summary>
     public DbSet<ShortVideoViewEventEntity> ShortVideoViewEvents => Set<ShortVideoViewEventEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for lyrics like entities.
+    /// </summary>
+    public DbSet<LyricsLikeEntity> LyricsLikes => Set<LyricsLikeEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for lyrics share entities.
+    /// </summary>
+    public DbSet<LyricsShareEntity> LyricsShares => Set<LyricsShareEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for raw lyrics view event entities.
+    /// </summary>
+    public DbSet<LyricsViewEventEntity> LyricsViewEvents => Set<LyricsViewEventEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for artist profile entities.
+    /// </summary>
+    public DbSet<ArtistEntity> Artists => Set<ArtistEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for album entities.
+    /// </summary>
+    public DbSet<AlbumEntity> Albums => Set<AlbumEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for streaming link entities.
+    /// </summary>
+    public DbSet<StreamingLinkEntity> StreamingLinks => Set<StreamingLinkEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for lyrics translation entities.
+    /// </summary>
+    public DbSet<LyricsTranslationEntity> LyricsTranslations => Set<LyricsTranslationEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for lyrics translation revision entities.
+    /// </summary>
+    public DbSet<LyricsTranslationRevisionEntity> LyricsTranslationRevisions => Set<LyricsTranslationRevisionEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for lyrics translation vote entities.
+    /// </summary>
+    public DbSet<LyricsTranslationVoteEntity> LyricsTranslationVotes => Set<LyricsTranslationVoteEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for lyrics submission entities.
+    /// </summary>
+    public DbSet<LyricsSubmissionEntity> LyricsSubmissions => Set<LyricsSubmissionEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for lyrics revision entities.
+    /// </summary>
+    public DbSet<LyricsRevisionEntity> LyricsRevisions => Set<LyricsRevisionEntity>();
+
+    /// <summary>
+    /// Gets the DbSet for lyrics revision vote entities.
+    /// </summary>
+    public DbSet<LyricsRevisionVoteEntity> LyricsRevisionVotes => Set<LyricsRevisionVoteEntity>();
 
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)

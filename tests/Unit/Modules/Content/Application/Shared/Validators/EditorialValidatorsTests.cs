@@ -18,6 +18,8 @@ internal record VideoOptionalTitleInput(string? Title);
 
 internal record VideoOptionalSlugInput(string? Slug);
 
+internal record LyricsOptionalSlugInput(string? Slug);
+
 internal class ArticleOptionalTitleValidator : AbstractValidator<ArticleOptionalTitleInput>
 {
     public ArticleOptionalTitleValidator()
@@ -51,6 +53,15 @@ internal class VideoOptionalSlugValidator : AbstractValidator<VideoOptionalSlugI
     {
         VideoErrorMessage i18n = LocalizerFactory.CreateMessage<VideoErrorMessage>();
         RuleFor(x => x.Slug).ValidVideoSlug(i18n, isRequired: false);
+    }
+}
+
+internal class LyricsOptionalSlugValidator : AbstractValidator<LyricsOptionalSlugInput>
+{
+    public LyricsOptionalSlugValidator()
+    {
+        LyricsErrorMessage i18n = LocalizerFactory.CreateMessage<LyricsErrorMessage>();
+        RuleFor(x => x.Slug).ValidLyricsSlug(i18n, isRequired: false);
     }
 }
 
@@ -232,6 +243,55 @@ public class EditorialValidatorsTests
         ValidationResult result = await validator.ValidateAsync(new VideoOptionalSlugInput(Slug: "Invalid Slug"));
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == nameof(VideoOptionalSlugInput.Slug));
+    }
+
+    #endregion
+
+    #region EditorialValidation — ValidLyricsSlug(isRequired: false)
+
+    [Fact]
+    public async Task ValidLyricsSlug_Optional_WithNull_ShouldNotHaveErrors()
+    {
+        var validator = new LyricsOptionalSlugValidator();
+        ValidationResult result = await validator.ValidateAsync(new LyricsOptionalSlugInput(Slug: null));
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidLyricsSlug_Optional_WithWhitespace_ShouldNotHaveErrors()
+    {
+        var validator = new LyricsOptionalSlugValidator();
+        ValidationResult result = await validator.ValidateAsync(new LyricsOptionalSlugInput(Slug: "   "));
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidLyricsSlug_Optional_WithValidSlug_ShouldNotHaveErrors()
+    {
+        var validator = new LyricsOptionalSlugValidator();
+        ValidationResult result = await validator.ValidateAsync(
+            new LyricsOptionalSlugInput(Slug: "fally-ipupa-eloko-oyo-lyrics")
+        );
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ValidLyricsSlug_Optional_WithTooLongSlug_ShouldHaveError()
+    {
+        var validator = new LyricsOptionalSlugValidator();
+        string tooLong = new('a', ContentConstants.MaxSlugLength + 1);
+        ValidationResult result = await validator.ValidateAsync(new LyricsOptionalSlugInput(Slug: tooLong));
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(LyricsOptionalSlugInput.Slug));
+    }
+
+    [Fact]
+    public async Task ValidLyricsSlug_Optional_WithInvalidFormat_ShouldHaveError()
+    {
+        var validator = new LyricsOptionalSlugValidator();
+        ValidationResult result = await validator.ValidateAsync(new LyricsOptionalSlugInput(Slug: "Invalid Slug"));
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(LyricsOptionalSlugInput.Slug));
     }
 
     #endregion

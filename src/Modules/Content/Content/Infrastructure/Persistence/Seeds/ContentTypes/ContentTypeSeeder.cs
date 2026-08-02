@@ -26,6 +26,7 @@ public class ContentTypeSeeder(
         nameof(EnumCoreContentType.Article),
         nameof(EnumCoreContentType.Video),
         nameof(EnumCoreContentType.Short),
+        nameof(EnumCoreContentType.Lyrics),
     ];
 
     /// <inheritdoc />

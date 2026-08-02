@@ -15,24 +15,32 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyric
 /// <summary>
 /// Request model for updating lyrics.
 /// </summary>
+/// <param name="CategoryId">The category this lyrics page belongs to.</param>
 /// <param name="SongTitle">The song title.</param>
 /// <param name="ArtistName">The performing artist name.</param>
+/// <param name="Slug">The URL-safe slug. Must be unique across all lyrics pages.</param>
 /// <param name="LyricsText">The full lyrics text.</param>
 /// <param name="Language">ISO 639-1 language code.</param>
 /// <param name="VideoId">Optional linked video UUID. Null to unlink.</param>
+/// <param name="CustomerId">Optional B2B customer who commissioned this lyrics page.</param>
+/// <param name="OrderItemId">Optional order item this lyrics page fulfils.</param>
 public record AdminUpdateLyricsRequest(
+    Guid CategoryId,
     string SongTitle,
     string ArtistName,
+    string Slug,
     string LyricsText,
     string Language,
-    Guid? VideoId
+    Guid? VideoId,
+    Guid? CustomerId,
+    Guid? OrderItemId
 );
 
 /// <summary>
 /// Response model for successful lyrics update.
 /// </summary>
 /// <param name="Lyrics">The updated lyrics information.</param>
-public record AdminUpdateLyricsResponse(LyricsDto Lyrics);
+public record AdminUpdateLyricsResponse(LyricsDetailDto Lyrics);
 
 /// <summary>
 /// Defines the admin update lyrics endpoint.
@@ -58,11 +66,15 @@ public class AdminUpdateLyricsEndpointV1 : ICarterModule
                 {
                     var command = new AdminUpdateLyricsCommand(
                         Id: id,
+                        Slug: request.Slug,
+                        CategoryId: request.CategoryId,
                         SongTitle: request.SongTitle,
                         ArtistName: request.ArtistName,
                         LyricsText: request.LyricsText,
                         Language: request.Language,
-                        VideoId: request.VideoId
+                        VideoId: request.VideoId,
+                        CustomerId: request.CustomerId,
+                        OrderItemId: request.OrderItemId
                     );
 
                     AdminUpdateLyricsResult result = await dispatcher.Send(request: command);
@@ -83,6 +95,7 @@ public class AdminUpdateLyricsEndpointV1 : ICarterModule
             .ProducesProblem(statusCode: StatusCodes.Status401Unauthorized)
             .ProducesProblem(statusCode: StatusCodes.Status403Forbidden)
             .ProducesProblem(statusCode: StatusCodes.Status404NotFound)
+            .ProducesProblem(statusCode: StatusCodes.Status409Conflict)
             .ProducesProblem(statusCode: StatusCodes.Status429TooManyRequests);
     }
 }

@@ -215,4 +215,24 @@ public static class ContentConstants
     /// Maximum allowed length for a user playlist name.
     /// </summary>
     public const int MaxPlaylistNameLength = 100;
+
+    /// <summary>
+    /// Maximum allowed length for the album name on a lyrics page.
+    /// </summary>
+    public const int MaxAlbumNameLength = 200;
+
+    /// <summary>
+    /// Maximum allowed length for the record label name on a lyrics page.
+    /// </summary>
+    public const int MaxLabelNameLength = 100;
+
+    /// <summary>
+    /// Maximum allowed length for a credited songwriter or producer name on a lyrics page.
+    /// </summary>
+    public const int MaxCreditNameLength = 100;
+
+    /// <summary>
+    /// Maximum allowed length for a streaming platform deep link URL.
+    /// </summary>
+    public const int MaxStreamingLinkUrlLength = 500;
 }

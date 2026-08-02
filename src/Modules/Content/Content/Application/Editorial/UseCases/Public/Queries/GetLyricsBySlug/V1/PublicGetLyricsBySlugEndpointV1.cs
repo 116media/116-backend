@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Constants;
+using _116.Identity.Contracts.Application;
 using _116.Shared.Application.Extensions;
 using _116.Shared.Contracts.Application.CQRS;
 using Carter;
@@ -15,17 +17,39 @@ namespace _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBy
 /// Response model for retrieving lyrics by slug.
 /// </summary>
 /// <param name="Lyrics">The matched lyrics information.</param>
-public record PublicGetLyricsBySlugResponse(LyricsDto Lyrics);
+/// <param name="VideoSlug">
+/// The slug of the linked video, or null if this lyrics page is standalone or the linked
+/// video no longer exists.
+/// </param>
+/// <param name="ArtistSlug">
+/// The slug of the linked artist profile, or null if this lyrics page has no linked
+/// artist profile or the linked profile no longer exists.
+/// </param>
+/// <param name="AlbumTracks">
+/// Other published tracks from the same album, excluding this one. Empty when the lyrics page
+/// has no linked album (a standalone single).
+/// </param>
+/// <param name="StreamingLinks">
+/// The resolved streaming platform deep links for this release — always populated for both an
+/// album track and a standalone single, either curated or generated.
+/// </param>
+public record PublicGetLyricsBySlugResponse(
+    LyricsDetailDto Lyrics,
+    string? VideoSlug,
+    string? ArtistSlug,
+    IReadOnlyList<AlbumTrackDto> AlbumTracks,
+    IReadOnlyList<StreamingLinkDto> StreamingLinks
+);
 
 /// <summary>
 /// Defines the public get lyrics by slug endpoint.
-/// Returns a lyrics page matching the given song title and artist name path parameters.
+/// Returns a lyrics page matching the given URL-safe slug.
 /// </summary>
 public class PublicGetLyricsBySlugEndpointV1 : ICarterModule
 {
     /// <summary>
     /// Configures the lyrics by slug retrieval route within the API pipeline.
-    /// Maps the <c>GET /api/v1/public/lyrics/{songTitle}/{artistName}</c> endpoint.
+    /// Maps the <c>GET /api/v1/public/lyrics/{slug}</c> endpoint.
     /// </summary>
     /// <param name="app">The route builder used to register API endpoints.</param>
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -36,14 +60,27 @@ public class PublicGetLyricsBySlugEndpointV1 : ICarterModule
 
         group
             .MapGet(
-                "/{songTitle}/{artistName}",
-                async (string songTitle, string artistName, IDispatcher dispatcher) =>
+                "/{slug}",
+                async (string slug, ClaimsPrincipal user, IClaimsProvider claimsProvider, IDispatcher dispatcher) =>
                 {
-                    var query = new PublicGetLyricsBySlugQuery(SongTitle: songTitle, ArtistName: artistName);
+                    Guid? userId = null;
+
+                    if (user.Identity?.IsAuthenticated == true)
+                    {
+                        userId = claimsProvider.GetUserIdFromClaims(user: user);
+                    }
+
+                    var query = new PublicGetLyricsBySlugQuery(Slug: slug, CurrentUserId: userId);
 
                     PublicGetLyricsBySlugResult result = await dispatcher.Send(request: query);
 
-                    var response = new PublicGetLyricsBySlugResponse(Lyrics: result.Lyrics);
+                    var response = new PublicGetLyricsBySlugResponse(
+                        Lyrics: result.Lyrics,
+                        VideoSlug: result.VideoSlug,
+                        ArtistSlug: result.ArtistSlug,
+                        AlbumTracks: result.AlbumTracks,
+                        StreamingLinks: result.StreamingLinks
+                    );
                     return Results.Ok(response);
                 }
             )

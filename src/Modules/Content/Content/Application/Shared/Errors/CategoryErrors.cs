@@ -47,6 +47,17 @@ public class CategoryErrors(CategoryErrorMessage i18n)
     }
 
     /// <summary>
+    /// Throws when the default free lyrics category — the seeded fallback every
+    /// community-originated lyrics record (submission approval or verified-artist upload) is
+    /// filed under — has not been configured yet. A real, actionable setup error rather than a
+    /// silent failure.
+    /// </summary>
+    public InternalServerException DefaultLyricsCategoryNotConfigured()
+    {
+        return new InternalServerException(i18n.DefaultLyricsCategoryNotConfigured());
+    }
+
+    /// <summary>
     /// Throws when a category name is required but not provided.
     /// </summary>
     public BadRequestException NameRequired()
@@ -100,6 +111,22 @@ public class CategoryErrors(CategoryErrorMessage i18n)
     public BadRequestException OnlyVideoCategoryCanBeExclusive()
     {
         return new BadRequestException(i18n.OnlyVideoCategoryCanBeExclusive());
+    }
+
+    /// <summary>
+    /// Throws when attempting to mark an inactive category as the default for lyrics pages.
+    /// </summary>
+    public BadRequestException CannotMakeInactiveDefaultForLyrics()
+    {
+        return new BadRequestException(i18n.CannotMakeInactiveDefaultForLyrics());
+    }
+
+    /// <summary>
+    /// Throws when a category outside the Lyrics content type is set as the lyrics default.
+    /// </summary>
+    public BadRequestException OnlyLyricsCategoryCanBeDefault()
+    {
+        return new BadRequestException(i18n.OnlyLyricsCategoryCanBeDefault());
     }
 
     /// <summary>

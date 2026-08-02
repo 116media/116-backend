@@ -68,7 +68,7 @@ public class PackageMapperTests(PostgresFixture postgres) : BaseRepositoryTest(p
 
         PackageDto dto = loaded.ToPackageDto(_mapper);
 
-        dto.Slots.Should().HaveCount(1);
+        dto.Slots.Should().ContainSingle();
         dto.Slots[0].CategoryName.Should().Be("Music");
         dto.Slots[0].CategoryId.Should().Be(category.Id);
     }

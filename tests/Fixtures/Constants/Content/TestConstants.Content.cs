@@ -195,12 +195,44 @@ public static partial class TestConstants
                 public const int SongTitleMaxLength = 200;
                 public const int ArtistNameMaxLength = 100;
                 public const int LanguageMaxLength = 5;
+                public const int SlugMaxLength = 220;
+                public const int RejectionReasonMaxLength = 500;
 
                 public const string ValidSongTitle = "Eloko Oyo";
                 public const string ValidArtistName = "Fally Ipupa";
                 public const string ValidLyricsText =
                     "Eloko oyo na lingi\nMpo na yo nde nazali\nSolola na ngai pamba te\nNa lingi yo koloba.";
                 public const string ValidLanguage = "fr";
+                public const string ValidSlug = "fally-ipupa-eloko-oyo-lyrics";
+                public const string AnotherValidSlug = "fally-ipupa-mabele-lyrics";
+                public const string ValidRejectionReason = "Les paroles contiennent des erreurs de transcription.";
+            }
+
+            /// <summary>
+            /// Constants for Artist entity testing.
+            /// </summary>
+            public static class Artist
+            {
+                public const int NameMaxLength = 100;
+                public const int SlugMaxLength = 220;
+
+                public const string ValidName = "Fally Ipupa";
+                public const string ValidSlug = "fally-ipupa";
+                public const string AnotherValidSlug = "koffi-olomide";
+                public const string ValidBio = "Congolese singer, songwriter, and dancer.";
+            }
+
+            /// <summary>
+            /// Constants for Album entity testing.
+            /// </summary>
+            public static class Album
+            {
+                public const int NameMaxLength = 200;
+                public const int LabelMaxLength = 100;
+
+                public const string ValidName = "Le Grand Kalle Et L'African Jazz";
+                public const string ValidLabel = "Fiesta";
+                public const short ValidReleaseYear = 1960;
             }
 
             /// <summary>

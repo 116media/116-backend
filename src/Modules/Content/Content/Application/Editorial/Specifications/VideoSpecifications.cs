@@ -55,6 +55,18 @@ public class VideoByCategorySpecification(Guid categoryId) : Specification<Video
 }
 
 /// <summary>
+/// Specification that matches videos linked to a specific artist profile.
+/// </summary>
+public class VideoByArtistSpecification(Guid artistId) : Specification<VideoEntity>
+{
+    /// <inheritdoc />
+    public override Expression<Func<VideoEntity, bool>> ToExpression()
+    {
+        return video => video.ArtistId == artistId;
+    }
+}
+
+/// <summary>
 /// Specification that matches videos carrying a tag with the given slug (case-insensitive).
 /// </summary>
 public class VideoByTagSlugSpecification(string tagSlug) : Specification<VideoEntity>

@@ -30,6 +30,7 @@ internal class VideoBuilder
     private DateTimeOffset? _promotedUntil;
     private Guid _promotionLevelId = Guid.NewGuid();
     private DateTimeOffset? _publishedAtOverride;
+    private Guid? _artistId;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VideoBuilder"/> class with a required category ID.
@@ -136,6 +137,15 @@ internal class VideoBuilder
     public VideoBuilder WithThumbnailFileId(Guid fileId)
     {
         _thumbnailFileId = fileId;
+        return this;
+    }
+
+    /// <summary>
+    /// Links this video to a real, addressable artist profile.
+    /// </summary>
+    public VideoBuilder WithArtistId(Guid artistId)
+    {
+        _artistId = artistId;
         return this;
     }
 
@@ -284,6 +294,11 @@ internal class VideoBuilder
             )!;
 
             publishedProp.SetValue(entity, _publishedAtOverride);
+        }
+
+        if (_artistId.HasValue)
+        {
+            entity.LinkArtist(_artistId.Value);
         }
 
         entity.CreatedAt = DateTime.UtcNow;

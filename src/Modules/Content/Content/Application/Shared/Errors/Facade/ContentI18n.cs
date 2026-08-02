@@ -20,7 +20,13 @@ public class ContentI18n(
     PlaylistErrors playlist,
     ArticleInteractionErrors articleInteraction,
     ShortVideoInteractionErrors shortVideoInteraction,
-    PromotionLevelErrors promotionLevel
+    LyricsInteractionErrors lyricsInteraction,
+    PromotionLevelErrors promotionLevel,
+    ArtistErrors artist,
+    AlbumErrors album,
+    TranslationErrors translation,
+    SubmissionErrors submission,
+    LyricsRevisionErrors lyricsRevision
 )
 {
     /// <summary>
@@ -94,7 +100,37 @@ public class ContentI18n(
     public ShortVideoInteractionErrors ShortVideoInteraction => shortVideoInteraction;
 
     /// <summary>
+    /// Lyrics interaction domain errors and messages.
+    /// </summary>
+    public LyricsInteractionErrors LyricsInteraction => lyricsInteraction;
+
+    /// <summary>
     /// Promotion level domain errors and messages.
     /// </summary>
     public PromotionLevelErrors PromotionLevel => promotionLevel;
+
+    /// <summary>
+    /// Artist domain errors and messages.
+    /// </summary>
+    public ArtistErrors Artist => artist;
+
+    /// <summary>
+    /// Album domain errors and messages.
+    /// </summary>
+    public AlbumErrors Album => album;
+
+    /// <summary>
+    /// Lyrics translation and community review domain errors and messages.
+    /// </summary>
+    public TranslationErrors Translation => translation;
+
+    /// <summary>
+    /// Community lyrics submission domain errors and messages.
+    /// </summary>
+    public SubmissionErrors Submission => submission;
+
+    /// <summary>
+    /// Lyrics-text community correction domain errors and messages.
+    /// </summary>
+    public LyricsRevisionErrors LyricsRevision => lyricsRevision;
 }

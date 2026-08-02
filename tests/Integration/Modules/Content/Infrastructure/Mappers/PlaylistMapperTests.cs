@@ -32,7 +32,7 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
         var fileRepository = Resolve<IFileRepository>();
         IReadOnlyList<PlaylistDto> dtos = await loaded.ToPlaylistDtosAsync(_mapper, fileRepository);
 
-        dtos.Should().HaveCount(1);
+        dtos.Should().ContainSingle();
         dtos[0].Id.Should().Be(playlist.Id);
         dtos[0].Name.Should().Be(playlist.Name);
         dtos[0].VideoCount.Should().Be(0);
@@ -73,7 +73,7 @@ public class PlaylistMapperTests(PostgresFixture postgres) : BaseRepositoryTest(
         PlaylistDetailDto dto = await loaded.ToPlaylistDetailDtoAsync(_mapper, fileRepository);
 
         dto.Id.Should().Be(playlist.Id);
-        dto.Videos.Should().HaveCount(1);
+        dto.Videos.Should().ContainSingle();
         dto.Videos[0].Title.Should().Be(video.Title);
         dto.Videos[0].ShareCount.Should().Be(1);
     }

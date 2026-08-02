@@ -69,4 +69,19 @@
   <data name="NotEnoughVideosToPinToFeed" xml:space="preserve">
     <value>This category needs at least {0} published videos to be pinned to the feed.</value>
   </data>
+  <data name="DefaultLyricsCategoryNotConfigured" xml:space="preserve">
+    <value>No default lyrics category has been configured yet.</value>
+  </data>
+  <data name="CannotMakeInactiveDefaultForLyrics" xml:space="preserve">
+    <value>Cannot mark an inactive category as the lyrics default.</value>
+  </data>
+  <data name="OnlyLyricsCategoryCanBeDefault" xml:space="preserve">
+    <value>Only lyrics categories can be marked as the lyrics default.</value>
+  </data>
+  <data name="NoExclusiveCategoryFound" xml:space="preserve">
+    <value>No exclusive category is currently set.</value>
+  </data>
+  <data name="OnlyVideoCategoryCanBeExclusive" xml:space="preserve">
+    <value>Only video categories can be marked as exclusive.</value>
+  </data>
 </root>

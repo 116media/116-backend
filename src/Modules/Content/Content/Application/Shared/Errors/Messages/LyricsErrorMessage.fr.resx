@@ -12,9 +12,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AlreadyExists" xml:space="preserve">
-    <value>Les paroles de « {0} » par « {1} » existent déjà.</value>
-  </data>
   <data name="SongTitleRequired" xml:space="preserve">
     <value>Le titre de la chanson est obligatoire.</value>
   </data>
@@ -30,6 +27,21 @@
   <data name="ArtistNameTooLong" xml:space="preserve">
     <value>Le nom de l'artiste ne doit pas dépasser {0} caractères.</value>
   </data>
+  <data name="AlbumTooLong" xml:space="preserve">
+    <value>Le nom de l'album ne doit pas dépasser {0} caractères.</value>
+  </data>
+  <data name="LabelTooLong" xml:space="preserve">
+    <value>Le nom du label ne doit pas dépasser {0} caractères.</value>
+  </data>
+  <data name="SongwriterTooLong" xml:space="preserve">
+    <value>Le nom de l'auteur ne doit pas dépasser {0} caractères.</value>
+  </data>
+  <data name="ProducerTooLong" xml:space="preserve">
+    <value>Le nom du producteur ne doit pas dépasser {0} caractères.</value>
+  </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>Le fichier de l'image de couverture est obligatoire.</value>
+  </data>
   <data name="LanguageRequired" xml:space="preserve">
     <value>La langue des paroles est obligatoire.</value>
   </data>
@@ -44,5 +56,50 @@
   </data>
   <data name="IdInvalid" xml:space="preserve">
     <value>L'identifiant des paroles est invalide.</value>
+  </data>
+  <data name="SlugRequired" xml:space="preserve">
+    <value>Le slug des paroles est obligatoire.</value>
+  </data>
+  <data name="SlugAlreadyExists" xml:space="preserve">
+    <value>Des paroles avec le slug « {0} » existent déjà.</value>
+  </data>
+  <data name="SlugTooLong" xml:space="preserve">
+    <value>Le slug des paroles ne doit pas dépasser {0} caractères.</value>
+  </data>
+  <data name="SlugInvalidFormat" xml:space="preserve">
+    <value>Le slug des paroles doit être en minuscules et ne contenir que des lettres, des chiffres et des tirets.</value>
+  </data>
+  <data name="AlreadySubmitted" xml:space="preserve">
+    <value>Les paroles sont déjà en attente de paiement.</value>
+  </data>
+  <data name="AlreadyPendingReview" xml:space="preserve">
+    <value>Les paroles sont déjà en attente de révision.</value>
+  </data>
+  <data name="AlreadyApproved" xml:space="preserve">
+    <value>Les paroles sont déjà approuvées.</value>
+  </data>
+  <data name="AlreadyPublished" xml:space="preserve">
+    <value>Les paroles sont déjà publiées.</value>
+  </data>
+  <data name="AlreadyRejected" xml:space="preserve">
+    <value>Les paroles sont déjà rejetées.</value>
+  </data>
+  <data name="AlreadyArchived" xml:space="preserve">
+    <value>Les paroles sont déjà archivées.</value>
+  </data>
+  <data name="InvalidStatusTransition" xml:space="preserve">
+    <value>Impossible de faire passer les paroles de « {0} » à « {1} ».</value>
+  </data>
+  <data name="CategoryIdRequired" xml:space="preserve">
+    <value>L'identifiant de catégorie des paroles est requis.</value>
+  </data>
+  <data name="RejectionReasonRequired" xml:space="preserve">
+    <value>La raison du rejet est obligatoire.</value>
+  </data>
+  <data name="RejectionReasonTooLong" xml:space="preserve">
+    <value>La raison du rejet ne doit pas dépasser {0} caractères.</value>
+  </data>
+  <data name="BelongsToAlbum" xml:space="preserve">
+    <value>Ces paroles appartiennent à un album ; modifiez plutôt les liens de streaming de l'album.</value>
   </data>
 </root>

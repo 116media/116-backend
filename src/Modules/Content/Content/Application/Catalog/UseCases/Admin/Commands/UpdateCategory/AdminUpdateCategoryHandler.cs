@@ -72,12 +72,36 @@ public class AdminUpdateCategoryHandler(
             }
         }
 
+        if (command.IsDefaultForLyrics)
+        {
+            if (!category.IsActive)
+            {
+                throw i18n.Category.CannotMakeInactiveDefaultForLyrics();
+            }
+
+            if (category.ContentType.Name != nameof(EnumCoreContentType.Lyrics))
+            {
+                throw i18n.Category.OnlyLyricsCategoryCanBeDefault();
+            }
+
+            CategoryEntity? currentDefault = await categoryRepository.GetDefaultLyricsCategoryAsync(
+                cancellationToken: cancellationToken
+            );
+
+            if (currentDefault is not null && currentDefault.Id != category.Id)
+            {
+                currentDefault.ClearDefaultForLyrics();
+                await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+            }
+        }
+
         category.Update(
             name: command.Name,
             slug: command.Slug,
             description: command.Description,
             isGossip: command.IsGossip,
             isExclusive: command.IsExclusive,
+            isDefaultForLyrics: command.IsDefaultForLyrics,
             errors: i18n.Category
         );
 

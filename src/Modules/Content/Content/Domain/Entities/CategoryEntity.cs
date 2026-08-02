@@ -73,6 +73,14 @@ public class CategoryEntity : Aggregate<Guid>
     public bool IsExclusive { get; private set; }
 
     /// <summary>
+    /// When true, this category is the default category assigned to lyrics pages created without
+    /// an explicit category (e.g. via <c>GetDefaultLyricsCategoryAsync</c>). Mirrors
+    /// <see cref="IsGossip" />'s shape. Exactly one category should have this flag set at a time.
+    /// A lyrics-only concept — no article or video category carries this flag.
+    /// </summary>
+    public bool IsDefaultForLyrics { get; private set; }
+
+    /// <summary>
     /// The moment this category was pinned to the content feed, or null if it is not pinned.
     /// A non-null value means the category appears as a section in its content-type feed
     /// (video feed, and later the article feed). The timestamp also serves as the FIFO
@@ -120,6 +128,7 @@ public class CategoryEntity : Aggregate<Guid>
     /// <param name="isFree">Whether content in this category is free.</param>
     /// <param name="isGossip">Whether this is the gossip category used for homepage feed fallbacks.</param>
     /// <param name="isExclusive">Whether this category is the exclusive show featured on the homepage.</param>
+    /// <param name="isDefaultForLyrics">Whether this is the default category assigned to lyrics pages.</param>
     /// <returns>A new <see cref="CategoryEntity" /> instance.</returns>
     public static CategoryEntity Create(
         Guid id,
@@ -130,7 +139,8 @@ public class CategoryEntity : Aggregate<Guid>
         bool isFree,
         CategoryErrors errors,
         bool isGossip = false,
-        bool isExclusive = false
+        bool isExclusive = false,
+        bool isDefaultForLyrics = false
     )
     {
         if (string.IsNullOrWhiteSpace(value: name))
@@ -153,6 +163,7 @@ public class CategoryEntity : Aggregate<Guid>
             IsFree = isFree,
             IsGossip = isGossip,
             IsExclusive = isExclusive,
+            IsDefaultForLyrics = isDefaultForLyrics,
             IsActive = true,
         };
     }
@@ -165,6 +176,11 @@ public class CategoryEntity : Aggregate<Guid>
     /// <param name="description">The new description.</param>
     /// <param name="isGossip">Whether this is the gossip category used for homepage feed fallbacks.</param>
     /// <param name="isExclusive">Whether this category is the exclusive show featured on the homepage.</param>
+    /// <param name="isDefaultForLyrics">
+    /// Whether this is the default category assigned to lyrics pages. Required — deliberately not
+    /// optional, because a defaulted value here silently clears a persisted flag at every call site
+    /// that omits it. Callers must pass the intended value explicitly.
+    /// </param>
     /// <param name="errors">The errors factory instance.</param>
     public void Update(
         string name,
@@ -172,6 +188,7 @@ public class CategoryEntity : Aggregate<Guid>
         string description,
         bool isGossip,
         bool isExclusive,
+        bool isDefaultForLyrics,
         CategoryErrors errors
     )
     {
@@ -190,6 +207,26 @@ public class CategoryEntity : Aggregate<Guid>
         Description = description;
         IsGossip = isGossip;
         IsExclusive = isExclusive;
+        IsDefaultForLyrics = isDefaultForLyrics;
+    }
+
+    /// <summary>
+    /// Marks this category as the default category for lyrics pages.
+    /// The handler is responsible for calling <see cref="ClearDefaultForLyrics" /> on the
+    /// previously default category before calling this method.
+    /// </summary>
+    public void SetDefaultForLyrics()
+    {
+        IsDefaultForLyrics = true;
+    }
+
+    /// <summary>
+    /// Removes the default-for-lyrics flag from this category.
+    /// Called by the handler on the previously default category before setting a new one.
+    /// </summary>
+    public void ClearDefaultForLyrics()
+    {
+        IsDefaultForLyrics = false;
     }
 
     /// <summary>

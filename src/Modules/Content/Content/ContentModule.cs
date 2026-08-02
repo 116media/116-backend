@@ -18,6 +18,7 @@ using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Mappers;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
+using _116.Content.Application.Shared.Services;
 using _116.Content.Domain.Constants;
 using _116.Content.Infrastructure.BackgroundJobs;
 using _116.Content.Infrastructure.Cache;
@@ -80,7 +81,13 @@ public static class ContentModule
         services.AddScoped<PlaylistErrorMessage>();
         services.AddScoped<ArticleInteractionErrorMessage>();
         services.AddScoped<ShortVideoInteractionErrorMessage>();
+        services.AddScoped<LyricsInteractionErrorMessage>();
         services.AddScoped<PromotionLevelErrorMessage>();
+        services.AddScoped<ArtistErrorMessage>();
+        services.AddScoped<AlbumErrorMessage>();
+        services.AddScoped<TranslationErrorMessage>();
+        services.AddScoped<SubmissionErrorMessage>();
+        services.AddScoped<LyricsRevisionErrorMessage>();
 
         // Register error factory classes
         services.AddScoped<ArticleErrors>();
@@ -97,7 +104,13 @@ public static class ContentModule
         services.AddScoped<PlaylistErrors>();
         services.AddScoped<ArticleInteractionErrors>();
         services.AddScoped<ShortVideoInteractionErrors>();
+        services.AddScoped<LyricsInteractionErrors>();
         services.AddScoped<PromotionLevelErrors>();
+        services.AddScoped<ArtistErrors>();
+        services.AddScoped<AlbumErrors>();
+        services.AddScoped<TranslationErrors>();
+        services.AddScoped<SubmissionErrors>();
+        services.AddScoped<LyricsRevisionErrors>();
         services.AddScoped<ContentI18n>();
 
         // Register Mapster configuration and IMapper (thread-safe, no global state)
@@ -120,6 +133,15 @@ public static class ContentModule
         services.AddScoped<ILyricsRepository, LyricsRepository>();
         services.AddScoped<IContentOrderRepository, ContentOrderRepository>();
         services.AddScoped<IPlaylistRepository, PlaylistRepository>();
+        services.AddScoped<IArtistRepository, ArtistRepository>();
+        services.AddScoped<IAlbumRepository, AlbumRepository>();
+        services.AddScoped<IStreamingLinkRepository, StreamingLinkRepository>();
+        services.AddScoped<ITranslationRepository, TranslationRepository>();
+        services.AddScoped<ITranslationRevisionRepository, TranslationRevisionRepository>();
+        services.AddScoped<ITranslationVoteRepository, TranslationVoteRepository>();
+        services.AddScoped<ILyricsSubmissionRepository, LyricsSubmissionRepository>();
+        services.AddScoped<ILyricsRevisionRepository, LyricsRevisionRepository>();
+        services.AddScoped<ILyricsRevisionVoteRepository, LyricsRevisionVoteRepository>();
 
         // Commerce factories
         services.AddScoped<IOrderPaymentFactory, OrderPaymentFactory>();
@@ -130,6 +152,7 @@ public static class ContentModule
         services.AddScoped<ICreateOrderFactory, AdminCreateOrderFactory>();
 
         services.AddHttpClient<IYoutubeThumbnailService, YoutubeThumbnailService>();
+        services.AddScoped<ITranslationService, PlaceholderTranslationService>();
         services.AddScheduledJob<AbandonedDraftCleanupJob>(cronExpression: "0 0 * * * ?");
         services.AddScheduledJob<ShortVideoViewEventCleanupJob>(cronExpression: "0 0 3 * * ?");
         services.AddScoped<ContentTypeSeeder>();

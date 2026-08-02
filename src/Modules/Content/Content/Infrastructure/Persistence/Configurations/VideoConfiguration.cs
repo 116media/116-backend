@@ -84,5 +84,12 @@ public class VideoConfiguration : IEntityTypeConfiguration<VideoEntity>
             .HasForeignKey(x => x.PromotionLevelId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder
+            .HasOne<ArtistEntity>()
+            .WithMany()
+            .HasForeignKey(x => x.ArtistId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

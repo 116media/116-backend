@@ -109,6 +109,11 @@ public static class RateLimitingExtension
                 RateLimitPolicies.AdminMetrics,
                 AdminMetricsRateLimitConstants.PermitLimit,
                 AdminMetricsRateLimitConstants.WindowSeconds
+            )
+            .AddPolicy(
+                RateLimitPolicies.ContentContribution,
+                ContentContributionRateLimitConstants.PermitLimit,
+                ContentContributionRateLimitConstants.WindowSeconds
             );
     }
 

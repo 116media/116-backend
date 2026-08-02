@@ -59,4 +59,11 @@ public static class RateLimitPolicies
     /// Algorithm: Fixed Window. Prevents expensive query abuse.
     /// </summary>
     public const string AdminMetrics = "AdminMetrics";
+
+    /// <summary>
+    /// Policy name for authenticated content-contribution endpoints (translations, revisions,
+    /// votes, submissions). Algorithm: Fixed Window. Stricter than ContentBrowsing since these
+    /// are write paths open to any signed-in user, not just read traffic.
+    /// </summary>
+    public const string ContentContribution = "ContentContribution";
 }

@@ -248,4 +248,48 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         await response.ShouldBeProblem(HttpStatusCode.BadRequest);
     }
+
+    /// <summary>
+    /// Only one category may be the featured exclusive show at a time. Updating a second video
+    /// category with <c>IsExclusive</c> set drives the mutex path in the handler, which calls
+    /// <c>CategoryEntity.ClearExclusive</c> on the previous holder before promoting the new one.
+    /// </summary>
+    [Fact]
+    public async Task UpdateCategory_SetExclusive_ClearsPreviouslyExclusiveCategory()
+    {
+        Guid previousExclusiveId = Guid.Empty;
+        CategoryEntity target = await SeedAsync<ContentDbContext, CategoryEntity>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create("Video");
+            ctx.ContentTypes.Add(contentType);
+            CategoryEntity previousExclusive = CategoryFactory.Create(contentType.Id, isExclusive: true);
+            CategoryEntity candidate = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(previousExclusive);
+            ctx.Categories.Add(candidate);
+            previousExclusiveId = previousExclusive.Id;
+            return candidate;
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new
+        {
+            Name = ShortName("ex"),
+            Slug = ShortSlug("ex"),
+            Description = "Now exclusive",
+            IsGossip = false,
+            IsExclusive = true,
+        };
+
+        var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{target.Id}", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.ReadAsAsync<AdminUpdateCategoryResponse>();
+        body.Category.IsExclusive.Should().BeTrue();
+
+        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        CategoryEntity? previous = await verifyContext.Categories.FindAsync(previousExclusiveId);
+        previous!.IsExclusive.Should().BeFalse();
+        CategoryEntity? updated = await verifyContext.Categories.FindAsync(target.Id);
+        updated!.IsExclusive.Should().BeTrue();
+    }
 }

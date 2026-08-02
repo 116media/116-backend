@@ -58,7 +58,8 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: newSlug,
             Description: "Updated description",
             IsGossip: false,
-            IsExclusive: false
+            IsExclusive: false,
+            IsDefaultForLyrics: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -96,7 +97,8 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: slug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: false
+            IsExclusive: false,
+            IsDefaultForLyrics: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -128,7 +130,8 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: true
+            IsExclusive: true,
+            IsDefaultForLyrics: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -156,7 +159,8 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: true
+            IsExclusive: true,
+            IsDefaultForLyrics: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -183,7 +187,8 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: false
+            IsExclusive: false,
+            IsDefaultForLyrics: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -194,6 +199,157 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
 
         // Assert
         _categoryRepositoryMock.Verify(x => x.GetExclusiveCategoryAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    /// <summary>
+    /// Regression guard: an unrelated edit must not clear the lyrics default. Before
+    /// <c>isDefaultForLyrics</c> became a required parameter it defaulted to <c>false</c>, so
+    /// renaming the holder silently unset the flag and broke community lyrics submission.
+    /// </summary>
+    [Fact]
+    public async Task Handle_RenamingTheLyricsDefault_ShouldKeepTheFlagSet()
+    {
+        // Arrange
+        ContentTypeEntity lyricsType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Lyrics));
+        CategoryEntity category = CategoryFactory.Create(lyricsType);
+        category.SetDefaultForLyrics();
+
+        var command = new AdminUpdateCategoryCommand(
+            Id: category.Id.ToString(),
+            Name: TestConstants.Content.Category.AnotherValidName,
+            Slug: TestConstants.Content.Category.ValidSlug,
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsGossip: false,
+            IsExclusive: false,
+            IsDefaultForLyrics: true
+        );
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetDefaultLyricsCategory(category);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        category.IsDefaultForLyrics.Should().BeTrue();
+        category.Name.Should().Be(TestConstants.Content.Category.AnotherValidName);
+    }
+
+    [Fact]
+    public async Task Handle_WithIsDefaultForLyrics_ShouldUnsetCurrentDefault()
+    {
+        // Arrange
+        ContentTypeEntity lyricsType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Lyrics));
+        CategoryEntity category = CategoryFactory.Create(lyricsType);
+        CategoryEntity currentDefault = CategoryFactory.Create(lyricsType);
+        currentDefault.SetDefaultForLyrics();
+
+        var command = new AdminUpdateCategoryCommand(
+            Id: category.Id.ToString(),
+            Name: TestConstants.Content.Category.ValidName,
+            Slug: TestConstants.Content.Category.ValidSlug,
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsGossip: false,
+            IsExclusive: false,
+            IsDefaultForLyrics: true
+        );
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+        _categoryRepositoryMock.SetupGetDefaultLyricsCategory(currentDefault);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        currentDefault.IsDefaultForLyrics.Should().BeFalse();
+        category.IsDefaultForLyrics.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Handle_WithIsDefaultForLyricsFalse_ShouldNotQueryCurrentDefault()
+    {
+        // Arrange
+        ContentTypeEntity lyricsType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Lyrics));
+        CategoryEntity category = CategoryFactory.Create(lyricsType);
+
+        var command = new AdminUpdateCategoryCommand(
+            Id: category.Id.ToString(),
+            Name: TestConstants.Content.Category.ValidName,
+            Slug: TestConstants.Content.Category.ValidSlug,
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsGossip: false,
+            IsExclusive: false,
+            IsDefaultForLyrics: false
+        );
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _categoryRepositoryMock.Verify(
+            x => x.GetDefaultLyricsCategoryAsync(It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task Handle_WithIsDefaultForLyrics_NonLyricsContentType_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        ContentTypeEntity articleType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Article));
+        CategoryEntity category = CategoryFactory.Create(articleType);
+
+        var command = new AdminUpdateCategoryCommand(
+            Id: category.Id.ToString(),
+            Name: TestConstants.Content.Category.ValidName,
+            Slug: TestConstants.Content.Category.ValidSlug,
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsGossip: false,
+            IsExclusive: false,
+            IsDefaultForLyrics: true
+        );
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
+    }
+
+    [Fact]
+    public async Task Handle_WithIsDefaultForLyrics_InactiveCategory_ShouldThrowBadRequestException()
+    {
+        // Arrange
+        ContentTypeEntity lyricsType = ContentTypeFactory.Create(nameof(EnumCoreContentType.Lyrics));
+        CategoryEntity category = CategoryFactory.Create(lyricsType);
+        category.Deactivate();
+
+        var command = new AdminUpdateCategoryCommand(
+            Id: category.Id.ToString(),
+            Name: TestConstants.Content.Category.ValidName,
+            Slug: TestConstants.Content.Category.ValidSlug,
+            Description: TestConstants.Content.Category.ValidDescription,
+            IsGossip: false,
+            IsExclusive: false,
+            IsDefaultForLyrics: true
+        );
+
+        _categoryRepositoryMock.SetupGetByIdOrThrow(category);
+        _categoryRepositoryMock.SetupGetBySlug(TestConstants.Content.Category.ValidSlug, null);
+
+        // Act
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
     }
 
     [Fact]
@@ -209,7 +365,8 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: true
+            IsExclusive: true,
+            IsDefaultForLyrics: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);
@@ -239,7 +396,8 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: true
+            IsExclusive: true,
+            IsDefaultForLyrics: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(inactive);
@@ -264,7 +422,8 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: TestConstants.Content.Category.ValidSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: false
+            IsExclusive: false,
+            IsDefaultForLyrics: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrowNotFound(nonExistentId);
@@ -290,7 +449,8 @@ public class AdminUpdateCategoryHandlerTests : BaseContentHandlerTest
             Slug: conflictingSlug,
             Description: TestConstants.Content.Category.ValidDescription,
             IsGossip: false,
-            IsExclusive: false
+            IsExclusive: false,
+            IsDefaultForLyrics: false
         );
 
         _categoryRepositoryMock.SetupGetByIdOrThrow(category);

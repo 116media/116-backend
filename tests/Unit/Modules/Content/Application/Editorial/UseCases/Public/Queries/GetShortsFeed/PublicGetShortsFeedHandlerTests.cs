@@ -78,7 +78,7 @@ public class PublicGetShortsFeedHandlerTests : BaseContentHandlerTest
         PublicGetShortsFeedResult result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Items.Should().HaveCount(1);
+        result.Items.Should().ContainSingle();
         result.NextCursor.Should().BeNull();
     }
 

@@ -1,6 +1,7 @@
 using _116.Content.Application.Editorial.Builders.Contracts;
 using _116.Content.Application.Editorial.Specifications;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Shared.Application.Specifications;
 
 namespace _116.Content.Application.Editorial.Builders;
@@ -23,6 +24,45 @@ public class LyricsQueryBuilder : ILyricsQueryBuilder
 
         var searchSpec = new LyricsSearchSpecification(search: search);
         CombineSpecification(spec: searchSpec);
+        return this;
+    }
+
+    /// <inheritdoc />
+    public ILyricsQueryBuilder WithStatus(EnumContentStatus? status)
+    {
+        if (!status.HasValue)
+        {
+            return this;
+        }
+
+        var statusSpec = new LyricsByStatusSpecification(status: status.Value);
+        CombineSpecification(spec: statusSpec);
+        return this;
+    }
+
+    /// <inheritdoc />
+    public ILyricsQueryBuilder WithCategory(Guid? categoryId)
+    {
+        if (!categoryId.HasValue)
+        {
+            return this;
+        }
+
+        var categorySpec = new LyricsByCategorySpecification(categoryId: categoryId.Value);
+        CombineSpecification(spec: categorySpec);
+        return this;
+    }
+
+    /// <inheritdoc />
+    public ILyricsQueryBuilder WithLanguage(string? language)
+    {
+        if (string.IsNullOrWhiteSpace(value: language))
+        {
+            return this;
+        }
+
+        var languageSpec = new LyricsByLanguageSpecification(language: language);
+        CombineSpecification(spec: languageSpec);
         return this;
     }
 

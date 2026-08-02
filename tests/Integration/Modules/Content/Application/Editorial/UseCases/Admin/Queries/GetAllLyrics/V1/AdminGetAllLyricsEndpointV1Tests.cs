@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetAllLyrics.V1;
 using _116.Content.Domain.Entities;
+using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -11,6 +12,20 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminGetAllLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private async Task<Guid> SeedCategoryAsync()
+    {
+        return await SeedAsync<ContentDbContext, Guid>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+
+            CategoryEntity category = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(category);
+
+            return category.Id;
+        });
+    }
+
     [Fact]
     public async Task GetAllLyrics_WithNoAuth_ReturnsUnauthorized()
     {
@@ -34,9 +49,10 @@ public class AdminGetAllLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     [Fact]
     public async Task GetAllLyrics_AsAdmin_IsAllowed()
     {
+        Guid categoryId = await SeedCategoryAsync();
         LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
-            LyricsEntity entity = LyricsFactory.Create();
+            LyricsEntity entity = LyricsFactory.Create(categoryId);
             ctx.Lyrics.Add(entity);
             return entity;
         });
@@ -74,15 +90,17 @@ public class AdminGetAllLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
     [Fact]
     public async Task GetAllLyrics_WithSearchQuery_ReturnsFilteredResults()
     {
+        Guid categoryId = await SeedCategoryAsync();
+
         LyricsEntity matchingLyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
-            LyricsEntity entity = LyricsFactory.Create("UniqueSearchTerm Song", "Test Artist");
+            LyricsEntity entity = LyricsFactory.Create(categoryId, "UniqueSearchTerm Song", "Test Artist");
             ctx.Lyrics.Add(entity);
             return entity;
         });
         LyricsEntity otherLyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
-            LyricsEntity entity = LyricsFactory.Create("Completely Different Song", "Other Artist");
+            LyricsEntity entity = LyricsFactory.Create(categoryId, "Completely Different Song", "Other Artist");
             ctx.Lyrics.Add(entity);
             return entity;
         });
@@ -97,5 +115,73 @@ public class AdminGetAllLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         body.Lyrics.Items.Should().Contain(item => item.Id == matchingLyrics.Id);
         body.Lyrics.Items.Should().NotContain(item => item.Id == otherLyrics.Id);
         body.Lyrics.Items.Should().OnlyContain(item => item.SongTitle.Contains("UniqueSearchTerm"));
+    }
+
+    /// <summary>
+    /// Verifies that the status query parameter filters lyrics by editorial workflow status,
+    /// returning only lyrics whose status matches the requested filter.
+    /// </summary>
+    [Fact]
+    public async Task GetAllLyrics_WithStatusFilter_ReturnsOnlyMatchingLyrics()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+
+        LyricsEntity published = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
+        {
+            LyricsEntity entity = LyricsFactory.CreatePublished(categoryId);
+            ctx.Lyrics.Add(entity);
+            return entity;
+        });
+        LyricsEntity draft = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
+        {
+            LyricsEntity entity = LyricsFactory.Create(categoryId);
+            ctx.Lyrics.Add(entity);
+            return entity;
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Lyrics}?status={EnumContentStatus.Published}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetAllLyricsResponse body = await response.ReadAsAsync<AdminGetAllLyricsResponse>();
+        body.Lyrics.Items.Should().Contain(item => item.Id == published.Id);
+        body.Lyrics.Items.Should().NotContain(item => item.Id == draft.Id);
+        body.Lyrics.Items.Should().OnlyContain(item => item.Status == EnumContentStatus.Published);
+    }
+
+    /// <summary>
+    /// Verifies that the categoryId query parameter filters lyrics down to the given category.
+    /// </summary>
+    [Fact]
+    public async Task GetAllLyrics_WithCategoryFilter_ReturnsOnlyMatchingLyrics()
+    {
+        Guid category1Id = await SeedCategoryAsync();
+        Guid category2Id = await SeedCategoryAsync();
+
+        LyricsEntity lyricsInCategory1 = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
+        {
+            LyricsEntity entity = LyricsFactory.Create(category1Id);
+            ctx.Lyrics.Add(entity);
+            return entity;
+        });
+        LyricsEntity lyricsInCategory2 = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
+        {
+            LyricsEntity entity = LyricsFactory.Create(category2Id);
+            ctx.Lyrics.Add(entity);
+            return entity;
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.GetAsync($"{ApiRoutes.Admin.Lyrics}?categoryId={category1Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        AdminGetAllLyricsResponse body = await response.ReadAsAsync<AdminGetAllLyricsResponse>();
+        body.Lyrics.Items.Should().Contain(item => item.Id == lyricsInCategory1.Id);
+        body.Lyrics.Items.Should().NotContain(item => item.Id == lyricsInCategory2.Id);
+        body.Lyrics.Items.Should().OnlyContain(item => item.CategoryId == category1Id);
     }
 }

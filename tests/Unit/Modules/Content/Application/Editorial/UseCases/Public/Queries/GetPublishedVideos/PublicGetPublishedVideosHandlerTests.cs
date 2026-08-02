@@ -50,7 +50,7 @@ public class PublicGetPublishedVideosHandlerTests : BaseContentHandlerTest
 
         // Assert
         result.Should().NotBeNull();
-        result.Videos.Items.Count().Should().Be(videos.Count);
+        result.Videos.Items.Should().HaveCount(videos.Count);
         result.Videos.Count.Should().Be((long)videos.Count);
     }
 

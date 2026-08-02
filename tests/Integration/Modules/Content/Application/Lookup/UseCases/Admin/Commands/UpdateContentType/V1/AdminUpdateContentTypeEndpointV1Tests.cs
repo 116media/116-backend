@@ -2,6 +2,7 @@ using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateContentType.
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Builders.Requests.Content;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Commands.UpdateContentType.V1;
@@ -70,9 +71,7 @@ public class AdminUpdateContentTypeEndpointV1Tests(PostgresFixture db) : BaseApi
         Client.AuthenticateAsSuperAdmin();
         Guid id = Guid.NewGuid();
         var request = new AdminUpdateContentTypeRequestBuilder()
-            .WithName(
-                new string('X', _116.Tests.Fixtures.Constants.TestConstants.Content.ContentType.NameMaxLength + 1)
-            )
+            .WithName(new string('X', TestConstants.Content.ContentType.NameMaxLength + 1))
             .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.ContentTypes}/{id}", request);

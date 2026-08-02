@@ -97,7 +97,7 @@ public class PopularTagsQueryBuilderTests : IDisposable
 
         List<TagEntity> result = await new PopularTagsQueryBuilder().Build(_context).ToListAsync();
 
-        result.Should().HaveCount(1);
+        result.Should().ContainSingle();
         result[0].Id.Should().Be(tag.Id);
     }
 

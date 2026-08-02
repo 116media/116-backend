@@ -175,7 +175,7 @@ public class PublicGetShortsFeedEndpointV1Tests(PostgresFixture db) : BaseApiTes
         var response = await Client.GetAsync($"{FeedUrl}?pageSize=10");
 
         PublicGetShortsFeedResponse body = await response.ReadAsAsync<PublicGetShortsFeedResponse>();
-        body.Items.Should().HaveCount(1);
+        body.Items.Should().ContainSingle();
         body.NextCursor.Should().BeNull();
     }
 }

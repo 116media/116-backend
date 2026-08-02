@@ -260,13 +260,15 @@ public class MapperExtensionTests : BaseContentHandlerTest
     #region LyricsMapper Extensions
 
     [Fact]
-    public void ToLyricsDtos_WithMultipleEntities_ShouldReturnMappedList()
+    public async Task ToLyricsSummaryDtosAsync_WithMultipleEntities_ShouldReturnMappedList()
     {
         // Arrange
-        IReadOnlyList<LyricsEntity> entities = LyricsFactory.CreateMany(3).AsReadOnly();
+        Guid categoryId = Guid.NewGuid();
+        IReadOnlyList<LyricsEntity> entities = LyricsFactory.CreateMany(categoryId, 3).AsReadOnly();
+        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
 
         // Act
-        IReadOnlyList<LyricsDto> result = entities.ToLyricsDtos(Mapper);
+        IReadOnlyList<LyricsSummaryDto> result = await entities.ToLyricsSummaryDtosAsync(fileRepositoryMock.Object);
 
         // Assert
         result.Should().HaveCount(3);
@@ -274,16 +276,38 @@ public class MapperExtensionTests : BaseContentHandlerTest
     }
 
     [Fact]
-    public void ToLyricsDtos_WithEmptyList_ShouldReturnEmptyList()
+    public async Task ToLyricsSummaryDtosAsync_WithEmptyList_ShouldReturnEmptyList()
     {
         // Arrange
         IReadOnlyList<LyricsEntity> entities = new List<LyricsEntity>().AsReadOnly();
+        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
 
         // Act
-        IReadOnlyList<LyricsDto> result = entities.ToLyricsDtos(Mapper);
+        IReadOnlyList<LyricsSummaryDto> result = await entities.ToLyricsSummaryDtosAsync(fileRepositoryMock.Object);
 
         // Assert
         result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ToLyricsSummaryDtoAsync_WithSingleEntity_ShouldMapCoreFields()
+    {
+        // Arrange
+        Guid categoryId = Guid.NewGuid();
+        LyricsEntity entity = LyricsFactory.Create(categoryId);
+        Mock<IFileRepository> fileRepositoryMock = MockFileRepository.Create();
+
+        // Act
+        LyricsSummaryDto dto = await entity.ToLyricsSummaryDtoAsync(fileRepositoryMock.Object);
+
+        // Assert
+        dto.Id.Should().Be(entity.Id);
+        dto.CategoryId.Should().Be(entity.CategoryId);
+        dto.SongTitle.Should().Be(entity.SongTitle);
+        dto.ArtistName.Should().Be(entity.ArtistName);
+        dto.Slug.Should().Be(entity.Slug);
+        dto.Language.Should().Be(entity.Language);
+        dto.Status.Should().Be(entity.Status);
     }
 
     #endregion

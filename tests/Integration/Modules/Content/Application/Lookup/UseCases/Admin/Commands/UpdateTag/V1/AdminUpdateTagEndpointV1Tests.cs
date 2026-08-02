@@ -2,6 +2,7 @@ using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateTag.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Builders.Requests.Content;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Commands.UpdateTag.V1;
@@ -72,7 +73,7 @@ public class AdminUpdateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         Client.AuthenticateAsSuperAdmin();
         Guid id = Guid.NewGuid();
         var request = new AdminUpdateTagRequestBuilder()
-            .WithSlug(new string('a', _116.Tests.Fixtures.Constants.TestConstants.Content.Tag.SlugMaxLength + 1))
+            .WithSlug(new string('a', TestConstants.Content.Tag.SlugMaxLength + 1))
             .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Tags}/{id}", request);
@@ -91,7 +92,7 @@ public class AdminUpdateTagEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
         Client.AuthenticateAsSuperAdmin();
         Guid id = Guid.NewGuid();
         var request = new AdminUpdateTagRequestBuilder()
-            .WithName(new string('T', _116.Tests.Fixtures.Constants.TestConstants.Content.Tag.NameMaxLength + 1))
+            .WithName(new string('T', TestConstants.Content.Tag.NameMaxLength + 1))
             .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Tags}/{id}", request);

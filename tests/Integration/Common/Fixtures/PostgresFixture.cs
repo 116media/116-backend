@@ -45,9 +45,17 @@ public class PostgresFixture : IAsyncLifetime
         await ApplyMigrationsAsync();
         await CreateRespawnerAsync();
 
-        _apiFixture = new ApiFixture(this);
+        _apiFixture = CreateApiFixture();
         _ = _apiFixture.Services;
     }
+
+    /// <summary>
+    /// Creates the <see cref="ApiFixture" /> that boots the application for this container.
+    /// Derived fixtures override this to substitute a differently configured host, such as one
+    /// that keeps the production rate limit policies active.
+    /// </summary>
+    /// <returns>The API fixture used for the lifetime of the container.</returns>
+    protected virtual ApiFixture CreateApiFixture() => new(this);
 
     /// <summary>
     /// Truncates all data across identity, core, and content schemas.

@@ -175,6 +175,12 @@ public static class Routes
             public static string Thumbnail(string collection, Guid id) =>
                 Action(collection, id, EditorialRouteConstants.Thumbnail);
 
+            public static string Metadata(string collection, Guid id) =>
+                Action(collection, id, EditorialRouteConstants.Metadata);
+
+            public static string Cover(string collection, Guid id) =>
+                Action(collection, id, EditorialRouteConstants.Cover);
+
             public static string Video(string collection, Guid id) =>
                 Action(collection, id, EditorialRouteConstants.Video);
 
@@ -189,6 +195,28 @@ public static class Routes
 
             public static string Unpromote(string collection, Guid id) =>
                 Action(collection, id, EditorialRouteConstants.Unpromote);
+
+            public static string StreamingLink(string collection, Guid id, string platform) =>
+                $"{Action(collection, id, EditorialRouteConstants.StreamingLinks)}/{platform}";
+        }
+
+        /// <summary>
+        /// Artist profile sub-resources and actions.
+        /// </summary>
+        public static class Artists
+        {
+            public static string Avatar(Guid id) => $"{ApiRoutes.Admin.Artists}/{id}/{EditorialRouteConstants.Avatar}";
+
+            public static string VerifyOwner(Guid id) =>
+                $"{ApiRoutes.Admin.Artists}/{id}/{EditorialRouteConstants.VerifyOwner}";
+        }
+
+        /// <summary>
+        /// Album sub-resources and actions.
+        /// </summary>
+        public static class Albums
+        {
+            public static string Cover(Guid id) => $"{ApiRoutes.Admin.Albums}/{id}/{EditorialRouteConstants.Cover}";
         }
 
         /// <summary>
@@ -201,6 +229,33 @@ public static class Routes
 
             public static string Deactivate(string collection, Guid id) =>
                 $"{ApiRoutes.Admin.Base}/{collection}/{id}/{LookupRouteConstants.Deactivate}";
+        }
+
+        /// <summary>
+        /// Community lyrics submission moderation and lyrics-revision moderation endpoints.
+        /// </summary>
+        public static class Lyrics
+        {
+            public static string Submissions() => $"{ApiRoutes.Admin.Lyrics}/{EditorialRouteConstants.Submissions}";
+
+            public static string Submission(Guid id) => $"{Submissions()}/{id}";
+
+            public static string RejectSubmission(Guid id) => $"{Submission(id)}/{EditorialRouteConstants.Reject}";
+
+            public static string RequestSubmissionRevision(Guid id) =>
+                $"{Submission(id)}/{EditorialRouteConstants.RequestRevision}";
+
+            public static string Revision(Guid id) =>
+                $"{ApiRoutes.Admin.Lyrics}/{EditorialRouteConstants.Revisions}/{id}";
+        }
+
+        /// <summary>
+        /// Translation-revision moderation endpoints.
+        /// </summary>
+        public static class Translations
+        {
+            public static string Revision(Guid id) =>
+                $"{ApiRoutes.Admin.Translations}/{EditorialRouteConstants.Revisions}/{id}";
         }
     }
 
@@ -319,6 +374,54 @@ public static class Routes
         }
 
         /// <summary>
+        /// Lyrics interaction and similar-lyrics endpoints.
+        /// </summary>
+        public static class Lyrics
+        {
+            public static string Likes(Guid id) => $"{ApiRoutes.Public.Lyrics}/{id}/{InteractionsRouteConstants.Likes}";
+
+            public static string Shares(Guid id) =>
+                $"{ApiRoutes.Public.Lyrics}/{id}/{InteractionsRouteConstants.Shares}";
+
+            public static string Views(Guid id) => $"{ApiRoutes.Public.Lyrics}/{id}/{InteractionsRouteConstants.Views}";
+
+            public static string Similar(Guid id) =>
+                $"{ApiRoutes.Public.Lyrics}/{id}/{EditorialRouteConstants.Similar}";
+
+            public static string Translations(Guid id) =>
+                $"{ApiRoutes.Public.Lyrics}/{id}/{EditorialRouteConstants.Translations}";
+        }
+
+        /// <summary>
+        /// Unscoped community lyrics submission and lyrics-text correction-revision endpoints —
+        /// deliberately outside both the <c>admin</c> and <c>public</c> route groups, mirroring
+        /// the unscoped artist claim route.
+        /// </summary>
+        public static class LyricsSubmissionsAndRevisions
+        {
+            public static string Submissions() => $"{ApiRoutes.Lyrics}/{EditorialRouteConstants.Submissions}";
+
+            public static string Revisions(Guid lyricsId) =>
+                $"{ApiRoutes.Lyrics}/{lyricsId}/{EditorialRouteConstants.Revisions}";
+
+            public static string RevisionVotes(Guid revisionId) =>
+                $"{ApiRoutes.Lyrics}/{EditorialRouteConstants.Revisions}/{revisionId}/{EditorialRouteConstants.Votes}";
+        }
+
+        /// <summary>
+        /// Unscoped translation-revision review endpoints — deliberately outside both the
+        /// <c>admin</c> and <c>public</c> route groups.
+        /// </summary>
+        public static class Translations
+        {
+            public static string Revisions(Guid translationId) =>
+                $"{ApiRoutes.Translations}/{translationId}/{EditorialRouteConstants.Revisions}";
+
+            public static string RevisionVotes(Guid revisionId) =>
+                $"{ApiRoutes.Translations}/{EditorialRouteConstants.Revisions}/{revisionId}/{EditorialRouteConstants.Votes}";
+        }
+
+        /// <summary>
         /// Playlist endpoints.
         /// </summary>
         public static class Playlists
@@ -329,6 +432,19 @@ public static class Routes
                 $"{ApiRoutes.Public.Playlists}/{id}/{InteractionsRouteConstants.PlaylistVideos}";
 
             public static string Video(Guid id, Guid videoId) => $"{Videos(id)}/{videoId}";
+        }
+
+        /// <summary>
+        /// Artist public profile and claim-request endpoints.
+        /// </summary>
+        public static class Artists
+        {
+            public static string BySlug(string slug) => $"{ApiRoutes.Public.Artists}/{slug}";
+
+            /// <summary>
+            /// The unscoped claim-request route — <c>POST /api/v1/artists/{id}/claim</c>.
+            /// </summary>
+            public static string Claim(Guid id) => $"{ApiRoutes.Artists}/{id}/{EditorialRouteConstants.Claim}";
         }
     }
 }

@@ -105,7 +105,7 @@ public class EnumSchemaFilterTests
         // Assert
         schema.Type.Should().Be("integer");
         schema.Format.Should().Be("int32");
-        schema.Enum.Should().HaveCount(1);
+        schema.Enum.Should().ContainSingle();
     }
 
     [Fact]

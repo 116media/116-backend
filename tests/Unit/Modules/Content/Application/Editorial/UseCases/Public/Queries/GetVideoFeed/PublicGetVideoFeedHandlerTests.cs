@@ -59,7 +59,7 @@ public class PublicGetVideoFeedHandlerTests : BaseContentHandlerTest
 
         PublicGetVideoFeedResult result = await _handler.Handle(new PublicGetVideoFeedQuery(), CancellationToken.None);
 
-        result.Sections.Should().HaveCount(1);
+        result.Sections.Should().ContainSingle();
         result.Sections[0].Category.Id.Should().Be(withVideos.Id);
         result.Sections[0].Videos.Should().HaveCount(3);
         _fileRepositoryMock.VerifyGetByIdsCalledOnce();

@@ -386,11 +386,17 @@ public class ArticleEntity : Aggregate<Guid>
     /// <summary>
     /// Transitions a free article from <c>Draft</c> → <c>PendingReview</c>,
     /// or a paid article from <c>PendingPayment</c> → <c>PendingReview</c> after payment is verified.
+    /// A no-op when the article is already <c>PendingReview</c> or already <c>Published</c> — the
+    /// latter is what makes retroactive promotion safe: buying promoted placement on an
+    /// already-live article must stamp <see cref="StampPromotion" /> without silently
+    /// un-publishing it back into the review queue.
     /// </summary>
-    /// <returns><c>true</c> if moved to pending review; <c>false</c> if already pending review.</returns>
+    /// <returns>
+    /// <c>true</c> if moved to pending review; <c>false</c> if already pending review or already published.
+    /// </returns>
     public bool MarkPendingReview()
     {
-        if (Status == EnumContentStatus.PendingReview)
+        if (Status is EnumContentStatus.PendingReview or EnumContentStatus.Published)
         {
             return false;
         }

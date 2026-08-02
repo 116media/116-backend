@@ -2,6 +2,7 @@ using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Session.Factories.Contracts;
 using _116.Identity.Application.Session.Repositories;
 using _116.Identity.Application.Shared.Errors;
+using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Tests.Fixtures.Factories.Identity;
@@ -103,7 +104,7 @@ public class RefreshTokenFactoryTests
 
         // Act & Assert
         Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
-        await act.Should().ThrowExactlyAsync<_116.Identity.Application.Shared.Exceptions.RefreshTokenExpiryException>();
+        await act.Should().ThrowExactlyAsync<RefreshTokenExpiryException>();
     }
 
     [Fact]
@@ -121,7 +122,7 @@ public class RefreshTokenFactoryTests
 
         // Act & Assert
         Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
-        await act.Should().ThrowExactlyAsync<_116.Identity.Application.Shared.Exceptions.RefreshTokenExpiryException>();
+        await act.Should().ThrowExactlyAsync<RefreshTokenExpiryException>();
 
         _refreshTokenServiceMock.Verify(x => x.HashRefreshToken(refreshToken), Times.Once);
     }
@@ -141,7 +142,7 @@ public class RefreshTokenFactoryTests
 
         // Act & Assert
         Func<Task> act = async () => await _factory.RefreshTokenAsync(refreshToken, CancellationToken.None);
-        await act.Should().ThrowExactlyAsync<_116.Identity.Application.Shared.Exceptions.RefreshTokenExpiryException>();
+        await act.Should().ThrowExactlyAsync<RefreshTokenExpiryException>();
 
         _sessionRepositoryMock.Verify(
             x => x.GetByRefreshTokenHashAsync(refreshTokenHash, It.IsAny<CancellationToken>()),
