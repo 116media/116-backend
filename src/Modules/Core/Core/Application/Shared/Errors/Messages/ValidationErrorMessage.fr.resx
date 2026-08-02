@@ -12,18 +12,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="UnsupportedFileType" xml:space="preserve">
-    <value>Le type de fichier « {0} » n'est pas pris en charge. Types autorisés : {1}.</value>
-  </data>
-  <data name="FileTooLarge" xml:space="preserve">
-    <value>La taille du fichier {0} octets dépasse la taille maximale autorisée de {1} octets.</value>
-  </data>
-  <data name="CorruptedFile" xml:space="preserve">
-    <value>Le fichier « {0} » semble être corrompu ou invalide.</value>
-  </data>
-  <data name="InvalidConfiguration" xml:space="preserve">
-    <value>La configuration « {0} » est manquante ou invalide.</value>
-  </data>
   <data name="FileNameRequired" xml:space="preserve">
     <value>Le nom du fichier est obligatoire.</value>
   </data>
