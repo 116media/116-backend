@@ -45,15 +45,16 @@ public class AdminAssignPermissionToRoleHandler(
             cancellationToken: cancellationToken
         );
 
-        // Check if the role is active and not deleted
-        if (!role!.IsActive)
-        {
-            throw i18n.User.RoleIsInactive();
-        }
-
-        if (role.IsDeleted)
+        // Soft deletion also clears IsActive, so the deleted state is checked first to keep the
+        // more specific error reachable.
+        if (role!.IsDeleted)
         {
             throw i18n.User.RoleIsDeleted();
+        }
+
+        if (!role.IsActive)
+        {
+            throw i18n.User.RoleIsInactive();
         }
 
         // Validate permission exists
@@ -62,15 +63,16 @@ public class AdminAssignPermissionToRoleHandler(
             cancellationToken: cancellationToken
         );
 
-        // Check if permission is active and not deleted
-        if (!permission!.IsActive)
-        {
-            throw i18n.User.PermissionIsInactive();
-        }
-
-        if (permission.IsDeleted)
+        // Soft deletion also clears IsActive, so the deleted state is checked first to keep the
+        // more specific error reachable.
+        if (permission!.IsDeleted)
         {
             throw i18n.User.PermissionIsDeleted();
+        }
+
+        if (!permission.IsActive)
+        {
+            throw i18n.User.PermissionIsInactive();
         }
 
         // Check if permission is already assigned to the role
