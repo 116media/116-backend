@@ -3,6 +3,7 @@ using _116.Shared.Domain;
 using _116.Shared.Infrastructure.interceptors;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -241,6 +242,49 @@ public class DispatchDomainEventsInterceptorTests
         await context.SaveChangesAsync();
 
         // Assert
+        publisherMock.Verify(p => p.Publish(It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    /// <summary>
+    /// Verifies that interception carrying no context is a no-op on every entry
+    /// point: nothing is collected, nothing is dispatched, and no guard throws.
+    /// </summary>
+    [Fact]
+    public async Task Interception_WithoutAContext_ShouldCollectAndDispatchNothing()
+    {
+        // Arrange
+        var publisherMock = new Mock<IDomainEventPublisher>();
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddScoped(_ => publisherMock.Object);
+
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+        var interceptor = new DispatchDomainEventsInterceptor(
+            serviceProvider.GetRequiredService<IServiceScopeFactory>(),
+            NullLogger<DispatchDomainEventsInterceptor>.Instance
+        );
+
+        var contextEventData = new DbContextEventData(eventDefinition: null!, messageGenerator: null!, context: null);
+        var completedEventData = new SaveChangesCompletedEventData(
+            eventDefinition: null!,
+            messageGenerator: null!,
+            context: null!,
+            entitiesSavedCount: 0
+        );
+
+        // Act
+        Func<Task> act = async () =>
+        {
+            interceptor.SavingChanges(contextEventData, default);
+            await interceptor.SavingChangesAsync(contextEventData, default);
+            interceptor.SavedChanges(completedEventData, 0);
+            await interceptor.SavedChangesAsync(completedEventData, 0);
+            await interceptor.SaveChangesCanceledAsync(contextEventData);
+        };
+
+        Exception? exception = await Record.ExceptionAsync(act);
+
+        // Assert
+        exception.Should().BeNull();
         publisherMock.Verify(p => p.Publish(It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }
