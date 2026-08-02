@@ -14,48 +14,6 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     public IStringLocalizer Localizer => localizer;
 
     /// <summary>
-    /// Gets the error message for the unsupported file type.
-    /// </summary>
-    /// <param name="fileType">The unsupported file type.</param>
-    /// <param name="allowedTypes">Array of allowed file types.</param>
-    /// <returns>A formatted error message indicating the file type is not supported.</returns>
-    public string UnsupportedFileType(string fileType, string[] allowedTypes)
-    {
-        return string.Format(localizer["UnsupportedFileType"], fileType, string.Join(", ", allowedTypes));
-    }
-
-    /// <summary>
-    /// Gets the error message for the file too large.
-    /// </summary>
-    /// <param name="fileSize">The actual file size in bytes.</param>
-    /// <param name="maxSize">The maximum allowed file size in bytes.</param>
-    /// <returns>A formatted error message indicating the file size exceeds the limit.</returns>
-    public string FileTooLarge(long fileSize, long maxSize)
-    {
-        return string.Format(localizer["FileTooLarge"], fileSize, maxSize);
-    }
-
-    /// <summary>
-    /// Gets the error message for the corrupted file.
-    /// </summary>
-    /// <param name="fileName">The name of the corrupted file.</param>
-    /// <returns>A formatted error message indicating the file is corrupted.</returns>
-    public string CorruptedFile(string fileName)
-    {
-        return string.Format(localizer["CorruptedFile"], fileName);
-    }
-
-    /// <summary>
-    /// Gets the error message for invalid configuration.
-    /// </summary>
-    /// <param name="configKey">The configuration key that is invalid.</param>
-    /// <returns>A formatted error message indicating the configuration is invalid.</returns>
-    public string InvalidConfiguration(string configKey)
-    {
-        return string.Format(localizer["InvalidConfiguration"], configKey);
-    }
-
-    /// <summary>
     /// Error message indicating that file name is required.
     /// </summary>
     public string FileNameRequired()
