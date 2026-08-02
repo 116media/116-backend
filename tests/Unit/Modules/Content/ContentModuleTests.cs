@@ -8,13 +8,16 @@ using _116.Content.Infrastructure.Persistence;
 using _116.Content.Infrastructure.Persistence.Seeds.ContentTypes;
 using _116.Content.Infrastructure.Repositories;
 using _116.Content.Infrastructure.Services;
+using _116.Unit.Tests.Common;
 using AwesomeAssertions;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -213,6 +216,59 @@ public class ContentModuleTests : IDisposable
             // Assert
             result.Should().NotBeNull();
             result.Should().BeSameAs(appBuilderMock.Object);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", previousEnv);
+        }
+    }
+
+    /// <summary>
+    /// Verifies that outside the Testing environment the pipeline runs the
+    /// migration step and then executes the content type seeder, so a fresh
+    /// deployment comes up with the structural content types in place.
+    /// </summary>
+    [Fact]
+    public void UseContentModule_OutsideTheTestingEnvironment_ShouldSeedTheContentTypes()
+    {
+        // Arrange — Development enables migrations and seeding; the migrator is
+        // replaced so the startup migration completes without a database, and
+        // the seeder is bound to an in-memory store it can write to.
+        string? previousEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+
+        DbContextOptions<ContentDbContext> seedOptions = new DbContextOptionsBuilder<ContentDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        try
+        {
+            using var seedContext = new ContentDbContext(seedOptions);
+
+            var services = new ServiceCollection();
+            services.AddLogging();
+            services.AddLocalization();
+            services.AddDbContext<ContentDbContext>(options =>
+                options
+                    .UseNpgsql("Host=localhost;Port=5432;Database=unit;Username=unit;Password=unit")
+                    .ReplaceService<IMigrator, NoOpMigrator>()
+            );
+            services.AddContentModule();
+            services.AddScoped(serviceProvider => new ContentTypeSeeder(
+                seedContext,
+                serviceProvider.GetRequiredService<ILogger<ContentTypeSeeder>>(),
+                serviceProvider.GetRequiredService<ContentTypeErrors>()
+            ));
+
+            ServiceProvider provider = services.BuildServiceProvider();
+            var app = new ApplicationBuilder(provider);
+
+            // Act
+            IApplicationBuilder result = app.UseContentModule();
+
+            // Assert
+            result.Should().BeSameAs(app);
+            seedContext.ContentTypes.Select(contentType => contentType.Name).Should().Contain("Article");
         }
         finally
         {
