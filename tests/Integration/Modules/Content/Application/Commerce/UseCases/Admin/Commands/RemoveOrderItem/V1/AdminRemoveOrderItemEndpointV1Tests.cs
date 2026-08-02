@@ -51,6 +51,31 @@ public class AdminRemoveOrderItemEndpointV1Tests(PostgresFixture db) : BaseApiTe
         await response.ShouldBeProblem(HttpStatusCode.NotFound);
     }
 
+    /// <summary>
+    /// Verifies that an unknown item identifier on an existing Draft order returns the
+    /// <c>ItemNotFound</c> 404 raised by <c>GetItemByIdOrThrowAsync</c> rather than the order
+    /// lookup's own 404. The order exists and is in Draft, so both earlier guards in
+    /// <c>AdminRemoveOrderItemHandler</c> pass and the response names the order item.
+    /// </summary>
+    [Fact]
+    public async Task RemoveOrderItem_ExistingOrderWithUnknownItem_ReturnsNotFoundNamingTheOrderItem()
+    {
+        CustomerEntity customer = CustomerFactory.Create();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        Client.DefaultRequestHeaders.Add("Accept-Language", "en");
+
+        var response = await Client.DeleteAsync(Routes.Admin.Orders.Item(order.Id, Guid.NewGuid()));
+
+        await response.ShouldBeProblem(HttpStatusCode.NotFound, "Could not find the requested order item.");
+    }
+
     [Fact]
     public async Task RemoveOrderItem_WithNoAuth_ReturnsUnauthorized()
     {
