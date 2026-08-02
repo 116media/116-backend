@@ -2,6 +2,7 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.V1;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.V1;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Integration.Tests.Common.Stubs;
+using _116.Mailer.Application.Shared.Exceptions;
 using _116.Mailer.Application.Shared.Repositories;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
@@ -9,7 +10,6 @@ using _116.Mailer.Infrastructure.BackgroundJobs;
 using _116.Mailer.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
 using Microsoft.Extensions.Logging.Abstractions;
-using Quartz;
 
 namespace _116.Integration.Tests.Workflows;
 
@@ -98,7 +98,7 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
             Api.Services.GetRequiredService<IServiceScopeFactory>(),
             NullLogger<OutboxEmailDispatcherJob>.Instance
         );
-        await job.Execute(new Moq.Mock<IJobExecutionContext>().Object);
+        await job.Execute(new TestJobExecutionContext());
 
         stub.Sent.Count.Should().BeGreaterThan(alreadySent);
         stub.Sent.Should().Contain(m => m.To.Address == "drain@example.com" && m.Subject == "Drain me");
@@ -129,13 +129,13 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         );
 
         StubEmailSender stub = Api.Services.GetRequiredService<StubEmailSender>();
-        stub.NextFailure = new _116.Mailer.Application.Shared.Exceptions.EmailDeliveryException("smtp down");
+        stub.NextFailure = new EmailDeliveryException("smtp down");
 
         var job = new OutboxEmailDispatcherJob(
             Api.Services.GetRequiredService<IServiceScopeFactory>(),
             NullLogger<OutboxEmailDispatcherJob>.Instance
         );
-        await job.Execute(new Moq.Mock<IJobExecutionContext>().Object);
+        await job.Execute(new TestJobExecutionContext());
 
         await using MailerDbContext verify = CreateDbContext<MailerDbContext>();
         OutboxEmailEntity retried = await verify.OutboxEmails.SingleAsync(o => o.Id == emailId);
@@ -143,5 +143,54 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         retried.AttemptCount.Should().Be(1);
         retried.NextAttemptAt.Should().BeAfter(DateTime.UtcNow);
         retried.LastError.Should().Contain("smtp down");
+    }
+
+    /// <summary>
+    /// Verifies that a failure the adapter classifies as permanent takes the row out of the
+    /// rotation on its first attempt: <c>RegisterFailure</c> marks it failed instead of consuming
+    /// a retry slot, so the backoff schedule is never consulted and <c>NextAttemptAt</c> keeps the
+    /// value it was enqueued with.
+    /// </summary>
+    [Fact]
+    public async Task Dispatcher_PermanentFailure_MarksTheRowFailedWithoutSchedulingARetry()
+    {
+        Guid emailId = Guid.NewGuid();
+        DateTime enqueuedAt = DateTime.UtcNow.AddSeconds(-5);
+        await SeedAsync<MailerDbContext>(ctx =>
+            ctx.OutboxEmails.Add(
+                OutboxEmailEntity.Enqueue(
+                    id: emailId,
+                    recipientAddress: "rejected@example.com",
+                    recipientName: null,
+                    subject: "Reject me",
+                    htmlBody: "<p>x</p>",
+                    textBody: "x",
+                    template: "Welcome",
+                    now: enqueuedAt
+                )
+            )
+        );
+
+        await using (MailerDbContext seeded = CreateDbContext<MailerDbContext>())
+        {
+            enqueuedAt = (await seeded.OutboxEmails.SingleAsync(o => o.Id == emailId)).NextAttemptAt;
+        }
+
+        StubEmailSender stub = Api.Services.GetRequiredService<StubEmailSender>();
+        stub.NextFailure = new EmailDeliveryException("mailbox does not exist", isTransient: false);
+
+        var job = new OutboxEmailDispatcherJob(
+            Api.Services.GetRequiredService<IServiceScopeFactory>(),
+            NullLogger<OutboxEmailDispatcherJob>.Instance
+        );
+        await job.Execute(new TestJobExecutionContext());
+
+        await using MailerDbContext verify = CreateDbContext<MailerDbContext>();
+        OutboxEmailEntity failed = await verify.OutboxEmails.SingleAsync(o => o.Id == emailId);
+        failed.Status.Should().Be(EnumOutboxEmailStatus.Failed);
+        failed.AttemptCount.Should().Be(1);
+        failed.NextAttemptAt.Should().Be(enqueuedAt);
+        failed.LastError.Should().Contain("mailbox does not exist");
+        failed.SentAt.Should().BeNull();
     }
 }
