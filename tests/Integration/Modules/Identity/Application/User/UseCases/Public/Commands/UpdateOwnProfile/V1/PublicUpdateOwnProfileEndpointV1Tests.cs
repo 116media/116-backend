@@ -43,6 +43,45 @@ public class PublicUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApi
         user.CountryDialCode.Should().Be(request.CountryDialCode);
     }
 
+    /// <summary>
+    /// Verifies that submitting a phone number another account already holds returns the
+    /// <c>PhoneNumberAlreadyExists</c> 409 raised by <c>PublicUpdateProfileAuthFactory</c>. The
+    /// username is left out of the request so the phone-uniqueness check is the only branch that
+    /// can fail, and the caller's own profile is left unchanged because the conflict is thrown
+    /// before the unit of work commits.
+    /// </summary>
+    [Fact]
+    public async Task PublicUpdateOwnProfile_WithPhoneNumberHeldByAnotherUser_ReturnsConflict()
+    {
+        const string countryDialCode = "+1";
+        const string partialPhoneNumber = "5550117788";
+        const string fullPhoneNumber = $"{countryDialCode}{partialPhoneNumber}";
+
+        var sessionId = Guid.NewGuid();
+        await SeedAsync<IdentityDbContext>(context =>
+        {
+            context.Users.Add(UserFactory.CreateWithPhoneNumber(fullPhoneNumber, partialPhoneNumber));
+            context.Sessions.Add(SessionFactory.CreateWithId(sessionId, TestUser.VisitorId));
+        });
+
+        Client.AuthenticateAs(TestUser.VisitorId, "Visitor", sessionId);
+        Client.DefaultRequestHeaders.Add("Accept-Language", "en");
+
+        var request = new PublicUpdateOwnProfileRequestBuilder()
+            .WithUserName(null)
+            .WithPartialPhoneNumber(partialPhoneNumber)
+            .WithCountryDialCode(countryDialCode)
+            .Build();
+
+        var response = await Client.PatchAsJsonAsync(Routes.Public.Me.Profile(), request);
+
+        await response.ShouldBeProblem(HttpStatusCode.Conflict, $"Phone number '{fullPhoneNumber}' is already taken.");
+
+        await using var verifyContext = CreateDbContext<IdentityDbContext>();
+        UserEntity? caller = await verifyContext.Users.FindAsync(TestUser.VisitorId);
+        caller!.FullPhoneNumber.Should().BeNull();
+    }
+
     [Fact]
     public async Task PublicUpdateOwnProfile_AsVisitor_WithoutValidSession_ReturnsForbidden()
     {
