@@ -1,3 +1,4 @@
+using System.Reflection;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 
@@ -17,6 +18,7 @@ internal class ContentOrderItemBuilder
     private decimal? _promoPriceSnapshotUsd;
     private bool _socialBoost;
     private bool _isBonus;
+    private CategoryEntity? _category;
 
     public ContentOrderItemBuilder WithId(Guid id)
     {
@@ -61,9 +63,20 @@ internal class ContentOrderItemBuilder
         return this;
     }
 
+    /// <summary>
+    /// Populates the category navigation, as loading the item with its category
+    /// included would.
+    /// </summary>
+    public ContentOrderItemBuilder WithCategory(CategoryEntity category)
+    {
+        _category = category;
+        _categoryId = category.Id;
+        return this;
+    }
+
     public ContentOrderItemEntity Build()
     {
-        return ContentOrderItemEntity.Create(
+        ContentOrderItemEntity entity = ContentOrderItemEntity.Create(
             _id,
             _orderId,
             _contentKind,
@@ -73,5 +86,17 @@ internal class ContentOrderItemBuilder
             _socialBoost,
             _isBonus
         );
+
+        if (_category is not null)
+        {
+            PropertyInfo prop = typeof(ContentOrderItemEntity).GetProperty(
+                nameof(ContentOrderItemEntity.Category),
+                BindingFlags.Public | BindingFlags.Instance
+            )!;
+
+            prop.SetValue(entity, _category);
+        }
+
+        return entity;
     }
 }
