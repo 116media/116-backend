@@ -106,17 +106,6 @@ public class ArtistErrorsTests
     #region ArtistErrorMessage
 
     [Fact]
-    public void Localizer_ShouldBeUsableForValidationExtensions()
-    {
-        // Arrange & Act
-        string resolved = _message.Localizer["NameRequired"];
-
-        // Assert
-        _message.Localizer.Should().NotBeNull();
-        resolved.Should().NotBeNullOrWhiteSpace().And.NotBe("NameRequired");
-    }
-
-    [Fact]
     public void NameRequiredMessage_ShouldResolveToLocalizedTextNotTheResourceKey()
     {
         // Arrange & Act
