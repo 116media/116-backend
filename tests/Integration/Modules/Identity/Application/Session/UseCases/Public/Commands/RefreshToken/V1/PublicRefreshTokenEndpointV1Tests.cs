@@ -4,6 +4,7 @@ using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken.V1;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Mailer.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 
@@ -70,5 +71,41 @@ public class PublicRefreshTokenEndpointV1Tests(PostgresFixture db) : BaseApiTest
         body.RefreshToken.Should().NotBeNullOrEmpty();
         body.AccessTokenExpiresAt.Should().BeAfter(DateTime.UtcNow);
         body.RefreshTokenExpiresAt.Should().BeAfter(DateTime.UtcNow);
+    }
+
+    /// <summary>
+    /// Presenting a refresh token that belongs to an already-revoked session is treated as a
+    /// stolen credential in circulation, not merely an expired one. The attempt is still refused,
+    /// and the account's surviving sessions are revoked and the owner alerted by email.
+    /// </summary>
+    [Fact]
+    public async Task RefreshToken_WithATokenFromARevokedSession_RevokesTheAccountAndAlertsTheOwner()
+    {
+        const string replayedToken = "test-replayed-refresh-token-for-visitor";
+        string replayedHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(replayedToken)));
+
+        var survivingSessionId = Guid.NewGuid();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            ctx.Sessions.Add(SessionFactory.CreateRevokedWithRefreshTokenHash(TestUser.VisitorId, replayedHash));
+            ctx.Sessions.Add(SessionFactory.CreateWithId(survivingSessionId, TestUser.VisitorId));
+        });
+
+        Client.ClearAuthentication();
+        var request = new PublicRefreshTokenRequestBuilder().WithRefreshToken(replayedToken).Build();
+
+        var response = await Client.PostAsJsonAsync(RefreshTokenUrl, request);
+
+        await response.ShouldBeProblem(HttpStatusCode.Forbidden);
+
+        await using IdentityDbContext identityContext = CreateDbContext<IdentityDbContext>();
+        SessionEntity surviving = await identityContext.Sessions.SingleAsync(s => s.Id == survivingSessionId);
+        surviving.IsRevoked.Should().BeTrue();
+
+        await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
+        var outbox = await mailerContext
+            .OutboxEmails.Where(o => o.RecipientAddress == TestUser.VisitorEmail)
+            .ToListAsync();
+        outbox.Should().ContainSingle(o => o.Template == "RefreshTokenReplayAlert");
     }
 }
