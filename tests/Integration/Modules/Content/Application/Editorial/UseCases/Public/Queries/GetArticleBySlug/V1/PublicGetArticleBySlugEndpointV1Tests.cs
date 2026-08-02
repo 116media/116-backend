@@ -165,4 +165,28 @@ public class PublicGetArticleBySlugEndpointV1Tests(PostgresFixture db) : BaseApi
         body.Article.IsLiked.Should().BeFalse();
         body.Article.IsBookmarked.Should().BeFalse();
     }
+
+    /// <summary>
+    /// A correctly signed token whose subject identifier is not a UUID is rejected rather than
+    /// treated as an anonymous read. This endpoint reads its caller optionally, so a claim set
+    /// the identity module cannot parse must surface as an authentication failure instead of
+    /// silently degrading to the anonymous projection.
+    /// </summary>
+    [Fact]
+    public async Task GetArticleBySlug_WithAnUnparsableSubjectClaim_ReturnsUnauthorized()
+    {
+        Guid categoryId = await SeedCategoryAsync();
+        ArticleEntity article = await SeedAsync<ContentDbContext, ArticleEntity>(ctx =>
+        {
+            ArticleEntity entity = ArticleFactory.CreatePublished(categoryId);
+            ctx.Articles.Add(entity);
+            return entity;
+        });
+
+        Client.AuthenticateWithMalformedUserId("Visitor");
+
+        var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}/{article.Slug}");
+
+        await response.ShouldBeProblem(HttpStatusCode.Unauthorized);
+    }
 }
