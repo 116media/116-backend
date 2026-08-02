@@ -4,6 +4,7 @@ using _116.Identity.Infrastructure.Persistence;
 using _116.Integration.Tests.Common.Stubs;
 using _116.Mailer.Application.Shared.Exceptions;
 using _116.Mailer.Application.Shared.Repositories;
+using _116.Mailer.Domain.Constants;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Mailer.Infrastructure.BackgroundJobs;
@@ -192,5 +193,49 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         failed.NextAttemptAt.Should().Be(enqueuedAt);
         failed.LastError.Should().Contain("mailbox does not exist");
         failed.SentAt.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Verifies that a provider error longer than the column allows is truncated to the storage
+    /// limit rather than failing the commit that records the attempt. A verbose upstream stack
+    /// trace must not be able to take the dispatcher down.
+    /// </summary>
+    [Fact]
+    public async Task Dispatcher_OverlongProviderError_TruncatesItToTheStorageLimit()
+    {
+        Guid emailId = Guid.NewGuid();
+        await SeedAsync<MailerDbContext>(ctx =>
+            ctx.OutboxEmails.Add(
+                OutboxEmailEntity.Enqueue(
+                    id: emailId,
+                    recipientAddress: "verbose@example.com",
+                    recipientName: null,
+                    subject: "Verbose failure",
+                    htmlBody: "<p>x</p>",
+                    textBody: "x",
+                    template: "Welcome",
+                    now: DateTime.UtcNow.AddSeconds(-5)
+                )
+            )
+        );
+
+        const string marker = "OVERLONG";
+        string overlongError = marker + new string('e', MailerConstants.MaxLastErrorLength);
+
+        StubEmailSender stub = Api.Services.GetRequiredService<StubEmailSender>();
+        stub.NextFailure = new EmailDeliveryException(overlongError);
+
+        var job = new OutboxEmailDispatcherJob(
+            Api.Services.GetRequiredService<IServiceScopeFactory>(),
+            NullLogger<OutboxEmailDispatcherJob>.Instance
+        );
+        await job.Execute(new TestJobExecutionContext());
+
+        await using MailerDbContext verify = CreateDbContext<MailerDbContext>();
+        OutboxEmailEntity truncated = await verify.OutboxEmails.SingleAsync(o => o.Id == emailId);
+        truncated.LastError.Should().NotBeNull();
+        truncated.LastError!.Length.Should().Be(MailerConstants.MaxLastErrorLength);
+        truncated.LastError.Should().StartWith(marker);
+        truncated.AttemptCount.Should().Be(1);
     }
 }
