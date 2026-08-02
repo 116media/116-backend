@@ -18,6 +18,15 @@ public class StubCloudinaryService : ICloudinaryService
     /// </summary>
     public Exception? NextDeleteFailure { get; set; }
 
+    /// <summary>
+    /// Every public id handed to a delete call, in call order, so a test can
+    /// assert which remote assets a committed mutation asked the provider to
+    /// purge. Ids queued behind <see cref="NextDeleteFailure" /> are recorded
+    /// before the failure is raised, matching the provider's own semantics of
+    /// having received the request.
+    /// </summary>
+    public List<string> DeletedPublicIds { get; } = [];
+
     /// <inheritdoc />
     public Task<CloudinaryUploadResult> UploadImageAsync(
         IFormFile file,
@@ -54,6 +63,7 @@ public class StubCloudinaryService : ICloudinaryService
     /// <inheritdoc />
     public Task<bool> DeleteImageAsync(string publicId, CancellationToken cancellationToken = default)
     {
+        DeletedPublicIds.Add(publicId);
         ThrowNextDeleteFailureIfSet();
         return Task.FromResult(true);
     }
@@ -61,6 +71,7 @@ public class StubCloudinaryService : ICloudinaryService
     /// <inheritdoc />
     public Task<bool> DeleteImagesAsync(IEnumerable<string> publicIds, CancellationToken cancellationToken = default)
     {
+        DeletedPublicIds.AddRange(publicIds);
         ThrowNextDeleteFailureIfSet();
         return Task.FromResult(true);
     }
