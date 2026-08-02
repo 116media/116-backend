@@ -244,14 +244,6 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     }
 
     /// <summary>
-    /// Error message indicating that a password cannot be updated for a user without an email.
-    /// </summary>
-    public string PasswordUpdateRequiresEmail()
-    {
-        return localizer["PasswordUpdateRequiresEmail"];
-    }
-
-    /// <summary>
     /// Gets an error message for when a username does not meet required rules or format.
     /// </summary>
     /// <param name="userName">The invalid username.</param>
@@ -402,18 +394,6 @@ public class ValidationErrorMessage(IStringLocalizer<ValidationErrorMessage> loc
     public string PasswordOnlyForExternalAuth()
     {
         return localizer["PasswordOnlyForExternalAuth"];
-    }
-
-    /// <summary>
-    /// Gets an error message for when a core role cannot be modified.
-    /// </summary>
-    /// <param name="roleName">The name of the core role.</param>
-    /// <returns>
-    /// A formatted error message indicating that the core role cannot be modified.
-    /// </returns>
-    public string CoreRoleCannotBeModified(string roleName)
-    {
-        return string.Format(localizer["CoreRoleCannotBeModified"], roleName);
     }
 
     /// <summary>
