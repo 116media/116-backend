@@ -267,7 +267,7 @@ public class UserEntityTests
         Action act = () => user.InitializePasswordHash("new_password_hash", _userErrors);
 
         // Assert
-        act.Should().Throw<BadRequestException>().WithMessage("Cannot update password for a user without email.");
+        act.Should().Throw<BadRequestException>().WithMessage("An email address is required to set a password.");
     }
 
     #endregion
