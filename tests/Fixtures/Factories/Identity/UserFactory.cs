@@ -83,6 +83,15 @@ public static class UserFactory
         new UserBuilder().WithAuthProvider(authProvider).AsVerified().Build();
 
     /// <summary>
+    /// Creates an external auth user whose provider shared no email address, so the
+    /// account has a usable identity but nothing to send mail to.
+    /// </summary>
+    /// <param name="authProvider">The authentication provider.</param>
+    /// <returns>A new external auth UserEntity with a null email.</returns>
+    public static UserEntity CreateExternalWithoutEmail(EnumAuthProvider authProvider) =>
+        new UserBuilder().WithAuthProvider(authProvider).WithoutEmail().AsVerified().Build();
+
+    /// <summary>
     /// Creates a user with a phone number set.
     /// </summary>
     /// <param name="fullPhoneNumber">The full international phone number (e.g. "+1234567890").</param>
