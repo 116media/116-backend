@@ -192,7 +192,7 @@ public class UserEntity : Aggregate<Guid>
 
         if (AuthProvider != EnumAuthProvider.Local && string.IsNullOrEmpty(value: Email))
         {
-            throw errors.PasswordUpdateRequiresEmail();
+            throw errors.EmailRequiredToSetPassword();
         }
 
         PasswordHash = newPasswordHash;
