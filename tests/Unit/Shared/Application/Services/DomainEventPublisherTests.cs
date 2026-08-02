@@ -321,6 +321,94 @@ public class DomainEventPublisherTests
         );
     }
 
+    /// <summary>
+    /// Verifies that the per-handler fallback honors an instance registration:
+    /// the registered object is dispatched to as-is rather than being rebuilt,
+    /// even though a sibling handler broke the fan-out resolution.
+    /// </summary>
+    [Fact]
+    public async Task Publish_WhenOneHandlerCannotBeConstructed_StillRunsAnInstanceRegisteredSibling()
+    {
+        // Arrange
+        bool siblingRan = false;
+        var registeredInstance = new DelegatingTestHandler(
+            (_, _) =>
+            {
+                siblingRan = true;
+                return Task.CompletedTask;
+            }
+        );
+
+        DomainEventPublisher publisher = CreatePublisher(services =>
+        {
+            services.AddScoped<IDomainEventHandler<TestDomainEvent>, UnconstructableTestHandler>();
+            services.AddSingleton<IDomainEventHandler<TestDomainEvent>>(registeredInstance);
+        });
+
+        // Act
+        Exception? exception = await Record.ExceptionAsync(() =>
+            publisher.Publish(new TestDomainEvent(Guid.NewGuid()))
+        );
+
+        // Assert
+        exception.Should().BeNull();
+        siblingRan.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Verifies that a handler registered through a factory that throws is
+    /// reported against the handler service type — a factory registration names
+    /// no implementation type — and that its siblings still run.
+    /// </summary>
+    [Fact]
+    public async Task Publish_WhenAHandlerFactoryThrows_LogsTheServiceTypeAndRunsTheSiblings()
+    {
+        // Arrange
+        var loggerMock = new Mock<ILogger<DomainEventPublisher>>();
+        bool siblingRan = false;
+
+        DomainEventPublisher publisher = CreatePublisher(
+            services =>
+            {
+                services.AddScoped<IDomainEventHandler<TestDomainEvent>>(_ =>
+                    throw new InvalidOperationException("Handler factory failure")
+                );
+                services.AddScoped<IDomainEventHandler<TestDomainEvent>>(_ => new DelegatingTestHandler(
+                    (_, _) =>
+                    {
+                        siblingRan = true;
+                        return Task.CompletedTask;
+                    }
+                ));
+            },
+            loggerMock
+        );
+
+        // Act
+        Exception? exception = await Record.ExceptionAsync(() =>
+            publisher.Publish(new TestDomainEvent(Guid.NewGuid()))
+        );
+
+        // Assert
+        exception.Should().BeNull();
+        siblingRan.Should().BeTrue();
+        loggerMock.Verify(
+            x =>
+                x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>(
+                        (v, _) =>
+                            v.ToString()!.Contains(nameof(IDomainEventHandler<TestDomainEvent>))
+                            && v.ToString()!.Contains(nameof(TestDomainEvent))
+                    ),
+                    It.IsAny<InvalidOperationException>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+                ),
+            Times.Once
+        );
+    }
+
     [Fact]
     public async Task Publish_WithNoRegisteredHandlers_LogsDebugNamingTheEventType()
     {
