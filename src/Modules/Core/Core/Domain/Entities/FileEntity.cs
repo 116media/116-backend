@@ -136,20 +136,6 @@ public class FileEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Updates the storage URL of the file.
-    /// </summary>
-    /// <param name="newStorageUrl">The new storage URL.</param>
-    public void UpdateStorageUrl(string newStorageUrl, CoreI18n i18n)
-    {
-        if (string.IsNullOrWhiteSpace(newStorageUrl))
-        {
-            throw i18n.File.StorageUrlRequired();
-        }
-
-        StorageUrl = newStorageUrl;
-    }
-
-    /// <summary>
     /// Marks the file as deleted (soft delete) and raises
     /// <see cref="FileSoftDeletedEvent" /> with the storage key captured at
     /// raise time so the remote asset can be cleaned post-commit.
