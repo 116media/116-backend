@@ -2,6 +2,9 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.RequestLyricsSu
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Mailer.Contracts.Application;
+using _116.Mailer.Domain.Entities;
+using _116.Mailer.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.RequestLyricsSubmissionRevision.V1;
@@ -73,5 +76,48 @@ public class AdminRequestLyricsSubmissionRevisionEndpointV1Tests(PostgresFixture
 
         bool anyLyricsCreated = await ctx.Lyrics.AnyAsync();
         anyLyricsCreated.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// A revision request is a decision like approval and rejection, so it reaches a resolvable
+    /// submitter on both channels. Its wording is neither of the two terminal outcomes: the copy
+    /// says the submission was returned for revision, and the moderator's note rides the email.
+    /// </summary>
+    [Fact]
+    public async Task RequestLyricsSubmissionRevision_ForAKnownSubmitter_TellsThemItWasReturnedForRevision()
+    {
+        const string note = "Please split the chorus onto its own lines.";
+
+        LyricsSubmissionEntity submission = await SeedAsync<ContentDbContext, LyricsSubmissionEntity>(ctx =>
+        {
+            LyricsSubmissionEntity created = LyricsSubmissionFactory.Create(TestUser.VisitorId);
+            ctx.LyricsSubmissions.Add(created);
+            return created;
+        });
+
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PatchAsJsonAsync(
+            Routes.Admin.Lyrics.RequestSubmissionRevision(submission.Id),
+            new AdminRequestLyricsSubmissionRevisionRequest(note)
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
+        OutboxEmailEntity email = (
+            await mailerContext.OutboxEmails.Where(o => o.RecipientAddress == TestUser.VisitorEmail).ToListAsync()
+        )
+            .Should()
+            .ContainSingle(o => o.Template == "SubmissionDecided")
+            .Subject;
+
+        email.TextBody.Should().Contain("returned for revision");
+        email.TextBody.Should().Contain(note);
+
+        List<NotificationEntity> notifications = await mailerContext
+            .Notifications.Where(n => n.UserId == TestUser.VisitorId)
+            .ToListAsync();
+        notifications.Should().ContainSingle(n => n.Type == EnumNotificationType.SubmissionDecided);
     }
 }
