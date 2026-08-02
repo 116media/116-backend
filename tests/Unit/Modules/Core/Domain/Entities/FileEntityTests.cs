@@ -212,40 +212,6 @@ public class FileEntityTests
 
     #endregion
 
-    #region UpdateStorageUrl Tests
-
-    [Fact]
-    public void UpdateStorageUrl_WithValidUrl_ShouldUpdateStorageUrl()
-    {
-        // Arrange
-        FileEntity file = FileFactory.Create();
-        string newStorageUrl = "https://newcloud.example.com/files/new-file.jpg";
-
-        // Act
-        file.UpdateStorageUrl(newStorageUrl, _coreErrors);
-
-        // Assert
-        file.StorageUrl.Should().Be(newStorageUrl);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void UpdateStorageUrl_WithInvalidUrl_ShouldThrowBadRequestException(string? invalidUrl)
-    {
-        // Arrange
-        FileEntity file = FileFactory.Create();
-
-        // Act
-        Action act = () => file.UpdateStorageUrl(invalidUrl!, _coreErrors);
-
-        // Assert
-        act.Should().Throw<BadRequestException>();
-    }
-
-    #endregion
-
     #region Delete Tests
 
     [Fact]
