@@ -107,6 +107,50 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
     }
 
     /// <summary>
+    /// Verifies that an unverified payment on a cancelled order returns the
+    /// <c>AlreadyPaid</c> conflict raised by <c>ContentOrderEntity.MarkPaid</c>. The payment's own
+    /// <c>Verify</c> guard passes first — the payment is still <c>Pending</c> — so the order status
+    /// guard is the sole failure, and the cancelled order is left untouched because
+    /// <c>AdminVerifyPaymentFactory</c> throws before committing.
+    /// </summary>
+    [Fact]
+    public async Task VerifyPayment_WhenOrderWasCancelled_ReturnsAlreadyPaidConflictAndLeavesOrderCancelled()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        CustomerEntity customer = CustomerFactory.CreateWithId(order.CustomerId);
+        ContentPaymentEntity payment = ContentPaymentFactory.CreateWithProof(order.Id, Guid.NewGuid());
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentPayments.Add(payment);
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        Client.DefaultRequestHeaders.Add("Accept-Language", "en");
+
+        var cancelResponse = await Client.PatchAsync(Routes.Admin.Orders.Cancel(order.Id), null);
+        cancelResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var request = new { ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl };
+        var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
+        {
+            Content = JsonContent.Create(request),
+        };
+
+        var response = await Client.SendAsync(msg);
+
+        await response.ShouldBeProblem(HttpStatusCode.Conflict, "Order is already paid.");
+
+        await using ContentDbContext db = CreateDbContext<ContentDbContext>();
+        ContentOrderEntity? persistedOrder = await db.ContentOrders.FindAsync(order.Id);
+        persistedOrder!.Status.Should().Be(EnumOrderStatus.Cancelled);
+
+        ContentPaymentEntity? persistedPayment = await db.ContentPayments.FindAsync(payment.Id);
+        persistedPayment!.Status.Should().Be(EnumPaymentStatus.Pending);
+    }
+
+    /// <summary>
     /// Verifies that verifying payment on an order with a video order item succeeds,
     /// covering the VideoByOrderItemIdSpecification lookup path.
     /// </summary>
