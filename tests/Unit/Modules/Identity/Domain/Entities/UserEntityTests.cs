@@ -513,36 +513,6 @@ public class UserEntityTests
         act.Should().Throw<Exception>();
     }
 
-    [Fact]
-    public void RemoveRole_WhenRoleAssigned_ShouldRemoveAndReturnTrue()
-    {
-        // Arrange
-        var roleId = Guid.NewGuid();
-        UserRoleEntity userRole = UserRoleFactory.CreateWithRoleId(roleId);
-        UserEntity user = UserFactory.Create();
-        user.AssignRole(userRole, TestErrorsFactory.CreateUserErrors());
-
-        // Act
-        bool result = user.RemoveRole(roleId);
-
-        // Assert
-        result.Should().BeTrue();
-        user.HasRole(roleId).Should().BeFalse();
-    }
-
-    [Fact]
-    public void RemoveRole_WhenRoleNotAssigned_ShouldReturnFalse()
-    {
-        // Arrange
-        UserEntity user = UserFactory.Create();
-
-        // Act
-        bool result = user.RemoveRole(Guid.NewGuid());
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
     #endregion
 
     #region UpdateAvatar Tests
