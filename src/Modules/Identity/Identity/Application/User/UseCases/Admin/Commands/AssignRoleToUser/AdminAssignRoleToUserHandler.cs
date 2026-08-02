@@ -52,16 +52,16 @@ public class AdminAssignRoleToUserHandler(
             cancellationToken: cancellationToken
         );
 
-        // Check if role is active
-        if (!role!.IsActive)
-        {
-            throw i18n.User.RoleIsInactive();
-        }
-
-        // Check if role is deleted
-        if (role.IsDeleted)
+        // Soft deletion also clears IsActive, so the deleted state is checked first to keep the
+        // more specific error reachable.
+        if (role!.IsDeleted)
         {
             throw i18n.User.RoleIsDeleted();
+        }
+
+        if (!role.IsActive)
+        {
+            throw i18n.User.RoleIsInactive();
         }
 
         // Check if role is already assigned to user
