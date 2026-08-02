@@ -199,6 +199,37 @@ public class DispatchDomainEventsInterceptorPostCommitTests
         scopedPublishers.SelectMany(p => p.PublishedEvents).Should().BeEmpty();
     }
 
+    /// <summary>
+    /// Verifies that a save canceled after the events were collected discards
+    /// them, so the reactions to a change that never committed cannot ride
+    /// along with the next successful save on the same context.
+    /// </summary>
+    [Fact]
+    public async Task SaveChangesAsync_WhenCanceled_DiscardsTheCollectedEventsSoALaterSaveDispatchesNothing()
+    {
+        // Arrange
+        string databaseName = Guid.NewGuid().ToString();
+        var (context, scopedPublishers) = CreateContext(databaseName);
+
+        var canceledAggregate = TestAggregate.Create(Guid.NewGuid(), "Canceled");
+        canceledAggregate.AddDomainEvent(new TestDomainEvent(canceledAggregate.Id));
+        context.Aggregates.Add(canceledAggregate);
+
+        using var tokenSource = new CancellationTokenSource();
+        await tokenSource.CancelAsync();
+
+        // Act
+        Exception? exception = await Record.ExceptionAsync(() => context.SaveChangesAsync(tokenSource.Token));
+
+        context.ChangeTracker.Clear();
+        context.Aggregates.Add(TestAggregate.Create(Guid.NewGuid(), "Fresh"));
+        await context.SaveChangesAsync();
+
+        // Assert
+        exception.Should().BeAssignableTo<OperationCanceledException>();
+        scopedPublishers.SelectMany(p => p.PublishedEvents).Should().BeEmpty();
+    }
+
     [Fact]
     public void SaveChanges_WithMultipleEvents_DispatchesEachEventInAFreshScopeInRaiseOrder()
     {
