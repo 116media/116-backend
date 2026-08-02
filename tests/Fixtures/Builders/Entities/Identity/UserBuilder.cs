@@ -15,7 +15,7 @@ internal class UserBuilder
     private readonly Faker _faker = new();
 
     private Guid _id;
-    private string _email;
+    private string? _email;
     private string _userName;
     private string _passwordHash;
     private EnumAuthProvider _authProvider = EnumAuthProvider.Local;
@@ -61,6 +61,18 @@ internal class UserBuilder
     public UserBuilder WithEmail(string email)
     {
         _email = email.ToLowerInvariant();
+        return this;
+    }
+
+    /// <summary>
+    /// Clears the email address, producing the shape a social provider that
+    /// shares no address leaves behind. Only meaningful together with
+    /// <see cref="WithAuthProvider"/>, since local accounts always carry one.
+    /// </summary>
+    /// <returns>The builder instance for chaining.</returns>
+    public UserBuilder WithoutEmail()
+    {
+        _email = null;
         return this;
     }
 
@@ -170,7 +182,7 @@ internal class UserBuilder
         var errors = TestErrorsFactory.CreateUserErrors();
         UserEntity user =
             _authProvider == EnumAuthProvider.Local
-                ? UserEntity.Create(_id, _email, _userName, _passwordHash, errors)
+                ? UserEntity.Create(_id, _email!, _userName, _passwordHash, errors)
                 : UserEntity.CreateExternal(_id, _userName, _authProvider, errors, _email);
 
         if (_isVerified)
