@@ -5,25 +5,31 @@ using Xunit;
 namespace _116.Unit.Tests.Shared.Application.Configurations;
 
 /// <summary>
-/// Unit tests for <see cref="AppEnvironment.CorsAllowedOrigins"/>.
+/// Unit tests for <see cref="AppEnvironment.CorsAllowedOrigins"/> and
+/// <see cref="AppEnvironment.FrontendBaseUrl"/>.
 /// </summary>
+[Collection("EnvironmentVariable")]
 public class AppEnvironmentTests : IDisposable
 {
     private const string DashboardEnvVar = "DASHBOARD_ORIGIN";
     private const string WebAppEnvVar = "WEBAPP_ORIGIN";
+    private const string FrontendBaseUrlEnvVar = "FRONTEND_BASE_URL";
     private readonly string? _originalDashboard;
     private readonly string? _originalWebApp;
+    private readonly string? _originalFrontendBaseUrl;
 
     public AppEnvironmentTests()
     {
         _originalDashboard = Environment.GetEnvironmentVariable(DashboardEnvVar);
         _originalWebApp = Environment.GetEnvironmentVariable(WebAppEnvVar);
+        _originalFrontendBaseUrl = Environment.GetEnvironmentVariable(FrontendBaseUrlEnvVar);
     }
 
     public void Dispose()
     {
         Environment.SetEnvironmentVariable(DashboardEnvVar, _originalDashboard);
         Environment.SetEnvironmentVariable(WebAppEnvVar, _originalWebApp);
+        Environment.SetEnvironmentVariable(FrontendBaseUrlEnvVar, _originalFrontendBaseUrl);
         GC.SuppressFinalize(this);
     }
 
@@ -116,6 +122,44 @@ public class AppEnvironmentTests : IDisposable
 
         // Assert
         result.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region FrontendBaseUrl Tests
+
+    /// <summary>
+    /// Verifies that a configured base URL loses its trailing slash, so the
+    /// paths appended to it never produce a doubled separator.
+    /// </summary>
+    [Fact]
+    public void FrontendBaseUrl_WithATrailingSlash_ShouldTrimIt()
+    {
+        // Arrange
+        Environment.SetEnvironmentVariable(FrontendBaseUrlEnvVar, "https://116.cd/");
+
+        // Act
+        string? result = AppEnvironment.FrontendBaseUrl();
+
+        // Assert
+        result.Should().Be("https://116.cd");
+    }
+
+    /// <summary>
+    /// Verifies that an unset variable yields null, leaving callers to apply
+    /// their own fallback.
+    /// </summary>
+    [Fact]
+    public void FrontendBaseUrl_WhenNotSet_ShouldReturnNull()
+    {
+        // Arrange
+        Environment.SetEnvironmentVariable(FrontendBaseUrlEnvVar, null);
+
+        // Act
+        string? result = AppEnvironment.FrontendBaseUrl();
+
+        // Assert
+        result.Should().BeNull();
     }
 
     #endregion
