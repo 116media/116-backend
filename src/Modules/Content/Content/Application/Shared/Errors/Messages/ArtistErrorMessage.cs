@@ -10,11 +10,6 @@ namespace _116.Content.Application.Shared.Errors.Messages;
 public class ArtistErrorMessage(IStringLocalizer<ArtistErrorMessage> localizer)
 {
     /// <summary>
-    /// Exposes the underlying localizer for shared validation extensions.
-    /// </summary>
-    public IStringLocalizer Localizer => localizer;
-
-    /// <summary>
     /// Gets an error message for when an artist name is required but not provided.
     /// </summary>
     /// <returns>
