@@ -357,21 +357,6 @@ public class UserEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Removes a role from this user. Returns true if removed, false if wasn't assigned.
-    /// </summary>
-    public bool RemoveRole(Guid roleId)
-    {
-        UserRoleEntity? userRole = UserRoles.FirstOrDefault(ur => ur.RoleId == roleId);
-        if (userRole == null)
-        {
-            return false;
-        }
-
-        UserRoles.Remove(item: userRole);
-        return true;
-    }
-
-    /// <summary>
     /// Checks if this user has a specific role.
     /// </summary>
     public bool HasRole(Guid roleId)
