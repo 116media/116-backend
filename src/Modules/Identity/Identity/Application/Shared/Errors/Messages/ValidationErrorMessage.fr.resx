@@ -138,9 +138,6 @@
   <data name="RoleDescriptionTooLong" xml:space="preserve">
     <value>La description du rôle ne peut pas dépasser {0} caractères.</value>
   </data>
-  <data name="CoreRoleCannotBeModified" xml:space="preserve">
-    <value>Le rôle système « {0} » ne peut pas être modifié.</value>
-  </data>
   <data name="CoreRoleCannotBeDeleted" xml:space="preserve">
     <value>Le rôle système « {0} » ne peut pas être supprimé.</value>
   </data>
@@ -167,9 +164,6 @@
   </data>
   <data name="InvalidPasswordFormat" xml:space="preserve">
     <value>Le mot de passe ne répond pas aux exigences de sécurité.</value>
-  </data>
-  <data name="PasswordUpdateRequiresEmail" xml:space="preserve">
-    <value>Impossible de mettre à jour le mot de passe d'un utilisateur sans adresse e-mail.</value>
   </data>
   <data name="InvalidUsernameFormat" xml:space="preserve">
     <value>Le nom d'utilisateur « {0} » ne répond pas aux exigences.</value>
