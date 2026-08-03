@@ -1,5 +1,6 @@
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
+using _116.Identity.Infrastructure.Services;
 using _116.Tests.Fixtures.Constants;
 using Bogus;
 
@@ -11,6 +12,12 @@ namespace _116.Tests.Fixtures.Builders.Entities.Identity;
 /// </summary>
 internal class OtpBuilder
 {
+    /// <summary>
+    /// The production hashing service, so a built OTP stores its code exactly the way the
+    /// application does and the real verification path accepts the plaintext handed to the builder.
+    /// </summary>
+    private static readonly PasswordService Hasher = new();
+
     private readonly Faker _faker = new();
 
     private Guid _id;
@@ -55,7 +62,8 @@ internal class OtpBuilder
     }
 
     /// <summary>
-    /// Sets the OTP code.
+    /// Sets the plaintext OTP code the built entity should accept.
+    /// The entity stores the hash of this value, never the value itself.
     /// </summary>
     /// <param name="code">The OTP code.</param>
     /// <returns>The builder instance for chaining.</returns>
@@ -154,7 +162,7 @@ internal class OtpBuilder
     /// <returns>A configured OtpEntity instance.</returns>
     public OtpEntity Build()
     {
-        var otp = OtpEntity.Create(_id, _userId, _code, _purpose, _expiresAt);
+        var otp = OtpEntity.Create(_id, _userId, Hasher.Hash(_code), _purpose, _expiresAt);
 
         for (int i = 0; i < _attemptCount; i++)
         {
