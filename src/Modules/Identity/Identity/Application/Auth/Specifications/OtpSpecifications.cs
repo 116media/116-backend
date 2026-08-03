@@ -54,18 +54,6 @@ public class OtpIsUsedSpecification : Specification<OtpEntity>
 }
 
 /// <summary>
-/// Specification that matches non-expired OTPs.
-/// Used for filtering OTPs that are still valid based on expiration time.
-/// </summary>
-public class OtpIsNotExpiredSpecification : Specification<OtpEntity>
-{
-    public override Expression<Func<OtpEntity, bool>> ToExpression()
-    {
-        return otp => otp.ExpiresAt > DateTime.UtcNow;
-    }
-}
-
-/// <summary>
 /// Specification that matches expired OTPs.
 /// Used for cleanup operations and filtering expired OTPs.
 /// </summary>
@@ -74,23 +62,6 @@ public class OtpIsExpiredSpecification : Specification<OtpEntity>
     public override Expression<Func<OtpEntity, bool>> ToExpression()
     {
         return otp => otp.ExpiresAt <= DateTime.UtcNow;
-    }
-}
-
-/// <summary>
-/// Composite specification that matches valid OTPs for a user and purpose.
-/// Combines user ID, purpose, not used, and not expired specifications.
-/// Used for finding OTPs that can be validated.
-/// </summary>
-public class OtpIsValidForUserAndPurposeSpecification(Guid userId, EnumOtpPurpose purpose) : Specification<OtpEntity>
-{
-    public override Expression<Func<OtpEntity, bool>> ToExpression()
-    {
-        var userSpec = new OtpByUserIdSpecification(userId: userId);
-        var purposeSpec = new OtpByPurposeSpecification(purpose: purpose);
-        var notUsedSpec = new OtpIsNotUsedSpecification();
-        var notExpiredSpec = new OtpIsNotExpiredSpecification();
-        return userSpec.And(other: purposeSpec).And(other: notUsedSpec).And(other: notExpiredSpec).ToExpression();
     }
 }
 
