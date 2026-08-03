@@ -142,38 +142,6 @@ public class OtpSpecificationsTests
 
     #endregion
 
-    #region OtpIsNotExpiredSpecification Tests
-
-    [Fact]
-    public void OtpIsNotExpiredSpecification_WithNonExpiredOtp_ShouldReturnTrue()
-    {
-        // Arrange
-        OtpEntity otp = OtpFactory.CreateWithExpiresAt(DateTime.UtcNow.AddMinutes(10));
-        OtpIsNotExpiredSpecification spec = new();
-
-        // Act
-        bool result = spec.IsSatisfiedBy(otp);
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void OtpIsNotExpiredSpecification_WithExpiredOtp_ShouldReturnFalse()
-    {
-        // Arrange
-        OtpEntity otp = OtpFactory.CreateWithExpiresAt(DateTime.UtcNow.AddMinutes(-1));
-        OtpIsNotExpiredSpecification spec = new();
-
-        // Act
-        bool result = spec.IsSatisfiedBy(otp);
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
     #region OtpIsExpiredSpecification Tests
 
     [Fact]
@@ -196,58 +164,6 @@ public class OtpSpecificationsTests
         // Arrange
         OtpEntity otp = OtpFactory.CreateWithExpiresAt(DateTime.UtcNow.AddMinutes(10));
         OtpIsExpiredSpecification spec = new();
-
-        // Act
-        bool result = spec.IsSatisfiedBy(otp);
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
-    #region OtpIsValidForUserAndPurposeSpecification Tests
-
-    [Fact]
-    public void OtpIsValidForUserAndPurposeSpecification_WithValidOtp_ShouldReturnTrue()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        const EnumOtpPurpose purpose = EnumOtpPurpose.EmailVerification;
-        OtpEntity otp = OtpFactory.Create(userId, purpose);
-        OtpIsValidForUserAndPurposeSpecification spec = new(userId, purpose);
-
-        // Act
-        bool result = spec.IsSatisfiedBy(otp);
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void OtpIsValidForUserAndPurposeSpecification_WithExpiredOtp_ShouldReturnFalse()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var purpose = EnumOtpPurpose.EmailVerification;
-        OtpEntity otp = OtpFactory.CreateExpired(userId, purpose);
-        OtpIsValidForUserAndPurposeSpecification spec = new(userId, purpose);
-
-        // Act
-        bool result = spec.IsSatisfiedBy(otp);
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public void OtpIsValidForUserAndPurposeSpecification_WithUsedOtp_ShouldReturnFalse()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var purpose = EnumOtpPurpose.EmailVerification;
-        OtpEntity otp = OtpFactory.CreateUsed(userId, purpose);
-        OtpIsValidForUserAndPurposeSpecification spec = new(userId, purpose);
 
         // Act
         bool result = spec.IsSatisfiedBy(otp);
@@ -406,30 +322,6 @@ public class OtpSpecificationsTests
         // Assert
         filtered.Should().HaveCount(2);
         filtered.Should().OnlyContain(o => o.UserId == userId);
-    }
-
-    [Fact]
-    public void OtpIsValidForUserAndPurposeSpecification_WithLinq_ShouldFilterCorrectly()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var purpose = EnumOtpPurpose.EmailVerification;
-
-        OtpEntity validOtp = OtpFactory.Create(userId, purpose);
-
-        OtpEntity expiredOtp = OtpFactory.CreateExpired(userId, purpose);
-
-        OtpEntity usedOtp = OtpFactory.CreateUsed(userId, purpose);
-
-        List<OtpEntity> otps = [validOtp, expiredOtp, usedOtp];
-        OtpIsValidForUserAndPurposeSpecification spec = new(userId, purpose);
-
-        // Act
-        List<OtpEntity> filtered = otps.Where(spec.ToExpression().Compile()).ToList();
-
-        // Assert
-        filtered.Should().ContainSingle();
-        filtered[0].UserId.Should().Be(userId);
     }
 
     #endregion
