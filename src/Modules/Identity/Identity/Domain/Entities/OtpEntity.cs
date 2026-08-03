@@ -92,15 +92,6 @@ public class OtpEntity : Aggregate<Guid>
     }
 
     /// <summary>
-    /// Checks if the OTP is valid for verification.
-    /// </summary>
-    /// <returns>True if the OTP is valid, otherwise false.</returns>
-    public bool IsValid()
-    {
-        return !IsUsed && DateTime.UtcNow <= ExpiresAt && AttemptCount < UserConstants.MaxOtpAttempts;
-    }
-
-    /// <summary>
     /// Checks if the OTP has expired.
     /// </summary>
     /// <returns>True if the OTP has expired, otherwise false.</returns>
