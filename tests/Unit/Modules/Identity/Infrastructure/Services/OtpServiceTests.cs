@@ -1,5 +1,5 @@
 using _116.BuildingBlocks.Constants;
-using _116.Identity.Domain.Entities;
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Services;
 using AwesomeAssertions;
@@ -12,11 +12,15 @@ namespace _116.Unit.Tests.Modules.Identity.Infrastructure.Services;
 /// </summary>
 public class OtpServiceTests
 {
+    private readonly PasswordService _passwordService;
     private readonly OtpService _sut;
 
     public OtpServiceTests()
     {
-        _sut = new OtpService();
+        // The real hashing service: it has no dependencies, and the assertions below are about
+        // the hash the service actually stores.
+        _passwordService = new PasswordService();
+        _sut = new OtpService(_passwordService);
     }
 
     #region GenerateOtpCode Tests
@@ -81,28 +85,77 @@ public class OtpServiceTests
         var purpose = EnumOtpPurpose.EmailVerification;
 
         // Act
-        OtpEntity otp = _sut.CreateOtp(userId, purpose);
+        OtpCreationResult result = _sut.CreateOtp(userId, purpose);
 
         // Assert
-        otp.Should().NotBeNull();
-        otp.Id.Should().NotBe(Guid.Empty);
-        otp.UserId.Should().Be(userId);
-        otp.Purpose.Should().Be(purpose);
+        result.Otp.Should().NotBeNull();
+        result.Otp.Id.Should().NotBe(Guid.Empty);
+        result.Otp.UserId.Should().Be(userId);
+        result.Otp.Purpose.Should().Be(purpose);
     }
 
     [Fact]
-    public void CreateOtp_ShouldGenerateValidCode()
+    public void CreateOtp_ShouldReturnAPlainCodeOfTheGeneratedShape()
     {
         // Arrange
         var userId = Guid.NewGuid();
         var purpose = EnumOtpPurpose.EmailVerification;
 
         // Act
-        OtpEntity otp = _sut.CreateOtp(userId, purpose);
+        OtpCreationResult result = _sut.CreateOtp(userId, purpose);
 
         // Assert
-        otp.Code.Should().HaveLength(UserConstants.OtpCodeLength);
-        otp.Code.Should().MatchRegex(@"^\d+$");
+        result.PlainCode.Should().HaveLength(UserConstants.OtpCodeLength);
+        result.PlainCode.Should().MatchRegex(@"^\d+$");
+    }
+
+    [Fact]
+    public void CreateOtp_ShouldStoreAHashInsteadOfThePlainCode()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
+
+        // Act
+        OtpCreationResult result = _sut.CreateOtp(userId, purpose);
+
+        // Assert
+        result.Otp.CodeHash.Should().StartWith("v1:");
+        result.Otp.CodeHash.Should().NotBe(result.PlainCode);
+        result.Otp.CodeHash.Length.Should().BeLessThanOrEqualTo(UserConstants.OtpCodeHashLength);
+    }
+
+    [Fact]
+    public void CreateOtp_ShouldStoreAHashThatVerifiesAgainstThePlainCode()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
+
+        // Act
+        OtpCreationResult result = _sut.CreateOtp(userId, purpose);
+
+        // Assert
+        _passwordService.Verify(result.PlainCode, result.Otp.CodeHash).Should().BeTrue();
+        _passwordService
+            .Verify("000000" == result.PlainCode ? "111111" : "000000", result.Otp.CodeHash)
+            .Should()
+            .BeFalse();
+    }
+
+    [Fact]
+    public void CreateOtp_CalledTwice_ShouldProduceDifferentHashes()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var purpose = EnumOtpPurpose.EmailVerification;
+
+        // Act - the per-hash salt means even an identical code never yields an identical hash
+        OtpCreationResult first = _sut.CreateOtp(userId, purpose);
+        OtpCreationResult second = _sut.CreateOtp(userId, purpose);
+
+        // Assert
+        first.Otp.CodeHash.Should().NotBe(second.Otp.CodeHash);
     }
 
     [Fact]
@@ -114,11 +167,11 @@ public class OtpServiceTests
         DateTime beforeCreation = DateTime.UtcNow;
 
         // Act
-        OtpEntity otp = _sut.CreateOtp(userId, purpose);
+        OtpCreationResult result = _sut.CreateOtp(userId, purpose);
 
         // Assert
         DateTime expectedExpiration = beforeCreation.AddMinutes(UserConstants.OtpExpirationMinutes);
-        otp.ExpiresAt.Should().BeCloseTo(expectedExpiration, TimeSpan.FromSeconds(2));
+        result.Otp.ExpiresAt.Should().BeCloseTo(expectedExpiration, TimeSpan.FromSeconds(2));
     }
 
     [Fact]
@@ -129,10 +182,10 @@ public class OtpServiceTests
         var purpose = EnumOtpPurpose.PasswordReset;
 
         // Act
-        OtpEntity otp = _sut.CreateOtp(userId, purpose);
+        OtpCreationResult result = _sut.CreateOtp(userId, purpose);
 
         // Assert
-        otp.Purpose.Should().Be(EnumOtpPurpose.PasswordReset);
+        result.Otp.Purpose.Should().Be(EnumOtpPurpose.PasswordReset);
     }
 
     [Fact]
@@ -143,11 +196,11 @@ public class OtpServiceTests
         var purpose = EnumOtpPurpose.EmailVerification;
 
         // Act
-        OtpEntity otp1 = _sut.CreateOtp(userId, purpose);
-        OtpEntity otp2 = _sut.CreateOtp(userId, purpose);
+        OtpCreationResult first = _sut.CreateOtp(userId, purpose);
+        OtpCreationResult second = _sut.CreateOtp(userId, purpose);
 
         // Assert
-        otp1.Id.Should().NotBe(otp2.Id);
+        first.Otp.Id.Should().NotBe(second.Otp.Id);
     }
 
     #endregion
