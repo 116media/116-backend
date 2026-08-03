@@ -1,9 +1,11 @@
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ForgotPassword.Contracts;
 using _116.Identity.Application.Shared.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
 using _116.Mailer.Contracts.Application;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common.Mocks.Repositories;
 using AwesomeAssertions;
@@ -17,6 +19,7 @@ namespace _116.Unit.Tests.Modules.Identity.Application.Auth.UseCases.Admin.Comma
 /// </summary>
 public class AdminForgotPasswordHandlerTests
 {
+    private readonly Mock<IMailer> _mailerMock = new();
     private readonly Mock<IAdminForgotPasswordOtpFactory> _otpFactoryMock;
     private readonly Mock<IAuthRepository> _authRepositoryMock;
     private readonly AdminForgotPasswordHandler _handler;
@@ -29,11 +32,53 @@ public class AdminForgotPasswordHandlerTests
         _handler = new AdminForgotPasswordHandler(
             _otpFactoryMock.Object,
             _authRepositoryMock.Object,
-            new Mock<IMailer>().Object
+            _mailerMock.Object
         );
     }
 
     #region Success Cases
+
+    /// <summary>
+    /// Verifies that the code reaching the mailer is the plaintext from the creation result while
+    /// the OTP entity the flow produced carries only its hash. This is the assertion that would
+    /// fail if the plaintext ever leaked back into the persisted row.
+    /// </summary>
+    [Fact]
+    public async Task Handle_ShouldMailThePlainCodeWhileTheOtpEntityKeepsOnlyItsHash()
+    {
+        // Arrange
+        string email = "admin@example.com";
+        UserEntity user = UserFactory.CreateVerifiedActive();
+        AdminForgotPasswordCommand command = new(Email: email);
+        OtpEntity otp = OtpFactory.CreateForPasswordReset(user.Id);
+
+        _authRepositoryMock.SetupExistsByEmail(new Email(email), true);
+        _authRepositoryMock.SetupGetUserWithRolesByEmailOrThrow(new Email(email), user);
+        _authRepositoryMock.SetupIsUserAdminReturnsTrue();
+        _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
+        _otpFactoryMock
+            .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OtpCreationResult(otp, TestConstants.Otp.DefaultCode));
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _mailerMock.Verify(
+            x =>
+                x.EnqueueAsync(
+                    It.IsAny<EnumEmailTemplate>(),
+                    It.IsAny<EmailRecipient>(),
+                    It.Is<IReadOnlyDictionary<string, string>>(t =>
+                        t["otpCode"] == TestConstants.Otp.DefaultCode && t["otpCode"] != otp.CodeHash
+                    ),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+        otp.CodeHash.Should().NotBe(TestConstants.Otp.DefaultCode);
+    }
 
     [Fact]
     public async Task Handle_WhenUserExists_ShouldReturnSuccess()
@@ -49,7 +94,9 @@ public class AdminForgotPasswordHandlerTests
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
         _otpFactoryMock
             .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(OtpFactory.CreateForPasswordReset(user.Id));
+            .ReturnsAsync(
+                new OtpCreationResult(OtpFactory.CreateForPasswordReset(user.Id), TestConstants.Otp.DefaultCode)
+            );
 
         // Act
         AdminForgotPasswordResult result = await _handler.Handle(command, CancellationToken.None);
@@ -74,7 +121,9 @@ public class AdminForgotPasswordHandlerTests
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
         _otpFactoryMock
             .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(OtpFactory.CreateForPasswordReset(user.Id));
+            .ReturnsAsync(
+                new OtpCreationResult(OtpFactory.CreateForPasswordReset(user.Id), TestConstants.Otp.DefaultCode)
+            );
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -174,7 +223,9 @@ public class AdminForgotPasswordHandlerTests
         _authRepositoryMock.SetupIsUserAccountActiveReturnsTrue();
         _otpFactoryMock
             .Setup(x => x.CreatePasswordResetOtpAsync(user.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(OtpFactory.CreateForPasswordReset(user.Id));
+            .ReturnsAsync(
+                new OtpCreationResult(OtpFactory.CreateForPasswordReset(user.Id), TestConstants.Otp.DefaultCode)
+            );
 
         // Act
         await _handler.Handle(command, cts.Token);
