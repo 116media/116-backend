@@ -1,4 +1,5 @@
 using _116.Identity.Application.Auth.Repositories;
+using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.Specifications;
 using _116.Identity.Application.Shared.Errors;
 using _116.Identity.Domain.Entities;
@@ -12,7 +13,14 @@ namespace _116.Identity.Infrastructure.Repositories;
 /// <summary>
 /// Implementation of <see cref="IOtpRepository" /> using Entity Framework Core.
 /// </summary>
-public class OtpRepository(IdentityDbContext context, UserErrors userErrors) : IOtpRepository
+/// <param name="context">The identity database context.</param>
+/// <param name="userErrors">User domain error factory for generating localized domain exceptions.</param>
+/// <param name="passwordService">
+/// Hashing service used to compare a supplied code against the stored hash. Codes are salted,
+/// so the comparison cannot be pushed into the query and happens once a candidate row is loaded.
+/// </param>
+public class OtpRepository(IdentityDbContext context, UserErrors userErrors, IPasswordService passwordService)
+    : IOtpRepository
 {
     /// <inheritdoc />
     public async Task AddAsync(OtpEntity otp, CancellationToken cancellationToken = default)
@@ -28,75 +36,44 @@ public class OtpRepository(IdentityDbContext context, UserErrors userErrors) : I
         CancellationToken cancellationToken = default
     )
     {
-        // Use specification to find OTP with the provided code
-        var specification = new OtpForValidationSpecification(userId: userId, code: code, purpose: purpose);
-        OtpEntity? matchingOtp = await context
+        // Load the outstanding OTP for this user and purpose; the code itself cannot take part
+        // in the query because the stored value is salted.
+        var specification = new OtpForValidationSpecification(userId: userId, purpose: purpose);
+        OtpEntity? candidateOtp = await context
             .Otps.ApplySpecification(specification: specification)
             .OrderByDescending(o => o.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        if (matchingOtp != null)
-        {
-            // First check if the otp is not expired
-            if (matchingOtp.IsExpired())
-            {
-                throw userErrors.OtpExpired();
-            }
-
-            // Then check if the max attempts are not reached
-            if (matchingOtp.HasMaxAttemptsReached())
-            {
-                throw userErrors.MaxOtpAttemptsReached();
-            }
-
-            // Then check if the otp is valid for the user
-            if (matchingOtp.IsValid())
-            {
-                return matchingOtp;
-            }
-
-            // Now increment the attempt count
-            matchingOtp.IncrementAttemptCount();
-
-            context.Otps.Update(entity: matchingOtp);
-            await context.SaveChangesAsync(cancellationToken: cancellationToken);
-
-            if (matchingOtp.HasMaxAttemptsReached())
-            {
-                throw userErrors.MaxOtpAttemptsReached();
-            }
-
-            throw userErrors.InvalidOtpCode();
-        }
-
-        // No matching OTP found — check the latest valid OTP for this purpose
-        OtpEntity? latestOtp = await GetLatestValidOtpAsync(
-            userId: userId,
-            purpose: purpose,
-            cancellationToken: cancellationToken
-        );
-
-        if (latestOtp == null)
+        if (candidateOtp == null)
         {
             throw userErrors.NoValidOtpFound();
         }
 
-        if (latestOtp.HasMaxAttemptsReached())
-        {
-            throw userErrors.MaxOtpAttemptsReached();
-        }
-
-        if (latestOtp.IsExpired())
+        // First check if the otp is not expired
+        if (candidateOtp.IsExpired())
         {
             throw userErrors.OtpExpired();
         }
 
-        // Increment attempts for wrong code
-        latestOtp.IncrementAttemptCount();
-        context.Otps.Update(entity: latestOtp);
+        // Then check if the max attempts are not reached
+        if (candidateOtp.HasMaxAttemptsReached())
+        {
+            throw userErrors.MaxOtpAttemptsReached();
+        }
+
+        // Then compare the supplied code against the stored hash
+        if (passwordService.Verify(password: code, hash: candidateOtp.CodeHash))
+        {
+            return candidateOtp;
+        }
+
+        // Now increment the attempt count
+        candidateOtp.IncrementAttemptCount();
+
+        context.Otps.Update(entity: candidateOtp);
         await context.SaveChangesAsync(cancellationToken: cancellationToken);
 
-        if (latestOtp.HasMaxAttemptsReached())
+        if (candidateOtp.HasMaxAttemptsReached())
         {
             throw userErrors.MaxOtpAttemptsReached();
         }
@@ -112,15 +89,16 @@ public class OtpRepository(IdentityDbContext context, UserErrors userErrors) : I
         CancellationToken cancellationToken = default
     )
     {
-        // Use specification to find used OTP with the provided code
-        var specification = new OtpForUsedValidationSpecification(userId: userId, code: code, purpose: purpose);
+        // Load the most recently consumed OTP for this user and purpose; the salted hash keeps
+        // the code out of the query, so the comparison happens on the loaded row.
+        var specification = new OtpForUsedValidationSpecification(userId: userId, purpose: purpose);
         OtpEntity? matchingOtp = await context
             .Otps.ApplySpecification(specification: specification)
             .OrderByDescending(o => o.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        // Check if OTP exists
-        if (matchingOtp == null)
+        // Check if a consumed OTP exists and that it is the one the caller presented
+        if (matchingOtp == null || !passwordService.Verify(password: code, hash: matchingOtp.CodeHash))
         {
             throw userErrors.OtpNotYetVerified();
         }
@@ -162,28 +140,5 @@ public class OtpRepository(IdentityDbContext context, UserErrors userErrors) : I
 
         context.Otps.RemoveRange(entities: expiredOtpList);
         return expiredOtpList.Count;
-    }
-
-    /// <summary>
-    /// Retrieves the latest valid OTP for a user and specific purpose.
-    /// </summary>
-    /// <param name="userId">The unique identifier of the user.</param>
-    /// <param name="purpose">The purpose of the OTP.</param>
-    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
-    /// <returns>The latest valid OTP entity if found; otherwise, null.</returns>
-    /// <remarks>
-    /// This method returns the most recently created valid OTP that hasn't expired or been used.
-    /// </remarks>
-    private async Task<OtpEntity?> GetLatestValidOtpAsync(
-        Guid userId,
-        EnumOtpPurpose purpose,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var specification = new OtpIsValidForUserAndPurposeSpecification(userId: userId, purpose: purpose);
-        return await context
-            .Otps.ApplySpecification(specification: specification)
-            .OrderByDescending(o => o.CreatedAt)
-            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
     }
 }
