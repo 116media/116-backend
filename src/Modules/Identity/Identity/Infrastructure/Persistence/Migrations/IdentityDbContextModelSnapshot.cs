@@ -36,11 +36,11 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("attempt_count");
 
-                    b.Property<string>("Code")
+                    b.Property<string>("CodeHash")
                         .IsRequired()
-                        .HasMaxLength(6)
-                        .HasColumnType("character varying(6)")
-                        .HasColumnName("code");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("code_hash");
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -92,9 +92,6 @@ namespace _116.Identity.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId", "Purpose")
                         .HasDatabaseName("IX_Otps_UserId_Purpose");
-
-                    b.HasIndex("UserId", "Code", "Purpose")
-                        .HasDatabaseName("IX_Otps_UserId_Code_Purpose");
 
                     b.ToTable("otps", "identity");
                 });
