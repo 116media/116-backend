@@ -2,7 +2,6 @@ using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp.Contracts;
 using _116.Identity.Application.Shared.Persistence;
-using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.ValueObjects;
 
 namespace _116.Identity.Application.Auth.UseCases.Admin.Commands.ResendOtp;
@@ -19,7 +18,11 @@ public class AdminResendOtpFactory(IOtpRepository otpRepository, IOtpService otp
     /// <summary>
     /// Invalidates existing OTPs and creates a new OTP for the specified purpose.
     /// </summary>
-    public async Task<OtpEntity> ResendOtpAsync(Guid userId, OtpPurpose purpose, CancellationToken cancellationToken)
+    public async Task<OtpCreationResult> ResendOtpAsync(
+        Guid userId,
+        OtpPurpose purpose,
+        CancellationToken cancellationToken
+    )
     {
         await otpRepository.InvalidateExistingOtpsAsync(
             userId: userId,
@@ -27,9 +30,9 @@ public class AdminResendOtpFactory(IOtpRepository otpRepository, IOtpService otp
             cancellationToken: cancellationToken
         );
 
-        OtpEntity newOtp = otpService.CreateOtp(userId: userId, purpose: purpose);
+        OtpCreationResult newOtp = otpService.CreateOtp(userId: userId, purpose: purpose);
 
-        await otpRepository.AddAsync(otp: newOtp, cancellationToken: cancellationToken);
+        await otpRepository.AddAsync(otp: newOtp.Otp, cancellationToken: cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
 
         return newOtp;
