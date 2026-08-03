@@ -96,4 +96,11 @@ public static class UserConstants
     /// Length of generated OTP codes.
     /// </summary>
     public const int OtpCodeLength = 6;
+
+    /// <summary>
+    /// Maximum allowed length for the stored OTP code hash.
+    /// The current PBKDF2 format occupies 67 characters; the surplus leaves room for a future
+    /// hash version, mirroring the allowance made for the user password hash column.
+    /// </summary>
+    public const int OtpCodeHashLength = 100;
 }
