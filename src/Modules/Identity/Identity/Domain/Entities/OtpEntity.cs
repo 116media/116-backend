@@ -16,10 +16,12 @@ public class OtpEntity : Aggregate<Guid>
     public Guid UserId { get; private set; }
 
     /// <summary>
-    /// The OTP code sent to the user.
+    /// The salted hash of the OTP code that was sent to the user.
+    /// The deliverable code itself is never stored; verification compares a supplied
+    /// code against this hash.
     /// </summary>
-    [MaxLength(length: UserConstants.OtpCodeLength)]
-    public string Code { get; private set; } = null!;
+    [MaxLength(length: UserConstants.OtpCodeHashLength)]
+    public string CodeHash { get; private set; } = null!;
 
     /// <summary>
     /// The purpose of the OTP (EmailVerification, PasswordReset, etc.).
@@ -56,17 +58,17 @@ public class OtpEntity : Aggregate<Guid>
     /// </summary>
     /// <param name="id">The unique identifier of the OTP.</param>
     /// <param name="userId">The ID of the user.</param>
-    /// <param name="code">The OTP code.</param>
+    /// <param name="codeHash">The salted hash of the OTP code.</param>
     /// <param name="purpose">The purpose of the OTP.</param>
     /// <param name="expiresAt">When the OTP expires.</param>
     /// <returns>A new <see cref="OtpEntity" /> instance.</returns>
-    public static OtpEntity Create(Guid id, Guid userId, string code, EnumOtpPurpose purpose, DateTime expiresAt)
+    public static OtpEntity Create(Guid id, Guid userId, string codeHash, EnumOtpPurpose purpose, DateTime expiresAt)
     {
         return new OtpEntity
         {
             Id = id,
             UserId = userId,
-            Code = code,
+            CodeHash = codeHash,
             Purpose = purpose,
             ExpiresAt = expiresAt,
         };
