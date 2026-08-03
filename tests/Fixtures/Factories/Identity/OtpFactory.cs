@@ -7,6 +7,8 @@ namespace _116.Tests.Fixtures.Factories.Identity;
 
 /// <summary>
 /// Factory for quickly creating <see cref="OtpEntity"/> instances in tests.
+/// Codes passed in are plaintext; the built entity stores only their hash, exactly as the
+/// application does, so the real verification path accepts them.
 /// </summary>
 public static class OtpFactory
 {
@@ -27,7 +29,7 @@ public static class OtpFactory
     /// Creates an OTP with a specific user and code.
     /// </summary>
     /// <param name="userId">The user identifier.</param>
-    /// <param name="code">The OTP code.</param>
+    /// <param name="code">The plaintext OTP code the entity should accept.</param>
     /// <returns>A new OtpEntity with the specified values.</returns>
     public static OtpEntity Create(Guid userId, string code) =>
         new OtpBuilder().WithUserId(userId).WithCode(code).Build();
@@ -130,7 +132,7 @@ public static class OtpFactory
     /// Creates an OTP with a specific user, code, and purpose.
     /// </summary>
     /// <param name="userId">The user identifier.</param>
-    /// <param name="code">The OTP code.</param>
+    /// <param name="code">The plaintext OTP code the entity should accept.</param>
     /// <param name="purpose">The OTP purpose.</param>
     /// <returns>A new OtpEntity with the specified values.</returns>
     public static OtpEntity Create(Guid userId, string code, EnumOtpPurpose purpose) =>
@@ -139,7 +141,7 @@ public static class OtpFactory
     /// <summary>
     /// Creates an OTP with a specific code.
     /// </summary>
-    /// <param name="code">The OTP code.</param>
+    /// <param name="code">The plaintext OTP code the entity should accept.</param>
     /// <returns>A new OtpEntity with the specified code.</returns>
     public static OtpEntity CreateWithCode(string code) => new OtpBuilder().WithCode(code).Build();
 
@@ -155,7 +157,7 @@ public static class OtpFactory
     /// Creates an OTP with a specific attempt count.
     /// </summary>
     /// <param name="userId">The user identifier.</param>
-    /// <param name="code">The OTP code.</param>
+    /// <param name="code">The plaintext OTP code the entity should accept.</param>
     /// <param name="purpose">The OTP purpose.</param>
     /// <param name="attemptCount">The attempt count.</param>
     /// <returns>A new OtpEntity with the specified values.</returns>
@@ -188,7 +190,7 @@ public static class OtpFactory
     /// Creates an expired OTP for a specific user, code, and purpose.
     /// </summary>
     /// <param name="userId">The user identifier.</param>
-    /// <param name="code">The OTP code.</param>
+    /// <param name="code">The plaintext OTP code the entity should accept.</param>
     /// <param name="purpose">The OTP purpose.</param>
     /// <returns>A new expired OtpEntity with the specified values.</returns>
     public static OtpEntity CreateExpired(Guid userId, string code, EnumOtpPurpose purpose) =>
@@ -198,7 +200,7 @@ public static class OtpFactory
     /// Creates an OTP with max attempts reached for a specific user, code, and purpose.
     /// </summary>
     /// <param name="userId">The user identifier.</param>
-    /// <param name="code">The OTP code.</param>
+    /// <param name="code">The plaintext OTP code the entity should accept.</param>
     /// <param name="purpose">The OTP purpose.</param>
     /// <returns>A new OtpEntity with max attempts for the specified values.</returns>
     public static OtpEntity CreateMaxAttemptsReached(Guid userId, string code, EnumOtpPurpose purpose) =>
@@ -208,7 +210,7 @@ public static class OtpFactory
     /// Creates a used OTP for a specific user, code, and purpose.
     /// </summary>
     /// <param name="userId">The user identifier.</param>
-    /// <param name="code">The OTP code.</param>
+    /// <param name="code">The plaintext OTP code the entity should accept.</param>
     /// <param name="purpose">The OTP purpose.</param>
     /// <returns>A new used OtpEntity with the specified values.</returns>
     public static OtpEntity CreateUsed(Guid userId, string code, EnumOtpPurpose purpose) =>
@@ -218,7 +220,7 @@ public static class OtpFactory
     /// Creates a used and expired OTP for a specific user, code, and purpose.
     /// </summary>
     /// <param name="userId">The user identifier.</param>
-    /// <param name="code">The OTP code.</param>
+    /// <param name="code">The plaintext OTP code the entity should accept.</param>
     /// <param name="purpose">The OTP purpose.</param>
     /// <returns>A new used and expired OtpEntity with the specified values.</returns>
     public static OtpEntity CreateUsedAndExpired(Guid userId, string code, EnumOtpPurpose purpose) =>
