@@ -2,6 +2,7 @@ using _116.Identity.Application.Auth.Repositories;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Shared.Application.Exceptions;
+using _116.Tests.Fixtures.Constants;
 using Moq;
 
 namespace _116.Unit.Tests.Common.Mocks.Repositories;
@@ -27,10 +28,15 @@ public static class MockOtpRepository
     /// </summary>
     /// <param name="mock">The mock instance.</param>
     /// <param name="otp">The OTP entity to return.</param>
+    /// <param name="code">The plaintext code the caller is expected to submit.</param>
     /// <returns>The mock instance for chaining.</returns>
-    public static Mock<IOtpRepository> SetupValidateOtp(this Mock<IOtpRepository> mock, OtpEntity otp)
+    public static Mock<IOtpRepository> SetupValidateOtp(
+        this Mock<IOtpRepository> mock,
+        OtpEntity otp,
+        string code = TestConstants.Otp.ValidCode
+    )
     {
-        mock.Setup(x => x.ValidateOtpAsync(otp.UserId, otp.Code, otp.Purpose, It.IsAny<CancellationToken>()))
+        mock.Setup(x => x.ValidateOtpAsync(otp.UserId, code, otp.Purpose, It.IsAny<CancellationToken>()))
             .ReturnsAsync(otp);
         return mock;
     }
@@ -100,10 +106,15 @@ public static class MockOtpRepository
     /// </summary>
     /// <param name="mock">The mock instance.</param>
     /// <param name="otp">The OTP entity to return.</param>
+    /// <param name="code">The plaintext code the caller is expected to submit.</param>
     /// <returns>The mock instance for chaining.</returns>
-    public static Mock<IOtpRepository> SetupValidateUsedOtp(this Mock<IOtpRepository> mock, OtpEntity otp)
+    public static Mock<IOtpRepository> SetupValidateUsedOtp(
+        this Mock<IOtpRepository> mock,
+        OtpEntity otp,
+        string code = TestConstants.Otp.ValidCode
+    )
     {
-        mock.Setup(x => x.ValidateUsedOtpAsync(otp.UserId, otp.Code, otp.Purpose, It.IsAny<CancellationToken>()))
+        mock.Setup(x => x.ValidateUsedOtpAsync(otp.UserId, code, otp.Purpose, It.IsAny<CancellationToken>()))
             .ReturnsAsync(otp);
         return mock;
     }
