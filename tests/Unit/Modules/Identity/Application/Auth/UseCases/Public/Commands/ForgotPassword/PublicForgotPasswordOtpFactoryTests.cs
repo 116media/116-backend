@@ -4,6 +4,7 @@ using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword;
 using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -39,6 +40,35 @@ public class PublicForgotPasswordOtpFactoryTests
 
     #region Success Cases
 
+    /// <summary>
+    /// Verifies that the entity handed to the OTP repository is exactly the one from the creation
+    /// result and that it carries the hash, never the plaintext the caller will mail out.
+    /// </summary>
+    [Fact]
+    public async Task CreatePasswordResetOtpAsync_ShouldPersistTheHashedEntityNotThePlainCode()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        OtpEntity otp = OtpFactory.CreateForPasswordReset(userId);
+
+        _otpServiceMock.SetupCreateOtpReturns(otp, TestConstants.Otp.DefaultCode);
+
+        // Act
+        OtpCreationResult result = await _factory.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
+
+        // Assert
+        result.PlainCode.Should().Be(TestConstants.Otp.DefaultCode);
+        result.Otp.CodeHash.Should().NotBe(result.PlainCode);
+        _otpRepositoryMock.Verify(
+            x =>
+                x.AddAsync(
+                    It.Is<OtpEntity>(o => o == result.Otp && o.CodeHash.StartsWith("v1:")),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
     [Fact]
     public async Task CreatePasswordResetOtpAsync_WithValidUserId_ShouldReturnOtp()
     {
@@ -49,12 +79,12 @@ public class PublicForgotPasswordOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        OtpEntity result = await _factory.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
+        OtpCreationResult result = await _factory.CreatePasswordResetOtpAsync(userId, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
-        result.UserId.Should().Be(userId);
-        result.Purpose.Should().Be(EnumOtpPurpose.PasswordReset);
+        result.Otp.UserId.Should().Be(userId);
+        result.Otp.Purpose.Should().Be(EnumOtpPurpose.PasswordReset);
     }
 
     [Fact]
