@@ -78,39 +78,6 @@ public class OtpSpecificationsTests
 
     #endregion
 
-    #region OtpByCodeSpecification Tests
-
-    [Fact]
-    public void OtpByCodeSpecification_WithMatchingCode_ShouldReturnTrue()
-    {
-        // Arrange
-        string code = "123456";
-        OtpEntity otp = OtpFactory.CreateWithCode(code);
-        OtpByCodeSpecification spec = new(code);
-
-        // Act
-        bool result = spec.IsSatisfiedBy(otp);
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void OtpByCodeSpecification_WithDifferentCode_ShouldReturnFalse()
-    {
-        // Arrange
-        OtpEntity otp = OtpFactory.CreateWithCode("123456");
-        OtpByCodeSpecification spec = new("654321");
-
-        // Act
-        bool result = spec.IsSatisfiedBy(otp);
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
     #region OtpIsNotUsedSpecification Tests
 
     [Fact]
@@ -298,10 +265,9 @@ public class OtpSpecificationsTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        string code = "123456";
         var purpose = EnumOtpPurpose.EmailVerification;
-        OtpEntity otp = OtpFactory.Create(userId, code, purpose);
-        OtpForValidationSpecification spec = new(userId, code, purpose);
+        OtpEntity otp = OtpFactory.Create(userId, "123456", purpose);
+        OtpForValidationSpecification spec = new(userId, purpose);
 
         // Act
         bool result = spec.IsSatisfiedBy(otp);
@@ -315,11 +281,10 @@ public class OtpSpecificationsTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        string code = "123456";
         var purpose = EnumOtpPurpose.EmailVerification;
-        OtpEntity otp = OtpFactory.Create(userId, code, purpose);
+        OtpEntity otp = OtpFactory.Create(userId, "123456", purpose);
         otp.MarkAsUsed();
-        OtpForValidationSpecification spec = new(userId, code, purpose);
+        OtpForValidationSpecification spec = new(userId, purpose);
 
         // Act
         bool result = spec.IsSatisfiedBy(otp);
@@ -329,13 +294,12 @@ public class OtpSpecificationsTests
     }
 
     [Fact]
-    public void OtpForValidationSpecification_WithWrongCode_ShouldReturnFalse()
+    public void OtpForValidationSpecification_WithADifferentUser_ShouldReturnFalse()
     {
         // Arrange
-        var userId = Guid.NewGuid();
         var purpose = EnumOtpPurpose.EmailVerification;
-        OtpEntity otp = OtpFactory.Create(userId, "123456", purpose);
-        OtpForValidationSpecification spec = new(userId, "654321", purpose);
+        OtpEntity otp = OtpFactory.Create(Guid.NewGuid(), "123456", purpose);
+        OtpForValidationSpecification spec = new(Guid.NewGuid(), purpose);
 
         // Act
         bool result = spec.IsSatisfiedBy(otp);
@@ -390,11 +354,10 @@ public class OtpSpecificationsTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        string code = "123456";
         var purpose = EnumOtpPurpose.TwoFactorAuthentication;
-        OtpEntity otp = OtpFactory.Create(userId, code, purpose);
+        OtpEntity otp = OtpFactory.Create(userId, "123456", purpose);
         otp.MarkAsUsed();
-        OtpForUsedValidationSpecification spec = new(userId, code, purpose);
+        OtpForUsedValidationSpecification spec = new(userId, purpose);
 
         // Act
         bool result = spec.IsSatisfiedBy(otp);
@@ -408,10 +371,9 @@ public class OtpSpecificationsTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        string code = "123456";
         var purpose = EnumOtpPurpose.TwoFactorAuthentication;
-        OtpEntity otp = OtpFactory.Create(userId, code, purpose);
-        OtpForUsedValidationSpecification spec = new(userId, code, purpose);
+        OtpEntity otp = OtpFactory.Create(userId, "123456", purpose);
+        OtpForUsedValidationSpecification spec = new(userId, purpose);
 
         // Act
         bool result = spec.IsSatisfiedBy(otp);
