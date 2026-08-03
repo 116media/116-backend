@@ -54,6 +54,7 @@ using _116.Identity.Contracts.Application;
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Events;
 using _116.Identity.Infrastructure.Adapters.Wangkanai.Detection;
+using _116.Identity.Infrastructure.BackgroundJobs;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Identity.Infrastructure.Persistence.Seeds.SuperAdmin;
 using _116.Identity.Infrastructure.Persistence.Seeds.Visitor;
@@ -61,6 +62,7 @@ using _116.Identity.Infrastructure.Repositories;
 using _116.Identity.Infrastructure.Services;
 using _116.Shared.Application.Configurations;
 using _116.Shared.Application.Exceptions.Handlers.Contracts;
+using _116.Shared.Application.Extensions;
 using _116.Shared.Application.Services;
 using _116.Shared.Infrastructure;
 using Mapster;
@@ -172,6 +174,8 @@ public static class IdentityModule
         services.AddScoped<IPublicSignOutSessionFactory, PublicSignOutSessionFactory>();
         services.AddScoped<IAdminSignOutSessionFactory, AdminSignOutSessionFactory>();
         services.AddScoped<IRefreshTokenFactory, RefreshTokenFactory>();
+
+        services.AddScheduledJob<ExpiredOtpCleanupJob>(cronExpression: IdentityConstants.ExpiredOtpCleanupCron);
 
         services.AddScoped<SuperAdminSeeder>();
         services.AddScoped<VisitorRoleSeeder>();
