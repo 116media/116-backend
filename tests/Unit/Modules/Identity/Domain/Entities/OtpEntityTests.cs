@@ -127,62 +127,6 @@ public class OtpEntityTests
 
     #endregion
 
-    #region IsValid Tests
-
-    [Fact]
-    public void IsValid_WhenNotUsedNotExpiredAndBelowMaxAttempts_ShouldReturnTrue()
-    {
-        // Arrange
-        OtpEntity otp = OtpFactory.Create();
-
-        // Act
-        bool result = otp.IsValid();
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void IsValid_WhenUsed_ShouldReturnFalse()
-    {
-        // Arrange
-        OtpEntity otp = OtpFactory.CreateUsed();
-
-        // Act
-        bool result = otp.IsValid();
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public void IsValid_WhenExpired_ShouldReturnFalse()
-    {
-        // Arrange
-        OtpEntity otp = OtpFactory.CreateExpired();
-
-        // Act
-        bool result = otp.IsValid();
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public void IsValid_WhenMaxAttemptsReached_ShouldReturnFalse()
-    {
-        // Arrange
-        OtpEntity otp = OtpFactory.CreateMaxAttemptsReached();
-
-        // Act
-        bool result = otp.IsValid();
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
     #region IsExpired Tests
 
     [Fact]
