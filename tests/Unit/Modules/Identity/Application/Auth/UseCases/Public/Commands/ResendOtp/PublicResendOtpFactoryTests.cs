@@ -5,6 +5,7 @@ using _116.Identity.Application.Shared.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Domain.ValueObjects;
+using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Unit.Tests.Common.Mocks.Infrastructure;
 using _116.Unit.Tests.Common.Mocks.Repositories;
@@ -40,6 +41,36 @@ public class PublicResendOtpFactoryTests
 
     #region Success Cases
 
+    /// <summary>
+    /// Verifies that the entity handed to the OTP repository is exactly the one from the creation
+    /// result and that it carries the hash, never the plaintext the caller will mail out.
+    /// </summary>
+    [Fact]
+    public async Task ResendOtpAsync_ShouldPersistTheHashedEntityNotThePlainCode()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        OtpPurpose purpose = EnumOtpPurpose.EmailVerification;
+        OtpEntity otp = OtpFactory.CreateForEmailVerification(userId);
+
+        _otpServiceMock.SetupCreateOtpReturns(otp, TestConstants.Otp.DefaultCode);
+
+        // Act
+        OtpCreationResult result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+
+        // Assert
+        result.PlainCode.Should().Be(TestConstants.Otp.DefaultCode);
+        result.Otp.CodeHash.Should().NotBe(result.PlainCode);
+        _otpRepositoryMock.Verify(
+            x =>
+                x.AddAsync(
+                    It.Is<OtpEntity>(o => o == result.Otp && o.CodeHash.StartsWith("v1:")),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
     [Fact]
     public async Task ResendOtpAsync_WithValidData_ShouldReturnNewOtp()
     {
@@ -51,11 +82,11 @@ public class PublicResendOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        OtpEntity result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+        OtpCreationResult result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
-        result.UserId.Should().Be(userId);
+        result.Otp.UserId.Should().Be(userId);
     }
 
     [Fact]
@@ -145,7 +176,7 @@ public class PublicResendOtpFactoryTests
         _otpServiceMock.SetupCreateOtpReturns(otp);
 
         // Act
-        OtpEntity result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
+        OtpCreationResult result = await _factory.ResendOtpAsync(userId, purpose, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
