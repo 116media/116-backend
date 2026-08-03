@@ -35,14 +35,19 @@ public static class MockOtpService
     }
 
     /// <summary>
-    /// Sets up CreateOtp to return the specified OTP entity.
+    /// Sets up CreateOtp to return the specified OTP entity paired with a plaintext code.
     /// </summary>
     /// <param name="mock">The mock instance.</param>
     /// <param name="otp">The OTP entity to return.</param>
+    /// <param name="plainCode">The plaintext code the caller should receive.</param>
     /// <returns>The mock instance for chaining.</returns>
-    public static Mock<IOtpService> SetupCreateOtp(this Mock<IOtpService> mock, OtpEntity otp)
+    public static Mock<IOtpService> SetupCreateOtp(
+        this Mock<IOtpService> mock,
+        OtpEntity otp,
+        string plainCode = TestConstants.Otp.DefaultCode
+    )
     {
-        mock.Setup(x => x.CreateOtp(otp.UserId, otp.Purpose)).Returns(otp);
+        mock.Setup(x => x.CreateOtp(otp.UserId, otp.Purpose)).Returns(new OtpCreationResult(otp, plainCode));
         return mock;
     }
 
@@ -51,10 +56,16 @@ public static class MockOtpService
     /// </summary>
     /// <param name="mock">The mock instance.</param>
     /// <param name="otp">The OTP entity to return.</param>
+    /// <param name="plainCode">The plaintext code the caller should receive.</param>
     /// <returns>The mock instance for chaining.</returns>
-    public static Mock<IOtpService> SetupCreateOtpReturns(this Mock<IOtpService> mock, OtpEntity otp)
+    public static Mock<IOtpService> SetupCreateOtpReturns(
+        this Mock<IOtpService> mock,
+        OtpEntity otp,
+        string plainCode = TestConstants.Otp.DefaultCode
+    )
     {
-        mock.Setup(x => x.CreateOtp(It.IsAny<Guid>(), It.IsAny<EnumOtpPurpose>())).Returns(otp);
+        mock.Setup(x => x.CreateOtp(It.IsAny<Guid>(), It.IsAny<EnumOtpPurpose>()))
+            .Returns(new OtpCreationResult(otp, plainCode));
         return mock;
     }
 
