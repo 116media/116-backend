@@ -140,10 +140,57 @@ unapplied like every prior migration.
 
 ## Checklist
 
-- [ ] `CodeHash` entity rename + `OtpCodeHashLength` constant
-- [ ] CSPRNG generation
-- [ ] `CreateOtp` returns `OtpCreationResult`; `IPasswordService` injected
-- [ ] Five call sites updated; no reader of `otp.Code` remains anywhere
-- [ ] Repository verification inverted; by-code specifications gone
-- [ ] Migration (delete + rename + widen) generated
-- [ ] Error semantics verified unchanged against the table in section 4
+- [x] `CodeHash` entity rename + `OtpCodeHashLength` constant
+- [x] CSPRNG generation
+- [x] `CreateOtp` returns `OtpCreationResult`; `IPasswordService` injected
+- [x] Five call sites updated; no reader of `otp.Code` remains anywhere
+- [x] Repository verification inverted; by-code specifications gone
+- [x] Migration (delete + rename + widen) generated
+- [x] Error semantics verified unchanged against the table in section 4
+
+## Implementation notes
+
+Deviations from the spec as written, and the reasoning behind each.
+
+### The candidate query cannot filter on expiry
+
+Section 4 describes the load as "the existing `GetLatestValidOtpAsync` query shape". That query
+is `OtpIsValidForUserAndPurposeSpecification`, which excludes expired rows — and with expired rows
+excluded, step 3 (`IsExpired()` → `OtpExpired`) can never fire, so verify-otp would answer
+`NoValidOtpFound` where it answers `OtpExpired` today. The 410 Gone that expiry produces is a
+pinned public contract, so the load runs on `(userId, purpose, not used)` instead and the ordered
+checks in section 4 all stay reachable. `OtpForValidationSpecification` is the specification that
+lost its `code` parameter and now expresses exactly that predicate.
+
+One observable consequence: a **wrong** code submitted against an **expired** row now answers
+`OtpExpired` where it previously answered `NoValidOtpFound`. That is the ordering section 4
+prescribes — expiry is settled before the code is ever compared — and both answers mean the same
+thing to a client: this OTP is finished, ask for a new one. Every other error case is byte-for-byte
+identical.
+
+### `GetLatestValidOtpAsync` removed, its specification left in place
+
+Collapsing the two-branch flow into one leaves the private `GetLatestValidOtpAsync` helper with no
+caller, so it is gone. Its specification, `OtpIsValidForUserAndPurposeSpecification`, now has no
+caller either. It is left in place rather than deleted: removing it cascades into
+`OtpIsNotExpiredSpecification` and the composable leaf specifications around it, which is a wider
+cleanup than a security fix should carry. It belongs with the `CleanupExpiredOtpsAsync` dead-code
+item the overview already defers to its own change.
+
+### The by-code index is dropped
+
+`IX_Otps_UserId_Code_Purpose` existed to serve the by-code query. No query can filter on a salted
+hash, so the index can never be used again while still costing a write on every OTP insert. The
+migration drops it; `IX_Otps_UserId_Purpose` is what the new lookup uses.
+
+### Schema name
+
+The migration targets `identity.otps`. Section 5 says `authentication.otps`; the schema
+`IdentityDbContext` actually maps to is `identity`.
+
+### Factory contracts return the result record
+
+The forgot-password and resend factories previously returned `OtpEntity` and their handlers read
+`otp.Code` for the mailer token. Both contracts now return `OtpCreationResult`, which is the
+"take the result record" option section 3 offers, so the plaintext travels to the mailer without
+any type having to carry it alongside a persisted entity.
