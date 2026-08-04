@@ -9,8 +9,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadAlbum
 /// the new one is uploaded successfully.
 /// </summary>
 /// <param name="AlbumId">The unique identifier of the album to upload the cover for.</param>
-/// <param name="File">The cover image file to upload.</param>
-public record AdminUploadAlbumCoverCommand(Guid AlbumId, IFormFile File) : ICommand<AdminUploadAlbumCoverResult>;
+/// <param name="File">The cover image file to upload. Null when the file part is missing.</param>
+public record AdminUploadAlbumCoverCommand(Guid AlbumId, IFormFile? File) : ICommand<AdminUploadAlbumCoverResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminUploadAlbumCoverCommand" /> containing the uploaded cover details.
