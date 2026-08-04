@@ -6,6 +6,7 @@ using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
+using Microsoft.AspNetCore.Http;
 
 namespace _116.Content.Application.Catalog.UseCases.Admin.Commands.UploadCategoryPoster;
 
@@ -36,13 +37,15 @@ public class AdminUploadCategoryPosterHandler(
             cancellationToken: cancellationToken
         );
 
+        IFormFile file = command.File!;
+
         FileEntity fileEntity = await fileRepository.ReplaceImageFileAsync(
             currentFileId: category.PosterFileId,
-            file: command.File,
+            file: file,
             publicId: id.ToString(),
             folder: "content/category-posters",
-            originalFileName: command.File.FileName,
-            mimeType: command.File.ContentType,
+            originalFileName: file.FileName,
+            mimeType: file.ContentType,
             cancellationToken: cancellationToken
         );
 
