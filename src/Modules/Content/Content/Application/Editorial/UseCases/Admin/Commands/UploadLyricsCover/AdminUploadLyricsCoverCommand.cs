@@ -9,8 +9,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadLyric
 /// the new one is uploaded successfully.
 /// </summary>
 /// <param name="LyricsId">The unique identifier of the lyrics page to upload the cover for.</param>
-/// <param name="File">The cover image file to upload.</param>
-public record AdminUploadLyricsCoverCommand(Guid LyricsId, IFormFile File) : ICommand<AdminUploadLyricsCoverResult>;
+/// <param name="File">The cover image file to upload. Null when the file part is missing.</param>
+public record AdminUploadLyricsCoverCommand(Guid LyricsId, IFormFile? File) : ICommand<AdminUploadLyricsCoverResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminUploadLyricsCoverCommand" /> containing the uploaded cover details.
