@@ -38,7 +38,7 @@ public class AdminUploadCategoryPosterEndpointV1 : ICarterModule
         group
             .MapPut(
                 "/{id}/poster",
-                async (string id, IFormFile file, IDispatcher dispatcher) =>
+                async (string id, IFormFile? file, IDispatcher dispatcher) =>
                 {
                     var command = new AdminUploadCategoryPosterCommand(Id: id, File: file);
 
