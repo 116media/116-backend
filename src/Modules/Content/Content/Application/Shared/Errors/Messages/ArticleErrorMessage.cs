@@ -210,4 +210,9 @@ public class ArticleErrorMessage(IStringLocalizer<ArticleErrorMessage> localizer
     /// <param name="max">The largest accepted limit value.</param>
     public string PopularLimitOutOfRange(int min, int max) =>
         string.Format(localizer["PopularLimitOutOfRange"], min, max);
+
+    /// <summary>
+    /// Gets an error message for when an article carries no active promotion.
+    /// </summary>
+    public string NotPromoted() => localizer["NotPromoted"];
 }
