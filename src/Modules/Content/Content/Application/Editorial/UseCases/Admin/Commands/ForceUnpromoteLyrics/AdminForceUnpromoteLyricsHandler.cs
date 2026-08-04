@@ -1,3 +1,4 @@
+using _116.Content.Application.Shared.Errors.Facade;
 using _116.Content.Application.Shared.Persistence;
 using _116.Content.Application.Shared.Repositories;
 using _116.Content.Domain.Entities;
@@ -14,10 +15,12 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnprom
 /// <param name="lyricsRepository">Repository for lyrics data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="currentActor">Provides the identity of the authenticated user from JWT claims.</param>
+/// <param name="i18n">Single i18n entry point for the Content module.</param>
 public class AdminForceUnpromoteLyricsHandler(
     ILyricsRepository lyricsRepository,
     IContentUnitOfWork unitOfWork,
-    ICurrentActor currentActor
+    ICurrentActor currentActor,
+    ContentI18n i18n
 ) : ICommandHandler<AdminForceUnpromoteLyricsCommand, AdminForceUnpromoteLyricsResult>
 {
     /// <inheritdoc />
@@ -31,7 +34,7 @@ public class AdminForceUnpromoteLyricsHandler(
             cancellationToken: cancellationToken
         );
 
-        lyrics.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason);
+        lyrics.ForceUnpromote(unpromotedBy: currentActor.UserId!, reason: command.Reason, errors: i18n.Lyrics);
 
         lyricsRepository.Update(lyrics: lyrics);
         await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
