@@ -12,8 +12,9 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, config) => config.ReadFrom.Configuration(context.Configuration));
 
-Env.Load();
-Env.TraversePath().Load();
+// The .env file supplies defaults only; variables already present in the process win.
+Env.NoClobber().Load();
+Env.NoClobber().TraversePath().Load();
 
 // Load Cloudinary configuration from environment variables
 builder.Services.AddCloudinaryConfiguration();
@@ -49,6 +50,8 @@ builder.Services.AddRateLimiting();
 
 builder.Services.AddMemoryCache();
 
+builder.Services.AddSingleton(TimeProvider.System);
+
 builder.Services.AddAppLocalization();
 
 string[] allowedOrigins = AppEnvironment.CorsAllowedOrigins();
@@ -72,10 +75,10 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 );
 
 builder
-    .Services.AddIdentityModule()
-    .AddCoreModule()
-    .AddContentModule()
-    .AddMailerModule()
+    .Services.AddIdentityModule(builder.Environment)
+    .AddCoreModule(builder.Environment)
+    .AddContentModule(builder.Environment)
+    .AddMailerModule(builder.Environment)
     .AddEndpointsApiExplorer()
     .AddSwaggerGen(c => c.AddSwaggerOptions());
 
