@@ -8,6 +8,7 @@ using _116.Core.Application.Shared.Services;
 using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
 using MapsterMapper;
+using Microsoft.AspNetCore.Http;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArticleImage;
 
@@ -44,14 +45,16 @@ public class AdminUploadArticleImageHandler(
             cancellationToken: cancellationToken
         );
 
+        IFormFile file = command.File!;
+
         bool isCover = command.ImageType == EnumArticleImageType.Cover;
 
         if (isCover)
         {
-            return await HandleCoverImage(article, articleId, command, cancellationToken);
+            return await HandleCoverImage(article, articleId, file, cancellationToken);
         }
 
-        return await HandleBodyImage(article, articleId, command, cancellationToken);
+        return await HandleBodyImage(articleId, file, command.ImageType, cancellationToken);
     }
 
     /// <summary>
@@ -60,7 +63,7 @@ public class AdminUploadArticleImageHandler(
     private async Task<AdminUploadArticleImageResult> HandleCoverImage(
         ArticleEntity article,
         Guid articleId,
-        AdminUploadArticleImageCommand command,
+        IFormFile file,
         CancellationToken cancellationToken
     )
     {
@@ -80,11 +83,11 @@ public class AdminUploadArticleImageHandler(
 
         FileEntity fileEntity = await fileRepository.ReplaceImageFileAsync(
             currentFileId: article.CoverImageFileId,
-            file: command.File,
+            file: file,
             publicId: articleId.ToString(),
             folder: "content/article-images",
-            originalFileName: command.File.FileName,
-            mimeType: command.File.ContentType,
+            originalFileName: file.FileName,
+            mimeType: file.ContentType,
             cancellationToken: cancellationToken
         );
 
@@ -110,9 +113,9 @@ public class AdminUploadArticleImageHandler(
     /// Handles body image upload via direct Cloudinary upload (not tracked by FileEntity).
     /// </summary>
     private async Task<AdminUploadArticleImageResult> HandleBodyImage(
-        ArticleEntity article,
         Guid articleId,
-        AdminUploadArticleImageCommand command,
+        IFormFile file,
+        EnumArticleImageType imageType,
         CancellationToken cancellationToken
     )
     {
@@ -120,7 +123,7 @@ public class AdminUploadArticleImageHandler(
         string publicId = $"{articleId}-{imageId}";
 
         CloudinaryUploadResult uploadResult = await cloudinaryService.UploadImageAsync(
-            file: command.File,
+            file: file,
             publicId: publicId,
             folder: "content/article-images",
             cancellationToken: cancellationToken
@@ -131,7 +134,7 @@ public class AdminUploadArticleImageHandler(
             articleId: articleId,
             storageKey: uploadResult.PublicId,
             url: uploadResult.SecureUrl,
-            imageType: command.ImageType
+            imageType: imageType
         );
 
         await articleRepository.AddImageAsync(image: image, cancellationToken: cancellationToken);
