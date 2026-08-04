@@ -38,7 +38,7 @@ public class AdminUploadLyricsCoverEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{EditorialRouteConstants.Cover}",
-                async (Guid id, IFormFile file, IDispatcher dispatcher) =>
+                async (Guid id, IFormFile? file, IDispatcher dispatcher) =>
                 {
                     var command = new AdminUploadLyricsCoverCommand(LyricsId: id, File: file);
                     AdminUploadLyricsCoverResult result = await dispatcher.Send(request: command);
