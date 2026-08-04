@@ -9,8 +9,8 @@ namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadArtis
 /// the new one is uploaded successfully.
 /// </summary>
 /// <param name="ArtistId">The unique identifier of the artist profile to upload the avatar for.</param>
-/// <param name="File">The avatar image file to upload.</param>
-public record AdminUploadArtistAvatarCommand(Guid ArtistId, IFormFile File) : ICommand<AdminUploadArtistAvatarResult>;
+/// <param name="File">The avatar image file to upload. Null when the file part is missing.</param>
+public record AdminUploadArtistAvatarCommand(Guid ArtistId, IFormFile? File) : ICommand<AdminUploadArtistAvatarResult>;
 
 /// <summary>
 /// Result of the <see cref="AdminUploadArtistAvatarCommand" /> containing the uploaded avatar details.
