@@ -102,4 +102,7 @@
   <data name="BelongsToAlbum" xml:space="preserve">
     <value>This lyrics page belongs to an album; update the album's streaming links instead.</value>
   </data>
+  <data name="NotPromoted" xml:space="preserve">
+    <value>Lyrics page is not currently promoted.</value>
+  </data>
 </root>
