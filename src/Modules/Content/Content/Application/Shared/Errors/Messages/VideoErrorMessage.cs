@@ -197,4 +197,9 @@ public class VideoErrorMessage(IStringLocalizer<VideoErrorMessage> localizer)
     /// <param name="max">The largest accepted limit value.</param>
     public string PopularLimitOutOfRange(int min, int max) =>
         string.Format(localizer["PopularLimitOutOfRange"], min, max);
+
+    /// <summary>
+    /// Gets an error message for when a video carries no active promotion.
+    /// </summary>
+    public string NotPromoted() => localizer["NotPromoted"];
 }
