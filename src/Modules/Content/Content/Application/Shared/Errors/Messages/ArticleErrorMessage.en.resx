@@ -105,4 +105,7 @@
   <data name="PopularLimitOutOfRange" xml:space="preserve">
     <value>Limit must be between {0} and {1}.</value>
   </data>
+  <data name="NotPromoted" xml:space="preserve">
+    <value>Article is not currently promoted.</value>
+  </data>
 </root>
