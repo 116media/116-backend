@@ -13,11 +13,12 @@ public class AdminCreateAlbumValidator : AbstractValidator<AdminCreateAlbumComma
     /// Initializes a new instance of <see cref="AdminCreateAlbumValidator" /> with the specified error message provider.
     /// </summary>
     /// <param name="i18n">Content module i18n facade.</param>
-    public AdminCreateAlbumValidator(ContentI18n i18n)
+    /// <param name="timeProvider">The clock the release-year upper boundary is computed from.</param>
+    public AdminCreateAlbumValidator(ContentI18n i18n, TimeProvider timeProvider)
     {
         RuleFor(x => x.Name).ValidAlbumName(i18n.Album.Msg);
 
-        RuleFor(x => x.ReleaseYear).ValidReleaseYear();
+        RuleFor(x => x.ReleaseYear).ValidReleaseYear(timeProvider);
 
         RuleFor(x => x.ReleaseType).IsInEnum();
     }
