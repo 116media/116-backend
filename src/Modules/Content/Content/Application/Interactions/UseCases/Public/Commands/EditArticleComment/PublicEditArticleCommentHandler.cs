@@ -8,6 +8,8 @@ namespace _116.Content.Application.Interactions.UseCases.Public.Commands.EditArt
 
 /// <summary>
 /// Handles the <see cref="PublicEditArticleCommentCommand" /> to update a comment body.
+/// The comment is looked up scoped to the article in the route, so a comment reached
+/// through a different article's id is never edited.
 /// </summary>
 /// <param name="articleRepository">Repository for article data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
@@ -26,24 +28,25 @@ public class PublicEditArticleCommentHandler(
     {
         ArticleCommentEntity? comment = await articleRepository.GetCommentByIdAsync(
             commentId: command.CommentId,
+            articleId: command.ArticleId,
             cancellationToken: cancellationToken
         );
 
-        if (comment is not null)
+        if (comment is null)
         {
-            if (comment.UserId != command.UserId)
-            {
-                throw i18n.ArticleInteraction.NotCommentOwner();
-            }
-
-            comment.Edit(body: command.Body);
-            articleRepository.UpdateComment(comment: comment);
-
-            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-
-            return new PublicEditArticleCommentResult(IsSuccess: true);
+            throw i18n.ArticleInteraction.CommentNotFound(commentId: command.CommentId);
         }
 
-        throw i18n.ArticleInteraction.CommentNotFound(commentId: command.CommentId);
+        if (comment.UserId != command.UserId)
+        {
+            throw i18n.ArticleInteraction.NotCommentOwner();
+        }
+
+        comment.Edit(body: command.Body);
+        articleRepository.UpdateComment(comment: comment);
+
+        await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+
+        return new PublicEditArticleCommentResult(IsSuccess: true);
     }
 }
