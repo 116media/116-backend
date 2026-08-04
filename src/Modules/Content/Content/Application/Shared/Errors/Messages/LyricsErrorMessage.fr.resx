@@ -102,4 +102,7 @@
   <data name="BelongsToAlbum" xml:space="preserve">
     <value>Ces paroles appartiennent à un album ; modifiez plutôt les liens de streaming de l'album.</value>
   </data>
+  <data name="NotPromoted" xml:space="preserve">
+    <value>La page de paroles ne bénéficie actuellement d'aucune promotion.</value>
+  </data>
 </root>
