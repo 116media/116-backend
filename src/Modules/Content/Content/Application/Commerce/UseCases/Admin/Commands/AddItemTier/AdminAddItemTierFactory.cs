@@ -15,14 +15,14 @@ namespace _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier;
 /// <param name="lookupRepository">Repository for lookup data access operations.</param>
 /// <param name="unitOfWork">Unit of Work for managing database transactions.</param>
 /// <param name="contentOrderErrors">Content order domain error factory.</param>
-/// <param name="pricingTierErrors">Pricing tier domain error factory.</param>
+/// <param name="categoryErrors">Category domain error factory.</param>
 public class AdminAddItemTierFactory(
     IContentOrderRepository contentOrderRepository,
     ICategoryRepository categoryRepository,
     ILookupRepository lookupRepository,
     IContentUnitOfWork unitOfWork,
     ContentOrderErrors contentOrderErrors,
-    PricingTierErrors pricingTierErrors
+    CategoryErrors categoryErrors
 ) : IAddItemTierFactory
 {
     /// <inheritdoc />
@@ -75,7 +75,7 @@ public class AdminAddItemTierFactory(
 
             if (categoryPricing is null)
             {
-                throw pricingTierErrors.NotFound(id: pricingTierId);
+                throw categoryErrors.PricingNotFound(categoryId: item.CategoryId, tierId: pricingTierId);
             }
 
             var tier = ContentItemTierEntity.Create(
