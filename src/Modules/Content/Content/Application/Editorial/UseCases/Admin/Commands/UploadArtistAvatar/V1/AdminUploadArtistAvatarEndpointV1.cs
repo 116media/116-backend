@@ -38,7 +38,7 @@ public class AdminUploadArtistAvatarEndpointV1 : ICarterModule
         group
             .MapPost(
                 $"/{{id}}/{EditorialRouteConstants.Avatar}",
-                async (Guid id, IFormFile file, IDispatcher dispatcher) =>
+                async (Guid id, IFormFile? file, IDispatcher dispatcher) =>
                 {
                     var command = new AdminUploadArtistAvatarCommand(ArtistId: id, File: file);
                     AdminUploadArtistAvatarResult result = await dispatcher.Send(request: command);
