@@ -5,6 +5,7 @@ using _116.Content.Domain.Entities;
 using _116.Core.Application.Shared.Repositories;
 using _116.Core.Domain.Entities;
 using _116.Shared.Contracts.Application.CQRS;
+using Microsoft.AspNetCore.Http;
 
 namespace _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadAlbumCover;
 
@@ -34,13 +35,15 @@ public class AdminUploadAlbumCoverHandler(
             cancellationToken: cancellationToken
         );
 
+        IFormFile file = command.File!;
+
         FileEntity fileEntity = await fileRepository.ReplaceImageFileAsync(
             currentFileId: album.CoverImageFileId,
-            file: command.File,
+            file: file,
             publicId: command.AlbumId.ToString(),
             folder: "content/album-covers",
-            originalFileName: command.File.FileName,
-            mimeType: command.File.ContentType,
+            originalFileName: file.FileName,
+            mimeType: file.ContentType,
             cancellationToken: cancellationToken
         );
 
