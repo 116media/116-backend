@@ -109,4 +109,12 @@ public class ArticleErrors(ArticleErrorMessage i18n)
     {
         return new BadRequestException(i18n.CannotDeletePublishedArticle());
     }
+
+    /// <summary>
+    /// Throws when an article carries no active promotion.
+    /// </summary>
+    public BadRequestException NotPromoted()
+    {
+        return new BadRequestException(i18n.NotPromoted());
+    }
 }
