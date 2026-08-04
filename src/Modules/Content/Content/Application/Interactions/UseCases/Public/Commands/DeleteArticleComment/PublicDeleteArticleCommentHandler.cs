@@ -29,27 +29,26 @@ public class PublicDeleteArticleCommentHandler(
     {
         ArticleCommentEntity? comment = await articleRepository.GetCommentByIdAsync(
             commentId: command.CommentId,
+            articleId: command.ArticleId,
             cancellationToken: cancellationToken
         );
 
-        if (comment is not null)
+        if (comment is null)
         {
-            if (comment.UserId != command.UserId)
-            {
-                throw i18n.ArticleInteraction.NotCommentOwner();
-            }
-
-            await articleRepository.GetByIdOrThrowAsync(id: command.ArticleId, cancellationToken: cancellationToken);
-
-            if (comment.SoftDelete())
-            {
-                articleRepository.UpdateComment(comment: comment);
-                await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
-            }
-
-            return new PublicDeleteArticleCommentResult(IsSuccess: true);
+            throw i18n.ArticleInteraction.CommentNotFound(commentId: command.CommentId);
         }
 
-        throw i18n.ArticleInteraction.CommentNotFound(commentId: command.CommentId);
+        if (comment.UserId != command.UserId)
+        {
+            throw i18n.ArticleInteraction.NotCommentOwner();
+        }
+
+        if (comment.SoftDelete())
+        {
+            articleRepository.UpdateComment(comment: comment);
+            await unitOfWork.CommitAsync(cancellationToken: cancellationToken);
+        }
+
+        return new PublicDeleteArticleCommentResult(IsSuccess: true);
     }
 }
