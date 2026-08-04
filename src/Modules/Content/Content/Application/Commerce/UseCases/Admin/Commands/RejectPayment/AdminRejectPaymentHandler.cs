@@ -29,6 +29,8 @@ public class AdminRejectPaymentHandler(
     {
         Guid orderId = Guid.Parse(command.OrderId);
 
+        await contentOrderRepository.GetByIdOrThrowAsync(id: orderId, ct: cancellationToken);
+
         ContentPaymentEntity payment = await orderPaymentFactory.GetByOrderIdOrThrowAsync(
             orderId: orderId,
             ct: cancellationToken
