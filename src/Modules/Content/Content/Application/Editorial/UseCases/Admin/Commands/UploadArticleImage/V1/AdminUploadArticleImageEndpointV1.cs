@@ -42,7 +42,7 @@ public class AdminUploadArticleImageEndpointV1 : ICarterModule
                 $"/{{id}}/{EditorialRouteConstants.Images}",
                 async (
                     string id,
-                    IFormFile file,
+                    IFormFile? file,
                     EnumArticleImageType imageType,
                     IDispatcher dispatcher,
                     HttpContext httpContext
