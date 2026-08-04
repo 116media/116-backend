@@ -31,6 +31,8 @@ public class AdminUpdateCategoryPricingHandler(
         Guid categoryId = Guid.Parse(command.CategoryId);
         Guid pricingTierId = Guid.Parse(command.PricingTierId);
 
+        await categoryRepository.GetByIdOrThrowAsync(id: categoryId, cancellationToken: cancellationToken);
+
         CategoryPricingEntity? pricing = await categoryRepository.GetPricingAsync(
             categoryId: categoryId,
             pricingTierId: pricingTierId,
