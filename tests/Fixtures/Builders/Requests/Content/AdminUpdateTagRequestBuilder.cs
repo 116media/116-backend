@@ -1,5 +1,6 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateTag.V1;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Requests.Content;
@@ -9,7 +10,7 @@ namespace _116.Tests.Fixtures.Builders.Requests.Content;
 /// </summary>
 public class AdminUpdateTagRequestBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private string _name;
     private string _slug;
@@ -22,10 +23,10 @@ public class AdminUpdateTagRequestBuilder
     {
         string token = _faker.Random.AlphaNumeric(length: 8).ToLowerInvariant();
         string nameCandidate = $"Tag {token}";
-        _name = nameCandidate[..Math.Min(TestConstants.Content.Tag.NameMaxLength, nameCandidate.Length)];
+        _name = nameCandidate[..Math.Min(TestConstants.Tag.NameMaxLength, nameCandidate.Length)];
 
         string slugCandidate = $"tag-{token}";
-        _slug = slugCandidate[..Math.Min(TestConstants.Content.Tag.SlugMaxLength, slugCandidate.Length)];
+        _slug = slugCandidate[..Math.Min(TestConstants.Tag.SlugMaxLength, slugCandidate.Length)];
     }
 
     /// <summary>
