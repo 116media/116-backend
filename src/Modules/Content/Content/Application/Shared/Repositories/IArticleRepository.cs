@@ -319,8 +319,23 @@ public interface IArticleRepository : IRepository<ArticleEntity>
 
     /// <summary>
     /// Returns a single comment by its ID, or null if not found.
+    /// Used by callers that reach a comment without an article in scope.
     /// </summary>
     Task<ArticleCommentEntity?> GetCommentByIdAsync(Guid commentId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns a single comment by its ID scoped to the article it belongs to, or null if no
+    /// comment with that ID belongs to that article.
+    /// </summary>
+    /// <param name="commentId">The comment identifier.</param>
+    /// <param name="articleId">The article the comment must belong to.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The comment, or null when it does not belong to the given article.</returns>
+    Task<ArticleCommentEntity?> GetCommentByIdAsync(
+        Guid commentId,
+        Guid articleId,
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Marks an existing comment as modified.
