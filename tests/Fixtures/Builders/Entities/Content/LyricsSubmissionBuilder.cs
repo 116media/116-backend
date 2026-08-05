@@ -4,16 +4,17 @@ using _116.Tests.Fixtures.Constants;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="LyricsSubmissionEntity"/> instances in tests.
-/// For test code, prefer using LyricsSubmissionFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="LyricsSubmissionEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; LyricsSubmissionFactory only names chains three or more tests share.
 /// </summary>
-internal class LyricsSubmissionBuilder
+public class LyricsSubmissionBuilder
 {
     private Guid _id = Guid.NewGuid();
-    private string _songTitle = TestConstants.Content.Editorial.Lyrics.ValidSongTitle;
-    private string _artistName = TestConstants.Content.Editorial.Lyrics.ValidArtistName;
-    private string _lyricsText = TestConstants.Content.Editorial.Lyrics.ValidLyricsText;
-    private string _language = TestConstants.Content.Editorial.Lyrics.ValidLanguage;
+    private string _songTitle = TestConstants.Lyrics.ValidSongTitle;
+    private string _artistName = TestConstants.Lyrics.ValidArtistName;
+    private string _lyricsText = TestConstants.Lyrics.ValidLyricsText;
+    private string _language = TestConstants.Lyrics.ValidLanguage;
     private Guid _submittedByUserId = Guid.NewGuid();
     private bool _approved;
     private bool _rejected;
