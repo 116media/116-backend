@@ -7,12 +7,15 @@ using Bogus;
 namespace _116.Tests.Fixtures.Builders.Entities.Identity;
 
 /// <summary>
-/// Fluent builder for creating <see cref="UserEntity"/> instances in tests.
-/// For test code, prefer using UserFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="UserEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; UserFactory only names chains three or more tests share.
 /// </summary>
-internal class UserBuilder
+public class UserBuilder
 {
-    private readonly Faker _faker = new();
+    private const int SuffixLength = 6;
+
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _id;
     private string? _email;
@@ -31,14 +34,13 @@ internal class UserBuilder
     public UserBuilder()
     {
         _id = Guid.NewGuid();
-        _email = _faker.Internet.Email().ToLowerInvariant();
+        _email = $"{_faker.Internet.UserName()}.{Guid.NewGuid():N}@example.test".ToLowerInvariant();
 
-        // Generate a username that fits within the max length (20 chars)
-        string generatedName = $"{_faker.Name.FirstName()}{_faker.Random.Number(100, 999)}";
-        _userName =
-            generatedName.Length > TestConstants.User.UserNameMaxLength
-                ? generatedName[..TestConstants.User.UserNameMaxLength]
-                : generatedName;
+        string suffix = Guid.NewGuid().ToString("N")[..SuffixLength];
+        string generatedName = _faker.Name.FirstName();
+        int nameBudget = TestConstants.User.UserNameMaxLength - SuffixLength;
+
+        _userName = $"{generatedName[..Math.Min(generatedName.Length, nameBudget)]}{suffix}";
         _passwordHash = TestConstants.User.DefaultPasswordHash;
     }
 
