@@ -7,12 +7,13 @@ using Bogus;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="CategoryEntity"/> instances in tests.
-/// For test code, prefer using CategoryFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="CategoryEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; CategoryFactory only names chains three or more tests share.
 /// </summary>
-internal class CategoryBuilder
+public class CategoryBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _id;
     private Guid _contentTypeId;
@@ -37,8 +38,8 @@ internal class CategoryBuilder
         _contentTypeId = contentTypeId;
         string suffix = Guid.NewGuid().ToString("N")[..8];
         string word = _faker.Lorem.Word().ToLower();
-        _name = $"{word}-{suffix}"[..Math.Min(TestConstants.Content.Category.NameMaxLength, $"{word}-{suffix}".Length)];
-        _slug = $"{word}-{suffix}"[..Math.Min(TestConstants.Content.Category.SlugMaxLength, $"{word}-{suffix}".Length)];
+        _name = $"{word}-{suffix}"[..Math.Min(TestConstants.Category.NameMaxLength, $"{word}-{suffix}".Length)];
+        _slug = $"{word}-{suffix}"[..Math.Min(TestConstants.Category.SlugMaxLength, $"{word}-{suffix}".Length)];
     }
 
     /// <summary>
@@ -47,15 +48,6 @@ internal class CategoryBuilder
     public CategoryBuilder WithId(Guid id)
     {
         _id = id;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the content type ID.
-    /// </summary>
-    public CategoryBuilder WithContentTypeId(Guid contentTypeId)
-    {
-        _contentTypeId = contentTypeId;
         return this;
     }
 
