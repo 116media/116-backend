@@ -5,10 +5,11 @@ using _116.Tests.Fixtures.Helpers;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="CategoryPricingEntity"/> instances in tests.
-/// For test code, prefer using CategoryPricingFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="CategoryPricingEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; CategoryPricingFactory only names chains three or more tests share.
 /// </summary>
-internal class CategoryPricingBuilder
+public class CategoryPricingBuilder
 {
     private Guid _id;
     private Guid _categoryId;
@@ -23,7 +24,7 @@ internal class CategoryPricingBuilder
         _id = Guid.NewGuid();
         _categoryId = categoryId;
         _pricingTierId = pricingTierId;
-        _priceUsd = TestConstants.Content.CategoryPricing.ValidPriceUsd;
+        _priceUsd = TestConstants.CategoryPricing.ValidPriceUsd;
     }
 
     /// <summary>
