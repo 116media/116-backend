@@ -70,6 +70,7 @@ using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 
 namespace _116.Identity;
@@ -81,12 +82,13 @@ public static class IdentityModule
 {
     /// <summary>
     /// Gets the shared module configuration options for the Identity module.
+    /// Migrations and seeding run in every environment except Testing.
     /// </summary>
-    private static ModuleOptions<IdentityDbContext> GetModuleOptions()
+    /// <param name="environment">The host environment the options are derived from.</param>
+    /// <returns>The module options for the supplied environment.</returns>
+    private static ModuleOptions<IdentityDbContext> GetModuleOptions(IHostEnvironment environment)
     {
-        // Disable migrations and seeding in Testing environment (tests use InMemory database)
-        string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
-        bool enableSeeding = !environment.Equals("Testing", StringComparison.OrdinalIgnoreCase);
+        bool enableSeeding = !environment.IsEnvironment("Testing");
 
         return new ModuleOptions<IdentityDbContext>
         {
@@ -101,19 +103,16 @@ public static class IdentityModule
     /// Adds the Identity module's services to the dependency injection container.
     /// </summary>
     /// <param name="services">The service collection to register services into.</param>
+    /// <param name="environment">The host environment deciding whether the module migrates and seeds.</param>
     /// <returns>The updated <see cref="IServiceCollection" /> for chaining.</returns>
-    /// <remarks>
-    /// Registers database context with interceptors, authentication services, JWT configuration,
-    /// and authorization policies for user management.
-    /// </remarks>
     /// <example>
     /// <code>
-    /// builder.Services.AddIdentityModule(builder.Configuration);
+    /// builder.Services.AddIdentityModule(builder.Environment);
     /// </code>
     /// </example>
-    public static IServiceCollection AddIdentityModule(this IServiceCollection services)
+    public static IServiceCollection AddIdentityModule(this IServiceCollection services, IHostEnvironment environment)
     {
-        services.AddModuleDatabase(GetModuleOptions());
+        services.AddModuleDatabase(GetModuleOptions(environment));
 
         // Register error message classes (IStringLocalizer-backed)
         services.AddScoped<ValidationErrorMessage>();
@@ -236,9 +235,6 @@ public static class IdentityModule
     /// </summary>
     /// <param name="app">The application builder.</param>
     /// <returns>The updated <see cref="IApplicationBuilder" /> for chaining.</returns>
-    /// <remarks>
-    /// Applies pending EF Core migrations and executes the data seeder for user management.
-    /// </remarks>
     /// <example>
     /// <code>
     /// app.UseIdentityModule();
@@ -246,7 +242,8 @@ public static class IdentityModule
     /// </example>
     public static IApplicationBuilder UseIdentityModule(this IApplicationBuilder app)
     {
-        ModuleOptions<IdentityDbContext> options = GetModuleOptions();
+        IHostEnvironment environment = app.ApplicationServices.GetRequiredService<IHostEnvironment>();
+        ModuleOptions<IdentityDbContext> options = GetModuleOptions(environment);
         app.UseModuleDatabase(options);
 
         if (options.EnableSeeding)
