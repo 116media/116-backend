@@ -6,12 +6,13 @@ using Bogus;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="TagEntity"/> instances in tests.
-/// For test code, prefer using TagFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="TagEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; TagFactory only names chains three or more tests share.
 /// </summary>
-internal class TagBuilder
+public class TagBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _id;
     private string _name;
@@ -26,8 +27,8 @@ internal class TagBuilder
         string suffix = Guid.NewGuid().ToString("N")[..8];
         string word = _faker.Lorem.Word().ToLower();
         string unique = $"{word}{suffix}";
-        _name = unique[..Math.Min(TestConstants.Content.Tag.NameMaxLength, unique.Length)];
-        _slug = unique[..Math.Min(TestConstants.Content.Tag.SlugMaxLength, unique.Length)];
+        _name = unique[..Math.Min(TestConstants.Tag.NameMaxLength, unique.Length)];
+        _slug = unique[..Math.Min(TestConstants.Tag.SlugMaxLength, unique.Length)];
     }
 
     /// <summary>
