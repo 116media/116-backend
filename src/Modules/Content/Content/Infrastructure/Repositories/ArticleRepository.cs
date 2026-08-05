@@ -414,6 +414,19 @@ public class ArticleRepository(ContentDbContext context) : IArticleRepository
     }
 
     /// <inheritdoc />
+    public async Task<ArticleCommentEntity?> GetCommentByIdAsync(
+        Guid commentId,
+        Guid articleId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var specification = new ArticleCommentByIdInArticleSpecification(commentId: commentId, articleId: articleId);
+        return await context
+            .ArticleComments.ApplySpecification(specification: specification)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<(List<ArticleCommentEntity> Replies, int TotalCount)> GetRepliesAsync(
         Guid parentCommentId,
         int page,
