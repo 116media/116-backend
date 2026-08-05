@@ -6,13 +6,14 @@ using _116.Tests.Fixtures.Helpers;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="AlbumEntity"/> instances in tests.
-/// For test code, prefer using AlbumFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="AlbumEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; AlbumFactory only names chains three or more tests share.
 /// </summary>
-internal class AlbumBuilder
+public class AlbumBuilder
 {
     private Guid _id = Guid.NewGuid();
-    private string _name = TestConstants.Content.Editorial.Album.ValidName;
+    private string _name = TestConstants.Album.ValidName;
     private Guid? _artistId;
     private Guid? _coverImageFileId;
     private short? _releaseYear;
