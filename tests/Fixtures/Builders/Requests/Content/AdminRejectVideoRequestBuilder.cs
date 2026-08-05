@@ -17,7 +17,7 @@ public class AdminRejectVideoRequestBuilder
     /// </summary>
     public AdminRejectVideoRequestBuilder()
     {
-        _reason = TestConstants.Content.Editorial.Video.ValidRejectionReason;
+        _reason = TestConstants.Video.ValidRejectionReason;
     }
 
     /// <summary>
