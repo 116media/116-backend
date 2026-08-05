@@ -6,12 +6,13 @@ using Bogus;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="PromotionLevelEntity"/> instances in tests.
-/// For test code, prefer using PromotionLevelFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="PromotionLevelEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; PromotionLevelFactory only names chains three or more tests share.
 /// </summary>
-internal class PromotionLevelBuilder
+public class PromotionLevelBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _id;
     private string _name;
@@ -29,7 +30,7 @@ internal class PromotionLevelBuilder
         string word = _faker.Lorem.Word();
         string prefix = word.Length > 4 ? word[..4] : word;
         string unique = $"{prefix}{Guid.NewGuid():N}";
-        _name = unique[..Math.Min(TestConstants.Content.PromotionLevel.NameMaxLength, unique.Length)];
+        _name = unique[..Math.Min(TestConstants.PromotionLevel.NameMaxLength, unique.Length)];
         _durationDays = _faker.Random.Int(1, 30);
         _priceUsd = _faker.Random.Decimal(0, 500);
         _spotPriority = _faker.Random.Int(1, 3);
