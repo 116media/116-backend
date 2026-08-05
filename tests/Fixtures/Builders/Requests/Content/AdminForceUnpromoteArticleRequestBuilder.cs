@@ -17,7 +17,7 @@ public class AdminForceUnpromoteArticleRequestBuilder
     /// </summary>
     public AdminForceUnpromoteArticleRequestBuilder()
     {
-        _reason = TestConstants.Content.Editorial.Article.ValidRejectionReason;
+        _reason = TestConstants.Article.ValidRejectionReason;
     }
 
     /// <summary>
