@@ -30,18 +30,17 @@ public class SessionQueryBuilder : ISessionQueryBuilder
             return this;
         }
 
-        string normalizedStatus = status.ToLower();
-        Specification<SessionEntity> statusSpec = normalizedStatus switch
+        Specification<SessionEntity> statusSpec = status switch
         {
-            _ when normalizedStatus.Equals(
+            _ when status.Equals(
                     nameof(EnumSessionStatus.Active),
                     comparisonType: StringComparison.InvariantCultureIgnoreCase
                 ) => new SessionIsActiveSpecification(),
-            _ when normalizedStatus.Equals(
+            _ when status.Equals(
                     nameof(EnumSessionStatus.Expired),
                     comparisonType: StringComparison.InvariantCultureIgnoreCase
                 ) => new SessionIsExpiredSpecification(),
-            _ when normalizedStatus.Equals(
+            _ when status.Equals(
                     nameof(EnumSessionStatus.Revoked),
                     comparisonType: StringComparison.InvariantCultureIgnoreCase
                 ) => new SessionIsRevokedSpecification(),
