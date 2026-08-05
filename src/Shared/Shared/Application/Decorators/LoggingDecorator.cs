@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using _116.Shared.Contracts.Application.CQRS;
 using Microsoft.Extensions.Logging;
 
@@ -10,9 +9,13 @@ namespace _116.Shared.Application.Decorators;
 /// </summary>
 /// <typeparam name="TRequest">The type of the request.</typeparam>
 /// <typeparam name="TResponse">The type of the response.</typeparam>
+/// <param name="handler">The decorated handler.</param>
+/// <param name="logger">The logger the lifecycle entries are written to.</param>
+/// <param name="timeProvider">The clock used to measure how long the handler took.</param>
 public class LoggingDecorator<TRequest, TResponse>(
     IRequestHandler<TRequest, TResponse> handler,
-    ILogger<LoggingDecorator<TRequest, TResponse>> logger
+    ILogger<LoggingDecorator<TRequest, TResponse>> logger,
+    TimeProvider timeProvider
 ) : IRequestHandler<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
     where TResponse : notnull
@@ -24,13 +27,11 @@ public class LoggingDecorator<TRequest, TResponse>(
     {
         LogStart(request);
 
-        var stopwatch = Stopwatch.StartNew();
+        long startTimestamp = timeProvider.GetTimestamp();
 
         TResponse response = await handler.Handle(request, cancellationToken);
 
-        stopwatch.Stop();
-
-        LogPerformanceWarning(stopwatch.Elapsed);
+        LogPerformanceWarning(timeProvider.GetElapsedTime(startTimestamp));
         LogEnd();
 
         return response;
