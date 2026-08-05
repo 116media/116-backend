@@ -1,5 +1,6 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.CreatePlaylist.V1;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Requests.Content;
@@ -9,7 +10,7 @@ namespace _116.Tests.Fixtures.Builders.Requests.Content;
 /// </summary>
 public class PublicCreatePlaylistRequestBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private string _name;
 
@@ -20,7 +21,7 @@ public class PublicCreatePlaylistRequestBuilder
     public PublicCreatePlaylistRequestBuilder()
     {
         string words = _faker.Lorem.Sentence(wordCount: 3);
-        _name = words[..Math.Min(TestConstants.Content.Interactions.MaxPlaylistNameLength, words.Length)];
+        _name = words[..Math.Min(TestConstants.Interactions.MaxPlaylistNameLength, words.Length)];
     }
 
     /// <summary>
