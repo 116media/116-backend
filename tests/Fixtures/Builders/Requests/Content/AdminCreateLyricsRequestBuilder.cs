@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics.V1;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Requests.Content;
@@ -10,7 +11,7 @@ namespace _116.Tests.Fixtures.Builders.Requests.Content;
 /// </summary>
 public class AdminCreateLyricsRequestBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _categoryId;
     private string _songTitle;
@@ -29,11 +30,11 @@ public class AdminCreateLyricsRequestBuilder
     public AdminCreateLyricsRequestBuilder()
     {
         _categoryId = _faker.Random.Guid();
-        _songTitle = TestConstants.Content.Editorial.Lyrics.ValidSongTitle;
-        _artistName = TestConstants.Content.Editorial.Lyrics.ValidArtistName;
-        _slug = TestConstants.Content.Editorial.Lyrics.ValidSlug;
-        _lyricsText = TestConstants.Content.Editorial.Lyrics.ValidLyricsText;
-        _language = TestConstants.Content.Editorial.Lyrics.ValidLanguage;
+        _songTitle = TestConstants.Lyrics.ValidSongTitle;
+        _artistName = TestConstants.Lyrics.ValidArtistName;
+        _slug = TestConstants.Lyrics.ValidSlug;
+        _lyricsText = TestConstants.Lyrics.ValidLyricsText;
+        _language = TestConstants.Lyrics.ValidLanguage;
         _videoId = null;
         _customerId = null;
         _orderItemId = null;
