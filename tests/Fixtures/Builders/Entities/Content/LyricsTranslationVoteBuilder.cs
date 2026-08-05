@@ -4,10 +4,11 @@ using _116.Content.Domain.Enums;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="LyricsTranslationVoteEntity"/> instances in tests.
-/// For test code, prefer using LyricsTranslationVoteFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="LyricsTranslationVoteEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; LyricsTranslationVoteFactory only names chains three or more tests share.
 /// </summary>
-internal class LyricsTranslationVoteBuilder
+public class LyricsTranslationVoteBuilder
 {
     private Guid _id = Guid.NewGuid();
     private Guid _revisionId = Guid.NewGuid();
