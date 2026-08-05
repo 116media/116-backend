@@ -16,7 +16,7 @@ public class PublicRateVideoRequestBuilder
     /// </summary>
     public PublicRateVideoRequestBuilder()
     {
-        _stars = TestConstants.Content.Interactions.ValidStarRating;
+        _stars = TestConstants.Interactions.ValidStarRating;
     }
 
     /// <summary>
