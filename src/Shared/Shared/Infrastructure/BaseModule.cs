@@ -118,6 +118,10 @@ public static class BaseModule
         services.AddHttpContextAccessor();
         services.TryAddSingleton<ICurrentActor, HttpCurrentActor>();
 
+        // The audit interceptor reads the clock through TimeProvider, so the seam must be present
+        // wherever a module database is registered, not only in the API host.
+        services.TryAddSingleton(TimeProvider.System);
+
         // The dispatch interceptor logs the post-commit failures it swallows, so the logging
         // services must be present wherever a module database is registered.
         services.AddLogging();
