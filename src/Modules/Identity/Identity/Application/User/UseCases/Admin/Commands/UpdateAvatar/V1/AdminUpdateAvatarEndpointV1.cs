@@ -41,7 +41,7 @@ public class AdminUpdateAvatarEndpointV1 : ICarterModule
             .MapPatch(
                 pattern: UserRouteConstants.Avatar,
                 async (
-                    IFormFile avatarFile,
+                    IFormFile? avatarFile,
                     ClaimsPrincipal user,
                     IClaimsProvider authProvider,
                     IDispatcher dispatcher
