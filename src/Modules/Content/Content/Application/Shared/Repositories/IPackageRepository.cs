@@ -48,6 +48,20 @@ public interface IPackageRepository : IRepository<PackageEntity>
     Task<PackageSlotEntity?> GetSlotByIdAsync(Guid slotId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a package slot by its unique identifier scoped to the package it belongs to.
+    /// Returns null when no slot with that identifier belongs to that package.
+    /// </summary>
+    /// <param name="slotId">The slot identifier.</param>
+    /// <param name="packageId">The package the slot must belong to.</param>
+    /// <param name="cancellationToken">Token to observe for cancellation requests.</param>
+    /// <returns>The slot, or null when it does not belong to the given package.</returns>
+    Task<PackageSlotEntity?> GetSlotByIdAsync(
+        Guid slotId,
+        Guid packageId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Adds a new package slot to the repository.
     /// </summary>
     Task AddSlotAsync(PackageSlotEntity slot, CancellationToken cancellationToken = default);
