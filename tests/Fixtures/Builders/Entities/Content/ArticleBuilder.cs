@@ -1,3 +1,4 @@
+using System.Reflection;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Tests.Fixtures.Constants;
@@ -6,15 +7,16 @@ using _116.Tests.Fixtures.Helpers;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="ArticleEntity"/> instances in tests.
-/// For test code, prefer using ArticleFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="ArticleEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; ArticleFactory only names chains three or more tests share.
 /// </summary>
-internal class ArticleBuilder
+public class ArticleBuilder
 {
     private Guid _id = Guid.NewGuid();
     private Guid _categoryId;
-    private string _title = $"{TestConstants.Content.Editorial.Article.ValidTitle} {Guid.NewGuid():N}";
-    private string _slug = $"{TestConstants.Content.Editorial.Article.ValidSlug}-{Guid.NewGuid():N}";
+    private string _title = $"{TestConstants.Article.ValidTitle} {Guid.NewGuid():N}";
+    private string _slug = $"{TestConstants.Article.ValidSlug}-{Guid.NewGuid():N}";
     private Guid _authorId = Guid.NewGuid();
     private Guid? _customerId;
     private Guid? _orderItemId;
@@ -23,6 +25,9 @@ internal class ArticleBuilder
     private bool _stampSocialBoost;
     private DateTimeOffset? _promotedUntil;
     private Guid _promotionLevelId = Guid.NewGuid();
+    private DateTime? _createdAt;
+    private CategoryEntity? _category;
+    private CustomerEntity? _customerNavigation;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ArticleBuilder"/> class with a required category ID.
@@ -38,15 +43,6 @@ internal class ArticleBuilder
     public ArticleBuilder WithId(Guid id)
     {
         _id = id;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the category ID.
-    /// </summary>
-    public ArticleBuilder WithCategoryId(Guid categoryId)
-    {
-        _categoryId = categoryId;
         return this;
     }
 
@@ -129,7 +125,7 @@ internal class ArticleBuilder
     public ArticleBuilder AsRejected(string? reason = null)
     {
         _targetStatus = EnumContentStatus.Rejected;
-        _rejectionReason = reason ?? TestConstants.Content.Editorial.Article.ValidRejectionReason;
+        _rejectionReason = reason ?? TestConstants.Article.ValidRejectionReason;
         return this;
     }
 
@@ -158,6 +154,36 @@ internal class ArticleBuilder
     {
         _promotedUntil = until;
         _promotionLevelId = promotionLevelId ?? Guid.NewGuid();
+        return this;
+    }
+
+    /// <summary>
+    /// Overrides the <c>CreatedAt</c> timestamp, for tests that exercise recency-based ordering.
+    /// </summary>
+    public ArticleBuilder WithCreatedAt(DateTime createdAt)
+    {
+        _createdAt = createdAt;
+        return this;
+    }
+
+    /// <summary>
+    /// Attaches the Category navigation EF Core populates through <c>.Include(a =&gt; a.Category)</c>,
+    /// and points the foreign key at the same category.
+    /// </summary>
+    public ArticleBuilder WithCategory(CategoryEntity category)
+    {
+        _category = category;
+        _categoryId = category.Id;
+        return this;
+    }
+
+    /// <summary>
+    /// Attaches the Customer navigation EF Core populates through <c>.Include(a =&gt; a.Customer)</c>.
+    /// Combine with <see cref="WithCustomer" /> to set the matching foreign key.
+    /// </summary>
+    public ArticleBuilder WithCustomerNavigation(CustomerEntity customer)
+    {
+        _customerNavigation = customer;
         return this;
     }
 
@@ -199,7 +225,21 @@ internal class ArticleBuilder
             entity.StampPromotion(_promotionLevelId, _promotedUntil.Value);
         }
 
-        entity.CreatedAt = DateTime.UtcNow;
+        if (_category is not null)
+        {
+            typeof(ArticleEntity)
+                .GetProperty(nameof(ArticleEntity.Category), BindingFlags.Public | BindingFlags.Instance)!
+                .SetValue(entity, _category);
+        }
+
+        if (_customerNavigation is not null)
+        {
+            typeof(ArticleEntity)
+                .GetProperty(nameof(ArticleEntity.Customer), BindingFlags.Public | BindingFlags.Instance)!
+                .SetValue(entity, _customerNavigation);
+        }
+
+        entity.CreatedAt = _createdAt ?? DateTime.UtcNow;
 
         return entity;
     }
@@ -224,7 +264,7 @@ internal class ArticleBuilder
                 entity.Publish();
                 break;
             case EnumContentStatus.Rejected:
-                entity.Reject(_rejectionReason ?? TestConstants.Content.Editorial.Article.ValidRejectionReason);
+                entity.Reject(_rejectionReason ?? TestConstants.Article.ValidRejectionReason);
                 break;
             case EnumContentStatus.Archived:
                 entity.MarkPendingReview();
