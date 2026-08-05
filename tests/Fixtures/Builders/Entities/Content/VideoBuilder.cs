@@ -8,18 +8,19 @@ using _116.Tests.Fixtures.Helpers;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="VideoEntity"/> instances in tests.
-/// For test code, prefer using VideoFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="VideoEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; VideoFactory only names chains three or more tests share.
 /// </summary>
-internal class VideoBuilder
+public class VideoBuilder
 {
     private Guid _id = Guid.NewGuid();
     private Guid _categoryId;
 
-    private string _title = $"{TestConstants.Content.Editorial.Video.ValidTitle} {Guid.NewGuid():N}";
-    private string _slug = $"{TestConstants.Content.Editorial.Video.ValidSlug}-{Guid.NewGuid():N}";
+    private string _title = $"{TestConstants.Video.ValidTitle} {Guid.NewGuid():N}";
+    private string _slug = $"{TestConstants.Video.ValidSlug}-{Guid.NewGuid():N}";
     private Guid _authorId = Guid.NewGuid();
-    private string _description = TestConstants.Content.Editorial.Video.ValidDescription;
+    private string _description = TestConstants.Video.ValidDescription;
     private Guid? _customerId;
     private Guid? _orderItemId;
     private string? _youtubeVideoUrl;
@@ -31,6 +32,8 @@ internal class VideoBuilder
     private Guid _promotionLevelId = Guid.NewGuid();
     private DateTimeOffset? _publishedAtOverride;
     private Guid? _artistId;
+    private CategoryEntity? _category;
+    private CustomerEntity? _customerNavigation;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VideoBuilder"/> class with a required category ID.
@@ -46,15 +49,6 @@ internal class VideoBuilder
     public VideoBuilder WithId(Guid id)
     {
         _id = id;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the category ID.
-    /// </summary>
-    public VideoBuilder WithCategoryId(Guid categoryId)
-    {
-        _categoryId = categoryId;
         return this;
     }
 
@@ -109,7 +103,7 @@ internal class VideoBuilder
     /// </summary>
     public VideoBuilder WithYoutubeUrl(string? youtubeVideoUrl = null)
     {
-        _youtubeVideoUrl = youtubeVideoUrl ?? TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl;
+        _youtubeVideoUrl = youtubeVideoUrl ?? TestConstants.Video.ValidYoutubeVideoUrl;
         return this;
     }
 
@@ -128,15 +122,6 @@ internal class VideoBuilder
     public VideoBuilder WithThumbnail(Guid? fileId = null)
     {
         _thumbnailFileId = fileId ?? Guid.NewGuid();
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the thumbnail file ID (FileEntity reference).
-    /// </summary>
-    public VideoBuilder WithThumbnailFileId(Guid fileId)
-    {
-        _thumbnailFileId = fileId;
         return this;
     }
 
@@ -186,7 +171,7 @@ internal class VideoBuilder
         {
             return this;
         }
-        _youtubeVideoUrl = TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl;
+        _youtubeVideoUrl = TestConstants.Video.ValidYoutubeVideoUrl;
 
         return this;
     }
@@ -207,7 +192,7 @@ internal class VideoBuilder
     public VideoBuilder AsRejected(string? reason = null)
     {
         _targetStatus = EnumContentStatus.Rejected;
-        _rejectionReason = reason ?? TestConstants.Content.Editorial.Video.ValidRejectionReason;
+        _rejectionReason = reason ?? TestConstants.Video.ValidRejectionReason;
         return this;
     }
 
@@ -231,8 +216,29 @@ internal class VideoBuilder
         {
             return this;
         }
-        _youtubeVideoUrl = TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl;
+        _youtubeVideoUrl = TestConstants.Video.ValidYoutubeVideoUrl;
 
+        return this;
+    }
+
+    /// <summary>
+    /// Attaches the Category navigation EF Core populates through <c>.Include(v =&gt; v.Category)</c>,
+    /// and points the foreign key at the same category.
+    /// </summary>
+    public VideoBuilder WithCategory(CategoryEntity category)
+    {
+        _category = category;
+        _categoryId = category.Id;
+        return this;
+    }
+
+    /// <summary>
+    /// Attaches the Customer navigation EF Core populates through <c>.Include(v =&gt; v.Customer)</c>.
+    /// Combine with <see cref="WithCustomer" /> to set the matching foreign key.
+    /// </summary>
+    public VideoBuilder WithCustomerNavigation(CustomerEntity customer)
+    {
+        _customerNavigation = customer;
         return this;
     }
 
@@ -301,6 +307,20 @@ internal class VideoBuilder
             entity.LinkArtist(_artistId.Value);
         }
 
+        if (_category is not null)
+        {
+            typeof(VideoEntity)
+                .GetProperty(nameof(VideoEntity.Category), BindingFlags.Public | BindingFlags.Instance)!
+                .SetValue(entity, _category);
+        }
+
+        if (_customerNavigation is not null)
+        {
+            typeof(VideoEntity)
+                .GetProperty(nameof(VideoEntity.Customer), BindingFlags.Public | BindingFlags.Instance)!
+                .SetValue(entity, _customerNavigation);
+        }
+
         entity.CreatedAt = DateTime.UtcNow;
 
         return entity;
@@ -326,7 +346,7 @@ internal class VideoBuilder
                 entity.Publish(errors);
                 break;
             case EnumContentStatus.Rejected:
-                entity.Reject(_rejectionReason ?? TestConstants.Content.Editorial.Video.ValidRejectionReason);
+                entity.Reject(_rejectionReason ?? TestConstants.Video.ValidRejectionReason);
                 break;
             case EnumContentStatus.Archived:
                 entity.MarkPendingReview();
