@@ -6,12 +6,13 @@ using Bogus;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="ContentTypeEntity"/> instances in tests.
-/// For test code, prefer using ContentTypeFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="ContentTypeEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; ContentTypeFactory only names chains three or more tests share.
 /// </summary>
-internal class ContentTypeBuilder
+public class ContentTypeBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _id;
     private string _name;
@@ -26,7 +27,7 @@ internal class ContentTypeBuilder
         string word = _faker.Lorem.Word();
         string prefix = word.Length > 4 ? word[..4] : word;
         string unique = $"{prefix}{Guid.NewGuid():N}";
-        _name = unique[..Math.Min(TestConstants.Content.ContentType.NameMaxLength, unique.Length)];
+        _name = unique[..Math.Min(TestConstants.ContentType.NameMaxLength, unique.Length)];
     }
 
     /// <summary>
