@@ -5,14 +5,15 @@ using _116.Tests.Fixtures.Helpers;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="ArtistEntity"/> instances in tests.
-/// For test code, prefer using ArtistFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="ArtistEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; ArtistFactory only names chains three or more tests share.
 /// </summary>
-internal class ArtistBuilder
+public class ArtistBuilder
 {
     private Guid _id = Guid.NewGuid();
-    private string _name = TestConstants.Content.Editorial.Artist.ValidName;
-    private string _slug = $"{TestConstants.Content.Editorial.Artist.ValidSlug}-{Guid.NewGuid():N}";
+    private string _name = TestConstants.Artist.ValidName;
+    private string _slug = $"{TestConstants.Artist.ValidSlug}-{Guid.NewGuid():N}";
     private string? _bio;
     private Guid? _avatarFileId;
     private Guid? _userId;
