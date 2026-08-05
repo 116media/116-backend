@@ -1,5 +1,6 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateArticle.V1;
 using _116.Tests.Fixtures.Constants;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Requests.Content;
@@ -10,7 +11,7 @@ namespace _116.Tests.Fixtures.Builders.Requests.Content;
 /// </summary>
 public class AdminUpdateArticleRequestBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _categoryId;
     private string _title;
@@ -30,10 +31,10 @@ public class AdminUpdateArticleRequestBuilder
     public AdminUpdateArticleRequestBuilder()
     {
         _categoryId = _faker.Random.Guid();
-        _title = TestConstants.Content.Editorial.Article.ValidTitle;
-        _slug = TestConstants.Content.Editorial.Article.ValidSlug;
-        _headline = TestConstants.Content.Editorial.Article.ValidHeadline;
-        _body = TestConstants.Content.Editorial.Article.ValidBody;
+        _title = TestConstants.Article.ValidTitle;
+        _slug = TestConstants.Article.ValidSlug;
+        _headline = TestConstants.Article.ValidHeadline;
+        _body = TestConstants.Article.ValidBody;
         _customerId = null;
         _orderItemId = null;
         _socialBoost = false;
