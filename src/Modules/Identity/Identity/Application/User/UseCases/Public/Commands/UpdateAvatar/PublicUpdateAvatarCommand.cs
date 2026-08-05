@@ -8,13 +8,13 @@ namespace _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar;
 /// Command for updating user avatar via file upload.
 /// </summary>
 /// <param name="UserId">The ID of the user to update (from JWT claims).</param>
-/// <param name="AvatarFile">The avatar image file to upload.</param>
+/// <param name="AvatarFile">The avatar image file to upload. Null when the file part is missing.</param>
 /// <remarks>
 /// This command allows logged-in users to update their avatar by uploading an image file.
 /// The file is uploaded to Cloudinary, and the previous avatar is automatically deleted.
 /// Only verified accounts can update their avatar.
 /// </remarks>
-public record PublicUpdateAvatarCommand(Guid UserId, Guid SessionId, IFormFile AvatarFile)
+public record PublicUpdateAvatarCommand(Guid UserId, Guid SessionId, IFormFile? AvatarFile)
     : ICommand<PublicUpdateAvatarResult>;
 
 /// <summary>
