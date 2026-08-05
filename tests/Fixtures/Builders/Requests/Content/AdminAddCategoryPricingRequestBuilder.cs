@@ -1,4 +1,5 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.AddCategoryPricing.V1;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Requests.Content;
@@ -9,7 +10,7 @@ namespace _116.Tests.Fixtures.Builders.Requests.Content;
 /// </summary>
 public class AdminAddCategoryPricingRequestBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private Guid _pricingTierId;
     private decimal _priceUsd;
