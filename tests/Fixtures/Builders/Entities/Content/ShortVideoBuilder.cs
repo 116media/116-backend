@@ -5,14 +5,15 @@ using _116.Tests.Fixtures.Helpers;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="ShortVideoEntity"/> instances in tests.
-/// For test code, prefer using ShortVideoFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="ShortVideoEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; ShortVideoFactory only names chains three or more tests share.
 /// </summary>
-internal class ShortVideoBuilder
+public class ShortVideoBuilder
 {
     private Guid _id = Guid.NewGuid();
-    private string _title = $"{TestConstants.Content.Editorial.ShortVideo.ValidTitle} {Guid.NewGuid():N}";
-    private string _slug = $"{TestConstants.Content.Editorial.ShortVideo.ValidSlug}-{Guid.NewGuid():N}";
+    private string _title = $"{TestConstants.ShortVideo.ValidTitle} {Guid.NewGuid():N}";
+    private string _slug = $"{TestConstants.ShortVideo.ValidSlug}-{Guid.NewGuid():N}";
     private Guid _authorId = Guid.NewGuid();
     private Guid? _videoFileId = Guid.NewGuid();
     private Guid? _videoId;
