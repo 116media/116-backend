@@ -5,10 +5,11 @@ using _116.Content.Domain.Enums;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="ContentOrderItemEntity"/> instances in tests.
-/// For test code, prefer using ContentOrderItemFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="ContentOrderItemEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; ContentOrderItemFactory only names chains three or more tests share.
 /// </summary>
-internal class ContentOrderItemBuilder
+public class ContentOrderItemBuilder
 {
     private Guid _id = Guid.NewGuid();
     private Guid _orderId = Guid.NewGuid();
