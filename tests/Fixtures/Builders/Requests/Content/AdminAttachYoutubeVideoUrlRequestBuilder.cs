@@ -17,7 +17,7 @@ public class AdminAttachYoutubeVideoUrlRequestBuilder
     /// </summary>
     public AdminAttachYoutubeVideoUrlRequestBuilder()
     {
-        _youtubeVideoUrl = TestConstants.Content.Editorial.Video.ValidYoutubeVideoUrl;
+        _youtubeVideoUrl = TestConstants.Video.ValidYoutubeVideoUrl;
     }
 
     /// <summary>
