@@ -1,5 +1,6 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddOrderItem.V1;
 using _116.Content.Domain.Enums;
+using _116.Tests.Fixtures.Helpers;
 using Bogus;
 
 namespace _116.Tests.Fixtures.Builders.Requests.Content;
@@ -9,7 +10,7 @@ namespace _116.Tests.Fixtures.Builders.Requests.Content;
 /// </summary>
 public class AdminAddOrderItemRequestBuilder
 {
-    private readonly Faker _faker = new();
+    private readonly Faker _faker = TestFaker.Create();
 
     private EnumCoreContentType _contentKind;
     private string _categoryId;
