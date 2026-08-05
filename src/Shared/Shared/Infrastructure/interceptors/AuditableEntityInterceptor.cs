@@ -12,7 +12,9 @@ namespace _116.Shared.Infrastructure.interceptors;
 /// such as <c>CreatedBy</c>, <c>CreatedAt</c>, <c>UpdatedBy</c>, and <c>UpdatedAt</c>
 /// on entities implementing <see cref="IEntity"/>.
 /// </summary>
-public class AuditableEntityInterceptor(ICurrentActor currentActor) : SaveChangesInterceptor
+/// <param name="currentActor">Supplies the audit actor label for the current operation.</param>
+/// <param name="timeProvider">The clock the audit timestamps are read from.</param>
+public class AuditableEntityInterceptor(ICurrentActor currentActor, TimeProvider timeProvider) : SaveChangesInterceptor
 {
     /// <summary>
     /// Called synchronously before <see cref="DbContext.SaveChanges()"/> executes,
@@ -62,12 +64,16 @@ public class AuditableEntityInterceptor(ICurrentActor currentActor) : SaveChange
 
         string actor = ResolveActor();
 
+        // One instant for the whole save, so two entities written in the same transaction
+        // cannot carry different timestamps.
+        DateTime now = timeProvider.GetUtcNow().UtcDateTime;
+
         foreach (EntityEntry<IEntity> entry in eventDataContext.ChangeTracker.Entries<IEntity>())
         {
             if (entry.State == EntityState.Added)
             {
                 entry.Entity.CreatedBy = actor;
-                entry.Entity.CreatedAt = DateTime.UtcNow;
+                entry.Entity.CreatedAt = now;
             }
 
             bool isNewOrUpdated = entry.State is EntityState.Added or EntityState.Modified;
@@ -77,7 +83,7 @@ public class AuditableEntityInterceptor(ICurrentActor currentActor) : SaveChange
             }
 
             entry.Entity.UpdatedBy = actor;
-            entry.Entity.UpdatedAt = DateTime.UtcNow;
+            entry.Entity.UpdatedAt = now;
         }
     }
 
