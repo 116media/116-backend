@@ -1,3 +1,4 @@
+using System.Reflection;
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Helpers;
@@ -5,16 +6,18 @@ using _116.Tests.Fixtures.Helpers;
 namespace _116.Tests.Fixtures.Builders.Entities.Content;
 
 /// <summary>
-/// Fluent builder for creating <see cref="PackageSlotEntity"/> instances in tests.
-/// For test code, prefer using PackageSlotFactory instead of direct Builder usage.
+/// Fluent builder for creating <see cref="PackageSlotEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; PackageSlotFactory only names chains three or more tests share.
 /// </summary>
-internal class PackageSlotBuilder
+public class PackageSlotBuilder
 {
     private Guid _id;
     private Guid _packageId;
     private Guid? _categoryId;
     private bool _isRequired = true;
     private int _quantity;
+    private CategoryEntity? _category;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PackageSlotBuilder"/> class with default values.
@@ -23,7 +26,7 @@ internal class PackageSlotBuilder
     {
         _id = Guid.NewGuid();
         _packageId = packageId;
-        _quantity = TestConstants.Content.PackageSlot.ValidQuantity;
+        _quantity = TestConstants.PackageSlot.ValidQuantity;
     }
 
     /// <summary>
@@ -72,11 +75,22 @@ internal class PackageSlotBuilder
     }
 
     /// <summary>
+    /// Attaches the Category navigation EF Core populates through <c>.Include(s =&gt; s.Category)</c>,
+    /// and points the foreign key at the same category.
+    /// </summary>
+    public PackageSlotBuilder WithCategory(CategoryEntity category)
+    {
+        _category = category;
+        _categoryId = category.Id;
+        return this;
+    }
+
+    /// <summary>
     /// Builds the <see cref="PackageSlotEntity"/> instance.
     /// </summary>
     public PackageSlotEntity Build()
     {
-        return PackageSlotEntity.Create(
+        PackageSlotEntity slot = PackageSlotEntity.Create(
             _id,
             _packageId,
             _categoryId,
@@ -84,5 +98,14 @@ internal class PackageSlotBuilder
             _quantity,
             TestErrorsFactory.CreatePackageErrors()
         );
+
+        if (_category is not null)
+        {
+            typeof(PackageSlotEntity)
+                .GetProperty(nameof(PackageSlotEntity.Category), BindingFlags.Public | BindingFlags.Instance)!
+                .SetValue(slot, _category);
+        }
+
+        return slot;
     }
 }
