@@ -4,10 +4,11 @@ using _116.Identity.Domain.Entities;
 namespace _116.Tests.Fixtures.Builders.Entities.Identity;
 
 /// <summary>
-/// Fluent builder for creating <see cref="RolePermissionEntity"/> instances in tests.
-/// For complex junction table scenarios.
+/// Fluent builder for creating <see cref="RolePermissionEntity" /> instances in tests.
+/// Drives the real domain transitions, so every state it produces is one the application can reach.
+/// Use it for any shape a test needs; RolePermissionFactory only names chains three or more tests share.
 /// </summary>
-internal class RolePermissionBuilder
+public class RolePermissionBuilder
 {
     private Guid _id;
     private Guid _roleId;
