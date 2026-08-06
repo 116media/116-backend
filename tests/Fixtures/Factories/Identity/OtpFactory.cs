@@ -6,7 +6,9 @@ using _116.Tests.Fixtures.Constants;
 namespace _116.Tests.Fixtures.Factories.Identity;
 
 /// <summary>
-/// Factory for quickly creating <see cref="OtpEntity"/> instances in tests.
+/// Named aliases for <see cref="OtpBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// Codes passed in are plaintext; the built entity stores only their hash, exactly as the
 /// application does, so the real verification path accepts them.
 /// </summary>
@@ -33,13 +35,6 @@ public static class OtpFactory
     /// <returns>A new OtpEntity with the specified values.</returns>
     public static OtpEntity Create(Guid userId, string code) =>
         new OtpBuilder().WithUserId(userId).WithCode(code).Build();
-
-    /// <summary>
-    /// Creates an OTP with a specific ID.
-    /// </summary>
-    /// <param name="id">The OTP identifier.</param>
-    /// <returns>A new OtpEntity with the specified ID.</returns>
-    public static OtpEntity CreateWithId(Guid id) => new OtpBuilder().WithId(id).Build();
 
     /// <summary>
     /// Creates an OTP for email verification.
@@ -106,13 +101,6 @@ public static class OtpFactory
         new OtpBuilder().WithUserId(userId).WithCode(TestConstants.Otp.ValidCode).Build();
 
     /// <summary>
-    /// Creates a list of OTPs with the specified count.
-    /// </summary>
-    /// <param name="count">The number of OTPs to create.</param>
-    /// <returns>A list of OtpEntity instances.</returns>
-    public static List<OtpEntity> CreateMany(int count) => Enumerable.Range(0, count).Select(_ => Create()).ToList();
-
-    /// <summary>
     /// Creates an OTP with a specific purpose.
     /// </summary>
     /// <param name="purpose">The OTP purpose.</param>
@@ -137,13 +125,6 @@ public static class OtpFactory
     /// <returns>A new OtpEntity with the specified values.</returns>
     public static OtpEntity Create(Guid userId, string code, EnumOtpPurpose purpose) =>
         new OtpBuilder().WithUserId(userId).WithCode(code).WithPurpose(purpose).Build();
-
-    /// <summary>
-    /// Creates an OTP with a specific code.
-    /// </summary>
-    /// <param name="code">The plaintext OTP code the entity should accept.</param>
-    /// <returns>A new OtpEntity with the specified code.</returns>
-    public static OtpEntity CreateWithCode(string code) => new OtpBuilder().WithCode(code).Build();
 
     /// <summary>
     /// Creates an OTP with a specific expiration date.
