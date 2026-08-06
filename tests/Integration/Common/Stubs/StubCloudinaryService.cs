@@ -5,11 +5,9 @@ namespace _116.Integration.Tests.Common.Stubs;
 
 /// <summary>
 /// In-memory stub that returns fake Cloudinary URLs without making real HTTP calls.
-/// Setting <see cref="NextDeleteFailure" /> makes the next delete call throw
-/// once, driving the failure-tolerance path of post-commit asset cleanup
-/// without any provider.
+/// Setting <see cref="NextDeleteFailure" /> makes the next delete call throw once.
 /// </summary>
-public class StubCloudinaryService : ICloudinaryService
+public class StubCloudinaryService : ICloudinaryService, IResettableStub
 {
     /// <summary>
     /// When set, the next <see cref="DeleteImageAsync" /> or
@@ -19,13 +17,17 @@ public class StubCloudinaryService : ICloudinaryService
     public Exception? NextDeleteFailure { get; set; }
 
     /// <summary>
-    /// Every public id handed to a delete call, in call order, so a test can
-    /// assert which remote assets a committed mutation asked the provider to
-    /// purge. Ids queued behind <see cref="NextDeleteFailure" /> are recorded
-    /// before the failure is raised, matching the provider's own semantics of
-    /// having received the request.
+    /// Every public id handed to a delete call, in call order. Ids queued behind
+    /// <see cref="NextDeleteFailure" /> are recorded before the failure is raised.
     /// </summary>
     public List<string> DeletedPublicIds { get; } = [];
+
+    /// <inheritdoc />
+    public void Reset()
+    {
+        NextDeleteFailure = null;
+        DeletedPublicIds.Clear();
+    }
 
     /// <inheritdoc />
     public Task<CloudinaryUploadResult> UploadImageAsync(
