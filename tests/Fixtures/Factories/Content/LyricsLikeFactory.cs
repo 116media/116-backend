@@ -3,7 +3,9 @@ using _116.Content.Domain.Entities;
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="LyricsLikeEntity"/> instances in tests.
+/// Named aliases for <see cref="LyricsLikeEntity" /> arrangements that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class LyricsLikeFactory
 {
@@ -12,9 +14,4 @@ public static class LyricsLikeFactory
     /// </summary>
     public static LyricsLikeEntity Create(Guid userId, Guid lyricsId) =>
         LyricsLikeEntity.Create(Guid.NewGuid(), userId, lyricsId);
-
-    /// <summary>
-    /// Creates a like record for a random user against the given lyrics page.
-    /// </summary>
-    public static LyricsLikeEntity CreateForLyrics(Guid lyricsId) => Create(Guid.NewGuid(), lyricsId);
 }
