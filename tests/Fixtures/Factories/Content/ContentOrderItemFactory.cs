@@ -4,7 +4,9 @@ using _116.Tests.Fixtures.Builders.Entities.Content;
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="ContentOrderItemEntity"/> instances in tests.
+/// Named aliases for <see cref="ContentOrderItemBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class ContentOrderItemFactory
 {
@@ -47,10 +49,4 @@ public static class ContentOrderItemFactory
     /// </summary>
     public static ContentOrderItemEntity CreateWithCategory(Guid orderId, CategoryEntity category) =>
         new ContentOrderItemBuilder().WithOrderId(orderId).WithCategory(category).Build();
-
-    /// <summary>
-    /// Creates a list of order items with the specified count.
-    /// </summary>
-    public static List<ContentOrderItemEntity> CreateMany(Guid orderId, Guid categoryId, int count) =>
-        Enumerable.Range(0, count).Select(_ => Create(orderId, categoryId)).ToList();
 }
