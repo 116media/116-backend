@@ -4,7 +4,9 @@ using _116.Tests.Fixtures.Builders.Entities.Identity;
 namespace _116.Tests.Fixtures.Factories.Identity;
 
 /// <summary>
-/// Factory for quickly creating <see cref="RolePermissionEntity"/> instances in tests.
+/// Named aliases for <see cref="RolePermissionBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class RolePermissionFactory
 {
@@ -39,12 +41,4 @@ public static class RolePermissionFactory
     /// <param name="id">The association identifier.</param>
     /// <returns>A new RolePermissionEntity with the specified ID.</returns>
     public static RolePermissionEntity CreateWithId(Guid id) => new RolePermissionBuilder().WithId(id).Build();
-
-    /// <summary>
-    /// Creates a list of role-permission associations with the specified count.
-    /// </summary>
-    /// <param name="count">The number of associations to create.</param>
-    /// <returns>A list of RolePermissionEntity instances.</returns>
-    public static List<RolePermissionEntity> CreateMany(int count) =>
-        Enumerable.Range(0, count).Select(_ => Create()).ToList();
 }
