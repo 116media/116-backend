@@ -4,11 +4,10 @@ using Bogus;
 namespace _116.Tests.Fixtures;
 
 /// <summary>
-/// Seeds Bogus's global randomizer with a fixed value so generated test data is
-/// reproducible across runs. Uniqueness still comes from <see cref="System.Guid" />,
-/// which is independent of this seed, so determinism does not reintroduce
-/// duplicate-key collisions. To reproduce a specific failure, keep this seed; to
-/// explore other data, change it intentionally.
+/// Seeds Bogus's process-wide randomizer as a backstop for any <see cref="Bogus.Faker" />
+/// created without <see cref="Helpers.TestFaker.Create" />. Fixtures using the helper own a
+/// private stream; a shared stream is order-dependent under parallel execution and cannot be
+/// relied on to reproduce a specific failure.
 /// </summary>
 internal static class TestDataModuleInitializer
 {
