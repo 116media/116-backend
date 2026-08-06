@@ -4,7 +4,9 @@ using _116.Tests.Fixtures.Builders.Entities.Content;
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="LyricsSubmissionEntity"/> instances in tests.
+/// Named aliases for <see cref="LyricsSubmissionBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class LyricsSubmissionFactory
 {
@@ -12,11 +14,6 @@ public static class LyricsSubmissionFactory
     /// Creates a pending community lyrics submission with default valid values.
     /// </summary>
     public static LyricsSubmissionEntity Create() => new LyricsSubmissionBuilder().Build();
-
-    /// <summary>
-    /// Creates a pending community lyrics submission with a specific ID.
-    /// </summary>
-    public static LyricsSubmissionEntity CreateWithId(Guid id) => new LyricsSubmissionBuilder().WithId(id).Build();
 
     /// <summary>
     /// Creates a pending community lyrics submission submitted by a specific user.
@@ -41,12 +38,4 @@ public static class LyricsSubmissionFactory
     /// </summary>
     public static LyricsSubmissionEntity CreateRejected(Guid reviewedByUserId, string note = "Not a good fit.") =>
         new LyricsSubmissionBuilder().AsRejected(reviewedByUserId, note).Build();
-
-    /// <summary>
-    /// Creates a lyrics submission already sent back for revision with a note.
-    /// </summary>
-    public static LyricsSubmissionEntity CreateNeedsRevision(
-        Guid reviewedByUserId,
-        string note = "Please fix formatting."
-    ) => new LyricsSubmissionBuilder().AsNeedsRevision(reviewedByUserId, note).Build();
 }
