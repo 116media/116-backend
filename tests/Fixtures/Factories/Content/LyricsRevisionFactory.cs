@@ -4,7 +4,9 @@ using _116.Tests.Fixtures.Builders.Entities.Content;
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="LyricsRevisionEntity"/> instances in tests.
+/// Named aliases for <see cref="LyricsRevisionBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class LyricsRevisionFactory
 {
@@ -13,12 +15,6 @@ public static class LyricsRevisionFactory
     /// </summary>
     public static LyricsRevisionEntity Create(Guid lyricsId) =>
         new LyricsRevisionBuilder().WithLyricsId(lyricsId).Build();
-
-    /// <summary>
-    /// Creates a pending lyrics-text correction revision with a specific ID.
-    /// </summary>
-    public static LyricsRevisionEntity CreateWithId(Guid id, Guid lyricsId) =>
-        new LyricsRevisionBuilder().WithId(id).WithLyricsId(lyricsId).Build();
 
     /// <summary>
     /// Creates a pending lyrics-text correction revision proposed by a specific user, with
@@ -30,23 +26,4 @@ public static class LyricsRevisionFactory
             .WithProposedByUserId(proposedByUserId)
             .WithProposedText(proposedText)
             .Build();
-
-    /// <summary>
-    /// Creates a lyrics-text revision already accepted by the community vote threshold
-    /// (<c>DecidedByUserId == null</c>).
-    /// </summary>
-    public static LyricsRevisionEntity CreateAutoAccepted(Guid lyricsId) =>
-        new LyricsRevisionBuilder().WithLyricsId(lyricsId).AsAccepted().Build();
-
-    /// <summary>
-    /// Creates a lyrics-text revision already accepted by a moderator override.
-    /// </summary>
-    public static LyricsRevisionEntity CreateAcceptedByModerator(Guid lyricsId, Guid decidedByUserId) =>
-        new LyricsRevisionBuilder().WithLyricsId(lyricsId).AsAccepted(decidedByUserId).Build();
-
-    /// <summary>
-    /// Creates a lyrics-text revision already rejected by a moderator.
-    /// </summary>
-    public static LyricsRevisionEntity CreateRejected(Guid lyricsId, Guid decidedByUserId) =>
-        new LyricsRevisionBuilder().WithLyricsId(lyricsId).AsRejected(decidedByUserId).Build();
 }
