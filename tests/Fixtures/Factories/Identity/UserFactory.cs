@@ -6,7 +6,9 @@ using _116.Tests.Fixtures.Constants;
 namespace _116.Tests.Fixtures.Factories.Identity;
 
 /// <summary>
-/// Factory for quickly creating <see cref="UserEntity"/> instances in tests.
+/// Named aliases for <see cref="UserBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class UserFactory
 {
@@ -99,13 +101,6 @@ public static class UserFactory
     /// <returns>A new UserEntity with phone number fields populated.</returns>
     public static UserEntity CreateWithPhoneNumber(string fullPhoneNumber, string partialPhoneNumber) =>
         new UserBuilder().WithPhoneNumber(fullPhoneNumber, partialPhoneNumber).Build();
-
-    /// <summary>
-    /// Creates a list of users with the specified count.
-    /// </summary>
-    /// <param name="count">The number of users to create.</param>
-    /// <returns>A list of UserEntity instances.</returns>
-    public static List<UserEntity> CreateMany(int count) => Enumerable.Range(0, count).Select(_ => Create()).ToList();
 
     /// <summary>
     /// Creates a SuperAdmin user with the SuperAdmin role.
