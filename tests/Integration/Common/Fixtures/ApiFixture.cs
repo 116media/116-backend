@@ -1,4 +1,3 @@
-using System.Text;
 using System.Threading.RateLimiting;
 using _116.BuildingBlocks.Constants.RateLimit;
 using _116.Content.Application.Editorial.Services;
@@ -10,47 +9,53 @@ using _116.Identity.Infrastructure.Persistence;
 using _116.Integration.Tests.Common.Stubs;
 using _116.Mailer.Application.Shared.Services;
 using _116.Mailer.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using _116.Shared.Application.Extensions;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.Hosting;
+using Quartz;
 
 namespace _116.Integration.Tests.Common.Fixtures;
 
 /// <summary>
 /// Wraps <see cref="WebApplicationFactory{TEntryPoint}" /> for integration tests.
-/// Replaces database connections, JWT configuration, and external service stubs.
+/// Replaces database connections and external services; the JWT validation parameters
+/// the application configured from the environment are left untouched.
 /// </summary>
-/// <remarks>
-/// Creates a new <see cref="ApiFixture" /> backed by the given Testcontainer database.
-/// </remarks>
 public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
 {
     private readonly PostgresFixture _db = db;
 
     /// <summary>
     /// Controls whether the production rate limit policies are replaced with no-op limiters.
-    /// Defaults to <c>true</c> so that the shared test host never returns 429 responses and
-    /// tests may issue as many requests as they need.
-    /// Derived fixtures that assert real rate limiting behaviour override this to <c>false</c>,
-    /// which leaves the production <c>AddRateLimiting</c> configuration untouched.
+    /// Defaults to <c>true</c>; fixtures asserting real rate limiting override it to
+    /// <c>false</c>.
     /// </summary>
     protected virtual bool DisableRateLimits => true;
+
+    /// <summary>
+    /// The environment the host boots in. Defaults to <c>Testing</c>, which disables module
+    /// migrations and seeding. Derived fixtures override it to boot a non-Testing host.
+    /// </summary>
+    protected virtual string EnvironmentName => "Testing";
 
     /// <inheritdoc />
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        SetEnvironmentVariables();
+        ConfigureEnvironment();
 
-        builder.UseEnvironment("Testing");
+        builder.UseEnvironment(EnvironmentName);
 
         builder.ConfigureTestServices(services =>
         {
             ReplaceDbContexts(services);
             StubExternalServices(services);
-            OverrideJwtAuthentication(services);
+            DisableScheduledJobs(services);
 
             if (DisableRateLimits)
             {
@@ -60,10 +65,31 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     }
 
     /// <summary>
-    /// Sets all environment variables consumed by <c>AppEnvironment</c>
-    /// so that the real modules boot with test-safe values.
+    /// Removes the Quartz hosted service so no trigger fires during a test.
+    /// Job and trigger definitions stay registered.
     /// </summary>
-    private void SetEnvironmentVariables()
+    /// <param name="services">The test host's service collection.</param>
+    private static void DisableScheduledJobs(IServiceCollection services)
+    {
+        List<ServiceDescriptor> hostedServices = services
+            .Where(descriptor =>
+                descriptor.ServiceType == typeof(IHostedService)
+                && descriptor.ImplementationType == typeof(QuartzHostedService)
+            )
+            .ToList();
+
+        foreach (ServiceDescriptor descriptor in hostedServices)
+        {
+            services.Remove(descriptor);
+        }
+    }
+
+    /// <summary>
+    /// Sets all environment variables consumed by <c>AppEnvironment</c>
+    /// so that the real modules boot with test-safe values. Derived fixtures override it to
+    /// vary a single variable for the host they own, calling the base implementation first.
+    /// </summary>
+    protected virtual void ConfigureEnvironment()
     {
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
 
@@ -104,53 +130,36 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     }
 
     /// <summary>
-    /// Removes the existing DbContext registration and re-registers it
-    /// against the Testcontainer connection string.
+    /// Points a module DbContext at the Testcontainer database, removing every pooled-context
+    /// descriptor first and re-attaching the save-changes interceptors.
     /// </summary>
+    /// <typeparam name="TDbContext">The module context to re-register.</typeparam>
+    /// <param name="services">The test host's service collection.</param>
     private void ReplaceDbContext<TDbContext>(IServiceCollection services)
         where TDbContext : DbContext
     {
-        var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<TDbContext>));
+        Type[] pooledDescriptorTypes =
+        [
+            typeof(DbContextOptions<TDbContext>),
+            typeof(TDbContext),
+            typeof(IDbContextPool<TDbContext>),
+            typeof(IScopedDbContextLease<TDbContext>),
+        ];
 
-        if (descriptor is not null)
+        List<ServiceDescriptor> existing = services
+            .Where(descriptor => pooledDescriptorTypes.Contains(descriptor.ServiceType))
+            .ToList();
+
+        foreach (ServiceDescriptor descriptor in existing)
         {
             services.Remove(descriptor);
         }
 
-        var poolDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(TDbContext));
-
-        if (poolDescriptor is not null)
-        {
-            services.Remove(poolDescriptor);
-        }
-
-        services.AddDbContext<TDbContext>(options =>
-        {
-            options.UseNpgsql(_db.ConnectionString).UseSnakeCaseNamingConvention();
-        });
-    }
-
-    /// <summary>
-    /// Overrides JWT Bearer token validation parameters to use test constants,
-    /// because the production module captures env vars before test env vars are set.
-    /// </summary>
-    private static void OverrideJwtAuthentication(IServiceCollection services)
-    {
-        services.PostConfigure<JwtBearerOptions>(
-            JwtBearerDefaults.AuthenticationScheme,
-            options =>
+        services.AddDbContextPool<TDbContext>(
+            (serviceProvider, options) =>
             {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = Jwt.ValidIssuer,
-                    ValidAudience = Jwt.ValidAudience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Jwt.ValidSecret)),
-                    ClockSkew = TimeSpan.Zero,
-                };
+                options.AddInterceptors(serviceProvider.GetServices<ISaveChangesInterceptor>());
+                options.UseNpgsql(_db.ConnectionString).UseSnakeCaseNamingConvention();
             }
         );
     }
@@ -158,7 +167,9 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     /// <summary>
     /// Disables all production rate limit policies so tests never receive 429 responses.
     /// Removes the original <c>RateLimiterOptions</c> configure actions and registers
-    /// a fresh configuration with no-op policies for every policy name.
+    /// a fresh configuration with no-op policies for every policy name, keeping the production
+    /// rejection status code and <c>OnRejected</c> handler so the host never diverges on the
+    /// contract a rejected client would receive.
     /// </summary>
     private static void DisableRateLimiting(IServiceCollection services)
     {
@@ -180,7 +191,8 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
 
         services.Configure<RateLimiterOptions>(options =>
         {
-            options.RejectionStatusCode = 429;
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.OnRejected = RateLimitingExtension.OnRateLimitRejected;
 
             string[] policies =
             [
@@ -210,58 +222,76 @@ public class ApiFixture(PostgresFixture db) : WebApplicationFactory<Program>
     {
         ReplaceCloudinaryService(services);
         Replace<IYoutubeThumbnailService, StubYoutubeThumbnailService>(services);
-        Replace<IStreamingLinkResolutionService, StubStreamingLinkResolutionService>(services);
+        ReplaceStreamingLinkResolutionService(services);
         ReplaceEmailSender(services);
     }
 
     /// <summary>
-    /// Replaces the Cloudinary adapter with the stub, registered as a
-    /// singleton so failure-injection tests can queue a delete failure on the
-    /// same instance the request pipeline resolves.
+    /// Replaces the Cloudinary adapter with the stub, registered as a singleton and
+    /// under <see cref="IResettableStub" /> so tests share and reset one instance.
     /// </summary>
     private static void ReplaceCloudinaryService(IServiceCollection services)
     {
-        var descriptors = services.Where(d => d.ServiceType == typeof(ICloudinaryService)).ToList();
-        foreach (var d in descriptors)
-        {
-            services.Remove(d);
-        }
+        RemoveAll<ICloudinaryService>(services);
 
         services.AddSingleton<StubCloudinaryService>();
         services.AddSingleton<ICloudinaryService>(sp => sp.GetRequiredService<StubCloudinaryService>());
+        services.AddSingleton<IResettableStub>(sp => sp.GetRequiredService<StubCloudinaryService>());
     }
 
     /// <summary>
-    /// Replaces the SMTP adapter with the recording stub, registered as a
-    /// singleton so dispatcher tests can observe deliveries across scopes.
+    /// Replaces the Odesli-backed resolution adapter with the stub, registered as a singleton
+    /// and under <see cref="IResettableStub" /> so tests share and reset one instance.
+    /// </summary>
+    private static void ReplaceStreamingLinkResolutionService(IServiceCollection services)
+    {
+        RemoveAll<IStreamingLinkResolutionService>(services);
+
+        services.AddSingleton<StubStreamingLinkResolutionService>();
+        services.AddSingleton<IStreamingLinkResolutionService>(sp =>
+            sp.GetRequiredService<StubStreamingLinkResolutionService>()
+        );
+        services.AddSingleton<IResettableStub>(sp => sp.GetRequiredService<StubStreamingLinkResolutionService>());
+    }
+
+    /// <summary>
+    /// Replaces the SMTP adapter with the recording stub, registered as a singleton
+    /// and under <see cref="IResettableStub" /> so tests share and reset one instance.
     /// </summary>
     private static void ReplaceEmailSender(IServiceCollection services)
     {
-        var descriptors = services.Where(d => d.ServiceType == typeof(IEmailSender)).ToList();
-        foreach (var d in descriptors)
-        {
-            services.Remove(d);
-        }
+        RemoveAll<IEmailSender>(services);
 
         services.AddSingleton<StubEmailSender>();
         services.AddSingleton<IEmailSender>(sp => sp.GetRequiredService<StubEmailSender>());
+        services.AddSingleton<IResettableStub>(sp => sp.GetRequiredService<StubEmailSender>());
     }
 
     /// <summary>
     /// Removes all registrations of <typeparamref name="TService" /> and adds
-    /// a scoped <typeparamref name="TImpl" />.
+    /// a scoped <typeparamref name="TImpl" />. Reserved for stateless stubs.
     /// </summary>
     private static void Replace<TService, TImpl>(IServiceCollection services)
         where TService : class
         where TImpl : class, TService
     {
-        var descriptors = services.Where(d => d.ServiceType == typeof(TService)).ToList();
-        foreach (var d in descriptors)
-        {
-            services.Remove(d);
-        }
+        RemoveAll<TService>(services);
 
         services.AddScoped<TService, TImpl>();
+    }
+
+    /// <summary>
+    /// Removes every registration of <typeparamref name="TService" /> from the collection.
+    /// </summary>
+    private static void RemoveAll<TService>(IServiceCollection services)
+        where TService : class
+    {
+        List<ServiceDescriptor> descriptors = services.Where(d => d.ServiceType == typeof(TService)).ToList();
+
+        foreach (ServiceDescriptor descriptor in descriptors)
+        {
+            services.Remove(descriptor);
+        }
     }
 
     /// <summary>
