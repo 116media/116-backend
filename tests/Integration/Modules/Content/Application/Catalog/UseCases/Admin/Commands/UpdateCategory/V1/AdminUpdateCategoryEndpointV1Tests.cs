@@ -1,7 +1,13 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategory.V1;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Commands.UpdateCategory.V1;
 
@@ -11,6 +17,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     private static string ShortName(string prefix = "c") => $"{prefix}{Guid.NewGuid().ToString("N")[..8]}";
 
     private static string ShortSlug(string prefix = "s") => $"{prefix}-{Guid.NewGuid().ToString("N")[..8]}";
@@ -77,7 +86,10 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Category"))
+        );
     }
 
     [Fact]
@@ -135,7 +147,10 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{category.Id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Name", Localized<CategoryErrorMessage>(m => m.NameRequired()))
+        );
     }
 
     [Fact]
@@ -153,13 +168,12 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/not-a-guid", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Id", Localized<CategoryErrorMessage>(m => m.Localizer["IdInvalid"].Value))
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating a category with a name exceeding the maximum allowed length
-    /// (60 characters) returns a 400 Bad Request or 422 Unprocessable Entity response.
-    /// </summary>
     [Fact]
     public async Task UpdateCategory_WithNameTooLong_ReturnsBadRequest()
     {
@@ -176,13 +190,15 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "Name",
+                Localized<CategoryErrorMessage>(m => m.NameTooLong(ContentConstants.MaxCategoryNameLength))
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating a category with a slug exceeding the maximum allowed length
-    /// (80 characters) returns a 400 Bad Request or 422 Unprocessable Entity response.
-    /// </summary>
     [Fact]
     public async Task UpdateCategory_WithSlugTooLong_ReturnsBadRequest()
     {
@@ -199,13 +215,15 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "Slug",
+                Localized<CategoryErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxCategorySlugLength))
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating a category with a description exceeding the maximum allowed length
-    /// (300 characters) returns a 400 Bad Request or 422 Unprocessable Entity response.
-    /// </summary>
     [Fact]
     public async Task UpdateCategory_WithDescriptionTooLong_ReturnsBadRequest()
     {
@@ -222,14 +240,17 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "Description",
+                Localized<CategoryErrorMessage>(m =>
+                    m.DescriptionTooLong(ContentConstants.MaxCategoryDescriptionLength)
+                )
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating a category with a slug that does not match the required format
-    /// (lowercase letters, numbers, and hyphens only) returns a 400 Bad Request or
-    /// 422 Unprocessable Entity response, exercising the slug regex branch of CategoryValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateCategory_WithInvalidSlugFormat_ReturnsBadRequest()
     {
@@ -246,14 +267,12 @@ public class AdminUpdateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Categories}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Slug", Localized<CategoryErrorMessage>(m => m.SlugInvalidFormat()))
+        );
     }
 
-    /// <summary>
-    /// Only one category may be the featured exclusive show at a time. Updating a second video
-    /// category with <c>IsExclusive</c> set drives the mutex path in the handler, which calls
-    /// <c>CategoryEntity.ClearExclusive</c> on the previous holder before promoting the new one.
-    /// </summary>
     [Fact]
     public async Task UpdateCategory_SetExclusive_ClearsPreviouslyExclusiveCategory()
     {
