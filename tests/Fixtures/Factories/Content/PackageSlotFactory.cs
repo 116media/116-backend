@@ -4,7 +4,9 @@ using _116.Tests.Fixtures.Builders.Entities.Content;
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="PackageSlotEntity"/> instances in tests.
+/// Named aliases for <see cref="PackageSlotBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class PackageSlotFactory
 {
@@ -24,18 +26,6 @@ public static class PackageSlotFactory
     /// </summary>
     public static PackageSlotEntity CreateOpen(Guid packageId) =>
         new PackageSlotBuilder(packageId).WithCategoryId(null).Build();
-
-    /// <summary>
-    /// Creates a required slot.
-    /// </summary>
-    public static PackageSlotEntity CreateRequired(Guid packageId) =>
-        new PackageSlotBuilder(packageId).WithIsRequired(true).Build();
-
-    /// <summary>
-    /// Creates an optional (non-required) slot.
-    /// </summary>
-    public static PackageSlotEntity CreateOptional(Guid packageId) =>
-        new PackageSlotBuilder(packageId).AsOptional().Build();
 
     /// <summary>
     /// Creates a slot with explicit category, required flag, and quantity.
