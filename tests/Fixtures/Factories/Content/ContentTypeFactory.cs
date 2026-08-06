@@ -5,7 +5,9 @@ using _116.Tests.Fixtures.Constants;
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="ContentTypeEntity"/> instances in tests.
+/// Named aliases for <see cref="ContentTypeBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class ContentTypeFactory
 {
@@ -20,11 +22,6 @@ public static class ContentTypeFactory
     public static ContentTypeEntity Create(string name) => new ContentTypeBuilder().WithName(name).Build();
 
     /// <summary>
-    /// Creates a content type with a specific ID.
-    /// </summary>
-    public static ContentTypeEntity CreateWithId(Guid id) => new ContentTypeBuilder().WithId(id).Build();
-
-    /// <summary>
     /// Creates an inactive content type.
     /// </summary>
     public static ContentTypeEntity CreateInactive() => new ContentTypeBuilder().AsInactive().Build();
@@ -33,7 +30,7 @@ public static class ContentTypeFactory
     /// Creates a content type with a known default name (ValidName).
     /// </summary>
     public static ContentTypeEntity CreateDefault() =>
-        new ContentTypeBuilder().WithName(TestConstants.Content.ContentType.ValidName).Build();
+        new ContentTypeBuilder().WithName(TestConstants.ContentType.ValidName).Build();
 
     /// <summary>
     /// Creates a list of content types with the specified count.
