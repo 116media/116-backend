@@ -1,7 +1,10 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.PinCategoryToFeed.V1;
 using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Commands.PinCategoryToFeed.V1;
@@ -74,7 +77,10 @@ public class AdminPinCategoryToFeedEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{Guid.NewGuid()}/{PinSegment}", null);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Category"))
+        );
     }
 
     [Fact]
@@ -94,7 +100,10 @@ public class AdminPinCategoryToFeedEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/{PinSegment}", null);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<CategoryErrorMessage>(m => m.CannotPinInactiveToFeed())
+        );
         (await PinnedAtAsync(category.Id)).Should().BeNull();
     }
 
@@ -114,7 +123,10 @@ public class AdminPinCategoryToFeedEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/{PinSegment}", null);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<CategoryErrorMessage>(m => m.ContentTypeNotFeedable())
+        );
         (await PinnedAtAsync(category.Id)).Should().BeNull();
     }
 
@@ -137,7 +149,12 @@ public class AdminPinCategoryToFeedEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PatchAsync($"{ApiRoutes.Admin.Categories}/{category.Id}/{PinSegment}", null);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<CategoryErrorMessage>(m =>
+                m.NotEnoughVideosToPinToFeed(EditorialFeedConstants.MinVideosToPinToFeed)
+            )
+        );
         (await PinnedAtAsync(category.Id)).Should().BeNull();
     }
 
