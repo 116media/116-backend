@@ -1,5 +1,8 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Commands.ActivateCategory.V1;
@@ -62,7 +65,10 @@ public class AdminActivateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PatchAsync(Routes.Admin.Categories.Activate(Guid.NewGuid()), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Category"))
+        );
     }
 
     [Fact]
@@ -75,10 +81,6 @@ public class AdminActivateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiT
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    /// <summary>
-    /// Verifies that activating an already-active category returns a 409 Conflict
-    /// problem and leaves the category active.
-    /// </summary>
     [Fact]
     public async Task ActivateCategory_WhenAlreadyActive_ReturnsConflictProblem()
     {
@@ -87,7 +89,10 @@ public class AdminActivateCategoryEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PatchAsync(Routes.Admin.Categories.Activate(category.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<CategoryErrorMessage>(m => m.AlreadyActive())
+        );
         (await IsCategoryActiveAsync(category.Id)).Should().BeTrue();
     }
 }
