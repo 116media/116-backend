@@ -3,8 +3,8 @@ namespace _116.Tests.Fixtures.Constants;
 public static partial class TestConstants
 {
     /// <summary>
-    /// Constants for Auth/Login testing.
-    /// Mirrors <c>src/Modules/Identity/Identity/Application/Auth/</c>.
+    /// Constants for Auth/Login testing. Every value is test-owned credential and provider
+    /// fixture data with no production counterpart; the passwords satisfy the complexity rules.
     /// </summary>
     public static class Auth
     {
