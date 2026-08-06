@@ -1,7 +1,10 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.CreatePackage.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Builders.Requests.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Commands.CreatePackage.V1;
 
@@ -11,6 +14,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Ad
 [Collection("Database")]
 public class AdminCreatePackageEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task CreatePackage_WithNoAuth_ReturnsUnauthorized()
     {
@@ -41,7 +47,10 @@ public class AdminCreatePackageEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Packages, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Name", Localized<PackageErrorMessage>(m => m.NameRequired()))
+        );
     }
 
     [Fact]
@@ -54,7 +63,10 @@ public class AdminCreatePackageEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Packages, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Description", Localized<PackageErrorMessage>(m => m.DescriptionRequired()))
+        );
     }
 
     [Fact]
