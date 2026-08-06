@@ -7,7 +7,9 @@ using _116.Tests.Fixtures.Builders.Commands.Roles;
 namespace _116.Tests.Fixtures.Factories.Identity;
 
 /// <summary>
-/// Factory for quickly creating command instances in tests.
+/// Named aliases for role and permission command-builder chains that three or more tests share
+/// verbatim. A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class CommandFactory
 {
@@ -17,34 +19,11 @@ public static class CommandFactory
     public static class Role
     {
         /// <summary>
-        /// Creates a create role command with default random values.
-        /// </summary>
-        /// <returns>A new AdminCreateRoleCommand with random values.</returns>
-        public static AdminCreateRoleCommand CreateCommand() => new CreateRoleCommandBuilder().Build();
-
-        /// <summary>
         /// Creates a create role command with valid test data.
         /// </summary>
         /// <returns>A new AdminCreateRoleCommand with valid test values.</returns>
         public static AdminCreateRoleCommand CreateValidCommand() =>
             new CreateRoleCommandBuilder().WithValidData().Build();
-
-        /// <summary>
-        /// Creates a create role command with a specific name.
-        /// </summary>
-        /// <param name="name">The role name.</param>
-        /// <returns>A new AdminCreateRoleCommand with the specified name.</returns>
-        public static AdminCreateRoleCommand CreateCommand(string name) =>
-            new CreateRoleCommandBuilder().WithName(name).Build();
-
-        /// <summary>
-        /// Creates a create role command with a specific name and description.
-        /// </summary>
-        /// <param name="name">The role name.</param>
-        /// <param name="description">The role description.</param>
-        /// <returns>A new AdminCreateRoleCommand with the specified values.</returns>
-        public static AdminCreateRoleCommand CreateCommand(string name, string description) =>
-            new CreateRoleCommandBuilder().WithName(name).WithDescription(description).Build();
 
         /// <summary>
         /// Creates an update role command with default random values.
@@ -79,40 +58,11 @@ public static class CommandFactory
     public static class Permission
     {
         /// <summary>
-        /// Creates a create permission command with default random values.
-        /// </summary>
-        /// <returns>A new AdminCreatePermissionCommand with random values.</returns>
-        public static AdminCreatePermissionCommand CreateCommand() => new CreatePermissionCommandBuilder().Build();
-
-        /// <summary>
         /// Creates a create permission command with valid test data.
         /// </summary>
         /// <returns>A new AdminCreatePermissionCommand with valid test values.</returns>
         public static AdminCreatePermissionCommand CreateValidCommand() =>
             new CreatePermissionCommandBuilder().WithValidData().Build();
-
-        /// <summary>
-        /// Creates a create permission command with specific values.
-        /// </summary>
-        /// <param name="resource">The resource name.</param>
-        /// <param name="action">The action name.</param>
-        /// <returns>A new AdminCreatePermissionCommand with the specified values.</returns>
-        public static AdminCreatePermissionCommand CreateCommand(string resource, string action) =>
-            new CreatePermissionCommandBuilder().WithResource(resource).WithAction(action).Build();
-
-        /// <summary>
-        /// Creates a create permission command with specific values.
-        /// </summary>
-        /// <param name="resource">The resource name.</param>
-        /// <param name="action">The action name.</param>
-        /// <param name="description">The permission description.</param>
-        /// <returns>A new AdminCreatePermissionCommand with the specified values.</returns>
-        public static AdminCreatePermissionCommand CreateCommand(string resource, string action, string description) =>
-            new CreatePermissionCommandBuilder()
-                .WithResource(resource)
-                .WithAction(action)
-                .WithDescription(description)
-                .Build();
 
         /// <summary>
         /// Creates an update permission command with default random values.
