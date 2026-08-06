@@ -1,12 +1,13 @@
 using System.Reflection;
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Builders.Entities.Content;
-using _116.Tests.Fixtures.Constants;
 
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="LyricsEntity"/> instances in tests.
+/// Named aliases for <see cref="LyricsBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class LyricsFactory
 {
@@ -16,21 +17,10 @@ public static class LyricsFactory
     public static LyricsEntity Create(Guid categoryId) => new LyricsBuilder(categoryId).Build();
 
     /// <summary>
-    /// Creates a free lyrics page in Draft status.
-    /// </summary>
-    public static LyricsEntity CreateFree(Guid categoryId) => new LyricsBuilder(categoryId).Build();
-
-    /// <summary>
     /// Creates a paid lyrics page in Draft status linked to a customer and order item.
     /// </summary>
     public static LyricsEntity CreatePaid(Guid categoryId, Guid customerId, Guid orderItemId) =>
         new LyricsBuilder(categoryId).WithCustomer(customerId, orderItemId).Build();
-
-    /// <summary>
-    /// Creates a free lyrics page with a specific ID in Draft status.
-    /// </summary>
-    public static LyricsEntity CreateWithId(Guid id, Guid categoryId) =>
-        new LyricsBuilder(categoryId).WithId(id).Build();
 
     /// <summary>
     /// Creates a lyrics page linked to a video.
@@ -43,24 +33,6 @@ public static class LyricsFactory
     /// </summary>
     public static LyricsEntity CreatePublishedForVideoWithSlug(Guid categoryId, Guid videoId, string slug) =>
         new LyricsBuilder(categoryId).WithVideoId(videoId).WithSlug(slug).AsPublished().Build();
-
-    /// <summary>
-    /// Creates a free lyrics page with a cover image file id set.
-    /// </summary>
-    public static LyricsEntity CreateWithCoverImageFileId(Guid categoryId, Guid coverImageFileId) =>
-        new LyricsBuilder(categoryId).WithCoverImageFileId(coverImageFileId).Build();
-
-    /// <summary>
-    /// Creates a free lyrics page with song-credit metadata populated.
-    /// </summary>
-    public static LyricsEntity CreateWithMetadata(
-        Guid categoryId,
-        string? album = null,
-        short? releaseYear = null,
-        string? label = null,
-        string? songwriter = null,
-        string? producer = null
-    ) => new LyricsBuilder(categoryId).WithMetadata(album, releaseYear, label, songwriter, producer).Build();
 
     /// <summary>
     /// Creates a free lyrics page with the given tags applied.
@@ -112,7 +84,13 @@ public static class LyricsFactory
     public static LyricsEntity CreatePublishedWithVideoNavigation(Guid categoryId, VideoEntity video)
     {
         LyricsEntity entity = new LyricsBuilder(categoryId).WithVideoId(video.Id).AsPublished().Build();
-        typeof(LyricsEntity).GetProperty("Video", BindingFlags.Public | BindingFlags.Instance)!.SetValue(entity, video);
+
+        PropertyInfo navigation = typeof(LyricsEntity).GetProperty(
+            nameof(LyricsEntity.Video),
+            BindingFlags.Public | BindingFlags.Instance
+        )!;
+
+        navigation.SetValue(entity, video);
         return entity;
     }
 
@@ -170,22 +148,6 @@ public static class LyricsFactory
     ) => new LyricsBuilder(categoryId).AsPublished().WithPromotion(promotionLevelId, until).Build();
 
     /// <summary>
-    /// Creates a paid lyrics page linked to a customer and order item with an active paid
-    /// promotion stamped, without transitioning its editorial status.
-    /// </summary>
-    public static LyricsEntity CreatePaidWithPromotion(
-        Guid categoryId,
-        Guid customerId,
-        Guid orderItemId,
-        Guid? promotionLevelId = null,
-        DateTimeOffset? until = null
-    ) =>
-        new LyricsBuilder(categoryId)
-            .WithCustomer(customerId, orderItemId)
-            .WithPromotion(promotionLevelId, until)
-            .Build();
-
-    /// <summary>
     /// Creates a published lyrics page with a specific song title, used to prove recency-based
     /// ("newest") sort order wins over alphabetical order. Callers that need a specific
     /// <c>CreatedAt</c> must backdate it afterward via a raw SQL update, since the audit
@@ -193,14 +155,4 @@ public static class LyricsFactory
     /// </summary>
     public static LyricsEntity CreatePublishedWithSongTitle(Guid categoryId, string songTitle) =>
         new LyricsBuilder(categoryId).WithSongTitle(songTitle).AsPublished().Build();
-
-    /// <summary>
-    /// Creates a free lyrics page with the default known values from TestConstants.
-    /// </summary>
-    public static LyricsEntity CreateDefault(Guid categoryId) =>
-        new LyricsBuilder(categoryId)
-            .WithSongTitle(TestConstants.Content.Editorial.Lyrics.ValidSongTitle)
-            .WithArtistName(TestConstants.Content.Editorial.Lyrics.ValidArtistName)
-            .WithSlug(TestConstants.Content.Editorial.Lyrics.ValidSlug)
-            .Build();
 }
