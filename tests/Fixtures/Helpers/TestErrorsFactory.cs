@@ -255,11 +255,13 @@ public static class TestErrorsFactory
     }
 
     /// <summary>
-    /// Creates a real <see cref="StreamingLinkErrors"/> instance backed by the English catalog.
+    /// Creates a real <see cref="StreamingLinkErrors"/> instance over the embedded resources.
+    /// The catalogue used is whichever the ambient UI culture selects when a message is read;
+    /// a test that needs a specific one wraps its assertion in a <see cref="CultureScope"/>.
     /// </summary>
     public static StreamingLinkErrors CreateStreamingLinkErrors()
     {
-        return new StreamingLinkErrors(LocalizerFactory.CreateMessage<StreamingLinkErrorMessage>("en"));
+        return new StreamingLinkErrors(LocalizerFactory.CreateMessage<StreamingLinkErrorMessage>());
     }
 
     /// <summary>
