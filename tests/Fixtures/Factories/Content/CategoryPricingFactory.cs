@@ -1,11 +1,12 @@
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Builders.Entities.Content;
-using _116.Tests.Fixtures.Constants;
 
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="CategoryPricingEntity"/> instances in tests.
+/// Named aliases for <see cref="CategoryPricingBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class CategoryPricingFactory
 {
@@ -20,12 +21,4 @@ public static class CategoryPricingFactory
     /// </summary>
     public static CategoryPricingEntity Create(Guid categoryId, Guid pricingTierId, decimal priceUsd) =>
         new CategoryPricingBuilder(categoryId, pricingTierId).WithPriceUsd(priceUsd).Build();
-
-    /// <summary>
-    /// Creates a category pricing with zero price.
-    /// </summary>
-    public static CategoryPricingEntity CreateFree(Guid categoryId, Guid pricingTierId) =>
-        new CategoryPricingBuilder(categoryId, pricingTierId)
-            .WithPriceUsd(TestConstants.Content.CategoryPricing.ZeroPriceUsd)
-            .Build();
 }
