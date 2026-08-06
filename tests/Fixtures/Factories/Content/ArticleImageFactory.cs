@@ -5,7 +5,9 @@ using _116.Tests.Fixtures.Constants;
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="ArticleImageEntity"/> instances in tests.
+/// Named aliases for <see cref="ArticleImageBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class ArticleImageFactory
 {
@@ -20,8 +22,8 @@ public static class ArticleImageFactory
     public static ArticleImageEntity CreateCover(Guid articleId) =>
         new ArticleImageBuilder(articleId)
             .AsCover()
-            .WithStorageKey(TestConstants.Content.Editorial.ArticleImage.ValidStorageKey)
-            .WithUrl(TestConstants.Content.Editorial.ArticleImage.ValidUrl)
+            .WithStorageKey(TestConstants.ArticleImage.ValidStorageKey)
+            .WithUrl(TestConstants.ArticleImage.ValidUrl)
             .Build();
 
     /// <summary>
@@ -30,8 +32,8 @@ public static class ArticleImageFactory
     public static ArticleImageEntity CreateBody(Guid articleId) =>
         new ArticleImageBuilder(articleId)
             .AsBody()
-            .WithStorageKey(TestConstants.Content.Editorial.ArticleImage.AnotherStorageKey)
-            .WithUrl(TestConstants.Content.Editorial.ArticleImage.AnotherUrl)
+            .WithStorageKey(TestConstants.ArticleImage.AnotherStorageKey)
+            .WithUrl(TestConstants.ArticleImage.AnotherUrl)
             .Build();
 
     /// <summary>
