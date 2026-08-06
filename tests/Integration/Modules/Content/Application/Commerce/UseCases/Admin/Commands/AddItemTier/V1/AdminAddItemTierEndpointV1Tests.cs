@@ -1,6 +1,9 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.AddItemTier.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -64,7 +67,10 @@ public class AdminAddItemTierEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ContentOrder"))
+        );
     }
 
     [Fact]
@@ -81,9 +87,41 @@ public class AdminAddItemTierEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    /// <summary>
-    /// Verifies that attaching a tier that is already attached to the order item returns 409 Conflict.
-    /// </summary>
+    [Fact]
+    public async Task AddItemTier_WhenCategoryHasNoPricingForTier_ReturnsCategoryPricingNotFound()
+    {
+        CustomerEntity customer = CustomerFactory.Create();
+        ContentTypeEntity contentType = ContentTypeFactory.Create();
+        CategoryEntity category = CategoryFactory.Create(contentType.Id);
+        PricingTierEntity pricingTier = PricingTierFactory.Create();
+        ContentOrderEntity order = ContentOrderFactory.CreateForCustomer(customer.Id);
+        ContentOrderItemEntity orderItem = ContentOrderItemFactory.Create(order.Id, category.Id);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.PricingTiers.Add(pricingTier);
+            ctx.ContentOrders.Add(order);
+            ctx.ContentOrderItems.Add(orderItem);
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        AdminAddItemTierRequest request = new AdminAddItemTierRequestBuilder()
+            .WithPricingTierId(pricingTier.Id.ToString())
+            .Build();
+
+        var response = await Client.PostAsJsonAsync(Routes.Admin.Orders.ItemTiers(order.Id, orderItem.Id), request);
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("CategoryPricing"))
+        );
+
+        await using ContentDbContext db = CreateDbContext<ContentDbContext>();
+        (await db.ContentItemTiers.AnyAsync(t => t.OrderItemId == orderItem.Id)).Should().BeFalse();
+    }
+
     [Fact]
     public async Task AddItemTier_WhenAlreadyAttached_ReturnsConflict()
     {
@@ -114,6 +152,9 @@ public class AdminAddItemTierEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PostAsJsonAsync(Routes.Admin.Orders.ItemTiers(order.Id, orderItem.Id), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ContentOrderErrorMessage>(m => m.TierAlreadyAttached())
+        );
     }
 }
