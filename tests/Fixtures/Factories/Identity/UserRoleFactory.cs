@@ -4,7 +4,9 @@ using _116.Tests.Fixtures.Builders.Entities.Identity;
 namespace _116.Tests.Fixtures.Factories.Identity;
 
 /// <summary>
-/// Factory for quickly creating <see cref="UserRoleEntity"/> instances in tests.
+/// Named aliases for <see cref="UserRoleBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class UserRoleFactory
 {
@@ -39,14 +41,6 @@ public static class UserRoleFactory
     /// <param name="id">The association identifier.</param>
     /// <returns>A new UserRoleEntity with the specified ID.</returns>
     public static UserRoleEntity CreateWithId(Guid id) => new UserRoleBuilder().WithId(id).Build();
-
-    /// <summary>
-    /// Creates a list of user-role associations with the specified count.
-    /// </summary>
-    /// <param name="count">The number of associations to create.</param>
-    /// <returns>A list of UserRoleEntity instances.</returns>
-    public static List<UserRoleEntity> CreateMany(int count) =>
-        Enumerable.Range(0, count).Select(_ => Create()).ToList();
 
     /// <summary>
     /// Creates a user-role association with a specific user ID.
