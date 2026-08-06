@@ -1,6 +1,8 @@
 using _116.Content.Application.Catalog.UseCases.Admin.Commands.RemoveCategoryPricing.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Catalog.UseCases.Admin.Commands.RemoveCategoryPricing.V1;
@@ -69,19 +71,63 @@ public class AdminRemoveCategoryPricingEndpointV1Tests(PostgresFixture db) : Bas
     }
 
     [Fact]
-    public async Task RemoveCategoryPricing_NonExistentCategory_ReturnsNotFound()
+    public async Task RemoveCategoryPricing_WithUnknownCategoryId_ReturnsCategoryNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
 
         var response = await Client.DeleteAsync(Routes.Admin.Categories.PricingItem(Guid.NewGuid(), Guid.NewGuid()));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Category"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that removing a category pricing entry that does not exist
-    /// returns a 404 Not Found response.
-    /// </summary>
+    [Fact]
+    public async Task RemoveCategoryPricing_WithPricingBelongingToAnotherCategory_ReturnsNotFound()
+    {
+        CategoryEntity owningCategory = null!;
+        CategoryEntity addressedCategory = null!;
+        PricingTierEntity pricingTier = null!;
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            ctx.ContentTypes.Add(contentType);
+            owningCategory = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(owningCategory);
+            addressedCategory = CategoryFactory.Create(contentType.Id);
+            ctx.Categories.Add(addressedCategory);
+            pricingTier = PricingTierFactory.Create();
+            ctx.PricingTiers.Add(pricingTier);
+            CategoryPricingEntity categoryPricing = CategoryPricingFactory.Create(
+                owningCategory.Id,
+                pricingTier.Id,
+                5.99m
+            );
+            ctx.CategoryPricing.Add(categoryPricing);
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+
+        var response = await Client.DeleteAsync(
+            Routes.Admin.Categories.PricingItem(addressedCategory.Id, pricingTier.Id)
+        );
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("CategoryPricing"))
+        );
+
+        await using var verifyContext = CreateDbContext<ContentDbContext>();
+        (
+            await verifyContext.CategoryPricing.AnyAsync(cp =>
+                cp.CategoryId == owningCategory.Id && cp.PricingTierId == pricingTier.Id
+            )
+        )
+            .Should()
+            .BeTrue("pricing owned by another category must not be removed");
+    }
+
     [Fact]
     public async Task RemoveCategoryPricing_NonExistentPricing_ReturnsNotFound()
     {
@@ -98,6 +144,9 @@ public class AdminRemoveCategoryPricingEndpointV1Tests(PostgresFixture db) : Bas
 
         var response = await Client.DeleteAsync(Routes.Admin.Categories.PricingItem(category.Id, Guid.NewGuid()));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("CategoryPricing"))
+        );
     }
 }
