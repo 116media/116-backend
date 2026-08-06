@@ -1,12 +1,13 @@
 using System.Reflection;
 using _116.Content.Domain.Entities;
 using _116.Tests.Fixtures.Builders.Entities.Content;
-using _116.Tests.Fixtures.Constants;
 
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="VideoEntity"/> instances in tests.
+/// Named aliases for <see cref="VideoBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class VideoFactory
 {
@@ -16,21 +17,10 @@ public static class VideoFactory
     public static VideoEntity Create(Guid categoryId) => new VideoBuilder(categoryId).Build();
 
     /// <summary>
-    /// Creates a free video with a YouTube URL attached (Draft status).
-    /// </summary>
-    public static VideoEntity CreateWithYoutubeUrl(Guid categoryId) =>
-        new VideoBuilder(categoryId).WithYoutubeUrl().Build();
-
-    /// <summary>
     /// Creates a paid video in Draft status.
     /// </summary>
     public static VideoEntity CreatePaid(Guid categoryId, Guid customerId, Guid orderItemId) =>
         new VideoBuilder(categoryId).WithCustomer(customerId, orderItemId).Build();
-
-    /// <summary>
-    /// Creates a free video with a specific ID in Draft status.
-    /// </summary>
-    public static VideoEntity CreateWithId(Guid id, Guid categoryId) => new VideoBuilder(categoryId).WithId(id).Build();
 
     /// <summary>
     /// Creates a published free video (requires YouTube URL).
@@ -101,12 +91,6 @@ public static class VideoFactory
         new VideoBuilder(categoryId).AsPendingReview().Build();
 
     /// <summary>
-    /// Creates a paid video in PendingPayment status.
-    /// </summary>
-    public static VideoEntity CreatePendingPayment(Guid categoryId, Guid customerId, Guid orderItemId) =>
-        new VideoBuilder(categoryId).WithCustomer(customerId, orderItemId).AsPendingPayment().Build();
-
-    /// <summary>
     /// Creates an archived free video.
     /// </summary>
     public static VideoEntity CreateArchived(Guid categoryId) => new VideoBuilder(categoryId).AsArchived().Build();
@@ -130,9 +114,13 @@ public static class VideoFactory
     public static VideoEntity CreateWithCategory(Guid categoryId, CategoryEntity category)
     {
         VideoEntity entity = Create(categoryId);
-        typeof(VideoEntity)
-            .GetProperty("Category", BindingFlags.Public | BindingFlags.Instance)!
-            .SetValue(entity, category);
+
+        PropertyInfo navigation = typeof(VideoEntity).GetProperty(
+            nameof(VideoEntity.Category),
+            BindingFlags.Public | BindingFlags.Instance
+        )!;
+
+        navigation.SetValue(entity, category);
         return entity;
     }
 
@@ -143,31 +131,8 @@ public static class VideoFactory
         Enumerable.Range(0, count).Select(_ => CreateWithCategory(categoryId, category)).ToList();
 
     /// <summary>
-    /// Creates a free video with the default known values from TestConstants.
-    /// </summary>
-    public static VideoEntity CreateDefault(Guid categoryId) =>
-        new VideoBuilder(categoryId)
-            .WithTitle(TestConstants.Content.Editorial.Video.ValidTitle)
-            .WithSlug(TestConstants.Content.Editorial.Video.ValidSlug)
-            .Build();
-
-    /// <summary>
     /// Creates a free video in Draft status with a specific title.
     /// </summary>
     public static VideoEntity CreateWithTitle(Guid categoryId, string title) =>
         new VideoBuilder(categoryId).WithTitle(title).Build();
-
-    /// <summary>
-    /// Creates a free video with a shooting scheduled in the future.
-    /// A YouTube URL cannot be attached until after the shoot date passes.
-    /// </summary>
-    public static VideoEntity CreateWithFutureShoot(Guid categoryId, int daysFromNow = 30) =>
-        new VideoBuilder(categoryId).WithShootingScheduledAt(DateTimeOffset.UtcNow.AddDays(daysFromNow)).Build();
-
-    /// <summary>
-    /// Creates a free video with a shooting that already happened (in the past).
-    /// A YouTube URL can be freely attached.
-    /// </summary>
-    public static VideoEntity CreateWithPastShoot(Guid categoryId, int daysAgo = 7) =>
-        new VideoBuilder(categoryId).WithShootingScheduledAt(DateTimeOffset.UtcNow.AddDays(-daysAgo)).Build();
 }
