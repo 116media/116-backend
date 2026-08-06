@@ -5,7 +5,9 @@ using _116.Tests.Fixtures.Constants;
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="PromotionLevelEntity"/> instances in tests.
+/// Named aliases for <see cref="PromotionLevelBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class PromotionLevelFactory
 {
@@ -21,11 +23,6 @@ public static class PromotionLevelFactory
         new PromotionLevelBuilder().WithName(name).WithDurationDays(durationDays).WithPriceUsd(priceUsd).Build();
 
     /// <summary>
-    /// Creates a promotion level with a specific ID.
-    /// </summary>
-    public static PromotionLevelEntity CreateWithId(Guid id) => new PromotionLevelBuilder().WithId(id).Build();
-
-    /// <summary>
     /// Creates an inactive promotion level.
     /// </summary>
     public static PromotionLevelEntity CreateInactive() => new PromotionLevelBuilder().AsInactive().Build();
@@ -35,9 +32,9 @@ public static class PromotionLevelFactory
     /// </summary>
     public static PromotionLevelEntity CreateDefault() =>
         new PromotionLevelBuilder()
-            .WithName(TestConstants.Content.PromotionLevel.ValidName)
-            .WithDurationDays(TestConstants.Content.PromotionLevel.ValidDurationDays)
-            .WithPriceUsd(TestConstants.Content.PromotionLevel.ValidPriceUsd)
+            .WithName(TestConstants.PromotionLevel.ValidName)
+            .WithDurationDays(TestConstants.PromotionLevel.ValidDurationDays)
+            .WithPriceUsd(TestConstants.PromotionLevel.ValidPriceUsd)
             .Build();
 
     /// <summary>
