@@ -10,25 +10,22 @@ namespace _116.Tests.Fixtures.Helpers;
 /// </summary>
 public static class TestLocalizer
 {
+    private static readonly IStringLocalizerFactory Factory = new ResourceManagerStringLocalizerFactory(
+        new OptionsWrapper<LocalizationOptions>(new LocalizationOptions()),
+        NullLoggerFactory.Instance
+    );
+
     /// <summary>
     /// Builds a real <see cref="IStringLocalizer{T}"/> backed by the embedded .resx resources
-    /// compiled into the assembly that contains <typeparamref name="T"/>.
+    /// compiled into the assembly that contains <typeparamref name="T"/>. Strings resolve at
+    /// access time against the ambient UI culture; pin it around the assertion with a <see cref="CultureScope"/>.
     /// </summary>
     /// <typeparam name="T">
     /// The message class whose assembly contains the matching .resx resource.
     /// </typeparam>
-    /// <param name="culture">
-    /// The culture to use when resolving strings (e.g., "en", "fr"). Defaults to "en".
-    /// </param>
     /// <returns>
-    /// A real <see cref="IStringLocalizer{T}"/> resolved against the specified culture.
+    /// A real <see cref="IStringLocalizer{T}"/> over the embedded resources.
     /// </returns>
-    public static IStringLocalizer<T> For<T>(string culture = "en")
-        where T : class
-    {
-        var options = new OptionsWrapper<LocalizationOptions>(new LocalizationOptions());
-        var factory = new ResourceManagerStringLocalizerFactory(options, NullLoggerFactory.Instance);
-        using var scope = new CultureScope(culture);
-        return (IStringLocalizer<T>)factory.Create(typeof(T));
-    }
+    public static IStringLocalizer<T> For<T>()
+        where T : class => (IStringLocalizer<T>)Factory.Create(typeof(T));
 }
