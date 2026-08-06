@@ -5,7 +5,9 @@ using _116.Tests.Fixtures.Constants;
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="PricingTierEntity"/> instances in tests.
+/// Named aliases for <see cref="PricingTierBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class PricingTierFactory
 {
@@ -18,11 +20,6 @@ public static class PricingTierFactory
     /// Creates a pricing tier with a specific name.
     /// </summary>
     public static PricingTierEntity Create(string name) => new PricingTierBuilder().WithName(name).Build();
-
-    /// <summary>
-    /// Creates a pricing tier with a specific ID.
-    /// </summary>
-    public static PricingTierEntity CreateWithId(Guid id) => new PricingTierBuilder().WithId(id).Build();
 
     /// <summary>
     /// Creates an inactive pricing tier.
@@ -39,7 +36,7 @@ public static class PricingTierFactory
     /// Creates a pricing tier with a known default name (ValidName).
     /// </summary>
     public static PricingTierEntity CreateDefault() =>
-        new PricingTierBuilder().WithName(TestConstants.Content.PricingTier.ValidName).Build();
+        new PricingTierBuilder().WithName(TestConstants.PricingTier.ValidName).Build();
 
     /// <summary>
     /// Creates a list of pricing tiers with the specified count.
