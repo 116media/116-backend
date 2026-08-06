@@ -5,7 +5,9 @@ using _116.Tests.Fixtures.Constants;
 namespace _116.Tests.Fixtures.Factories.Content;
 
 /// <summary>
-/// Factory for quickly creating <see cref="CustomerEntity"/> instances in tests.
+/// Named aliases for <see cref="CustomerBuilder" /> chains that three or more tests share verbatim.
+/// A shape fewer tests need belongs at the call site as a builder chain, not here —
+/// factory names carry the combinatorics, and combinatorics multiply.
 /// </summary>
 public static class CustomerFactory
 {
@@ -29,8 +31,8 @@ public static class CustomerFactory
     /// </summary>
     public static CustomerEntity CreateDefault() =>
         new CustomerBuilder()
-            .WithFullName(TestConstants.Content.Customer.ValidFullName)
-            .WithEmail(TestConstants.Content.Customer.ValidEmail)
+            .WithFullName(TestConstants.Customer.ValidFullName)
+            .WithEmail(TestConstants.Customer.ValidEmail)
             .Build();
 
     /// <summary>
