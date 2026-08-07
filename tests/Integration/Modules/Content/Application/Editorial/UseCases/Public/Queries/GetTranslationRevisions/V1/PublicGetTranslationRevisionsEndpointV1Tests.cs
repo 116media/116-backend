@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Public.Queries.GetTranslationR
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetTranslationRevisions.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetTranslationRevisions.V1;
@@ -19,13 +21,12 @@ public class PublicGetTranslationRevisionsEndpointV1Tests(PostgresFixture db) : 
 
         var response = await Client.GetAsync(Routes.Public.Translations.Revisions(Guid.NewGuid()));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("LyricsTranslation"))
+        );
     }
 
-    /// <summary>
-    /// The full revision history includes revisions of every status — pending, accepted (both
-    /// auto-accepted and moderator-accepted), and rejected — without hiding any of them.
-    /// </summary>
     [Fact]
     public async Task GetTranslationRevisions_HistoryHasEveryStatus_ReturnsAllRevisions()
     {
