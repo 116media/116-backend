@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideoTags.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -64,13 +66,12 @@ public class AdminUpdateVideoTagsEndpointV1Tests(PostgresFixture db) : BaseApiTe
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Video"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that submitting tag names for an existing video creates the tags,
-    /// links them to the video, and persists the associations.
-    /// </summary>
     [Fact]
     public async Task UpdateVideoTags_AsSuperAdmin_WithValidTags_ReturnsOkAndPersists()
     {
@@ -103,10 +104,6 @@ public class AdminUpdateVideoTagsEndpointV1Tests(PostgresFixture db) : BaseApiTe
         linkedTagNames.Should().BeEquivalentTo(tagNames);
     }
 
-    /// <summary>
-    /// Verifies that updating the tags of a video that already has tags removes the previous
-    /// associations before attaching the new set, exercising the tag-removal path.
-    /// </summary>
     [Fact]
     public async Task UpdateVideoTags_WhenVideoAlreadyHasTags_ReplacesThem()
     {
