@@ -1,8 +1,11 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.PublishLyrics.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.PublishLyrics.V1;
@@ -83,13 +86,12 @@ public class AdminPublishLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that publishing a lyrics page that is already in Published status
-    /// returns a 409 Conflict problem and leaves the lyrics page published.
-    /// </summary>
     [Fact]
     public async Task PublishLyrics_WhenAlreadyPublished_ReturnsConflict()
     {
@@ -101,14 +103,13 @@ public class AdminPublishLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<LyricsErrorMessage>(m => m.AlreadyPublished())
+        );
         (await GetLyricsAsync(lyrics.Id)).Status.Should().Be(EnumContentStatus.Published);
     }
 
-    /// <summary>
-    /// Verifies that publishing a Draft lyrics page returns a 400 BadRequest problem
-    /// because Draft cannot transition directly to Published, and the lyrics page stays Draft.
-    /// </summary>
     [Fact]
     public async Task PublishLyrics_WhenDraft_ReturnsBadRequest()
     {
@@ -120,14 +121,18 @@ public class AdminPublishLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<LyricsErrorMessage>(m =>
+                m.InvalidStatusTransition(
+                    from: nameof(EnumContentStatus.Draft),
+                    to: nameof(EnumContentStatus.Published)
+                )
+            )
+        );
         (await GetLyricsAsync(lyrics.Id)).Status.Should().Be(EnumContentStatus.Draft);
     }
 
-    /// <summary>
-    /// Verifies that publishing an Approved lyrics page succeeds, returns IsSuccess true,
-    /// transitions the persisted status to Published, and stamps PublishedAt.
-    /// </summary>
     [Fact]
     public async Task PublishLyrics_AsSuperAdmin_ApprovedLyrics_ReturnsOk()
     {
