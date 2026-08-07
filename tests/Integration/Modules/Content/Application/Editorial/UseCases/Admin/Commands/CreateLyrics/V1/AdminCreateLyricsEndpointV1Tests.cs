@@ -1,9 +1,14 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics.V1;
 
@@ -13,6 +18,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     private async Task<CategoryEntity> SeedCategoryAsync()
     {
         return await SeedAsync<ContentDbContext, CategoryEntity>(ctx =>
@@ -55,10 +63,6 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    /// <summary>
-    /// Verifies that creating a free standalone lyrics page returns 201 Created, echoes the
-    /// supplied song title/artist/category in the typed response, and persists a Draft lyrics row.
-    /// </summary>
     [Fact]
     public async Task CreateLyrics_AsSuperAdmin_WithValidData_ReturnsCreated()
     {
@@ -103,7 +107,33 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Lyrics, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Category"))
+        );
+    }
+
+    [Fact]
+    public async Task CreateLyrics_AsSuperAdmin_WithNonExistentVideo_ReturnsNotFound()
+    {
+        CategoryEntity category = await SeedCategoryAsync();
+
+        Client.AuthenticateAsSuperAdmin();
+        AdminCreateLyricsRequest request = new AdminCreateLyricsRequestBuilder()
+            .WithCategoryId(category.Id)
+            .WithSlug($"non-existent-video-lyrics-{Guid.NewGuid().ToString("N")[..8]}")
+            .WithVideoId(Guid.NewGuid())
+            .Build();
+
+        var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Lyrics, request);
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Video"))
+        );
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        (await ctx.Lyrics.FirstOrDefaultAsync(l => l.Slug == request.Slug)).Should().BeNull();
     }
 
     [Fact]
@@ -120,7 +150,10 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Lyrics, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("SongTitle", Localized<LyricsErrorMessage>(m => m.SongTitleRequired()))
+        );
     }
 
     [Fact]
@@ -137,13 +170,12 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Lyrics, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("LyricsText", Localized<LyricsErrorMessage>(m => m.LyricsTextRequired()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that creating lyrics with a slug already used by an existing lyrics page
-    /// returns a 409 Conflict problem from the slug-uniqueness guard in the handler.
-    /// </summary>
     [Fact]
     public async Task CreateLyrics_AsSuperAdmin_WithDuplicateSlug_ReturnsConflict()
     {
@@ -166,13 +198,12 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Lyrics, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<LyricsErrorMessage>(m => m.SlugAlreadyExists(existingLyrics.Slug))
+        );
     }
 
-    /// <summary>
-    /// Verifies that creating a paid lyrics page linked to a customer and order item returns
-    /// 201 Created and persists the customer/order-item association.
-    /// </summary>
     [Fact]
     public async Task CreateLyrics_AsSuperAdmin_WithPaidLyrics_ReturnsCreated()
     {
@@ -214,11 +245,6 @@ public class AdminCreateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         persisted.OrderItemId.Should().Be(orderItemId);
     }
 
-    /// <summary>
-    /// Verifies that creating a lyrics page linked to a video flips the parent video's
-    /// <c>HasLyrics</c> flag through <c>VideoEntity.MarkHasLyrics</c>, so the video page knows
-    /// it now has a lyrics companion.
-    /// </summary>
     [Fact]
     public async Task CreateLyrics_AsSuperAdmin_LinkedToVideo_MarksVideoAsHavingLyrics()
     {
