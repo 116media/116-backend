@@ -1,9 +1,12 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ResolveSingleStreamingLinks.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Integration.Tests.Common.Stubs;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.ResolveSingleStreamingLinks.V1;
@@ -16,6 +19,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 public class AdminResolveSingleStreamingLinksEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
     private const string SourceUrl = "https://open.spotify.com/track/xyz789";
+
+    private StubStreamingLinkResolutionService StreamingStub =>
+        Api.Services.GetRequiredService<StubStreamingLinkResolutionService>();
 
     private static string Url(Guid lyricsId) =>
         Routes.Admin.Editorial.ResolveStreamingLinks(EditorialRouteConstants.Lyrics, lyricsId);
@@ -32,15 +38,10 @@ public class AdminResolveSingleStreamingLinksEndpointV1Tests(PostgresFixture db)
         });
     }
 
-    /// <summary>
-    /// A standalone single resolves and persists a curated row per platform in the stubbed
-    /// result.
-    /// </summary>
     [Fact]
     public async Task ResolveSingleStreamingLinks_ForStandaloneSingle_PersistsCuratedRows()
     {
-        StubStreamingLinkResolutionService.Reset();
-        StubStreamingLinkResolutionService.NextResult = new Dictionary<EnumStreamingPlatform, string>
+        StreamingStub.NextResult = new Dictionary<EnumStreamingPlatform, string>
         {
             [EnumStreamingPlatform.Spotify] = "https://open.spotify.com/track/1",
             [EnumStreamingPlatform.Deezer] = "https://www.deezer.com/track/5",
@@ -73,15 +74,9 @@ public class AdminResolveSingleStreamingLinksEndpointV1Tests(PostgresFixture db)
         rows.Should().OnlyContain(l => l.AlbumId == null);
     }
 
-    /// <summary>
-    /// A song that belongs to an album is rejected — the album's links are the release's
-    /// links, same rule as the manual upsert.
-    /// </summary>
     [Fact]
     public async Task ResolveSingleStreamingLinks_WhenSongBelongsToAlbum_ReturnsConflict()
     {
-        StubStreamingLinkResolutionService.Reset();
-
         Guid categoryId = await SeedCategoryAsync();
         LyricsEntity lyrics = await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
         {
@@ -99,7 +94,10 @@ public class AdminResolveSingleStreamingLinksEndpointV1Tests(PostgresFixture db)
             new AdminResolveSingleStreamingLinksRequest(SourceUrl)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<LyricsErrorMessage>(m => m.BelongsToAlbum())
+        );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         (await ctx.StreamingLinks.AnyAsync(l => l.LyricsId == lyrics.Id)).Should().BeFalse();
@@ -108,7 +106,6 @@ public class AdminResolveSingleStreamingLinksEndpointV1Tests(PostgresFixture db)
     [Fact]
     public async Task ResolveSingleStreamingLinks_WithUnknownSong_ReturnsNotFound()
     {
-        StubStreamingLinkResolutionService.Reset();
         Client.AuthenticateAsAdmin();
 
         var response = await Client.PostAsJsonAsync(
@@ -116,18 +113,16 @@ public class AdminResolveSingleStreamingLinksEndpointV1Tests(PostgresFixture db)
             new AdminResolveSingleStreamingLinksRequest(SourceUrl)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// The resolved links surface on the public lyrics detail page as curated links, taking
-    /// precedence over the generated search fallback.
-    /// </summary>
     [Fact]
     public async Task ResolveSingleStreamingLinks_ResolvedLinksSurfaceOnThePublicLyricsPage()
     {
-        StubStreamingLinkResolutionService.Reset();
-        StubStreamingLinkResolutionService.NextResult = new Dictionary<EnumStreamingPlatform, string>
+        StreamingStub.NextResult = new Dictionary<EnumStreamingPlatform, string>
         {
             [EnumStreamingPlatform.Spotify] = "https://open.spotify.com/track/curated-abc",
         };
