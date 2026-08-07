@@ -1,6 +1,8 @@
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.RemoveArtistSocialLink.V1;
@@ -57,10 +59,6 @@ public class AdminRemoveArtistSocialLinkEndpointV1Tests(PostgresFixture db) : Ba
         (await ctx.ArtistSocialLinks.AnyAsync(l => l.Id == link.Id)).Should().BeFalse();
     }
 
-    /// <summary>
-    /// A second delete of the same slot is a 404, not a silent success — the admin asked to
-    /// delete something specific and should learn it was already gone.
-    /// </summary>
     [Fact]
     public async Task RemoveArtistSocialLink_Twice_SecondDeleteReturnsNotFound()
     {
@@ -70,13 +68,12 @@ public class AdminRemoveArtistSocialLinkEndpointV1Tests(PostgresFixture db) : Ba
         await Client.DeleteAsync(Url(artist.Id, EnumSocialPlatform.TikTok));
         var response = await Client.DeleteAsync(Url(artist.Id, EnumSocialPlatform.TikTok));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ArtistSocialLink"))
+        );
     }
 
-    /// <summary>
-    /// Deleting the artist cascades its social links away — a link has no meaning without
-    /// its profile.
-    /// </summary>
     [Fact]
     public async Task DeletingArtist_CascadesSocialLinksAway()
     {
