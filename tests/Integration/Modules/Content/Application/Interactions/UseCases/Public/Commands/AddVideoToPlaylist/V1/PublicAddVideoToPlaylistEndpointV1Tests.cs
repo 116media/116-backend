@@ -1,6 +1,8 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.AddVideoToPlaylist.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -52,10 +54,14 @@ public class PublicAddVideoToPlaylistEndpointV1Tests(PostgresFixture db) : BaseA
     {
         Client.AuthenticateAsVisitor();
         PublicAddVideoToPlaylistRequest request = new PublicAddVideoToPlaylistRequestBuilder().Build();
+        var missingId = Guid.NewGuid();
 
-        var response = await Client.PostAsJsonAsync(Routes.Public.Playlists.Videos(Guid.NewGuid()), request);
+        var response = await Client.PostAsJsonAsync(Routes.Public.Playlists.Videos(missingId), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<PlaylistErrorMessage>(m => m.NotFound(missingId))
+        );
     }
 
     [Fact]
@@ -80,9 +86,6 @@ public class PublicAddVideoToPlaylistEndpointV1Tests(PostgresFixture db) : BaseA
             .BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that adding a video that is already in the playlist returns 409 Conflict.
-    /// </summary>
     [Fact]
     public async Task AddVideo_WhenAlreadyInPlaylist_ReturnsConflict()
     {
@@ -102,7 +105,10 @@ public class PublicAddVideoToPlaylistEndpointV1Tests(PostgresFixture db) : BaseA
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Playlists.Videos(playlist.Id), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<PlaylistErrorMessage>(m => m.VideoAlreadyInPlaylist())
+        );
 
         await using ContentDbContext verifyDb = CreateDbContext<ContentDbContext>();
         (await verifyDb.PlaylistVideos.CountAsync(pv => pv.PlaylistId == playlist.Id && pv.VideoId == video.Id))
