@@ -33,12 +33,15 @@ public class PublicGetPopularVideosEndpointV1Tests(PostgresFixture db) : BaseApi
         Guid categoryId,
         decimal ratingAverage = 0m,
         int ratingCount = 0,
-        int shares = 0
+        int shares = 0,
+        DateTimeOffset? publishedAt = null
     )
     {
         return await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
         {
-            VideoEntity video = VideoFactory.CreatePublished(categoryId);
+            VideoEntity video = publishedAt is null
+                ? VideoFactory.CreatePublished(categoryId)
+                : VideoFactory.CreatePublishedAt(categoryId, publishedAt.Value);
 
             if (ratingCount > 0)
             {
@@ -79,9 +82,16 @@ public class PublicGetPopularVideosEndpointV1Tests(PostgresFixture db) : BaseApi
     {
         Guid categoryId = await SeedCategoryAsync();
 
-        VideoEntity older = await SeedVideoAsync(categoryId, shares: 2);
-        await Task.Delay(50);
-        VideoEntity newer = await SeedVideoAsync(categoryId, shares: 2);
+        VideoEntity older = await SeedVideoAsync(
+            categoryId,
+            shares: 2,
+            publishedAt: new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero)
+        );
+        VideoEntity newer = await SeedVideoAsync(
+            categoryId,
+            shares: 2,
+            publishedAt: new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero)
+        );
 
         Client.ClearAuthentication();
 
