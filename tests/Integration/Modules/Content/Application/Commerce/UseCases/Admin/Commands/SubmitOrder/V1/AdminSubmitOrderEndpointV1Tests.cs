@@ -1,7 +1,10 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Commands.SubmitOrder.V1;
@@ -61,7 +64,10 @@ public class AdminSubmitOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PatchAsync(Routes.Admin.Orders.Submit(Guid.NewGuid()), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ContentOrder"))
+        );
     }
 
     [Fact]
@@ -74,13 +80,6 @@ public class AdminSubmitOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    /// <summary>
-    /// Verifies that resubmitting an order that is already past <c>Draft</c> reaches
-    /// <c>ContentOrderEntity.Submit</c> and returns its <c>AlreadySubmitted</c> conflict.
-    /// The order carries one item with one pricing tier so the earlier
-    /// <c>MustHaveAtLeastOneItemWithTier</c> guard in <c>AdminSubmitOrderFactory</c> passes and
-    /// the status guard is the only remaining failure, making the assertion specific to it.
-    /// </summary>
     [Fact]
     public async Task SubmitOrder_AsSuperAdmin_WhenPendingPaymentWithPricedItem_ReturnsAlreadySubmittedConflict()
     {
@@ -107,7 +106,10 @@ public class AdminSubmitOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PatchAsync(Routes.Admin.Orders.Submit(order.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict, "Order has already been submitted.");
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ContentOrderErrorMessage>(m => m.AlreadySubmitted(), LocalizedMessage.EnglishCulture)
+        );
 
         await using ContentDbContext db = CreateDbContext<ContentDbContext>();
         ContentOrderEntity? persisted = await db.ContentOrders.FindAsync(order.Id);
@@ -119,10 +121,6 @@ public class AdminSubmitOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
             .Be(0);
     }
 
-    /// <summary>
-    /// Verifies that submitting a Draft order whose items have no pricing tiers
-    /// returns 400 Bad Request, covering the MustHaveAtLeastOneItemWithTier error path.
-    /// </summary>
     [Fact]
     public async Task SubmitOrder_WithItemButNoTiers_ReturnsBadRequest()
     {
@@ -144,7 +142,10 @@ public class AdminSubmitOrderEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PatchAsync(Routes.Admin.Orders.Submit(order.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ContentOrderErrorMessage>(m => m.MustHaveAtLeastOneItemWithTier())
+        );
 
         await using ContentDbContext db = CreateDbContext<ContentDbContext>();
         ContentOrderEntity? persisted = await db.ContentOrders.FindAsync(order.Id);
