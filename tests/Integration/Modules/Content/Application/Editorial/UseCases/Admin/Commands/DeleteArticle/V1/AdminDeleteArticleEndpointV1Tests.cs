@@ -1,7 +1,10 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteArticle.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.DeleteArticle.V1;
@@ -67,13 +70,12 @@ public class AdminDeleteArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Articles}/{nonExistentId}");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Article"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that deleting a Draft article succeeds, returns IsSuccess true,
-    /// and removes the row from the database.
-    /// </summary>
     [Fact]
     public async Task DeleteArticle_WhenDraft_RemovesArticle()
     {
@@ -91,10 +93,6 @@ public class AdminDeleteArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
         persisted.Should().BeNull();
     }
 
-    /// <summary>
-    /// Verifies that deleting a Published article returns a 400 BadRequest problem
-    /// because only Draft or Rejected articles can be deleted, and the article remains.
-    /// </summary>
     [Fact]
     public async Task DeleteArticle_WhenPublished_ReturnsBadRequest()
     {
@@ -103,7 +101,10 @@ public class AdminDeleteArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Articles}/{article.Id}");
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ArticleErrorMessage>(m => m.CannotDeletePublishedArticle())
+        );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         ArticleEntity? persisted = await ctx.Articles.FindAsync(article.Id);
