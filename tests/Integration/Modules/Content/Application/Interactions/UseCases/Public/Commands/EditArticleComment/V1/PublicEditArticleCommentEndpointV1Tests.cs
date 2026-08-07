@@ -1,6 +1,9 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.EditArticleComment.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -61,12 +64,12 @@ public class PublicEditArticleCommentEndpointV1Tests(PostgresFixture db) : BaseA
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ArticleComment"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that editing a comment that does not exist returns 404 Not Found.
-    /// </summary>
     [Fact]
     public async Task EditComment_WhenNotExists_ReturnsNotFound()
     {
@@ -76,12 +79,12 @@ public class PublicEditArticleCommentEndpointV1Tests(PostgresFixture db) : BaseA
 
         var response = await Client.PutAsJsonAsync(Routes.Public.Articles.Comment(article.Id, Guid.NewGuid()), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ArticleComment"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that editing a comment owned by another user returns 400 Bad Request.
-    /// </summary>
     [Fact]
     public async Task EditComment_WhenNotOwner_ReturnsBadRequest()
     {
@@ -93,12 +96,12 @@ public class PublicEditArticleCommentEndpointV1Tests(PostgresFixture db) : BaseA
 
         var response = await Client.PutAsJsonAsync(Routes.Public.Articles.Comment(article.Id, comment.Id), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ArticleInteractionErrorMessage>(m => m.NotCommentOwner())
+        );
     }
 
-    /// <summary>
-    /// Verifies that the owner can edit their own comment and the new body persists.
-    /// </summary>
     [Fact]
     public async Task EditComment_AsOwner_UpdatesCommentBody()
     {
@@ -117,5 +120,33 @@ public class PublicEditArticleCommentEndpointV1Tests(PostgresFixture db) : BaseA
         await using ContentDbContext verifyDb = CreateDbContext<ContentDbContext>();
         ArticleCommentEntity? stored = await verifyDb.ArticleComments.FindAsync(comment.Id);
         stored!.Body.Should().Be(request.Body);
+    }
+
+    [Fact]
+    public async Task EditArticleComment_AsOwner_WithCommentBelongingToAnotherArticle_ReturnsNotFound()
+    {
+        ArticleEntity article = await SeedArticleAsync();
+        ArticleEntity otherArticle = await SeedArticleAsync();
+        ArticleCommentEntity comment = await SeedCommentAsync(article.Id, TestUser.VisitorId);
+        string originalBody = comment.Body;
+
+        Client.AuthenticateAsVisitor();
+        PublicEditArticleCommentRequest request = new PublicEditArticleCommentRequestBuilder()
+            .WithBody("Edited through another article.")
+            .Build();
+
+        var response = await Client.PutAsJsonAsync(
+            Routes.Public.Articles.Comment(otherArticle.Id, comment.Id),
+            request
+        );
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ArticleComment"))
+        );
+
+        await using ContentDbContext verifyDb = CreateDbContext<ContentDbContext>();
+        ArticleCommentEntity? persisted = await verifyDb.ArticleComments.FindAsync(comment.Id);
+        persisted!.Body.Should().Be(originalBody, "a comment under another article must not be edited");
     }
 }
