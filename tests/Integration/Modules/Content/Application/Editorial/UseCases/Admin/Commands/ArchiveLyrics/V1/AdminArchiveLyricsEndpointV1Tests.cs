@@ -1,8 +1,11 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveLyrics.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveLyrics.V1;
@@ -83,13 +86,12 @@ public class AdminArchiveLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that archiving a lyrics page that is already in Archived status
-    /// returns a 409 Conflict problem and leaves the lyrics page archived.
-    /// </summary>
     [Fact]
     public async Task ArchiveLyrics_WhenAlreadyArchived_ReturnsConflict()
     {
@@ -101,14 +103,13 @@ public class AdminArchiveLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<LyricsErrorMessage>(m => m.AlreadyArchived())
+        );
         (await GetLyricsStatusAsync(lyrics.Id)).Should().Be(EnumContentStatus.Archived);
     }
 
-    /// <summary>
-    /// Verifies that archiving a published lyrics page succeeds, returns IsSuccess true,
-    /// and transitions the persisted status to Archived.
-    /// </summary>
     [Fact]
     public async Task ArchiveLyrics_AsSuperAdmin_PublishedLyrics_ReturnsOk()
     {
