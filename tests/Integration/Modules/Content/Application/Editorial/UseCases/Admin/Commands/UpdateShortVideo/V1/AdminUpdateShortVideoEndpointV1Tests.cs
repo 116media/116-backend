@@ -1,7 +1,11 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateShortVideo.V1;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UpdateShortVideo.V1;
 
@@ -12,6 +16,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUpdateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     private static object BuildRequest(string title, Guid? videoId = null) => new { Title = title, VideoId = videoId };
 
     [Fact]
@@ -77,13 +84,12 @@ public class AdminUpdateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Shorts}/{id}", BuildRequest(string.Empty));
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Title", Localized<ShortVideoErrorMessage>(m => m.TitleRequired()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating the title of an existing short video succeeds, echoes the new
-    /// title in the response DTO, and persists it.
-    /// </summary>
     [Fact]
     public async Task UpdateShortVideo_AsSuperAdmin_WithValidData_ReturnsOkAndPersists()
     {
@@ -112,10 +118,6 @@ public class AdminUpdateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
         persisted!.Title.Should().Be("Updated Short Video Title");
     }
 
-    /// <summary>
-    /// Verifies that updating a short video with a title exceeding the maximum allowed length
-    /// returns a 400 Bad Request response from the ValidShortVideoTitle validator rule.
-    /// </summary>
     [Fact]
     public async Task UpdateShortVideo_WithTitleTooLong_ReturnsBadRequest()
     {
@@ -127,6 +129,12 @@ public class AdminUpdateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
             BuildRequest(new string('T', 300))
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "Title",
+                Localized<ShortVideoErrorMessage>(m => m.TitleTooLong(ContentConstants.MaxShortVideoTitleLength))
+            )
+        );
     }
 }
