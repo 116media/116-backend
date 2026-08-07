@@ -1,8 +1,13 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UploadLyricsCover.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UploadLyricsCover.V1;
 
@@ -12,6 +17,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUploadLyricsCoverEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     private async Task<LyricsEntity> SeedLyricsAsync()
     {
         return await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
@@ -77,13 +85,12 @@ public class AdminUploadLyricsCoverEndpointV1Tests(PostgresFixture db) : BaseApi
             formContent
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// Verifies the cover URL is null before any upload, then resolves correctly to the
-    /// uploaded Cloudinary URL after a successful upload, persisting the resolved file id.
-    /// </summary>
     [Fact]
     public async Task UploadLyricsCover_AsSuperAdmin_WithValidFile_ReturnsOkAndPersists()
     {
@@ -110,10 +117,6 @@ public class AdminUploadLyricsCoverEndpointV1Tests(PostgresFixture db) : BaseApi
         persisted!.CoverImageFileId.Should().NotBeNull();
     }
 
-    /// <summary>
-    /// Uploading a replacement cover for a lyrics page that already has one overwrites the
-    /// stored file reference rather than accumulating multiple files.
-    /// </summary>
     [Fact]
     public async Task UploadLyricsCover_WhenLyricsHasExistingCover_OverwritesInPlace()
     {
@@ -144,5 +147,24 @@ public class AdminUploadLyricsCoverEndpointV1Tests(PostgresFixture db) : BaseApi
         LyricsEntity? afterSecond = await verifyContext.Lyrics.FindAsync(lyrics.Id);
         afterSecond!.CoverImageFileId.Should().NotBeNull();
         firstFileId.Should().NotBe(Guid.Empty);
+    }
+
+    [Fact]
+    public async Task UploadLyricsCover_WithNoFilePart_ReturnsLocalizedValidationProblem()
+    {
+        Client.AuthenticateAsSuperAdmin();
+
+        using var formContent = new MultipartFormDataContent();
+        formContent.Add(new StringContent("unused"), "note");
+
+        var response = await Client.PostAsync(
+            Routes.Admin.Editorial.Cover(EditorialRouteConstants.Lyrics, Guid.NewGuid()),
+            formContent
+        );
+
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("File", Localized<LyricsErrorMessage>(m => m.FileRequired()))
+        );
     }
 }
