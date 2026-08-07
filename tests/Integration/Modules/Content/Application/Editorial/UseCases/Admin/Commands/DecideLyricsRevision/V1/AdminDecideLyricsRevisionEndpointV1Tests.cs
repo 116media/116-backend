@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.DecideLyricsRev
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.DecideLyricsRevision.V1;
@@ -48,13 +50,12 @@ public class AdminDecideLyricsRevisionEndpointV1Tests(PostgresFixture db) : Base
             new AdminDecideLyricsRevisionRequest(true)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("LyricsRevision"))
+        );
     }
 
-    /// <summary>
-    /// A moderator can accept a pending lyrics-text correction directly with zero community
-    /// votes cast, bypassing the tally, applying the proposed text to the lyrics page.
-    /// </summary>
     [Fact]
     public async Task DecideLyricsRevision_AdminAcceptsWithZeroVotes_BypassesTallyAndReplacesText()
     {
@@ -99,11 +100,6 @@ public class AdminDecideLyricsRevisionEndpointV1Tests(PostgresFixture db) : Base
         persistedLyrics!.LyricsText.Should().Be("Moderator-accepted lyrics text");
     }
 
-    /// <summary>
-    /// A moderator can reject a pending correction directly with votes already cast below the
-    /// auto-accept threshold, bypassing the tally in the opposite direction — the lyrics page's
-    /// text is left untouched.
-    /// </summary>
     [Fact]
     public async Task DecideLyricsRevision_AdminRejectsWithSomeApprovalVotes_BypassesTallyAndLeavesLyricsUnchanged()
     {
