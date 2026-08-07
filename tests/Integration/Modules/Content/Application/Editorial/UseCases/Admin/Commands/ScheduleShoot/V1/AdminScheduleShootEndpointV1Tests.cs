@@ -1,9 +1,14 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ScheduleShoot.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.ScheduleShoot.V1;
 
@@ -13,6 +18,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminScheduleShootEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     private async Task<VideoEntity> SeedVideoAsync()
     {
         return await SeedAsync<ContentDbContext, VideoEntity>(ctx =>
@@ -64,13 +72,12 @@ public class AdminScheduleShootEndpointV1Tests(PostgresFixture db) : BaseApiTest
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Video"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that scheduling a shoot with a future date on an existing video persists
-    /// the scheduled date.
-    /// </summary>
     [Fact]
     public async Task ScheduleShoot_AsSuperAdmin_WithFutureDate_ReturnsOkAndPersists()
     {
@@ -97,11 +104,6 @@ public class AdminScheduleShootEndpointV1Tests(PostgresFixture db) : BaseApiTest
         persisted.ShootingScheduledAt!.Value.Should().BeCloseTo(request.ShootingScheduledAt, TimeSpan.FromSeconds(1));
     }
 
-    /// <summary>
-    /// Verifies that scheduling a shoot with a date in the past returns a 400 Bad Request
-    /// response from the validator because <c>ValidShootingScheduledAt</c> requires the
-    /// date to be greater than <c>DateTimeOffset.UtcNow</c>.
-    /// </summary>
     [Fact]
     public async Task ScheduleShoot_WithDateInPast_ReturnsBadRequest()
     {
@@ -115,6 +117,12 @@ public class AdminScheduleShootEndpointV1Tests(PostgresFixture db) : BaseApiTest
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "ShootingScheduledAt",
+                Localized<VideoErrorMessage>(m => m.ShootingScheduledDateMustBeInFuture())
+            )
+        );
     }
 }
