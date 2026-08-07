@@ -1,8 +1,13 @@
 using _116.Content.Application.Editorial.UseCases.Public.Commands.ProposeLyricsRevision.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Commands.ProposeLyricsRevision.V1;
 
@@ -13,6 +18,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class PublicProposeLyricsRevisionEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task ProposeLyricsRevision_WithNoAuth_ReturnsUnauthorized()
     {
@@ -36,7 +44,10 @@ public class PublicProposeLyricsRevisionEndpointV1Tests(PostgresFixture db) : Ba
             new PublicProposeLyricsRevisionRequest(string.Empty, null)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("ProposedText", Localized<LyricsRevisionErrorMessage>(m => m.ProposedTextRequired()))
+        );
     }
 
     [Fact]
@@ -49,14 +60,12 @@ public class PublicProposeLyricsRevisionEndpointV1Tests(PostgresFixture db) : Ba
             new PublicProposeLyricsRevisionRequest("Corrected text", null)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// Proposing a correction against a lyrics page created via the plain admin
-    /// <c>CreateFree</c> path — no submission/community history whatsoever — succeeds through
-    /// the exact same code path as any other lyrics page, creating a pending revision.
-    /// </summary>
     [Fact]
     public async Task ProposeLyricsRevision_AgainstAdminCreatedLyricsPage_CreatesPendingRevision()
     {
@@ -90,11 +99,6 @@ public class PublicProposeLyricsRevisionEndpointV1Tests(PostgresFixture db) : Ba
         persisted.Status.Should().Be(EnumRevisionStatus.Pending);
     }
 
-    /// <summary>
-    /// Proposing a correction against a lyrics page that originated from an approved community
-    /// submission works identically to the admin-created case above — same endpoint, same code
-    /// path, no special-casing by origin.
-    /// </summary>
     [Fact]
     public async Task ProposeLyricsRevision_AgainstCommunitySubmittedLyricsPage_CreatesPendingRevisionIdentically()
     {
