@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.DecideTranslati
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.DecideTranslationRevision.V1;
@@ -48,14 +50,12 @@ public class AdminDecideTranslationRevisionEndpointV1Tests(PostgresFixture db) :
             new AdminDecideTranslationRevisionRequest(true)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("LyricsTranslationRevision"))
+        );
     }
 
-    /// <summary>
-    /// A moderator can accept a pending revision directly with zero community votes cast,
-    /// bypassing the vote tally entirely, applying the proposed text to the translation and
-    /// attributing the decision to the deciding admin.
-    /// </summary>
     [Fact]
     public async Task DecideTranslationRevision_AdminAcceptsWithZeroVotes_BypassesTallyAndAppliesText()
     {
@@ -109,11 +109,6 @@ public class AdminDecideTranslationRevisionEndpointV1Tests(PostgresFixture db) :
         persistedTranslation.Source.Should().Be(EnumTranslationSource.Community);
     }
 
-    /// <summary>
-    /// A moderator can reject a pending revision directly with votes already cast below the
-    /// auto-accept threshold, bypassing the tally in the opposite direction — the translation's
-    /// text is left untouched.
-    /// </summary>
     [Fact]
     public async Task DecideTranslationRevision_AdminRejectsWithSomeApprovalVotes_BypassesTallyAndLeavesTranslationUnchanged()
     {
