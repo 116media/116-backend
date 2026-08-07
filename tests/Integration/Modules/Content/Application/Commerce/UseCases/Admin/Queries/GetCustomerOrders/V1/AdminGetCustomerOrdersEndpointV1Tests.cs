@@ -47,12 +47,11 @@ public class AdminGetCustomerOrdersEndpointV1Tests(PostgresFixture db) : BaseApi
             $"{ApiRoutes.Admin.Customers}/{Guid.NewGuid()}/{CommerceRouteConstants.Orders}"
         );
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.NotFound);
-        if (response.StatusCode == HttpStatusCode.OK)
-        {
-            var body = await response.ReadAsAsync<AdminGetCustomerOrdersResponse>();
-            body.Orders.Items.Should().BeEmpty();
-        }
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.ReadAsAsync<AdminGetCustomerOrdersResponse>();
+        body.Orders.Items.Should().BeEmpty();
+        body.Orders.Count.Should().Be(0);
     }
 
     [Fact]
