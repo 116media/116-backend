@@ -1,6 +1,9 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyrics.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -55,13 +58,12 @@ public class AdminUpdateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Lyrics}/{nonExistentId}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating an existing lyrics page returns 200 OK, echoes the new
-    /// song title/artist/text in the typed response, and persists the changed fields.
-    /// </summary>
     [Fact]
     public async Task UpdateLyrics_AsSuperAdmin_WithValidData_ReturnsOk()
     {
@@ -99,10 +101,6 @@ public class AdminUpdateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         persisted.LyricsText.Should().Be(request.LyricsText);
     }
 
-    /// <summary>
-    /// Verifies that updating a lyrics page to reference a different category persists
-    /// the new category association.
-    /// </summary>
     [Fact]
     public async Task UpdateLyrics_AsSuperAdmin_WithNewCategory_UpdatesCategory()
     {
@@ -139,10 +137,6 @@ public class AdminUpdateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         persisted!.CategoryId.Should().Be(newCategory.Id);
     }
 
-    /// <summary>
-    /// Verifies that updating a lyrics page's customer/order-item association persists
-    /// the new commerce linkage.
-    /// </summary>
     [Fact]
     public async Task UpdateLyrics_AsSuperAdmin_WithCustomerAndOrderItem_UpdatesCommerceFields()
     {
@@ -182,10 +176,6 @@ public class AdminUpdateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         persisted.OrderItemId.Should().Be(orderItemId);
     }
 
-    /// <summary>
-    /// Verifies that submitting the lyrics page's own unchanged slug does not trigger the
-    /// slug-uniqueness guard, since the conflict check only runs when the slug changes.
-    /// </summary>
     [Fact]
     public async Task UpdateLyrics_AsSuperAdmin_WithUnchangedSlug_ReturnsOk()
     {
@@ -208,10 +198,6 @@ public class AdminUpdateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
-    /// <summary>
-    /// Verifies that updating a lyrics page with a slug already used by a different lyrics
-    /// page returns a 409 Conflict problem from the slug-uniqueness guard in the handler.
-    /// </summary>
     [Fact]
     public async Task UpdateLyrics_AsSuperAdmin_WithSlugUsedByAnotherLyrics_ReturnsConflict()
     {
@@ -237,6 +223,9 @@ public class AdminUpdateLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Lyrics}/{lyrics.Id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<LyricsErrorMessage>(m => m.SlugAlreadyExists(otherLyrics.Slug))
+        );
     }
 }
