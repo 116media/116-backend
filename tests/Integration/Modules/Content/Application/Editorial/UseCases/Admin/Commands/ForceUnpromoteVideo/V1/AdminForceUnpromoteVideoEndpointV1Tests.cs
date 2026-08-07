@@ -1,7 +1,10 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ForceUnpromoteVideo.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -61,7 +64,10 @@ public class AdminForceUnpromoteVideoEndpointV1Tests(PostgresFixture db) : BaseA
 
         var response = await Client.PatchAsJsonAsync(UnpromoteUrl("non-existent-slug"), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Video"))
+        );
     }
 
     [Fact]
@@ -96,11 +102,6 @@ public class AdminForceUnpromoteVideoEndpointV1Tests(PostgresFixture db) : BaseA
         persisted.UnpromotedAt.Should().NotBeNull();
     }
 
-    /// <summary>
-    /// Verifies that force-unpromoting a video that does not have an active promotion
-    /// returns a 400 Bad Request response, exercising the <c>!IsPromoted</c> guard
-    /// in <c>VideoEntity.ForceUnpromote</c>.
-    /// </summary>
     [Fact]
     public async Task ForceUnpromoteVideo_AsSuperAdmin_NotPromoted_ReturnsBadRequest()
     {
@@ -120,7 +121,10 @@ public class AdminForceUnpromoteVideoEndpointV1Tests(PostgresFixture db) : BaseA
 
         var response = await Client.PatchAsJsonAsync(UnpromoteUrl(video.Slug), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<VideoErrorMessage>(m => m.NotPromoted())
+        );
         (await GetVideoAsync(video.Id)).IsPromoted.Should().BeFalse();
     }
 }
