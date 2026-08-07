@@ -83,10 +83,6 @@ public class AdminGetAllVideosEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         body.Videos.Should().NotBeNull();
     }
 
-    /// <summary>
-    /// Verifies that the status query parameter filters videos by editorial status,
-    /// returning only videos whose status matches the requested value.
-    /// </summary>
     [Fact]
     public async Task GetAllVideos_WithStatusFilter_ReturnsFilteredResults()
     {
@@ -117,10 +113,6 @@ public class AdminGetAllVideosEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         body.Videos.Items.Should().OnlyContain(item => item.Status == EnumContentStatus.Published);
     }
 
-    /// <summary>
-    /// Verifies that the search query parameter filters videos by title,
-    /// returning only videos whose title matches the search term.
-    /// </summary>
     [Fact]
     public async Task GetAllVideos_WithSearchQuery_ReturnsFilteredResults()
     {
