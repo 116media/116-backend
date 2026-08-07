@@ -32,10 +32,6 @@ public class AdminGetLyricsSubmissionsEndpointV1Tests(PostgresFixture db) : Base
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    /// <summary>
-    /// Lists every submission in the moderation queue, paginated, when no status filter is
-    /// supplied.
-    /// </summary>
     [Fact]
     public async Task GetLyricsSubmissions_AsAdmin_ReturnsPaginatedSubmissions()
     {
@@ -54,10 +50,6 @@ public class AdminGetLyricsSubmissionsEndpointV1Tests(PostgresFixture db) : Base
         body.Submissions.Items.Should().HaveCountGreaterThanOrEqualTo(2);
     }
 
-    /// <summary>
-    /// Filtering by status returns only submissions in that status, excluding every other
-    /// status from the result.
-    /// </summary>
     [Fact]
     public async Task GetLyricsSubmissions_FilteredByStatus_ReturnsOnlyMatchingSubmissions()
     {
