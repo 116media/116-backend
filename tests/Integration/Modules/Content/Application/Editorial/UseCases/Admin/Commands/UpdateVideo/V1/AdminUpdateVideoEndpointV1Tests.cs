@@ -1,8 +1,14 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo.V1;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideo.V1;
 
@@ -12,6 +18,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     private async Task<(CategoryEntity Category, VideoEntity Video)> SeedVideoAsync(Func<Guid, VideoEntity> create)
     {
         CategoryEntity? seededCategory = null;
@@ -60,13 +69,12 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{nonExistentId}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Video"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating a draft video with valid data persists the new title, slug,
-    /// description, and SEO metadata and echoes them back in the response DTO.
-    /// </summary>
     [Fact]
     public async Task UpdateVideo_AsSuperAdmin_WithValidData_ReturnsOkAndPersists()
     {
@@ -103,11 +111,6 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         persisted.SocialBoost.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that updating a video with a title exceeding the maximum allowed length
-    /// (100 characters) returns a 400 Bad Request response from the validator, exercising
-    /// the <c>isRequired=false</c> branch of <c>ValidVideoTitle</c> in EditorialValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateVideo_WithTitleTooLong_ReturnsBadRequest()
     {
@@ -117,14 +120,15 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "Title",
+                Localized<VideoErrorMessage>(m => m.TitleTooLong(ContentConstants.MaxTitleLength))
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating a video with a slug containing spaces and special characters
-    /// returns a 400 Bad Request response from the validator, exercising the slug regex
-    /// validation in EditorialValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateVideo_WithInvalidSlug_ReturnsBadRequest()
     {
@@ -134,14 +138,12 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Slug", Localized<VideoErrorMessage>(m => m.SlugInvalidFormat()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating a video with a slug exceeding the maximum allowed length
-    /// (220 characters) returns a 400 Bad Request response from the validator, exercising
-    /// the MaximumLength branch of <c>ValidVideoSlug</c> in EditorialValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateVideo_WithSlugTooLong_ReturnsBadRequest()
     {
@@ -151,14 +153,12 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Slug", Localized<VideoErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxSlugLength)))
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating a video with an empty description returns a 400 Bad Request
-    /// response from the validator, exercising the <c>ValidVideoDescription</c> branch
-    /// in EditorialValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateVideo_WithEmptyDescription_ReturnsBadRequest()
     {
@@ -168,14 +168,12 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Description", Localized<VideoErrorMessage>(m => m.DescriptionRequired()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating a video with a meta title shorter than the minimum allowed
-    /// length (10 characters) returns a 400 Bad Request response from the validator,
-    /// exercising the MinimumLength branch of <c>ValidMetaTitle</c> in EditorialValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateVideo_WithMetaTitleTooShort_ReturnsBadRequest()
     {
@@ -185,14 +183,15 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "MetaTitle",
+                Localized<ArticleErrorMessage>(m => m.MetaTitleTooShort(ContentConstants.MinMetaTitleLength))
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating a video with a meta description shorter than the minimum
-    /// allowed length (50 characters) returns a 400 Bad Request response from the validator,
-    /// exercising the MinimumLength branch of <c>ValidMetaDescription</c> in EditorialValidation.
-    /// </summary>
     [Fact]
     public async Task UpdateVideo_WithMetaDescriptionTooShort_ReturnsBadRequest()
     {
@@ -202,6 +201,14 @@ public class AdminUpdateVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.Videos}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "MetaDescription",
+                Localized<ArticleErrorMessage>(m =>
+                    m.MetaDescriptionTooShort(ContentConstants.MinMetaDescriptionLength)
+                )
+            )
+        );
     }
 }
