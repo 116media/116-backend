@@ -49,10 +49,6 @@ public class AdminGetAllArtistsEndpointV1Tests(PostgresFixture db) : BaseApiTest
         body.Artists.Items.Should().HaveCountGreaterThanOrEqualTo(3);
     }
 
-    /// <summary>
-    /// The search term is matched against both name and bio, exercising
-    /// <c>ArtistSearchSpecification</c> end-to-end.
-    /// </summary>
     [Fact]
     public async Task GetAllArtists_WithSearchQuery_ReturnsOnlyMatchingArtists()
     {
