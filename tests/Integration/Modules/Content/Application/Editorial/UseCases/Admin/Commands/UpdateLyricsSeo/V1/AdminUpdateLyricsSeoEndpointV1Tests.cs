@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyricsSeo.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -49,13 +51,12 @@ public class AdminUpdateLyricsSeoEndpointV1Tests(PostgresFixture db) : BaseApiTe
             new { }
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating a lyrics page's SEO metadata returns 200 OK, echoes the
-    /// new meta title/description in the typed response, and persists them.
-    /// </summary>
     [Fact]
     public async Task UpdateLyricsSeo_AsSuperAdmin_WithValidData_PersistsMeta()
     {
