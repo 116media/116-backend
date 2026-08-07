@@ -71,10 +71,6 @@ public class AdminRemoveSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    /// <summary>
-    /// Removing an existing curated link deletes only that platform's row, leaving the single's
-    /// other platform slots intact.
-    /// </summary>
     [Fact]
     public async Task RemoveSingleStreamingLink_WhenLinkExists_DeletesOnlyThatPlatformRow()
     {
@@ -98,10 +94,6 @@ public class AdminRemoveSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
         remaining.Should().ContainSingle().Which.Should().Be(EnumStreamingPlatform.Tidal);
     }
 
-    /// <summary>
-    /// Removing a platform slot that holds no curated link is a no-op success — the absence of
-    /// a row is a valid state, since the public endpoint falls back to a generated search URL.
-    /// </summary>
     [Fact]
     public async Task RemoveSingleStreamingLink_WhenLinkAbsent_ReturnsOkAndChangesNothing()
     {
@@ -122,10 +114,6 @@ public class AdminRemoveSingleStreamingLinkEndpointV1Tests(PostgresFixture db) :
         remaining.Should().Be(2);
     }
 
-    /// <summary>
-    /// The endpoint does not require the lyrics page itself to exist: an unknown id resolves to
-    /// no curated link and therefore takes the same no-op success path.
-    /// </summary>
     [Fact]
     public async Task RemoveSingleStreamingLink_WithNonExistentLyrics_ReturnsOk()
     {
