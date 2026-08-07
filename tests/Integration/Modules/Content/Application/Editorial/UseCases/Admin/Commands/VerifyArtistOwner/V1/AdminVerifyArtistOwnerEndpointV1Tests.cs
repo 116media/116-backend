@@ -1,6 +1,9 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.VerifyArtistOwner.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.VerifyArtistOwner.V1;
@@ -34,9 +37,6 @@ public class AdminVerifyArtistOwnerEndpointV1Tests(PostgresFixture db) : BaseApi
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    /// <summary>
-    /// The verify-owner action is admin-only — a plain authenticated Visitor must be forbidden.
-    /// </summary>
     [Fact]
     public async Task VerifyArtistOwner_AsVisitor_ReturnsForbidden()
     {
@@ -60,7 +60,10 @@ public class AdminVerifyArtistOwnerEndpointV1Tests(PostgresFixture db) : BaseApi
             new AdminVerifyArtistOwnerRequest(Guid.NewGuid())
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Artist"))
+        );
     }
 
     [Fact]
@@ -83,10 +86,6 @@ public class AdminVerifyArtistOwnerEndpointV1Tests(PostgresFixture db) : BaseApi
         persisted.VerifiedAt.Should().NotBeNull();
     }
 
-    /// <summary>
-    /// Verifying an already-claimed artist profile returns a conflict rather than silently
-    /// overwriting the original claimant's <c>UserId</c>.
-    /// </summary>
     [Fact]
     public async Task VerifyArtistOwner_WhenAlreadyClaimed_ReturnsConflict()
     {
@@ -105,7 +104,10 @@ public class AdminVerifyArtistOwnerEndpointV1Tests(PostgresFixture db) : BaseApi
             new AdminVerifyArtistOwnerRequest(Guid.NewGuid())
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ArtistErrorMessage>(m => m.AlreadyClaimed())
+        );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         ArtistEntity? persisted = await ctx.Artists.FindAsync(artist.Id);
