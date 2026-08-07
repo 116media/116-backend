@@ -1,6 +1,8 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtist.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.CreateArtist.V1;
@@ -60,10 +62,6 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         persisted!.UserId.Should().BeNull();
     }
 
-    /// <summary>
-    /// Creating an artist profile with a slug that already exists returns a conflict rather
-    /// than silently creating a duplicate profile.
-    /// </summary>
     [Fact]
     public async Task CreateArtist_WithDuplicateSlug_ReturnsConflict()
     {
@@ -81,7 +79,10 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
             new AdminCreateArtistRequest("Fally Ipupa Copy", "fally-ipupa", null, null, null, null, null)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ArtistErrorMessage>(m => m.SlugAlreadyExists("fally-ipupa"))
+        );
     }
 
     [Fact]
@@ -97,10 +98,6 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    /// <summary>
-    /// Aliases pass the validator on count and length alone; the entity is what folds out
-    /// case-insensitive duplicates and blank entries. Asserted on the persisted row.
-    /// </summary>
     [Fact]
     public async Task CreateArtist_WithDuplicateAndBlankAliases_PersistsDedupedList()
     {
@@ -129,10 +126,6 @@ public class AdminCreateArtistEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
     #region Identity Field Validation
 
-    /// <summary>
-    /// Each invalid identity payload is rejected at the validator with a 400 — through real
-    /// HTTP, so the validation extensions and their localized messages actually execute.
-    /// </summary>
     [Fact]
     public async Task CreateArtist_WithMoreThanTenAliases_ReturnsBadRequest()
     {
