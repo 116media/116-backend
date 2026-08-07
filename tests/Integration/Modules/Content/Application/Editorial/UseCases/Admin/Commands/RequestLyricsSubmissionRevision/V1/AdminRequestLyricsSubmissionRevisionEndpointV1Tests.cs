@@ -41,11 +41,6 @@ public class AdminRequestLyricsSubmissionRevisionEndpointV1Tests(PostgresFixture
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    /// <summary>
-    /// Requesting a revision on a pending submission sets its status to <c>NeedsRevision</c>
-    /// with the moderator's note, without creating a <see cref="LyricsEntity" /> and without
-    /// rejecting the submission outright.
-    /// </summary>
     [Fact]
     public async Task RequestLyricsSubmissionRevision_HappyPath_SetsNeedsRevisionStatusAndNote()
     {
@@ -78,11 +73,6 @@ public class AdminRequestLyricsSubmissionRevisionEndpointV1Tests(PostgresFixture
         anyLyricsCreated.Should().BeFalse();
     }
 
-    /// <summary>
-    /// A revision request is a decision like approval and rejection, so it reaches a resolvable
-    /// submitter on both channels. Its wording is neither of the two terminal outcomes: the copy
-    /// says the submission was returned for revision, and the moderator's note rides the email.
-    /// </summary>
     [Fact]
     public async Task RequestLyricsSubmissionRevision_ForAKnownSubmitter_TellsThemItWasReturnedForRevision()
     {
