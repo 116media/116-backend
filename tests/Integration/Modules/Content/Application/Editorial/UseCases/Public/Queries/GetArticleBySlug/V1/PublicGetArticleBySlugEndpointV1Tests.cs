@@ -1,6 +1,9 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetArticleBySlug.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetArticleBySlug.V1;
@@ -48,10 +51,6 @@ public class PublicGetArticleBySlugEndpointV1Tests(PostgresFixture db) : BaseApi
         body.Article.Title.Should().Be(article.Title);
     }
 
-    /// <summary>
-    /// Verifies that a non-published (draft) article is excluded from public reads
-    /// and the endpoint reports it as not found.
-    /// </summary>
     [Fact]
     public async Task GetArticleBySlug_WithDraftArticle_ReturnsNotFound()
     {
@@ -67,7 +66,10 @@ public class PublicGetArticleBySlugEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}/{article.Slug}");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Article"))
+        );
     }
 
     [Fact]
@@ -77,13 +79,12 @@ public class PublicGetArticleBySlugEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}/non-existent-slug");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Article"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that an authenticated user who has liked and bookmarked the article
-    /// receives both interaction flags set to true.
-    /// </summary>
     [Fact]
     public async Task GetArticleBySlug_WhenUserLikedAndBookmarked_ReturnsTrueFlags()
     {
@@ -109,10 +110,6 @@ public class PublicGetArticleBySlugEndpointV1Tests(PostgresFixture db) : BaseApi
         body.Article.IsBookmarked.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that an anonymous request always receives false interaction flags,
-    /// even when other users have liked the article.
-    /// </summary>
     [Fact]
     public async Task GetArticleBySlug_WhenAnonymous_ReturnsFalseFlags()
     {
@@ -136,10 +133,6 @@ public class PublicGetArticleBySlugEndpointV1Tests(PostgresFixture db) : BaseApi
         body.Article.IsBookmarked.Should().BeFalse();
     }
 
-    /// <summary>
-    /// Verifies that one user's like and bookmark never surface on another user's
-    /// response — the flags are strictly per-caller.
-    /// </summary>
     [Fact]
     public async Task GetArticleBySlug_WhenDifferentUser_DoesNotLeakAnotherUsersState()
     {
@@ -166,12 +159,6 @@ public class PublicGetArticleBySlugEndpointV1Tests(PostgresFixture db) : BaseApi
         body.Article.IsBookmarked.Should().BeFalse();
     }
 
-    /// <summary>
-    /// A correctly signed token whose subject identifier is not a UUID is rejected rather than
-    /// treated as an anonymous read. This endpoint reads its caller optionally, so a claim set
-    /// the identity module cannot parse must surface as an authentication failure instead of
-    /// silently degrading to the anonymous projection.
-    /// </summary>
     [Fact]
     public async Task GetArticleBySlug_WithAnUnparsableSubjectClaim_ReturnsUnauthorized()
     {
@@ -187,6 +174,9 @@ public class PublicGetArticleBySlugEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.GetAsync($"{ApiRoutes.Public.Articles}/{article.Slug}");
 
-        await response.ShouldBeProblem(HttpStatusCode.Unauthorized);
+        await response.ShouldBeProblem<AuthenticationException>(
+            HttpStatusCode.Unauthorized,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidUserAuthentication())
+        );
     }
 }
