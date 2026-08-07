@@ -1,7 +1,10 @@
 using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.PublishVideo.V1;
@@ -82,7 +85,10 @@ public class AdminPublishVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Video"))
+        );
     }
 
     [Fact]
@@ -96,7 +102,10 @@ public class AdminPublishVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<VideoErrorMessage>(m => m.AlreadyPublished())
+        );
         (await GetVideoAsync(video.Id)).Status.Should().Be(EnumContentStatus.Published);
     }
 
@@ -111,7 +120,15 @@ public class AdminPublishVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<VideoErrorMessage>(m =>
+                m.InvalidStatusTransition(
+                    from: nameof(EnumContentStatus.Draft),
+                    to: nameof(EnumContentStatus.Published)
+                )
+            )
+        );
         (await GetVideoAsync(video.Id)).Status.Should().Be(EnumContentStatus.Draft);
     }
 
@@ -144,7 +161,10 @@ public class AdminPublishVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<VideoErrorMessage>(m => m.CannotPublishWithoutYoutubeUrl())
+        );
         (await GetVideoAsync(video.Id)).Status.Should().Be(EnumContentStatus.Approved);
     }
 }
