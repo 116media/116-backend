@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsTransl
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsTranslations.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsTranslations.V1;
@@ -19,13 +21,12 @@ public class PublicGetLyricsTranslationsEndpointV1Tests(PostgresFixture db) : Ba
 
         var response = await Client.GetAsync(Routes.Public.Lyrics.Translations(Guid.NewGuid()));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// Lists every translation of a lyrics page, across every requested language, without
-    /// requiring authentication.
-    /// </summary>
     [Fact]
     public async Task GetLyricsTranslations_AnonymousWithMultipleLanguages_ReturnsAllTranslations()
     {
@@ -68,9 +69,6 @@ public class PublicGetLyricsTranslationsEndpointV1Tests(PostgresFixture db) : Ba
             .Contain(t => t.Id == english.Id && t.Language == "en" && t.Text == "Text in english");
     }
 
-    /// <summary>
-    /// A lyrics page with no translations yet returns an empty list rather than an error.
-    /// </summary>
     [Fact]
     public async Task GetLyricsTranslations_NoTranslationsYet_ReturnsEmptyList()
     {
