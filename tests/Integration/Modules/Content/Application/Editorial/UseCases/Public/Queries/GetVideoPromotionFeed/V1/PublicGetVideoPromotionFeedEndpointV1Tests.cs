@@ -30,10 +30,6 @@ public class PublicGetVideoPromotionFeedEndpointV1Tests(PostgresFixture db) : Ba
         body.Spot3.SpotPriority.Should().Be(EditorialFeedConstants.Spot3);
     }
 
-    /// <summary>
-    /// Verifies that a published free video surfaces somewhere in the promotion feed
-    /// (a spot fallback or the free-video strip), exercising the free-video query path.
-    /// </summary>
     [Fact]
     public async Task GetVideoPromotionFeed_WithFreeVideo_IncludesVideoInFeed()
     {
