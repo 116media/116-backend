@@ -1,7 +1,10 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.VerifyPayment.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Helpers;
@@ -28,7 +31,7 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl };
+        var request = new { ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl };
         var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
         {
             Content = JsonContent.Create(request),
@@ -52,7 +55,7 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
     public async Task VerifyPayment_NonExistentOrder_ReturnsNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
-        var request = new { ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl };
+        var request = new { ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl };
         var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(Guid.NewGuid()))
         {
             Content = JsonContent.Create(request),
@@ -60,14 +63,43 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.SendAsync(msg);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ContentOrder"))
+        );
+    }
+
+    [Fact]
+    public async Task VerifyPayment_WhenTheOrderHasNoPayment_ReturnsNotFound()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        CustomerEntity customer = CustomerFactory.CreateWithId(order.CustomerId);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl };
+        var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
+        {
+            Content = JsonContent.Create(request),
+        };
+
+        var response = await Client.SendAsync(msg);
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ContentPayment"))
+        );
     }
 
     [Fact]
     public async Task VerifyPayment_WithNoAuth_ReturnsUnauthorized()
     {
         Client.ClearAuthentication();
-        var request = new { ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl };
+        var request = new { ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl };
         var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(Guid.NewGuid()))
         {
             Content = JsonContent.Create(request),
@@ -78,9 +110,6 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    /// <summary>
-    /// Verifies that verifying an already-verified payment returns 409 Conflict.
-    /// </summary>
     [Fact]
     public async Task VerifyPayment_WhenAlreadyVerified_ReturnsConflict()
     {
@@ -95,7 +124,7 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl };
+        var request = new { ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl };
         var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
         {
             Content = JsonContent.Create(request),
@@ -103,16 +132,12 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.SendAsync(msg);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ContentOrderErrorMessage>(m => m.PaymentAlreadyVerified())
+        );
     }
 
-    /// <summary>
-    /// Verifies that an unverified payment on a cancelled order returns the
-    /// <c>AlreadyPaid</c> conflict raised by <c>ContentOrderEntity.MarkPaid</c>. The payment's own
-    /// <c>Verify</c> guard passes first — the payment is still <c>Pending</c> — so the order status
-    /// guard is the sole failure, and the cancelled order is left untouched because
-    /// <c>AdminVerifyPaymentFactory</c> throws before committing.
-    /// </summary>
     [Fact]
     public async Task VerifyPayment_WhenOrderWasCancelled_ReturnsAlreadyPaidConflictAndLeavesOrderCancelled()
     {
@@ -132,7 +157,7 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         var cancelResponse = await Client.PatchAsync(Routes.Admin.Orders.Cancel(order.Id), null);
         cancelResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var request = new { ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl };
+        var request = new { ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl };
         var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
         {
             Content = JsonContent.Create(request),
@@ -140,7 +165,10 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.SendAsync(msg);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict, "Order is already paid.");
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ContentOrderErrorMessage>(m => m.AlreadyPaid(), LocalizedMessage.EnglishCulture)
+        );
 
         await using ContentDbContext db = CreateDbContext<ContentDbContext>();
         ContentOrderEntity? persistedOrder = await db.ContentOrders.FindAsync(order.Id);
@@ -150,10 +178,6 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         persistedPayment!.Status.Should().Be(EnumPaymentStatus.Pending);
     }
 
-    /// <summary>
-    /// Verifies that verifying payment on an order with a video order item succeeds,
-    /// covering the VideoByOrderItemIdSpecification lookup path.
-    /// </summary>
     [Fact]
     public async Task VerifyPayment_WithVideoOrderItem_ReturnsOk()
     {
@@ -176,7 +200,7 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl };
+        var request = new { ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl };
         var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
         {
             Content = JsonContent.Create(request),
@@ -196,11 +220,6 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         persistedOrder!.Status.Should().Be(EnumOrderStatus.Paid);
     }
 
-    /// <summary>
-    /// Verifies that verifying payment for a paid lyrics page's promoted order item stamps
-    /// <c>IsPromoted</c>/<c>PromotedUntil</c> and moves the lyrics page to <c>PendingReview</c>,
-    /// covering the third (lyrics) branch <c>AdminVerifyPaymentFactory</c> added in Phase 4.
-    /// </summary>
     [Fact]
     public async Task VerifyPayment_WithLyricsOrderItemAndPromotion_StampsPromotionAndMarksPendingReview()
     {
@@ -230,7 +249,7 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl };
+        var request = new { ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl };
         var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
         {
             Content = JsonContent.Create(request),
@@ -247,13 +266,6 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         persistedLyrics.Status.Should().Be(EnumContentStatus.PendingReview);
     }
 
-    /// <summary>
-    /// Verifies the "retroactive promotion" path called out explicitly in the Phase 4 plan: an
-    /// already-<c>Published</c> free lyrics page that later gets a <c>customerId</c>/
-    /// <c>orderItemId</c> via <c>Update()</c> can have its new order's payment verified, which
-    /// stamps promotion WITHOUT disturbing its <c>Published</c> status — proving
-    /// <c>MarkPendingReview()</c> is correctly a no-op once already past PendingReview.
-    /// </summary>
     [Fact]
     public async Task VerifyPayment_RetroactivePromotionOnPublishedFreeLyrics_DoesNotDisturbPublishedStatus()
     {
@@ -304,7 +316,7 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         }
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl };
+        var request = new { ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl };
         var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
         {
             Content = JsonContent.Create(request),
@@ -321,10 +333,6 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         persistedLyrics.Status.Should().Be(EnumContentStatus.Published);
     }
 
-    /// <summary>
-    /// An unlinked lyrics record (<c>OrderItemId</c> null) must be untouched by payment
-    /// verification for an unrelated order item.
-    /// </summary>
     [Fact]
     public async Task VerifyPayment_WithUnlinkedLyrics_LeavesLyricsUntouched()
     {
@@ -347,7 +355,7 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl };
+        var request = new { ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl };
         var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
         {
             Content = JsonContent.Create(request),
@@ -363,11 +371,6 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         persistedLyrics.Status.Should().Be(EnumContentStatus.Published);
     }
 
-    /// <summary>
-    /// Verifying payment for an order item bought with the social-boost add-on stamps
-    /// <c>SocialBoost</c> on the video fulfilling that item, exercising
-    /// <c>VideoEntity.StampSocialBoost</c> — the only path that sets the flag from Commerce.
-    /// </summary>
     [Fact]
     public async Task VerifyPayment_WithSocialBoostVideoOrderItem_StampsSocialBoostOnVideo()
     {
@@ -392,7 +395,7 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         video.SocialBoost.Should().BeFalse();
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl };
+        var request = new { ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl };
         var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
         {
             Content = JsonContent.Create(request),
@@ -408,10 +411,6 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         persistedVideo.Status.Should().Be(EnumContentStatus.PendingReview);
     }
 
-    /// <summary>
-    /// The article counterpart of the social-boost stamp: verifying payment for a social-boost
-    /// order item fulfilled by an article exercises <c>ArticleEntity.StampSocialBoost</c>.
-    /// </summary>
     [Fact]
     public async Task VerifyPayment_WithSocialBoostArticleOrderItem_StampsSocialBoostOnArticle()
     {
@@ -436,7 +435,7 @@ public class AdminVerifyPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         article.SocialBoost.Should().BeFalse();
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl };
+        var request = new { ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl };
         var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
         {
             Content = JsonContent.Create(request),
