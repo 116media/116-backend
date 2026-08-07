@@ -1,9 +1,14 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateArticle.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.CreateArticle.V1;
 
@@ -13,6 +18,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminCreateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     private async Task<CategoryEntity> SeedCategoryAsync()
     {
         return await SeedAsync<ContentDbContext, CategoryEntity>(ctx =>
@@ -55,10 +63,6 @@ public class AdminCreateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    /// <summary>
-    /// Verifies that creating a free article draft returns 201 Created, echoes the
-    /// supplied title/slug/category in the typed response, and persists a Draft article.
-    /// </summary>
     [Fact]
     public async Task CreateArticle_AsSuperAdmin_WithValidData_ReturnsCreated()
     {
@@ -100,7 +104,10 @@ public class AdminCreateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Articles, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Category"))
+        );
     }
 
     [Fact]
@@ -117,13 +124,12 @@ public class AdminCreateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Articles, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Title", Localized<ArticleErrorMessage>(m => m.TitleRequired()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that creating an article with a slug already used by an existing article
-    /// returns a 409 Conflict problem from the slug-uniqueness guard in the handler.
-    /// </summary>
     [Fact]
     public async Task CreateArticle_AsSuperAdmin_WithDuplicateSlug_ReturnsConflict()
     {
@@ -146,13 +152,12 @@ public class AdminCreateArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Articles, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ArticleErrorMessage>(m => m.SlugAlreadyExists(existingArticle.Slug))
+        );
     }
 
-    /// <summary>
-    /// Verifies that creating a paid article linked to a customer and order item returns
-    /// 201 Created and persists the customer/order-item association.
-    /// </summary>
     [Fact]
     public async Task CreateArticle_AsSuperAdmin_WithPaidArticle_ReturnsCreated()
     {
