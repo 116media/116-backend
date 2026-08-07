@@ -1,13 +1,17 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Queries.GetLyricsSubmissions.V1;
 using _116.Content.Application.Editorial.UseCases.Public.Commands.SubmitLyrics.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Content;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Commands.SubmitLyrics.V1;
 
@@ -18,6 +22,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task SubmitLyrics_WithNoAuth_ReturnsUnauthorized()
     {
@@ -31,11 +38,6 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    /// <summary>
-    /// A user with no claimed artist profile and a valid artist name has their song queued as a
-    /// <see cref="LyricsSubmissionEntity" /> for moderation, confirmed both via the response and
-    /// by re-fetching it through the admin submissions-list endpoint.
-    /// </summary>
     [Fact]
     public async Task SubmitLyrics_WithoutClaimedArtistAndValidArtistName_QueuesSubmission()
     {
@@ -62,10 +64,6 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
         listBody.Submissions.Items.Should().Contain(s => s.Id == body.SubmissionId);
     }
 
-    /// <summary>
-    /// A user with no claimed artist profile and a blank artist name is rejected — the
-    /// submission queue has nothing authoritative to attribute the song to.
-    /// </summary>
     [Fact]
     public async Task SubmitLyrics_WithoutClaimedArtistAndBlankArtistName_ReturnsBadRequest()
     {
@@ -76,21 +74,16 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
             new PublicSubmitLyricsRequest("Eloko Oyo", "   ", "Some submitted lyrics text.", "fr", null)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<LyricsErrorMessage>(m => m.ArtistNameRequired())
+        );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         bool anySubmissionCreated = await ctx.LyricsSubmissions.AnyAsync();
         anySubmissionCreated.Should().BeFalse();
     }
 
-    /// <summary>
-    /// The core identity-gate proof: a user who owns a claimed <see cref="ArtistEntity" />
-    /// skips the moderation queue entirely — no <see cref="LyricsSubmissionEntity" /> row is
-    /// created — and the resulting <see cref="LyricsEntity" /> is linked to the artist and
-    /// attributed to the OWNED PROFILE'S name, never the deliberately mismatched
-    /// <c>ArtistName</c> sent in the request. Exercised as a full HTTP round trip through real
-    /// Postgres, not a mock.
-    /// </summary>
     [Fact]
     public async Task SubmitLyrics_WithClaimedArtist_SkipsQueueAndAttributesToOwnedArtistIdentityInDraft()
     {
@@ -147,11 +140,6 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
         persistedLyrics.Status.Should().Be(EnumContentStatus.Draft);
     }
 
-    /// <summary>
-    /// The verified-artist fast path requires a slug — a queued community submission never
-    /// carries one, since only an admin assigns it at approval time, but the fast path creates
-    /// the real lyrics record immediately and therefore needs one up front.
-    /// </summary>
     [Fact]
     public async Task SubmitLyrics_WithClaimedArtistButNoSlug_ReturnsBadRequest()
     {
@@ -182,16 +170,55 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
             new PublicSubmitLyricsRequest("Eloko Oyo", null, "Some submitted lyrics text.", "fr", null)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<LyricsErrorMessage>(m => m.SlugRequired())
+        );
     }
 
-    /// <summary>
-    /// The slug is optional on a community submission, but when one is supplied it still has to
-    /// be a well-formed slug. A present-but-malformed value drives the optional (non-required)
-    /// branch of <c>ValidLyricsSlug</c> in <c>EditorialValidation</c> — the branch whose
-    /// <c>When</c> predicate only lets the format rules run for a non-blank value — and nothing
-    /// is queued.
-    /// </summary>
+    [Fact]
+    public async Task SubmitLyrics_WithClaimedArtistAndAlreadyTakenSlug_ReturnsConflict()
+    {
+        string takenSlug = $"taken-slug-{Guid.NewGuid():N}";
+
+        Guid userId = Guid.NewGuid();
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            UserEntity user = UserFactory.CreateWithId(userId);
+            user.MarkAsVerified();
+            user.Activate();
+            ctx.Users.Add(user);
+        });
+
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ContentTypeEntity contentType = ContentTypeFactory.Create();
+            CategoryEntity category = CategoryFactory.CreateDefaultForLyrics(contentType.Id);
+            ArtistEntity artist = ArtistFactory.CreateClaimed(userId);
+            LyricsEntity existing = LyricsFactory.CreateWithSlug(category.Id, takenSlug);
+            ctx.ContentTypes.Add(contentType);
+            ctx.Categories.Add(category);
+            ctx.Artists.Add(artist);
+            ctx.Lyrics.Add(existing);
+        });
+
+        Client.AuthenticateAs(userId, "Visitor");
+
+        var response = await Client.PostAsJsonAsync(
+            Routes.Public.LyricsSubmissionsAndRevisions.Submissions(),
+            new PublicSubmitLyricsRequest("Eloko Oyo", null, "Some submitted lyrics text.", "fr", takenSlug)
+        );
+
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<LyricsErrorMessage>(m => m.SlugAlreadyExists(takenSlug))
+        );
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        int withTakenSlug = await ctx.Lyrics.CountAsync(lyrics => lyrics.Slug == takenSlug);
+        withTakenSlug.Should().Be(1);
+    }
+
     [Fact]
     public async Task SubmitLyrics_WithMalformedOptionalSlug_ReturnsBadRequest()
     {
@@ -208,7 +235,10 @@ public class PublicSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest
             )
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Slug", Localized<LyricsErrorMessage>(m => m.SlugInvalidFormat()))
+        );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         bool anySubmissionCreated = await ctx.LyricsSubmissions.AnyAsync();
