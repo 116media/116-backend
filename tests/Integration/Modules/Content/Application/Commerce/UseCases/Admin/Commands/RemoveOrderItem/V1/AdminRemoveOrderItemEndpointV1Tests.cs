@@ -1,6 +1,8 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.RemoveOrderItem.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Commands.RemoveOrderItem.V1;
@@ -42,21 +44,18 @@ public class AdminRemoveOrderItemEndpointV1Tests(PostgresFixture db) : BaseApiTe
     }
 
     [Fact]
-    public async Task RemoveOrderItem_NonExistent_ReturnsNotFound()
+    public async Task RemoveOrderItem_NonExistentOrder_ReturnsNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
 
         var response = await Client.DeleteAsync(Routes.Admin.Orders.Item(Guid.NewGuid(), Guid.NewGuid()));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ContentOrder"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that an unknown item identifier on an existing Draft order returns the
-    /// <c>ItemNotFound</c> 404 raised by <c>GetItemByIdOrThrowAsync</c> rather than the order
-    /// lookup's own 404. The order exists and is in Draft, so both earlier guards in
-    /// <c>AdminRemoveOrderItemHandler</c> pass and the response names the order item.
-    /// </summary>
     [Fact]
     public async Task RemoveOrderItem_ExistingOrderWithUnknownItem_ReturnsNotFoundNamingTheOrderItem()
     {
@@ -73,7 +72,13 @@ public class AdminRemoveOrderItemEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.DeleteAsync(Routes.Admin.Orders.Item(order.Id, Guid.NewGuid()));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound, "Could not find the requested order item.");
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(
+                m => m.EntityNotFound("ContentOrderItem"),
+                LocalizedMessage.EnglishCulture
+            )
+        );
     }
 
     [Fact]
