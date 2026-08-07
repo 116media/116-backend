@@ -2,6 +2,8 @@ using _116.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderById.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Queries.GetOrderById.V1;
@@ -49,7 +51,10 @@ public class AdminGetOrderByIdEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.GetAsync($"{ApiRoutes.Admin.Orders}/{Guid.NewGuid()}");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ContentOrder"))
+        );
     }
 
     [Fact]
