@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.LinkVideoArtist.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.LinkVideoArtist.V1;
@@ -84,6 +86,27 @@ public class AdminLinkVideoArtistEndpointV1Tests(PostgresFixture db) : BaseApiTe
     }
 
     [Fact]
+    public async Task LinkVideoArtist_WithNonExistentVideoId_ReturnsNotFound()
+    {
+        (_, ArtistEntity artist) = await SeedVideoAndArtistAsync();
+        Client.AuthenticateAsAdmin();
+
+        var response = await Client.PutAsJsonAsync(
+            Routes.Admin.Editorial.Action(
+                EditorialRouteConstants.Videos,
+                Guid.NewGuid(),
+                EditorialRouteConstants.Artist
+            ),
+            new AdminLinkVideoArtistRequest(artist.Id)
+        );
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Video"))
+        );
+    }
+
+    [Fact]
     public async Task LinkVideoArtist_WithNonExistentArtistId_ReturnsNotFound()
     {
         (VideoEntity video, _) = await SeedVideoAndArtistAsync();
@@ -94,7 +117,10 @@ public class AdminLinkVideoArtistEndpointV1Tests(PostgresFixture db) : BaseApiTe
             new AdminLinkVideoArtistRequest(Guid.NewGuid())
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Artist"))
+        );
     }
 
     [Fact]
