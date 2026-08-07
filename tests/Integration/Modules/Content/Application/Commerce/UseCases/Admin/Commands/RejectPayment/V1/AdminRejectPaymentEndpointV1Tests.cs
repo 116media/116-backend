@@ -1,7 +1,10 @@
 using _116.Content.Application.Commerce.UseCases.Admin.Commands.RejectPayment.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Commerce.UseCases.Admin.Commands.RejectPayment.V1;
@@ -47,7 +50,7 @@ public class AdminRejectPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
     }
 
     [Fact]
-    public async Task RejectPayment_NonExistentOrder_ReturnsNotFound()
+    public async Task RejectPayment_WithUnknownOrderId_ReturnsOrderNotFound()
     {
         Client.AuthenticateAsSuperAdmin();
         var request = new { Notes = "Invalid payment" };
@@ -58,7 +61,36 @@ public class AdminRejectPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.SendAsync(msg);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ContentOrder"))
+        );
+    }
+
+    [Fact]
+    public async Task RejectPayment_WithOrderThatHasNoPayment_ReturnsPaymentNotFound()
+    {
+        ContentOrderEntity order = ContentOrderFactory.CreateSubmitted();
+        CustomerEntity customer = CustomerFactory.CreateWithId(order.CustomerId);
+        await SeedAsync<ContentDbContext>(ctx =>
+        {
+            ctx.Customers.Add(customer);
+            ctx.ContentOrders.Add(order);
+        });
+
+        Client.AuthenticateAsSuperAdmin();
+        var request = new { Notes = "Invalid payment" };
+        var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.RejectPayment(order.Id))
+        {
+            Content = JsonContent.Create(request),
+        };
+
+        var response = await Client.SendAsync(msg);
+
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ContentPayment"))
+        );
     }
 
     [Fact]
@@ -76,9 +108,6 @@ public class AdminRejectPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    /// <summary>
-    /// Verifies that rejecting an already-rejected payment returns 409 Conflict.
-    /// </summary>
     [Fact]
     public async Task RejectPayment_WhenAlreadyRejected_ReturnsConflict()
     {
@@ -101,6 +130,9 @@ public class AdminRejectPaymentEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.SendAsync(msg);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ContentOrderErrorMessage>(m => m.PaymentAlreadyRejected())
+        );
     }
 }
