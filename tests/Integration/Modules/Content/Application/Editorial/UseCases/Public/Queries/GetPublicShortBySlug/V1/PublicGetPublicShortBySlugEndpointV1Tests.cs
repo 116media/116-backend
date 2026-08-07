@@ -1,6 +1,8 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetPublicShortBySlug.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetPublicShortBySlug.V1;
@@ -34,10 +36,6 @@ public class PublicGetPublicShortBySlugEndpointV1Tests(PostgresFixture db) : Bas
         body.ShortVideo.IsActive.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that an inactive short video is excluded from public reads
-    /// and the endpoint reports it as not found.
-    /// </summary>
     [Fact]
     public async Task GetShortBySlug_WithInactiveShort_ReturnsNotFound()
     {
@@ -52,7 +50,10 @@ public class PublicGetPublicShortBySlugEndpointV1Tests(PostgresFixture db) : Bas
 
         var response = await Client.GetAsync($"{ApiRoutes.Public.Shorts}/{shortVideo.Slug}");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ShortVideo"))
+        );
     }
 
     [Fact]
@@ -62,7 +63,10 @@ public class PublicGetPublicShortBySlugEndpointV1Tests(PostgresFixture db) : Bas
 
         var response = await Client.GetAsync($"{ApiRoutes.Public.Shorts}/non-existent-slug");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ShortVideo"))
+        );
     }
 
     [Fact]
