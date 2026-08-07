@@ -1,8 +1,11 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveArticle.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.ApproveArticle.V1;
@@ -83,13 +86,12 @@ public class AdminApproveArticleEndpointV1Tests(PostgresFixture db) : BaseApiTes
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Article"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that approving an article that is already in Approved status
-    /// returns a 409 Conflict problem and leaves the article approved.
-    /// </summary>
     [Fact]
     public async Task ApproveArticle_WhenAlreadyApproved_ReturnsConflict()
     {
@@ -101,14 +103,13 @@ public class AdminApproveArticleEndpointV1Tests(PostgresFixture db) : BaseApiTes
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ArticleErrorMessage>(m => m.AlreadyApproved())
+        );
         (await GetArticleStatusAsync(article.Id)).Should().Be(EnumContentStatus.Approved);
     }
 
-    /// <summary>
-    /// Verifies that approving a PendingReview article succeeds, returns IsSuccess true,
-    /// and transitions the persisted status to Approved.
-    /// </summary>
     [Fact]
     public async Task ApproveArticle_AsSuperAdmin_PendingReviewArticle_ReturnsOk()
     {
