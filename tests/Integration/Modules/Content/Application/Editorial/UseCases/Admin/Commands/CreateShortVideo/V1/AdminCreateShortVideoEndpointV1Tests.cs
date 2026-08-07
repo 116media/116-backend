@@ -1,6 +1,10 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateShortVideo.V1;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.CreateShortVideo.V1;
 
@@ -11,6 +15,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     private static object BuildRequest(string title, string slug, Guid? videoId = null) =>
         new
         {
@@ -45,10 +52,6 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    /// <summary>
-    /// Verifies that creating a short video draft with a valid title and slug succeeds,
-    /// returns the created short video DTO, and persists an inactive, file-less draft row.
-    /// </summary>
     [Fact]
     public async Task CreateShortVideo_WithValidData_ReturnsCreatedAndPersistsDraft()
     {
@@ -79,13 +82,12 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Shorts, BuildRequest(string.Empty, "valid-slug"));
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Title", Localized<ShortVideoErrorMessage>(m => m.TitleRequired()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that creating a short video with an empty slug returns 400 Bad Request
-    /// from the validator because the slug is required and must not be empty.
-    /// </summary>
     [Fact]
     public async Task CreateShortVideo_WithEmptySlug_ShouldReturnBadRequest()
     {
@@ -93,7 +95,10 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Shorts, BuildRequest("Valid Title", string.Empty));
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Slug", Localized<ShortVideoErrorMessage>(m => m.SlugRequired()))
+        );
     }
 
     [Fact]
@@ -106,13 +111,12 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
             BuildRequest("Valid Title", "INVALID SLUG!!!")
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Slug", Localized<ShortVideoErrorMessage>(m => m.SlugInvalidFormat()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that creating a short video with a title exceeding the maximum allowed length
-    /// returns a 400 Bad Request response from the ValidShortVideoTitle validator rule.
-    /// </summary>
     [Fact]
     public async Task CreateShortVideo_WithTitleTooLong_ShouldReturnBadRequest()
     {
@@ -123,13 +127,15 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
             BuildRequest(new string('T', 300), "valid-slug")
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "Title",
+                Localized<ShortVideoErrorMessage>(m => m.TitleTooLong(ContentConstants.MaxShortVideoTitleLength))
+            )
+        );
     }
 
-    /// <summary>
-    /// Verifies that creating a short video with a slug exceeding the maximum allowed length
-    /// returns a 400 Bad Request response from the ValidShortVideoSlug validator rule.
-    /// </summary>
     [Fact]
     public async Task CreateShortVideo_WithSlugTooLong_ShouldReturnBadRequest()
     {
@@ -140,6 +146,12 @@ public class AdminCreateShortVideoEndpointV1Tests(PostgresFixture db) : BaseApiT
             BuildRequest("Valid Title", new string('a', 300))
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "Slug",
+                Localized<ShortVideoErrorMessage>(m => m.SlugTooLong(ContentConstants.MaxSlugLength))
+            )
+        );
     }
 }
