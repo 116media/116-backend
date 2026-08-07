@@ -70,10 +70,6 @@ public class AdminGetActiveVideosEndpointV1Tests(PostgresFixture db) : BaseApiTe
         body.Videos.Should().Contain(video => video.Id == activeVideo.Id);
     }
 
-    /// <summary>
-    /// Verifies that the active videos endpoint returns only videos that are neither
-    /// archived nor rejected, excluding both from the result set.
-    /// </summary>
     [Fact]
     public async Task GetActiveVideos_ExcludesArchivedAndRejectedVideos()
     {
