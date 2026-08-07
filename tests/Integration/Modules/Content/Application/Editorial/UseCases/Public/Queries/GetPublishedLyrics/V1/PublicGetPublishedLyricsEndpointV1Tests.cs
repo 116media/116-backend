@@ -26,10 +26,6 @@ public class PublicGetPublishedLyricsEndpointV1Tests(PostgresFixture db) : BaseA
         });
     }
 
-    /// <summary>
-    /// Verifies that the published lyrics feed only returns Published lyrics, excluding
-    /// Draft, PendingReview, and Rejected lyrics pages seeded alongside them.
-    /// </summary>
     [Fact]
     public async Task GetPublishedLyrics_AsAnonymous_ReturnsOnlyPublishedLyrics()
     {
@@ -76,10 +72,6 @@ public class PublicGetPublishedLyricsEndpointV1Tests(PostgresFixture db) : BaseA
         body.Lyrics.PageSize.Should().Be(10);
     }
 
-    /// <summary>
-    /// Verifies that the page index and page size query parameters correctly paginate
-    /// the published lyrics feed.
-    /// </summary>
     [Fact]
     public async Task GetPublishedLyrics_WithPagination_ReturnsRequestedPage()
     {
@@ -103,10 +95,6 @@ public class PublicGetPublishedLyricsEndpointV1Tests(PostgresFixture db) : BaseA
         body.Lyrics.Count.Should().BeGreaterThanOrEqualTo(5);
     }
 
-    /// <summary>
-    /// Verifies that the search query parameter filters the published lyrics feed by
-    /// song title, returning only lyrics whose song title matches the search term.
-    /// </summary>
     [Fact]
     public async Task GetPublishedLyrics_WithSearchQuery_ReturnsFilteredResults()
     {
@@ -139,10 +127,6 @@ public class PublicGetPublishedLyricsEndpointV1Tests(PostgresFixture db) : BaseA
         body.Lyrics.Items.Should().NotContain(item => item.Id == otherLyrics.Id);
     }
 
-    /// <summary>
-    /// Verifies that the categoryId query parameter filters the published lyrics feed
-    /// down to the given category.
-    /// </summary>
     [Fact]
     public async Task GetPublishedLyrics_WithCategoryFilter_ReturnsOnlyMatchingLyrics()
     {
@@ -174,10 +158,6 @@ public class PublicGetPublishedLyricsEndpointV1Tests(PostgresFixture db) : BaseA
         body.Lyrics.Items.Should().OnlyContain(item => item.CategoryId == category1Id);
     }
 
-    /// <summary>
-    /// Verifies that the language query parameter filters the published lyrics feed by
-    /// ISO 639-1 language code.
-    /// </summary>
     [Fact]
     public async Task GetPublishedLyrics_WithLanguageFilter_ReturnsOnlyMatchingLyrics()
     {
@@ -201,10 +181,6 @@ public class PublicGetPublishedLyricsEndpointV1Tests(PostgresFixture db) : BaseA
         body.Lyrics.Items.Should().OnlyContain(item => item.Language == frenchLyrics.Language);
     }
 
-    /// <summary>
-    /// The lyrics page liked by the current user resolves <c>IsLiked: true</c> on its summary,
-    /// and the cached view/like/share counters pass through end to end through real Postgres.
-    /// </summary>
     [Fact]
     public async Task GetPublishedLyrics_WhenCurrentUserHasLiked_ReturnsIsLikedTrueAndCounts()
     {
@@ -240,9 +216,6 @@ public class PublicGetPublishedLyricsEndpointV1Tests(PostgresFixture db) : BaseA
         body.Lyrics.Items.Single(item => item.Id == notLikedLyrics.Id).IsLiked.Should().BeFalse();
     }
 
-    /// <summary>
-    /// An anonymous caller sees <c>IsLiked: false</c> on every summary in the feed.
-    /// </summary>
     [Fact]
     public async Task GetPublishedLyrics_WhenAnonymous_ReturnsIsLikedFalseForAllItems()
     {
