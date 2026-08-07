@@ -60,10 +60,6 @@ public class PublicGetPromotedArticlesEndpointV1Tests(PostgresFixture db) : Base
         body.Articles.Should().OnlyContain(item => item.IsPromoted);
     }
 
-    /// <summary>
-    /// Verifies that an authenticated user's promoted list stamps IsLiked / IsBookmarked
-    /// on their own interactions and never surfaces another user's state.
-    /// </summary>
     [Fact]
     public async Task GetPromotedArticles_WhenAuthenticated_StampsOnlyTheUsersInteractions()
     {
