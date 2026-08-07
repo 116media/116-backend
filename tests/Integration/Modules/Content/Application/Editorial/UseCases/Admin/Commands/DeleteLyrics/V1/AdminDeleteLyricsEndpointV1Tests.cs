@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.UseCases.Admin.Commands.CreateLyrics.V1
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeleteLyrics.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -54,13 +56,12 @@ public class AdminDeleteLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.DeleteAsync($"{ApiRoutes.Admin.Lyrics}/{nonExistentId}");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that deleting an existing standalone lyrics page succeeds, returns
-    /// IsSuccess true, and removes the row from the database.
-    /// </summary>
     [Fact]
     public async Task DeleteLyrics_AsSuperAdmin_RemovesLyrics()
     {
@@ -88,11 +89,6 @@ public class AdminDeleteLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         persisted.Should().BeNull();
     }
 
-    /// <summary>
-    /// Verifies that deleting a lyrics page linked to a video clears the parent video's
-    /// <c>HasLyrics</c> flag through <c>VideoEntity.UnmarkHasLyrics</c>, so the video page stops
-    /// advertising a lyrics companion that no longer exists.
-    /// </summary>
     [Fact]
     public async Task DeleteLyrics_AsSuperAdmin_LinkedToVideo_ClearsVideoHasLyricsFlag()
     {
