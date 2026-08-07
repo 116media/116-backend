@@ -1,7 +1,10 @@
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ApproveLyricsSubmission.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.ApproveLyricsSubmission.V1;
@@ -48,14 +51,12 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
             new AdminApproveLyricsSubmissionRequest("some-slug")
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("LyricsSubmission"))
+        );
     }
 
-    /// <summary>
-    /// Approving a pending submission creates a real, correctly-populated
-    /// <see cref="LyricsEntity" />, links it back onto the submission as
-    /// <c>PublishedLyricsId</c>, and marks the submission <c>Approved</c>.
-    /// </summary>
     [Fact]
     public async Task ApproveLyricsSubmission_HappyPath_CreatesLyricsAndLinksSubmission()
     {
@@ -97,10 +98,6 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
         persistedSubmission.ReviewedByUserId.Should().Be(TestUser.AdminId);
     }
 
-    /// <summary>
-    /// Approving a submission with a slug that collides with an existing published lyrics
-    /// page's slug is rejected as a conflict rather than silently overwriting it.
-    /// </summary>
     [Fact]
     public async Task ApproveLyricsSubmission_WithSlugCollidingWithExistingLyrics_ReturnsConflict()
     {
@@ -127,7 +124,10 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
             new AdminApproveLyricsSubmissionRequest("already-taken-slug")
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<LyricsErrorMessage>(m => m.SlugAlreadyExists("already-taken-slug"))
+        );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         LyricsSubmissionEntity? persistedSubmission = await ctx.LyricsSubmissions.FindAsync(submission.Id);
@@ -135,10 +135,6 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
         persistedSubmission!.Status.Should().Be(EnumSubmissionStatus.Pending);
     }
 
-    /// <summary>
-    /// Approving a submission that has already been decided (not <c>Pending</c>) is rejected
-    /// rather than creating a second lyrics record from the same submission.
-    /// </summary>
     [Fact]
     public async Task ApproveLyricsSubmission_AlreadyApproved_ReturnsConflict()
     {
@@ -160,6 +156,9 @@ public class AdminApproveLyricsSubmissionEndpointV1Tests(PostgresFixture db) : B
             new AdminApproveLyricsSubmissionRequest("some-other-slug")
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<SubmissionErrorMessage>(m => m.NotPending())
+        );
     }
 }
