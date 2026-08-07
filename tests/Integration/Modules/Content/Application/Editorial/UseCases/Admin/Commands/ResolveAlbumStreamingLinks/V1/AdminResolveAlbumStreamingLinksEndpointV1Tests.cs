@@ -1,24 +1,30 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.ResolveAlbumStreamingLinks.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Application.Shared.Exceptions;
 using _116.Content.Application.Shared.Services;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Integration.Tests.Common.Stubs;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.ResolveAlbumStreamingLinks.V1;
 
 /// <summary>
 /// Integration tests for the AdminResolveAlbumStreamingLinks endpoint, with the Odesli-backed
-/// resolution service replaced by <see cref="StubStreamingLinkResolutionService"/> — the
-/// external-service stub exception, exactly as Cloudinary is stubbed.
+/// resolution service replaced by <see cref="StubStreamingLinkResolutionService" />, which
+/// tests script through <see cref="StreamingStub" />.
 /// </summary>
 [Collection("Database")]
 public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
     private const string SourceUrl = "https://open.spotify.com/album/abc123";
+
+    private StubStreamingLinkResolutionService StreamingStub =>
+        Api.Services.GetRequiredService<StubStreamingLinkResolutionService>();
 
     private static string Url(Guid albumId) =>
         Routes.Admin.Editorial.ResolveStreamingLinks(EditorialRouteConstants.Albums, albumId);
@@ -36,7 +42,6 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
     [Fact]
     public async Task ResolveAlbumStreamingLinks_WithNoAuth_ReturnsUnauthorized()
     {
-        StubStreamingLinkResolutionService.Reset();
         Client.ClearAuthentication();
 
         var response = await Client.PostAsJsonAsync(
@@ -50,7 +55,6 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
     [Fact]
     public async Task ResolveAlbumStreamingLinks_WithUnknownAlbum_ReturnsNotFound()
     {
-        StubStreamingLinkResolutionService.Reset();
         Client.AuthenticateAsAdmin();
 
         var response = await Client.PostAsJsonAsync(
@@ -58,17 +62,15 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
             new AdminResolveAlbumStreamingLinksRequest(SourceUrl)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Album"))
+        );
     }
 
-    /// <summary>
-    /// The happy path: one paste persists a curated row per resolved platform, readable back
-    /// from the database.
-    /// </summary>
     [Fact]
     public async Task ResolveAlbumStreamingLinks_PersistsOneCuratedRowPerResolvedPlatform()
     {
-        StubStreamingLinkResolutionService.Reset();
         AlbumEntity album = await SeedAlbumAsync();
         Client.AuthenticateAsAdmin();
 
@@ -90,19 +92,15 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
         rows.Should().OnlyContain(l => l.Url.StartsWith("https://resolved.example/"));
     }
 
-    /// <summary>
-    /// A second resolve replaces URLs on the existing rows — never a duplicate per platform.
-    /// </summary>
     [Fact]
     public async Task ResolveAlbumStreamingLinks_Twice_ReplacesWithoutDuplicating()
     {
-        StubStreamingLinkResolutionService.Reset();
         AlbumEntity album = await SeedAlbumAsync();
         Client.AuthenticateAsAdmin();
 
         await Client.PostAsJsonAsync(Url(album.Id), new AdminResolveAlbumStreamingLinksRequest(SourceUrl));
 
-        StubStreamingLinkResolutionService.NextResult = new Dictionary<EnumStreamingPlatform, string>
+        StreamingStub.NextResult = new Dictionary<EnumStreamingPlatform, string>
         {
             [EnumStreamingPlatform.Spotify] = "https://open.spotify.com/album/replaced",
         };
@@ -121,14 +119,9 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
         spotifyRows[0].Url.Should().Be("https://open.spotify.com/album/replaced");
     }
 
-    /// <summary>
-    /// Resolution never deletes: a hand-curated row for a platform the provider had no link
-    /// for survives the resolve untouched.
-    /// </summary>
     [Fact]
     public async Task ResolveAlbumStreamingLinks_LeavesManualRowsForUnresolvedPlatformsAlone()
     {
-        StubStreamingLinkResolutionService.Reset();
         AlbumEntity album = await SeedAlbumAsync();
         StreamingLinkEntity manualTidal = await SeedAsync<ContentDbContext, StreamingLinkEntity>(ctx =>
         {
@@ -142,7 +135,7 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
             return link;
         });
 
-        StubStreamingLinkResolutionService.NextResult = new Dictionary<EnumStreamingPlatform, string>
+        StreamingStub.NextResult = new Dictionary<EnumStreamingPlatform, string>
         {
             [EnumStreamingPlatform.Spotify] = "https://open.spotify.com/album/1",
         };
@@ -167,8 +160,7 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
     [Fact]
     public async Task ResolveAlbumStreamingLinks_WhenProviderResolvesNothing_ReturnsNotFound()
     {
-        StubStreamingLinkResolutionService.Reset();
-        StubStreamingLinkResolutionService.NextResult = new Dictionary<EnumStreamingPlatform, string>();
+        StreamingStub.NextResult = new Dictionary<EnumStreamingPlatform, string>();
         AlbumEntity album = await SeedAlbumAsync();
         Client.AuthenticateAsAdmin();
 
@@ -177,21 +169,16 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
             new AdminResolveAlbumStreamingLinksRequest(SourceUrl)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<StreamingLinkErrorMessage>(m => m.NothingResolved())
+        );
     }
 
-    /// <summary>
-    /// A provider rate-limit maps to 429, not 502 — the admin is told to wait, not that the
-    /// provider is down.
-    /// </summary>
     [Fact]
     public async Task ResolveAlbumStreamingLinks_WhenProviderRateLimits_ReturnsTooManyRequests()
     {
-        StubStreamingLinkResolutionService.Reset();
-        StubStreamingLinkResolutionService.NextException = new StreamingLinkResolutionException(
-            "slow down",
-            isRateLimited: true
-        );
+        StreamingStub.NextException = new StreamingLinkResolutionException("slow down", isRateLimited: true);
         AlbumEntity album = await SeedAlbumAsync();
         Client.AuthenticateAsAdmin();
 
@@ -200,14 +187,16 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
             new AdminResolveAlbumStreamingLinksRequest(SourceUrl)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.TooManyRequests);
+        await response.ShouldBeProblem<RateLimitExceededException>(
+            HttpStatusCode.TooManyRequests,
+            Localized<StreamingLinkErrorMessage>(m => m.ResolutionRateLimited())
+        );
     }
 
     [Fact]
     public async Task ResolveAlbumStreamingLinks_WhenProviderThrows_ReturnsBadGateway()
     {
-        StubStreamingLinkResolutionService.Reset();
-        StubStreamingLinkResolutionService.NextException = new StreamingLinkResolutionException("provider down");
+        StreamingStub.NextException = new StreamingLinkResolutionException("provider down");
         AlbumEntity album = await SeedAlbumAsync();
         Client.AuthenticateAsAdmin();
 
@@ -216,7 +205,10 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
             new AdminResolveAlbumStreamingLinksRequest(SourceUrl)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadGateway);
+        await response.ShouldBeProblem<BadGatewayException>(
+            HttpStatusCode.BadGateway,
+            Localized<StreamingLinkErrorMessage>(m => m.ResolutionFailed())
+        );
     }
 
     [Theory]
@@ -224,7 +216,6 @@ public class AdminResolveAlbumStreamingLinksEndpointV1Tests(PostgresFixture db) 
     [InlineData("not-a-url")]
     public async Task ResolveAlbumStreamingLinks_WithNonHttpsSourceUrl_ReturnsBadRequest(string sourceUrl)
     {
-        StubStreamingLinkResolutionService.Reset();
         AlbumEntity album = await SeedAlbumAsync();
         Client.AuthenticateAsAdmin();
 
