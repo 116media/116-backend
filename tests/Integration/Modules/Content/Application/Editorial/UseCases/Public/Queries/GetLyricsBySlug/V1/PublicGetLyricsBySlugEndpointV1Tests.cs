@@ -1,6 +1,8 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBySlug.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetLyricsBySlug.V1;
@@ -52,11 +54,6 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         body.Lyrics.ArtistName.Should().Be(lyrics.ArtistName);
     }
 
-    /// <summary>
-    /// Verifies that a lyrics page not yet Published is invisible to the public by-slug lookup,
-    /// mirroring <c>PublicGetArticleBySlugHandler</c>'s status gate — unreviewed content (Draft,
-    /// PendingReview, Rejected, etc.) must never be publicly fetchable by slug.
-    /// </summary>
     [Fact]
     public async Task GetLyricsBySlug_WithDraftLyrics_ReturnsNotFound()
     {
@@ -73,7 +70,10 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.GetAsync($"{ApiRoutes.Public.Lyrics}/{draftLyrics.Slug}");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
     [Fact]
@@ -83,13 +83,12 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.GetAsync($"{ApiRoutes.Public.Lyrics}/non-existent-slug");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// A published lyrics page linked to an existing video resolves that video's own slug so
-    /// the frontend can cross-link between the two pages.
-    /// </summary>
     [Fact]
     public async Task GetLyricsBySlug_LinkedToExistingVideo_ReturnsVideoSlug()
     {
@@ -115,10 +114,6 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         body.VideoSlug.Should().Be(videoSlug);
     }
 
-    /// <summary>
-    /// A published lyrics page linked to a video that has since been deleted resolves a null
-    /// <c>VideoSlug</c> rather than 404ing the entire lyrics page response.
-    /// </summary>
     [Fact]
     public async Task GetLyricsBySlug_LinkedToDeletedVideo_ReturnsNullVideoSlugWithoutFailing()
     {
@@ -146,10 +141,6 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         body.VideoSlug.Should().BeNull();
     }
 
-    /// <summary>
-    /// A standalone published lyrics page (no linked video) resolves null for both
-    /// <c>VideoSlug</c> and <c>ArtistSlug</c>.
-    /// </summary>
     [Fact]
     public async Task GetLyricsBySlug_Standalone_ReturnsNullVideoSlugAndArtistSlug()
     {
@@ -176,10 +167,6 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         body.ArtistSlug.Should().BeNull();
     }
 
-    /// <summary>
-    /// A published lyrics page linked to an existing artist profile resolves that artist's own
-    /// slug so the frontend can cross-link to the artist's public page.
-    /// </summary>
     [Fact]
     public async Task GetLyricsBySlug_LinkedToExistingArtist_ReturnsArtistSlug()
     {
@@ -209,11 +196,6 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         body.ArtistSlug.Should().Be(artistSlug);
     }
 
-    /// <summary>
-    /// A published lyrics page linked to an artist that has since been deleted resolves a null
-    /// <c>ArtistSlug</c> rather than 404ing the entire lyrics page response — exercises the
-    /// <c>ArtistId</c> FK's <c>OnDelete(DeleteBehavior.SetNull)</c> behavior end-to-end.
-    /// </summary>
     [Fact]
     public async Task GetLyricsBySlug_LinkedToDeletedArtist_ReturnsNullArtistSlugWithoutFailing()
     {
@@ -251,9 +233,6 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         body.ArtistSlug.Should().BeNull();
     }
 
-    /// <summary>
-    /// A standalone lyrics page with no linked artist resolves a null <c>ArtistSlug</c>.
-    /// </summary>
     [Fact]
     public async Task GetLyricsBySlug_Unlinked_ReturnsNullArtistSlug()
     {
@@ -279,10 +258,6 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         body.ArtistSlug.Should().BeNull();
     }
 
-    /// <summary>
-    /// The authenticated caller who liked the lyrics page sees <c>IsLiked: true</c>, and the
-    /// cached view/like/share counters pass through end to end through real Postgres.
-    /// </summary>
     [Fact]
     public async Task GetLyricsBySlug_WhenCurrentUserHasLiked_ReturnsIsLikedTrueAndCounts()
     {
@@ -313,10 +288,6 @@ public class PublicGetLyricsBySlugEndpointV1Tests(PostgresFixture db) : BaseApiT
         body.Lyrics.ShareCount.Should().Be(1);
     }
 
-    /// <summary>
-    /// An anonymous caller always sees <c>IsLiked: false</c>, regardless of any like records
-    /// left by other users.
-    /// </summary>
     [Fact]
     public async Task GetLyricsBySlug_WhenAnonymous_ReturnsIsLikedFalse()
     {
