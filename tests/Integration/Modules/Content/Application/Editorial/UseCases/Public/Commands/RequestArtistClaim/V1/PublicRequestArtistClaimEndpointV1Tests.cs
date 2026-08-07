@@ -1,6 +1,9 @@
 using _116.Content.Application.Editorial.UseCases.Public.Commands.RequestArtistClaim.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Commands.RequestArtistClaim.V1;
@@ -38,7 +41,10 @@ public class PublicRequestArtistClaimEndpointV1Tests(PostgresFixture db) : BaseA
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Artists.Claim(Guid.NewGuid()), new { });
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Artist"))
+        );
     }
 
     [Fact]
@@ -55,18 +61,12 @@ public class PublicRequestArtistClaimEndpointV1Tests(PostgresFixture db) : BaseA
         body.IsSuccess.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that a second claim on the same unclaimed profile by the same account returns the
-    /// <c>ClaimRequestAlreadyExists</c> 409 raised by <c>PublicRequestArtistClaimHandler</c> after
-    /// <c>IArtistClaimRequestRepository.ExistsForArtistAndUserAsync</c> finds the first request.
-    /// Exactly one <c>ArtistClaimRequestEntity</c> row survives, so the queue holds requests worth
-    /// reviewing rather than a submit count.
-    /// </summary>
     [Fact]
     public async Task RequestArtistClaim_SubmittedTwiceByTheSameVisitor_ReturnsConflictAndPersistsOneRequest()
     {
         ArtistEntity artist = await SeedArtistAsync();
         Client.AuthenticateAsVisitor();
+
         Client.DefaultRequestHeaders.Add("Accept-Language", "en");
 
         var firstResponse = await Client.PostAsJsonAsync(Routes.Public.Artists.Claim(artist.Id), new { });
@@ -74,9 +74,9 @@ public class PublicRequestArtistClaimEndpointV1Tests(PostgresFixture db) : BaseA
 
         var secondResponse = await Client.PostAsJsonAsync(Routes.Public.Artists.Claim(artist.Id), new { });
 
-        await secondResponse.ShouldBeProblem(
+        await secondResponse.ShouldBeProblem<ConflictException>(
             HttpStatusCode.Conflict,
-            "A claim request for this artist profile is already on file for your account."
+            Localized<ArtistErrorMessage>(m => m.ClaimRequestAlreadyExists(), LocalizedMessage.EnglishCulture)
         );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
@@ -86,11 +86,30 @@ public class PublicRequestArtistClaimEndpointV1Tests(PostgresFixture db) : BaseA
         requests.Should().ContainSingle().Which.UserId.Should().Be(TestUser.VisitorId);
     }
 
-    /// <summary>
-    /// Requesting a claim is purely a logged audit signal for this phase — it must never mutate
-    /// <see cref="ArtistEntity.UserId"/> or <see cref="ArtistEntity.VerifiedAt"/>. Only the
-    /// separate admin verify-owner action does that.
-    /// </summary>
+    [Fact]
+    public async Task RequestArtistClaim_AgainstAProfileOwnedByAnotherAccount_ReturnsConflictAndQueuesNothing()
+    {
+        ArtistEntity claimedArtist = await SeedAsync<ContentDbContext, ArtistEntity>(ctx =>
+        {
+            ArtistEntity artist = ArtistFactory.CreateClaimed(Guid.NewGuid());
+            ctx.Artists.Add(artist);
+            return artist;
+        });
+
+        Client.AuthenticateAsVisitor();
+
+        var response = await Client.PostAsJsonAsync(Routes.Public.Artists.Claim(claimedArtist.Id), new { });
+
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ArtistErrorMessage>(m => m.AlreadyClaimed())
+        );
+
+        await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
+        bool anyRequestQueued = await ctx.ArtistClaimRequests.AnyAsync(request => request.ArtistId == claimedArtist.Id);
+        anyRequestQueued.Should().BeFalse();
+    }
+
     [Fact]
     public async Task RequestArtistClaim_ShouldNotMutateArtistUserId()
     {
