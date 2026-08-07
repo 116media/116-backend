@@ -1,7 +1,10 @@
 using _116.Content.Application.Editorial.Constants;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.ArchiveVideo.V1;
@@ -82,7 +85,10 @@ public class AdminArchiveVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Video"))
+        );
     }
 
     [Fact]
@@ -96,14 +102,13 @@ public class AdminArchiveVideoEndpointV1Tests(PostgresFixture db) : BaseApiTest(
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<VideoErrorMessage>(m => m.AlreadyArchived())
+        );
         (await GetVideoStatusAsync(video.Id)).Should().Be(EnumContentStatus.Archived);
     }
 
-    /// <summary>
-    /// Verifies that archiving a published video succeeds and persists the Archived status,
-    /// exercising the happy path of <c>VideoEntity.Archive</c>.
-    /// </summary>
     [Fact]
     public async Task ArchiveVideo_AsSuperAdmin_PublishedVideo_ReturnsOk()
     {
