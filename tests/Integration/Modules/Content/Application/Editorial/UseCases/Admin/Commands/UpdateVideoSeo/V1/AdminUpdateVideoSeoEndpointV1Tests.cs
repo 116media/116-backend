@@ -2,6 +2,8 @@ using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateVideoSeo.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -63,13 +65,12 @@ public class AdminUpdateVideoSeoEndpointV1Tests(PostgresFixture db) : BaseApiTes
             new { }
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Video"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that updating SEO metadata on an existing video persists the new
-    /// meta title and meta description and echoes them back in the response DTO.
-    /// </summary>
     [Fact]
     public async Task UpdateVideoSeo_AsSuperAdmin_WithValidData_ReturnsOkAndPersists()
     {
