@@ -1,7 +1,10 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.DeactivateShortVideo.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.DeactivateShortVideo.V1;
@@ -59,7 +62,10 @@ public class AdminDeactivateShortVideoEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PatchAsync(DeactivateUrl(Guid.NewGuid()), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ShortVideo"))
+        );
     }
 
     [Fact]
@@ -76,14 +82,13 @@ public class AdminDeactivateShortVideoEndpointV1Tests(PostgresFixture db) : Base
 
         var response = await Client.PatchAsync(DeactivateUrl(shortVideo.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ShortVideoErrorMessage>(m => m.AlreadyInactive())
+        );
         (await GetIsActiveAsync(shortVideo.Id)).Should().BeFalse();
     }
 
-    /// <summary>
-    /// Verifies that deactivating an active short video succeeds, persists IsActive = false,
-    /// exercising the happy path of <c>ShortVideoEntity.Deactivate</c>.
-    /// </summary>
     [Fact]
     public async Task DeactivateShortVideo_AsSuperAdmin_ActiveShortVideo_ReturnsOk()
     {
