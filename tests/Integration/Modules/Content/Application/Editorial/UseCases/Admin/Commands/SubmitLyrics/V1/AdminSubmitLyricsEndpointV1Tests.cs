@@ -1,8 +1,11 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.SubmitLyrics.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.SubmitLyrics.V1;
@@ -83,15 +86,14 @@ public class AdminSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that submitting a free lyrics page that is already in PendingReview status
-    /// returns a 409 Conflict problem and leaves the status unchanged.
-    /// </summary>
     [Fact]
-    public async Task SubmitLyrics_WhenAlreadySubmitted_ReturnsConflict()
+    public async Task SubmitLyrics_WhenAlreadyPendingReview_ReturnsConflict()
     {
         LyricsEntity lyrics = await SeedLyricsAsync(LyricsFactory.CreatePendingReview);
         Client.AuthenticateAsSuperAdmin();
@@ -101,14 +103,13 @@ public class AdminSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
             null
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<LyricsErrorMessage>(m => m.AlreadyPendingReview())
+        );
         (await GetLyricsStatusAsync(lyrics.Id)).Should().Be(EnumContentStatus.PendingReview);
     }
 
-    /// <summary>
-    /// Verifies that submitting a free draft lyrics page succeeds, returns IsSuccess true,
-    /// and transitions the persisted status from Draft to PendingReview.
-    /// </summary>
     [Fact]
     public async Task SubmitLyrics_AsSuperAdmin_FreeLyrics_ReturnsOk()
     {
@@ -126,12 +127,6 @@ public class AdminSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         (await GetLyricsStatusAsync(lyrics.Id)).Should().Be(EnumContentStatus.PendingReview);
     }
 
-    /// <summary>
-    /// Submitting a paid lyrics page whose order has not been paid moves it to
-    /// <c>PendingPayment</c>; submitting it a second time takes the already-pending-payment
-    /// early return in <c>LyricsEntity.Submit</c>, which the handler surfaces as
-    /// <c>LyricsErrors.AlreadySubmitted</c> — a 409 Conflict that leaves the status untouched.
-    /// </summary>
     [Fact]
     public async Task SubmitLyrics_AsSuperAdmin_PaidLyricsAlreadySubmitted_ReturnsConflict()
     {
@@ -157,7 +152,10 @@ public class AdminSubmitLyricsEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var secondResponse = await Client.PatchAsync(url, null);
 
-        await secondResponse.ShouldBeProblem(HttpStatusCode.Conflict);
+        await secondResponse.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<LyricsErrorMessage>(m => m.AlreadySubmitted())
+        );
         (await GetLyricsStatusAsync(lyrics.Id)).Should().Be(EnumContentStatus.PendingPayment);
     }
 }
