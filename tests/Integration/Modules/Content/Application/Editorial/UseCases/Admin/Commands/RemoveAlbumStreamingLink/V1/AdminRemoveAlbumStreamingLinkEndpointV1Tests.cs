@@ -60,10 +60,6 @@ public class AdminRemoveAlbumStreamingLinkEndpointV1Tests(PostgresFixture db) : 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    /// <summary>
-    /// Removing an existing curated link deletes only that platform's row, leaving the album's
-    /// other platform slots intact.
-    /// </summary>
     [Fact]
     public async Task RemoveAlbumStreamingLink_WhenLinkExists_DeletesOnlyThatPlatformRow()
     {
@@ -87,10 +83,6 @@ public class AdminRemoveAlbumStreamingLinkEndpointV1Tests(PostgresFixture db) : 
         remaining.Should().ContainSingle().Which.Should().Be(EnumStreamingPlatform.Tidal);
     }
 
-    /// <summary>
-    /// Removing a platform slot that holds no curated link is a no-op success — the absence of
-    /// a row is a valid state, since the public endpoint falls back to a generated search URL.
-    /// </summary>
     [Fact]
     public async Task RemoveAlbumStreamingLink_WhenLinkAbsent_ReturnsOkAndChangesNothing()
     {
@@ -111,10 +103,6 @@ public class AdminRemoveAlbumStreamingLinkEndpointV1Tests(PostgresFixture db) : 
         remaining.Should().Be(2);
     }
 
-    /// <summary>
-    /// The endpoint does not require the album itself to exist: an unknown album resolves to no
-    /// curated link and therefore takes the same no-op success path.
-    /// </summary>
     [Fact]
     public async Task RemoveAlbumStreamingLink_WithNonExistentAlbum_ReturnsOk()
     {
