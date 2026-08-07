@@ -31,10 +31,6 @@ public class PublicGetArticlePromotionFeedEndpointV1Tests(PostgresFixture db) : 
         body.Spot3.SpotPriority.Should().Be(EditorialFeedConstants.Spot3);
     }
 
-    /// <summary>
-    /// Verifies that the promotion feed endpoint returns OK when called as a visitor,
-    /// exercising the GossipArticleSpecification internally.
-    /// </summary>
     [Fact]
     public async Task GetPromotionFeed_AsVisitor_ReturnsOk()
     {
@@ -49,13 +45,6 @@ public class PublicGetArticlePromotionFeedEndpointV1Tests(PostgresFixture db) : 
         body.Spot1.SpotPriority.Should().Be(EditorialFeedConstants.Spot1);
     }
 
-    /// <summary>
-    /// Verifies that the promotion feed endpoint surfaces a published gossip article when a gossip
-    /// category with published articles exists. Seeding the gossip category causes the handler to
-    /// call <c>GetGossipCategoryAsync</c> (using <c>GossipCategorySpecification</c>) and the gossip
-    /// fallback query (<c>GossipArticleSpecification</c>), and the seeded article is expected to
-    /// appear somewhere in the feed (a spot fallback or the gossip strip).
-    /// </summary>
     [Fact]
     public async Task GetArticlePromotionFeed_WithGossipArticles_ReturnsOk()
     {
@@ -94,11 +83,6 @@ public class PublicGetArticlePromotionFeedEndpointV1Tests(PostgresFixture db) : 
         allFeedArticles.Should().Contain(item => item.Id == publishedArticle.Id);
     }
 
-    /// <summary>
-    /// Verifies that the promotion feed stamps the caller's interaction state on the feed
-    /// articles and never surfaces another user's state — regardless of which spot or the
-    /// gossip strip the article lands in.
-    /// </summary>
     [Fact]
     public async Task GetArticlePromotionFeed_WhenAuthenticated_StampsOnlyTheUsersInteractions()
     {
