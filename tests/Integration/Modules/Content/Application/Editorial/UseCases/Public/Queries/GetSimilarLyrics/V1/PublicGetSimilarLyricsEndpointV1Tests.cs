@@ -1,6 +1,8 @@
 using _116.Content.Application.Editorial.UseCases.Public.Queries.GetSimilarLyrics.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Public.Queries.GetSimilarLyrics.V1;
@@ -33,13 +35,12 @@ public class PublicGetSimilarLyricsEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.GetAsync(Routes.Public.Lyrics.Similar(Guid.NewGuid()));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// A published lyrics page with no matches in any branch returns an empty array with 200,
-    /// never a 404 — a missing similar-lyrics result is a normal outcome.
-    /// </summary>
     [Fact]
     public async Task GetSimilarLyrics_WithNoMatchesInAnyBranch_ReturnsEmptyArray()
     {
@@ -61,10 +62,6 @@ public class PublicGetSimilarLyricsEndpointV1Tests(PostgresFixture db) : BaseApi
         body.Lyrics.Should().BeEmpty();
     }
 
-    /// <summary>
-    /// A video-linked source lyrics page finds another published, video-linked lyrics page in
-    /// the same video category, sorted by recency (newest first).
-    /// </summary>
     [Fact]
     public async Task GetSimilarLyrics_VideoCategoryBranch_ReturnsMatchesSortedByRecency()
     {
@@ -117,10 +114,6 @@ public class PublicGetSimilarLyricsEndpointV1Tests(PostgresFixture db) : BaseApi
         body.Lyrics.Select(l => l.Id).Should().Equal(newer.Id, older.Id);
     }
 
-    /// <summary>
-    /// A standalone source lyrics page finds published lyrics pages sharing at least one tag,
-    /// ranked by shared-tag count descending, then recency.
-    /// </summary>
     [Fact]
     public async Task GetSimilarLyrics_SharedTagsBranch_RanksByTagCountThenRecency()
     {
@@ -157,12 +150,6 @@ public class PublicGetSimilarLyricsEndpointV1Tests(PostgresFixture db) : BaseApi
         body.Lyrics.Select(l => l.Id).Should().Equal(twoTagsMatch.Id, oneTagMatch.Id);
     }
 
-    /// <summary>
-    /// The resolved, deliberate fallthrough design (spec 06), proven end to end through real
-    /// Postgres: a video-linked source lyrics page with tags but no same-category peers falls
-    /// through the empty video-category branch and returns the shared-tags branch matches,
-    /// rather than an empty list.
-    /// </summary>
     [Fact]
     public async Task GetSimilarLyrics_VideoLinkedWithTagsButNoCategoryPeers_FallsThroughToSharedTagsBranch()
     {
