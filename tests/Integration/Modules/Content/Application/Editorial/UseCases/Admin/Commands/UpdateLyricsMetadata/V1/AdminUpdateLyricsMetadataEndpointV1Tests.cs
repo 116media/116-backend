@@ -1,9 +1,14 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyricsMetadata.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.Admin.Commands.UpdateLyricsMetadata.V1;
 
@@ -13,6 +18,18 @@ namespace _116.Integration.Tests.Modules.Content.Application.Editorial.UseCases.
 [Collection("Database")]
 public class AdminUpdateLyricsMetadataEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    /// <summary>
+    /// Rebuilds the envelope FluentValidation puts in the ProblemDetails detail. The rules on
+    /// this command are independent, so a request that breaks several of them produces one
+    /// failure per property, in the order the validator declares them.
+    /// </summary>
+    /// <param name="failures">The expected property/message pairs, in validator order.</param>
+    /// <returns>The expected detail.</returns>
+    private static string ValidationDetail(params (string Property, string Message)[] failures) =>
+        new ValidationException(
+            failures.Select(failure => new ValidationFailure(failure.Property, failure.Message))
+        ).Message;
+
     private async Task<LyricsEntity> SeedLyricsAsync()
     {
         return await SeedAsync<ContentDbContext, LyricsEntity>(ctx =>
@@ -63,13 +80,12 @@ public class AdminUpdateLyricsMetadataEndpointV1Tests(PostgresFixture db) : Base
             new AdminUpdateLyricsMetadataRequest(null, null, null, null, null)
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// Verifies a full round trip: all five song-credit fields are set, returned in the
-    /// response, and persisted.
-    /// </summary>
     [Fact]
     public async Task UpdateLyricsMetadata_AsSuperAdmin_WithAllFields_PersistsMetadata()
     {
@@ -107,10 +123,6 @@ public class AdminUpdateLyricsMetadataEndpointV1Tests(PostgresFixture db) : Base
         persisted.Producer.Should().Be("Viviane Arnoux");
     }
 
-    /// <summary>
-    /// Each song-credit field is independently nullable/clearable — updating with only some
-    /// fields set to null clears just those fields, leaving the others as previously persisted.
-    /// </summary>
     [Fact]
     public async Task UpdateLyricsMetadata_WithSomeFieldsNulled_ClearsOnlyThoseFields()
     {
@@ -138,9 +150,6 @@ public class AdminUpdateLyricsMetadataEndpointV1Tests(PostgresFixture db) : Base
         persisted.Producer.Should().BeNull();
     }
 
-    /// <summary>
-    /// An out-of-range release year is rejected with a validation problem end-to-end.
-    /// </summary>
     [Fact]
     public async Task UpdateLyricsMetadata_WithReleaseYearOutOfBounds_ReturnsValidationProblem()
     {
@@ -155,12 +164,6 @@ public class AdminUpdateLyricsMetadataEndpointV1Tests(PostgresFixture db) : Base
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    /// <summary>
-    /// Over-length values for the four optional free-text song credits are rejected end-to-end,
-    /// driving the maximum-length branch of the <c>ValidAlbum</c>, <c>ValidLabel</c>,
-    /// <c>ValidSongwriter</c>, and <c>ValidProducer</c> rules in <c>EditorialValidation</c>, and
-    /// leaving the persisted credits untouched.
-    /// </summary>
     [Fact]
     public async Task UpdateLyricsMetadata_WithOverLongCredits_ReturnsValidationProblem()
     {
@@ -180,7 +183,21 @@ public class AdminUpdateLyricsMetadataEndpointV1Tests(PostgresFixture db) : Base
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                ("Album", Localized<LyricsErrorMessage>(m => m.AlbumTooLong(ContentConstants.MaxAlbumNameLength))),
+                ("Label", Localized<LyricsErrorMessage>(m => m.LabelTooLong(ContentConstants.MaxLabelNameLength))),
+                (
+                    "Songwriter",
+                    Localized<LyricsErrorMessage>(m => m.SongwriterTooLong(ContentConstants.MaxCreditNameLength))
+                ),
+                (
+                    "Producer",
+                    Localized<LyricsErrorMessage>(m => m.ProducerTooLong(ContentConstants.MaxCreditNameLength))
+                )
+            )
+        );
 
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         LyricsEntity? persisted = await ctx.Lyrics.FindAsync(lyrics.Id);
