@@ -1,8 +1,11 @@
 using _116.Content.Application.Editorial.Constants;
 using _116.Content.Application.Editorial.UseCases.Admin.Commands.RejectArticle.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -85,13 +88,12 @@ public class AdminRejectArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Article"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that rejecting an article that is already in Rejected status
-    /// returns a 409 Conflict problem and leaves the article rejected.
-    /// </summary>
     [Fact]
     public async Task RejectArticle_WhenAlreadyRejected_ReturnsConflict()
     {
@@ -104,14 +106,13 @@ public class AdminRejectArticleEndpointV1Tests(PostgresFixture db) : BaseApiTest
             request
         );
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ArticleErrorMessage>(m => m.AlreadyRejected())
+        );
         (await GetArticleAsync(article.Id)).Status.Should().Be(EnumContentStatus.Rejected);
     }
 
-    /// <summary>
-    /// Verifies that rejecting a PendingReview article succeeds, returns IsSuccess true,
-    /// transitions the persisted status to Rejected, and records the rejection reason.
-    /// </summary>
     [Fact]
     public async Task RejectArticle_AsSuperAdmin_PendingReviewArticle_ReturnsOk()
     {
