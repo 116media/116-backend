@@ -3,6 +3,8 @@ using _116.Content.Application.Shared.DTOs;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Shared.Application.Pagination;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -176,7 +178,10 @@ public class PublicGetOwnArticleFavoritesEndpointV1Tests(PostgresFixture db) : B
 
         HttpResponseMessage response = await Client.GetAsync(MineUrl(article.Id));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Article"))
+        );
     }
 
     [Fact]
