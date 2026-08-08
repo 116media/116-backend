@@ -1,7 +1,9 @@
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ChangePassword.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
 using _116.Tests.Fixtures.Helpers;
@@ -44,10 +46,6 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    /// <summary>
-    /// Verifies that a Visitor user with a correct current password can successfully change their password
-    /// and that the persisted password hash is updated.
-    /// </summary>
     [Fact]
     public async Task ChangePassword_AsVisitor_WithCorrectPassword_ReturnsOk()
     {
@@ -90,9 +88,6 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
         passwordService.Verify(request.NewPassword, updated.PasswordHash).Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that providing an incorrect current password returns a 400 Bad Request.
-    /// </summary>
     [Fact]
     public async Task ChangePassword_WithIncorrectCurrentPassword_ReturnsBadRequest()
     {
@@ -124,12 +119,12 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.PatchAsJsonAsync(Routes.Public.Auth.ChangePassword(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.IncorrectCurrentPassword())
+        );
     }
 
-    /// <summary>
-    /// Verifies that setting the new password to the same value as the old password returns a 409 Conflict.
-    /// </summary>
     [Fact]
     public async Task ChangePassword_WithSameAsOldPassword_ReturnsConflict()
     {
@@ -161,12 +156,12 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.PatchAsJsonAsync(Routes.Public.Auth.ChangePassword(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ValidationErrorMessage>(m => m.NewPasswordSameAsOld())
+        );
     }
 
-    /// <summary>
-    /// Verifies that changing password on an account with no password hash (social-only) returns 400 Bad Request.
-    /// </summary>
     [Fact]
     public async Task ChangePassword_WithSocialOnlyAccount_ReturnsBadRequest()
     {
@@ -192,6 +187,9 @@ public class PublicChangePasswordEndpointV1Tests(PostgresFixture db) : BaseApiTe
 
         var response = await Client.PatchAsJsonAsync(Routes.Public.Auth.ChangePassword(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.PasswordNotConfigured(EnumAuthProvider.Google))
+        );
     }
 }
