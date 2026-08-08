@@ -75,8 +75,6 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         (await contentCtx.Articles.FindAsync(article.Id)).Should().BeNull();
         (await contentCtx.ArticleImages.CountAsync(img => img.ArticleId == article.Id)).Should().Be(0);
 
-        // The cover row commits its soft delete before the remote call, so the
-        // failing storage delete cannot undo it.
         await using CoreDbContext coreCtx = CreateDbContext<CoreDbContext>();
         FileEntity? cover = await coreCtx.Files.FindAsync(coverFile.Id);
         cover!.IsDeleted.Should().BeTrue();
@@ -110,8 +108,6 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // The orphaned rows are removed and committed before the remote delete,
-        // so the Cloudinary failure no longer leaves them dangling.
         await using ContentDbContext ctx = CreateDbContext<ContentDbContext>();
         (await ctx.ArticleImages.CountAsync(img => img.StorageKey == orphanedKey)).Should().Be(0);
     }
@@ -202,8 +198,6 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // The post-commit thumbnail handler replaced the old file and attached
-        // the new one; the failing remote delete of the old asset is tolerated.
         await using ContentDbContext contentCtx = CreateDbContext<ContentDbContext>();
         VideoEntity? persisted = await contentCtx.Videos.FindAsync(video.Id);
         persisted!.YoutubeVideoUrl.Should().Be("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
@@ -224,7 +218,6 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         });
         Client.AuthenticateAs(TestUser.VisitorId, "Visitor", sessionId);
 
-        // First upload establishes the avatar file row that the second upload replaces.
         var firstResponse = await Client.PatchAsync(Routes.Public.Me.Avatar(), BuildAvatarContent());
         firstResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -240,8 +233,6 @@ public class ExternalAssetCleanupFlowTests(PostgresFixture db) : BaseApiTest(db)
         var secondResponse = await Client.PatchAsync(Routes.Public.Me.Avatar(), BuildAvatarContent());
         secondResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // The old row rides the unified replacement path: soft-deleted, never
-        // hard-deleted, and the failing remote delete is tolerated.
         await using IdentityDbContext verifyIdentityCtx = CreateDbContext<IdentityDbContext>();
         UserEntity? updatedUser = await verifyIdentityCtx.Users.FindAsync(TestUser.VisitorId);
         updatedUser!.AvatarFileId.Should().NotBeNull();
