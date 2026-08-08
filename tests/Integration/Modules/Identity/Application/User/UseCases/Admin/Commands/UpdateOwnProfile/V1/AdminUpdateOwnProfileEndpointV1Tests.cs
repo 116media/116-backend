@@ -1,3 +1,5 @@
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Application.User.Constants;
 using _116.Identity.Application.User.UseCases.Admin.Commands.UpdateOwnProfile.V1;
 using _116.Identity.Domain.Constants;
@@ -61,7 +63,10 @@ public class AdminUpdateOwnProfileEndpointV1Tests(PostgresFixture db) : BaseApiT
 
         var response = await Client.PatchAsJsonAsync(AdminMeProfile, request);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.Forbidden, HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<RefreshTokenExpiryException>(
+            HttpStatusCode.Forbidden,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidRefreshToken())
+        );
     }
 
     [Fact]
