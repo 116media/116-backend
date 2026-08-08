@@ -5,12 +5,18 @@
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
-        <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+        <NoWarn>$(NoWarn);xUnit1051;EF1001</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
         <RootNamespace>_116.Integration.Tests</RootNamespace>
     </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="xunit.runner.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.7" />
@@ -27,6 +33,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Bogus" Version="35.6.3" />
+        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="9.10.0" />
         <PackageReference Include="Respawn" Version="7.0.0" />
         <PackageReference Include="EFCore.NamingConventions" Version="9.0.0" />
 
