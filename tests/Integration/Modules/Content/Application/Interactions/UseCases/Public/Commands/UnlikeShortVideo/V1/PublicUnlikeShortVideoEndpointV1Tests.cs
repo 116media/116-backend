@@ -1,6 +1,9 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.UnlikeShortVideo.V1;
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Public.Commands.UnlikeShortVideo.V1;
@@ -38,12 +41,12 @@ public class PublicUnlikeShortVideoEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.DeleteAsync(Routes.Public.Shorts.Likes(Guid.NewGuid()));
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ShortVideo"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that unliking a previously liked short video removes the like row.
-    /// </summary>
     [Fact]
     public async Task UnlikeShortVideo_WhenLiked_RemovesLikeAndPersists()
     {
@@ -67,9 +70,6 @@ public class PublicUnlikeShortVideoEndpointV1Tests(PostgresFixture db) : BaseApi
             .BeFalse();
     }
 
-    /// <summary>
-    /// Verifies that unliking a short video that was never liked returns 400 Bad Request.
-    /// </summary>
     [Fact]
     public async Task UnlikeShortVideo_WhenNotLiked_ReturnsBadRequest()
     {
@@ -78,6 +78,9 @@ public class PublicUnlikeShortVideoEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.DeleteAsync(Routes.Public.Shorts.Likes(shortVideo.Id));
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ShortVideoInteractionErrorMessage>(m => m.LikeNotFound())
+        );
     }
 }
