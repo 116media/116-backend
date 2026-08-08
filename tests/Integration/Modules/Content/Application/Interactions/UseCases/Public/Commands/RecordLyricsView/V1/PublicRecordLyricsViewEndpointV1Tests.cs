@@ -2,6 +2,8 @@ using System.Net.Http.Json;
 using _116.Content.Application.Interactions.UseCases.Public.Commands.RecordLyricsView.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Public.Commands.RecordLyricsView.V1;
@@ -56,13 +58,12 @@ public class PublicRecordLyricsViewEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await RecordViewAsync(Guid.NewGuid(), dwellMs: 30_000, scrollDepthRatio: 1.0);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Lyrics"))
+        );
     }
 
-    /// <summary>
-    /// A genuine full read — high dwell time, full scroll depth — counts exactly once per
-    /// dedup window and persists the raw event.
-    /// </summary>
     [Fact]
     public async Task RecordLyricsView_GenuineFullRead_CountsOnce()
     {
@@ -92,10 +93,6 @@ public class PublicRecordLyricsViewEndpointV1Tests(PostgresFixture db) : BaseApi
         events.Single().IsCounted.Should().BeTrue();
     }
 
-    /// <summary>
-    /// A bounce — negligible dwell time and scroll depth — never counts, even from a fresh
-    /// anonymous identity with no dedup history, but the raw event is still persisted.
-    /// </summary>
     [Fact]
     public async Task RecordLyricsView_Bounce_NeverCountsButPersistsRawEvent()
     {
@@ -125,10 +122,6 @@ public class PublicRecordLyricsViewEndpointV1Tests(PostgresFixture db) : BaseApi
         events.Single().IsCounted.Should().BeFalse();
     }
 
-    /// <summary>
-    /// A repeat genuine read from the same identity within the dedup window does not double
-    /// count, but both raw events are persisted.
-    /// </summary>
     [Fact]
     public async Task RecordLyricsView_RepeatGenuineReadWithinWindow_DoesNotDoubleCount()
     {
@@ -158,9 +151,6 @@ public class PublicRecordLyricsViewEndpointV1Tests(PostgresFixture db) : BaseApi
         events.Count(e => e.IsCounted).Should().Be(1);
     }
 
-    /// <summary>
-    /// Different identities (device ids) each get their own dedup window, so both count.
-    /// </summary>
     [Fact]
     public async Task RecordLyricsView_DifferentDevices_EachCounts()
     {
