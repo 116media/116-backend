@@ -94,11 +94,6 @@ public class AdminGetAllRolesEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         body.Roles.Items.Should().OnlyContain(r => r.IsActive);
     }
 
-    /// <summary>
-    /// Verifies that filtering roles by isDeleted=true returns only
-    /// soft-deleted roles.
-    /// Covers RoleIsDeletedSpecification.
-    /// </summary>
     [Fact]
     public async Task GetAllRoles_FilterByIsDeletedTrue_ReturnsDeletedRoles()
     {
@@ -119,11 +114,6 @@ public class AdminGetAllRolesEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         body.Roles.Items.Should().OnlyContain(r => r.IsDeleted);
     }
 
-    /// <summary>
-    /// Verifies that filtering roles by isActive=false returns only
-    /// inactive roles.
-    /// Covers RoleIsNotActiveSpecification.
-    /// </summary>
     [Fact]
     public async Task GetAllRoles_FilterByIsActiveFalse_ReturnsInactiveRoles()
     {
@@ -144,11 +134,6 @@ public class AdminGetAllRolesEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         body.Roles.Items.Should().OnlyContain(r => !r.IsActive);
     }
 
-    /// <summary>
-    /// Verifies that filtering roles by isActive=true returns only active roles
-    /// and excludes inactive ones.
-    /// Covers ActiveRoleSpecification (isActive and not deleted).
-    /// </summary>
     [Fact]
     public async Task GetAllRoles_FilterByIsActiveTrue_ReturnsOnlyActiveRoles()
     {
@@ -169,11 +154,6 @@ public class AdminGetAllRolesEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         body.Roles.Items.Should().OnlyContain(r => r.IsActive);
     }
 
-    /// <summary>
-    /// Verifies that filtering roles by isDeleted=false excludes soft-deleted roles
-    /// from the results.
-    /// Covers RoleNotDeletedSpecification.
-    /// </summary>
     [Fact]
     public async Task GetAllRoles_DefaultQuery_ExcludesDeletedRoles()
     {
@@ -194,11 +174,6 @@ public class AdminGetAllRolesEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         body.Roles.Items.Should().OnlyContain(r => !r.IsDeleted);
     }
 
-    /// <summary>
-    /// Verifies that filtering roles by search term returns only roles
-    /// whose name matches the search pattern.
-    /// Covers RoleSearchSpecification.
-    /// </summary>
     [Fact]
     public async Task GetAllRoles_FilterBySearch_ReturnsMatchingRoles()
     {
