@@ -1,9 +1,13 @@
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword.V1;
 
@@ -13,10 +17,9 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
-    /// <summary>
-    /// Verifies that a valid used OTP with matching code successfully resets the password
-    /// and that the persisted password hash now matches the new password.
-    /// </summary>
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task ResetPassword_WithValidOtp_ReturnsOk()
     {
@@ -55,11 +58,8 @@ public class PublicResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
         passwordService.Verify(request.NewPassword, updated.PasswordHash).Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that providing an incorrect OTP code returns a 400 Bad Request.
-    /// </summary>
     [Fact]
-    public async Task ResetPassword_WithInvalidOtpCode_ReturnsBadRequest()
+    public async Task ResetPassword_WithCodeNotMatchingTheVerifiedOtp_ReturnsBadRequest()
     {
         await using var seedContext = CreateDbContext<IdentityDbContext>();
 
@@ -84,12 +84,12 @@ public class PublicResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.ResetPassword(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.OtpNotYetVerified())
+        );
     }
 
-    /// <summary>
-    /// Verifies that submitting with an empty email returns a 400 Bad Request from the validator.
-    /// </summary>
     [Fact]
     public async Task ResetPassword_WithEmptyEmail_ReturnsBadRequest()
     {
@@ -103,6 +103,9 @@ public class PublicResetPasswordEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.ResetPassword(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired()))
+        );
     }
 }
