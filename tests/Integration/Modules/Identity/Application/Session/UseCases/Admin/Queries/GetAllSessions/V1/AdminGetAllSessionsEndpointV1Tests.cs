@@ -13,6 +13,31 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Session.UseCases.A
 public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
     /// <summary>
+    /// Seeds a session whose <c>CreatedAt</c> is a chosen instant. The audit interceptor stamps
+    /// <c>CreatedAt</c> from the clock on insert and leaves it alone on update, so the instant is
+    /// applied by a second save rather than by the seeded entity.
+    /// </summary>
+    /// <param name="createdAt">The creation instant the date filters should see.</param>
+    /// <returns>The identifier of the seeded session.</returns>
+    private async Task<Guid> SeedSessionCreatedAtAsync(DateTime createdAt)
+    {
+        SessionEntity session = await SeedAsync<IdentityDbContext, SessionEntity>(ctx =>
+        {
+            SessionEntity entity = SessionFactory.Create(TestUser.SuperAdminId);
+            ctx.Sessions.Add(entity);
+            return entity;
+        });
+
+        await SeedAsync<IdentityDbContext>(ctx =>
+        {
+            SessionEntity tracked = ctx.Sessions.Single(s => s.Id == session.Id);
+            tracked.CreatedAt = createdAt;
+        });
+
+        return session.Id;
+    }
+
+    /// <summary>
     /// Creates a session entity with specific user and IP address for filter testing.
     /// </summary>
     private static SessionEntity CreateSessionWithIp(Guid userId, string ipAddress)
@@ -74,11 +99,6 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    /// <summary>
-    /// Verifies that filtering sessions by IP address returns only sessions
-    /// matching the specified IP address pattern.
-    /// Covers SessionByIpAddressSpecification.
-    /// </summary>
     [Fact]
     public async Task GetAllSessions_FilterByIpAddress_ReturnsFilteredResults()
     {
@@ -102,20 +122,11 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
         body.Sessions.Items.Should().OnlyContain(s => s.IpAddress!.Contains("192.168.1.1"));
     }
 
-    /// <summary>
-    /// Verifies that filtering sessions by fromDate returns only sessions
-    /// created on or after the specified date.
-    /// Covers SessionCreatedAfterSpecification.
-    /// </summary>
     [Fact]
     public async Task GetAllSessions_FilterByFromDate_ReturnsFilteredResults()
     {
-        await SeedAsync<IdentityDbContext>(ctx =>
-        {
-            SessionEntity session = SessionFactory.Create(TestUser.SuperAdminId);
-            session.CreatedAt = new DateTime(2026, 6, 10, 0, 0, 0, DateTimeKind.Utc);
-            ctx.Sessions.Add(session);
-        });
+        Guid inWindow = await SeedSessionCreatedAtAsync(new DateTime(2026, 6, 10, 12, 0, 0, DateTimeKind.Utc));
+        Guid outOfWindow = await SeedSessionCreatedAtAsync(new DateTime(2026, 3, 1, 12, 0, 0, DateTimeKind.Utc));
 
         Client.AuthenticateAsSuperAdmin();
 
@@ -126,41 +137,29 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         AdminGetAllSessionsResponse body = await response.ReadAsAsync<AdminGetAllSessionsResponse>();
-        body.Sessions.Items.Should().NotBeEmpty();
+        body.Sessions.Items.Should().Contain(s => s.Id == inWindow);
+        body.Sessions.Items.Should().NotContain(s => s.Id == outOfWindow);
     }
 
-    /// <summary>
-    /// Verifies that filtering sessions by toDate returns only sessions
-    /// created on or before the specified date.
-    /// Covers SessionCreatedBeforeSpecification.
-    /// </summary>
     [Fact]
     public async Task GetAllSessions_FilterByToDate_ReturnsFilteredResults()
     {
-        SessionEntity session = await SeedAsync<IdentityDbContext, SessionEntity>(ctx =>
-        {
-            SessionEntity entity = SessionFactory.Create(TestUser.SuperAdminId);
-            ctx.Sessions.Add(entity);
-            return entity;
-        });
+        Guid inWindow = await SeedSessionCreatedAtAsync(new DateTime(2026, 3, 1, 12, 0, 0, DateTimeKind.Utc));
+        Guid outOfWindow = await SeedSessionCreatedAtAsync(new DateTime(2026, 5, 1, 12, 0, 0, DateTimeKind.Utc));
 
         Client.AuthenticateAsSuperAdmin();
 
         var response = await Client.GetAsync(
-            $"{ApiRoutes.Admin.Sessions}?pageIndex=0&pageSize=50&toDate=2030-01-01T00:00:00Z"
+            $"{ApiRoutes.Admin.Sessions}?pageIndex=0&pageSize=50&toDate=2026-03-02T00:00:00Z"
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         AdminGetAllSessionsResponse body = await response.ReadAsAsync<AdminGetAllSessionsResponse>();
-        body.Sessions.Items.Should().Contain(s => s.Id == session.Id);
+        body.Sessions.Items.Should().Contain(s => s.Id == inWindow);
+        body.Sessions.Items.Should().NotContain(s => s.Id == outOfWindow);
     }
 
-    /// <summary>
-    /// Verifies that filtering sessions by status=Active returns only sessions
-    /// that are not revoked and not expired.
-    /// Covers SessionIsActiveSpecification.
-    /// </summary>
     [Fact]
     public async Task GetAllSessions_FilterByStatusActive_ReturnsFilteredResults()
     {
@@ -182,11 +181,6 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
         body.Sessions.Items.Should().OnlyContain(s => s.IsActive);
     }
 
-    /// <summary>
-    /// Verifies that filtering sessions by status=Expired returns only sessions
-    /// whose expiration date is in the past.
-    /// Covers SessionIsExpiredSpecification.
-    /// </summary>
     [Fact]
     public async Task GetAllSessions_FilterByStatusExpired_ReturnsFilteredResults()
     {
@@ -207,11 +201,6 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
         body.Sessions.Items.Should().Contain(s => s.Id == expiredSession.Id);
     }
 
-    /// <summary>
-    /// Verifies that filtering sessions by status=Revoked returns only sessions
-    /// that have been explicitly revoked.
-    /// Covers SessionIsRevokedSpecification and the Revoked branch of SessionQueryBuilder.
-    /// </summary>
     [Fact]
     public async Task GetAllSessions_FilterByStatusRevoked_ReturnsFilteredResults()
     {
@@ -233,11 +222,6 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
         body.Sessions.Items.Should().OnlyContain(s => !s.IsActive);
     }
 
-    /// <summary>
-    /// Verifies that combining multiple filters (status and IP address) returns
-    /// only sessions matching all criteria simultaneously.
-    /// Covers combined specification composition via SessionQueryBuilder.
-    /// </summary>
     [Fact]
     public async Task GetAllSessions_FilterByStatusAndIpAddress_ReturnsFilteredResults()
     {
@@ -262,11 +246,6 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
         body.Sessions.Items.Should().OnlyContain(s => s.IpAddress!.Contains("203.0.113.50") && s.IsActive);
     }
 
-    /// <summary>
-    /// Verifies that filtering sessions by userId returns only sessions
-    /// belonging to the specified user. This exercises the
-    /// SessionQueryBuilder.WithUserId path and SessionByUserIdSpecification.
-    /// </summary>
     [Fact]
     public async Task GetAllSessions_FilterByUserId_ReturnsOnlyMatchingUserSessions()
     {
@@ -290,11 +269,6 @@ public class AdminGetAllSessionsEndpointV1Tests(PostgresFixture db) : BaseApiTes
         body.Sessions.Items.Should().NotContain(s => s.Id == otherSession.Id);
     }
 
-    /// <summary>
-    /// Verifies that combining userId and status filters returns only sessions
-    /// matching both criteria. Covers the SessionQueryBuilder composition
-    /// with WithUserId and WithStatus together.
-    /// </summary>
     [Fact]
     public async Task GetAllSessions_FilterByUserIdAndStatus_ReturnsFilteredResults()
     {
