@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
 using System.Text;
 using _116.Identity.Application.Session.UseCases.Admin.Commands.RefreshToken.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
@@ -20,7 +22,10 @@ public class AdminRefreshTokenEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsync(Routes.Admin.Sessions.RefreshToken(), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.Forbidden);
+        await response.ShouldBeProblem<RefreshTokenExpiryException>(
+            HttpStatusCode.Forbidden,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidRefreshToken())
+        );
     }
 
     [Fact]
@@ -31,13 +36,12 @@ public class AdminRefreshTokenEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(Routes.Admin.Sessions.RefreshToken(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Forbidden);
+        await response.ShouldBeProblem<RefreshTokenExpiryException>(
+            HttpStatusCode.Forbidden,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidRefreshToken())
+        );
     }
 
-    /// <summary>
-    /// Verifies that refreshing with a valid token cookie returns 200 OK and the
-    /// authenticated admin profile in the body (tokens are delivered via cookies).
-    /// </summary>
     [Fact]
     public async Task RefreshToken_WithValidToken_ReturnsOk()
     {
@@ -65,9 +69,6 @@ public class AdminRefreshTokenEndpointV1Tests(PostgresFixture db) : BaseApiTest(
         body.User.Id.Should().Be(TestUser.SuperAdminId);
     }
 
-    /// <summary>
-    /// Verifies that refreshing with an invalid token cookie returns 403 Forbidden.
-    /// </summary>
     [Fact]
     public async Task RefreshToken_WithInvalidToken_ReturnsForbidden()
     {
@@ -79,12 +80,12 @@ public class AdminRefreshTokenEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.SendAsync(msg);
 
-        await response.ShouldBeProblem(HttpStatusCode.Forbidden);
+        await response.ShouldBeProblem<RefreshTokenExpiryException>(
+            HttpStatusCode.Forbidden,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidRefreshToken())
+        );
     }
 
-    /// <summary>
-    /// Verifies that refreshing with an empty token returns 403 Forbidden.
-    /// </summary>
     [Fact]
     public async Task RefreshToken_WithEmptyToken_ReturnsForbidden()
     {
@@ -96,6 +97,9 @@ public class AdminRefreshTokenEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.SendAsync(msg);
 
-        await response.ShouldBeProblem(HttpStatusCode.Forbidden);
+        await response.ShouldBeProblem<RefreshTokenExpiryException>(
+            HttpStatusCode.Forbidden,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidRefreshToken())
+        );
     }
 }
