@@ -3,6 +3,8 @@ using _116.Identity.Application.Session.UseCases.Admin.Queries.GetOwnSessionById
 using _116.Identity.Domain.Constants;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Session.UseCases.Admin.Queries.GetOwnSessionById.V1;
@@ -35,7 +37,10 @@ public class AdminGetOwnSessionByIdEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.GetAsync($"{AdminMeSessions}/{nonExistentId}");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Session"))
+        );
     }
 
     [Fact]
