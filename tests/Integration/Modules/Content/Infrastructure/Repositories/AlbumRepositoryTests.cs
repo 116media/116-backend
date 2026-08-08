@@ -79,11 +79,6 @@ public class AlbumRepositoryTests(PostgresFixture postgres) : BaseRepositoryTest
         result.Should().NotContain(a => a.Id == nonMatchingAlbum.Id);
     }
 
-    /// <summary>
-    /// Exercises the album's own <c>ArtistId</c> FK <c>OnDelete(DeleteBehavior.SetNull)</c>
-    /// configuration: deleting the linked artist must set the album's <c>ArtistId</c> to null
-    /// rather than cascading the delete or throwing an FK violation.
-    /// </summary>
     [Fact]
     public async Task DeletingLinkedArtist_SetsAlbumArtistIdNull_WithoutCascadingOrThrowing()
     {
