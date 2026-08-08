@@ -1,8 +1,11 @@
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.SocialLogin.V1;
 
@@ -12,6 +15,9 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicSocialLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task SocialLogin_WithInvalidProvider_ReturnsValidationError()
     {
@@ -25,13 +31,12 @@ public class PublicSocialLoginEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SocialLogin(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Provider", Localized<ValidationErrorMessage>(m => m.AuthProviderInvalid()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that authenticating with a valid social provider for a new email creates the
-    /// user, returns a fully-populated mobile token response, and persists the user record.
-    /// </summary>
     [Fact]
     public async Task SocialLogin_WithValidProvider_CreatesUserAndReturnsTokens()
     {
