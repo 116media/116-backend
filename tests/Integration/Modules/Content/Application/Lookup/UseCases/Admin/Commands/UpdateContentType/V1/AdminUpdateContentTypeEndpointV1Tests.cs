@@ -1,9 +1,15 @@
 using _116.Content.Application.Lookup.UseCases.Admin.Commands.UpdateContentType.V1;
+using _116.Content.Application.Shared.Errors.Messages;
+using _116.Content.Domain.Constants;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Content;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Admin.Commands.UpdateContentType.V1;
 
@@ -13,6 +19,9 @@ namespace _116.Integration.Tests.Modules.Content.Application.Lookup.UseCases.Adm
 [Collection("Database")]
 public class AdminUpdateContentTypeEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task UpdateContentType_WithNoAuth_ReturnsUnauthorized()
     {
@@ -32,7 +41,10 @@ public class AdminUpdateContentTypeEndpointV1Tests(PostgresFixture db) : BaseApi
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.ContentTypes}/{Guid.NewGuid()}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ContentType"))
+        );
     }
 
     [Fact]
@@ -61,21 +73,23 @@ public class AdminUpdateContentTypeEndpointV1Tests(PostgresFixture db) : BaseApi
         persisted!.Name.Should().Be(request.Name);
     }
 
-    /// <summary>
-    /// Verifies that updating a content type with a name exceeding the maximum allowed length
-    /// (30 characters) returns a 400 Bad Request response.
-    /// </summary>
     [Fact]
     public async Task UpdateContentType_WithNameTooLong_ReturnsBadRequest()
     {
         Client.AuthenticateAsSuperAdmin();
         Guid id = Guid.NewGuid();
         var request = new AdminUpdateContentTypeRequestBuilder()
-            .WithName(new string('X', TestConstants.Content.ContentType.NameMaxLength + 1))
+            .WithName(new string('X', TestConstants.ContentType.NameMaxLength + 1))
             .Build();
 
         var response = await Client.PutAsJsonAsync($"{ApiRoutes.Admin.ContentTypes}/{id}", request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "Name",
+                Localized<ContentTypeErrorMessage>(m => m.NameTooLong(ContentConstants.MaxContentTypeNameLength))
+            )
+        );
     }
 }
