@@ -1,4 +1,7 @@
 using System.Text.Json;
+using _116.Identity.Application.Shared.Errors.Messages;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 
 namespace _116.Integration.Tests.Shared.Application.Decorators;
@@ -10,6 +13,9 @@ namespace _116.Integration.Tests.Shared.Application.Decorators;
 [Collection("Database")]
 public class ValidationDecoratorTests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(params (string Property, string Message)[] failures) =>
+        new ValidationException(failures.Select(f => new ValidationFailure(f.Property, f.Message))).Message;
+
     [Fact]
     public async Task Post_WithInvalidPayload_ShouldReturn400()
     {
@@ -17,7 +23,13 @@ public class ValidationDecoratorTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, new { Name = "", Description = "" });
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                ("Name", Localized<ValidationErrorMessage>(m => m.RoleNameRequired())),
+                ("Description", Localized<ValidationErrorMessage>(m => m.RoleDescriptionRequired()))
+            )
+        );
     }
 
     [Fact]
@@ -40,10 +52,15 @@ public class ValidationDecoratorTests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(ApiRoutes.Admin.Roles, new { Name = "", Description = "" });
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                ("Name", Localized<ValidationErrorMessage>(m => m.RoleNameRequired())),
+                ("Description", Localized<ValidationErrorMessage>(m => m.RoleDescriptionRequired()))
+            )
+        );
 
         ProblemDetails problem = await response.ReadAsAsync<ProblemDetails>();
-        problem.Status.Should().Be(400);
 
         problem.Extensions.Should().ContainKey("errors", "the validation problem should enumerate the failed fields");
 
