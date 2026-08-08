@@ -1,6 +1,8 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.HardDeleteRole.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Commands.HardDeleteRole.V1;
@@ -55,9 +57,6 @@ public class AdminHardDeleteRoleEndpointV1Tests(PostgresFixture db) : BaseApiTes
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    /// <summary>
-    /// Verifies that hard-deleting a core role (SuperAdmin, Admin, or Visitor) returns a 400 Bad Request.
-    /// </summary>
     [Fact]
     public async Task HardDeleteRole_CoreRole_ReturnsBadRequest()
     {
@@ -72,6 +71,9 @@ public class AdminHardDeleteRoleEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.DeleteAsync(Routes.Admin.Roles.Hard(coreRole.Id));
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.CoreRoleCannotBeDeleted(coreRole.Name))
+        );
     }
 }
