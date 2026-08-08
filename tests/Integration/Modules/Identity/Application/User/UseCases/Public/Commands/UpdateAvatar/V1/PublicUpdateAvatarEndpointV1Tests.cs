@@ -1,8 +1,12 @@
 using System.Net.Http.Headers;
+using _116.BuildingBlocks.Constants;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar.V1;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Tests.Fixtures.Factories.Identity;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.User.UseCases.Public.Commands.UpdateAvatar.V1;
 
@@ -12,6 +16,9 @@ namespace _116.Integration.Tests.Modules.Identity.Application.User.UseCases.Publ
 [Collection("Database")]
 public class PublicUpdateAvatarEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task UpdateAvatar_AsVisitor_WithValidSession_UpdatesAvatar()
     {
@@ -68,9 +75,6 @@ public class PublicUpdateAvatarEndpointV1Tests(PostgresFixture db) : BaseApiTest
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    /// <summary>
-    /// Verifies that uploading a file with an invalid extension returns 400 Bad Request.
-    /// </summary>
     [Fact]
     public async Task UpdateAvatar_WithInvalidFileFormat_ReturnsBadRequest()
     {
@@ -81,6 +85,30 @@ public class PublicUpdateAvatarEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PatchAsync(Routes.Public.Me.Avatar(), content);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "AvatarFile",
+                Localized<ValidationErrorMessage>(m =>
+                    m.AvatarFileInvalidType(string.Join(", ", FileConstants.AllowedAvatarMimeTypes))
+                )
+            )
+        );
+    }
+
+    [Fact]
+    public async Task UpdateAvatar_WithNoFilePart_ReturnsLocalizedValidationProblem()
+    {
+        Client.AuthenticateAsVisitor();
+
+        using var content = new MultipartFormDataContent();
+        content.Add(new StringContent("unused"), "note");
+
+        var response = await Client.PatchAsync(Routes.Public.Me.Avatar(), content);
+
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("AvatarFile", Localized<ValidationErrorMessage>(m => m.AvatarFileRequired()))
+        );
     }
 }
