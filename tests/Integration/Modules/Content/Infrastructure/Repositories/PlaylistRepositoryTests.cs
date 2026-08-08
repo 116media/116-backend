@@ -137,11 +137,6 @@ public class PlaylistRepositoryTests(PostgresFixture postgres) : BaseRepositoryT
         removed.Should().BeNull();
     }
 
-    /// <summary>
-    /// Verifies that <see cref="IPlaylistRepository.VideoExistsInPlaylistAsync" /> returns
-    /// <c>true</c> after a video has been added to the playlist, exercising the positive
-    /// branch of the query method.
-    /// </summary>
     [Fact]
     public async Task VideoExistsInPlaylistAsync_AfterAddingVideo_ReturnsTrue()
     {
@@ -178,11 +173,6 @@ public class PlaylistRepositoryTests(PostgresFixture postgres) : BaseRepositoryT
         result.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that <see cref="IPlaylistRepository.AddVideoAsync" /> persists a
-    /// <see cref="PlaylistVideoEntity" /> and that the video can subsequently be found
-    /// via <see cref="IPlaylistRepository.VideoExistsInPlaylistAsync" />.
-    /// </summary>
     [Fact]
     public async Task AddVideoAsync_NewVideo_PersistsToPlaylist()
     {
@@ -222,10 +212,6 @@ public class PlaylistRepositoryTests(PostgresFixture postgres) : BaseRepositoryT
         exists.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that <see cref="IPlaylistRepository.Update" /> persists a name change
-    /// on an existing playlist, exercising the update path of the repository.
-    /// </summary>
     [Fact]
     public async Task Update_ExistingPlaylist_PersistsNameChange()
     {
