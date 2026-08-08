@@ -49,13 +49,10 @@ public class IdentitySecurityEventFlowTests(PostgresFixture db) : BaseApiTest(db
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // A stolen refresh token no longer survives the victim's reset: the
-        // reset carries no acting session, so every session is revoked.
         await using IdentityDbContext identityContext = CreateDbContext<IdentityDbContext>();
         SessionEntity session = await identityContext.Sessions.SingleAsync(s => s.Id == sessionId);
         session.IsRevoked.Should().BeTrue();
 
-        // The reset still notifies through both channels.
         await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
         var outbox = await mailerContext.OutboxEmails.Where(o => o.RecipientAddress == email).ToListAsync();
         outbox.Should().ContainSingle(o => o.Template == "PasswordResetCompleted");
@@ -87,13 +84,10 @@ public class IdentitySecurityEventFlowTests(PostgresFixture db) : BaseApiTest(db
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // The privilege-escalation window closes: the revoked role cannot keep
-        // riding a live session's token family.
         await using IdentityDbContext identityContext = CreateDbContext<IdentityDbContext>();
         SessionEntity session = await identityContext.Sessions.SingleAsync(s => s.Id == sessionId);
         session.IsRevoked.Should().BeTrue();
 
-        // The role change reaches the user through both channels.
         await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
         var outbox = await mailerContext
             .OutboxEmails.Where(o => o.RecipientAddress == TestUser.VisitorEmail)
@@ -153,7 +147,6 @@ public class IdentitySecurityEventFlowTests(PostgresFixture db) : BaseApiTest(db
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Dual delivery: the alert reaches the old address, the confirmation the new one.
         await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
         var oldAddressRows = await mailerContext
             .OutboxEmails.Where(o => o.RecipientAddress == TestUser.VisitorEmail)
@@ -168,7 +161,6 @@ public class IdentitySecurityEventFlowTests(PostgresFixture db) : BaseApiTest(db
             .ToListAsync();
         notifications.Should().ContainSingle(n => n.Type == EnumNotificationType.EmailChanged);
 
-        // The self-service change preserves the acting session and revokes the rest.
         await using IdentityDbContext identityContext = CreateDbContext<IdentityDbContext>();
         SessionEntity acting = await identityContext.Sessions.SingleAsync(s => s.Id == sessionId);
         SessionEntity other = await identityContext.Sessions.SingleAsync(s => s.Id == otherSessionId);
