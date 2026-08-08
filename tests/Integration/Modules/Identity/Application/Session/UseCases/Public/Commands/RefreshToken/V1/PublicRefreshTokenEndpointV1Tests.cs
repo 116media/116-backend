@@ -2,6 +2,8 @@ using System.Security.Cryptography;
 using System.Text;
 using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RefreshToken.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
+using _116.Identity.Application.Shared.Exceptions;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
 using _116.Mailer.Infrastructure.Persistence;
@@ -26,7 +28,10 @@ public class PublicRefreshTokenEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsync(RefreshTokenUrl, null);
 
-        await response.ShouldBeProblem(HttpStatusCode.Forbidden);
+        await response.ShouldBeProblem<RefreshTokenExpiryException>(
+            HttpStatusCode.Forbidden,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidRefreshToken())
+        );
     }
 
     [Fact]
@@ -39,13 +44,12 @@ public class PublicRefreshTokenEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(RefreshTokenUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Forbidden);
+        await response.ShouldBeProblem<RefreshTokenExpiryException>(
+            HttpStatusCode.Forbidden,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidRefreshToken())
+        );
     }
 
-    /// <summary>
-    /// Verifies that refreshing with a valid refresh token in the body (mobile client)
-    /// returns 200 OK with new, non-empty tokens and future expiry timestamps.
-    /// </summary>
     [Fact]
     public async Task RefreshToken_WithValidTokenInBody_ReturnsNewTokens()
     {
@@ -73,11 +77,6 @@ public class PublicRefreshTokenEndpointV1Tests(PostgresFixture db) : BaseApiTest
         body.RefreshTokenExpiresAt.Should().BeAfter(DateTime.UtcNow);
     }
 
-    /// <summary>
-    /// Presenting a refresh token that belongs to an already-revoked session is treated as a
-    /// stolen credential in circulation, not merely an expired one. The attempt is still refused,
-    /// and the account's surviving sessions are revoked and the owner alerted by email.
-    /// </summary>
     [Fact]
     public async Task RefreshToken_WithATokenFromARevokedSession_RevokesTheAccountAndAlertsTheOwner()
     {
@@ -96,7 +95,10 @@ public class PublicRefreshTokenEndpointV1Tests(PostgresFixture db) : BaseApiTest
 
         var response = await Client.PostAsJsonAsync(RefreshTokenUrl, request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Forbidden);
+        await response.ShouldBeProblem<RefreshTokenExpiryException>(
+            HttpStatusCode.Forbidden,
+            Localized<AuthenticationErrorMessage>(m => m.InvalidRefreshToken())
+        );
 
         await using IdentityDbContext identityContext = CreateDbContext<IdentityDbContext>();
         SessionEntity surviving = await identityContext.Sessions.SingleAsync(s => s.Id == survivingSessionId);
