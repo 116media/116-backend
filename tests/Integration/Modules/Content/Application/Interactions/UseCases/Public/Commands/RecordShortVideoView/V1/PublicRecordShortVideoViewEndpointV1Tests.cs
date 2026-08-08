@@ -1,6 +1,8 @@
 using _116.Content.Application.Interactions.UseCases.Public.Commands.RecordShortVideoView.V1;
 using _116.Content.Domain.Entities;
 using _116.Content.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Content;
 
 namespace _116.Integration.Tests.Modules.Content.Application.Interactions.UseCases.Public.Commands.RecordShortVideoView.V1;
@@ -73,7 +75,10 @@ public class PublicRecordShortVideoViewEndpointV1Tests(PostgresFixture db) : Bas
 
         var response = await Client.PostAsync(Routes.Public.Shorts.Views(Guid.NewGuid()), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("ShortVideo"))
+        );
     }
 
     [Fact]
