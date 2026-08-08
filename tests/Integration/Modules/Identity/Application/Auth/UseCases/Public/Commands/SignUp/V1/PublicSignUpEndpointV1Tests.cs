@@ -1,7 +1,12 @@
+using _116.BuildingBlocks.Constants;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
 using _116.Tests.Fixtures.Factories.Identity;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.SignUp.V1;
 
@@ -11,6 +16,9 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicSignUpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task SignUp_WithValidData_ReturnsCreated()
     {
@@ -51,15 +59,12 @@ public class PublicSignUpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(m => m.EmailAlreadyExists(TestUser.SuperAdminEmail))
+        );
     }
 
-    /// <summary>
-    /// Verifies that a fresh email paired with a taken username returns the
-    /// <c>UsernameAlreadyExists</c> 409. The email uniqueness check in
-    /// <c>AuthRepository.EnsureUserDoesNotExistAsync</c> runs first, so a novel email is required
-    /// for the username branch to be the one that fires.
-    /// </summary>
     [Fact]
     public async Task SignUp_WithDuplicateUserName_ReturnsConflict()
     {
@@ -77,7 +82,13 @@ public class PublicSignUpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict, $"Username '{takenUserName}' is already taken.");
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(
+                m => m.UsernameAlreadyExists(takenUserName),
+                LocalizedMessage.EnglishCulture
+            )
+        );
 
         await using var verifyContext = CreateDbContext<IdentityDbContext>();
         (await verifyContext.Users.CountAsync(u => u.UserName == takenUserName)).Should().Be(1);
@@ -91,7 +102,10 @@ public class PublicSignUpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired()))
+        );
     }
 
     [Fact]
@@ -102,7 +116,13 @@ public class PublicSignUpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "Password",
+                Localized<ValidationErrorMessage>(m => m.PasswordTooShort("Password", UserConstants.MinPasswordLength))
+            )
+        );
     }
 
     [Fact]
@@ -113,6 +133,12 @@ public class PublicSignUpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.SignUp(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail(
+                "UserName",
+                Localized<ValidationErrorMessage>(m => m.UsernameTooShort(UserConstants.MinUserNameLength))
+            )
+        );
     }
 }
