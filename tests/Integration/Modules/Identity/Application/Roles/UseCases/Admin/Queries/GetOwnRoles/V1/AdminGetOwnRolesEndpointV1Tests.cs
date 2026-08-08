@@ -44,12 +44,6 @@ public class AdminGetOwnRolesEndpointV1Tests(PostgresFixture db) : BaseApiTest(d
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    /// <summary>
-    /// Verifies that an inactive user hitting a RequireActiveUser protected endpoint
-    /// receives 403 Forbidden, exercising the AccountStatusRequirementHandler.
-    /// The handler reads the user status from the database; even if the JWT says
-    /// IsActive=true, the real DB state drives the authorization decision.
-    /// </summary>
     [Fact]
     public async Task GetOwnRoles_WithInactiveAccount_ReturnsForbidden()
     {
