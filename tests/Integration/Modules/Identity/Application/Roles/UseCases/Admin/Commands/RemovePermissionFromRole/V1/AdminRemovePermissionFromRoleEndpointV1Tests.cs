@@ -1,6 +1,8 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.RemovePermissionFromRole.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Commands.RemovePermissionFromRole.V1;
@@ -60,6 +62,9 @@ public class AdminRemovePermissionFromRoleEndpointV1Tests(PostgresFixture db) : 
 
         var response = await Client.DeleteAsync(Routes.Admin.Roles.Permission(roleId, permissionId));
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.PermissionNotAssignedToRole())
+        );
     }
 }
