@@ -2,6 +2,8 @@ using _116.Identity.Application.Session.Constants;
 using _116.Identity.Application.Session.UseCases.Public.Commands.RevokeSession.V1;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Session.UseCases.Public.Commands.RevokeSession.V1;
@@ -26,9 +28,6 @@ public class PublicRevokeSessionEndpointV1Tests(PostgresFixture db) : BaseApiTes
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
-    /// <summary>
-    /// Verifies that a Visitor can revoke their own session successfully.
-    /// </summary>
     [Fact]
     public async Task RevokeSession_AsVisitor_WithOwnSession_ReturnsOk()
     {
@@ -54,10 +53,6 @@ public class PublicRevokeSessionEndpointV1Tests(PostgresFixture db) : BaseApiTes
         persisted!.IsRevoked.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that trying to revoke another user's session returns 404 Not Found.
-    /// The handler treats mismatched ownership as session not found for security.
-    /// </summary>
     [Fact]
     public async Task RevokeSession_WithOtherUsersSession_ReturnsNotFound()
     {
@@ -74,12 +69,12 @@ public class PublicRevokeSessionEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PostAsync($"{RevokeSessionBaseUrl}/{otherSessionId}", null);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Session"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that revoking a non-existent session returns 404 Not Found.
-    /// </summary>
     [Fact]
     public async Task RevokeSession_WithNonExistentSession_ReturnsNotFound()
     {
@@ -88,6 +83,9 @@ public class PublicRevokeSessionEndpointV1Tests(PostgresFixture db) : BaseApiTes
         Guid nonExistentId = Guid.NewGuid();
         var response = await Client.PostAsync($"{RevokeSessionBaseUrl}/{nonExistentId}", null);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Session"))
+        );
     }
 }
