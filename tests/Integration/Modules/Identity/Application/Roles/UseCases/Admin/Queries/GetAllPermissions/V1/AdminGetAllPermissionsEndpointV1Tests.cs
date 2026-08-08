@@ -46,11 +46,6 @@ public class AdminGetAllPermissionsEndpointV1Tests(PostgresFixture db) : BaseApi
         body.Permissions.Items.Should().Contain(p => p.Id == seeded.Id);
     }
 
-    /// <summary>
-    /// Verifies that filtering permissions by isDeleted=true returns only
-    /// soft-deleted permissions.
-    /// Covers PermissionIsDeletedSpecification.
-    /// </summary>
     [Fact]
     public async Task GetAllPermissions_FilterByIsDeletedTrue_ReturnsDeletedPermissions()
     {
@@ -71,11 +66,6 @@ public class AdminGetAllPermissionsEndpointV1Tests(PostgresFixture db) : BaseApi
         body.Permissions.Items.Should().OnlyContain(p => p.IsDeleted);
     }
 
-    /// <summary>
-    /// Verifies that filtering permissions by isActive=false returns only
-    /// inactive permissions.
-    /// Covers PermissionIsNotActiveSpecification.
-    /// </summary>
     [Fact]
     public async Task GetAllPermissions_FilterByIsActiveFalse_ReturnsInactivePermissions()
     {
@@ -96,11 +86,6 @@ public class AdminGetAllPermissionsEndpointV1Tests(PostgresFixture db) : BaseApi
         body.Permissions.Items.Should().OnlyContain(p => !p.IsActive);
     }
 
-    /// <summary>
-    /// Verifies that filtering permissions by isActive=true returns only active permissions
-    /// and excludes inactive ones.
-    /// Covers ActivePermissionSpecification (isActive and not deleted).
-    /// </summary>
     [Fact]
     public async Task GetAllPermissions_FilterByIsActiveTrue_ReturnsOnlyActivePermissions()
     {
@@ -121,11 +106,6 @@ public class AdminGetAllPermissionsEndpointV1Tests(PostgresFixture db) : BaseApi
         body.Permissions.Items.Should().OnlyContain(p => p.IsActive);
     }
 
-    /// <summary>
-    /// Verifies that filtering permissions by isDeleted=false excludes soft-deleted permissions
-    /// from the results.
-    /// Covers PermissionNotDeletedSpecification.
-    /// </summary>
     [Fact]
     public async Task GetAllPermissions_DefaultQuery_ExcludesDeletedPermissions()
     {
@@ -145,11 +125,6 @@ public class AdminGetAllPermissionsEndpointV1Tests(PostgresFixture db) : BaseApi
         body.Permissions.Items.Should().OnlyContain(p => !p.IsDeleted);
     }
 
-    /// <summary>
-    /// Verifies that filtering permissions by search term returns only
-    /// permissions whose resource or action matches the search pattern.
-    /// Covers PermissionSearchSpecification.
-    /// </summary>
     [Fact]
     public async Task GetAllPermissions_FilterBySearch_ReturnsMatchingPermissions()
     {
