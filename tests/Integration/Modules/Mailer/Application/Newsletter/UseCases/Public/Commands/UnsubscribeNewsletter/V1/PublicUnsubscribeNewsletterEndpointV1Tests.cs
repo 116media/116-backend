@@ -1,7 +1,9 @@
 using _116.Mailer.Application.Newsletter.UseCases.Public.Commands.UnsubscribeNewsletter.V1;
+using _116.Mailer.Application.Shared.Errors.Messages;
 using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Mailer.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 
 namespace _116.Integration.Tests.Modules.Mailer.Application.Newsletter.UseCases.Public.Commands.UnsubscribeNewsletter.V1;
 
@@ -64,6 +66,9 @@ public class PublicUnsubscribeNewsletterEndpointV1Tests(PostgresFixture db) : Ba
     {
         var response = await Client.GetAsync($"{ApiRoutes.Public.Newsletter}/unsubscribe/nope");
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<NewsletterErrorMessage>(m => m.TokenInvalid())
+        );
     }
 }
