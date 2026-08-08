@@ -1,7 +1,9 @@
+using _116.Content.Application.Shared.Errors.Messages;
 using _116.Content.Domain.Entities;
 using _116.Content.Domain.Enums;
 using _116.Content.Infrastructure.Persistence;
 using _116.Mailer.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Constants;
 using _116.Tests.Fixtures.Factories.Content;
 
@@ -47,7 +49,7 @@ public class CommerceEventDispatchFlowTests(PostgresFixture db) : BaseApiTest(db
         });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl };
+        var request = new { ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl };
         var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
         {
             Content = JsonContent.Create(request),
@@ -65,8 +67,6 @@ public class CommerceEventDispatchFlowTests(PostgresFixture db) : BaseApiTest(db
         ContentOrderEntity? persistedOrder = await contentContext.ContentOrders.FindAsync(order.Id);
         persistedOrder!.Status.Should().Be(EnumOrderStatus.Paid);
 
-        // The effects handler stamped the article post-commit with the window
-        // computed at raise time.
         ArticleEntity? persistedArticle = await contentContext.Articles.FindAsync(article.Id);
         persistedArticle!.IsPromoted.Should().BeTrue();
         persistedArticle.PromotionLevelId.Should().Be(promoLevel.Id);
@@ -75,7 +75,6 @@ public class CommerceEventDispatchFlowTests(PostgresFixture db) : BaseApiTest(db
         persistedArticle.PromotedUntil.Value.Should().BeOnOrBefore(after.AddDays(promoLevel.DurationDays));
         persistedArticle.Status.Should().Be(EnumContentStatus.PendingReview);
 
-        // The receipt email handler enqueued the outbox row post-commit.
         await using MailerDbContext mailerContext = CreateDbContext<MailerDbContext>();
         var receipts = await mailerContext
             .OutboxEmails.Where(o => o.RecipientAddress == customer.Email && o.Template == "PaymentReceipt")
@@ -106,7 +105,7 @@ public class CommerceEventDispatchFlowTests(PostgresFixture db) : BaseApiTest(db
         });
 
         Client.AuthenticateAsSuperAdmin();
-        var request = new { ReceiptUrl = TestConstants.Content.Commerce.ValidReceiptUrl };
+        var request = new { ReceiptUrl = TestConstants.Commerce.ValidReceiptUrl };
         var msg = new HttpRequestMessage(HttpMethod.Patch, Routes.Admin.Orders.VerifyPayment(order.Id))
         {
             Content = JsonContent.Create(request),
@@ -116,10 +115,11 @@ public class CommerceEventDispatchFlowTests(PostgresFixture db) : BaseApiTest(db
         var response = await Client.SendAsync(msg);
 
         // Assert
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ContentOrderErrorMessage>(m => m.PaymentAlreadyVerified())
+        );
 
-        // The rejected operation dispatched nothing: no paid effects on the
-        // article, no receipt email, and the order never left PendingPayment.
         await using ContentDbContext contentContext = CreateDbContext<ContentDbContext>();
         ContentOrderEntity? persistedOrder = await contentContext.ContentOrders.FindAsync(order.Id);
         persistedOrder!.Status.Should().Be(EnumOrderStatus.PendingPayment);
