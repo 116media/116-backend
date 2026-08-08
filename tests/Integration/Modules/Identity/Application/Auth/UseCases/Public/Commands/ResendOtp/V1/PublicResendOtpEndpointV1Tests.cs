@@ -1,5 +1,8 @@
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Tests.Fixtures.Builders.Requests.Identity;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp.V1;
 
@@ -9,6 +12,9 @@ namespace _116.Integration.Tests.Modules.Identity.Application.Auth.UseCases.Publ
 [Collection("Database")]
 public class PublicResendOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db)
 {
+    private static string ValidationDetail(string property, string message) =>
+        new ValidationException([new ValidationFailure(property, message)]).Message;
+
     [Fact]
     public async Task ResendOtp_WithEmptyEmail_ReturnsValidationError()
     {
@@ -17,13 +23,12 @@ public class PublicResendOtpEndpointV1Tests(PostgresFixture db) : BaseApiTest(db
 
         var response = await Client.PostAsJsonAsync(Routes.Public.Auth.ResendOtp(), request);
 
-        await response.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await response.ShouldBeProblem<ValidationException>(
+            HttpStatusCode.BadRequest,
+            ValidationDetail("Email", Localized<ValidationErrorMessage>(m => m.EmailRequired()))
+        );
     }
 
-    /// <summary>
-    /// Verifies that requesting an OTP resend for a non-existent email returns 200 OK with a
-    /// success payload. The endpoint reports success to avoid leaking account existence.
-    /// </summary>
     [Fact]
     public async Task ResendOtp_WithNonExistentEmail_ReturnsOk()
     {
