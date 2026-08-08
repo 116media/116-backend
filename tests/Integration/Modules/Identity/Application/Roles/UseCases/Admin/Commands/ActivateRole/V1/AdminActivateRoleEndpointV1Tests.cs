@@ -1,6 +1,9 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.ActivateRole.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
+using _116.Shared.Application.Exceptions.Messages;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Commands.ActivateRole.V1;
@@ -50,12 +53,12 @@ public class AdminActivateRoleEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PatchAsync(Routes.Admin.Roles.Activate(Guid.NewGuid()), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.NotFound);
+        await response.ShouldBeProblem<NotFoundException>(
+            HttpStatusCode.NotFound,
+            Localized<SharedExceptionMessage>(m => m.EntityNotFound("Role"))
+        );
     }
 
-    /// <summary>
-    /// Verifies that activating a role that is already active returns a 409 Conflict.
-    /// </summary>
     [Fact]
     public async Task ActivateRole_WhenAlreadyActive_ReturnsConflict()
     {
@@ -70,7 +73,10 @@ public class AdminActivateRoleEndpointV1Tests(PostgresFixture db) : BaseApiTest(
 
         var response = await Client.PatchAsync(Routes.Admin.Roles.Activate(role.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(m => m.RoleAlreadyActive())
+        );
         (await IsRoleActiveAsync(role.Id)).Should().BeTrue();
     }
 }
