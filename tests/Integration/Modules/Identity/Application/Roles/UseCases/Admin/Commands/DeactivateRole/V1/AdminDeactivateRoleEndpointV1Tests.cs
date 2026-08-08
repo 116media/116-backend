@@ -1,6 +1,8 @@
 using _116.Identity.Application.Roles.UseCases.Admin.Commands.DeactivateRole.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 
 namespace _116.Integration.Tests.Modules.Identity.Application.Roles.UseCases.Admin.Commands.DeactivateRole.V1;
@@ -43,9 +45,6 @@ public class AdminDeactivateRoleEndpointV1Tests(PostgresFixture db) : BaseApiTes
         (await IsRoleActiveAsync(role.Id)).Should().BeFalse();
     }
 
-    /// <summary>
-    /// Verifies that deactivating a role that is already inactive returns a 409 Conflict.
-    /// </summary>
     [Fact]
     public async Task DeactivateRole_WhenAlreadyInactive_ReturnsConflict()
     {
@@ -60,7 +59,10 @@ public class AdminDeactivateRoleEndpointV1Tests(PostgresFixture db) : BaseApiTes
 
         var response = await Client.PatchAsync(Routes.Admin.Roles.Deactivate(role.Id), null);
 
-        await response.ShouldBeProblem(HttpStatusCode.Conflict);
+        await response.ShouldBeProblem<ConflictException>(
+            HttpStatusCode.Conflict,
+            Localized<ConflictErrorMessage>(m => m.RoleAlreadyInactive())
+        );
         (await IsRoleActiveAsync(role.Id)).Should().BeFalse();
     }
 }
