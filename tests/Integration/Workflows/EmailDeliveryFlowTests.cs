@@ -1,10 +1,12 @@
 using System.Text.RegularExpressions;
+using _116.Identity.Application.Auth.Exceptions;
 using _116.Identity.Application.Auth.Services;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ForgotPassword.V1;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResendOtp.V1;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.ResetPassword.V1;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.SignUp.V1;
 using _116.Identity.Application.Auth.UseCases.Public.Commands.VerifyOtp.V1;
+using _116.Identity.Application.Shared.Errors.Messages;
 using _116.Identity.Domain.Entities;
 using _116.Identity.Domain.Enums;
 using _116.Identity.Infrastructure.Persistence;
@@ -16,6 +18,7 @@ using _116.Mailer.Domain.Entities;
 using _116.Mailer.Domain.Enums;
 using _116.Mailer.Infrastructure.BackgroundJobs;
 using _116.Mailer.Infrastructure.Persistence;
+using _116.Shared.Application.Exceptions;
 using _116.Tests.Fixtures.Factories.Identity;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -29,13 +32,6 @@ namespace _116.Integration.Tests.Workflows;
 [Collection("Database")]
 public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
 {
-    /// <summary>
-    /// Verifies the signup delivery path end to end. The row now stores only a hash, so the code
-    /// cannot be read back out of the database and compared against the email; the flow runs the
-    /// other way round instead — the delivered code is taken from the outbox body, which is the
-    /// only place the plaintext legitimately survives, and is then driven through the real verify
-    /// endpoint. The OTP row is asserted to hold a hash that is not that code.
-    /// </summary>
     [Fact]
     public async Task SignUp_OverRealHttp_EnqueuesAVerificationCodeThatVerifiesWhileTheRowStaysHashed()
     {
@@ -65,7 +61,6 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
 
         string deliveredCode = await ExtractLatestOtpCodeAsync(email);
 
-        // The persisted row holds the hash of the delivered code, never the code.
         await using (IdentityDbContext identityContext = CreateDbContext<IdentityDbContext>())
         {
             string codeHash = await identityContext
@@ -76,7 +71,6 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
             codeHash.Should().NotBe(deliveredCode);
         }
 
-        // The delivered code still verifies through the real endpoint.
         var verifyResponse = await Client.PostAsJsonAsync(
             Routes.Public.Auth.VerifyOtp(),
             new PublicVerifyOtpRequest(
@@ -93,12 +87,6 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         verifiedUser.IsVerified.Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that a wrong code is rejected with the invalid-code error and burns one of the
-    /// allowed attempts, and that the third wrong code switches the response to the
-    /// attempts-limit error. Exercises the in-memory hash comparison in <c>OtpRepository</c> over
-    /// real HTTP.
-    /// </summary>
     [Fact]
     public async Task VerifyOtp_WithAWrongCode_ConsumesAnAttemptAndEventuallyLocksOut()
     {
@@ -115,7 +103,10 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         string wrongCode = deliveredCode == "000000" ? "111111" : "000000";
 
         var firstAttempt = await PostVerifyOtpAsync(email, wrongCode);
-        await firstAttempt.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await firstAttempt.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.InvalidOtpCode())
+        );
 
         await using (IdentityDbContext afterFirst = CreateDbContext<IdentityDbContext>())
         {
@@ -124,22 +115,22 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         }
 
         var secondAttempt = await PostVerifyOtpAsync(email, wrongCode);
-        await secondAttempt.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await secondAttempt.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.InvalidOtpCode())
+        );
 
-        // The third wrong code exhausts the allowance and changes the failure shape.
         var thirdAttempt = await PostVerifyOtpAsync(email, wrongCode);
-        await thirdAttempt.ShouldBeProblem(HttpStatusCode.TooManyRequests);
+        await thirdAttempt.ShouldBeProblem<OtpAttemptsLimitException>(
+            HttpStatusCode.TooManyRequests,
+            Localized<ValidationErrorMessage>(m => m.MaxOtpAttemptsReached())
+        );
 
         await using IdentityDbContext verifyContext = CreateDbContext<IdentityDbContext>();
         OtpEntity exhausted = await verifyContext.Otps.SingleAsync(o => o.User.Email == email);
         exhausted.AttemptCount.Should().Be(3);
     }
 
-    /// <summary>
-    /// Verifies the whole password-reset round trip against hashed rows: forgot password delivers
-    /// a code, the code verifies, and reset password then re-validates the same code against the
-    /// consumed row. This is the path that proves <c>ValidateUsedOtpAsync</c> matches by hash.
-    /// </summary>
     [Fact]
     public async Task PasswordReset_ForgotThenVerifyThenReset_CompletesAgainstHashedRows()
     {
@@ -183,10 +174,6 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         passwordService.Verify(TestAuth.ResetNewPassword, updated.PasswordHash).Should().BeTrue();
     }
 
-    /// <summary>
-    /// Verifies that resending rotates the credential: the code delivered first stops working the
-    /// moment a new one is issued, and only the newest delivered code verifies.
-    /// </summary>
     [Fact]
     public async Task ResendOtp_InvalidatesThePreviouslyDeliveredCode()
     {
@@ -211,7 +198,10 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         secondCode.Should().NotBe(firstCode);
 
         var staleAttempt = await PostVerifyOtpAsync(email, firstCode);
-        await staleAttempt.ShouldBeProblem(HttpStatusCode.BadRequest);
+        await staleAttempt.ShouldBeProblem<BadRequestException>(
+            HttpStatusCode.BadRequest,
+            Localized<ValidationErrorMessage>(m => m.InvalidOtpCode())
+        );
 
         var freshAttempt = await PostVerifyOtpAsync(email, secondCode);
         freshAttempt.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -277,7 +267,6 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
             new PublicForgotPasswordRequest("ghost@nowhere.example")
         );
 
-        // Enumeration-safety: the neutral 200 comes with zero outbox rows.
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         await using MailerDbContext ctx = CreateDbContext<MailerDbContext>();
@@ -306,8 +295,6 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         StubEmailSender stub = Api.Services.GetRequiredService<StubEmailSender>();
         int alreadySent = stub.Sent.Count;
 
-        // The real job, driven once: claims with skip-locked, delivers through
-        // the (stubbed) provider, records the outcome.
         var job = new OutboxEmailDispatcherJob(
             Api.Services.GetRequiredService<IServiceScopeFactory>(),
             NullLogger<OutboxEmailDispatcherJob>.Instance
@@ -359,12 +346,6 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         retried.LastError.Should().Contain("smtp down");
     }
 
-    /// <summary>
-    /// Verifies that a failure the adapter classifies as permanent takes the row out of the
-    /// rotation on its first attempt: <c>RegisterFailure</c> marks it failed instead of consuming
-    /// a retry slot, so the backoff schedule is never consulted and <c>NextAttemptAt</c> keeps the
-    /// value it was enqueued with.
-    /// </summary>
     [Fact]
     public async Task Dispatcher_PermanentFailure_MarksTheRowFailedWithoutSchedulingARetry()
     {
@@ -408,11 +389,6 @@ public class EmailDeliveryFlowTests(PostgresFixture db) : BaseApiTest(db)
         failed.SentAt.Should().BeNull();
     }
 
-    /// <summary>
-    /// Verifies that a provider error longer than the column allows is truncated to the storage
-    /// limit rather than failing the commit that records the attempt. A verbose upstream stack
-    /// trace must not be able to take the dispatcher down.
-    /// </summary>
     [Fact]
     public async Task Dispatcher_OverlongProviderError_TruncatesItToTheStorageLimit()
     {
