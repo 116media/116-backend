@@ -7,15 +7,18 @@ namespace _116.Integration.Tests.Shared.Application.Extensions;
 
 /// <summary>
 /// Verifies that <c>RateLimitingExtension.AddRateLimiting</c> is wired into the real HTTP
-/// pipeline and that each of its three algorithms actually rejects traffic.
+/// pipeline and that every named policy it registers actually rejects traffic at the limit its
+/// constants declare.
 /// </summary>
 /// <remarks>
 /// These tests run against <see cref="RateLimitedApiFixture" />, the only host that keeps the
-/// production policies in place. Every policy is registered as a single host-wide limiter, so
-/// each test drives a different policy and no test can steal another's permits. The permitted
-/// requests are deliberately sent unauthenticated or with an invalid body: the rate limiter runs
-/// before authentication and before model binding, so a permit is consumed regardless of the
-/// outcome, which keeps these tests focused on the limiter rather than on endpoint behaviour.
+/// production policies in place. Every policy is registered as a single host-wide limiter whose
+/// permits are never restored between tests, so the theory below must remain the sole consumer of
+/// every policy on this host: a second test driving a policy a row already exhausted would steal
+/// its permits and both would be flaky. The permitted requests are deliberately sent
+/// unauthenticated and with no body: the rate limiter runs before authentication and before model
+/// binding, so a permit is consumed regardless of the outcome, which keeps these tests focused on
+/// the limiter rather than on endpoint behaviour.
 /// </remarks>
 /// <param name="db">The dedicated Testcontainer database and rate-limited application host.</param>
 [Collection("RateLimiting")]
@@ -31,60 +34,101 @@ public class RateLimitingExtensionTests(RateLimitedPostgresFixture db) : IDispos
     }
 
     /// <summary>
-    /// Drives the sliding window tier by exhausting the <c>Otp</c> policy on the public
-    /// verify-OTP endpoint, proving that the sliding window policies configured by
-    /// <c>ConfigureSlidingWindowPolicies</c> are registered and enforced.
+    /// Supplies every named rate limit policy paired with the permit limit its constants declare
+    /// and a request against an endpoint that carries that policy. Sourcing the limit from the
+    /// production constant is what makes a row prove the configured number rather than a copy of
+    /// it. Each route is named beside its endpoint file so the pairing can be re-verified.
     /// </summary>
-    [Fact]
-    public async Task SlidingWindowPolicy_RejectsWithTooManyRequests_WhenOtpPermitLimitExceeded()
-    {
-        object body = new
+    /// <returns>Policy name, permit limit, HTTP method, and route for each registered policy.</returns>
+    public static TheoryData<string, int, string, string> Policies() =>
+        new()
         {
-            email = "rate-limit-probe@116.test",
-            code = "000000",
-            purpose = "AccountVerification",
+            {
+                RateLimitPolicies.Authentication,
+                AuthenticationRateLimitConstants.PermitLimit,
+                HttpMethod.Post.Method,
+                Routes.Public.Auth.Login()
+            },
+            {
+                RateLimitPolicies.Otp,
+                OtpRateLimitConstants.PermitLimit,
+                HttpMethod.Post.Method,
+                Routes.Public.Auth.VerifyOtp()
+            },
+            {
+                RateLimitPolicies.PasswordManagement,
+                PasswordManagementRateLimitConstants.PermitLimit,
+                HttpMethod.Post.Method,
+                Routes.Public.Auth.ForgotPassword()
+            },
+            {
+                RateLimitPolicies.FileUpload,
+                FileUploadRateLimitConstants.TokenLimit,
+                HttpMethod.Patch.Method,
+                Routes.Public.Me.Avatar()
+            },
+            {
+                RateLimitPolicies.DataExport,
+                DataExportRateLimitConstants.TokenLimit,
+                HttpMethod.Get.Method,
+                Routes.Admin.Sessions.Export()
+            },
+            {
+                RateLimitPolicies.ContentBrowsing,
+                ContentBrowsingRateLimitConstants.PermitLimit,
+                HttpMethod.Get.Method,
+                ApiRoutes.Public.Articles
+            },
+            {
+                RateLimitPolicies.UserProfile,
+                UserProfileRateLimitConstants.PermitLimit,
+                HttpMethod.Get.Method,
+                Routes.Public.Me.Profile()
+            },
+            {
+                RateLimitPolicies.SessionManagement,
+                SessionManagementRateLimitConstants.PermitLimit,
+                HttpMethod.Post.Method,
+                Routes.Public.Auth.SignOut()
+            },
+            {
+                RateLimitPolicies.AdminMetrics,
+                AdminMetricsRateLimitConstants.PermitLimit,
+                HttpMethod.Get.Method,
+                Routes.Admin.Sessions.Metrics()
+            },
+            {
+                RateLimitPolicies.ContentContribution,
+                ContentContributionRateLimitConstants.PermitLimit,
+                HttpMethod.Post.Method,
+                Routes.Public.LyricsSubmissionsAndRevisions.RevisionVotes(Guid.Empty)
+            },
         };
 
-        using HttpResponseMessage rejected = await ExhaustAsync(
-            OtpRateLimitConstants.PermitLimit,
-            () => _client.PostAsJsonAsync(Routes.Public.Auth.VerifyOtp(), body)
-        );
-
-        await ShouldBeRateLimitRejectionAsync(rejected);
-    }
-
-    /// <summary>
-    /// Drives the token bucket tier by exhausting the <c>DataExport</c> policy on the admin
-    /// session export endpoint, proving that the token bucket policies configured by
-    /// <c>ConfigureTokenBucketPolicies</c> are registered and enforced. The replenishment period
-    /// is a full minute, so no token is returned to the bucket during the test.
-    /// </summary>
-    [Fact]
-    public async Task TokenBucketPolicy_RejectsWithTooManyRequests_WhenDataExportTokensExhausted()
+    [Theory]
+    [MemberData(nameof(Policies))]
+    public async Task EveryNamedPolicy_RejectsWithTooManyRequests_AtItsConfiguredLimit(
+        string policy,
+        int permitLimit,
+        string method,
+        string route
+    )
     {
-        using HttpResponseMessage rejected = await ExhaustAsync(
-            DataExportRateLimitConstants.TokenLimit,
-            () => _client.GetAsync(Routes.Admin.Sessions.Export())
-        );
-
-        await ShouldBeRateLimitRejectionAsync(rejected);
-    }
-
-    /// <summary>
-    /// Drives the fixed window tier by exhausting the <c>ContentContribution</c> policy on the
-    /// lyrics revision voting endpoint, proving that the fixed window policies configured by
-    /// <c>ConfigureFixedWindowPolicies</c> are registered and enforced.
-    /// </summary>
-    [Fact]
-    public async Task FixedWindowPolicy_RejectsWithTooManyRequests_WhenContentContributionPermitLimitExceeded()
-    {
-        string route = Routes.Public.LyricsSubmissionsAndRevisions.RevisionVotes(Guid.NewGuid());
-        object body = new { vote = "Approve", comment = (string?)null };
+        var httpMethod = new HttpMethod(method);
 
         using HttpResponseMessage rejected = await ExhaustAsync(
-            ContentContributionRateLimitConstants.PermitLimit,
-            () => _client.PostAsJsonAsync(route, body)
+            permitLimit,
+            () => _client.SendAsync(new HttpRequestMessage(httpMethod, route))
         );
+
+        rejected
+            .StatusCode.Should()
+            .Be(
+                HttpStatusCode.TooManyRequests,
+                "the {0} policy must be registered and reject the request after {1} permits",
+                policy,
+                permitLimit
+            );
 
         await ShouldBeRateLimitRejectionAsync(rejected);
     }
