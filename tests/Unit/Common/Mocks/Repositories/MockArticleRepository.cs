@@ -251,6 +251,28 @@ public static class MockArticleRepository
         return mock;
     }
 
+    /// <summary>
+    /// Sets up the article-scoped comment lookup to return the comment only for the given article id.
+    /// Any other article id falls through to the default null, so a cross-article lookup is
+    /// distinguishable from a matching one.
+    /// </summary>
+    public static Mock<IArticleRepository> SetupGetCommentByIdInArticleAsync(
+        this Mock<IArticleRepository> mock,
+        ArticleCommentEntity? comment,
+        Guid articleId
+    )
+    {
+        mock.Setup(x =>
+                x.GetCommentByIdAsync(
+                    It.IsAny<Guid>(),
+                    It.Is<Guid>(id => id == articleId),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(comment);
+        return mock;
+    }
+
     public static Mock<IArticleRepository> SetupGetCommentsAsync(
         this Mock<IArticleRepository> mock,
         List<ArticleCommentEntity> comments,
@@ -540,6 +562,8 @@ public static class MockArticleRepository
             )
             .ReturnsAsync((new HashSet<Guid>(), new HashSet<Guid>()));
         mock.Setup(x => x.GetCommentByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ArticleCommentEntity?)null);
+        mock.Setup(x => x.GetCommentByIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((ArticleCommentEntity?)null);
         mock.Setup(x =>
                 x.GetCommentsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>())
